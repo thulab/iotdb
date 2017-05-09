@@ -1,7 +1,5 @@
 package cn.edu.thu.tsfile.hadoop.io;
 
-import cn.edu.thu.tsfile.io.HDFSInputStream;
-import cn.edu.thu.tsfile.io.HDFSOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -16,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 public class HDFSInputOutputStreamTest {
 
 	private HDFSInputStream hdfsInputStream = null;
-	private cn.edu.thu.tsfile.io.HDFSOutputStream hdfsOutputStream = null;
+	private HDFSOutputStream hdfsOutputStream = null;
 	private int lenOfBytes = 50;
 	private byte b = 10;
 	private byte[] bs = new byte[lenOfBytes];
@@ -27,7 +25,7 @@ public class HDFSInputOutputStreamTest {
 
 	@Before
 	public void setUp() throws Exception {
-		hdfsOutputStream = new cn.edu.thu.tsfile.io.HDFSOutputStream(filename, new Configuration(), true);
+		hdfsOutputStream = new HDFSOutputStream(filename, new Configuration(), true);
 		path = new Path(filename);
 		hdfsInputStream = new HDFSInputStream(filename);
 	}
