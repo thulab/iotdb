@@ -20,6 +20,7 @@ import java.util.Map;
 import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
+import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.MetadataArgsErrorException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
@@ -46,7 +47,8 @@ public class MManager {
 
 	private MManager() {
 		writeToLog = false;
-		String folderPath = TSFileDescriptor.getInstance().getConfig().metadataDir;
+		
+		String folderPath = TSFileDBDescriptor.getInstance().getConfig().metadataDir;
 		datafilePath = folderPath + "/mdata.obj";
 		logFilePath = folderPath + "/mlog.txt";
 		init();
@@ -133,10 +135,10 @@ public class MManager {
 				leftArgs = new String[0];
 			}
 			addAPathToMTree(args[1], args[2], args[3], leftArgs);
-		} else if (args[0].equals(MetadataOperationType.ADD_PATH_TO_MTREE)) {
-			deletePathFromMTree(args[1]);
 		} else if (args[0].equals(MetadataOperationType.DELETE_PATH_FROM_MTREE)) {
-			setStorageLevelToMTree(MetadataOperationType.SET_STORAGE_LEVEL_TO_MTREE);
+			deletePathFromMTree(args[1]);
+		} else if (args[0].equals(MetadataOperationType.SET_STORAGE_LEVEL_TO_MTREE)) {
+			setStorageLevelToMTree(args[1]);
 		} else if (args[0].equals(MetadataOperationType.ADD_A_PTREE)) {
 			addAPTree(args[1]);
 		} else if (args[0].equals(MetadataOperationType.ADD_A_PATH_TO_PTREE)) {
