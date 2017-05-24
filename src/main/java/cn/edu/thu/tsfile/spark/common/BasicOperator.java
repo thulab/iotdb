@@ -30,9 +30,6 @@ public class BasicOperator extends FilterOperator {
         this.seriesValue = value;
         this.isLeaf = true;
         this.isSingle = true;
-        if(path.equals(SQLConstant.RESERVED_DELTA_OBJECT) || path.equals(SQLConstant.RESERVED_TIME)) {
-            hasReserve = true;
-        }
     }
 
     public void setReversedTokenIntType() throws BasicOperatorException {

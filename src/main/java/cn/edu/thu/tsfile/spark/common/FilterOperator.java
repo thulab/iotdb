@@ -28,8 +28,6 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
     protected boolean isSingle = false;
     // if isSingle = false, singlePath must be null
     protected String singlePath = null;
-    // if paths contain "delta_object" or "time", hasReserve = true
-    public boolean hasReserve = false;
 
     public FilterOperator(int tokenType) {
         super(tokenType);
@@ -73,9 +71,6 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
 
     public void setChildrenList(List<FilterOperator> children) {
         this.childOperators = children;
-        for(FilterOperator child: children) {
-            hasReserve |= child.hasReserve;
-        }
     }
 
     public void setIsSingle(boolean b) {
@@ -92,7 +87,6 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
 
     public void addChildOPerator(FilterOperator op) {
         childOperators.add(op);
-        hasReserve |= op.hasReserve;
     }
 
 
@@ -140,7 +134,6 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
         ret.tokenSymbol=tokenSymbol;
         ret.isLeaf = isLeaf;
         ret.isSingle = isSingle;
-        ret.hasReserve = hasReserve;
         if(singlePath != null)
             ret.singlePath = singlePath;
         for (FilterOperator filterOperator : this.childOperators) {

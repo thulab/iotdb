@@ -39,6 +39,7 @@ public class QueryProcessor {
 
             DNFFilterOptimizer dnf = new DNFFilterOptimizer();
             filter = dnf.optimize(filter);
+
             MergeSingleFilterOptimizer merge = new MergeSingleFilterOptimizer();
             filter = merge.optimize(filter);
 
@@ -53,7 +54,6 @@ public class QueryProcessor {
         } else {
             queryPlans.addAll(new PhysicalOptimizer().optimize(null, paths, in, start, end));
         }
-
         return queryPlans;
     }
 

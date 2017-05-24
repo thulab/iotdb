@@ -44,6 +44,13 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     }
   }
 
+  test("qp") {
+    val df = spark.read.format("cn.edu.thu.tsfile.spark").load(tsfileFolder)
+    df.createOrReplaceTempView("tsfile_table")
+    val newDf = spark.sql("select s1,s2 from tsfile_table where delta_object = 'root.car.d1' and time <= 10 and (time > 5 or s1 > 10)")
+    Assert.assertEquals(0, newDf.count())
+  }
+
   test("testMultiFilesNoneExistDelta_object") {
     val df = spark.read.format("cn.edu.thu.tsfile.spark").load(tsfileFolder)
     df.createOrReplaceTempView("tsfile_table")

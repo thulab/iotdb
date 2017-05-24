@@ -28,9 +28,6 @@ public class DNFFilterOptimizer implements IFilterOptimizer {
     }
 
     private FilterOperator getDNF(FilterOperator filter) throws DNFOptimizeException {
-        if(!filter.hasReserve) {
-            return filter;
-        }
         if (filter.isLeaf())
             return filter;
         List<FilterOperator> children = filter.getChildren();
