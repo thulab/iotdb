@@ -16,6 +16,7 @@ public class Mi {
 		String path = "fdafad\\fds";
 		System.out.println("\\"+File.separator);
 		System.out.println("/");
+		
 //		System.out.println("\");
 		String[] paths = path.split("\\"+File.separator);
 		for(String str:paths){
