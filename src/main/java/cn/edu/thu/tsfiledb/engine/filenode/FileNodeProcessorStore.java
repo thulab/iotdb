@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.engine.filenode;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This is used to store information about filenodeProcessor status.<br>
@@ -17,6 +18,7 @@ public class FileNodeProcessorStore implements Serializable {
 
 	private static final long serialVersionUID = -54525372941897565L;
 
+	private  Map<String,Long> lastUpdateTimeMap;
 	private  long lastUpdateTime;
 	private  IntervalFileNode emptyIntervalFileNode;
 	private  List<IntervalFileNode> newFileNodes;
@@ -32,9 +34,28 @@ public class FileNodeProcessorStore implements Serializable {
 		this.numOfMergeFile = numOfMergeFile;
 	}
 	
+	public FileNodeProcessorStore(long lastUpdateTime, Map<String,Long> lastUpdateTimeMap,IntervalFileNode emptyIntervalFileNode,
+			List<IntervalFileNode> newFileNodes, FileNodeProcessorStatus fileNodeProcessorStatus,int numOfMergeFile) {
+		this.lastUpdateTime = lastUpdateTime;
+		this.lastUpdateTimeMap = lastUpdateTimeMap;
+		this.emptyIntervalFileNode = emptyIntervalFileNode;
+		this.newFileNodes = newFileNodes;
+		this.fileNodeProcessorStatus = fileNodeProcessorStatus;
+		this.numOfMergeFile = numOfMergeFile;
+	}
+	
 	public long getLastUpdateTime() {
 		return lastUpdateTime;
 	}
+	
+	public Map<String,Long> getLastUpdateTimeMap(){
+		return lastUpdateTimeMap;
+	}
+	
+	public void setLastUpdateTimeMap(Map<String,Long> lastUpdateTimeMap){
+		this.lastUpdateTimeMap = lastUpdateTimeMap;
+	}
+	
 	public IntervalFileNode getEmptyIntervalFileNode() {
 		return emptyIntervalFileNode;
 	}

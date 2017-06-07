@@ -62,7 +62,9 @@ public class FileNodeProcessor extends LRUProcessor {
 	private static final MManager mManager = MManager.getInstance();
 	private static final String LOCK_SIGNAL = "lock___signal";
 
-	private long lastUpdateTime = -1;
+	// private long lastUpdateTime = -1;
+	private Map<String, Long> lastUpdateTimeMap;
+
 	private IntervalFileNode emptyIntervalFileNode;
 	private List<IntervalFileNode> newFileNodes;
 	private FileNodeProcessorStatus isMerging;
@@ -101,7 +103,8 @@ public class FileNodeProcessor extends LRUProcessor {
 		public void act() throws Exception {
 			// update the lastUpdateTime Notice: Thread safe
 			synchronized (fileNodeProcessorStore) {
-				fileNodeProcessorStore.setLastUpdateTime(lastUpdateTime);
+				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
+				// fileNodeProcessorStore.setLastUpdateTime(lastUpdateTime);
 			}
 		}
 	};
@@ -114,7 +117,8 @@ public class FileNodeProcessor extends LRUProcessor {
 			// update the lastUpdatetime, newIntervalList and Notice: thread
 			// safe
 			synchronized (fileNodeProcessorStore) {
-				fileNodeProcessorStore.setLastUpdateTime(lastUpdateTime);
+				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
+				// fileNodeProcessorStore.setLastUpdateTime(lastUpdateTime);
 				addLastTimeToIntervalFile();
 				fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 			}
@@ -122,19 +126,34 @@ public class FileNodeProcessor extends LRUProcessor {
 	};
 
 	private void addLastTimeToIntervalFile() {
-		if (lastUpdateTime == -1) {
-			LOGGER.error("The lastUpdateTime is -1 when close the bufferwrite file");
-			throw new ProcessorRuntimException("The lastUpdateTime is -1 when close the bufferwrite file");
+
+		// TODO:check lastUpdateTimeMap is empty
+		if (lastUpdateTimeMap.isEmpty()) {
+			LOGGER.error("The lastUpdateTimeMap is empty when close the bufferwrite file");
+			throw new ProcessorRuntimException("The lastUpdateTimeMap is empty when close the bufferwrite file");
 		}
 		if (!newFileNodes.isEmpty()) {
-			newFileNodes.get(newFileNodes.size() - 1).setEndTime(lastUpdateTime);
+			newFileNodes.get(newFileNodes.size() - 1).setEndTimeMap(lastUpdateTimeMap);
 		} else {
 			throw new ProcessorRuntimException("The intervalFile list is empty when close bufferwrite file");
 		}
+
+		// if (lastUpdateTime == -1) {
+		// LOGGER.error("The lastUpdateTime is -1 when close the bufferwrite
+		// file");
+		// throw new ProcessorRuntimException("The lastUpdateTime is -1 when
+		// close the bufferwrite file");
+		// }
+		// if (!newFileNodes.isEmpty()) {
+		// newFileNodes.get(newFileNodes.size() - 1).setEndTime(lastUpdateTime);
+		// } else {
+		// throw new ProcessorRuntimException("The intervalFile list is empty
+		// when close bufferwrite file");
+		// }
 	}
 
 	public void addIntervalFileNode(long startTime, String fileName) {
-		IntervalFileNode intervalFileNode = new IntervalFileNode(startTime, OverflowChangeType.NO_CHANGE, fileName);
+		IntervalFileNode intervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, fileName);
 		newFileNodes.add(intervalFileNode);
 	}
 
@@ -171,7 +190,8 @@ public class FileNodeProcessor extends LRUProcessor {
 			throw new FileNodeProcessorException(
 					"Restore the FileNodeProcessor information error, the nameSpacePath is " + nameSpacePath);
 		}
-		lastUpdateTime = fileNodeProcessorStore.getLastUpdateTime();
+		lastUpdateTimeMap = fileNodeProcessorStore.getLastUpdateTimeMap();
+		// lastUpdateTime = fileNodeProcessorStore.getLastUpdateTime();
 		emptyIntervalFileNode = fileNodeProcessorStore.getEmptyIntervalFileNode();
 		newFileNodes = fileNodeProcessorStore.getNewFileNodes();
 		isMerging = fileNodeProcessorStore.getFileNodeProcessorState();
@@ -337,30 +357,44 @@ public class FileNodeProcessor extends LRUProcessor {
 		return bufferWriteProcessor != null;
 	}
 
-	public void setLastUpdateTime(long timestamp) {
+	// public void setLastUpdateTime(long timestamp) {
+	//
+	// this.lastUpdateTime = timestamp;
+	// }
 
-		this.lastUpdateTime = timestamp;
+	public void setLastUpdateTime(String deltaObjectId, long timestamp) {
+
+		lastUpdateTimeMap.put(deltaObjectId, timestamp);
 	}
 
-	public long getLastUpdateTime() {
+	public long getLastUpdateTime(String deltaObjectId) {
 
-		return lastUpdateTime;
+		if (lastUpdateTimeMap.containsKey(deltaObjectId)) {
+			return lastUpdateTimeMap.get(deltaObjectId);
+		} else {
+			return -1;
+		}
 	}
+
+	// public long getLastUpdateTime() {
+	//
+	// return lastUpdateTime;
+	// }
 
 	/**
 	 * For insert overflow
 	 * 
 	 * @param timestamp
 	 */
-	public void changeTypeToChanged(long timestamp) {
+	public void changeTypeToChanged(String deltaObjectId, long timestamp) {
 		if (newFileNodes.isEmpty()) {
 			LOGGER.warn("No any interval node to be changed overflow type");
-			emptyIntervalFileNode.endTime = lastUpdateTime;
+			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
 			emptyIntervalFileNode.changeTypeToChanged(isMerging);
 			return;
 		}
 
-		int index = searchIndexNodeByTimestamp(timestamp);
+		int index = searchIndexNodeByTimestamp(deltaObjectId, timestamp);
 		newFileNodes.get(index).changeTypeToChanged(isMerging);
 	}
 
@@ -370,16 +404,16 @@ public class FileNodeProcessor extends LRUProcessor {
 	 * @param startTime
 	 * @param endTime
 	 */
-	public void changeTypeToChanged(long startTime, long endTime) {
+	public void changeTypeToChanged(String deltaObjectId, long startTime, long endTime) {
 		if (newFileNodes.isEmpty()) {
 			LOGGER.warn("No any interval node to be changed overflow type");
-			emptyIntervalFileNode.endTime = lastUpdateTime;
+			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
 			emptyIntervalFileNode.changeTypeToChanged(isMerging);
 			return;
 		}
 
-		int left = searchIndexNodeByTimestamp(startTime);
-		int right = searchIndexNodeByTimestamp(endTime);
+		int left = searchIndexNodeByTimestamp(deltaObjectId, startTime);
+		int right = searchIndexNodeByTimestamp(deltaObjectId, endTime);
 		for (int i = left; i <= right; i++) {
 			newFileNodes.get(i).changeTypeToChanged(isMerging);
 		}
@@ -390,15 +424,15 @@ public class FileNodeProcessor extends LRUProcessor {
 	 * 
 	 * @param timestamp
 	 */
-	public void changeTypeToChangedForDelete(long timestamp) {
+	public void changeTypeToChangedForDelete(String deltaObjectId, long timestamp) {
 		if (newFileNodes.isEmpty()) {
 			LOGGER.warn("No any interval node to be changed overflow type");
-			emptyIntervalFileNode.endTime = lastUpdateTime;
+			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
 			emptyIntervalFileNode.changeTypeToChanged(isMerging);
 			return;
 		}
 
-		int index = searchIndexNodeByTimestamp(timestamp);
+		int index = searchIndexNodeByTimestamp(deltaObjectId, timestamp);
 		for (int i = 0; i <= index; i++) {
 			newFileNodes.get(i).changeTypeToChanged(isMerging);
 		}
@@ -410,11 +444,11 @@ public class FileNodeProcessor extends LRUProcessor {
 	 * @param timestamp
 	 * @return index of interval
 	 */
-	private int searchIndexNodeByTimestamp(long timestamp) {
+	private int searchIndexNodeByTimestamp(String deltaObjectId, long timestamp) {
 
 		int index = 1;
 		while (index < newFileNodes.size()) {
-			if (timestamp < newFileNodes.get(index).startTime) {
+			if (timestamp < newFileNodes.get(index).getStartTime(deltaObjectId)) {
 				break;
 			} else {
 				index++;
@@ -556,22 +590,15 @@ public class FileNodeProcessor extends LRUProcessor {
 		LOGGER.debug("Merge: the nameSpacePath {}, unlock the filenode write lock. {}", nameSpacePath, LOCK_SIGNAL);
 
 		// query buffer data and overflow data, and merge them
-		List<Path> pathList = new ArrayList<>();
-		try {
-			ArrayList<String> pathStrings = mManager.getPaths(nameSpacePath + FileNodeConstants.PATH_SEPARATOR + "*");
-			for (String string : pathStrings) {
-				pathList.add(new Path(string));
-			}
-		} catch (PathErrorException e) {
-			LOGGER.error("Can't get all the paths from MManager, the nameSpacePath is {}", nameSpacePath);
-			e.printStackTrace();
-			throw new FileNodeProcessorException(e);
-		}
 		for (IntervalFileNode backupIntervalFile : backupIntervalFiles) {
 			if (backupIntervalFile.overflowChangeType == OverflowChangeType.CHANGED) {
 				// query data and merge
 				try {
-					queryAndWriteDataForMerge(pathList, backupIntervalFile);
+					if (backupIntervalFile.getStartTimeMap().size() != backupIntervalFile.getEndTimeMap().size()) {
+						throw new FileNodeProcessorException(
+								"Merge: the size of startTimeMap is not equal to the size of startTimeMap");
+					}
+					queryAndWriteDataForMerge(backupIntervalFile);
 				} catch (IOException | WriteProcessException e) {
 					LOGGER.error("Merge: query and write data error, the reason is {}", e.getMessage());
 					e.printStackTrace();
@@ -586,8 +613,8 @@ public class FileNodeProcessor extends LRUProcessor {
 						+ OverflowChangeType.MERGING_CHANGE);
 			} else {
 				LOGGER.info("The overflowChangedType of backup IntervalFile is {}, start time is {}, end time is {}.",
-						backupIntervalFile.overflowChangeType, backupIntervalFile.startTime,
-						backupIntervalFile.endTime);
+						backupIntervalFile.overflowChangeType, backupIntervalFile.getStartTimeMap(),
+						backupIntervalFile.getEndTimeMap());
 			}
 		}
 		//
@@ -612,23 +639,46 @@ public class FileNodeProcessor extends LRUProcessor {
 						"The newFileNodes is empty, but the emptyIntervalFileNode OverflowChangeType is %s",
 						emptyIntervalFileNode.overflowChangeType));
 			}
-
-			IntervalFileNode intervalFileNode = new IntervalFileNode(0, emptyIntervalFileNode.endTime,
+			Map<String, Long> zeroStartTimeMap = new HashMap<>();
+			Map<String, Long> endTimeMap = new HashMap<>();
+			for (Entry<String, Long> endTimeEntry : emptyIntervalFileNode.getEndTimeMap().entrySet()) {
+				zeroStartTimeMap.put(endTimeEntry.getKey(), (long) 0);
+				endTimeMap.put(endTimeEntry.getKey(), endTimeEntry.getValue());
+			}
+			IntervalFileNode intervalFileNode = new IntervalFileNode(zeroStartTimeMap, endTimeMap,
 					OverflowChangeType.CHANGED, null);
 			result.add(intervalFileNode);
 		} else if (newFileNodes.size() == 1) {
 			// has overflow data, the only newFileNode must be changed or the
 			// emptyfile must be changed
 			IntervalFileNode temp = newFileNodes.get(0);
-			IntervalFileNode intervalFileNode = new IntervalFileNode(0, temp.endTime, temp.overflowChangeType,
-					temp.filePath);
+			Map<String, Long> zeroStartTimeMap = new HashMap<>();
+			for (Entry<String, Long> endTimeEntry : temp.getEndTimeMap().entrySet()) {
+				zeroStartTimeMap.put(endTimeEntry.getKey(), (long) 0);
+			}
+			IntervalFileNode intervalFileNode = new IntervalFileNode(zeroStartTimeMap, temp.getEndTimeMap(),
+					temp.overflowChangeType, temp.filePath);
 			result.add(intervalFileNode);
 		} else {
 			// add first
 			IntervalFileNode temp = newFileNodes.get(0);
+			IntervalFileNode next = newFileNodes.get(1);
 			if (emptyIntervalFileNode.overflowChangeType == OverflowChangeType.CHANGED
 					|| temp.overflowChangeType == OverflowChangeType.CHANGED) {
-				IntervalFileNode intervalFileNode = new IntervalFileNode(0, newFileNodes.get(1).startTime - 1,
+				Map<String, Long> zeroStartTimeMap = new HashMap<>();
+				Map<String, Long> endTimeMap = new HashMap<>();
+				for (Entry<String, Long> endTimeEntry : temp.getEndTimeMap().entrySet()) {
+					String deltaObjectId = endTimeEntry.getKey();
+					zeroStartTimeMap.put(deltaObjectId, (long) 0);
+					if (next.getStartTime(deltaObjectId) != -1) {
+						// set next start time -1
+						endTimeMap.put(deltaObjectId, next.getStartTime(deltaObjectId) - 1);
+					} else {
+						// set current end time
+						endTimeMap.put(deltaObjectId, temp.getEndTime(deltaObjectId));
+					}
+				}
+				IntervalFileNode intervalFileNode = new IntervalFileNode(zeroStartTimeMap, endTimeMap,
 						OverflowChangeType.CHANGED, temp.filePath);
 				result.add(intervalFileNode);
 			} else {
@@ -637,9 +687,24 @@ public class FileNodeProcessor extends LRUProcessor {
 			// second to the last -1
 			for (int i = 1; i < newFileNodes.size() - 1; i++) {
 				temp = newFileNodes.get(i);
+				next = newFileNodes.get(i + 1);
 				if (temp.overflowChangeType == OverflowChangeType.CHANGED) {
-					IntervalFileNode intervalFileNode = new IntervalFileNode(temp.startTime,
-							newFileNodes.get(i + 1).startTime - 1, temp.overflowChangeType, temp.filePath);
+					Map<String, Long> startTimeMap = new HashMap<>();
+					Map<String, Long> endTimeMap = new HashMap<>();
+					for (Entry<String, Long> endTimeEntry : temp.getEndTimeMap().entrySet()) {
+						String deltaObjectId = endTimeEntry.getKey();
+						startTimeMap.put(deltaObjectId, temp.getStartTime(deltaObjectId));
+						if (next.getStartTime(deltaObjectId) != -1) {
+							// set next start time -1
+							endTimeMap.put(deltaObjectId, next.getStartTime(deltaObjectId) - 1);
+						} else {
+							// set current end time
+							endTimeMap.put(deltaObjectId, temp.getEndTime(deltaObjectId));
+						}
+					}
+
+					IntervalFileNode intervalFileNode = new IntervalFileNode(startTimeMap, endTimeMap,
+							temp.overflowChangeType, temp.filePath);
 					result.add(intervalFileNode);
 				} else {
 					result.add(temp);
@@ -648,7 +713,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			// last interval
 			temp = newFileNodes.get(newFileNodes.size() - 1);
 			if (temp.overflowChangeType == OverflowChangeType.CHANGED) {
-				IntervalFileNode intervalFileNode = new IntervalFileNode(temp.startTime, temp.endTime,
+				IntervalFileNode intervalFileNode = new IntervalFileNode(temp.getStartTimeMap(), temp.getEndTimeMap(),
 						temp.overflowChangeType, temp.filePath);
 				result.add(intervalFileNode);
 			} else {
@@ -685,7 +750,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			boolean putoff = false;
 			for (int i = 0; i < lenOfBackUpList; i++) {
 				IntervalFileNode backupIntervalFile = backupIntervalFiles.get(i);
-				if (backupIntervalFile.startTime == -1) {
+				if (backupIntervalFile.getStartTimeMap().isEmpty()) {
 					if (putoff || newFileNodes.get(i).overflowChangeType == OverflowChangeType.MERGING_CHANGE) {
 						putoff = true;
 					}
@@ -710,7 +775,11 @@ public class FileNodeProcessor extends LRUProcessor {
 			}
 
 			if (putoff) {
-				emptyIntervalFileNode.endTime = lastUpdateTime;
+				Map<String, Long> endTimeMap = new HashMap<>();
+				for (Entry<String, Long> endTimeEntry : lastUpdateTimeMap.entrySet()) {
+					endTimeMap.put(endTimeEntry.getKey(), endTimeEntry.getValue());
+				}
+				emptyIntervalFileNode.setEndTimeMap(endTimeMap);
 				emptyIntervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
 			} else {
 				emptyIntervalFileNode.overflowChangeType = OverflowChangeType.NO_CHANGE;
@@ -811,71 +880,95 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 	}
 
-	private void queryAndWriteDataForMerge(List<Path> pathList, IntervalFileNode backupIntervalFile)
-			throws IOException, WriteProcessException {
+	private void queryAndWriteDataForMerge(IntervalFileNode backupIntervalFile)
+			throws IOException, WriteProcessException, FileNodeProcessorException {
 
-		FilterExpression timeFilter = FilterUtilsForOverflow.construct(null, null, "0",
-				"(>=" + backupIntervalFile.startTime + ")&" + "(<=" + backupIntervalFile.endTime + ")");
+		Map<String, Long> startTimeMap = new HashMap<>();
+		Map<String, Long> endTimeMap = new HashMap<>();
 
-		LOGGER.info("Merge query and merge: namespace {}, time filter {}", nameSpacePath, timeFilter);
+		TSRandomAccessFileWriter raf = null;
+		TSFileIOWriter tsfileIOWriter = null;
+		WriteSupport<TSRecord> writeSupport = null;
+		TSRecordWriter recordWriter = null;
 
-		long startTime = -1;
-		long endTime = -1;
-
-		QueryerForMerge queryer = new QueryerForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
-		int queryCount = 0;
-		if (!queryer.hasNextRecord()) {
-			// No record in this query
-			LOGGER.warn("Merge query: namespace {}, time filter {}, no query data", nameSpacePath, timeFilter);
-			// Set the IntervalFile
-			backupIntervalFile.startTime = -1;
-			backupIntervalFile.endTime = -1;
-
-		} else {
-			queryCount++;
-			TSRecordWriter recordWriter;
-			RowRecord firstRecord = queryer.getNextRecord();
-			// get the outputPate and FileSchema
-			String outputPath = constructOutputFilePath(nameSpacePath,
-					firstRecord.timestamp + FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
-			FileSchema fileSchema;
+		for (Entry<String, Long> timeMap : backupIntervalFile.getStartTimeMap().entrySet()) {
+			// query one deltaObjectId
+			String deltaObjectId = timeMap.getKey();
+			long startTime = backupIntervalFile.getStartTime(deltaObjectId);
+			long endTime = backupIntervalFile.getEndTime(deltaObjectId);
+			List<Path> pathList = new ArrayList<>();
 			try {
-				fileSchema = constructFileSchema(nameSpacePath);
-			} catch (PathErrorException e) {
-				LOGGER.error("Get the FileSchema error, the nameSpacePath is {}", nameSpacePath);
-				throw new WriteProcessException("Get the FileSchema error, the nameSpacePath is " + nameSpacePath);
-			}
-			// construct TSRecordWriter
-			TSRandomAccessFileWriter raf = new RandomAccessOutputStream(new File(outputPath));
-			TSFileIOWriter tsfileIOWriter = new TSFileIOWriter(fileSchema, raf);
-			WriteSupport<TSRecord> writeSupport = new TSRecordWriteSupport();
-			recordWriter = new TSRecordWriter(TsFileConf, tsfileIOWriter, writeSupport, fileSchema);
-
-			TSRecord filledRecord = removeNullTSRecord(firstRecord);
-			recordWriter.write(filledRecord);
-			startTime = endTime = firstRecord.getTime();
-
-			while (queryer.hasNextRecord()) {
-				queryCount++;
-				RowRecord row = queryer.getNextRecord();
-				filledRecord = removeNullTSRecord(row);
-				endTime = filledRecord.time;
-				try {
-					recordWriter.write(filledRecord);
-				} catch (WriteProcessException e) {
-					LOGGER.error("Merge query: write one record error, the tsrecord is {}", filledRecord);
-					e.printStackTrace();
+				ArrayList<String> pathStrings = mManager
+						.getPaths(deltaObjectId + FileNodeConstants.PATH_SEPARATOR + "*");
+				for (String string : pathStrings) {
+					pathList.add(new Path(string));
 				}
+			} catch (PathErrorException e) {
+				LOGGER.error("Can't get all the paths from MManager, the deltaObjectId is {}", deltaObjectId);
+				e.printStackTrace();
+				throw new FileNodeProcessorException(e);
 			}
-			recordWriter.close();
-			System.out.println("   ============   Merge Record Count: " + queryCount);
-			LOGGER.debug("Merge query: namespace {}, time filter {}, filepath {} successfully", nameSpacePath,
-					timeFilter, outputPath);
-			backupIntervalFile.startTime = startTime;
-			backupIntervalFile.endTime = endTime;
-			backupIntervalFile.filePath = outputPath;
-		}
 
+			FilterExpression timeFilter = FilterUtilsForOverflow.construct(null, null, "0",
+					"(>=" + startTime + ")&" + "(<=" + endTime + ")");
+			LOGGER.info("Merge query and merge: deltaObjectId {}, time filter {}", deltaObjectId, timeFilter);
+			startTime = -1;
+			endTime = -1;
+
+			QueryerForMerge queryer = new QueryerForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
+			int queryCount = 0;
+			String outputPath = null;
+			if (!queryer.hasNextRecord()) {
+				LOGGER.warn("Merge query: deltaObjectId {}, time filter {}, no query data", deltaObjectId, timeFilter);
+			} else {
+				queryCount++;
+				RowRecord firstRecord = queryer.getNextRecord();
+
+				if (raf == null) {
+					outputPath = constructOutputFilePath(nameSpacePath, firstRecord.timestamp
+							+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
+
+					FileSchema fileSchema;
+					try {
+						fileSchema = constructFileSchema(nameSpacePath);
+					} catch (PathErrorException e) {
+						LOGGER.error("Get the FileSchema error, the nameSpacePath is {}", nameSpacePath);
+						throw new WriteProcessException(
+								"Get the FileSchema error, the nameSpacePath is " + nameSpacePath);
+					}
+
+					raf = new RandomAccessOutputStream(new File(outputPath));
+					tsfileIOWriter = new TSFileIOWriter(fileSchema, raf);
+					recordWriter = new TSRecordWriter(TsFileConf, tsfileIOWriter, writeSupport, fileSchema);
+				}
+
+				TSRecord filledRecord = removeNullTSRecord(firstRecord);
+				recordWriter.write(filledRecord);
+				startTime = endTime = firstRecord.getTime();
+
+				while (queryer.hasNextRecord()) {
+					queryCount++;
+					RowRecord row = queryer.getNextRecord();
+					filledRecord = removeNullTSRecord(row);
+					endTime = filledRecord.time;
+					try {
+						recordWriter.write(filledRecord);
+					} catch (WriteProcessException e) {
+						LOGGER.error("Merge query: write one record error, the tsrecord is {}", filledRecord);
+						e.printStackTrace();
+					}
+				}
+				startTimeMap.put(deltaObjectId, startTime);
+				endTimeMap.put(deltaObjectId, endTime);
+				backupIntervalFile.filePath = outputPath;
+				System.out.println("   ============   Merge Record Count: " + queryCount);
+				LOGGER.debug("Merge query: deltaObjectId {}, time filter {}, filepath {} successfully", deltaObjectId,
+						timeFilter, outputPath);
+			}
+		}
+		recordWriter.close();
+		backupIntervalFile.setStartTimeMap(startTimeMap);
+		backupIntervalFile.setEndTimeMap(endTimeMap);
 	}
 
 	private String constructOutputFilePath(String nameSpacePath, String fileName) {
@@ -1035,8 +1128,8 @@ public class FileNodeProcessor extends LRUProcessor {
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				fileNodeProcessorStore = serializeUtil.deserialize(fileNodeRestoreFilePath)
-						.orElse(new FileNodeProcessorStore(-1,
-								new IntervalFileNode(0, OverflowChangeType.NO_CHANGE, null),
+						.orElse(new FileNodeProcessorStore(-1, new HashMap<>(),
+								new IntervalFileNode(OverflowChangeType.NO_CHANGE, null),
 								new ArrayList<IntervalFileNode>(), FileNodeProcessorStatus.NONE, 0));
 			} catch (IOException e) {
 				e.printStackTrace();
