@@ -7,7 +7,7 @@ import java.util
 import cn.edu.thu.tsfile.common.constant.QueryConstant
 import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream
 import cn.edu.thu.tsfile.spark.DefaultSource.SerializableConfiguration
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant
+import cn.edu.thu.tsfile.spark.common.SQLConstant
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet
 import cn.edu.thu.tsfile.timeseries.read.readSupport.{Field, RowRecord}
 import com.esotericsoftware.kryo.io.{Input, Output}
@@ -56,8 +56,8 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
     //check if the path is given
     options.getOrElse(DefaultSource.path, throw new TSFileDataSourceException(s"${DefaultSource.path} must be specified for tsfile DataSource"))
 
-    //get union series in tsfile
-    var tsfileSchema = Converter.getUnionSeries(files, conf)
+    //get union series in TsFile
+    val tsfileSchema = Converter.getUnionSeries(files, conf)
 
     Converter.toSparkSqlSchema(tsfileSchema)
   }
@@ -143,7 +143,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
           while (priorityQueue.nonEmpty && !hasNext) {
             //get a record from priorityQueue
-            var tmpRecord = priorityQueue.dequeue()
+            val tmpRecord = priorityQueue.dequeue()
             //insert a record to priorityQueue
             if (dataSets(tmpRecord.index).hasNextRecord) {
               priorityQueue.enqueue(Record(dataSets(tmpRecord.index).getNextRecord, tmpRecord.index))

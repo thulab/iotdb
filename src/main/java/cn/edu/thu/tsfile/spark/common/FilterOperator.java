@@ -1,8 +1,5 @@
 package cn.edu.thu.tsfile.spark.common;
 
-
-
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant;
 import cn.edu.thu.tsfile.timeseries.utils.StringContainer;
 
 import java.util.ArrayList;

@@ -7,8 +7,8 @@ import cn.edu.thu.tsfile.spark.exception.DNFOptimizeException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant.KW_AND;
-import static cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant.KW_OR;
+import static cn.edu.thu.tsfile.spark.common.SQLConstant.KW_AND;
+import static cn.edu.thu.tsfile.spark.common.SQLConstant.KW_OR;
 
 
 public class DNFFilterOptimizer implements IFilterOptimizer {

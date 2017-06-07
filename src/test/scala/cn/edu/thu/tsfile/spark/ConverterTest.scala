@@ -4,9 +4,9 @@ import java.io.File
 import java.util
 
 import cn.edu.thu.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
+import cn.edu.thu.tsfile.spark.common.SQLConstant
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant
 import cn.edu.thu.tsfile.timeseries.read.query.QueryConfig
 import cn.edu.thu.tsfile.timeseries.read.readSupport.Field
 import org.apache.spark.sql.sources.{Filter, GreaterThan, LessThan, Or}

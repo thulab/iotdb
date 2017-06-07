@@ -27,7 +27,7 @@ public class PhysicalOptimizer {
 
         QueryEngine queryEngine = new QueryEngine(in);
         List<String> actualDeltaObjects = queryEngine.getAllDeltaObjectUIDByPartition(start, end);
-        List<SeriesSchema> actualSeries = queryEngine.getAllSeries();
+        List<SeriesSchema> actualSeries = queryEngine.getAllSeriesSchema();
 
         List<String> validDeltaObjects = new ArrayList<>();
 
@@ -76,7 +76,7 @@ public class PhysicalOptimizer {
             validDeltaObjects.addAll(queryEngine.getAllDeltaObjectUIDByPartition(start, end));
         }
 
-        List<SeriesSchema> fileSeries = queryEngine.getAllSeries();
+        List<SeriesSchema> fileSeries = queryEngine.getAllSeriesSchema();
         Set<String> seriesSet = new HashSet<>();
         for(SeriesSchema series: fileSeries) {
             seriesSet.add(series.name);

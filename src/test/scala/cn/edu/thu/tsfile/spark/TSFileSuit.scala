@@ -2,7 +2,7 @@ package cn.edu.thu.tsfile.spark
 
 import java.io.File
 
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant
+import cn.edu.thu.tsfile.spark.common.SQLConstant
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.junit.Assert

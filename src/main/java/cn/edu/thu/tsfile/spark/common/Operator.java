@@ -1,7 +1,5 @@
 package cn.edu.thu.tsfile.spark.common;
 
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant;
-
 /**
  * This class is a superclass of all operator. 
  * @author kangrong

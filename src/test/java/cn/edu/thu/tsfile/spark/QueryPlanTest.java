@@ -3,10 +3,10 @@ package cn.edu.thu.tsfile.spark;
 
 import cn.edu.thu.tsfile.spark.common.BasicOperator;
 import cn.edu.thu.tsfile.spark.common.FilterOperator;
+import cn.edu.thu.tsfile.spark.common.SQLConstant;
 import cn.edu.thu.tsfile.spark.common.TSQueryPlan;
 import cn.edu.thu.tsfile.spark.exception.QueryProcessorException;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
