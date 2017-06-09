@@ -319,7 +319,6 @@ public class TSServiceImpl implements TSIService.Iface {
 			LOGGER.error("tsfile-server ExecuteBatchStatement: error occurs when executing statements", e);
 			return getTSBathcExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage(), null);
 		}
-
 	}
 
 	@Override
