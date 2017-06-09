@@ -63,7 +63,7 @@ import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService;
  * Thrift RPC implementation at server side
  */
 public class TSServiceImpl implements TSIService.Iface {
-
+    
     private WriteLogManager writeLogManager;
     private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
     // Record the username for every rpc connection. Username.get() is null if
@@ -574,5 +574,4 @@ public class TSServiceImpl implements TSIService.Iface {
         resp.setStatus(ts_status);
         return resp;
     }
-
 }
