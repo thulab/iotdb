@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>cn.edu.thu</groupId>
-  <artifactId>tsfile</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>tsfile-spark-connector</artifactId>
+  <version>0.1.0</version>
   <build>
     <plugins>
       <plugin>
