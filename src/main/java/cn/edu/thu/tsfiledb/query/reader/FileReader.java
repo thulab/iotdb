@@ -21,6 +21,7 @@ import cn.edu.thu.tsfile.timeseries.write.io.TSFileIOWriter;
  * @author Jinrui Zhang
  */
 public class FileReader {
+
     private TSFileMetaData fileMetaData;
     private static final int FOOTER_LENGTH = 4;
     private static final int MAGIC_LENGTH = TSFileIOWriter.magicStringBytes.length;

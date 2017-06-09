@@ -21,6 +21,7 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 public class ReaderManager {
 
     private FileReader fileReader;
+
     private List<FileReader> fileReaderList;
 
     private TSRandomAccessFileReader raf;
@@ -91,6 +92,7 @@ public class ReaderManager {
     private void addRowGroupReadersToList(FileReader fileReader) {
         this.rowGroupReaderList.addAll(fileReader.getRowGroupReaderList());
     }
+
 
     List<RowGroupReader> getAllRowGroupReaders() {
         return rowGroupReaderList;
