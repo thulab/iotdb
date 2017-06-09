@@ -277,7 +277,6 @@ public class TSServiceImpl implements TSIService.Iface {
 			LOGGER.error("TsFileDB Server: error occurs when executing statements", e);
 			return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage(), null);
 		}
-
 	}
 
 	@Override

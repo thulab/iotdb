@@ -71,7 +71,6 @@ public class RecordReaderFactory {
 		} else {
 			hasUnEnvelopedFile = false;
 		}
-
 		List<TSRandomAccessFileReader> rafList = new ArrayList<>();
 		try {
 			for (int i = 0; i < fileNodes.size() - 1; i++) {
@@ -82,6 +81,9 @@ public class RecordReaderFactory {
 			if (hasUnEnvelopedFile) {
 				TSRandomAccessFileReader raf = fileStreamManager
 						.getLocalRandomAcessFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
+				// rafList: bufferwrite ts in file serialized.
+				// raf: last filenode?
+				// indisk: unenvelopedFile?
 				recordReader = new RecordReader(rafList, raf, queryStructure.getBufferwriteDataInDisk(), deltaObjectUID,
 						measurementID, token, queryStructure.getBufferwriteDataInMemory(),
 						queryStructure.getAllOverflowData());

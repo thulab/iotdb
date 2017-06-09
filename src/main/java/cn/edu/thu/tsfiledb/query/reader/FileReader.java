@@ -17,15 +17,14 @@ import cn.edu.thu.tsfile.timeseries.write.io.TSFileIOWriter;
 /**
  * 
  * @description This class is used to read {@code TSFileMetaData} and construct
- *              file level reader which contains the information of
- *              rowgroupreader.
+ *              file level reader which contains the information of RowGroupReader.
  * @author Jinrui Zhang
  *
  */
 public class FileReader {
 	private TSFileMetaData fileMetaData;
-	public static final int FOOTER_LENGTH = 4;
-	public static final int MAGIC_LENGTH = TSFileIOWriter.magicStringBytes.length;
+	private static final int FOOTER_LENGTH = 4;
+	private static final int MAGIC_LENGTH = TSFileIOWriter.magicStringBytes.length;
 
 	private ByteArrayInputStream bais;
 	private TSRandomAccessFileReader raf;
@@ -37,6 +36,12 @@ public class FileReader {
 		init();
 	}
 
+	/**
+	 * RowGroupMetaData is used to initialize the position of raf.
+	 *
+	 * @param raf
+	 * @param rowGroupMetaDataList
+	 */
 	public FileReader(TSRandomAccessFileReader raf, List<RowGroupMetaData> rowGroupMetaDataList){
     	this.raf = raf;
     	initFromRowGroupMetadataList(rowGroupMetaDataList);
