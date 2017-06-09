@@ -228,7 +228,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			if (bufferWriteProcessor.isNewProcessor()) {
 				bufferWriteProcessor.setNewProcessor(false);
 				String fileAbsolutePath = bufferWriteProcessor.getFileAbsolutePath();
-				fileNodeProcessor.addIntervalFileNode(timestamp, fileAbsolutePath);
+				fileNodeProcessor.addIntervalFileNode(deltaObjectId,timestamp, fileAbsolutePath);
 			}
 			
 			// For WAL

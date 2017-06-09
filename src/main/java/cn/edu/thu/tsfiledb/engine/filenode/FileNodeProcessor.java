@@ -125,6 +125,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 	};
 
+	// 这里设置了lastupdate，要根据其对应的starttime配对
 	private void addLastTimeToIntervalFile() {
 
 		// TODO:check lastUpdateTimeMap is empty
@@ -133,28 +134,24 @@ public class FileNodeProcessor extends LRUProcessor {
 			throw new ProcessorRuntimException("The lastUpdateTimeMap is empty when close the bufferwrite file");
 		}
 		if (!newFileNodes.isEmpty()) {
-			newFileNodes.get(newFileNodes.size() - 1).setEndTimeMap(lastUpdateTimeMap);
+			// 不能直接使用lastupdatetimeMap结构
+			Map<String,Long> endTimeMap = new HashMap<>(lastUpdateTimeMap);
+			newFileNodes.get(newFileNodes.size() - 1).setEndTimeMap(endTimeMap);
 		} else {
 			throw new ProcessorRuntimException("The intervalFile list is empty when close bufferwrite file");
 		}
-
-		// if (lastUpdateTime == -1) {
-		// LOGGER.error("The lastUpdateTime is -1 when close the bufferwrite
-		// file");
-		// throw new ProcessorRuntimException("The lastUpdateTime is -1 when
-		// close the bufferwrite file");
-		// }
-		// if (!newFileNodes.isEmpty()) {
-		// newFileNodes.get(newFileNodes.size() - 1).setEndTime(lastUpdateTime);
-		// } else {
-		// throw new ProcessorRuntimException("The intervalFile list is empty
-		// when close bufferwrite file");
-		// }
 	}
-
-	public void addIntervalFileNode(long startTime, String fileName) {
+	// 这里要进行修改 设置某个deltaObjectId的starttime
+	public void addIntervalFileNode(String deltaObjectId,long startTime, String fileName) {
 		IntervalFileNode intervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, fileName);
+		
+		intervalFileNode.setStartTime(deltaObjectId, startTime);
+		
 		newFileNodes.add(intervalFileNode);
+	}
+	
+	private void setIntervalFileNodeStartTime(String deltaObjectId,long startTime){
+		
 	}
 
 	private Action overflowFlushAction = new Action() {
@@ -191,7 +188,6 @@ public class FileNodeProcessor extends LRUProcessor {
 					"Restore the FileNodeProcessor information error, the nameSpacePath is " + nameSpacePath);
 		}
 		lastUpdateTimeMap = fileNodeProcessorStore.getLastUpdateTimeMap();
-		// lastUpdateTime = fileNodeProcessorStore.getLastUpdateTime();
 		emptyIntervalFileNode = fileNodeProcessorStore.getEmptyIntervalFileNode();
 		newFileNodes = fileNodeProcessorStore.getNewFileNodes();
 		isMerging = fileNodeProcessorStore.getFileNodeProcessorState();
@@ -357,11 +353,6 @@ public class FileNodeProcessor extends LRUProcessor {
 		return bufferWriteProcessor != null;
 	}
 
-	// public void setLastUpdateTime(long timestamp) {
-	//
-	// this.lastUpdateTime = timestamp;
-	// }
-
 	public void setLastUpdateTime(String deltaObjectId, long timestamp) {
 
 		lastUpdateTimeMap.put(deltaObjectId, timestamp);
@@ -375,11 +366,10 @@ public class FileNodeProcessor extends LRUProcessor {
 			return -1;
 		}
 	}
-
-	// public long getLastUpdateTime() {
-	//
-	// return lastUpdateTime;
-	// }
+	
+	public Map<String,Long> getLastUpdateTimeMap(){
+		return lastUpdateTimeMap;
+	}
 
 	/**
 	 * For insert overflow
@@ -939,6 +929,7 @@ public class FileNodeProcessor extends LRUProcessor {
 
 					raf = new RandomAccessOutputStream(new File(outputPath));
 					tsfileIOWriter = new TSFileIOWriter(fileSchema, raf);
+					writeSupport = new TSRecordWriteSupport();
 					recordWriter = new TSRecordWriter(TsFileConf, tsfileIOWriter, writeSupport, fileSchema);
 				}
 
@@ -1128,7 +1119,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				fileNodeProcessorStore = serializeUtil.deserialize(fileNodeRestoreFilePath)
-						.orElse(new FileNodeProcessorStore(-1, new HashMap<>(),
+						.orElse(new FileNodeProcessorStore(new HashMap<>(),
 								new IntervalFileNode(OverflowChangeType.NO_CHANGE, null),
 								new ArrayList<IntervalFileNode>(), FileNodeProcessorStatus.NONE, 0));
 			} catch (IOException e) {

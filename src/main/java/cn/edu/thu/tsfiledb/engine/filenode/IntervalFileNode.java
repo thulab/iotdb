@@ -12,11 +12,12 @@ import java.util.Map;
  *
  */
 public class IntervalFileNode implements Serializable {
+	
 	private static final long serialVersionUID = -4309683416067212549L;
-//	public long startTime;
-//	public long endTime;
-	public OverflowChangeType overflowChangeType;
+	
 	public String filePath;
+	public OverflowChangeType overflowChangeType;
+	
 
 	private Map<String,Long> startTimeMap;
 	private Map<String,Long> endTimeMap; 
@@ -55,6 +56,7 @@ public class IntervalFileNode implements Serializable {
 		startTimeMap.put(deltaObjectId, startTime);
 	}
 	
+	// 如何处理这里的空指针
 	public long getStartTime(String deltaObjectId){
 		
 		if(startTimeMap.containsKey(deltaObjectId)){
@@ -82,9 +84,12 @@ public class IntervalFileNode implements Serializable {
 		
 		this.endTimeMap.put(deltaObjectId, timestamp);
 	}
-	
+	//有可能是空指针？？？？
 	public long getEndTime(String deltaObjectId){
 		
+		if(endTimeMap.get(deltaObjectId)==null){
+			return -1;
+		}
 		return endTimeMap.get(deltaObjectId);
 	}
 	
@@ -126,4 +131,45 @@ public class IntervalFileNode implements Serializable {
 	public IntervalFileNode backUp() {
 		return new IntervalFileNode(startTimeMap,endTimeMap,overflowChangeType, filePath);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((endTimeMap == null) ? 0 : endTimeMap.hashCode());
+		result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+		result = prime * result + ((overflowChangeType == null) ? 0 : overflowChangeType.hashCode());
+		result = prime * result + ((startTimeMap == null) ? 0 : startTimeMap.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IntervalFileNode other = (IntervalFileNode) obj;
+		if (endTimeMap == null) {
+			if (other.endTimeMap != null)
+				return false;
+		} else if (!endTimeMap.equals(other.endTimeMap))
+			return false;
+		if (filePath == null) {
+			if (other.filePath != null)
+				return false;
+		} else if (!filePath.equals(other.filePath))
+			return false;
+		if (overflowChangeType != other.overflowChangeType)
+			return false;
+		if (startTimeMap == null) {
+			if (other.startTimeMap != null)
+				return false;
+		} else if (!startTimeMap.equals(other.startTimeMap))
+			return false;
+		return true;
+	}
+	
 }

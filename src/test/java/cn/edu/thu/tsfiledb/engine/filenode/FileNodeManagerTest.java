@@ -97,8 +97,8 @@ public class FileNodeManagerTest {
 			for (int i = 0; i < pairList.size(); i++) {
 				IntervalFileNode temp = newInterFiles.get(i);
 				Pair<Long, Long> time = pairList.get(i);
-				assertEquals(time.left.longValue(), temp.startTime);
-				assertEquals(time.right.longValue(), temp.endTime);
+				assertEquals(time.left.longValue(), temp.getStartTime(deltaObjectId));
+				assertEquals(time.right.longValue(), temp.getEndTime(deltaObjectId));
 				System.out.println(time);
 			}
 
@@ -276,20 +276,20 @@ public class FileNodeManagerTest {
 			assertEquals(pairList.size(), bufferwriteFiles.size());
 			IntervalFileNode temp = bufferwriteFiles.get(0);
 			// range 1: 2-208
-			assertEquals(100, temp.startTime);
-			assertEquals(200, temp.endTime);
+			assertEquals(100, temp.getStartTime(deltaObjectId));
+			assertEquals(200, temp.getEndTime(deltaObjectId));
 			// range 2: 202-400
 			temp = bufferwriteFiles.get(1);
-			assertEquals(300, temp.startTime);
-			assertEquals(400, temp.endTime);
+			assertEquals(300, temp.getStartTime(deltaObjectId));
+			assertEquals(400, temp.getEndTime(deltaObjectId));
 			// range 3: 500-600
 			temp = bufferwriteFiles.get(2);
-			assertEquals(500, temp.startTime);
-			assertEquals(600, temp.endTime);
+			assertEquals(500, temp.getStartTime(deltaObjectId));
+			assertEquals(600, temp.getEndTime(deltaObjectId));
 			// range 4: 700-800
 			temp = bufferwriteFiles.get(3);
-			assertEquals(700, temp.startTime);
-			assertEquals(800, temp.endTime);
+			assertEquals(700, temp.getStartTime(deltaObjectId));
+			assertEquals(800, temp.getEndTime(deltaObjectId));
 			List<Object> overflowData = queryResult.getAllOverflowData();
 			assertEquals(true, overflowData.get(0) != null);
 			assertEquals(true, overflowData.get(1) != null);
@@ -310,28 +310,28 @@ public class FileNodeManagerTest {
 			assertEquals(pairList.size(), bufferwriteFiles.size());
 			temp = bufferwriteFiles.get(0);
 			// range 1: 2-208
-			assertEquals(2, temp.startTime);
-			assertEquals(208, temp.endTime);
+			assertEquals(2, temp.getStartTime(deltaObjectId));
+			assertEquals(208, temp.getEndTime(deltaObjectId));
 			// range 2: 202-400
 			temp = bufferwriteFiles.get(1);
-			assertEquals(300, temp.startTime);
-			assertEquals(400, temp.endTime);
+			assertEquals(300, temp.getStartTime(deltaObjectId));
+			assertEquals(400, temp.getEndTime(deltaObjectId));
 			// range 3: 500-600
 			temp = bufferwriteFiles.get(2);
-			assertEquals(500, temp.startTime);
-			assertEquals(600, temp.endTime);
+			assertEquals(500, temp.getStartTime(deltaObjectId));
+			assertEquals(600, temp.getEndTime(deltaObjectId));
 			// range 4: 700-800
 			temp = bufferwriteFiles.get(3);
-			assertEquals(700, temp.startTime);
-			assertEquals(800, temp.endTime);
+			assertEquals(700, temp.getStartTime(deltaObjectId));
+			assertEquals(800, temp.getEndTime(deltaObjectId));
 			overflowData = queryResult.getAllOverflowData();
 			assertEquals(null, overflowData.get(0));
 			assertEquals(null, overflowData.get(1));
 			assertEquals(null, overflowData.get(2));
 			assertEquals(null, overflowData.get(3));
 
+			waitToSleep(2000);
 			fManager.closeAll();
-			waitToSleep(1000);
 		} catch (FileNodeManagerException e) {
 			e.printStackTrace();
 			fail(e.getMessage());

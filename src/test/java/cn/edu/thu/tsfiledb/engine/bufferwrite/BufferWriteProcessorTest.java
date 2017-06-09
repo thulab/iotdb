@@ -73,6 +73,8 @@ public class BufferWriteProcessorTest {
 	@Test
 	public void test() throws IOException, BufferWriteProcessorException {
 		String filename = "bufferwritetest";
+		
+		BufferWriteProcessor bufferWriteProcessor1 = null;
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bfflushaction);
 		parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bfcloseaction);
@@ -90,7 +92,7 @@ public class BufferWriteProcessorTest {
 			outputfile.delete();
 		}
 		try {
-			processor = new BufferWriteProcessor(nsp, filename, parameters);
+			bufferWriteProcessor1 = new BufferWriteProcessor(nsp, filename, parameters);
 		} catch (BufferWriteProcessorException e) {
 			e.printStackTrace();
 			fail("Not yet implemented");
@@ -102,7 +104,7 @@ public class BufferWriteProcessorTest {
 		// check outfile
 		// write record and test multiple thread flush rowgroup
 		for (int i = 0; i < 1000; i++) {
-			processor.write(nsp, "s0", 100, TSDataType.INT32, i + "");
+			bufferWriteProcessor1.write(nsp, "s0", 100, TSDataType.INT32, i + "");
 			if(i==400){
 				break;
 			}
@@ -124,12 +126,14 @@ public class BufferWriteProcessorTest {
 		raf.close();
 		// read the buffer write file from middle of the file and test the cut off function
 		assertEquals(true, restorefile.exists());
-		processor = new BufferWriteProcessor(nsp, filename, parameters);
-		Pair<DynamicOneColumnData, List<RowGroupMetaData>> pair = processor.getIndexAndRowGroupList(nsp, "s0");
+		
+		BufferWriteProcessor bufferWriteProcessor2 = null;
+		bufferWriteProcessor2 = new BufferWriteProcessor(nsp, filename, parameters);
+		Pair<DynamicOneColumnData, List<RowGroupMetaData>> pair = bufferWriteProcessor2.getIndexAndRowGroupList(nsp, "s0");
 		assertEquals(0, pair.left.length);
 		int lastRowGroupNum = pair.right.size();
 		for (int i = 0; i < 1000; i++) {
-			processor.write(nsp, "s0", 100, TSDataType.INT32, i + "");
+			bufferWriteProcessor2.write(nsp, "s0", 100, TSDataType.INT32, i + "");
 			if(i==400){
 				break;
 			}
@@ -145,6 +149,8 @@ public class BufferWriteProcessorTest {
 		// assert the number of rowgroup 
 		assertEquals(lastRowGroupNum*2, pair.right.size());
 		processor.write(nsp, "s0", 100, TSDataType.INT32, 100 + "");
+		bufferWriteProcessor2.close();
+		bufferWriteProcessor1.close();
 		processor.close();
 		assertEquals(false, restorefile.exists());
 	}
