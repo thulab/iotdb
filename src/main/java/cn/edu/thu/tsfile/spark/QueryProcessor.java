@@ -2,6 +2,7 @@ package cn.edu.thu.tsfile.spark;
 
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
 import cn.edu.thu.tsfile.spark.common.FilterOperator;
+import cn.edu.thu.tsfile.spark.common.SQLConstant;
 import cn.edu.thu.tsfile.spark.common.SingleQuery;
 import cn.edu.thu.tsfile.spark.common.TSQueryPlan;
 import cn.edu.thu.tsfile.spark.exception.QueryOperatorException;
@@ -10,7 +11,6 @@ import cn.edu.thu.tsfile.spark.optimizer.DNFFilterOptimizer;
 import cn.edu.thu.tsfile.spark.optimizer.MergeSingleFilterOptimizer;
 import cn.edu.thu.tsfile.spark.optimizer.PhysicalOptimizer;
 import cn.edu.thu.tsfile.spark.optimizer.RemoveNotOptimizer;
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant;
 
 import java.io.IOException;
 import java.util.ArrayList;

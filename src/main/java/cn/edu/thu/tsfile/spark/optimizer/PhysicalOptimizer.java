@@ -1,12 +1,8 @@
 package cn.edu.thu.tsfile.spark.optimizer;
 
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
-import cn.edu.thu.tsfile.spark.common.BasicOperator;
-import cn.edu.thu.tsfile.spark.common.FilterOperator;
-import cn.edu.thu.tsfile.spark.common.SingleQuery;
-import cn.edu.thu.tsfile.spark.common.TSQueryPlan;
+import cn.edu.thu.tsfile.spark.common.*;
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema;
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryEngine;
 
 import java.io.IOException;

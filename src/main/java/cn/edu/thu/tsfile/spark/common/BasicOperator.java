@@ -2,7 +2,6 @@ package cn.edu.thu.tsfile.spark.common;
 
 
 import cn.edu.thu.tsfile.spark.exception.BasicOperatorException;
-import cn.edu.thu.tsfile.timeseries.read.qp.SQLConstant;
 
 /**
  * basic operators include < > >= <= !=.
