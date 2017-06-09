@@ -123,7 +123,10 @@ The SparkSQL Table Structure is as follow:
 * **Example 2**
 
 	```scala
-	val spark = SparkSession.builder().master("local").getOrCreate()
+	import cn.edu.thu.tsfile.spark._
+    import org.apache.spark.sql.SparkSession
+	
+    val spark = SparkSession.builder().master("local").getOrCreate()
 	val df = spark.read
 	      .format("cn.edu.thu.tsfile.spark")
 	      .load("test.ts")
@@ -136,6 +139,9 @@ The SparkSQL Table Structure is as follow:
 * **Example 3**
 
 	```scala
+	import cn.edu.thu.tsfile.spark._
+    import org.apache.spark.sql.SparkSession
+   	
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//create a table in SparkSQL and build relation with a TsFile
