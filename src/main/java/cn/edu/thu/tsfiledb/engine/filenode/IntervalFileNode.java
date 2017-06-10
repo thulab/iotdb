@@ -69,14 +69,14 @@ public class IntervalFileNode implements Serializable {
 		return startTimeMap;
 	}
 	
-	public void setEndTimeMap(Map<String,Long> endTimeMap){
-		
-		this.endTimeMap = endTimeMap;
-	}
-	
 	public void setStartTimeMap(Map<String,Long> startTimeMap){
 		
 		this.startTimeMap = startTimeMap;
+	}
+	
+	public void setEndTimeMap(Map<String,Long> endTimeMap){
+		
+		this.endTimeMap = endTimeMap;
 	}
 	
 	public void setEndTime(String deltaObjectId, long timestamp){
@@ -128,6 +128,8 @@ public class IntervalFileNode implements Serializable {
 	}
 
 	public IntervalFileNode backUp() {
+		Map<String,Long> startTimeMap = new HashMap<>(this.startTimeMap);
+		Map<String,Long> endTimeMap = new HashMap<>(this.endTimeMap);
 		return new IntervalFileNode(startTimeMap,endTimeMap,overflowChangeType, filePath);
 	}
 

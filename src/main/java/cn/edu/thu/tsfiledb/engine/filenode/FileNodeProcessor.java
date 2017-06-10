@@ -115,7 +115,8 @@ public class FileNodeProcessor extends LRUProcessor {
 		@Override
 		public void act() throws Exception {
 
-			// update the lastUpdatetime, newIntervalList and Notice: thread safe
+			// update the lastUpdatetime, newIntervalList and Notice: thread
+			// safe
 			synchronized (fileNodeProcessorStore) {
 				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
 				// fileNodeProcessorStore.setLastUpdateTime(lastUpdateTime);
@@ -134,8 +135,8 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 		if (!newFileNodes.isEmpty()) {
 			// end time with one start time
-			Map<String,Long> endTimeMap = new HashMap<>();
-			for(Entry<String, Long> startTime:currentIntervalFileNode.getStartTimeMap().entrySet()){
+			Map<String, Long> endTimeMap = new HashMap<>();
+			for (Entry<String, Long> startTime : currentIntervalFileNode.getStartTimeMap().entrySet()) {
 				String deltaObjectId = startTime.getKey();
 				endTimeMap.put(deltaObjectId, lastUpdateTimeMap.get(deltaObjectId));
 			}
@@ -146,15 +147,15 @@ public class FileNodeProcessor extends LRUProcessor {
 	}
 
 	public void addIntervalFileNode(long startTime, String fileName) {
-		
+
 		IntervalFileNode intervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, fileName);
 		this.currentIntervalFileNode = intervalFileNode;
 		newFileNodes.add(intervalFileNode);
-		
+
 	}
-	
-	public void setIntervalFileNodeStartTime(String deltaObjectId,long startTime){
-		if(currentIntervalFileNode.getStartTime(deltaObjectId)==-1){
+
+	public void setIntervalFileNodeStartTime(String deltaObjectId, long startTime) {
+		if (currentIntervalFileNode.getStartTime(deltaObjectId) == -1) {
 			currentIntervalFileNode.setStartTime(deltaObjectId, startTime);
 		}
 	}
@@ -371,8 +372,8 @@ public class FileNodeProcessor extends LRUProcessor {
 			return -1;
 		}
 	}
-	
-	public Map<String,Long> getLastUpdateTimeMap(){
+
+	public Map<String, Long> getLastUpdateTimeMap() {
 		return lastUpdateTimeMap;
 	}
 
@@ -534,10 +535,14 @@ public class FileNodeProcessor extends LRUProcessor {
 		// change status from work to merge
 		//
 		isMerging = FileNodeProcessorStatus.MERGING_WRITE;
+		//
+		// 注意这里对newfiles的修改与emtpy的关系需要前后照应
+		//
 		if (emptyIntervalFileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
 			if (!newFileNodes.isEmpty()) {
 				newFileNodes.get(0).overflowChangeType = OverflowChangeType.CHANGED;
-				emptyIntervalFileNode.overflowChangeType = OverflowChangeType.NO_CHANGE;
+				// refresh the empty interval filenode
+				emptyIntervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, null);
 			} else {
 				emptyIntervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
 			}
@@ -607,7 +612,8 @@ public class FileNodeProcessor extends LRUProcessor {
 				throw new FileNodeProcessorException("The overflowChangeType of backupIntervalFile must not be "
 						+ OverflowChangeType.MERGING_CHANGE);
 			} else {
-				LOGGER.info("The overflowChangedType of backup IntervalFile is {}, start time is {}, end time is {}.",
+				LOGGER.info(
+						"The overflowChangedType of backup IntervalFile is {}, start time map is {}, end time map is {}.",
 						backupIntervalFile.overflowChangeType, backupIntervalFile.getStartTimeMap(),
 						backupIntervalFile.getEndTimeMap());
 			}
@@ -651,10 +657,17 @@ public class FileNodeProcessor extends LRUProcessor {
 			for (Entry<String, Long> endTimeEntry : temp.getEndTimeMap().entrySet()) {
 				zeroStartTimeMap.put(endTimeEntry.getKey(), (long) 0);
 			}
-			IntervalFileNode intervalFileNode = new IntervalFileNode(zeroStartTimeMap, temp.getEndTimeMap(),
+			//
+			// 添加修改empty的內容,对应delete操作发生的内容，把emtpy的内容重置到第一个back中
+			//
+			Map<String, Long> endTimeMap = new HashMap<>(temp.getEndTimeMap());
+			IntervalFileNode intervalFileNode = new IntervalFileNode(zeroStartTimeMap, endTimeMap,
 					temp.overflowChangeType, temp.filePath);
 			result.add(intervalFileNode);
 		} else {
+			//
+			// 添加修改empty的內容，对应delete操作发生的内容，把emtpy的内容重置到第一个back中
+			//
 			// add first
 			IntervalFileNode temp = newFileNodes.get(0);
 			IntervalFileNode next = newFileNodes.get(1);
@@ -708,7 +721,9 @@ public class FileNodeProcessor extends LRUProcessor {
 			// last interval
 			temp = newFileNodes.get(newFileNodes.size() - 1);
 			if (temp.overflowChangeType == OverflowChangeType.CHANGED) {
-				IntervalFileNode intervalFileNode = new IntervalFileNode(temp.getStartTimeMap(), temp.getEndTimeMap(),
+				Map<String, Long> startTimeMap = new HashMap<>(temp.getStartTimeMap());
+				Map<String, Long> endTimeMap = new HashMap<>(temp.getEndTimeMap());
+				IntervalFileNode intervalFileNode = new IntervalFileNode(startTimeMap, endTimeMap,
 						temp.overflowChangeType, temp.filePath);
 				result.add(intervalFileNode);
 			} else {
@@ -726,7 +741,6 @@ public class FileNodeProcessor extends LRUProcessor {
 			oldMultiPassLock = newMultiPassLock;
 			newMultiPassTokenSet = new HashSet<>();
 			newMultiPassLock = new ReentrantReadWriteLock(false);
-			LOGGER.debug("Merge: swith merge to wait");
 
 			LOGGER.info(
 					"Merge: switch merge to wait, the overflowChangeType of emptyIntervalFileNode is {}, the newFileNodes is {}",
@@ -736,21 +750,28 @@ public class FileNodeProcessor extends LRUProcessor {
 				// no action
 			} else {
 				// backup just from emptyIntervalFileNode
+				// 现在的情况，就算empty是非 no changed back也可能不是1个内容，有可能是过个内容
 				assert (backupIntervalFiles.size() == 1);
+				//
+				// 注意这里的内容是否正确,这里的empty是否是正确的内容，这里是不正确的内容
+				//
 				newFileNodes.add(0, emptyIntervalFileNode);
 			}
 
 			List<IntervalFileNode> result = new ArrayList<>();
+			//
+			// 这个len对应的empty是否是有效的内容，同样要注意这个长度的内容
+			//
 			int lenOfBackUpList = backupIntervalFiles.size();
 			boolean putoff = false;
 			for (int i = 0; i < lenOfBackUpList; i++) {
 				IntervalFileNode backupIntervalFile = backupIntervalFiles.get(i);
 				if (backupIntervalFile.getStartTimeMap().isEmpty()) {
-					if (putoff || newFileNodes.get(i).overflowChangeType == OverflowChangeType.MERGING_CHANGE) {
+					if (putoff || backupIntervalFile.overflowChangeType == OverflowChangeType.MERGING_CHANGE) {
 						putoff = true;
 					}
 				} else {
-					if (putoff || newFileNodes.get(i).overflowChangeType == OverflowChangeType.MERGING_CHANGE) {
+					if (putoff || backupIntervalFile.overflowChangeType == OverflowChangeType.MERGING_CHANGE) {
 						backupIntervalFile.overflowChangeType = OverflowChangeType.CHANGED;
 						putoff = false;
 					} else {
@@ -759,7 +780,9 @@ public class FileNodeProcessor extends LRUProcessor {
 					result.add(backupIntervalFile);
 				}
 			}
-
+			//
+			// 这里的lenof是否是对的，会不会比刚开始的时候多了一个呢？，注意这里长度的问题
+			//
 			for (int i = lenOfBackUpList; i < newFileNodes.size(); i++) {
 				IntervalFileNode newFileNode = newFileNodes.get(i);
 				if (putoff || newFileNode.overflowChangeType == OverflowChangeType.MERGING_CHANGE) {
