@@ -452,6 +452,11 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 		return index - 1;
 	}
+	
+	private boolean checkIndexForStartTime(int index,String deltaObjectId){
+		
+		return newFileNodes.get(index).getStartTime(deltaObjectId)!=-1;
+	}
 
 	// Token for query which used to
 	private int multiPassLockToken = 0;
