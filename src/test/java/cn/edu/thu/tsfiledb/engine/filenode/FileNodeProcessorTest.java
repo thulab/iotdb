@@ -122,7 +122,7 @@ public class FileNodeProcessorTest {
 					+ File.separatorChar + filename;
 			assertEquals(true, new File(bufferwritefilePath).exists());
 			// add intervalFileNode
-			processor.addIntervalFileNode(deltaObjectId, lastUpdateTime, filename);
+			processor.addIntervalFileNode(lastUpdateTime, filename);
 			bfprocessor.write(deltaObjectId, measurementId, lastUpdateTime, TSDataType.INT32, String.valueOf(10));
 			assertEquals(true, bfprocessor.isNewProcessor());
 			bfprocessor.setNewProcessor(false);
@@ -244,7 +244,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, nameSpacePath, parameters);
 			BufferWriteProcessor bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 1);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(deltaObjectId, 1, bfprocessor.getFileName());
+			processor.addIntervalFileNode(1, bfprocessor.getFileName());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
 			processor.setLastUpdateTime(deltaObjectId, 1);
@@ -314,7 +314,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 401);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(deltaObjectId, 401, bfprocessor.getFileName());
+			processor.addIntervalFileNode(401, bfprocessor.getFileName());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 401, TSDataType.INT32, String.valueOf(401));
 			processor.setLastUpdateTime(deltaObjectId, 401);
@@ -355,7 +355,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 801);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(deltaObjectId, 801, bfprocessor.getFileName());
+			processor.addIntervalFileNode(801, bfprocessor.getFileName());
 			bfprocessor.write(deltaObjectId, measurementId, 801, TSDataType.INT32, String.valueOf(801));
 			processor.setLastUpdateTime(deltaObjectId, 801);
 			for (int i = 802; i < 820; i++) {
@@ -368,7 +368,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 820);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(deltaObjectId, 820, bfprocessor.getFileName());
+			processor.addIntervalFileNode(820, bfprocessor.getFileName());
 			bfprocessor.write(deltaObjectId, measurementId, 820, TSDataType.INT32, String.valueOf(820));
 			processor.setLastUpdateTime(deltaObjectId, 820);
 			for (int i = 821; i < 840; i++) {
@@ -472,7 +472,7 @@ public class FileNodeProcessorTest {
 			fileNodeProcessor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			BufferWriteProcessor bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deltaObjectId, 1);
 			bfprocessor.setNewProcessor(false);
-			fileNodeProcessor.addIntervalFileNode(deltaObjectId, 1, bfprocessor.getFileName());
+			fileNodeProcessor.addIntervalFileNode(1, bfprocessor.getFileName());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
 
@@ -947,7 +947,7 @@ public class FileNodeProcessorTest {
 			bfProcessor.write(measurementId, measurementId, begin, TSDataType.INT32, String.valueOf(begin));
 			processor.setLastUpdateTime(deltaObjectId,begin);
 			bfProcessor.setNewProcessor(false);
-			processor.addIntervalFileNode(deltaObjectId,begin, bfProcessor.getFileName());
+			processor.addIntervalFileNode(begin, bfProcessor.getFileName());
 			for (long i = begin + 1; i <= end; i++) {
 				bfProcessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfProcessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));

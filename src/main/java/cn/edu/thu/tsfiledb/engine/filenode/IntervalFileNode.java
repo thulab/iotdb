@@ -56,7 +56,6 @@ public class IntervalFileNode implements Serializable {
 		startTimeMap.put(deltaObjectId, startTime);
 	}
 	
-	// 如何处理这里的空指针
 	public long getStartTime(String deltaObjectId){
 		
 		if(startTimeMap.containsKey(deltaObjectId)){

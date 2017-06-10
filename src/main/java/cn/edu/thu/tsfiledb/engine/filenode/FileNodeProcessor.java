@@ -66,6 +66,7 @@ public class FileNodeProcessor extends LRUProcessor {
 	private Map<String, Long> lastUpdateTimeMap;
 
 	private IntervalFileNode emptyIntervalFileNode;
+	private IntervalFileNode currentIntervalFileNode;
 	private List<IntervalFileNode> newFileNodes;
 	private FileNodeProcessorStatus isMerging;
 	// this is used when work ->merge operation
@@ -114,8 +115,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		@Override
 		public void act() throws Exception {
 
-			// update the lastUpdatetime, newIntervalList and Notice: thread
-			// safe
+			// update the lastUpdatetime, newIntervalList and Notice: thread safe
 			synchronized (fileNodeProcessorStore) {
 				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
 				// fileNodeProcessorStore.setLastUpdateTime(lastUpdateTime);
@@ -125,7 +125,6 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 	};
 
-	// 这里设置了lastupdate，要根据其对应的starttime配对
 	private void addLastTimeToIntervalFile() {
 
 		// TODO:check lastUpdateTimeMap is empty
@@ -134,24 +133,30 @@ public class FileNodeProcessor extends LRUProcessor {
 			throw new ProcessorRuntimException("The lastUpdateTimeMap is empty when close the bufferwrite file");
 		}
 		if (!newFileNodes.isEmpty()) {
-			// 不能直接使用lastupdatetimeMap结构
-			Map<String,Long> endTimeMap = new HashMap<>(lastUpdateTimeMap);
-			newFileNodes.get(newFileNodes.size() - 1).setEndTimeMap(endTimeMap);
+			// end time with one start time
+			Map<String,Long> endTimeMap = new HashMap<>();
+			for(Entry<String, Long> startTime:currentIntervalFileNode.getStartTimeMap().entrySet()){
+				String deltaObjectId = startTime.getKey();
+				endTimeMap.put(deltaObjectId, lastUpdateTimeMap.get(deltaObjectId));
+			}
+			currentIntervalFileNode.setEndTimeMap(endTimeMap);
 		} else {
 			throw new ProcessorRuntimException("The intervalFile list is empty when close bufferwrite file");
 		}
 	}
-	// 这里要进行修改 设置某个deltaObjectId的starttime
-	public void addIntervalFileNode(String deltaObjectId,long startTime, String fileName) {
+
+	public void addIntervalFileNode(long startTime, String fileName) {
+		
 		IntervalFileNode intervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, fileName);
-		
-		intervalFileNode.setStartTime(deltaObjectId, startTime);
-		
+		this.currentIntervalFileNode = intervalFileNode;
 		newFileNodes.add(intervalFileNode);
+		
 	}
 	
-	private void setIntervalFileNodeStartTime(String deltaObjectId,long startTime){
-		
+	public void setIntervalFileNodeStartTime(String deltaObjectId,long startTime){
+		if(currentIntervalFileNode.getStartTime(deltaObjectId)==-1){
+			currentIntervalFileNode.setStartTime(deltaObjectId, startTime);
+		}
 	}
 
 	private Action overflowFlushAction = new Action() {
