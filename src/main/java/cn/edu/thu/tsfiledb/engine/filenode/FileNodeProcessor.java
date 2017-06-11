@@ -52,7 +52,7 @@ import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
 import cn.edu.thu.tsfiledb.metadata.MManager;
-import cn.edu.thu.tsfiledb.query.engine.QueryerForMerge;
+import cn.edu.thu.tsfiledb.query.engine.QueryForMerge;
 
 public class FileNodeProcessor extends LRUProcessor {
 
@@ -822,7 +822,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		long startTime = -1;
 		long endTime = -1;
 
-		QueryerForMerge queryer = new QueryerForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
+		QueryForMerge queryer = new QueryForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
 		int queryCount = 0;
 		if (!queryer.hasNextRecord()) {
 			// No record in this query

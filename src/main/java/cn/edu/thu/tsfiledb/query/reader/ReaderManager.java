@@ -12,9 +12,10 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 
 
 /**
- * @author Jinrui Zhang, CGF
- * @description This class is used to construct FileReader. <br>
+ * This class is used to construct FileReader. <br>
  * It is an adapter between {@code RecordReader} and {@code FileReader}
+ *
+ * @author Jinrui Zhang, CGF
  */
 
 public class ReaderManager {
@@ -61,7 +62,7 @@ public class ReaderManager {
      * {NEWFUNC}
      *
      * @param rafList               file node list
-     * @param unenvelopedFileReader fileReader for unenvelopedFile
+     * @param unenvelopedFileReader fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unenvelopedFile
      * @throws IOException
      */
