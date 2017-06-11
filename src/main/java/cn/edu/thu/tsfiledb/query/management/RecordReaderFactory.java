@@ -23,7 +23,7 @@ import cn.edu.thu.tsfiledb.query.reader.RecordReader;
  *
  */
 public class RecordReaderFactory {
-	private static final Logger logger = LoggerFactory.getLogger(RecordReaderFactory.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RecordReaderFactory.class);
 	private static RecordReaderFactory instance = new RecordReaderFactory();
 
 	private FileNodeManager fileNodeManager;
@@ -37,8 +37,8 @@ public class RecordReaderFactory {
 	}
 
 	public RecordReader getRecordReader(String deltaObjectUID, String measurementID,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-			SingleSeriesFilterExpression valueFilter) throws ProcessorException {
+			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
+			throws ProcessorException {
 		int token = readLockManager.lock(deltaObjectUID, measurementID);
 		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectUID, measurementID)) {
 			return readLockManager.recordReaderCache.get(deltaObjectUID, measurementID);
@@ -60,7 +60,7 @@ public class RecordReaderFactory {
 		}
 	}
 
-	public RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
+	private RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
 			QueryStructure queryStructure, int token) throws ProcessorException {
 		RecordReader recordReader;
 
