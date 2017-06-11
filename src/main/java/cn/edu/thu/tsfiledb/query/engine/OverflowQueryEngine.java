@@ -31,6 +31,7 @@ import cn.edu.thu.tsfiledb.query.reader.RecordReader;
 
 public class OverflowQueryEngine {
     private static final Logger logger = LoggerFactory.getLogger(OverflowQueryEngine.class);
+
     //private RecordReaderFactory recordReaderFactory;
     private MManager mManager;
 
@@ -88,6 +89,7 @@ public class OverflowQueryEngine {
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
         AggregationResult aggrRet = recordReader.aggregate(deltaObjectUID, measurementUID, func,
@@ -136,6 +138,7 @@ public class OverflowQueryEngine {
                 updateTrue, updateFalse, insertTrue, deleteFilter, res, fetchSize);
 
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
+
         //close current recordReader
         recordReader.closeFromFactory();
 

@@ -30,7 +30,10 @@ import cn.edu.thu.tsfile.common.exception.ProcessorException;
 
 /**
  * This class implements several read methods which can read data in different ways.<br>
+<<<<<<< HEAD
  * A RecordReader represents A (deltaObject, measurement);
+=======
+>>>>>>> make query engine code tidy
  * This class provides some APIs for reading.
  *
  * @author ZJR, CGF
