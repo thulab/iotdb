@@ -47,9 +47,8 @@ public class RecordReaderFactory {
 			try {
 				queryStructure = fileNodeManager.query(deltaObjectUID, measurementID, timeFilter, freqFilter,
 						valueFilter);
-				System.out.println("====== Device:" + deltaObjectUID + ". Sensor:" + measurementID);
+				LOGGER.info("====== Device:" + deltaObjectUID + ". Sensor:" + measurementID);
 				System.out.println(queryStructure);
-				System.out.println("======");
 			} catch (FileNodeManagerException e) {
 				throw new ProcessorException(e.getMessage());
 			}
@@ -79,12 +78,12 @@ public class RecordReaderFactory {
 				rafList.add(raf);
 			}
 			if (hasUnEnvelopedFile) {
-				TSRandomAccessFileReader raf = fileStreamManager
+				TSRandomAccessFileReader unsealedRaf = fileStreamManager
 						.getLocalRandomAcessFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
-				// rafList: bufferwrite ts in file serialized.
-				// raf: last filenode?
-				// indisk: unenvelopedFile?
-				recordReader = new RecordReader(rafList, raf, queryStructure.getBufferwriteDataInDisk(), deltaObjectUID,
+				// rafList: bufferwrite file has been serialized completely
+				// raf: unsealed file reader
+				// indisk: unsealed RowGroupMetadataList for above
+				recordReader = new RecordReader(rafList, unsealedRaf, queryStructure.getBufferwriteDataInDisk(), deltaObjectUID,
 						measurementID, token, queryStructure.getBufferwriteDataInMemory(),
 						queryStructure.getAllOverflowData());
 			} else {

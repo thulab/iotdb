@@ -46,7 +46,7 @@ public class RecordReader {
 
     /**
      *
-     * @param rafList what file??
+     * @param rafList bufferwrite file has been serialized completely
      * @throws IOException
      */
     public RecordReader(List<TSRandomAccessFileReader> rafList, String deltaObjectUID, String measurementID,
@@ -60,9 +60,9 @@ public class RecordReader {
     }
 
     /**
-     * @param rafList
-     * @param unsealedFileReader
-     * @param rowGroupMetadataList
+     * @param rafList bufferwrite file has been serialized completely
+     * @param unsealedFileReader unsealed file reader
+     * @param rowGroupMetadataList unsealed RowGroupMetadataList for above
      * @throws IOException
      */
     public RecordReader(List<TSRandomAccessFileReader> rafList, TSRandomAccessFileReader unsealedFileReader,
