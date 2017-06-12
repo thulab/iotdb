@@ -83,8 +83,7 @@ public class RowGroupReader {
      * @throws IOException
      */
     public DynamicOneColumnData readValueUseTimeValue(String measurementId, long[] timeRet) throws IOException {
-        DynamicOneColumnData v = valueReaders.get(measurementId).getValuesForGivenValues(timeRet);
-        return v;
+        return valueReaders.get(measurementId).getValuesForGivenValues(timeRet);
     }
 
     public DynamicOneColumnData readOneColumnUseFilter(String sid, DynamicOneColumnData res, int fetchSize
