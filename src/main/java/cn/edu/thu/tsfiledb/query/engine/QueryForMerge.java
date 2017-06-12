@@ -30,6 +30,7 @@ public class QueryForMerge {
 
 	public boolean hasNextRecord() {
 		boolean ret = false;
+		
 		if (queryDataSet == null || !queryDataSet.hasNextRecord()) {
 			try {
 				queryDataSet = queryEngine.query(pathList, timeFilter, null, null, queryDataSet,
