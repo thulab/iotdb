@@ -127,13 +127,13 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     Assert.assertEquals(expected, df.schema)
   }
 
-  test("testQuerySchema1") {
-    val df = spark.read.format("cn.edu.thu.tsfile").load("/testdata/test1.tsfile")
-    df.createOrReplaceTempView("tsfile")
-
-    println(spark.sql("select * from tsfile").schema)
-
-    spark.sql("select * from tsfile").show()
-  }
+//  test("testQuerySchema1") {
+//    val df = spark.read.format("cn.edu.thu.tsfile").load("/testdata/test1.tsfile")
+//    df.createOrReplaceTempView("tsfile")
+//
+//    println(spark.sql("select * from tsfile").schema)
+//
+//    spark.sql("select * from tsfile").show()
+//  }
 
 }

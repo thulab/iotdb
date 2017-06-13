@@ -22,7 +22,7 @@ import scala.collection.mutable.ListBuffer
   */
 class ConverterTest extends FunSuite with BeforeAndAfterAll {
 
-  private val tsfilePath: String = "src/test/resources/test.cn.edu.thu.tsfile"
+  private val tsfilePath: String = "src/test/resources/test.tsfile"
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
