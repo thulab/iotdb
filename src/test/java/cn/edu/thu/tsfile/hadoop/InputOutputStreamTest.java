@@ -14,7 +14,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 
-public class HDFSInputOutputStreamTest {
+public class InputOutputStreamTest {
 
 	private HDFSInputStream hdfsInputStream = null;
 	private HDFSOutputStream hdfsOutputStream = null;
@@ -28,9 +28,10 @@ public class HDFSInputOutputStreamTest {
 
 	@Before
 	public void setUp() throws Exception {
-		hdfsOutputStream = new HDFSOutputStream(filename, new Configuration(), true);
+		
+		fileSystem = FileSystem.get(new Configuration());
 		path = new Path(filename);
-		hdfsInputStream = new HDFSInputStream(filename);
+		fileSystem.delete(path,true);
 	}
 
 	@After
@@ -38,23 +39,24 @@ public class HDFSInputOutputStreamTest {
 		if (fileSystem.exists(path)) {
 			fileSystem.delete(path, true);
 		}
-
 	}
 
 	@Test
 	public void test() throws Exception {
 		// write one byte
+		hdfsOutputStream = new HDFSOutputStream(filename, new Configuration(), true);
 		hdfsOutputStream.write(b);
 		assertEquals(1, hdfsOutputStream.getPos());
 		hdfsOutputStream.close();
-		fileSystem = FileSystem.get(new Configuration());
 		assertEquals(true, fileSystem.exists(path));
 		fileSystem.delete(path, true);
+		assertEquals(false, fileSystem.exists(path));
 		// write bytes
 		hdfsOutputStream = new HDFSOutputStream(filename, new Configuration(), true);
 		hdfsOutputStream.write(bs);
 		assertEquals(bs.length, hdfsOutputStream.getPos());
 		hdfsOutputStream.close();
+		assertEquals(true, fileSystem.exists(path));
 		// read bytes using hdfs inputstream
 		hdfsInputStream = new HDFSInputStream(filename);
 		assertEquals(0, hdfsInputStream.getPos());
@@ -65,6 +67,10 @@ public class HDFSInputOutputStreamTest {
 		hdfsInputStream.read(rbs, 0, rbs.length);
 		assertEquals(lenOfBytes, hdfsInputStream.getPos());
 		assertArrayEquals(bs, rbs);
+		hdfsInputStream.close();
+		assertEquals(true, fileSystem.exists(path));
+		fileSystem.delete(path, true);
+		assertEquals(false, fileSystem.exists(path));
 	}
 
 }

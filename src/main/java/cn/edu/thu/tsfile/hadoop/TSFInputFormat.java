@@ -80,7 +80,6 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 				columns = columns + column + ",";
 			}
 			// Get conf type
-			System.out.println(job.getConfiguration().getClass());
 			job.getConfiguration().set(READ_COLUMNS, (String) columns.subSequence(0, columns.length() - 1));
 		}
 	}
@@ -233,6 +232,7 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 				HDFSInputStream hdfsInputStream = new HDFSInputStream(path, configuration);
 				FileReader fileReader = new FileReader(hdfsInputStream);
 				TSFileMetaData tsfMetaData = fileReader.getFileMetadata();
+				fileReader.close();
 				// Get the timeserise to test
 				splits.addAll(generateSplits(path, tsfMetaData, blockLocations));
 			} else {

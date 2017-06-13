@@ -41,6 +41,8 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	private boolean isReadDeviceId = false;
 	private boolean isReadTime = false;
 	private int arraySize = 0;
+	
+	private HDFSInputStream hdfsInputStream;
 
 	private static final String SEPARATOR_DEVIDE_SERIES = ".";
 	private static final String SEPARATOR_SERIES = "|";
@@ -60,7 +62,7 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			deviceId = tsfInputSplit.getDeviceId();
 			int rowGroupIndex = tsfInputSplit.getIndexOfDeviceRowGroup();
 			Configuration configuration = context.getConfiguration();
-			HDFSInputStream hdfsInputStream = new HDFSInputStream(path, configuration);
+			hdfsInputStream = new HDFSInputStream(path, configuration);
 			// Get the read columns and filter information
 			String[] columns = TSFInputFormat.getReadColumns(configuration);
 			isReadDeviceId = TSFInputFormat.getReadDeviceId(configuration);
@@ -193,6 +195,7 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	@Override
 	public void close() throws IOException {
 		dataSet = null;
+		hdfsInputStream.close();
 	}
 
 	private Writable[] getEmptyWritables() {
