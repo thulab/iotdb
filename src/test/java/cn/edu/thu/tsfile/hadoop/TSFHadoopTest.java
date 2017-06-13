@@ -9,7 +9,8 @@ import java.util.List;
 
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,12 +22,12 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 public class TSFHadoopTest {
 
 	private TSFInputFormat inputformat = null;
-	
+
 	private String tsfilePath = "tsfile";
-	
+
 	@Before
 	public void setUp() throws Exception {
-		
+
 		TsFileTestHelper.deleteTsFile(tsfilePath);
 		inputformat = new TSFInputFormat();
 
@@ -34,7 +35,7 @@ public class TSFHadoopTest {
 
 	@After
 	public void tearDown() throws Exception {
-		
+
 		TsFileTestHelper.deleteTsFile(tsfilePath);
 	}
 
@@ -59,38 +60,37 @@ public class TSFHadoopTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		// 
+		//
 		// deviceid
 		//
 		TSFInputFormat.setReadDeviceId(job, true);
 		assertEquals(true, TSFInputFormat.getReadDeviceId(job.getConfiguration()));
-		
+
 		//
 		// time
 		//
-		
+
 		TSFInputFormat.setReadTime(job, true);
 		assertEquals(true, TSFInputFormat.getReadTime(job.getConfiguration()));
-		
+
 		//
 		// filter
 		//
 		TSFInputFormat.setHasFilter(job, true);
 		assertEquals(true, TSFInputFormat.getHasFilter(job.getConfiguration()));
-		
+
 		String filterType = "singleFilter";
-		TSFInputFormat.setFilterType(job,filterType);
+		TSFInputFormat.setFilterType(job, filterType);
 		assertEquals(filterType, TSFInputFormat.getFilterType(job.getConfiguration()));
-		
+
 		String filterExpr = "s1>100";
 		TSFInputFormat.setFilterExp(job, filterExpr);
 		assertEquals(filterExpr, TSFInputFormat.getFilterExp(job.getConfiguration()));
 	}
-	
 
 	@Test
 	public void InputFormatTest() {
-		
+
 		//
 		// test getinputsplit method
 		//
@@ -104,7 +104,7 @@ public class TSFHadoopTest {
 			TsFile tsFile = new TsFile(reader);
 			System.out.println(tsFile.getDeltaObjectRowGroupCount());
 			assertEquals(tsFile.getRowGroupPosList().size(), inputSplits.size());
-			for(InputSplit inputSplit:inputSplits){
+			for (InputSplit inputSplit : inputSplits) {
 				System.out.println(inputSplit);
 			}
 			reader.close();
@@ -116,7 +116,40 @@ public class TSFHadoopTest {
 
 	@Test
 	public void RecordReaderTest() {
-		fail("Not yet implemented");
+		TsFileTestHelper.writeTsFile(tsfilePath);
+		try {
+			Job job = Job.getInstance();
+			// set input path to the job
+			TSFInputFormat.setInputPaths(job, tsfilePath);
+			String[] columns = { "s1", "s2", "s3", "s4" };
+			TSFInputFormat.setReadColumns(job, columns);
+			List<InputSplit> inputSplits = inputformat.getSplits(job);
+			TSRandomAccessFileReader reader = new LocalFileInput(tsfilePath);
+			TsFile tsFile = new TsFile(reader);
+			System.out.println(tsFile.getDeltaObjectRowGroupCount());
+			assertEquals(tsFile.getRowGroupPosList().size(), inputSplits.size());
+			for (InputSplit inputSplit : inputSplits) {
+				System.out.println(inputSplit);
+			}
+			reader.close();
+			// read one split
+			TSFRecordReader recordReader = new TSFRecordReader();
+			TaskAttemptContextImpl attemptContextImpl = new TaskAttemptContextImpl(job.getConfiguration(),
+					new TaskAttemptID());
+			recordReader.initialize(inputSplits.get(0), attemptContextImpl);
+			while (recordReader.nextKeyValue()) {
+				System.out.println(recordReader.getCurrentValue().toStrings());
+			}
+			recordReader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} catch (TSFHadoopException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
-
 }
