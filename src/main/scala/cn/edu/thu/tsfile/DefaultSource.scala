@@ -4,10 +4,9 @@ import java.io._
 import java.net.URI
 import java.util
 
-import cn.edu.thu.tsfile.common.SQLConstant
 import cn.edu.thu.tsfile.common.constant.QueryConstant
-import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream
 import cn.edu.thu.tsfile.DefaultSource.SerializableConfiguration
+import cn.edu.thu.tsfile.io.HDFSInputStream
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet
 import cn.edu.thu.tsfile.timeseries.read.readSupport.{Field, RowRecord}
 import com.esotericsoftware.kryo.io.{Input, Output}
@@ -23,7 +22,9 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.execution.datasources.{FileFormat, OutputWriterFactory, PartitionedFile}
 import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{StructField, StructType}
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
+import cn.edu.thu.tsfile.qp.Executor
+import cn.edu.thu.tsfile.qp.common.SQLConstant
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -35,6 +36,8 @@ import scala.collection.mutable
   * @author MXW
   */
 private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
+
+  private val log = LoggerFactory.getLogger(classOf[DefaultSource])
 
   class TSFileDataSourceException(message: String, cause: Throwable)
     extends Exception(message, cause){
@@ -54,7 +57,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
     val conf = spark.sparkContext.hadoopConfiguration
 
     //check if the path is given
-    options.getOrElse(DefaultSource.path, throw new TSFileDataSourceException(s"${DefaultSource.path} must be specified for tsfile DataSource"))
+    options.getOrElse(DefaultSource.path, throw new TSFileDataSourceException(s"${DefaultSource.path} must be specified for cn.edu.thu.tsfile DataSource"))
 
     //get union series in TsFile
     val tsfileSchema = Converter.getUnionSeries(files, conf)
@@ -81,16 +84,17 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       sparkSession.sparkContext.broadcast(new SerializableConfiguration(hadoopConf))
 
     (file: PartitionedFile) => {
+      val log = LoggerFactory.getLogger(classOf[DefaultSource])
+
+      log.info(file.toString())
 
       val conf = broadcastedConf.value.value
       val in = new HDFSInputStream(new Path(new URI(file.filePath)), conf)
 
-      var taskInfo: String = ""
       Option(TaskContext.get()).foreach { taskContext => {
         taskContext.addTaskCompletionListener { _ => in.close() }
-        taskInfo += "task Id: " + taskContext.taskAttemptId() + " partition Id: " + taskContext.partitionId()}
+        log.info("task Id: " + taskContext.taskAttemptId() + " partition Id: " + taskContext.partitionId())}
       }
-      DefaultSource.logger.debug("taskInfo: {}", taskInfo)
 
       val parameters = new util.HashMap[java.lang.String, java.lang.Long]()
       parameters.put(QueryConstant.PARTITION_START_OFFSET, file.start.asInstanceOf[java.lang.Long])
@@ -99,7 +103,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       //convert tsfilequery to QueryConfigs
       val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, file.start.asInstanceOf[java.lang.Long], (file.start + file.length).asInstanceOf[java.lang.Long])
 
-      //use QueryConfigs to query tsfile
+      //use QueryConfigs to query cn.edu.thu.tsfile
       val dataSets = Executor.query(in, queryConfigs.toList, parameters)
 
       case class Record(record: RowRecord, index: Int)
@@ -198,7 +202,6 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
 
 private[tsfile] object DefaultSource {
-  val logger: Logger = LoggerFactory.getLogger(getClass)
   val path = "path"
 
   class SerializableConfiguration(@transient var value: Configuration) extends Serializable with KryoSerializable{

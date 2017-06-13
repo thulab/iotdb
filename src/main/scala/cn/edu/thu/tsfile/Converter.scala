@@ -2,10 +2,9 @@ package cn.edu.thu.tsfile
 
 import java.util
 
-import cn.edu.thu.tsfile.common.{BasicOperator, FilterOperator, SQLConstant, TSQueryPlan}
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType
-import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream
+import cn.edu.thu.tsfile.io.HDFSInputStream
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema
 import cn.edu.thu.tsfile.timeseries.read.query.{QueryConfig, QueryEngine}
 import cn.edu.thu.tsfile.timeseries.read.readSupport.Field
@@ -13,6 +12,8 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileStatus
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types._
+import cn.edu.thu.tsfile.qp.QueryProcessor
+import cn.edu.thu.tsfile.qp.common.{BasicOperator, FilterOperator, SQLConstant, TSQueryPlan}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable

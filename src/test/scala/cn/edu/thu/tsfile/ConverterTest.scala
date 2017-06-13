@@ -3,8 +3,8 @@ package cn.edu.thu.tsfile
 import java.io.File
 import java.util
 
-import cn.edu.thu.tsfile.common.SQLConstant
 import cn.edu.thu.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
+import cn.edu.thu.tsfile.io.CreateTSFile
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema
 import cn.edu.thu.tsfile.timeseries.read.query.QueryConfig
@@ -13,6 +13,7 @@ import org.apache.spark.sql.sources.{Filter, GreaterThan, LessThan, Or}
 import org.apache.spark.sql.types._
 import org.junit.Assert
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import cn.edu.thu.tsfile.qp.common.SQLConstant
 
 import scala.collection.mutable.ListBuffer
 
@@ -21,7 +22,7 @@ import scala.collection.mutable.ListBuffer
   */
 class ConverterTest extends FunSuite with BeforeAndAfterAll {
 
-  private val tsfilePath: String = "src/test/resources/test.tsfile"
+  private val tsfilePath: String = "src/test/resources/test.cn.edu.thu.tsfile"
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()

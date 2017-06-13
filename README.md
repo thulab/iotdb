@@ -1,19 +1,19 @@
-# tsfile-spark-connector
+# cn.edu.thu.tsfile-spark-connector
 
 将一个或多个TsFile展示成SparkSQL中的一张表。允许指定单个目录，或使用通配符匹配多个目录。如果是多个TsFile，schema将保留各个TsFile中sensor的并集。
 
 
 ## 示例
 
-src/test/scala/cn.edu.thu.tsfile.spark.TSFileSuit
+src/test/scala/cn.edu.thu.cn.edu.thu.tsfile.spark.TSFileSuit
 
 
 ## 路径指定方式
 
 
-basefolder/key=1/file1.tsfile
+basefolder/key=1/file1.cn.edu.thu.tsfile
 
-basefolder/key=2/file2.tsfile
+basefolder/key=2/file2.cn.edu.thu.tsfile
 指定basefolder为path，会在表中多加一列key，值为1或2。
 
 如：
@@ -23,11 +23,11 @@ path=basefolder
 如果使用通配符指定，将不会当做partiton
 
 如：
-path=basefolder/\*/\*.tsfile
+path=basefolder/\*/\*.cn.edu.thu.tsfile
 
 
-basefolder/file1.tsfile
-basefolder/file2.tsfile
+basefolder/file1.cn.edu.thu.tsfile
+basefolder/file2.cn.edu.thu.tsfile
 
 指定basefolder会将多个tsfile的schema合并，保留sensor的并集
 
@@ -104,13 +104,13 @@ The SparkSQL Table Structure is as follow:
 
 	```scala
 	// import this library and Spark
-	import cn.edu.thu.tsfile.spark._
+	import cn.edu.thu.cn.edu.thu.tsfile._
 	import org.apache.spark.sql.SparkSession
 
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//read data in TsFile and create a table
-	val df = spark.read.tsfile("test.ts")
+	val df = spark.read.cn.edu.thu.tsfile("test.ts")
 	df.createOrReplaceTempView("TsFile_table")
 
 	//query with filter
@@ -123,12 +123,12 @@ The SparkSQL Table Structure is as follow:
 * **Example 2**
 
 	```scala
-	import cn.edu.thu.tsfile.spark._
+	import cn.edu.thu.cn.edu.thu.tsfile._
     import org.apache.spark.sql.SparkSession
 	
     val spark = SparkSession.builder().master("local").getOrCreate()
 	val df = spark.read
-	      .format("cn.edu.thu.tsfile.spark")
+	      .format("cn.edu.thu.cn.edu.thu.tsfile.spark")
 	      .load("test.ts")
 
 
@@ -139,13 +139,13 @@ The SparkSQL Table Structure is as follow:
 * **Example 3**
 
 	```scala
-	import cn.edu.thu.tsfile.spark._
+	import cn.edu.thu.cn.edu.thu.tsfile._
     import org.apache.spark.sql.SparkSession
    	
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//create a table in SparkSQL and build relation with a TsFile
-	spark.sql("create temporary view TsFile using cn.edu.thu.tsfile.spark options(path = \"test.ts\")")
+	spark.sql("create temporary view TsFile using cn.edu.thu.cn.edu.thu.tsfile.spark options(path = \"test.ts\")")
 
 	spark.sql("select * from TsFile where sensor_1 > 1.2").show()
 
@@ -159,13 +159,13 @@ The SparkSQL Table Structure is as follow:
 mvn package -DskipTests
 
 包所在位置：
-/tsfile-kmx-spark-connector/target/tsfile-1.0-SNAPSHOT-jar-with-dependencies.jar
+/cn.edu.thu.tsfile-kmx-spark-connector/target/cn.edu.thu.tsfile-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ```
-$ bin/spark-shell --jars tsfile-spark-0.1.0-jar-with-dependencies.jar
+$ bin/spark-shell --jars cn.edu.thu.tsfile-spark-0.1.0-jar-with-dependencies.jar
 
-scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile.spark OPTIONS (path \"hdfs://localhost:9000/test.ts\")")
+scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.cn.edu.thu.tsfile.spark OPTIONS (path \"hdfs://localhost:9000/test.ts\")")
 
 scala> sql("select * from TsFile_table where sensor_1 > 1.2").show()
 ```
