@@ -6,9 +6,9 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfile.common.constant.QueryConstant;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.thu.tsfiledb.qp.QueryConstant;
 import cn.edu.thu.tsfiledb.qp.exception.ErrorQueryOpException;
 import cn.edu.thu.tsfiledb.qp.exception.IllegalASTFormatException;
 import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
