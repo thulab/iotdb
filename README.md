@@ -156,16 +156,17 @@ The SparkSQL Table Structure is as follow:
 可以将项目打包在 `spark-shell`中使用。
 
 ```
-mvn package -DskipTests
+mvn clean scala:compile compile package -DskipTests
+```
 
 包所在位置：
-/cn.edu.thu.tsfile-kmx-spark-connector/target/cn.edu.thu.tsfile-1.0-SNAPSHOT-jar-with-dependencies.jar
-```
+target/tsfile-spark-connector-0.1.0.jar
+
 
 ```
-$ bin/spark-shell --jars cn.edu.thu.tsfile-spark-0.1.0-jar-with-dependencies.jar
+$ bin/spark-shell --jars target/tsfile-spark-connector-0.1.0.jar,tsfile-0.1.0.jar
 
-scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.cn.edu.thu.tsfile.spark OPTIONS (path \"hdfs://localhost:9000/test.ts\")")
+scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test1.tsfile\")")
 
-scala> sql("select * from TsFile_table where sensor_1 > 1.2").show()
+scala> sql("select * from TsFile_table").show()
 ```
