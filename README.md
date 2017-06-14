@@ -128,7 +128,7 @@ The SparkSQL Table Structure is as follow:
 	
     val spark = SparkSession.builder().master("local").getOrCreate()
 	val df = spark.read
-	      .format("cn.edu.thu.cn.edu.thu.tsfile.spark")
+	      .format("cn.edu.thu.tsfile")
 	      .load("test.ts")
 
 
@@ -145,7 +145,7 @@ The SparkSQL Table Structure is as follow:
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//create a table in SparkSQL and build relation with a TsFile
-	spark.sql("create temporary view TsFile using cn.edu.thu.cn.edu.thu.tsfile.spark options(path = \"test.ts\")")
+	spark.sql("create temporary view TsFile using cn.edu.thu.tsfile options(path = \"test.ts\")")
 
 	spark.sql("select * from TsFile where sensor_1 > 1.2").show()
 
@@ -156,7 +156,7 @@ The SparkSQL Table Structure is as follow:
 可以将项目打包在 `spark-shell`中使用。
 
 ```
-mvn clean scala:compile compile package -DskipTests
+mvn clean scala:compile compile package
 ```
 
 包所在位置：
@@ -164,9 +164,9 @@ target/tsfile-spark-connector-0.1.0.jar
 
 
 ```
-$ bin/spark-shell --jars target/tsfile-spark-connector-0.1.0.jar,tsfile-0.1.0.jar
+$ bin/spark-shell --jars tsfile-spark-connector-0.1.0.jar,tsfile-0.1.0.jar
 
-scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test1.tsfile\")")
+scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test1.tsfile\")")
 
 scala> sql("select * from TsFile_table").show()
 ```

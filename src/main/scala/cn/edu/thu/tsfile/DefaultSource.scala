@@ -39,7 +39,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
   private val log = LoggerFactory.getLogger(classOf[DefaultSource])
 
   class TSFileDataSourceException(message: String, cause: Throwable)
-    extends Exception(message, cause){
+    extends Exception(message, cause) {
     def this(message: String) = this(message, null)
   }
 
@@ -92,7 +92,8 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
       Option(TaskContext.get()).foreach { taskContext => {
         taskContext.addTaskCompletionListener { _ => in.close() }
-        log.info("task Id: " + taskContext.taskAttemptId() + " partition Id: " + taskContext.partitionId())}
+        log.info("task Id: " + taskContext.taskAttemptId() + " partition Id: " + taskContext.partitionId())
+      }
       }
 
       val parameters = new util.HashMap[java.lang.String, java.lang.Long]()
@@ -109,9 +110,9 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
       implicit object RowRecordOrdering extends Ordering[Record] {
         override def compare(r1: Record, r2: Record): Int = {
-          if(r1.record.timestamp == r2.record.timestamp) {
+          if (r1.record.timestamp == r2.record.timestamp) {
             r1.record.getFields.get(0).deltaObjectId.compareTo(r2.record.getFields.get(0).deltaObjectId)
-          } else if(r1.record.timestamp < r2.record.timestamp){
+          } else if (r1.record.timestamp < r2.record.timestamp) {
             1
           } else {
             -1
@@ -123,9 +124,9 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
       //init priorityQueue with first record of each dataSet
       var queryDataSet: QueryDataSet = null
-      for(i <- 0 until dataSets.size()) {
+      for (i <- 0 until dataSets.size()) {
         queryDataSet = dataSets(i)
-        if(queryDataSet.hasNextRecord) {
+        if (queryDataSet.hasNextRecord) {
           val rowRecord = queryDataSet.getNextRecord
           priorityQueue.enqueue(Record(rowRecord, i))
         }
