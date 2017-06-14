@@ -83,14 +83,11 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       sparkSession.sparkContext.broadcast(new SerializableConfiguration(hadoopConf))
 
     (file: PartitionedFile) => {
-      println(file.toString())
       val log = LoggerFactory.getLogger(classOf[DefaultSource])
 
       log.info(file.toString())
 
       val conf = broadcastedConf.value.value
-      if(conf == null)
-        println("@+++<<<: conf is null!!!!!!!")
       val in = new HDFSInputStream(new Path(new URI(file.filePath)), conf)
 
       Option(TaskContext.get()).foreach { taskContext => {
