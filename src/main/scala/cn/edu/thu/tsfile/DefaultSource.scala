@@ -9,8 +9,6 @@ import cn.edu.thu.tsfile.DefaultSource.SerializableConfiguration
 import cn.edu.thu.tsfile.io.HDFSInputStream
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet
 import cn.edu.thu.tsfile.timeseries.read.readSupport.{Field, RowRecord}
-import com.esotericsoftware.kryo.io.{Input, Output}
-import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.hadoop.mapreduce.Job
@@ -25,6 +23,7 @@ import org.apache.spark.sql.types.{StructField, StructType}
 import org.slf4j.LoggerFactory
 import cn.edu.thu.tsfile.qp.Executor
 import cn.edu.thu.tsfile.qp.common.SQLConstant
+import java.io.{ObjectInputStream, ObjectOutputStream}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -84,11 +83,14 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       sparkSession.sparkContext.broadcast(new SerializableConfiguration(hadoopConf))
 
     (file: PartitionedFile) => {
+      println(file.toString())
       val log = LoggerFactory.getLogger(classOf[DefaultSource])
 
       log.info(file.toString())
 
       val conf = broadcastedConf.value.value
+      if(conf == null)
+        println("@+++<<<: conf is null!!!!!!!")
       val in = new HDFSInputStream(new Path(new URI(file.filePath)), conf)
 
       Option(TaskContext.get()).foreach { taskContext => {
@@ -204,16 +206,15 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 private[tsfile] object DefaultSource {
   val path = "path"
 
-  class SerializableConfiguration(@transient var value: Configuration) extends Serializable with KryoSerializable{
-    override def write(kryo: Kryo, output: Output): Unit = {
-      val dos = new DataOutputStream(output)
-      value.write(dos)
-      dos.flush()
+  class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
+    private def writeObject(out: ObjectOutputStream): Unit = {
+      out.defaultWriteObject()
+      value.write(out)
     }
 
-    override def read(kryo: Kryo, input: Input): Unit = {
+    private def readObject(in: ObjectInputStream): Unit = {
       value = new Configuration(false)
-      value.readFields(new DataInputStream(input))
+      value.readFields(in)
     }
   }
 
