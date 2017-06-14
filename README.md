@@ -104,13 +104,13 @@ The SparkSQL Table Structure is as follow:
 
 	```scala
 	// import this library and Spark
-	import cn.edu.thu.cn.edu.thu.tsfile._
+	import cn.edu.thu.tsfile._
 	import org.apache.spark.sql.SparkSession
 
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//read data in TsFile and create a table
-	val df = spark.read.cn.edu.thu.tsfile("test.ts")
+	val df = spark.read.tsfile("test.ts")
 	df.createOrReplaceTempView("TsFile_table")
 
 	//query with filter
@@ -123,7 +123,7 @@ The SparkSQL Table Structure is as follow:
 * **Example 2**
 
 	```scala
-	import cn.edu.thu.cn.edu.thu.tsfile._
+	import cn.edu.thu.tsfile._
     import org.apache.spark.sql.SparkSession
 	
     val spark = SparkSession.builder().master("local").getOrCreate()
@@ -139,7 +139,7 @@ The SparkSQL Table Structure is as follow:
 * **Example 3**
 
 	```scala
-	import cn.edu.thu.cn.edu.thu.tsfile._
+	import cn.edu.thu.tsfile._
     import org.apache.spark.sql.SparkSession
    	
 	val spark = SparkSession.builder().master("local").getOrCreate()
