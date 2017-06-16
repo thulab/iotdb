@@ -1,19 +1,21 @@
-# cn.edu.thu.tsfile-spark-connector
+# tsfile-spark-connector
+
+Used to read tsfile in spark.
 
 将一个或多个TsFile展示成SparkSQL中的一张表。允许指定单个目录，或使用通配符匹配多个目录。如果是多个TsFile，schema将保留各个TsFile中sensor的并集。
 
 
-## 示例
+## Example
 
-src/test/scala/cn.edu.thu.cn.edu.thu.tsfile.spark.TSFileSuit
+src/test/scala/cn.edu.thu.tsfile.spark.TSFileSuit
 
 
 ## 路径指定方式
 
 
-basefolder/key=1/file1.cn.edu.thu.tsfile
+basefolder/key=1/file1.tsfile
 
-basefolder/key=2/file2.cn.edu.thu.tsfile
+basefolder/key=2/file2.tsfile
 指定basefolder为path，会在表中多加一列key，值为1或2。
 
 如：
@@ -23,11 +25,11 @@ path=basefolder
 如果使用通配符指定，将不会当做partiton
 
 如：
-path=basefolder/\*/\*.cn.edu.thu.tsfile
+path=basefolder/\*/\*.tsfile
 
 
-basefolder/file1.cn.edu.thu.tsfile
-basefolder/file2.cn.edu.thu.tsfile
+basefolder/file1.tsfile
+basefolder/file2.tsfile
 
 指定basefolder会将多个tsfile的schema合并，保留sensor的并集
 

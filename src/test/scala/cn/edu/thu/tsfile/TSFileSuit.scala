@@ -3,7 +3,7 @@ package cn.edu.thu.tsfile
 import java.io.File
 
 import cn.edu.thu.tsfile.io.CreateTSFile
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
 import org.junit.Assert
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
@@ -12,6 +12,16 @@ import cn.edu.thu.tsfile.qp.common.SQLConstant
 /**
   * @author QJL
   */
+
+class Seq extends Serializable {
+  var i = 0
+
+  def getVal: Int = {
+    i = i + 1
+    i
+  }
+}
+
 class TSFileSuit extends FunSuite with BeforeAndAfterAll {
 
   private val resourcesFolder = "src/test/resources"
@@ -32,7 +42,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     new CreateTSFile().createTSFile2(tsfilePath2)
     spark = SparkSession
       .builder()
-      .config("spark.master", "local")
+      .config("spark.master", "spark://192.168.130.15:7077")
       .appName("TSFile test")
       .getOrCreate()
   }
@@ -43,6 +53,36 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     } finally {
       super.afterAll()
     }
+  }
+
+  test("afa") {
+    val rdd = spark.sparkContext.parallelize(Seq(Row("one"), Row("two")))
+
+    val schema = StructType(Array(StructField("name", StringType)))
+
+    val df = spark.createDataFrame(rdd, schema)
+
+    df.show()
+
+    spark.udf.register("func", (name: String) => name.toUpperCase)
+
+    import org.apache.spark.sql.functions.expr
+
+    val newDf = df.withColumn("upperName", expr("func(name)"))
+
+//    newDf.show()
+//
+//    val seq = new Seq
+//
+//    spark.udf.register("seq", () => seq.getVal)
+//
+//    val seqDf = df.withColumn("id", expr("seq()"))
+//
+//    seqDf.show()
+//
+//    df.createOrReplaceTempView("df")
+//
+//    spark.sql("select *, seq() as sql_id from df").show()
   }
 
   test("tsfile/qp") {
