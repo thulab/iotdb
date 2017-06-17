@@ -20,6 +20,7 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 
 public class ReaderManager {
 
+
 //    private FileReader fileReader;
     private List<FileReader> fileReaderList;
 
@@ -114,6 +115,7 @@ public class ReaderManager {
 //        return this.raf;
 //    }
 
+
 //    TSDataType getDataTypeBySeriesName(String device, String sensor) {
 //        ArrayList<RowGroupReader> rgrList = fileReader.getRowGroupReadersMap().get(device);
 //        if (rgrList == null || rgrList.size() == 0) {
@@ -121,6 +123,7 @@ public class ReaderManager {
 //        }
 //        return rgrList.get(0).getDataTypeBySeriesName(sensor);
 //    }
+
 
     HashMap<String, List<RowGroupReader>> getRowGroupReaderMap() {
         return rowGroupReaderMap;
