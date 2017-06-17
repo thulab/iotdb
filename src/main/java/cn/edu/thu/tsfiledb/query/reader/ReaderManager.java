@@ -21,10 +21,11 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 public class ReaderManager {
 
     private FileReader fileReader;
-    private TSRandomAccessFileReader raf;
-
     private List<FileReader> fileReaderList;
+
+    private TSRandomAccessFileReader raf;
     private List<TSRandomAccessFileReader> rafList;
+
     private HashMap<String, List<RowGroupReader>> rowGroupReaderMap;
     private List<RowGroupReader> rowGroupReaderList;
 
@@ -44,7 +45,7 @@ public class ReaderManager {
      * @param rafList fileInputStreamList
      * @throws IOException
      */
-    public ReaderManager(List<TSRandomAccessFileReader> rafList) throws IOException {
+    ReaderManager(List<TSRandomAccessFileReader> rafList) throws IOException {
         this.rafList = rafList;
         rowGroupReaderList = new ArrayList<>();
         rowGroupReaderMap = new HashMap<>();
@@ -62,16 +63,16 @@ public class ReaderManager {
      * {NEWFUNC}
      *
      * @param rafList               file node list
-     * @param unenvelopedFileReader fileReader for unsealedFile
-     * @param rowGroupMetadataList  RowGroupMetadata List for unenvelopedFile
+     * @param unsealedFileReader fileReader for unsealedFile
+     * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
      * @throws IOException
      */
-    public ReaderManager(List<TSRandomAccessFileReader> rafList,
-                         TSRandomAccessFileReader unenvelopedFileReader, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
+    ReaderManager(List<TSRandomAccessFileReader> rafList,
+                         TSRandomAccessFileReader unsealedFileReader, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
         this(rafList);
-        this.rafList.add(unenvelopedFileReader);
+        this.rafList.add(unsealedFileReader);
 
-        FileReader fr = new FileReader(unenvelopedFileReader, rowGroupMetadataList);
+        FileReader fr = new FileReader(unsealedFileReader, rowGroupMetadataList);
         addRowGroupReadersToMap(fr);
         addRowGroupReadersToList(fr);
     }
@@ -91,11 +92,11 @@ public class ReaderManager {
         this.rowGroupReaderList.addAll(fileReader.getRowGroupReaderList());
     }
 
-    public List<RowGroupReader> getAllRowGroupReaders() {
+    List<RowGroupReader> getAllRowGroupReaders() {
         return rowGroupReaderList;
     }
 
-    public List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) {
+    List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) {
         List<RowGroupReader> ret = rowGroupReaderMap.get(deltaObjectUID);
         if (ret == null) {
             return new ArrayList<>();
@@ -111,7 +112,7 @@ public class ReaderManager {
         return this.raf;
     }
 
-    public TSDataType getDataTypeBySeriesName(String device, String sensor) {
+    TSDataType getDataTypeBySeriesName(String device, String sensor) {
         ArrayList<RowGroupReader> rgrList = fileReader.getRowGroupReadersMap().get(device);
         if (rgrList == null || rgrList.size() == 0) {
             return null;
@@ -119,7 +120,7 @@ public class ReaderManager {
         return rgrList.get(0).getDataTypeBySeriesName(sensor);
     }
 
-    public HashMap<String, List<RowGroupReader>> getRowGroupReaderMap() {
+    HashMap<String, List<RowGroupReader>> getRowGroupReaderMap() {
         return rowGroupReaderMap;
     }
 

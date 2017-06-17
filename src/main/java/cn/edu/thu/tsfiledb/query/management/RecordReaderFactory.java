@@ -74,12 +74,12 @@ public class RecordReaderFactory {
 		try {
 			for (int i = 0; i < fileNodes.size() - 1; i++) {
 				IntervalFileNode fileNode = fileNodes.get(i);
-				TSRandomAccessFileReader raf = fileStreamManager.getLocalRandomAcessFileReader(fileNode.filePath);
+				TSRandomAccessFileReader raf = fileStreamManager.getLocalRandomAccessFileReader(fileNode.filePath);
 				rafList.add(raf);
 			}
 			if (hasUnEnvelopedFile) {
 				TSRandomAccessFileReader unsealedRaf = fileStreamManager
-						.getLocalRandomAcessFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
+						.getLocalRandomAccessFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
 				// rafList: bufferwrite file has been serialized completely
 				// raf: unsealed file reader
 				// indisk: unsealed RowGroupMetadataList for above
@@ -89,7 +89,7 @@ public class RecordReaderFactory {
 			} else {
 				if (fileNodes.size() > 0) {
 					rafList.add(fileStreamManager
-							.getLocalRandomAcessFileReader(fileNodes.get(fileNodes.size() - 1).filePath));
+							.getLocalRandomAccessFileReader(fileNodes.get(fileNodes.size() - 1).filePath));
 				}
 				recordReader = new RecordReader(rafList, deltaObjectUID, measurementID, token,
 						queryStructure.getBufferwriteDataInMemory(), queryStructure.getAllOverflowData());

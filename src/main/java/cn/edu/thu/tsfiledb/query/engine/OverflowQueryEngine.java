@@ -31,11 +31,11 @@ import cn.edu.thu.tsfiledb.query.reader.RecordReader;
 
 public class OverflowQueryEngine {
     private static final Logger logger = LoggerFactory.getLogger(OverflowQueryEngine.class);
-    private RecordReaderFactory recordReaderFactory;
+    //private RecordReaderFactory recordReaderFactory;
     private MManager mManager;
 
     public OverflowQueryEngine() {
-        recordReaderFactory = RecordReaderFactory.getInstance();
+        //recordReaderFactory = RecordReaderFactory.getInstance();
         mManager = MManager.getInstance();
     }
 
@@ -75,24 +75,24 @@ public class OverflowQueryEngine {
 
         QueryDataSet queryDataSet = new QueryDataSet();
         String deltaObjectUID = path.getDeltaObjectToString();
-        String measuremetnUID = path.getMeasurementToString();
+        String measurementUID = path.getMeasurementToString();
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measuremetnUID,
+        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 (SingleSeriesFilterExpression) timeFilter,
                 (SingleSeriesFilterExpression) freqFilter,
                 (SingleSeriesFilterExpression) valueFilter);
         // Get 4 params
-        List<Object> params = getOverflowInfoAndFilterDataInMem(deltaObjectUID, measuremetnUID,
+        List<Object> params = getOverflowInfoAndFilterDataInMem(deltaObjectUID, measurementUID,
                 (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter, (SingleSeriesFilterExpression) valueFilter
                 , null, recordReader.insertDataInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-        SingleSeriesFilterExpression delteFilter = (SingleSeriesFilterExpression) params.get(3);
+        SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
-        AggregationResult aggrRet = recordReader.aggregate(deltaObjectUID, measuremetnUID, func,
+        AggregationResult aggrRet = recordReader.aggregate(deltaObjectUID, measurementUID, func,
                 updateTrue, updateFalse, insertTrue
-                , delteFilter, (SingleSeriesFilterExpression) freqFilter, (SingleSeriesFilterExpression) valueFilter);
+                , deleteFilter, (SingleSeriesFilterExpression) freqFilter, (SingleSeriesFilterExpression) valueFilter);
 
         queryDataSet.mapRet.put(func.name + "(" + path.getFullPath() + ")", aggrRet.data);
         //close current recordReader
@@ -130,12 +130,12 @@ public class OverflowQueryEngine {
 
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-        SingleSeriesFilterExpression delteFilter = (SingleSeriesFilterExpression) params.get(3);
+        SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
         res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
-                updateTrue, updateFalse, insertTrue, delteFilter, res, fetchSize);
+                updateTrue, updateFalse, insertTrue, deleteFilter, res, fetchSize);
 
-        res.putOverflowInfo(insertTrue, updateTrue, updateFalse, delteFilter);
+        res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
         //close current recordReader
         recordReader.closeFromFactory();
 
@@ -314,44 +314,44 @@ public class OverflowQueryEngine {
     }
 
     /**
-     * Merge insert data in overflow and memory.<br>
+     * Merge insert data in overflow and buffer writer memory.<br>
      * Important: If there is two fields whose timestamp are equal, use the value
      * from overflow.
      *
-     * @param insertTrue
-     * @param insertDataInMemory
+     * @param overflowData
+     * @param memoryData
      * @return
      */
     private static DynamicOneColumnData mergeInsertTrueAndInsertDataInMemory(
-            DynamicOneColumnData insertTrue, DynamicOneColumnData insertDataInMemory) {
-        if (insertTrue == null && insertDataInMemory == null) {
+            DynamicOneColumnData overflowData, DynamicOneColumnData memoryData) {
+        if (overflowData == null && memoryData == null) {
             return null;
         }
-        if (insertTrue != null && insertDataInMemory == null) {
-            return insertTrue;
+        if (overflowData != null && memoryData == null) {
+            return overflowData;
         }
-        if (insertTrue == null && insertDataInMemory != null) {
-            return insertDataInMemory;
+        if (overflowData == null && memoryData != null) {
+            return memoryData;
         }
 
-        DynamicOneColumnData res = new DynamicOneColumnData(insertTrue.dataType, true);
+        DynamicOneColumnData res = new DynamicOneColumnData(overflowData.dataType, true);
         int idx1 = 0;
         int idx2 = 0;
-        while (idx1 < insertTrue.length || idx2 < insertDataInMemory.length) {
-            while (idx1 < insertTrue.length && (idx2 >= insertDataInMemory.length ||
-                    insertDataInMemory.getTime(idx2) >= insertTrue.getTime(idx1))) {
-                res.putTime(insertTrue.getTime(idx1));
-                res.putAValueFromDynamicOneColumnData(insertTrue, idx1);
-                if (idx2 < insertDataInMemory.length && insertDataInMemory.getTime(idx2) == insertTrue.getTime(idx1)) {
+        while (idx1 < overflowData.length || idx2 < memoryData.length) {
+            while (idx1 < overflowData.length && (idx2 >= memoryData.length ||
+                    memoryData.getTime(idx2) >= overflowData.getTime(idx1))) {
+                res.putTime(overflowData.getTime(idx1));
+                res.putAValueFromDynamicOneColumnData(overflowData, idx1);
+                if (idx2 < memoryData.length && memoryData.getTime(idx2) == overflowData.getTime(idx1)) {
                     idx2++;
                 }
                 idx1++;
             }
 
-            while (idx2 < insertDataInMemory.length && (idx1 >= insertTrue.length ||
-                    insertTrue.getTime(idx1) > insertDataInMemory.getTime(idx2))) {
-                res.putTime(insertDataInMemory.getTime(idx2));
-                res.putAValueFromDynamicOneColumnData(insertDataInMemory, idx2);
+            while (idx2 < memoryData.length && (idx1 >= overflowData.length ||
+                    overflowData.getTime(idx1) > memoryData.getTime(idx2))) {
+                res.putTime(memoryData.getTime(idx2));
+                res.putAValueFromDynamicOneColumnData(memoryData, idx2);
                 idx2++;
             }
         }
