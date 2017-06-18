@@ -7,7 +7,6 @@ import java.util.List;
 
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 
 
@@ -20,13 +19,10 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 
 public class ReaderManager {
 
-
-//    private FileReader fileReader;
+    // private FileReader fileReader;
     private List<FileReader> fileReaderList;
 
-
     private List<TSRandomAccessFileReader> rafList; // file has been serialized, sealed
-
 
     private HashMap<String, List<RowGroupReader>> rowGroupReaderMap;
     private List<RowGroupReader> rowGroupReaderList;
@@ -54,12 +50,18 @@ public class ReaderManager {
         rowGroupReaderMap = new HashMap<>();
         fileReaderList = new ArrayList<>();
 
-        for (int i = 0; i < rafList.size(); i++) {
-            FileReader fr = new FileReader(rafList.get(i));
+        for (TSRandomAccessFileReader taf : rafList) {
+            FileReader fr = new FileReader(taf);
             fileReaderList.add(fr);
             addRowGroupReadersToMap(fr);
             addRowGroupReadersToList(fr);
         }
+//        for (int i = 0; i < rafList.size(); i++) {
+//            FileReader fr = new FileReader(rafList.get(i));
+//            fileReaderList.add(fr);
+//            addRowGroupReadersToMap(fr);
+//            addRowGroupReadersToList(fr);
+//        }
     }
 
     /**
@@ -115,7 +117,6 @@ public class ReaderManager {
 //        return this.raf;
 //    }
 
-
 //    TSDataType getDataTypeBySeriesName(String device, String sensor) {
 //        ArrayList<RowGroupReader> rgrList = fileReader.getRowGroupReadersMap().get(device);
 //        if (rgrList == null || rgrList.size() == 0) {
@@ -123,7 +124,6 @@ public class ReaderManager {
 //        }
 //        return rgrList.get(0).getDataTypeBySeriesName(sensor);
 //    }
-
 
     HashMap<String, List<RowGroupReader>> getRowGroupReaderMap() {
         return rowGroupReaderMap;

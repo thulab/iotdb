@@ -18,8 +18,6 @@ import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.read.readSupport.ColumnInfo;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
@@ -36,7 +34,7 @@ import cn.edu.thu.tsfile.common.exception.ProcessorException;
 
 public class RecordReader {
 
-    static final Logger Logger = LoggerFactory.getLogger(RecordReader.class);
+    static final Logger LOG = LoggerFactory.getLogger(RecordReader.class);
     private ReaderManager readerManager;
     private int lockToken; // for lock
     private String deltaObjectUID, measurementID;
