@@ -64,6 +64,7 @@ public class ReaderManager {
 //            addRowGroupReadersToMap(fr);
 //            addRowGroupReadersToList(fr);
 //        }
+
     }
 
     /**

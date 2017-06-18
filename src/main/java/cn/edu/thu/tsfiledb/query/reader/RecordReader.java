@@ -486,7 +486,6 @@ public class RecordReader {
         }
         return res;
     }
-
 //    public FilterSeries<?> getColumnBySensorName(String device, String sensor) {
 //        TSDataType type = readerManager.getDataTypeBySeriesName(device, sensor);
 //        if (type == TSDataType.INT32) {
