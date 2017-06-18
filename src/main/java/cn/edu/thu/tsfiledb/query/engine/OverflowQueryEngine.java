@@ -30,7 +30,7 @@ import cn.edu.thu.tsfiledb.query.reader.RecordReader;
 
 
 public class OverflowQueryEngine {
-    private static final Logger logger = LoggerFactory.getLogger(OverflowQueryEngine.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OverflowQueryEngine.class);
     //private RecordReaderFactory recordReaderFactory;
     private MManager mManager;
 
@@ -39,6 +39,15 @@ public class OverflowQueryEngine {
         mManager = MManager.getInstance();
     }
 
+    /**
+     *
+     * @param paths query paths
+     * @param queryDataSet
+     * @param fetchSize fetch size for batch read
+     * @return
+     * @throws ProcessorException
+     * @throws IOException
+     */
     public QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
                               FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException {
         initQueryDataSet(queryDataSet);
@@ -65,7 +74,7 @@ public class OverflowQueryEngine {
         return aggregate(path, func, timeFilter, freqFilter, valueFilter);
     }
 
-    public QueryDataSet aggregate(Path path, AggregateFunction func
+    private QueryDataSet aggregate(Path path, AggregateFunction func
             , FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter) throws ProcessorException, IOException {
         if (!(timeFilter == null || timeFilter instanceof SingleSeriesFilterExpression) ||
                 !(freqFilter == null || freqFilter instanceof SingleSeriesFilterExpression) ||
@@ -233,10 +242,10 @@ public class OverflowQueryEngine {
      */
     private static QueryDataSet crossColumnQuery(List<Path> paths, SingleSeriesFilterExpression timeFilter,
                                                  SingleSeriesFilterExpression freqFilter, CrossSeriesFilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException {
-        logger.info("start cross columns getIndex...");
+        LOGGER.info("start cross columns getIndex...");
         initQueryDataSet(queryDataSet);
         // Step 1: calculate common timestamp
-        logger.info("step 1: init time value generator...");
+        LOGGER.info("step 1: init time value generator...");
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             queryDataSet.timeQueryDataSet = new CrossQueryTimeGenerator(timeFilter, freqFilter, valueFilter, fetchSize) {
@@ -247,13 +256,13 @@ public class OverflowQueryEngine {
                 }
             };
         }
-        logger.info("step 1 done.");
-        logger.info("step 2: calculate timeRet...");
+        LOGGER.info("step 1 done.");
+        LOGGER.info("step 2: calculate timeRet...");
         long[] timeRet = queryDataSet.timeQueryDataSet.generateTimes();
-        logger.info("step 2 done. timeRet size is: " + timeRet.length + ", FetchSize is: " + fetchSize);
+        LOGGER.info("step 2 done. timeRet size is: " + timeRet.length + ", FetchSize is: " + fetchSize);
 
         // Step 3: Get result using common timestamp
-        logger.info("step 3: Get result using common timestamp");
+        LOGGER.info("step 3: Get result using common timestamp");
 
         QueryDataSet ret = queryDataSet;
         for (Path p : paths) {
