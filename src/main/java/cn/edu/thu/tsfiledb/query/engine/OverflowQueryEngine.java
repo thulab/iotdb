@@ -32,7 +32,6 @@ import cn.edu.thu.tsfiledb.query.reader.RecordReader;
 public class OverflowQueryEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowQueryEngine.class);
-
     //private RecordReaderFactory recordReaderFactory;
     private MManager mManager;
 
@@ -40,7 +39,6 @@ public class OverflowQueryEngine {
         //recordReaderFactory = RecordReaderFactory.getInstance();
         mManager = MManager.getInstance();
     }
-
 
     /**
      *
@@ -76,7 +74,6 @@ public class OverflowQueryEngine {
         AggregateFunction func = AggreFuncFactory.getAggrFuncByName(aggrFuncName, dataType);
         return aggregate(path, func, timeFilter, freqFilter, valueFilter);
     }
-
 
     private QueryDataSet aggregate(Path path, AggregateFunction func
             , FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter) throws ProcessorException, IOException {

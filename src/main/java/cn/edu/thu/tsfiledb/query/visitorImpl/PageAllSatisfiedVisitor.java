@@ -17,7 +17,6 @@ import cn.edu.thu.tsfile.timeseries.filter.visitorImpl.FilterVisitor;
 
 public class PageAllSatisfiedVisitor implements FilterVisitor<Boolean> {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PageAllSatisfiedVisitor.class);
     public DigestForFilter digest;
 

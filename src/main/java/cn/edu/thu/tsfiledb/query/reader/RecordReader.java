@@ -59,7 +59,7 @@ public class RecordReader {
     /**
      * @param rafList bufferwrite file has been serialized completely
      * @param unsealedFileReader unsealed file reader
-     * @param rowGroupMetadataList unsealed RowGroupMetadataList for above
+     * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
      * @throws IOException
      */
     public RecordReader(List<TSRandomAccessFileReader> rafList, TSRandomAccessFileReader unsealedFileReader,
@@ -74,7 +74,7 @@ public class RecordReader {
     }
 
     /**
-     * Read function 1* : read one column with overflow. (no filter)
+     * Read function 1* : read one column with overflow(no filter).
      *
      * @throws ProcessorException
      * @throws IOException

@@ -17,8 +17,6 @@ import cn.edu.thu.tsfile.timeseries.read.readSupport.RowRecord;
 public abstract class IteratorQueryDataSet extends QueryDataSet {
     //special for save time values when processing cross getIndex
     public CrossQueryTimeGenerator timeQueryDataSet;
-
-
     private LinkedHashMap<Path, DynamicOneColumnData> retMap;
 
     private LinkedHashMap<Path, Boolean> hasMoreRet;
