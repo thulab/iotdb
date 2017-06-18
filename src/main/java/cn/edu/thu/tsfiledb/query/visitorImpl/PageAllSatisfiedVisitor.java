@@ -17,7 +17,8 @@ import cn.edu.thu.tsfile.timeseries.filter.visitorImpl.FilterVisitor;
 
 public class PageAllSatisfiedVisitor implements FilterVisitor<Boolean> {
 
-    private static final Logger logger = LoggerFactory.getLogger(PageAllSatisfiedVisitor.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PageAllSatisfiedVisitor.class);
     public DigestForFilter digest;
 
     public Boolean satisfy(DigestForFilter digest, SingleSeriesFilterExpression expression) {
@@ -27,8 +28,8 @@ public class PageAllSatisfiedVisitor implements FilterVisitor<Boolean> {
 
     private boolean checkType(SingleSeriesFilterExpression expression) {
         if (!digest.getType().equals(expression.getFilterSeries().getSeriesDataType())) {
-            logger.error(digest.getTypeClass() + " - " + expression.getFilterSeries().getSeriesDataType());
-            logger.error("Generic Not Consistent!");
+            LOGGER.error(digest.getTypeClass() + " - " + expression.getFilterSeries().getSeriesDataType());
+            LOGGER.error("Generic Not Consistent!");
             return false;
         }
         return true;

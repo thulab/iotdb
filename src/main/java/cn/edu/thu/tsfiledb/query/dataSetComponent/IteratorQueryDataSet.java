@@ -18,7 +18,8 @@ public abstract class IteratorQueryDataSet extends QueryDataSet {
     //special for save time values when processing cross getIndex
     public CrossQueryTimeGenerator timeQueryDataSet;
 
-    public LinkedHashMap<Path, DynamicOneColumnData> retMap;
+
+    private LinkedHashMap<Path, DynamicOneColumnData> retMap;
 
     private LinkedHashMap<Path, Boolean> hasMoreRet;
 
