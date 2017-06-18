@@ -7,7 +7,6 @@ import java.util.List;
 
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 
 
@@ -20,24 +19,26 @@ import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 
 public class ReaderManager {
 
-    private FileReader fileReader;
+//    private FileReader fileReader;
     private List<FileReader> fileReaderList;
 
-    private TSRandomAccessFileReader raf;
+    // file node list has been serialized, sealed
     private List<TSRandomAccessFileReader> rafList;
+
 
     private HashMap<String, List<RowGroupReader>> rowGroupReaderMap;
     private List<RowGroupReader> rowGroupReaderList;
 
-    public ReaderManager(TSRandomAccessFileReader raf) throws IOException {
-        this.raf = raf;
-        rowGroupReaderList = new ArrayList<>();
-        rowGroupReaderMap = new HashMap<>();
-
-        fileReader = new FileReader(raf);
-        addRowGroupReadersToMap(fileReader);
-        addRowGroupReadersToList(fileReader);
-    }
+    //     private TSRandomAccessFileReader raf;
+//    public ReaderManager(TSRandomAccessFileReader raf) throws IOException {
+//        // this.raf = raf;
+//        rowGroupReaderList = new ArrayList<>();
+//        rowGroupReaderMap = new HashMap<>();
+//
+//        fileReader = new FileReader(raf);
+//        addRowGroupReadersToMap(fileReader);
+//        addRowGroupReadersToList(fileReader);
+//    }
 
     /**
      * {NEWFUNC}
@@ -51,12 +52,18 @@ public class ReaderManager {
         rowGroupReaderMap = new HashMap<>();
         fileReaderList = new ArrayList<>();
 
-        for (int i = 0; i < rafList.size(); i++) {
-            FileReader fr = new FileReader(rafList.get(i));
+        for (TSRandomAccessFileReader taf : rafList) {
+            FileReader fr = new FileReader(taf);
             fileReaderList.add(fr);
             addRowGroupReadersToMap(fr);
             addRowGroupReadersToList(fr);
         }
+//        for (int i = 0; i < rafList.size(); i++) {
+//            FileReader fr = new FileReader(rafList.get(i));
+//            fileReaderList.add(fr);
+//            addRowGroupReadersToMap(fr);
+//            addRowGroupReadersToList(fr);
+//        }
     }
 
     /**
@@ -104,21 +111,21 @@ public class ReaderManager {
         return ret;
     }
 
-    public RowGroupReader getRowGroupReader(String deviceUID, int index) {
-        return this.fileReader.getRowGroupReader(deviceUID, index);
-    }
+//    public RowGroupReader getRowGroupReader(String deviceUID, int index) {
+//        return this.fileReader.getRowGroupReader(deviceUID, index);
+//    }
 
-    public TSRandomAccessFileReader getInput() {
-        return this.raf;
-    }
+//    public TSRandomAccessFileReader getInput() {
+//        return this.raf;
+//    }
 
-    TSDataType getDataTypeBySeriesName(String device, String sensor) {
-        ArrayList<RowGroupReader> rgrList = fileReader.getRowGroupReadersMap().get(device);
-        if (rgrList == null || rgrList.size() == 0) {
-            return null;
-        }
-        return rgrList.get(0).getDataTypeBySeriesName(sensor);
-    }
+//    TSDataType getDataTypeBySeriesName(String device, String sensor) {
+//        ArrayList<RowGroupReader> rgrList = fileReader.getRowGroupReadersMap().get(device);
+//        if (rgrList == null || rgrList.size() == 0) {
+//            return null;
+//        }
+//        return rgrList.get(0).getDataTypeBySeriesName(sensor);
+//    }
 
     HashMap<String, List<RowGroupReader>> getRowGroupReaderMap() {
         return rowGroupReaderMap;
