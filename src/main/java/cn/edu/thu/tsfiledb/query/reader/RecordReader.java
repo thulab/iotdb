@@ -74,7 +74,7 @@ public class RecordReader {
     }
 
     /**
-     * Read function 1* : read one column with overflow(no filter).
+     *  Read function 1* : read one column function with overflow, no filter.
      *
      * @throws ProcessorException
      * @throws IOException
@@ -89,7 +89,7 @@ public class RecordReader {
         if (res != null) {
             i = res.getRowGroupIndex();
         }
-        // iterative res
+        // iterative res, res may be expand
         for (; i < rowGroupReaderList.size(); i++) {
             RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
             res = getValueInOneColumnWithOverflow(rowGroupReader, sensorId, updateTrue, updateFalse, insertTrue,
@@ -121,7 +121,7 @@ public class RecordReader {
     }
 
     /**
-     * Read function 2* : read one column with filter and overflow
+     * Read function 2* : read one column with filter and overflow.
      *
      * @throws ProcessorException
      * @throws IOException
@@ -162,6 +162,15 @@ public class RecordReader {
         return res;
     }
 
+    private DynamicOneColumnData getValueWithFilterAndOverflow(RowGroupReader rowGroupReader, String sensorId,
+                                                               DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
+                                                               SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+                                                               DynamicOneColumnData res, int fetchSize) throws IOException {
+        return rowGroupReader.getValueReaders().get(sensorId)
+                .getValuesWithOverFlow(updateTrue, updateFalse, insertTrue, timeFilter, freqFilter, valueFilter, res,
+                        fetchSize);
+    }
+
     private DynamicOneColumnData createAOneColRetByFullPath(String fullPath) throws ProcessorException {
         try {
             TSDataType type = MManager.getInstance().getSeriesType(fullPath);
@@ -172,15 +181,6 @@ public class RecordReader {
             // TODO Auto-generated catch block
             throw new ProcessorException(e.getMessage());
         }
-    }
-
-    private DynamicOneColumnData getValueWithFilterAndOverflow(RowGroupReader rowGroupReader, String sensorId,
-                                                              DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
-                                                              SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                                                              DynamicOneColumnData res, int fetchSize) throws IOException {
-        return rowGroupReader.getValueReaders().get(sensorId)
-                .getValuesWithOverFlow(updateTrue, updateFalse, insertTrue, timeFilter, freqFilter, valueFilter, res,
-                        fetchSize);
     }
 
     public AggregationResult aggregate(String deviceUID, String sensorId, AggregateFunction func,

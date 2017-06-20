@@ -28,7 +28,7 @@ public class QueryForMerge {
 		queryDataSet = null;
 	}
 
-	private boolean hasNextRecord() {
+	public boolean hasNextRecord() {
 		boolean ret = false;
 
 		if (queryDataSet == null || !queryDataSet.hasNextRecord()) {

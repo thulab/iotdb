@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.query.dataSetComponent;
+package cn.edu.thu.tsfiledb.query.dataset;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,8 +39,7 @@ public abstract class IteratorQueryDataSet extends QueryDataSet {
         }
     }
 
-    public abstract DynamicOneColumnData getMoreRecordsForOneColumn(Path colName
-            , DynamicOneColumnData res) throws IOException;
+    public abstract DynamicOneColumnData getMoreRecordsForOneColumn(Path colName, DynamicOneColumnData res) throws IOException;
 
     public void initForRecord() {
         heap = new PriorityQueue<>(retMap.size());
