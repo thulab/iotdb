@@ -65,30 +65,32 @@ public class OverflowValueReader extends ValueReader {
     }
 
     /**
-     * ？？-2是指？
+     * -1: no updateTrue data, no updateFalse data.
+     * 0: updateTrue data < updateFalse data.
+     * 1: updateFalse data < updateTrue data.
      *
-     * @param idx0
-     * @param idx1
-     * @param updateTrue
-     * @param updateFalse
+     * @param updateTrueIdx index of updateTrue DynamicOneColumn
+     * @param updateFalseIdx index of updateFalse DynamicOneColumn
+     * @param updateTrue updateTrue DynamicOneColumn
+     * @param updateFalse updateFalse DynamicOneColumn
      * @return
      */
-    private int getNextMode(int idx0, int idx1, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse) {
-        if (idx0 > updateTrue.timeLength - 2 && idx1 > updateFalse.timeLength - 2) {
+    private int getNextMode(int updateTrueIdx, int updateFalseIdx, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse) {
+        if (updateTrueIdx > updateTrue.timeLength - 2 && updateFalseIdx > updateFalse.timeLength - 2) {
             return -1;
-        } else if (idx0 <= updateTrue.timeLength - 2 && idx1 > updateFalse.timeLength - 2) {
+        } else if (updateTrueIdx <= updateTrue.timeLength - 2 && updateFalseIdx > updateFalse.timeLength - 2) {
             return 0;
-        } else if (idx0 > updateTrue.timeLength - 2 && idx1 <= updateFalse.timeLength - 2) {
+        } else if (updateTrueIdx > updateTrue.timeLength - 2 && updateFalseIdx <= updateFalse.timeLength - 2) {
             return 1;
         } else {
-            long t0 = updateTrue.getTime(idx0);
-            long t1 = updateFalse.getTime(idx1);
+            long t0 = updateTrue.getTime(updateTrueIdx);
+            long t1 = updateFalse.getTime(updateFalseIdx);
             return t0 < t1 ? 0 : 1;
         }
     }
 
-    DynamicOneColumnData getValuesWithOverFlow(DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
-                                                      DynamicOneColumnData insertTrue, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+    DynamicOneColumnData getValuesWithOverFlow(DynamicOneColumnData updateTrueData, DynamicOneColumnData updateFalseData,
+                                                      DynamicOneColumnData insertTrueData, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
                                                       SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize) throws IOException {
 
         // call functions without overflow if possible
@@ -119,22 +121,22 @@ public class OverflowValueReader extends ValueReader {
         // If not satisfied, return res with size equal to 0
 
         // TODO: optimize
-        updateTrue = (updateTrue == null ? new DynamicOneColumnData(dataType, true) : updateTrue);
-        insertTrue = (insertTrue == null ? new DynamicOneColumnData(dataType, true) : insertTrue);
-        updateFalse = (updateFalse == null ? new DynamicOneColumnData(dataType, true) : updateFalse);
+        updateTrueData = (updateTrueData == null ? new DynamicOneColumnData(dataType, true) : updateTrueData);
+        insertTrueData = (insertTrueData == null ? new DynamicOneColumnData(dataType, true) : insertTrueData);
+        updateFalseData = (updateFalseData == null ? new DynamicOneColumnData(dataType, true) : updateFalseData);
 
-        if (updateTrue.length == 0 && insertTrue.length == 0 && valueFilter != null
+        if (updateTrueData.length == 0 && insertTrueData.length == 0 && valueFilter != null
                 && !digestVisitor.satisfy(digestFF, valueFilter)) {
             return res;
         }
 
-        DynamicOneColumnData[] update = new DynamicOneColumnData[2];
-        update[0] = updateTrue;
-        update[1] = updateFalse;
-        int[] idx = new int[]{updateTrue.curIdx, updateFalse.curIdx};
-        int insertTrueIdx = insertTrue.curIdx;
+        DynamicOneColumnData[] updateData = new DynamicOneColumnData[2];
+        updateData[0] = updateTrueData;
+        updateData[1] = updateFalseData;
+        int[] updateIdx = new int[]{updateTrueData.curIdx, updateFalseData.curIdx};
+        int insertTrueIdx = insertTrueData.curIdx;
 
-        int mode = getNextMode(idx[0], idx[1], updateTrue, updateFalse);
+        int mode = getNextMode(updateIdx[0], updateIdx[1], updateTrueData, updateFalseData);
 
         // initial one page from file
         ByteArrayInputStream bis = initBAISForOnePage(res.pageOffset);
@@ -165,9 +167,9 @@ public class OverflowValueReader extends ValueReader {
             DigestForFilter timeDigestFF = new DigestForFilter(mint, maxt);
 
             // find first interval , skip some intervals that not available
-            while (mode != -1 && update[mode].getTime(idx[mode] + 1) < mint) {
-                idx[mode] += 2;
-                mode = getNextMode(idx[0], idx[1], updateTrue, updateFalse);
+            while (mode != -1 && updateData[mode].getTime(updateIdx[mode] + 1) < mint) {
+                updateIdx[mode] += 2;
+                mode = getNextMode(updateIdx[0], updateIdx[1], updateTrueData, updateFalseData);
             }
 
             if (mode == -1 && ((valueFilter != null && !digestVisitor.satisfy(valueDigestFF, valueFilter))
@@ -176,14 +178,14 @@ public class OverflowValueReader extends ValueReader {
                 res.pageOffset += lastAvailable - bis.available();
                 continue;
             }
-            if (mode == 0 && update[0].getTime(idx[0]) > maxt
+            if (mode == 0 && updateData[0].getTime(updateIdx[0]) > maxt
                     && ((valueFilter != null && !digestVisitor.satisfy(valueDigestFF, valueFilter))
                     || (timeFilter != null && !digestVisitor.satisfy(timeDigestFF, timeFilter)))) {
                 pageReader.skipCurrentPage();
                 res.pageOffset += lastAvailable - bis.available();
                 continue;
             }
-            if (mode == 1 && ((update[1].getTime(idx[1]) <= mint && update[1].getTime(idx[1] + 1) >= maxt)
+            if (mode == 1 && ((updateData[1].getTime(updateIdx[1]) <= mint && updateData[1].getTime(updateIdx[1] + 1) >= maxt)
                     || ((valueFilter != null && !digestVisitor.satisfy(valueDigestFF, valueFilter))
                     || (timeFilter != null && !digestVisitor.satisfy(timeDigestFF, timeFilter))))) {
                 pageReader.skipCurrentPage();
@@ -197,8 +199,8 @@ public class OverflowValueReader extends ValueReader {
             res.pageOffset += lastAvailable - bis.available();
 
             initFrequenceValue(page);
-            hasOverflowDataInThisPage = checkDataChanged(mint, maxt, updateTrue, idx[0], updateFalse, idx[1],
-                    insertTrue, insertTrueIdx, timeFilter);
+            hasOverflowDataInThisPage = checkDataChanged(mint, maxt, updateTrueData, updateIdx[0], updateFalseData, updateIdx[1],
+                    insertTrueData, insertTrueIdx, timeFilter);
 //				System.out.println("Overflow: " + hasOverflowDataInThisPage);
             if (!hasOverflowDataInThisPage && !frequencySatisfy(freqFilter)) {
                 continue;
@@ -222,24 +224,23 @@ public class OverflowValueReader extends ValueReader {
             }
 
             try {
-
                 int timeIdx = 0;
                 switch (dataType) {
                     case INT32:
                         while (decoder.hasNext(page)) {
                             // put insert points that less than or equals to current
                             // Timestamp in page.
-                            while (insertTrueIdx < insertTrue.length && timeIdx < timeValues.length
-                                    && insertTrue.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrue.getTime(insertTrueIdx));
-                                res.putInt(insertTrue.getInt(insertTrueIdx));
+                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
+                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertTrueData.getTime(insertTrueIdx));
+                                res.putInt(insertTrueData.getInt(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page. That is to say, insert is like
                                 // update.
-                                if (insertTrue.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readInt(page);
                                     if (!decoder.hasNext(page)) {
@@ -269,12 +270,12 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 0) {
-                                if (update[0].getTime(idx[0]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
+                                if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
                                     if (timeFilter == null
                                             || timeVisitor.verify(timeValues[timeIdx])) {
-                                        res.putInt(update[0].getInt(idx[0] / 2));
+                                        res.putInt(updateData[0].getInt(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
@@ -294,8 +295,8 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 1) {
-                                if (update[1].getTime(idx[1]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
+                                if (updateData[1].getTime(updateIdx[1]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
                                         || (valueFilter != null && timeFilter == null
@@ -315,25 +316,25 @@ public class OverflowValueReader extends ValueReader {
                             // Set the interval to next position that current time
                             // in page maybe be included.
                             while (mode != -1 && timeIdx < timeValues.length
-                                    && timeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                                idx[mode] += 2;
-                                mode = getNextMode(idx[0], idx[1], update[0], update[1]);
+                                    && timeValues[timeIdx] > updateData[mode].getTime(updateIdx[mode] + 1)) {
+                                updateIdx[mode] += 2;
+                                mode = getNextMode(updateIdx[0], updateIdx[1], updateData[0], updateData[1]);
                             }
                         }
                         break;
                     case BOOLEAN:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrue.length && timeIdx < timeValues.length
-                                    && insertTrue.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrue.getTime(insertTrueIdx));
-                                res.putBoolean(insertTrue.getBoolean(insertTrueIdx));
+                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
+                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertTrueData.getTime(insertTrueIdx));
+                                res.putBoolean(insertTrueData.getBoolean(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrue.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readBoolean(page);
                                     if (!decoder.hasNext(page)) {
@@ -361,12 +362,12 @@ public class OverflowValueReader extends ValueReader {
 
                             if (mode == 0) {
                                 boolean v = decoder.readBoolean(page);
-                                if (update[0].getTime(idx[0]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
+                                if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
                                     if (timeFilter == null
                                             || timeVisitor.verify(timeValues[timeIdx])) {
-                                        res.putBoolean(update[0].getBoolean(idx[0] / 2));
+                                        res.putBoolean(updateData[0].getBoolean(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
@@ -387,8 +388,8 @@ public class OverflowValueReader extends ValueReader {
 
                             if (mode == 1) {
                                 boolean v = decoder.readBoolean(page);
-                                if (update[1].getTime(idx[1]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
+                                if (updateData[1].getTime(updateIdx[1]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
                                         || (valueFilter != null && timeFilter == null
@@ -406,25 +407,25 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             while (mode != -1 && timeIdx < timeValues.length
-                                    && timeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                                idx[mode] += 2;
-                                mode = getNextMode(idx[0], idx[1], update[0], update[1]);
+                                    && timeValues[timeIdx] > updateData[mode].getTime(updateIdx[mode] + 1)) {
+                                updateIdx[mode] += 2;
+                                mode = getNextMode(updateIdx[0], updateIdx[1], updateData[0], updateData[1]);
                             }
                         }
                         break;
                     case INT64:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrue.length && timeIdx < timeValues.length
-                                    && insertTrue.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrue.getTime(insertTrueIdx));
-                                res.putLong(insertTrue.getLong(insertTrueIdx));
+                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
+                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertTrueData.getTime(insertTrueIdx));
+                                res.putLong(insertTrueData.getLong(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrue.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readLong(page);
                                     if (!decoder.hasNext(page)) {
@@ -453,12 +454,12 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 0) {
-                                if (update[0].getTime(idx[0]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
+                                if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value,需要和高飞再商量一下这个逻辑
                                     if (timeFilter == null
                                             || timeVisitor.verify(timeValues[timeIdx])) {
-                                        res.putLong(update[0].getLong(idx[0] / 2));
+                                        res.putLong(updateData[0].getLong(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
@@ -478,8 +479,8 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 1) {
-                                if (update[1].getTime(idx[1]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
+                                if (updateData[1].getTime(updateIdx[1]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
                                         || (valueFilter != null && timeFilter == null
@@ -497,25 +498,25 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             while (mode != -1 && timeIdx < timeValues.length
-                                    && timeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                                idx[mode] += 2;
-                                mode = getNextMode(idx[0], idx[1], update[0], update[1]);
+                                    && timeValues[timeIdx] > updateData[mode].getTime(updateIdx[mode] + 1)) {
+                                updateIdx[mode] += 2;
+                                mode = getNextMode(updateIdx[0], updateIdx[1], updateData[0], updateData[1]);
                             }
                         }
                         break;
                     case FLOAT:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrue.length && timeIdx < timeValues.length
-                                    && insertTrue.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrue.getTime(insertTrueIdx));
-                                res.putFloat(insertTrue.getFloat(insertTrueIdx));
+                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
+                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertTrueData.getTime(insertTrueIdx));
+                                res.putFloat(insertTrueData.getFloat(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrue.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readFloat(page);
                                     if (!decoder.hasNext(page)) {
@@ -544,12 +545,12 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 0) {
-                                if (update[0].getTime(idx[0]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
+                                if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
                                     if (timeFilter == null
                                             || timeVisitor.verify(timeValues[timeIdx])) {
-                                        res.putFloat(update[0].getFloat(idx[0] / 2));
+                                        res.putFloat(updateData[0].getFloat(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
@@ -569,8 +570,8 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 1) {
-                                if (update[1].getTime(idx[1]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
+                                if (updateData[1].getTime(updateIdx[1]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
                                         || (valueFilter != null && timeFilter == null
@@ -588,25 +589,25 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             while (mode != -1 && timeIdx < timeValues.length
-                                    && timeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                                idx[mode] += 2;
-                                mode = getNextMode(idx[0], idx[1], update[0], update[1]);
+                                    && timeValues[timeIdx] > updateData[mode].getTime(updateIdx[mode] + 1)) {
+                                updateIdx[mode] += 2;
+                                mode = getNextMode(updateIdx[0], updateIdx[1], updateData[0], updateData[1]);
                             }
                         }
                         break;
                     case DOUBLE:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrue.length && timeIdx < timeValues.length
-                                    && insertTrue.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrue.getTime(insertTrueIdx));
-                                res.putDouble(insertTrue.getDouble(insertTrueIdx));
+                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
+                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertTrueData.getTime(insertTrueIdx));
+                                res.putDouble(insertTrueData.getDouble(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrue.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readDouble(page);
                                     if (!decoder.hasNext(page)) {
@@ -635,12 +636,12 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 0) {
-                                if (update[0].getTime(idx[0]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
+                                if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
                                     if (timeFilter == null
                                             || timeVisitor.verify(timeValues[timeIdx])) {
-                                        res.putDouble(update[0].getDouble(idx[0] / 2));
+                                        res.putDouble(updateData[0].getDouble(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
@@ -660,8 +661,8 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             if (mode == 1) {
-                                if (update[1].getTime(idx[1]) <= timeValues[timeIdx]
-                                        && timeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
+                                if (updateData[1].getTime(updateIdx[1]) <= timeValues[timeIdx]
+                                        && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
                                         || (valueFilter != null && timeFilter == null
@@ -679,9 +680,9 @@ public class OverflowValueReader extends ValueReader {
                             }
 
                             while (mode != -1 && timeIdx < timeValues.length
-                                    && timeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                                idx[mode] += 2;
-                                mode = getNextMode(idx[0], idx[1], update[0], update[1]);
+                                    && timeValues[timeIdx] > updateData[mode].getTime(updateIdx[mode] + 1)) {
+                                updateIdx[mode] += 2;
+                                mode = getNextMode(updateIdx[0], updateIdx[1], updateData[0], updateData[1]);
                             }
                         }
                         break;
@@ -710,9 +711,9 @@ public class OverflowValueReader extends ValueReader {
         }
 
         // Important. save curIdx for batch read
-        updateTrue.curIdx = idx[0];
-        updateFalse.curIdx = idx[1];
-        insertTrue.curIdx = insertTrueIdx;
+        updateTrueData.curIdx = updateIdx[0];
+        updateFalseData.curIdx = updateIdx[1];
+        insertTrueData.curIdx = insertTrueIdx;
         return res;
     }
 
@@ -1302,35 +1303,35 @@ public class OverflowValueReader extends ValueReader {
     }
 
     // TODO 有一个bug，没有考虑删除的东西
-    private boolean checkDataChanged(long mint, long maxt, DynamicOneColumnData updateTrue, int idx0,
-                                     DynamicOneColumnData updateFalse, int idx1, DynamicOneColumnData insertTrue, int idx2,
+    private boolean checkDataChanged(long mint, long maxt, DynamicOneColumnData updateTrueData, int updateTrueIdx,
+                                     DynamicOneColumnData updateFalseData, int updateFalseIdx, DynamicOneColumnData insertTrueData, int insertTrueIdx,
                                      SingleSeriesFilterExpression timeFilter) {
         // Judge whether updateTrue has value for this page.
-        while (idx0 <= updateTrue.timeLength - 2) {
-            if (!((updateTrue.getTime(idx0 + 1) < mint) || (updateTrue.getTime(idx0) > maxt))) {
+        while (updateTrueIdx <= updateTrueData.timeLength - 2) {
+            if (!((updateTrueData.getTime(updateTrueIdx + 1) < mint) || (updateTrueData.getTime(updateTrueIdx) > maxt))) {
                 return true;
             }
-            idx0 += 2;
+            updateTrueIdx += 2;
         }
 
-        while (idx1 <= updateFalse.timeLength - 2) {
-            if (!((updateFalse.getTime(idx1 + 1) < mint) || (updateFalse.getTime(idx1) > maxt))) {
+        while (updateFalseIdx <= updateFalseData.timeLength - 2) {
+            if (!((updateFalseData.getTime(updateFalseIdx + 1) < mint) || (updateFalseData.getTime(updateFalseIdx) > maxt))) {
                 return true;
             }
-            idx1 += 2;
+            updateFalseIdx += 2;
         }
 
-        while (idx2 <= insertTrue.length - 1) {
-            if (mint <= insertTrue.getTime(idx2) && insertTrue.getTime(idx2) <= maxt) {
+        while (insertTrueIdx <= insertTrueData.length - 1) {
+            if (mint <= insertTrueData.getTime(insertTrueIdx) && insertTrueData.getTime(insertTrueIdx) <= maxt) {
                 return true;
             }
-            if (maxt < insertTrue.getTime(idx2)) {
+            if (maxt < insertTrueData.getTime(insertTrueIdx)) {
                 break;
             }
-            if (insertTrue.length > 0 && mint > insertTrue.getTime(insertTrue.length - 1)) {
+            if (insertTrueData.length > 0 && mint > insertTrueData.getTime(insertTrueData.length - 1)) {
                 break;
             }
-            idx2++;
+            insertTrueIdx++;
         }
         return false;
     }
