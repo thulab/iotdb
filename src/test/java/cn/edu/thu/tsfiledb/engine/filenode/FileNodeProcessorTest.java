@@ -178,7 +178,7 @@ public class FileNodeProcessorTest {
 			processor.merge();
 			// check the result
 			QueryStructure queryRestult = processor.query(deltaObjectId, measurementId, null, null, null);
-			DynamicOneColumnData bufferwriteinindex = queryRestult.getBufferwriteDataInMemory();
+			DynamicOneColumnData bufferwriteinindex = queryRestult.getCurrentPage();
 			List<RowGroupMetaData> bufferwriterowgroups = queryRestult.getBufferwriteDataInDisk();
 			List<IntervalFileNode> newInterFiles = queryRestult.getBufferwriteDataInFiles();
 			List<Object> overflowResult = queryRestult.getAllOverflowData();
@@ -253,7 +253,7 @@ public class FileNodeProcessorTest {
 			int token = processor.addMultiPassLock();
 			QueryStructure queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
 			processor.removeMultiPassLock(token);
-			DynamicOneColumnData bufferwritedataindex = queryResult.getBufferwriteDataInMemory();
+			DynamicOneColumnData bufferwritedataindex = queryResult.getCurrentPage();
 			List<RowGroupMetaData> bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 			List<IntervalFileNode> bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
 			List<Object> overflowResult = queryResult.getAllOverflowData();
@@ -389,7 +389,7 @@ public class FileNodeProcessorTest {
 			token = processor.addMultiPassLock();
 			assertEquals(false, processor.canBeClosed());
 			queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
-			bufferwritedataindex = queryResult.getBufferwriteDataInMemory();
+			bufferwritedataindex = queryResult.getCurrentPage();
 			bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 			bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
 			overflowResult = queryResult.getAllOverflowData();
@@ -706,7 +706,7 @@ public class FileNodeProcessorTest {
 			QueryStructure queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
 			assertEquals(false, processor.canBeClosed());
 			processor.removeMultiPassLock(token);
-			DynamicOneColumnData bufferwriteindex = queryResult.getBufferwriteDataInMemory();
+			DynamicOneColumnData bufferwriteindex = queryResult.getCurrentPage();
 			List<RowGroupMetaData> bufferwriterowgroups = queryResult.getBufferwriteDataInDisk();
 			List<IntervalFileNode> newInterFiles = queryResult.getBufferwriteDataInFiles();
 			restoreNewFiles = newInterFiles;
@@ -781,7 +781,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			// it will merge automatically
 			QueryStructure queryRestult = processor.query(deltaObjectId, measurementId, null, null, null);
-			DynamicOneColumnData bufferwriteinindex = queryRestult.getBufferwriteDataInMemory();
+			DynamicOneColumnData bufferwriteinindex = queryRestult.getCurrentPage();
 			List<RowGroupMetaData> bufferwriterowgroups = queryRestult.getBufferwriteDataInDisk();
 			List<IntervalFileNode> newInterFiles = queryRestult.getBufferwriteDataInFiles();
 			List<Object> overflowResult = queryRestult.getAllOverflowData();
@@ -844,7 +844,8 @@ public class FileNodeProcessorTest {
 			processor.getOverflowProcessor(deltaObjectId, parameters);
 			// check overflow data
 			QueryStructure queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
-			assertEquals(null, queryResult.getBufferwriteDataInMemory());
+			assertEquals(null, queryResult.getCurrentPage());
+			assertEquals(null, queryResult.getPageList());
 			assertEquals(null, queryResult.getBufferwriteDataInDisk());
 			assertEquals(0, queryResult.getBufferwriteDataInFiles().size());
 			List<Object> overflowResult = queryResult.getAllOverflowData();

@@ -3,6 +3,7 @@ package cn.edu.thu.tsfiledb.engine.bufferwrite;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,6 +21,7 @@ import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.common.utils.RandomAccessOutputStream;
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileWriter;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
@@ -58,6 +60,7 @@ public class BufferWriteProcessorTest {
 
 	BufferWriteProcessor processor = null;
 	String nsp = "root.vehicle.d0";
+
 	@Before
 	public void setUp() throws Exception {
 		EngineTestHelper.delete(nsp);
@@ -103,7 +106,7 @@ public class BufferWriteProcessorTest {
 		// write record and test multiple thread flush rowgroup
 		for (int i = 0; i < 1000; i++) {
 			processor.write(nsp, "s0", 100, TSDataType.INT32, i + "");
-			if(i==400){
+			if (i == 400) {
 				break;
 			}
 		}
@@ -119,18 +122,23 @@ public class BufferWriteProcessorTest {
 		TSRandomAccessFileWriter raf = new RandomAccessOutputStream(outFile);
 		raf.seek(outFile.length());
 		byte[] buff = new byte[100];
-		Arrays.fill(buff, (byte)10);
+		Arrays.fill(buff, (byte) 10);
 		raf.write(buff);
 		raf.close();
-		// read the buffer write file from middle of the file and test the cut off function
+		// read the buffer write file from middle of the file and test the cut
+		// off function
 		assertEquals(true, restorefile.exists());
 		processor = new BufferWriteProcessor(nsp, filename, parameters);
-		Pair<DynamicOneColumnData, List<RowGroupMetaData>> pair = processor.getIndexAndRowGroupList(nsp, "s0");
-		assertEquals(0, pair.left.length);
+		Pair<List<Object>, List<RowGroupMetaData>> pair = processor.getIndexAndRowGroupList(nsp, "s0");
+		DynamicOneColumnData columnData = (DynamicOneColumnData) pair.left.get(0);
+		Pair<List<ByteArrayInputStream>, CompressionTypeName> right = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) pair.left
+				.get(1);
+		assertEquals(null, columnData);
+		assertEquals(null, right);
 		int lastRowGroupNum = pair.right.size();
 		for (int i = 0; i < 1000; i++) {
 			processor.write(nsp, "s0", 100, TSDataType.INT32, i + "");
-			if(i==400){
+			if (i == 400) {
 				break;
 			}
 		}
@@ -142,8 +150,8 @@ public class BufferWriteProcessorTest {
 		}
 		processor = new BufferWriteProcessor(nsp, filename, parameters);
 		pair = processor.getIndexAndRowGroupList(nsp, "s0");
-		// assert the number of rowgroup 
-		assertEquals(lastRowGroupNum*2, pair.right.size());
+		// assert the number of rowgroup
+		assertEquals(lastRowGroupNum * 2, pair.right.size());
 		processor.write(nsp, "s0", 100, TSDataType.INT32, 100 + "");
 		processor.close();
 		assertEquals(false, restorefile.exists());

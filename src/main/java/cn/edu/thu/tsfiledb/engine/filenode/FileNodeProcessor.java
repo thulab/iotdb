@@ -1,5 +1,6 @@
 package cn.edu.thu.tsfiledb.engine.filenode;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.common.utils.RandomAccessOutputStream;
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileWriter;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.thu.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
@@ -480,7 +482,7 @@ public class FileNodeProcessor extends LRUProcessor {
 					((DynamicOneColumnData) overflowData.get(0)).length);
 		}
 		// query bufferwrite data in memory and disk
-		Pair<DynamicOneColumnData, List<RowGroupMetaData>> bufferwriteDataInMemory = new Pair<DynamicOneColumnData, List<RowGroupMetaData>>(
+		Pair<List<Object>, List<RowGroupMetaData>> bufferwriteDataInMemory = new Pair<List<Object>, List<RowGroupMetaData>>(
 				null, null);
 		// if no bufferwrite processor, there are not bufferwrite data in memory
 		if (bufferWriteProcessor != null) {
@@ -493,7 +495,10 @@ public class FileNodeProcessor extends LRUProcessor {
 			// add the same intervalFileNode, but not the same reference
 			bufferwriteDataInFiles.add(intervalFileNode.backUp());
 		}
-		queryStructure = new QueryStructure(bufferwriteDataInMemory.left, bufferwriteDataInMemory.right,
+		DynamicOneColumnData currentPage = (DynamicOneColumnData) bufferwriteDataInMemory.left.get(0);
+		Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) bufferwriteDataInMemory.left
+				.get(1);
+		queryStructure = new QueryStructure(currentPage, pageList, bufferwriteDataInMemory.right,
 				bufferwriteDataInFiles, overflowData);
 		return queryStructure;
 	}
