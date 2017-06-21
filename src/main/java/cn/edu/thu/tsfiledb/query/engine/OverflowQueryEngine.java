@@ -53,6 +53,10 @@ public class OverflowQueryEngine {
         return mManager.getSeriesType(path);
     }
 
+    private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
+        return mManager.getSeriesType(path.getFullPath());
+    }
+
     /**
      * Basic query function.
      *
@@ -87,7 +91,7 @@ public class OverflowQueryEngine {
      * @throws IOException
      */
     public QueryDataSet aggregate(Path path, String aggreFuncName
-            , FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter) throws ProcessorException, IOException {
+            , FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter) throws ProcessorException, IOException, PathErrorException {
         TSDataType dataType;
         try {
             dataType = MManager.getInstance().getSeriesType(path.getFullPath());
@@ -99,7 +103,7 @@ public class OverflowQueryEngine {
     }
 
     private QueryDataSet aggregate(Path path, AggregateFunction func
-            , FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter) throws ProcessorException, IOException {
+            , FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter) throws ProcessorException, IOException, PathErrorException {
         if (!(timeFilter == null || timeFilter instanceof SingleSeriesFilterExpression) ||
                 !(freqFilter == null || freqFilter instanceof SingleSeriesFilterExpression) ||
                 !(valueFilter == null || valueFilter instanceof SingleSeriesFilterExpression)) {
@@ -114,15 +118,17 @@ public class OverflowQueryEngine {
                 (SingleSeriesFilterExpression) timeFilter,
                 (SingleSeriesFilterExpression) freqFilter,
                 (SingleSeriesFilterExpression) valueFilter);
+
         // Get 4 params
         List<Object> params = getOverflowInfoAndFilterDataInMem((SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
-                (SingleSeriesFilterExpression) valueFilter, null, recordReader.insertDataInMemory, recordReader.overflowInfo);
+                (SingleSeriesFilterExpression) valueFilter, null, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
-        InsertDynamicData insertNew = new InsertDynamicData();
+        InsertDynamicData insertNew = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+                (SingleSeriesFilterExpression)timeFilter, (SingleSeriesFilterExpression)valueFilter, (SingleSeriesFilterExpression)freqFilter, getDataTypeByPath(path));
         AggregationResult aggrRet = recordReader.aggregate(deltaObjectUID, measurementUID, func,
                 updateTrue, updateFalse, insertNew
                 , deleteFilter, (SingleSeriesFilterExpression) freqFilter, (SingleSeriesFilterExpression) valueFilter);
@@ -142,7 +148,12 @@ public class OverflowQueryEngine {
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
                 @Override
                 public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
-                    return OverflowQueryEngine.readOneColumnWithoutFilter(p, res, fetchSize);
+                    try {
+                        return readOneColumnWithoutFilter(p, res, fetchSize);
+                    } catch (PathErrorException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
             };
             queryDataSet.setBatchReaderRetGenerator(batchReaderRetGenerator);
@@ -153,7 +164,7 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private static DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException {
+    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
@@ -162,15 +173,16 @@ public class OverflowQueryEngine {
 
         // Get 4 params
         List<Object> params = getOverflowInfoAndFilterDataInMem( null, null, null,
-                res, recordReader.insertDataInMemory, recordReader.overflowInfo);
+                res, recordReader.insertPageInMemory, recordReader.overflowInfo);
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
-        // 改！！
-        InsertDynamicData insertNew = new InsertDynamicData();
+        // TODO to modify InsertDynamicData
+        InsertDynamicData insertNew = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+                null, null, null, getDataTypeByPath(path));
         res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
                 updateTrue, updateFalse, insertNew, deleteFilter, res, fetchSize);
 
@@ -211,9 +223,8 @@ public class OverflowQueryEngine {
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(device, sensor, timeFilter, freqFilter, valueFilter);
 
         // Get 4 params
-        List<Object> params = getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter, res, recordReader.insertDataInMemory, recordReader.overflowInfo);
+        List<Object> params = getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
         InsertDynamicData insertTrue = (InsertDynamicData) params.get(0);
-        ////insertTrue.set
 
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -265,7 +276,7 @@ public class OverflowQueryEngine {
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(device, sensor, null, null, null);
 
             // Get 4 params
-            List<Object> params = getOverflowInfoAndFilterDataInMem(null, null, null, null, recordReader.insertDataInMemory, recordReader.overflowInfo);
+            List<Object> params = getOverflowInfoAndFilterDataInMem(null, null, null, null, recordReader.insertPageInMemory, recordReader.overflowInfo);
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
             SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
@@ -288,7 +299,7 @@ public class OverflowQueryEngine {
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(device, sensor, null, freqFilter, valueFilter);
         // Get 4 params
-        List<Object> params = getOverflowInfoAndFilterDataInMem( null, freqFilter, valueFilter, res, recordReader.insertDataInMemory, recordReader.overflowInfo);
+        List<Object> params = getOverflowInfoAndFilterDataInMem( null, freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);

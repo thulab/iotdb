@@ -34,7 +34,7 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private Decoder timeDecoder = new DeltaBinaryDecoder.LongDeltaDecoder(), valueDecoder, freDecoder;
     private boolean pageSatisfy = false, insertSatisfy = false;
     private long currentPageTime = -1; // timestamp for page list
-    public SingleSeriesFilterExpression timeFilter, valueFilter, frequencyFilter;
+    private SingleSeriesFilterExpression timeFilter, valueFilter, frequencyFilter;
 
     private int curPageIntValue;
     private boolean curPageBooleanValue;
@@ -52,17 +52,14 @@ public class InsertDynamicData extends DynamicOneColumnData {
         super();
     }
 
-    public InsertDynamicData(List<ByteArrayInputStream> list, CompressionTypeName name,
+    public InsertDynamicData(List<ByteArrayInputStream> pageList, CompressionTypeName compressionName,
                              SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression frequencyFilter,
-                             Decoder timeDecoder, Decoder valueDecoder, Decoder freDecoder) {
-        this.pageList = list;
-        this.compressionTypeName = name;
+                             TSDataType dataType) {
+        this.pageList = pageList;
+        this.compressionTypeName = compressionName;
         this.timeFilter = timeFilter;
         this.valueFilter = valueFilter;
         this.frequencyFilter = frequencyFilter;
-        this.timeDecoder = timeDecoder;
-        this.valueDecoder = valueDecoder;
-        this.freDecoder = freDecoder;
         this.singleValueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
         this.singleTimeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
     }

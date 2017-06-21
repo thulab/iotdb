@@ -84,7 +84,7 @@ public class RecordReaderFactory {
 				// raf: unsealed file reader
 				// indisk: unsealed RowGroupMetadataList for above
 				recordReader = new RecordReader(rafList, unsealedRaf, queryStructure.getBufferwriteDataInDisk(), deltaObjectUID,
-						measurementID, token, queryStructure.getBufferwriteDataInMemory(),
+						measurementID, token, queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right,
 						queryStructure.getAllOverflowData());
 			} else {
 				if (fileNodes.size() > 0) {
@@ -92,7 +92,7 @@ public class RecordReaderFactory {
 							.getLocalRandomAccessFileReader(fileNodes.get(fileNodes.size() - 1).filePath));
 				}
 				recordReader = new RecordReader(rafList, deltaObjectUID, measurementID, token,
-						queryStructure.getBufferwriteDataInMemory(), queryStructure.getAllOverflowData());
+						queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right, queryStructure.getAllOverflowData());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

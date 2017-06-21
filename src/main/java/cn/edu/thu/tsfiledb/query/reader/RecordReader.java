@@ -1,11 +1,13 @@
 package cn.edu.thu.tsfiledb.query.reader;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,43 +41,51 @@ public class RecordReader {
     private ReaderManager readerManager;
     private int lockToken; // for lock
     private String deltaObjectUID, measurementID;
-    public DynamicOneColumnData insertDataInMemory;  // bufferwrite insert memory
+    // public DynamicOneColumnData insertDataInMemory;  // bufferwrite insert memory
+    public DynamicOneColumnData insertPageInMemory;  // bufferwrite insert memory page
+    public List<ByteArrayInputStream> bufferWritePageList;  // bufferwrite insert memory page
+    public CompressionTypeName compressionTypeName;
     public List<Object> overflowInfo;
 
     /**
-     *
      * @param rafList bufferwrite file has been serialized completely
      * @throws IOException
      */
-    public RecordReader(List<TSRandomAccessFileReader> rafList, String deltaObjectUID, String measurementID,
-                        int lockToken, DynamicOneColumnData insertDataInMemory, List<Object> overflowInfo) throws IOException {
+    public RecordReader(List<TSRandomAccessFileReader> rafList, String deltaObjectUID, String measurementID, int lockToken,
+                        DynamicOneColumnData insertPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
+                        List<Object> overflowInfo) throws IOException {
         this.readerManager = new ReaderManager(rafList);
         this.deltaObjectUID = deltaObjectUID;
         this.measurementID = measurementID;
         this.lockToken = lockToken;
-        this.insertDataInMemory = insertDataInMemory;
+        this.insertPageInMemory = insertPageInMemory;
+        this.bufferWritePageList = bufferWritePageList;
+        this.compressionTypeName = compressionTypeName;
         this.overflowInfo = overflowInfo;
     }
 
     /**
-     * @param rafList bufferwrite file has been serialized completely
-     * @param unsealedFileReader unsealed file reader
+     * @param rafList              bufferwrite file has been serialized completely
+     * @param unsealedFileReader   unsealed file reader
      * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
      * @throws IOException
      */
     public RecordReader(List<TSRandomAccessFileReader> rafList, TSRandomAccessFileReader unsealedFileReader,
                         List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectUID, String measurementID, int lockToken,
-                        DynamicOneColumnData insertDataInMemory, List<Object> overflowInfo) throws IOException {
+                        DynamicOneColumnData insertPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
+                        List<Object> overflowInfo) throws IOException {
         this.readerManager = new ReaderManager(rafList, unsealedFileReader, rowGroupMetadataList);
         this.deltaObjectUID = deltaObjectUID;
         this.measurementID = measurementID;
         this.lockToken = lockToken;
-        this.insertDataInMemory = insertDataInMemory;
+        this.insertPageInMemory = insertPageInMemory;
+        this.bufferWritePageList = bufferWritePageList;
+        this.compressionTypeName = compressionTypeName;
         this.overflowInfo = overflowInfo;
     }
 
     /**
-     *  Read function 1* : read one column function with overflow, no filter.
+     * Read function 1* : read one column function with overflow, no filter.
      *
      * @throws ProcessorException
      * @throws IOException
