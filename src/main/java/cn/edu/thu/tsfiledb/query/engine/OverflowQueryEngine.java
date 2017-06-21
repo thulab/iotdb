@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,11 +120,11 @@ public class OverflowQueryEngine {
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
+        InsertDynamicData insertNew = new InsertDynamicData();
         AggregationResult aggrRet = recordReader.aggregate(deltaObjectUID, measurementUID, func,
-                updateTrue, updateFalse, insertTrue
+                updateTrue, updateFalse, insertNew
                 , deleteFilter, (SingleSeriesFilterExpression) freqFilter, (SingleSeriesFilterExpression) valueFilter);
 
         queryDataSet.mapRet.put(func.name + "(" + path.getFullPath() + ")", aggrRet.data);
@@ -168,8 +169,10 @@ public class OverflowQueryEngine {
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
+        // 改！！
+        InsertDynamicData insertNew = new InsertDynamicData();
         res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
-                updateTrue, updateFalse, insertTrue, deleteFilter, res, fetchSize);
+                updateTrue, updateFalse, insertNew, deleteFilter, res, fetchSize);
 
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
 
@@ -209,8 +212,8 @@ public class OverflowQueryEngine {
 
         // Get 4 params
         List<Object> params = getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter, res, recordReader.insertDataInMemory, recordReader.overflowInfo);
-        DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-
+        InsertDynamicData insertTrue = (InsertDynamicData) params.get(0);
+        ////insertTrue.set
 
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -291,7 +294,8 @@ public class OverflowQueryEngine {
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) params.get(3);
 
-        res = recordReader.getValueWithFilterAndOverflow(device, sensor, updateTrue, updateFalse, insertTrue,
+        InsertDynamicData insertNew = new InsertDynamicData();
+        res = recordReader.getValueWithFilterAndOverflow(device, sensor, updateTrue, updateFalse, insertNew,
                 deleteFilter, freqFilter, valueFilter, res, fetchSize);
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
 

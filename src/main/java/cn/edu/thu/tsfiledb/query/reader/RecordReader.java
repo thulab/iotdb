@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,7 @@ public class RecordReader {
      * @throws IOException
      */
     public DynamicOneColumnData getValueInOneColumnWithOverflow(String deviceUID, String sensorId,
-                                                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
+                                                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertTrue,
                                                                 SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException {
 
@@ -114,8 +115,8 @@ public class RecordReader {
     }
 
     private DynamicOneColumnData getValueInOneColumnWithOverflow(RowGroupReader rowGroupReader, String sensorId,
-                                                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
-                                                                SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize) throws IOException {
+                                                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertTrue,
+                                                                 SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize) throws IOException {
         return rowGroupReader.getValueReaders().get(sensorId)
                 .getValuesWithOverFlow(updateTrue, updateFalse, insertTrue, timeFilter, null, null, res, fetchSize);
     }
@@ -127,7 +128,7 @@ public class RecordReader {
      * @throws IOException
      */
     public DynamicOneColumnData getValueWithFilterAndOverflow(String deviceUID, String sensorId,
-                                                              DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
+                                                              DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertTrue,
                                                               SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
                                                               DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException {
 
@@ -163,7 +164,7 @@ public class RecordReader {
     }
 
     private DynamicOneColumnData getValueWithFilterAndOverflow(RowGroupReader rowGroupReader, String sensorId,
-                                                               DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
+                                                               DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertTrue,
                                                                SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
                                                                DynamicOneColumnData res, int fetchSize) throws IOException {
         return rowGroupReader.getValueReaders().get(sensorId)
@@ -184,7 +185,7 @@ public class RecordReader {
     }
 
     public AggregationResult aggregate(String deviceUID, String sensorId, AggregateFunction func,
-                                       DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue,
+                                       DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertTrue,
                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
     ) throws ProcessorException, IOException {
 
@@ -204,7 +205,7 @@ public class RecordReader {
 
 
     private AggregationResult aggregate(RowGroupReader rowGroupReader, String sensorId, AggregateFunction func
-            , DynamicOneColumnData insertTrue, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse
+            , InsertDynamicData insertTrue, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse
             , SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter) throws IOException {
         AggregationResult aggrRet = rowGroupReader.getValueReaders().get(sensorId)
                 .aggreate(func, insertTrue, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
@@ -221,7 +222,7 @@ public class RecordReader {
      */
     public DynamicOneColumnData getTimeUseValueFilterWithOverflow(SingleSeriesFilterExpression timeFilter,
                                                                   SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData updateTrue,
-                                                                  DynamicOneColumnData updateFalse, DynamicOneColumnData insertTrue, DynamicOneColumnData res, int fetchSize)
+                                                                  DynamicOneColumnData updateFalse, InsertDynamicData insertTrue, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException {
         String deviceUID = valueFilter.getFilterSeries().getDeltaObjectUID();
         String sensorId = valueFilter.getFilterSeries().getMeasurementUID();
@@ -367,7 +368,7 @@ public class RecordReader {
     }
 
     /**
-     * Put left values in insertTrue to res.
+     * Put left values in insertTrue to res. 要改！！
      *
      * @param res
      * @param insertTrue

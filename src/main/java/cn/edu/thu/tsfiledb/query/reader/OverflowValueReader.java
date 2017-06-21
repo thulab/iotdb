@@ -21,6 +21,7 @@ import cn.edu.thu.tsfile.timeseries.read.ValueReader;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfiledb.query.aggregation.AggregateFunction;
 import cn.edu.thu.tsfiledb.query.aggregation.AggregationResult;
+import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import cn.edu.thu.tsfiledb.query.visitorImpl.PageAllSatisfiedVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +91,8 @@ public class OverflowValueReader extends ValueReader {
     }
 
     DynamicOneColumnData getValuesWithOverFlow(DynamicOneColumnData updateTrueData, DynamicOneColumnData updateFalseData,
-                                                      DynamicOneColumnData insertTrueData, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-                                                      SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize) throws IOException {
+                                               InsertDynamicData insertMemoryData, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+                                               SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize) throws IOException {
 
         // call functions without overflow if possible
         // if(updateTrue == null && updateFalse == null && insertTrue == null){
@@ -122,10 +123,10 @@ public class OverflowValueReader extends ValueReader {
 
         // TODO: optimize
         updateTrueData = (updateTrueData == null ? new DynamicOneColumnData(dataType, true) : updateTrueData);
-        insertTrueData = (insertTrueData == null ? new DynamicOneColumnData(dataType, true) : insertTrueData);
+        insertMemoryData = (insertMemoryData == null ? new InsertDynamicData() : insertMemoryData);
         updateFalseData = (updateFalseData == null ? new DynamicOneColumnData(dataType, true) : updateFalseData);
 
-        if (updateTrueData.length == 0 && insertTrueData.length == 0 && valueFilter != null
+        if (updateTrueData.length == 0 && insertMemoryData.length == 0 && valueFilter != null
                 && !digestVisitor.satisfy(digestFF, valueFilter)) {
             return res;
         }
@@ -134,7 +135,7 @@ public class OverflowValueReader extends ValueReader {
         updateData[0] = updateTrueData;
         updateData[1] = updateFalseData;
         int[] updateIdx = new int[]{updateTrueData.curIdx, updateFalseData.curIdx};
-        int insertTrueIdx = insertTrueData.curIdx;
+        int insertTrueIdx = insertMemoryData.insertTrue.curIdx;
 
         int mode = getNextMode(updateIdx[0], updateIdx[1], updateTrueData, updateFalseData);
 
@@ -200,7 +201,7 @@ public class OverflowValueReader extends ValueReader {
 
             initFrequenceValue(page);
             hasOverflowDataInThisPage = checkDataChanged(mint, maxt, updateTrueData, updateIdx[0], updateFalseData, updateIdx[1],
-                    insertTrueData, insertTrueIdx, timeFilter);
+                    insertMemoryData, timeFilter);
 //				System.out.println("Overflow: " + hasOverflowDataInThisPage);
             if (!hasOverflowDataInThisPage && !frequencySatisfy(freqFilter)) {
                 continue;
@@ -230,17 +231,17 @@ public class OverflowValueReader extends ValueReader {
                         while (decoder.hasNext(page)) {
                             // put insert points that less than or equals to current
                             // Timestamp in page.
-                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
-                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrueData.getTime(insertTrueIdx));
-                                res.putInt(insertTrueData.getInt(insertTrueIdx));
-                                insertTrueIdx++;
+                            while (insertMemoryData.hasInsertData() && timeIdx < timeValues.length
+                                    && insertMemoryData.getCurrentMinTime() <= timeValues[timeIdx]) {
+                                res.putTime(insertMemoryData.getCurrentMinTime());
+                                res.putInt(insertMemoryData.getCurrentIntValue());
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page. That is to say, insert is like
-                                // update.
-                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                // update. ？？？更换完最新接口后有问题否？
+                                if (insertMemoryData.getCurrentMinTime() == timeValues[timeIdx]) {
+                                    insertMemoryData.rollCurrentValue();
                                     timeIdx++;
                                     decoder.readInt(page);
                                     if (!decoder.hasNext(page)) {
@@ -325,16 +326,16 @@ public class OverflowValueReader extends ValueReader {
                     case BOOLEAN:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
-                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrueData.getTime(insertTrueIdx));
-                                res.putBoolean(insertTrueData.getBoolean(insertTrueIdx));
+                            while (insertTrueIdx < insertMemoryData.length && timeIdx < timeValues.length
+                                    && insertMemoryData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertMemoryData.getTime(insertTrueIdx));
+                                res.putBoolean(insertMemoryData.getBoolean(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertMemoryData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readBoolean(page);
                                     if (!decoder.hasNext(page)) {
@@ -416,16 +417,16 @@ public class OverflowValueReader extends ValueReader {
                     case INT64:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
-                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrueData.getTime(insertTrueIdx));
-                                res.putLong(insertTrueData.getLong(insertTrueIdx));
+                            while (insertTrueIdx < insertMemoryData.length && timeIdx < timeValues.length
+                                    && insertMemoryData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertMemoryData.getTime(insertTrueIdx));
+                                res.putLong(insertMemoryData.getLong(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertMemoryData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readLong(page);
                                     if (!decoder.hasNext(page)) {
@@ -507,16 +508,16 @@ public class OverflowValueReader extends ValueReader {
                     case FLOAT:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
-                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrueData.getTime(insertTrueIdx));
-                                res.putFloat(insertTrueData.getFloat(insertTrueIdx));
+                            while (insertTrueIdx < insertMemoryData.length && timeIdx < timeValues.length
+                                    && insertMemoryData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertMemoryData.getTime(insertTrueIdx));
+                                res.putFloat(insertMemoryData.getFloat(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertMemoryData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readFloat(page);
                                     if (!decoder.hasNext(page)) {
@@ -598,16 +599,16 @@ public class OverflowValueReader extends ValueReader {
                     case DOUBLE:
                         while (decoder.hasNext(page)) {
                             // put insert points
-                            while (insertTrueIdx < insertTrueData.length && timeIdx < timeValues.length
-                                    && insertTrueData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
-                                res.putTime(insertTrueData.getTime(insertTrueIdx));
-                                res.putDouble(insertTrueData.getDouble(insertTrueIdx));
+                            while (insertTrueIdx < insertMemoryData.length && timeIdx < timeValues.length
+                                    && insertMemoryData.getTime(insertTrueIdx) <= timeValues[timeIdx]) {
+                                res.putTime(insertMemoryData.getTime(insertTrueIdx));
+                                res.putDouble(insertMemoryData.getDouble(insertTrueIdx));
                                 insertTrueIdx++;
                                 res.insertTrueIndex++;
                                 resCount++;
                                 // if equal, take value from insertTrue and skip one
                                 // value from page
-                                if (insertTrueData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
+                                if (insertMemoryData.getTime(insertTrueIdx - 1) == timeValues[timeIdx]) {
                                     timeIdx++;
                                     decoder.readDouble(page);
                                     if (!decoder.hasNext(page)) {
@@ -713,11 +714,11 @@ public class OverflowValueReader extends ValueReader {
         // Important. save curIdx for batch read
         updateTrueData.curIdx = updateIdx[0];
         updateFalseData.curIdx = updateIdx[1];
-        insertTrueData.curIdx = insertTrueIdx;
+        insertMemoryData.curIdx = insertTrueIdx;
         return res;
     }
 
-    AggregationResult aggreate(AggregateFunction func, DynamicOneColumnData insertTrue,
+    AggregationResult aggreate(AggregateFunction func, InsertDynamicData insertMemoryData,
                                       DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression timeFilter,
                                       SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter) throws IOException {
 
@@ -734,11 +735,11 @@ public class OverflowValueReader extends ValueReader {
 
         // initialize overflow info
         updateTrue = (updateTrue == null ? new DynamicOneColumnData(dataType, true) : updateTrue);
-        insertTrue = (insertTrue == null ? new DynamicOneColumnData(dataType, true) : insertTrue);
+        // insertMemoryData = (insertMemoryData == null ? new DynamicOneColumnData(dataType, true) : insertMemoryData);
         updateFalse = (updateFalse == null ? new DynamicOneColumnData(dataType, true) : updateFalse);
 
         // if this column is not satisfied to the filter, then return.
-        if (updateTrue.length == 0 && insertTrue.length == 0 && valueFilter != null
+        if (updateTrue.length == 0 && insertMemoryData == null && valueFilter != null
                 && !digestVisitor.satisfy(digestFF, valueFilter)) {
             return func.result;
         }
@@ -747,7 +748,7 @@ public class OverflowValueReader extends ValueReader {
         update[0] = updateTrue;
         update[1] = updateFalse;
         int[] idx = new int[]{updateTrue.curIdx, updateFalse.curIdx};
-        int idx2 = insertTrue.curIdx;
+        int idx2 = insertMemoryData.curIdx;
 
         ByteArrayInputStream bis = initBAISForOnePage(res.pageOffset);
         PageReader pageReader = new PageReader(bis, compressionTypeName);
@@ -803,7 +804,7 @@ public class OverflowValueReader extends ValueReader {
             res.pageOffset += lastAvailable - bis.available();
             initFrequenceValue(page);
             boolean hasOverflowDataInThisPage = checkDataChangedForAggregation(mint, maxt, valueDigestFF
-                    , updateTrue, idx[0], updateFalse, idx[1], insertTrue, idx2
+                    , updateTrue, idx[0], updateFalse, idx[1], insertMemoryData, idx2
                     , timeFilter, freqFilter, valueFilter);
             LOG.debug("Having Overflow info in this page : {}", hasOverflowDataInThisPage);
 
@@ -821,7 +822,7 @@ public class OverflowValueReader extends ValueReader {
 
                 //clear data in res to make the res only store the data in current page;
                 res = readOnePageWithOverflow(hasOverflowDataInThisPage, idx, timeValues, page,
-                        pageHeader, res, timeFilter, freqFilter, valueFilter, insertTrue, update);
+                        pageHeader, res, timeFilter, freqFilter, valueFilter, insertMemoryData, update);
                 func.calculateFromDataInThisPage(res);
                 res.clearData();
             }
@@ -1304,8 +1305,8 @@ public class OverflowValueReader extends ValueReader {
 
     // TODO 有一个bug，没有考虑删除的东西
     private boolean checkDataChanged(long mint, long maxt, DynamicOneColumnData updateTrueData, int updateTrueIdx,
-                                     DynamicOneColumnData updateFalseData, int updateFalseIdx, DynamicOneColumnData insertTrueData, int insertTrueIdx,
-                                     SingleSeriesFilterExpression timeFilter) {
+                                     DynamicOneColumnData updateFalseData, int updateFalseIdx, InsertDynamicData insertMemoryData,
+                                     SingleSeriesFilterExpression timeFilter) throws IOException {
         // Judge whether updateTrue has value for this page.
         while (updateTrueIdx <= updateTrueData.timeLength - 2) {
             if (!((updateTrueData.getTime(updateTrueIdx + 1) < mint) || (updateTrueData.getTime(updateTrueIdx) > maxt))) {
@@ -1321,26 +1322,26 @@ public class OverflowValueReader extends ValueReader {
             updateFalseIdx += 2;
         }
 
-        while (insertTrueIdx <= insertTrueData.length - 1) {
-            if (mint <= insertTrueData.getTime(insertTrueIdx) && insertTrueData.getTime(insertTrueIdx) <= maxt) {
+        while (insertMemoryData.hasInsertData()) {
+            if (mint <= insertMemoryData.getCurrentMinTime() && insertMemoryData.getCurrentMinTime() <= maxt) {
                 return true;
             }
-            if (maxt < insertTrueData.getTime(insertTrueIdx)) {
+            if (maxt < insertMemoryData.getCurrentMinTime()) {
                 break;
             }
-            if (insertTrueData.length > 0 && mint > insertTrueData.getTime(insertTrueData.length - 1)) {
+            if (insertMemoryData.hasInsertData() && mint > insertMemoryData.getCurrentMinTime()) {
                 break;
             }
-            insertTrueIdx++;
+            insertMemoryData.rollCurrentValue();
         }
         return false;
     }
 
     // TODO 有一个bug，没有考虑删除的东西
     private boolean checkDataChangedForAggregation(long mint, long maxt, DigestForFilter pageDigest, DynamicOneColumnData updateTrue, int idx0,
-                                                   DynamicOneColumnData updateFalse, int idx1, DynamicOneColumnData insertTrue, int idx2,
-                                                   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter) {
-        if (checkDataChanged(mint, maxt, updateTrue, idx0, updateFalse, idx1, insertTrue, idx2, timeFilter)) {
+                                                   DynamicOneColumnData updateFalse, int idx1, InsertDynamicData insertTrue, int idx2,
+                                                   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter) throws IOException {
+        if (checkDataChanged(mint, maxt, updateTrue, idx0, updateFalse, idx1, insertTrue, timeFilter)) {
             return true;
         }
 
