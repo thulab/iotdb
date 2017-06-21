@@ -495,9 +495,12 @@ public class FileNodeProcessor extends LRUProcessor {
 			// add the same intervalFileNode, but not the same reference
 			bufferwriteDataInFiles.add(intervalFileNode.backUp());
 		}
-		DynamicOneColumnData currentPage = (DynamicOneColumnData) bufferwriteDataInMemory.left.get(0);
-		Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) bufferwriteDataInMemory.left
-				.get(1);
+		DynamicOneColumnData currentPage = null;
+		Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList = null;
+		if (bufferWriteProcessor != null) {
+			currentPage = (DynamicOneColumnData) bufferwriteDataInMemory.left.get(0);
+			pageList = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) bufferwriteDataInMemory.left.get(1);
+		}
 		queryStructure = new QueryStructure(currentPage, pageList, bufferwriteDataInMemory.right,
 				bufferwriteDataInFiles, overflowData);
 		return queryStructure;

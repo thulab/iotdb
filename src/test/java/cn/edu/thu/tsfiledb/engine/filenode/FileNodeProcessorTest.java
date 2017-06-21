@@ -3,6 +3,7 @@ package cn.edu.thu.tsfiledb.engine.filenode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import cn.edu.thu.tsfile.common.conf.TSFileConfig;
 import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
@@ -75,6 +77,7 @@ public class FileNodeProcessorTest {
 		tsconfig.pageCheckSizeThreshold = 3;
 		tsconfig.pageSize = 100;
 		tsconfig.defaultMaxStringLength = 2;
+		tsconfig.cachePageData = true;
 
 		parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
@@ -254,10 +257,13 @@ public class FileNodeProcessorTest {
 			QueryStructure queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
 			processor.removeMultiPassLock(token);
 			DynamicOneColumnData bufferwritedataindex = queryResult.getCurrentPage();
+			Pair<List<ByteArrayInputStream>, CompressionTypeName> right = queryResult.getPageList();
 			List<RowGroupMetaData> bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 			List<IntervalFileNode> bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
 			List<Object> overflowResult = queryResult.getAllOverflowData();
-			assertEquals(10, bufferwritedataindex.length);
+			assertEquals(true, bufferwritedataindex!=null);
+			assertEquals(true, right!=null);
+			assertEquals(1, right.left.size());
 			for (int i = 1; i < 11; i++) {
 				assertEquals(i, bufferwritedataindex.getTime(i - 1));
 				assertEquals(i, bufferwritedataindex.getInt(i - 1));

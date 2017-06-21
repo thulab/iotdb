@@ -63,6 +63,8 @@ public class BufferWriteProcessorTest {
 
 	@Before
 	public void setUp() throws Exception {
+		TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
+		TsFileConf.cachePageData = true;
 		EngineTestHelper.delete(nsp);
 		MetadataManagerHelper.initMetadata();
 	}
@@ -148,6 +150,13 @@ public class BufferWriteProcessorTest {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		pair = processor.getIndexAndRowGroupList(nsp, "s0");
+		columnData = (DynamicOneColumnData) pair.left.get(0);
+		right = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) pair.left.get(1);
+		assertEquals(false, columnData==null);
+		assertEquals(false, right==null);
+		System.out.println(columnData.length);
+		System.out.println(right.left.size()+ " "+right.right);
 		processor = new BufferWriteProcessor(nsp, filename, parameters);
 		pair = processor.getIndexAndRowGroupList(nsp, "s0");
 		// assert the number of rowgroup
