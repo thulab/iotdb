@@ -2,7 +2,9 @@ package cn.edu.thu.tsfiledb.engine.filenode;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is used to store one bufferwrite file status.<br>
@@ -12,26 +14,25 @@ import java.util.Map;
  *
  */
 public class IntervalFileNode implements Serializable {
-	
+
 	private static final long serialVersionUID = -4309683416067212549L;
-	
+
 	public String filePath;
 	public OverflowChangeType overflowChangeType;
-	
 
-	private Map<String,Long> startTimeMap;
-	private Map<String,Long> endTimeMap; 
-	
-	
+	private Map<String, Long> startTimeMap;
+	private Map<String, Long> endTimeMap;
+	private Set<String> mergeChanged;
 
 	public IntervalFileNode(Map<String, Long> startTimeMap, Map<String, Long> endTimeMap, OverflowChangeType type,
 			String filePath) {
-		
+
 		this.overflowChangeType = type;
 		this.filePath = filePath;
 
 		this.startTimeMap = startTimeMap;
 		this.endTimeMap = endTimeMap;
+		this.mergeChanged = new HashSet<>();
 	}
 
 	/**
@@ -43,58 +44,79 @@ public class IntervalFileNode implements Serializable {
 	 * @param errFilePath
 	 */
 	public IntervalFileNode(OverflowChangeType type, String filePath) {
-		
+
 		this.overflowChangeType = type;
 		this.filePath = filePath;
 
 		startTimeMap = new HashMap<>();
 		endTimeMap = new HashMap<>();
 	}
-	
-	public void setStartTime(String deltaObjectId, long startTime){
-		
+
+	public void setStartTime(String deltaObjectId, long startTime) {
+
 		startTimeMap.put(deltaObjectId, startTime);
 	}
-	
-	public long getStartTime(String deltaObjectId){
-		
-		if(startTimeMap.containsKey(deltaObjectId)){
+
+	public long getStartTime(String deltaObjectId) {
+
+		if (startTimeMap.containsKey(deltaObjectId)) {
 			return startTimeMap.get(deltaObjectId);
-		}else{
+		} else {
 			return -1;
 		}
 	}
-	
-	public Map<String,Long> getStartTimeMap(){
+
+	public Map<String, Long> getStartTimeMap() {
+
 		return startTimeMap;
 	}
-	
-	public void setStartTimeMap(Map<String,Long> startTimeMap){
-		
+
+	public void setStartTimeMap(Map<String, Long> startTimeMap) {
+
 		this.startTimeMap = startTimeMap;
 	}
-	
-	public void setEndTimeMap(Map<String,Long> endTimeMap){
-		
+
+	public void setEndTimeMap(Map<String, Long> endTimeMap) {
+
 		this.endTimeMap = endTimeMap;
 	}
-	
-	public void setEndTime(String deltaObjectId, long timestamp){
-		
+
+	public void setEndTime(String deltaObjectId, long timestamp) {
+
 		this.endTimeMap.put(deltaObjectId, timestamp);
 	}
-	//有可能是空指针？？？？
-	public long getEndTime(String deltaObjectId){
-		
-		if(endTimeMap.get(deltaObjectId)==null){
+
+	// 有可能是空指针？？？？
+	public long getEndTime(String deltaObjectId) {
+
+		if (endTimeMap.get(deltaObjectId) == null) {
 			return -1;
 		}
 		return endTimeMap.get(deltaObjectId);
 	}
-	
-	public Map<String,Long> getEndTimeMap(){
-		
+
+	public Map<String, Long> getEndTimeMap() {
+
 		return endTimeMap;
+	}
+
+	public void removeTime(String deltaObjectId) {
+
+		startTimeMap.remove(deltaObjectId);
+		endTimeMap.remove(deltaObjectId);
+	}
+
+	public boolean checkEmpty() {
+
+		return startTimeMap.isEmpty() && endTimeMap.isEmpty();
+	}
+
+	public void clear() {
+
+		startTimeMap.clear();
+		endTimeMap.clear();
+		overflowChangeType = OverflowChangeType.NO_CHANGE;
+		filePath = null;
 	}
 
 	public void changeTypeToChanged(FileNodeProcessorStatus fileNodeProcessorState) {
@@ -105,32 +127,23 @@ public class IntervalFileNode implements Serializable {
 			overflowChangeType = OverflowChangeType.CHANGED;
 		}
 	}
-
-	public boolean changeTypeToUnChanged() {
-		switch (overflowChangeType) {
-		case NO_CHANGE:
-			return false;
-		case CHANGED:
-			overflowChangeType = OverflowChangeType.NO_CHANGE;
-			return true;
-		case MERGING_CHANGE:
-			overflowChangeType = OverflowChangeType.CHANGED;
-			return true;
-		default:
-			throw new UnsupportedOperationException(overflowChangeType.toString());
-		}
+	
+	public void addMergeChanged(String deltaObjectId){
+		
+		mergeChanged.add(deltaObjectId);
 	}
 
 	public boolean isClosed() {
-		
+
 		return !endTimeMap.isEmpty();
 
 	}
 
 	public IntervalFileNode backUp() {
-		Map<String,Long> startTimeMap = new HashMap<>(this.startTimeMap);
-		Map<String,Long> endTimeMap = new HashMap<>(this.endTimeMap);
-		return new IntervalFileNode(startTimeMap,endTimeMap,overflowChangeType, filePath);
+
+		Map<String, Long> startTimeMap = new HashMap<>(this.startTimeMap);
+		Map<String, Long> endTimeMap = new HashMap<>(this.endTimeMap);
+		return new IntervalFileNode(startTimeMap, endTimeMap, overflowChangeType, filePath);
 	}
 
 	@Override
@@ -172,5 +185,4 @@ public class IntervalFileNode implements Serializable {
 			return false;
 		return true;
 	}
-	
 }

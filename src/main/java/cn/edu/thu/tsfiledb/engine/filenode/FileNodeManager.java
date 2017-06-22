@@ -133,7 +133,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				if (fileNodeProcessor.shouldRecovery()) {
 					LOGGER.info("Recovery the filenode processor, the nameSpacePath is {}, the status is {}", nsPath,
 							fileNodeProcessor.getFileNodeProcessorStatus());
-					fileNodeProcessor.FileNodeRecovery();
+					fileNodeProcessor.fileNodeRecovery();
 				} else {
 					fileNodeProcessor.writeUnlock();
 				}
