@@ -127,10 +127,15 @@ public class IntervalFileNode implements Serializable {
 			overflowChangeType = OverflowChangeType.CHANGED;
 		}
 	}
-	
-	public void addMergeChanged(String deltaObjectId){
-		
+
+	public void addMergeChanged(String deltaObjectId) {
+
 		mergeChanged.add(deltaObjectId);
+	}
+
+	public Set<String> getMergeChanged() {
+
+		return mergeChanged;
 	}
 
 	public boolean isClosed() {
