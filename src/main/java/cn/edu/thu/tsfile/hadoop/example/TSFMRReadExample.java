@@ -63,7 +63,7 @@ public class TSFMRReadExample {
 		}
 		String inputPath = args[0];
 		String outputPaht = args[1];
-		TsFileHelper.writeTsFile(inputPath);
+		// TsFileHelper.writeTsFile(inputPath);
 		
 		Configuration configuration = new Configuration();
 		Job job = Job.getInstance(configuration);
