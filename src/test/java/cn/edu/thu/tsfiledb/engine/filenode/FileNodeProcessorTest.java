@@ -272,7 +272,6 @@ public class FileNodeProcessorTest {
 			assertEquals(1, bufferwritedatainfiles.size());
 			IntervalFileNode temp = bufferwritedatainfiles.get(0);
 			assertEquals(1, temp.getStartTime(deltaObjectId));
-			;
 			assertEquals(-1, temp.getEndTime(deltaObjectId));
 			assertEquals(false, bufferwritedatainfiles.get(0).isClosed());
 			assertEquals(null, overflowResult.get(0));
@@ -504,7 +503,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			processor.writeLock();
 			assertEquals(true, processor.shouldRecovery());
-			processor.FileNodeRecovery();
+			processor.fileNodeRecovery();
 			assertEquals(true, processor.hasBufferwriteProcessor());
 			assertEquals(true, processor.hasOverflowProcessor());
 			queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
@@ -582,7 +581,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			processor.writeLock();
 			assertEquals(true, processor.shouldRecovery());
-			processor.FileNodeRecovery();
+			processor.fileNodeRecovery();
 			assertEquals(fileNodeProcessorStore.getLastUpdateTimeMap(), processor.getLastUpdateTimeMap());
 			processor.close();
 			FileNodeProcessorStore store = serializeUtil.deserialize(filenodestorePath).orElse(null);

@@ -212,17 +212,16 @@ public class FileNodeProcessor extends LRUProcessor {
 			// FileNodeRecovery();
 		} else {
 			// add file into the index of file
-			addALLFileIntoIndex();
+			addALLFileIntoIndex(newFileNodes);
 		}
 	}
 
-	private void addALLFileIntoIndex() {
+	private void addALLFileIntoIndex(List<IntervalFileNode> fileList) {
 		// clear map
 		indexOfFiles.clear();
 		// add all file to index
-		for (IntervalFileNode fileNode : newFileNodes) {
-			for (Entry<String, Long> entry : fileNode.getStartTimeMap().entrySet()) {
-				String deltaObjectId = entry.getKey();
+		for (IntervalFileNode fileNode : fileList) {
+			for (String deltaObjectId : fileNode.getStartTimeMap().keySet()) {
 				if (!indexOfFiles.containsKey(deltaObjectId)) {
 					indexOfFiles.put(deltaObjectId, new ArrayList<>());
 				}
@@ -242,6 +241,14 @@ public class FileNodeProcessor extends LRUProcessor {
 	public void fileNodeRecovery() throws FileNodeProcessorException {
 		// restore bufferwrite
 		if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
+			//
+			// add the current file
+			//
+			//
+			// attention
+			//
+			currentIntervalFileNode = newFileNodes.get(newFileNodes.size() - 1);
+
 			// this bufferwrite file is not close by normal operation
 			String damagedFilePath = newFileNodes.get(newFileNodes.size() - 1).filePath;
 			String[] fileNames = damagedFilePath.split("\\" + File.separator);
@@ -306,7 +313,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 
 		// add file into index of file
-		addALLFileIntoIndex();
+		addALLFileIntoIndex(newFileNodes);
 	}
 
 	public BufferWriteProcessor getBufferWriteProcessor(String namespacePath, long insertTime)
@@ -773,6 +780,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			//
 			// 生成倒排索引
 			//
+			addALLFileIntoIndex(backupIntervalFiles);
 
 			// 从backupfile的第一个文件开始与newfilelist的第一个文件进行对比标记对应的文件状态。
 			for (int i = beginIndex; i < backupIntervalFiles.size(); i++) {
@@ -808,13 +816,21 @@ public class FileNodeProcessor extends LRUProcessor {
 			//
 			// 这个时候result已经成为最新的内容了
 			//
-
 			isMerging = FileNodeProcessorStatus.WAITING;
 			newFileNodes = result;
-
 			//
 			// 重构index of files
 			//
+			addALLFileIntoIndex(newFileNodes);
+			//
+			// 查看倒排中的第二文件如果是changed那么就标记第一个文件
+			//
+			for (String deltaObjectId : indexOfFiles.keySet()) {
+				List<IntervalFileNode> temp = indexOfFiles.get(deltaObjectId);
+				if(temp.size()>1&&temp.get(1).overflowChangeType==OverflowChangeType.CHANGED){
+					temp.get(0).overflowChangeType = OverflowChangeType.CHANGED;
+				}
+			}
 
 			synchronized (fileNodeProcessorStore) {
 				fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
