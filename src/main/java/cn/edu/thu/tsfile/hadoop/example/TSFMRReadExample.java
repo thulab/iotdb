@@ -55,17 +55,20 @@ public class TSFMRReadExample {
 		}
 	}
 
-	public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+	public static void main(String[] args) throws IOException, ClassNotFoundException{
 
-		if (args.length != 2) {
-			System.out.println("Please give the input file path and output file path");
+		if (args.length != 3) {
+			System.out.println("Please give hdfs url, input path, output path");
 			return;
 		}
-		String inputPath = args[0];
-		String outputPaht = args[1];
+		// like: hfds://ip:port
+		String HDFSURL = args[0];
+		String inputPath = args[1];
+		String outputPaht = args[2];
 		// TsFileHelper.writeTsFile(inputPath);
 		
 		Configuration configuration = new Configuration();
+		configuration.set("fs.defaultFS", HDFSURL);
 		Job job = Job.getInstance(configuration);
 		job.setJobName("TsFile read jar");
 		job.setJarByClass(TSFMRReadExample.class);
@@ -91,7 +94,12 @@ public class TSFMRReadExample {
 		TSFInputFormat.setReadTime(job, true); // read time data
 		TSFInputFormat.setReadDeltaObjectId(job, true); // read deltaObjectId
 		// TSFInputFormat.setReadColumns(job, value); // set read columns
-		boolean isSuccess = job.waitForCompletion(true);
+		boolean isSuccess = false;
+		try {
+			isSuccess = job.waitForCompletion(true);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		if (isSuccess) {
 			System.out.println("Execute successfully");
 		} else {
