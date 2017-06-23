@@ -63,8 +63,8 @@ public class TSFHadoopTest {
 		//
 		// deviceid
 		//
-		TSFInputFormat.setReadDeviceId(job, true);
-		assertEquals(true, TSFInputFormat.getReadDeviceId(job.getConfiguration()));
+		TSFInputFormat.setReadDeltaObjectId(job, true);
+		assertEquals(true, TSFInputFormat.getReadDeltaObject(job.getConfiguration()));
 
 		//
 		// time

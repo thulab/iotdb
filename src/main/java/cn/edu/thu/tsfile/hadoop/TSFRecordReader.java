@@ -65,7 +65,7 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			hdfsInputStream = new HDFSInputStream(path, configuration);
 			// Get the read columns and filter information
 			String[] columns = TSFInputFormat.getReadColumns(configuration);
-			isReadDeviceId = TSFInputFormat.getReadDeviceId(configuration);
+			isReadDeviceId = TSFInputFormat.getReadDeltaObject(configuration);
 			isReadTime = TSFInputFormat.getReadTime(configuration);
 			// Don't read any columns( series, time, deviceid)
 			if ((columns == null || columns.length < 1) && (isReadDeviceId == false && isReadTime == false)) {
