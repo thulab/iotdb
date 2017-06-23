@@ -63,6 +63,8 @@ public class TSFMRReadExample {
 		}
 		String inputPath = args[0];
 		String outputPaht = args[1];
+		TsFileHelper.writeTsFile(inputPath);
+		
 		Configuration configuration = new Configuration();
 		Job job = Job.getInstance(configuration);
 		job.setJobName("TsFile read jar");
