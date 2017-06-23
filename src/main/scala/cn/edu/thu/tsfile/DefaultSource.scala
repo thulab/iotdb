@@ -36,8 +36,6 @@ import scala.collection.mutable
   */
 private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
-  private val log = LoggerFactory.getLogger(classOf[DefaultSource])
-
   class TSFileDataSourceException(message: String, cause: Throwable)
     extends Exception(message, cause) {
     def this(message: String) = this(message, null)
@@ -84,7 +82,6 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
     (file: PartitionedFile) => {
       val log = LoggerFactory.getLogger(classOf[DefaultSource])
-
       log.info(file.toString())
 
       val conf = broadcastedConf.value.value
@@ -193,9 +190,10 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
   override def shortName(): String = "tsfile"
 
   override def prepareWrite(sparkSession: SparkSession,
-                            job: Job, options: Map[String, String],
+                            job: Job,
+                            options: Map[String, String],
                             dataSchema: StructType): OutputWriterFactory = {
-    null
+    new TsFileWriterFactory()
   }
 
 }

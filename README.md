@@ -131,10 +131,8 @@ The SparkSQL Table Structure is as follow:
     val spark = SparkSession.builder().master("local").getOrCreate()
 	val df = spark.read
 	      .format("cn.edu.thu.tsfile")
-	      .load("test.ts")
-
-
-	df.filter("sensor_1 > 1.2").show()
+	      .load("test.tsfile")
+	df.filter("time < 10").show()
 
 	```
 

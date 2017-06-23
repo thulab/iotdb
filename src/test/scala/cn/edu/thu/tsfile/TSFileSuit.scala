@@ -3,24 +3,12 @@ package cn.edu.thu.tsfile
 import java.io.File
 
 import cn.edu.thu.tsfile.io.CreateTSFile
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.junit.Assert
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import cn.edu.thu.tsfile.qp.common.SQLConstant
 
-/**
-  * @author QJL
-  */
-
-class Seq extends Serializable {
-  var i = 0
-
-  def getVal: Int = {
-    i = i + 1
-    i
-  }
-}
 
 class TSFileSuit extends FunSuite with BeforeAndAfterAll {
 
@@ -28,6 +16,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   private val tsfileFolder = "src/test/resources/tsfile"
   private val tsfilePath1 = "src/test/resources/tsfile/test1.tsfile"
   private val tsfilePath2 = "src/test/resources/tsfile/test2.tsfile"
+  private val outputPath = "src/test/resources/output"
   private var spark: SparkSession = _
 
   override protected def beforeAll(): Unit = {
@@ -38,16 +27,22 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     val tsfile_folder = new File(tsfileFolder)
     if (!tsfile_folder.exists())
       tsfile_folder.mkdirs()
+    val output = new File(outputPath)
+    if (output.exists())
+      output.delete()
     new CreateTSFile().createTSFile1(tsfilePath1)
     new CreateTSFile().createTSFile2(tsfilePath2)
     spark = SparkSession
       .builder()
-      .config("spark.master", "spark://192.168.130.15:7077")
+      .config("spark.master", "local")
       .appName("TSFile test")
       .getOrCreate()
   }
 
   override protected def afterAll(): Unit = {
+    val out = new File(outputPath)
+    if (out.exists())
+      out.delete()
     try {
       spark.sparkContext.stop()
     } finally {
@@ -55,37 +50,21 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  test("afa") {
-    val rdd = spark.sparkContext.parallelize(Seq(Row("one"), Row("two")))
-
-    val schema = StructType(Array(StructField("name", StringType)))
-
-    val df = spark.createDataFrame(rdd, schema)
+  test("writer") {
+    val df = spark.read.tsfile(tsfilePath1)
+//    val df = spark.createDataFrame(
+//      Seq(
+//        ("root.car.d1", 8, 1, 9.8),
+//        ("root.car.d1", 8, 2, 8.7),
+//        ("root.car.d2", 7, 3, 5.5),
+//        ("root.car.d2", 7, 4, 2.0))
+//    ).toDF("delta_object", "timestamp", "sensor1", "sensor2")
 
     df.show()
-
-    spark.udf.register("func", (name: String) => name.toUpperCase)
-
-    import org.apache.spark.sql.functions.expr
-
-    val newDf = df.withColumn("upperName", expr("func(name)"))
-
-//    newDf.show()
-//
-//    val seq = new Seq
-//
-//    spark.udf.register("seq", () => seq.getVal)
-//
-//    val seqDf = df.withColumn("id", expr("seq()"))
-//
-//    seqDf.show()
-//
-//    df.createOrReplaceTempView("df")
-//
-//    spark.sql("select *, seq() as sql_id from df").show()
+    df.write.tsfile(outputPath)
   }
 
-  test("tsfile/qp") {
+  test("tsfile_qp") {
     val df = spark.read.tsfile(tsfileFolder)
     df.createOrReplaceTempView("tsfile_table")
     val newDf = spark.sql("select s1,s2 from tsfile_table where delta_object = 'root.car.d1' and time <= 10 and (time > 5 or s1 > 10)")
