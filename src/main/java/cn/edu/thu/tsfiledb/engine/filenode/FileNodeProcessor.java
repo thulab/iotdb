@@ -220,11 +220,13 @@ public class FileNodeProcessor extends LRUProcessor {
 		indexOfFiles.clear();
 		// add all file to index
 		for (IntervalFileNode fileNode : fileList) {
-			for (String deltaObjectId : fileNode.getStartTimeMap().keySet()) {
-				if (!indexOfFiles.containsKey(deltaObjectId)) {
-					indexOfFiles.put(deltaObjectId, new ArrayList<>());
+			if (!fileNode.getStartTimeMap().isEmpty()) {
+				for (String deltaObjectId : fileNode.getStartTimeMap().keySet()) {
+					if (!indexOfFiles.containsKey(deltaObjectId)) {
+						indexOfFiles.put(deltaObjectId, new ArrayList<>());
+					}
+					indexOfFiles.get(deltaObjectId).add(fileNode);
 				}
-				indexOfFiles.get(deltaObjectId).add(fileNode);
 			}
 		}
 	}
@@ -741,16 +743,16 @@ public class FileNodeProcessor extends LRUProcessor {
 						List<IntervalFileNode> temp = indexOfFiles.get(deltaObjectId);
 						int index = temp.indexOf(intervalFileNode);
 						int size = temp.size();
+						// start time
 						if (index == 0) {
 							startTimeMap.put(deltaObjectId, 0L);
 						} else {
 							startTimeMap.put(deltaObjectId, intervalFileNode.getStartTime(deltaObjectId));
 						}
+						// end time
 						if (index < size - 1) {
-							// the start time of next file
 							endTimeMap.put(deltaObjectId, temp.get(index + 1).getStartTime(deltaObjectId) - 1);
 						} else {
-							// index = size -1
 							endTimeMap.put(deltaObjectId, intervalFileNode.getEndTime(deltaObjectId));
 						}
 					}
@@ -759,6 +761,8 @@ public class FileNodeProcessor extends LRUProcessor {
 					result.add(node);
 				}
 			}
+		} else {
+			throw new FileNodeProcessorException("No file was changed when merging");
 		}
 		return result;
 	}
@@ -821,36 +825,22 @@ public class FileNodeProcessor extends LRUProcessor {
 									newFile.getEndTime(deltaObjectId));
 						}
 					}
-					if (!temp.checkEmpty()) {
-						result.add(temp);
-					}
-				} else {
-					if (!temp.checkEmpty()) {
-						// 对应的newFilelsit文件没有被merge changed，并且back文件是真是存在的
-						result.add(temp);
-					}
+				}
+
+				if (!temp.checkEmpty()) {
+					result.add(temp);
 				}
 			}
-			/**
-			 * 还有newFile中其他的区间呢？？？就是在最后的文件区间呢
-			 */
+			// add new file when merge
 			for (int i = backupIntervalFiles.size() - beginIndex; i < newFileNodes.size(); i++) {
-				result.add(newFileNodes.get(i));
+				result.add(newFileNodes.get(i).backUp());
 			}
 
-			//
-			// 这个时候result已经成为最新的内容了
-			//
 			isMerging = FileNodeProcessorStatus.WAITING;
 			newFileNodes = result;
-			//
-			// 重构index of files
-			//
+			// reconstruct the index
 			addALLFileIntoIndex(newFileNodes);
-			//
-			// 查看倒排中的第二文件如果是changed那么就标记第一个文件
-			//
-			
+
 			// clear merge changed
 			for (IntervalFileNode fileNode : newFileNodes) {
 				fileNode.clearMergeChanged();
@@ -1023,6 +1013,10 @@ public class FileNodeProcessor extends LRUProcessor {
 					} catch (WriteProcessException e) {
 						LOGGER.error("Merge query: write one record error, the tsrecord is {}", filledRecord);
 						e.printStackTrace();
+
+						/**
+						 * should throw exception
+						 */
 					}
 				}
 				startTimeMap.put(deltaObjectId, startTime);
