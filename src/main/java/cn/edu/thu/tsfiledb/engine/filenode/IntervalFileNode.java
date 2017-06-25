@@ -137,6 +137,11 @@ public class IntervalFileNode implements Serializable {
 
 		return mergeChanged;
 	}
+	
+	public void clearMergeChanged(){
+		
+		mergeChanged.clear();
+	}
 
 	public boolean isClosed() {
 

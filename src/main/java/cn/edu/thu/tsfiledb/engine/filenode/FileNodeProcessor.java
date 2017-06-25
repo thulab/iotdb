@@ -129,7 +129,6 @@ public class FileNodeProcessor extends LRUProcessor {
 
 	private void addLastTimeToIntervalFile() {
 
-		// TODO:check lastUpdateTimeMap is empty
 		if (lastUpdateTimeMap.isEmpty()) {
 			LOGGER.error("The lastUpdateTimeMap is empty when close the bufferwrite file");
 			throw new ProcessorRuntimException("The lastUpdateTimeMap is empty when close the bufferwrite file");
@@ -462,7 +461,6 @@ public class FileNodeProcessor extends LRUProcessor {
 					temp.get(i).addMergeChanged(deltaObjectId);
 				}
 			}
-
 		}
 	}
 
@@ -488,7 +486,6 @@ public class FileNodeProcessor extends LRUProcessor {
 					temp.get(i).addMergeChanged(deltaObjectId);
 				}
 			}
-
 		}
 	}
 
@@ -510,11 +507,6 @@ public class FileNodeProcessor extends LRUProcessor {
 			}
 		}
 		return index - 1;
-	}
-
-	private boolean checkIndexForStartTime(int index, String deltaObjectId) {
-
-		return newFileNodes.get(index).getStartTime(deltaObjectId) != -1;
 	}
 
 	// Token for query which used to
@@ -616,7 +608,18 @@ public class FileNodeProcessor extends LRUProcessor {
 			if (emptyIntervalFileNode.checkEmpty()) {
 				emptyIntervalFileNode.clear();
 			} else {
-				emptyIntervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
+				// 如果有文件就把empty没有remove的区间都给第一个文件就可以了。
+				if (!newFileNodes.isEmpty()) {
+					IntervalFileNode first = newFileNodes.get(0);
+					for (String deltaObjectId : emptyIntervalFileNode.getStartTimeMap().keySet()) {
+						first.setStartTime(deltaObjectId, emptyIntervalFileNode.getStartTime(deltaObjectId));
+						first.setEndTime(deltaObjectId, emptyIntervalFileNode.getStartTime(deltaObjectId));
+						first.overflowChangeType = OverflowChangeType.CHANGED;
+					}
+					emptyIntervalFileNode.clear();
+				} else {
+					emptyIntervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
+				}
 			}
 		}
 		for (IntervalFileNode intervalFileNode : newFileNodes) {
@@ -718,6 +721,12 @@ public class FileNodeProcessor extends LRUProcessor {
 		if (emptyIntervalFileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
 			// add empty
 			result.add(emptyIntervalFileNode.backUp());
+			if (!newFileNodes.isEmpty()) {
+				throw new FileNodeProcessorException(
+						String.format("The status of empty file is %s, but the new file list is not empty",
+								emptyIntervalFileNode.overflowChangeType));
+			}
+			return result;
 		}
 		if (!newFileNodes.isEmpty()) {
 			for (IntervalFileNode intervalFileNode : newFileNodes) {
@@ -770,17 +779,32 @@ public class FileNodeProcessor extends LRUProcessor {
 			List<IntervalFileNode> result = new ArrayList<>();
 			int beginIndex = 0;
 			if (needEmpty) {
-				// 需要empty形成的backup文件
-				// 判断empty生成的区间是否是空
-				if (!backupIntervalFiles.get(0).checkEmpty()) {
-					result.add(backupIntervalFiles.get(0));
+				// 看empyt中有的设备，是否在merge的过程中生成了新的文件区间，并且这个文件区间还是被merge changed过的
+				IntervalFileNode empty = backupIntervalFiles.get(0);
+				if (!empty.checkEmpty()) {
+					// 如果empty有区间不是空
+					for (String deltaObjectId : empty.getStartTimeMap().keySet()) {
+						// 检查是否有在merge的过程中有bufferwrite插入并且还有对这个新文件对应的overflow操作
+						if (indexOfFiles.containsKey(deltaObjectId)) {
+							IntervalFileNode temp = indexOfFiles.get(deltaObjectId).get(0);
+							if (temp.getMergeChanged().contains(deltaObjectId)) {
+								empty.overflowChangeType = OverflowChangeType.CHANGED;
+								break;
+							}
+						}
+					}
+					empty.clearMergeChanged();
+					result.add(empty.backUp());
+					beginIndex++;
 				}
-				beginIndex++;
 			}
 			//
-			// 生成倒排索引
+			// 按照新生成的文件区间生成新的倒排索引内容，不过这个文件区间仅仅是backup出来的，可能少了一些对应的newFilelist中新添加的文件区间
 			//
 			addALLFileIntoIndex(backupIntervalFiles);
+
+			// 首先按照新生成的文件区间（缺少merge过程中创建的bufferwrite文件，不过没有影响）的倒排索引
+			// 然后查找新生成的backup文件对应的newFile文件是否有merge chagned的状态，如果有就按照策略改变区间的内容
 
 			// 从backupfile的第一个文件开始与newfilelist的第一个文件进行对比标记对应的文件状态。
 			for (int i = beginIndex; i < backupIntervalFiles.size(); i++) {
@@ -793,16 +817,10 @@ public class FileNodeProcessor extends LRUProcessor {
 						if (temp.getStartTimeMap().containsKey(deltaObjectId)) {
 							temp.overflowChangeType = OverflowChangeType.CHANGED;
 						} else {
-							if (indexOfFiles.containsKey(deltaObjectId)) {
-								indexOfFiles.get(deltaObjectId).get(0).overflowChangeType = OverflowChangeType.CHANGED;
-							} else {
-								emptyIntervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
-								emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
-								emptyIntervalFileNode.setEndTime(deltaObjectId, newFile.getEndTime(deltaObjectId));
-							}
+							changeTypeToChanged(deltaObjectId, newFile.getStartTime(deltaObjectId),
+									newFile.getEndTime(deltaObjectId));
 						}
 					}
-
 					if (!temp.checkEmpty()) {
 						result.add(temp);
 					}
@@ -813,6 +831,13 @@ public class FileNodeProcessor extends LRUProcessor {
 					}
 				}
 			}
+			/**
+			 * 还有newFile中其他的区间呢？？？就是在最后的文件区间呢
+			 */
+			for (int i = backupIntervalFiles.size() - beginIndex; i < newFileNodes.size(); i++) {
+				result.add(newFileNodes.get(i));
+			}
+
 			//
 			// 这个时候result已经成为最新的内容了
 			//
@@ -825,11 +850,10 @@ public class FileNodeProcessor extends LRUProcessor {
 			//
 			// 查看倒排中的第二文件如果是changed那么就标记第一个文件
 			//
-			for (String deltaObjectId : indexOfFiles.keySet()) {
-				List<IntervalFileNode> temp = indexOfFiles.get(deltaObjectId);
-				if(temp.size()>1&&temp.get(1).overflowChangeType==OverflowChangeType.CHANGED){
-					temp.get(0).overflowChangeType = OverflowChangeType.CHANGED;
-				}
+			
+			// clear merge changed
+			for (IntervalFileNode fileNode : newFileNodes) {
+				fileNode.clearMergeChanged();
 			}
 
 			synchronized (fileNodeProcessorStore) {
@@ -1003,7 +1027,7 @@ public class FileNodeProcessor extends LRUProcessor {
 				}
 				startTimeMap.put(deltaObjectId, startTime);
 				endTimeMap.put(deltaObjectId, endTime);
-				System.out.println("   ============   Merge Record Count: " + queryCount);
+				System.out.println("   ============   Merge Record Count  : " + queryCount + " , " + deltaObjectId);
 				LOGGER.debug("Merge query: deltaObjectId {}, time filter {}, filepath {} successfully", deltaObjectId,
 						timeFilter, outputPath);
 			}
