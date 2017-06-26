@@ -16,8 +16,4 @@ private[tsfile] class TsFileWriterFactory(options: Map[String, String]) extends 
                             context: TaskAttemptContext): OutputWriter = {
     new TsFileOutputWriter(path, dataSchema, options, context)
   }
-
-  override def newWriter(path: String): OutputWriter = {
-    throw new UnsupportedOperationException("newInstance with just path not supported")
-  }
 }

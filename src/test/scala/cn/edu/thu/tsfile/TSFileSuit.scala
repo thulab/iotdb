@@ -35,7 +35,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     new CreateTSFile().createTSFile2(tsfilePath2)
     spark = SparkSession
       .builder()
-      .config("spark.master", "localhost")
+      .config("spark.master", "local")
       .appName("TSFile test")
       .getOrCreate()
   }
