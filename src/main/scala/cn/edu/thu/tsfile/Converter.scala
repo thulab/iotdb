@@ -3,7 +3,7 @@ package cn.edu.thu.tsfile
 import java.util
 
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader
-import cn.edu.thu.tsfile.file.metadata.enums.TSDataType
+import cn.edu.thu.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
 import cn.edu.thu.tsfile.io.HDFSInputStream
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema
 import cn.edu.thu.tsfile.timeseries.read.query.{QueryConfig, QueryEngine}
@@ -14,6 +14,10 @@ import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types._
 import cn.edu.thu.tsfile.qp.QueryProcessor
 import cn.edu.thu.tsfile.qp.common.{BasicOperator, FilterOperator, SQLConstant, TSQueryPlan}
+import cn.edu.thu.tsfile.timeseries.write.desc.MeasurementDescriptor
+import cn.edu.thu.tsfile.timeseries.write.record.{DataPoint, TSRecord}
+import cn.edu.thu.tsfile.timeseries.write.schema.{FileSchema, SchemaBuilder}
+import org.apache.spark.sql.Row
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -66,7 +70,7 @@ object Converter {
     * @param tsfileSchema all time series information in TSFile
     * @return sparkSQL table schema
     */
-  def toSparkSqlSchema(tsfileSchema: util.ArrayList[SeriesSchema]): Option[StructType] = {
+  def toSqlSchema(tsfileSchema: util.ArrayList[SeriesSchema]): Option[StructType] = {
     val fields = new ListBuffer[StructField]()
     fields += StructField(SQLConstant.RESERVED_TIME, LongType, nullable = false)
     fields += StructField(SQLConstant.RESERVED_DELTA_OBJECT, StringType, nullable = false)
@@ -94,6 +98,61 @@ object Converter {
     }
   }
 
+
+  /**
+    * given a spark sql struct type, generate TsFile schema
+    * @param structType given sql schema
+    * @return TsFile schema
+    */
+  def toTsFileSchema(structType: StructType, options: Map[String, String]): FileSchema = {
+    val schemaBuilder = new SchemaBuilder()
+    structType.fields.filter(f => {
+      !SQLConstant.isReservedPath(f.name)
+    }).foreach(f => {
+      val seriesSchema = getSeriesSchema(f, options)
+      schemaBuilder.addSeries(seriesSchema)
+    })
+    schemaBuilder.build()
+  }
+
+
+  /**
+    * construct series schema from name and data type
+    * @param field series name
+    * @param options series data type
+    * @return series schema
+    */
+  def getSeriesSchema(field: StructField, options: Map[String, String]): MeasurementDescriptor = {
+    val dataType = getTsDataType(field.dataType)
+    val encodingStr = dataType match {
+      case TSDataType.INT32 => options.getOrElse(SQLConstant.INT32, SQLConstant.DEFAULT_ENCODING)
+      case TSDataType.INT64 => options.getOrElse(SQLConstant.INT64, SQLConstant.DEFAULT_ENCODING)
+      case TSDataType.FLOAT => options.getOrElse(SQLConstant.FLOAT, SQLConstant.DEFAULT_ENCODING)
+      case TSDataType.DOUBLE => options.getOrElse(SQLConstant.DOUBLE, SQLConstant.DEFAULT_ENCODING)
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+    val encoding = TSEncoding.valueOf(encodingStr)
+    new MeasurementDescriptor(field.name, dataType, encoding, null)
+  }
+
+
+  /**
+    * return the TsFile data type of given spark sql data type
+    * @param dataType spark sql data type
+    * @return TsFile data type
+    */
+  def getTsDataType(dataType: DataType): TSDataType = {
+    dataType match {
+      case IntegerType => TSDataType.INT32
+      case LongType => TSDataType.INT64
+      case BooleanType => TSDataType.BOOLEAN
+      case FloatType => TSDataType.FLOAT
+      case DoubleType => TSDataType.DOUBLE
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+  }
+
+
   /**
     * Use information given by sparkSQL to construct TSFile QueryConfigs for querying data.
     *
@@ -116,7 +175,7 @@ object Converter {
     //remove invalid filters
     val validFilters = new ListBuffer[Filter]()
     filters.foreach {f => {
-      if(isValidFIlter(f))
+      if(isValidFilter(f))
         validFilters.add(f)}
     }
 
@@ -152,16 +211,17 @@ object Converter {
     queryConfigs.toArray
   }
 
-  private def isValidFIlter(filter: Filter): Boolean = {
+
+  private def isValidFilter(filter: Filter): Boolean = {
     filter match {
       case f: EqualTo => true
       case f: GreaterThan => true
       case f: GreaterThanOrEqual => true
       case f: LessThan => true
       case f: LessThanOrEqual => true
-      case f: Or => isValidFIlter(f.left) && isValidFIlter(f.right)
-      case f: And => isValidFIlter(f.left) && isValidFIlter(f.right)
-      case f: Not => isValidFIlter(f.child)
+      case f: Or => isValidFilter(f.left) && isValidFilter(f.right)
+      case f: And => isValidFilter(f.left) && isValidFilter(f.right)
+      case f: Not => isValidFilter(f.child)
       case _ => false
     }
   }
@@ -169,8 +229,8 @@ object Converter {
   /**
     * Used in toQueryConfigs() to convert one query plan to one QueryConfig.
     *
-    * @param queryPlan TSFile logical query plan
-    * @return TSFile physical query plan
+    * @param queryPlan TsFile logical query plan
+    * @return TsFile physical query plan
     */
   private def queryToConfig(queryPlan: TSQueryPlan): QueryConfig = {
     val selectedColumns = queryPlan.getPaths.toArray
@@ -348,4 +408,39 @@ object Converter {
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
     }
   }
+
+
+  /**
+    * convert row to TSRecord
+    * @param row given spark sql row
+    * @return TSRecord
+    */
+  def toTsRecord(row: Row): TSRecord = {
+    val schema = row.schema
+    val time = row.getAs[Long](SQLConstant.RESERVED_TIME)
+    val delta_object = row.getAs[String](SQLConstant.RESERVED_DELTA_OBJECT)
+    val tsRecord = new TSRecord(time, delta_object)
+    var i = 1
+    schema.fields.filter(f => {
+      !SQLConstant.isReservedPath(f.name)
+    }).foreach(f => {
+      val name = f.name
+      val dataType = getTsDataType(f.dataType)
+      i = i + 1
+      if (!row.isNullAt(i)) {
+        val value = f.dataType match {
+          case IntegerType => row.getAs[Int](name)
+          case LongType => row.getAs[Long](name)
+          case FloatType => row.getAs[Float](name)
+          case DoubleType => row.getAs[Double](name)
+          case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+        }
+        val dataPoint = DataPoint.getDataPoint(dataType, name, value.toString)
+        tsRecord.addTuple(dataPoint)
+      }
+    })
+    tsRecord
+  }
+
+
 }

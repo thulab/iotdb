@@ -17,6 +17,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   private val tsfilePath1 = "src/test/resources/tsfile/test1.tsfile"
   private val tsfilePath2 = "src/test/resources/tsfile/test2.tsfile"
   private val outputPath = "src/test/resources/output"
+  private val outputPathFile = outputPath + "/part-m-00000"
   private var spark: SparkSession = _
 
   override protected def beforeAll(): Unit = {
@@ -34,15 +35,14 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     new CreateTSFile().createTSFile2(tsfilePath2)
     spark = SparkSession
       .builder()
-      .config("spark.master", "local")
+      .config("spark.master", "localhost")
       .appName("TSFile test")
       .getOrCreate()
   }
 
   override protected def afterAll(): Unit = {
     val out = new File(outputPath)
-    if (out.exists())
-      out.delete()
+    deleteDir(out)
     try {
       spark.sparkContext.stop()
     } finally {
@@ -50,19 +50,34 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     }
   }
 
+  def deleteDir(dir: File): Unit = {
+    if(dir.isDirectory) {
+      dir.list().foreach(f => {
+        deleteDir(new File(dir, f))
+      })
+    }
+    dir.delete()
+
+  }
+
+  test("writer format") {
+    val df = spark.read.tsfile(tsfilePath1)
+    df.show()
+    df.write.format("cn.edu.thu.tsfile").save(outputPath)
+    val newDf = spark.read.tsfile(outputPathFile)
+    newDf.show()
+    Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
+  }
+
   test("writer") {
     val df = spark.read.tsfile(tsfilePath1)
-//    val df = spark.createDataFrame(
-//      Seq(
-//        ("root.car.d1", 8, 1, 9.8),
-//        ("root.car.d1", 8, 2, 8.7),
-//        ("root.car.d2", 7, 3, 5.5),
-//        ("root.car.d2", 7, 4, 2.0))
-//    ).toDF("delta_object", "timestamp", "sensor1", "sensor2")
-
     df.show()
     df.write.tsfile(outputPath)
+    val newDf = spark.read.tsfile(outputPathFile)
+    newDf.show()
+    Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
   }
+
 
   test("tsfile_qp") {
     val df = spark.read.tsfile(tsfileFolder)

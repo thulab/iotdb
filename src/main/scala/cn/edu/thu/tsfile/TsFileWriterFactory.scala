@@ -7,17 +7,17 @@ import org.apache.spark.sql.types.StructType
 /**
   * @author qiaojialin
   */
-private[tsfile] class TsFileWriterFactory() extends OutputWriterFactory{
+private[tsfile] class TsFileWriterFactory(options: Map[String, String]) extends OutputWriterFactory{
 
   override def newInstance(
                             path: String,
                             bucketId: Option[Int],
                             dataSchema: StructType,
                             context: TaskAttemptContext): OutputWriter = {
-    println("---newInstance---")
+    new TsFileOutputWriter(path, dataSchema, options, context)
+  }
 
-    println(dataSchema)
-
-    new TsFileOutputWriter(path, context)
+  override def newWriter(path: String): OutputWriter = {
+    throw new UnsupportedOperationException("newInstance with just path not supported")
   }
 }

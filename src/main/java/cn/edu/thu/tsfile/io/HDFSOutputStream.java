@@ -5,8 +5,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,8 +17,6 @@ import java.io.OutputStream;
  * @author liukun
  */
 public class HDFSOutputStream implements TSRandomAccessFileWriter {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(HDFSOutputStream.class);
 
 	private FSDataOutputStream fsDataOutputStream;
 

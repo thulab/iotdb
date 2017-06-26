@@ -1,43 +1,16 @@
 # tsfile-spark-connector
 
-Used to read tsfile in spark.
+Used to read and write(developing) tsfile in spark.
 
 将一个或多个TsFile展示成SparkSQL中的一张表。允许指定单个目录，或使用通配符匹配多个目录。如果是多个TsFile，schema将保留各个TsFile中sensor的并集。
 
 
-## Example
+## dependency
 
-src/test/scala/cn.edu.thu.tsfile.spark.TSFileSuit
-
-
-## 路径指定方式
+https://github.com/thulab/tsfile.git
 
 
-basefolder/key=1/file1.tsfile
-
-basefolder/key=2/file2.tsfile
-指定basefolder为path，会在表中多加一列key，值为1或2。
-
-如：
-path=basefolder
-
-
-如果使用通配符指定，将不会当做partiton
-
-如：
-path=basefolder/\*/\*.tsfile
-
-
-basefolder/file1.tsfile
-basefolder/file2.tsfile
-
-指定basefolder会将多个tsfile的schema合并，保留sensor的并集
-
-如：
-path=basefolder
-
-
-## 版本需求
+## versions
 
 The versions required for Spark and Java are as follow:
 
@@ -47,7 +20,7 @@ The versions required for Spark and Java are as follow:
 
 
 
-## 数据类型转化
+## TsFile Type <=> SparkSQL type
 
 This library uses the following mapping the data type from TsFile to SparkSQL:
 
@@ -153,14 +126,11 @@ The SparkSQL Table Structure is as follow:
 
 ##### spark-shell
 
-可以将项目打包在 `spark-shell`中使用。
+package:
 
 ```
 mvn clean scala:compile compile package
 ```
-
-包所在位置：
-target/tsfile-spark-connector-0.1.0.jar
 
 
 ```

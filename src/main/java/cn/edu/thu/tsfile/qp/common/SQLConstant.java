@@ -1,7 +1,5 @@
 package cn.edu.thu.tsfile.qp.common;
 
-import cn.edu.thu.tsfile.timeseries.read.qp.Path;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,21 +10,15 @@ import java.util.Map;
  *
  */
 public class SQLConstant {
-    public static final String MREGE_EXTENSION = "merge";
-    public static final String ERR_EXTENSION = "err";
     public static final String PATH_SEPARATOR = ".";
-    public static final String PATH_SEPARATER_NO_REGEX = "\\.";
-
-    public static final String DEFAULT_DELTA_OBJECT_TYPE = "defalut_delta_object_type";
-
     public static final String RESERVED_TIME = "time";
     public static final String RESERVED_FREQ = "freq";
     public static final String RESERVED_DELTA_OBJECT = "delta_object";
-    public static final String IS_AGGREGATION = "IS_AGGREGATION";
-
-    public static final String lineFeedSignal = "\n";
-    public static final String ROOT = "root";
-    public static final String METADATA_PARAM_EQUAL = "=";
+    public static final String INT32 = "INT32";
+    public static final String INT64 = "INT64";
+    public static final String FLOAT = "FLOAT";
+    public static final String DOUBLE = "DOUBLE";
+    public static final String DEFAULT_ENCODING = "RLE";
 
     public static final int KW_AND = 1;
     public static final int KW_OR = 2;
@@ -47,9 +39,6 @@ public class SQLConstant {
     public static final int TOK_DELETE = 25;
     public static final int TOK_UPDATE = 26;
     public static final int TOK_QUERY = 27;
-    // public static final int TOK_VIRTUAL_TABLE = 30;
-    // public static final int TOK_TABNAME = 31;
-    // public static final int TOK_TABREF = 32;
 
     public static final int TOK_AUTHOR_CREATE = 41;
     public static final int TOK_AUTHOR_DROP = 42;
@@ -134,7 +123,7 @@ public class SQLConstant {
         reverseWords.put(GREATERTHAN, LESSTHANOREQUALTO);
     }
 
-    public static boolean isReservedPath(Path pathStr) {
+    public static boolean isReservedPath(String pathStr) {
         return pathStr.equals(SQLConstant.RESERVED_TIME)
                 || pathStr.equals(SQLConstant.RESERVED_FREQ)
                 || pathStr.equals(SQLConstant.RESERVED_DELTA_OBJECT);

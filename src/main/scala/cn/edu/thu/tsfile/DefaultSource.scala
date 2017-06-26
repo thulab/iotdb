@@ -31,8 +31,8 @@ import scala.collection.mutable
 /**
   * TSFile data source
   *
-  * @author QJL
-  * @author MXW
+  * @author qiaojialin
+  *
   */
 private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
@@ -59,7 +59,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
     //get union series in TsFile
     val tsfileSchema = Converter.getUnionSeries(files, conf)
 
-    Converter.toSparkSqlSchema(tsfileSchema)
+    Converter.toSqlSchema(tsfileSchema)
   }
 
   override def isSplitable(
@@ -193,7 +193,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
                             job: Job,
                             options: Map[String, String],
                             dataSchema: StructType): OutputWriterFactory = {
-    new TsFileWriterFactory()
+    new TsFileWriterFactory(options)
   }
 
 }

@@ -81,7 +81,7 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
     fields.add(new SeriesSchema("s4", TSDataType.DOUBLE, TSEncoding.PLAIN))
     fields.add(new SeriesSchema("s5", TSDataType.BOOLEAN, TSEncoding.PLAIN))
     fields.add(new SeriesSchema("s6", TSDataType.BYTE_ARRAY, TSEncoding.PLAIN))
-    val sqlSchema = Converter.toSparkSqlSchema(fields)
+    val sqlSchema = Converter.toSqlSchema(fields)
 
     val expectedFields = Array(
       StructField(SQLConstant.RESERVED_TIME, LongType, nullable = false),

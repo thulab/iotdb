@@ -28,11 +28,7 @@ public class CreateTSFile {
         TSRandomAccessFileWriter output = new RandomAccessOutputStream(new File(tsfilePath));
         TsFile tsFile = new TsFile(output, jsonSchema);
 
-//        for( int i = 1; i < 30000000; i++) {
-//            tsFile.writeLine("root.car.d1," + i + ", s1, " + i + ", s2, 10, s3, 100");
-//        }
-
-        tsFile.writeLine("root.car.d1,1, s1, 1, s2, 10, s3, 100.1, s4, 0.1");
+        tsFile.writeLine("root.car.d1,1, s1, 1, s2, 10, s3, 100.1");
         tsFile.writeLine("root.car.d1,2, s1, 2, s2, 20, s3, 200.2, s4, 0.2");
         tsFile.writeLine("root.car.d1,3, s1, 3, s2, 30, s3, 200.3, s4, 0.3");
         tsFile.writeLine("root.car.d1,4, s1, 4, s2, 40, s3, 200.4, s4, 0.4");
