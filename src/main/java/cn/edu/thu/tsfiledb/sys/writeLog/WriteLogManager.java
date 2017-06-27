@@ -2,21 +2,19 @@ package cn.edu.thu.tsfiledb.sys.writeLog;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.PlatformLoggingMXBean;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfiledb.qp.physical.plan.PhysicalPlan;
+import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 
 public class WriteLogManager {
     private static final Logger LOG = LoggerFactory.getLogger(WriteLogManager.class);
@@ -48,7 +46,7 @@ public class WriteLogManager {
     }
 
     public void write(PhysicalPlan plan) throws IOException, PathErrorException {
-        getWriteLogNode(MManager.getInstance().getFileNameByPath(plan.getPath().getFullPath())).write(plan);
+        getWriteLogNode(MManager.getInstance().getFileNameByPath(plan.getPaths().get(0).getFullPath())).write(plan);
     }
 
     public void write(TSRecord record, int type) throws IOException, PathErrorException {
@@ -77,7 +75,7 @@ public class WriteLogManager {
             recoveryPathList = MManager.getInstance().getAllFileNames();
             Iterator<String> iterator = recoveryPathList.iterator();
             while (iterator.hasNext()) {
-                String filePath = TSFileDBDescriptor.getInstance().getConfig().walFolder + iterator.next() + ".log";
+                String filePath = TsfileDBDescriptor.getInstance().getConfig().walFolder + iterator.next() + ".log";
                 if (!new File(filePath).exists()) {
                     iterator.remove();
                 }

@@ -1,5 +1,6 @@
 package cn.edu.thu.tsfiledb.engine.filenode;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.thu.tsfiledb.query.engine.QueryForMerge;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.common.utils.RandomAccessOutputStream;
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileWriter;
 import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.thu.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
@@ -38,8 +41,8 @@ import cn.edu.thu.tsfile.timeseries.write.io.TSFileIOWriter;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfile.timeseries.write.schema.FileSchema;
-import cn.edu.thu.tsfiledb.conf.TSFileDBConfig;
-import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.Action;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.FileNodeConstants;
@@ -52,13 +55,12 @@ import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
 import cn.edu.thu.tsfiledb.metadata.MManager;
-import cn.edu.thu.tsfiledb.query.engine.QueryerForMerge;
 
 public class FileNodeProcessor extends LRUProcessor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
-	private static final TSFileDBConfig TsFileDBConf = TSFileDBDescriptor.getInstance().getConfig();
+	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
 	private static final MManager mManager = MManager.getInstance();
 	private static final String LOCK_SIGNAL = "lock___signal";
 
@@ -568,7 +570,7 @@ public class FileNodeProcessor extends LRUProcessor {
 					((DynamicOneColumnData) overflowData.get(0)).length);
 		}
 		// query bufferwrite data in memory and disk
-		Pair<DynamicOneColumnData, List<RowGroupMetaData>> bufferwriteDataInMemory = new Pair<DynamicOneColumnData, List<RowGroupMetaData>>(
+		Pair<List<Object>, List<RowGroupMetaData>> bufferwriteDataInMemory = new Pair<List<Object>, List<RowGroupMetaData>>(
 				null, null);
 		// if no bufferwrite processor, there are not bufferwrite data in memory
 		if (bufferWriteProcessor != null) {
@@ -581,7 +583,13 @@ public class FileNodeProcessor extends LRUProcessor {
 			// add the same intervalFileNode, but not the same reference
 			bufferwriteDataInFiles.add(intervalFileNode.backUp());
 		}
-		queryStructure = new QueryStructure(bufferwriteDataInMemory.left, bufferwriteDataInMemory.right,
+		DynamicOneColumnData currentPage = null;
+		Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList = null;
+		if (bufferWriteProcessor != null) {
+			currentPage = (DynamicOneColumnData) bufferwriteDataInMemory.left.get(0);
+			pageList = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) bufferwriteDataInMemory.left.get(1);
+		}
+		queryStructure = new QueryStructure(currentPage, pageList, bufferwriteDataInMemory.right,
 				bufferwriteDataInFiles, overflowData);
 		return queryStructure;
 	}
@@ -955,6 +963,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			long startTime = backupIntervalFile.getStartTime(deltaObjectId);
 			long endTime = backupIntervalFile.getEndTime(deltaObjectId);
 			List<Path> pathList = new ArrayList<>();
+
 			try {
 				ArrayList<String> pathStrings = mManager
 						.getPaths(deltaObjectId + FileNodeConstants.PATH_SEPARATOR + "*");
@@ -973,7 +982,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			startTime = -1;
 			endTime = -1;
 
-			QueryerForMerge queryer = new QueryerForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
+			QueryForMerge queryer = new QueryForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
 			int queryCount = 0;
 			if (!queryer.hasNextRecord()) {
 				LOGGER.warn("Merge query: deltaObjectId {}, time filter {}, no query data", deltaObjectId, timeFilter);

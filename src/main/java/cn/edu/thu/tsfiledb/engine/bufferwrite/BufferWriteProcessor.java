@@ -1,5 +1,6 @@
 package cn.edu.thu.tsfiledb.engine.bufferwrite;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +32,7 @@ import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.thu.tsfile.file.metadata.TSFileMetaData;
 import cn.edu.thu.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.thu.tsfile.file.metadata.converter.TSFileMetaDataConverter;
+import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.thu.tsfile.format.FileMetaData;
@@ -43,8 +45,8 @@ import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.thu.tsfile.timeseries.write.series.IRowGroupWriter;
-import cn.edu.thu.tsfiledb.conf.TSFileDBConfig;
-import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.exception.BufferWriteProcessorException;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.lru.LRUProcessor;
@@ -58,7 +60,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
-	private static final TSFileDBConfig TsFileDBConf = TSFileDBDescriptor.getInstance().getConfig();
+	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
 	private static final MManager mManager = MManager.getInstance();
 
 	private BufferWriteIndex workingBufferIndex;
@@ -438,8 +440,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 	public String getFileName() {
 		return fileName;
 	}
-	
-	public String getFileAbsolutePath(){
+
+	public String getFileAbsolutePath() {
 		return bufferwriteOutputFilePath;
 	}
 
@@ -489,41 +491,29 @@ public class BufferWriteProcessor extends LRUProcessor {
 		workingBufferIndex.insert(tsRecord);
 	}
 
-	/**
-	 * Get the result of DynamicOneColumnData from work index and flush index
-	 * 
-	 * @param deltaObjectId
-	 * @param measurementId
-	 * @return
-	 */
-	private DynamicOneColumnData mergeTwoDynamicColumnData(String deltaObjectId, String measurementId) {
-		DynamicOneColumnData working = workingBufferIndex.query(deltaObjectId, measurementId);
-		DynamicOneColumnData ret = (working == null || working.length == 0) ? new DynamicOneColumnData()
-				: new DynamicOneColumnData(working.dataType, true);
-		if (flushState.isFlushing()) {
-			DynamicOneColumnData flushing = flushingBufferIndex.query(deltaObjectId, measurementId);
-			if (flushing != null) {
-				ret.mergeRecord(flushing);
+	public Pair<List<Object>, List<RowGroupMetaData>> getIndexAndRowGroupList(String deltaObjectId,
+			String measurementId) {
+		List<Object> memData = null;
+		List<RowGroupMetaData> list = null;
+		// wait until flush over
+		synchronized (flushState) {
+			while (flushState.isFlushing()) {
+				try {
+					flushState.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					LOGGER.error(e.getMessage());
+				}
 			}
 		}
-		if (working != null) {
-			ret.mergeRecord(working);
-		}
-		return ret;
-	}
-
-	public Pair<DynamicOneColumnData, List<RowGroupMetaData>> getIndexAndRowGroupList(String deltaObjectId,
-			String measurementId) {
-		DynamicOneColumnData index = null;
-		List<RowGroupMetaData> list = null;
 		convertBufferLock.readLock().lock();
 		try {
-			index = mergeTwoDynamicColumnData(deltaObjectId, measurementId);
+			memData = recordWriter.query(deltaObjectId, measurementId);
 			list = bufferIOWriter.getCurrentRowGroupMetaList();
 		} finally {
 			convertBufferLock.readLock().unlock();
 		}
-		return new Pair<>(index, list);
+		return new Pair<>(memData, list);
 	}
 
 	@Override
@@ -620,8 +610,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 					e.printStackTrace();
 					throw new IOException(e);
 				}
-				
-				//For WAL 
+
+				// For WAL
 				WriteLogManager.getInstance().startBufferWriteFlush(nameSpacePath);
 				// flush bufferwrite data
 				if (isFlushingSync) {

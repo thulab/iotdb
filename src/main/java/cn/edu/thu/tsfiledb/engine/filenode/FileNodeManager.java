@@ -15,13 +15,15 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.thu.tsfile.common.conf.TSFileConfig;
+import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.thu.tsfiledb.conf.TSFileDBConfig;
-import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.Action;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.FileNodeConstants;
@@ -40,7 +42,8 @@ import cn.edu.thu.tsfiledb.sys.writeLog.WriteLogManager;
 public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
-	private static final TSFileDBConfig TsFileDBConf = TSFileDBDescriptor.getInstance().getConfig();
+	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
+	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
 	private static final String restoreFileName = "fileNodeManager.restore";
 	private final String fileNodeManagerStoreFile;
 
@@ -95,6 +98,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 
 	private FileNodeManager(int maxLRUNumber, MManager mManager, String normalDataDir) {
 		super(maxLRUNumber, mManager, normalDataDir);
+		TsFileConf.cachePageData = true;
 		this.fileNodeManagerStoreFile = this.normalDataDir + restoreFileName;
 		this.overflowNameSpaceSet = readOverflowSetFromDisk();
 		if (overflowNameSpaceSet == null) {
