@@ -1,6 +1,5 @@
 package cn.edu.thu.tsfiledb.engine.bufferwrite;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,11 +31,9 @@ import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.thu.tsfile.file.metadata.TSFileMetaData;
 import cn.edu.thu.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.thu.tsfile.file.metadata.converter.TSFileMetaDataConverter;
-import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.thu.tsfile.format.FileMetaData;
-import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.write.TSRecordWriteSupport;
 import cn.edu.thu.tsfile.timeseries.write.TSRecordWriter;
 import cn.edu.thu.tsfile.timeseries.write.WriteSupport;
@@ -48,7 +45,6 @@ import cn.edu.thu.tsfile.timeseries.write.series.IRowGroupWriter;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.exception.BufferWriteProcessorException;
-import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.lru.LRUProcessor;
 import cn.edu.thu.tsfiledb.engine.utils.FlushState;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
@@ -63,8 +59,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
 	private static final MManager mManager = MManager.getInstance();
 
-	private BufferWriteIndex workingBufferIndex;
-	private BufferWriteIndex flushingBufferIndex;
+	// private BufferWriteIndex workingBufferIndex;
+	// private BufferWriteIndex flushingBufferIndex;
 
 	private boolean isFlushingSync = false;
 	private final FlushState flushState = new FlushState();
@@ -156,10 +152,6 @@ public class BufferWriteProcessor extends LRUProcessor {
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
-		// memory index init
-		workingBufferIndex = new MemoryBufferWriteIndexImpl();
-		flushingBufferIndex = new MemoryBufferWriteIndexImpl();
-
 	}
 
 	/**
@@ -488,7 +480,6 @@ public class BufferWriteProcessor extends LRUProcessor {
 					String.format("Write TSRecord error, the TSRecord is %s, the nameSpacePath is %s, the reason is %s",
 							tsRecord, nameSpacePath, e.getMessage()));
 		}
-		workingBufferIndex.insert(tsRecord);
 	}
 
 	public Pair<List<Object>, List<RowGroupMetaData>> getIndexAndRowGroupList(String deltaObjectId,
@@ -737,14 +728,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 	}
 
 	private void switchIndexFromWorkToFlush() {
-		BufferWriteIndex temp = workingBufferIndex;
-		workingBufferIndex = flushingBufferIndex;
-		flushingBufferIndex = temp;
 
 	}
 
 	private void switchIndexFromFlushToWork() {
-		flushingBufferIndex.clear();
 		bufferIOWriter.addNewRowGroupMetaDataToBackUp();
 	}
 }

@@ -245,6 +245,7 @@ public class FileNodeProcessorTest {
 
 	}
 
+	// 错误得地方
 	@Test
 	public void testQuery() {
 
@@ -253,7 +254,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, nameSpacePath, parameters);
 			BufferWriteProcessor bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 1);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(1, bfprocessor.getFileName());
+			processor.addIntervalFileNode(1, bfprocessor.getFileAbsolutePath());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
 			processor.setIntervalFileNodeStartTime(deltaObjectId, 1);
@@ -275,8 +276,8 @@ public class FileNodeProcessorTest {
 			List<RowGroupMetaData> bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 			List<IntervalFileNode> bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
 			List<Object> overflowResult = queryResult.getAllOverflowData();
-			assertEquals(true, bufferwritedataindex!=null);
-			assertEquals(true, right!=null);
+			assertEquals(true, bufferwritedataindex != null);
+			assertEquals(true, right != null);
 			assertEquals(1, right.left.size());
 			for (int i = 1; i < 11; i++) {
 				assertEquals(i, bufferwritedataindex.getTime(i - 1));
@@ -328,7 +329,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 401);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(401, bfprocessor.getFileName());
+			processor.addIntervalFileNode(401, bfprocessor.getFileAbsolutePath());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 401, TSDataType.INT32, String.valueOf(401));
 			processor.setIntervalFileNodeStartTime(deltaObjectId, 401);
@@ -371,7 +372,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 801);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(801, bfprocessor.getFileName());
+			processor.addIntervalFileNode(801, bfprocessor.getFileAbsolutePath());
 			bfprocessor.write(deltaObjectId, measurementId, 801, TSDataType.INT32, String.valueOf(801));
 			processor.setLastUpdateTime(deltaObjectId, 801);
 			for (int i = 802; i < 820; i++) {
@@ -385,7 +386,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 820);
 			bfprocessor.setNewProcessor(false);
-			processor.addIntervalFileNode(820, bfprocessor.getFileName());
+			processor.addIntervalFileNode(820, bfprocessor.getFileAbsolutePath());
 			bfprocessor.write(deltaObjectId, measurementId, 820, TSDataType.INT32, String.valueOf(820));
 			processor.setLastUpdateTime(deltaObjectId, 820);
 			for (int i = 821; i < 840; i++) {
@@ -490,13 +491,15 @@ public class FileNodeProcessorTest {
 			fileNodeProcessor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			BufferWriteProcessor bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deltaObjectId, 1);
 			bfprocessor.setNewProcessor(false);
-			fileNodeProcessor.addIntervalFileNode(1, bfprocessor.getFileName());
+			fileNodeProcessor.addIntervalFileNode(1, bfprocessor.getFileAbsolutePath());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
-
+			fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, 1);
+			fileNodeProcessor.setLastUpdateTime(deltaObjectId, 1);
 			for (int i = 2; i < 1000; i++) {
 				bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deltaObjectId, i);
 				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, i);
 				fileNodeProcessor.setLastUpdateTime(deltaObjectId, i);
 				if (i == 400) {
 					break;
@@ -907,6 +910,7 @@ public class FileNodeProcessorTest {
 			assertEquals(333, updateData.getInt(0));
 			assertEquals(333, updateData.getInt(1));
 			// merge
+			processor.merge();
 			processor.close();
 
 		} catch (FileNodeProcessorException e) {
@@ -966,7 +970,7 @@ public class FileNodeProcessorTest {
 			bfProcessor.write(measurementId, measurementId, begin, TSDataType.INT32, String.valueOf(begin));
 			processor.setLastUpdateTime(deltaObjectId, begin);
 			bfProcessor.setNewProcessor(false);
-			processor.addIntervalFileNode(begin, bfProcessor.getFileName());
+			processor.addIntervalFileNode(begin, bfProcessor.getFileAbsolutePath());
 			for (long i = begin; i <= end; i++) {
 				bfProcessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfProcessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));

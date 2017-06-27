@@ -212,7 +212,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				}
 			}
 			fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
-			addNameSpaceToOverflowList(fileNodeProcessor.getNameSpacePath());
+			addNameSpaceToOverflowList(nameSpacePath);
 			// overflowProcessor.writeUnlock();
 			LOGGER.debug("Unlock the OverflowProcessor: {}", fileNodeProcessor.getNameSpacePath());
 			insertType = 1;

@@ -352,7 +352,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		return bufferWriteProcessor;
 	}
 
-	public OverflowProcessor getOverflowProcessor(String namespacePath, Map<String, Object> parameters)
+	public OverflowProcessor getOverflowProcessor(String nameSpacePath, Map<String, Object> parameters)
 			throws FileNodeProcessorException {
 		if (overflowProcessor == null) {
 			// construct processor or restore
@@ -361,14 +361,14 @@ public class FileNodeProcessor extends LRUProcessor {
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
 			parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
 			try {
-				overflowProcessor = new OverflowProcessor(namespacePath, parameters);
+				overflowProcessor = new OverflowProcessor(nameSpacePath, parameters);
 			} catch (OverflowProcessorException e) {
 				LOGGER.error("Get the overflow processor instance failed, the nameSpacePath is {}, reason is {}",
-						namespacePath, e.getMessage());
+						nameSpacePath, e.getMessage());
 				e.printStackTrace();
 				throw new FileNodeProcessorException(String.format(
 						"Get the overflow processor instance failed, the nameSpacePath is %s, reason is %s",
-						namespacePath, e.getMessage()));
+						nameSpacePath, e.getMessage()));
 			}
 		}
 		return overflowProcessor;
@@ -623,7 +623,7 @@ public class FileNodeProcessor extends LRUProcessor {
 					IntervalFileNode first = newFileNodes.get(0);
 					for (String deltaObjectId : emptyIntervalFileNode.getStartTimeMap().keySet()) {
 						first.setStartTime(deltaObjectId, emptyIntervalFileNode.getStartTime(deltaObjectId));
-						first.setEndTime(deltaObjectId, emptyIntervalFileNode.getStartTime(deltaObjectId));
+						first.setEndTime(deltaObjectId, emptyIntervalFileNode.getEndTime(deltaObjectId));
 						first.overflowChangeType = OverflowChangeType.CHANGED;
 					}
 					emptyIntervalFileNode.clear();
@@ -637,6 +637,8 @@ public class FileNodeProcessor extends LRUProcessor {
 				intervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
 			}
 		}
+
+		addALLFileIntoIndex(newFileNodes);
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
 			fileNodeProcessorStore.setNewFileNodes(newFileNodes);
