@@ -86,7 +86,6 @@ public class IntervalFileNode implements Serializable {
 		this.endTimeMap.put(deltaObjectId, timestamp);
 	}
 
-	// 有可能是空指针？？？？
 	public long getEndTime(String deltaObjectId) {
 
 		if (endTimeMap.get(deltaObjectId) == null) {
@@ -137,9 +136,9 @@ public class IntervalFileNode implements Serializable {
 
 		return mergeChanged;
 	}
-	
-	public void clearMergeChanged(){
-		
+
+	public void clearMergeChanged() {
+
 		mergeChanged.clear();
 	}
 
@@ -194,5 +193,12 @@ public class IntervalFileNode implements Serializable {
 		} else if (!startTimeMap.equals(other.startTimeMap))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "IntervalFileNode [filePath=" + filePath + ", overflowChangeType=" + overflowChangeType
+				+ ", startTimeMap=" + startTimeMap + ", endTimeMap=" + endTimeMap + ", mergeChanged=" + mergeChanged
+				+ "]";
 	}
 }

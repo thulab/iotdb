@@ -95,7 +95,7 @@ public class BufferWriteProcessorTest {
 			bufferWriteProcessor1 = new BufferWriteProcessor(nsp, filename, parameters);
 		} catch (BufferWriteProcessorException e) {
 			e.printStackTrace();
-			fail("Not yet implemented");
+			fail(e.getMessage());
 		}
 
 		// check dir

@@ -40,8 +40,10 @@ public class FileNodeProcessorTest {
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
 
 	private FileNodeProcessor processor = null;
-	
+
 	private String deltaObjectId = "root.vehicle.d0";
+
+	private String deltaObjectId2 = "root.vehicle.d2";
 
 	private String measurementId = "s0";
 
@@ -107,9 +109,13 @@ public class FileNodeProcessorTest {
 			// nameSpacePath
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, nameSpacePath, parameters);
 			assertEquals(-1, processor.getLastUpdateTime(deltaObjectId));
+			assertEquals(-1, processor.getLastUpdateTime(deltaObjectId2));
 			processor.setLastUpdateTime(deltaObjectId, 20);
+			processor.setLastUpdateTime(deltaObjectId2, 21);
 			assertEquals(20, processor.getLastUpdateTime(deltaObjectId));
+			assertEquals(21, processor.getLastUpdateTime(deltaObjectId2));
 			processor.setLastUpdateTime(deltaObjectId, -1);
+			processor.setLastUpdateTime(deltaObjectId2, -1);
 			assertEquals(false, processor.hasBufferwriteProcessor());
 			assertEquals(false, processor.hasOverflowProcessor());
 
@@ -247,10 +253,12 @@ public class FileNodeProcessorTest {
 			processor.addIntervalFileNode(1, bfprocessor.getFileName());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
+			processor.setIntervalFileNodeStartTime(deltaObjectId, 1);
 			processor.setLastUpdateTime(deltaObjectId, 1);
 			for (int i = 2; i < 11; i++) {
 				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
 				processor.setLastUpdateTime(deltaObjectId, i);
 			}
 			if (!processor.hasOverflowProcessor()) {
@@ -283,6 +291,7 @@ public class FileNodeProcessorTest {
 			for (int i = 11; i < 1000; i++) {
 				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
 				processor.setLastUpdateTime(deltaObjectId, i);
 				if (i == 400) {
 					break;
@@ -316,10 +325,12 @@ public class FileNodeProcessorTest {
 			processor.addIntervalFileNode(401, bfprocessor.getFileName());
 			// write data into buffer write processor
 			bfprocessor.write(deltaObjectId, measurementId, 401, TSDataType.INT32, String.valueOf(401));
+			processor.setIntervalFileNodeStartTime(deltaObjectId, 401);
 			processor.setLastUpdateTime(deltaObjectId, 401);
 			for (int i = 402; i < 1000; i++) {
 				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
 				processor.setLastUpdateTime(deltaObjectId, i);
 				if (i == 800) {
 					break;
@@ -360,6 +371,7 @@ public class FileNodeProcessorTest {
 			for (int i = 802; i < 820; i++) {
 				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
 				processor.setLastUpdateTime(deltaObjectId, i);
 			}
 			processor.close();
@@ -373,6 +385,7 @@ public class FileNodeProcessorTest {
 			for (int i = 821; i < 840; i++) {
 				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
 				processor.setLastUpdateTime(deltaObjectId, i);
 			}
 			processor.close();
@@ -465,7 +478,7 @@ public class FileNodeProcessorTest {
 
 	@Test
 	public void testRecoveryBufferFile() {
-		
+
 		FileNodeProcessor fileNodeProcessor = null;
 		try {
 			fileNodeProcessor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
@@ -944,13 +957,14 @@ public class FileNodeProcessorTest {
 			BufferWriteProcessor bfProcessor = processor.getBufferWriteProcessor(deltaObjectId, begin);
 			assertEquals(true, bfProcessor.isNewProcessor());
 			bfProcessor.write(measurementId, measurementId, begin, TSDataType.INT32, String.valueOf(begin));
-			processor.setLastUpdateTime(deltaObjectId,begin);
+			processor.setLastUpdateTime(deltaObjectId, begin);
 			bfProcessor.setNewProcessor(false);
 			processor.addIntervalFileNode(begin, bfProcessor.getFileName());
-			for (long i = begin + 1; i <= end; i++) {
+			for (long i = begin; i <= end; i++) {
 				bfProcessor = processor.getBufferWriteProcessor(deltaObjectId, i);
 				bfProcessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-				processor.setLastUpdateTime(deltaObjectId,i);
+				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
+				processor.setLastUpdateTime(deltaObjectId, i);
 			}
 			processor.close();
 		} catch (FileNodeProcessorException e) {
@@ -982,7 +996,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			OverflowProcessor ofProcessor = processor.getOverflowProcessor(deltaObjectId, parameters);
 			ofProcessor.insert(deltaObjectId, measurementId, time, TSDataType.INT32, String.valueOf(value));
-			processor.changeTypeToChanged(deltaObjectId,time);
+			processor.changeTypeToChanged(deltaObjectId, time);
 			processor.close();
 			Thread.sleep(10);
 		} catch (FileNodeProcessorException e) {
@@ -1002,7 +1016,7 @@ public class FileNodeProcessorTest {
 			processor = new FileNodeProcessor(tsdbconfig.FileNodeDir, deltaObjectId, parameters);
 			OverflowProcessor ofProcessor = processor.getOverflowProcessor(deltaObjectId, parameters);
 			ofProcessor.update(deltaObjectId, measurementId, begin, end, TSDataType.INT32, String.valueOf(value));
-			processor.changeTypeToChanged(deltaObjectId,begin, end);
+			processor.changeTypeToChanged(deltaObjectId, begin, end);
 			processor.close();
 			Thread.sleep(10);
 		} catch (FileNodeProcessorException e) {
