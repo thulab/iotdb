@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.engine.filenode;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.HashMap;
@@ -13,8 +14,9 @@ import org.junit.Test;
 import cn.edu.thu.tsfile.common.conf.TSFileConfig;
 import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.thu.tsfiledb.conf.TSFileDBConfig;
-import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
+import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.Action;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.thu.tsfiledb.engine.bufferwrite.FileNodeConstants;
@@ -26,7 +28,7 @@ import cn.edu.thu.tsfiledb.metadata.MManager;
 
 public class FileNodeMulLastUpdateTest {
 
-	private TSFileDBConfig tsdbconfig = TSFileDBDescriptor.getInstance().getConfig();
+	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
 
@@ -123,9 +125,12 @@ public class FileNodeMulLastUpdateTest {
 		// query
 		try {
 			QueryStructure queryStructure = processor.query(deltaObjectId0, measurementId, null, null, null);
+			
+			DynamicOneColumnData CachePage = queryStructure.getCurrentPage();
+			
 		} catch (FileNodeProcessorException e) {
-			fail(e.getMessage());
 			e.printStackTrace();
+			fail(e.getMessage());
 		}
 	}
 

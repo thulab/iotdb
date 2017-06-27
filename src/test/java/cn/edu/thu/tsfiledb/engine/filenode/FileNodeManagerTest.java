@@ -19,8 +19,8 @@ import cn.edu.thu.tsfile.timeseries.filter.definition.SingleSeriesFilterExpressi
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.thu.tsfiledb.conf.TSFileDBConfig;
-import cn.edu.thu.tsfiledb.conf.TSFileDBDescriptor;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.lru.MetadataManagerHelper;
 import cn.edu.thu.tsfiledb.engine.overflow.io.EngineTestHelper;
@@ -28,7 +28,7 @@ import cn.edu.thu.tsfiledb.engine.overflow.io.EngineTestHelper;
 public class FileNodeManagerTest {
 
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
-	private TSFileDBConfig tsdbconfig = TSFileDBDescriptor.getInstance().getConfig();
+	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	private FileNodeManager fManager = null;
 
@@ -88,7 +88,7 @@ public class FileNodeManagerTest {
 		try {
 			int token = fManager.beginQuery(deltaObjectId);
 			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
-			DynamicOneColumnData bufferwriteinmemory = queryResult.getBufferwriteDataInMemory();
+			DynamicOneColumnData bufferwriteinmemory = queryResult.getCurrentPage();
 			List<RowGroupMetaData> bufferwriteinDisk = queryResult.getBufferwriteDataInDisk();
 			assertEquals(true, bufferwriteinmemory != null);
 			assertEquals(true, bufferwriteinDisk != null);
@@ -268,7 +268,7 @@ public class FileNodeManagerTest {
 			// query old file and overflow data
 			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 			fManager.endQuery(deltaObjectId, token);
-			DynamicOneColumnData bufferwriteindex = queryResult.getBufferwriteDataInMemory();
+			DynamicOneColumnData bufferwriteindex = queryResult.getCurrentPage();
 			assertEquals(null, bufferwriteindex);
 			List<RowGroupMetaData> bufferwriteindisk = queryResult.getBufferwriteDataInDisk();
 			assertEquals(null, bufferwriteindisk);
@@ -302,7 +302,7 @@ public class FileNodeManagerTest {
 			token = fManager.beginQuery(deltaObjectId);
 			queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 			fManager.endQuery(deltaObjectId, token);
-			bufferwriteindex = queryResult.getBufferwriteDataInMemory();
+			bufferwriteindex = queryResult.getCurrentPage();
 			assertEquals(null, bufferwriteindex);
 			bufferwriteindisk = queryResult.getBufferwriteDataInDisk();
 			assertEquals(null, bufferwriteindisk);

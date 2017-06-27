@@ -26,9 +26,6 @@ import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
-import cn.edu.thu.tsfiledb.engine.bufferwrite.Action;
-import cn.edu.thu.tsfiledb.engine.bufferwrite.BufferWriteProcessor;
-import cn.edu.thu.tsfiledb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.thu.tsfiledb.engine.exception.BufferWriteProcessorException;
 import cn.edu.thu.tsfiledb.engine.lru.MetadataManagerHelper;
 import cn.edu.thu.tsfiledb.engine.overflow.io.EngineTestHelper;
@@ -78,8 +75,9 @@ public class BufferWriteProcessorTest {
 	@Test
 	public void test() throws IOException, BufferWriteProcessorException {
 		String filename = "bufferwritetest";
-		
+
 		BufferWriteProcessor bufferWriteProcessor1 = null;
+		BufferWriteProcessor bufferWriteProcessor2 = null;
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bfflushaction);
 		parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bfcloseaction);
@@ -98,6 +96,7 @@ public class BufferWriteProcessorTest {
 		}
 		try {
 			bufferWriteProcessor1 = new BufferWriteProcessor(nsp, filename, parameters);
+			processor = bufferWriteProcessor1;
 		} catch (BufferWriteProcessorException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -109,13 +108,8 @@ public class BufferWriteProcessorTest {
 		// check outfile
 		// write record and test multiple thread flush rowgroup
 		for (int i = 0; i < 1000; i++) {
-<<<<<<< HEAD
-			bufferWriteProcessor1.write(nsp, "s0", 100, TSDataType.INT32, i + "");
-			if(i==400){
-=======
 			processor.write(nsp, "s0", 100, TSDataType.INT32, i + "");
 			if (i == 400) {
->>>>>>> f_cgf_memory_seal
 				break;
 			}
 		}
@@ -137,18 +131,8 @@ public class BufferWriteProcessorTest {
 		// read the buffer write file from middle of the file and test the cut
 		// off function
 		assertEquals(true, restorefile.exists());
-<<<<<<< HEAD
-		
-		BufferWriteProcessor bufferWriteProcessor2 = null;
-		bufferWriteProcessor2 = new BufferWriteProcessor(nsp, filename, parameters);
-		Pair<DynamicOneColumnData, List<RowGroupMetaData>> pair = bufferWriteProcessor2.getIndexAndRowGroupList(nsp, "s0");
-		assertEquals(0, pair.left.length);
-		int lastRowGroupNum = pair.right.size();
-		for (int i = 0; i < 1000; i++) {
-			bufferWriteProcessor2.write(nsp, "s0", 100, TSDataType.INT32, i + "");
-			if(i==400){
-=======
 		processor = new BufferWriteProcessor(nsp, filename, parameters);
+		bufferWriteProcessor2 = processor;
 		Pair<List<Object>, List<RowGroupMetaData>> pair = processor.getIndexAndRowGroupList(nsp, "s0");
 		DynamicOneColumnData columnData = (DynamicOneColumnData) pair.left.get(0);
 		Pair<List<ByteArrayInputStream>, CompressionTypeName> right = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) pair.left
@@ -159,7 +143,6 @@ public class BufferWriteProcessorTest {
 		for (int i = 0; i < 1000; i++) {
 			processor.write(nsp, "s0", 100, TSDataType.INT32, i + "");
 			if (i == 400) {
->>>>>>> f_cgf_memory_seal
 				break;
 			}
 		}
@@ -172,17 +155,17 @@ public class BufferWriteProcessorTest {
 		pair = processor.getIndexAndRowGroupList(nsp, "s0");
 		columnData = (DynamicOneColumnData) pair.left.get(0);
 		right = (Pair<List<ByteArrayInputStream>, CompressionTypeName>) pair.left.get(1);
-		assertEquals(false, columnData==null);
-		assertEquals(false, right==null);
+		assertEquals(false, columnData == null);
+		assertEquals(false, right == null);
 		System.out.println(columnData.length);
-		System.out.println(right.left.size()+ " "+right.right);
+		System.out.println(right.left.size() + " " + right.right);
 		processor = new BufferWriteProcessor(nsp, filename, parameters);
 		pair = processor.getIndexAndRowGroupList(nsp, "s0");
 		// assert the number of rowgroup
 		assertEquals(lastRowGroupNum * 2, pair.right.size());
 		processor.write(nsp, "s0", 100, TSDataType.INT32, 100 + "");
-		bufferWriteProcessor2.close();
 		bufferWriteProcessor1.close();
+		bufferWriteProcessor2.close();
 		processor.close();
 		assertEquals(false, restorefile.exists());
 	}
