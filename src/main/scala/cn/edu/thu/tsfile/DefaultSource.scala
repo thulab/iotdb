@@ -31,7 +31,8 @@ import scala.collection.mutable
 /**
   * TSFile data source
   *
-  * @author qiaojialin
+  * @author QJL
+  * @author MXW
   *
   */
 private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
