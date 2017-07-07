@@ -6,6 +6,7 @@ import cn.edu.thu.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.thu.tsfile.common.utils.RandomAccessOutputStream;
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileWriter;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.thu.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.thu.tsfile.timeseries.FileFormat.TsFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,8 +30,8 @@ public class CreateTSFile {
         TsFile tsFile = new TsFile(output, jsonSchema);
 
         tsFile.writeLine("root.car.d1,1, s1, 1, s2, 10, s3, 100.1");
-        tsFile.writeLine("root.car.d1,2, s1, 2, s2, 20, s3, 200.2, s4, 0.2");
-        tsFile.writeLine("root.car.d1,3, s1, 3, s2, 30, s3, 200.3, s4, 0.3");
+        tsFile.writeLine("root.car.d1,2, s1, 2, s2, 20, s3, 200.2, s4, 0.2, s5, PASS");
+        tsFile.writeLine("root.car.d1,3, s1, 3, s2, 30, s3, 200.3, s4, 0.3, s5, UNPASS");
         tsFile.writeLine("root.car.d1,4, s1, 4, s2, 40, s3, 200.4, s4, 0.4");
 
         tsFile.writeLine("root.car.d2,5, s1, 5, s2, 50, s3, 200.5, s4, 0.5");
@@ -86,11 +87,18 @@ public class CreateTSFile {
         s4.put(JsonFormatConstant.MEASUREMENT_ENCODING,
                 conf.defaultSeriesEncoder);
 
+        JSONObject s5 = new JSONObject();
+        s5.put(JsonFormatConstant.MEASUREMENT_UID, "s5");
+        s5.put(JsonFormatConstant.DATA_TYPE, TSDataType.BYTE_ARRAY.toString());
+        s5.put(JsonFormatConstant.MEASUREMENT_ENCODING,
+                TSEncoding.PLAIN.toString());
+
         JSONArray measureGroup = new JSONArray();
         measureGroup.put(s1);
         measureGroup.put(s2);
         measureGroup.put(s3);
         measureGroup.put(s4);
+        measureGroup.put(s5);
 
         JSONObject jsonSchema = new JSONObject();
         jsonSchema.put(JsonFormatConstant.DELTA_TYPE, "test_type");

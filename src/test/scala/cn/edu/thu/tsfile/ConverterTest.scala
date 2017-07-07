@@ -3,6 +3,7 @@ package cn.edu.thu.tsfile
 import java.io.File
 import java.util
 
+import cn.edu.thu.tsfile.common.utils.Binary
 import cn.edu.thu.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
 import cn.edu.thu.tsfile.io.CreateTSFile
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput
@@ -91,7 +92,7 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
       StructField("s3", FloatType, nullable = true),
       StructField("s4", DoubleType, nullable = true),
       StructField("s5", BooleanType, nullable = true),
-      StructField("s6", BinaryType, nullable = true)
+      StructField("s6", StringType, nullable = true)
     )
     val expectedType = StructType(expectedFields)
     val expectedSchema = StructType(expectedType.toList)
@@ -110,12 +111,15 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
     floatField.setFloatV(3.14f)
     val doubleField = new Field(TSDataType.DOUBLE, "s1")
     doubleField.setDoubleV(0.618d)
+    val stringField = new Field(TSDataType.BYTE_ARRAY, "s1")
+    stringField.setBinaryV(new Binary("pass"))
 
     Assert.assertEquals(Converter.toSqlValue(boolField), true)
     Assert.assertEquals(Converter.toSqlValue(intField), 32)
     Assert.assertEquals(Converter.toSqlValue(longField), 64l)
     Assert.assertEquals(Converter.toSqlValue(floatField), 3.14f)
     Assert.assertEquals(Converter.toSqlValue(doubleField), 0.618d)
+    Assert.assertEquals(Converter.toSqlValue(stringField), "pass")
   }
 
 }

@@ -14,8 +14,8 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
 
   private val resourcesFolder = "src/test/resources"
   private val tsfileFolder = "src/test/resources/tsfile"
-  private val tsfilePath1 = "src/test/resources/tsfile/test1.tsfile"
-  private val tsfilePath2 = "src/test/resources/tsfile/test2.tsfile"
+  private val tsfile1 = "src/test/resources/tsfile/test1.tsfile"
+  private val tsfile2 = "src/test/resources/tsfile/test2.tsfile"
   private val outputPath = "src/test/resources/output"
   private val outputPathFile = outputPath + "/part-m-00000"
   private var spark: SparkSession = _
@@ -31,8 +31,8 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     val output = new File(outputPath)
     if (output.exists())
       output.delete()
-    new CreateTSFile().createTSFile1(tsfilePath1)
-    new CreateTSFile().createTSFile2(tsfilePath2)
+    new CreateTSFile().createTSFile1(tsfile1)
+    new CreateTSFile().createTSFile2(tsfile2)
     spark = SparkSession
       .builder()
       .config("spark.master", "local")
@@ -60,24 +60,15 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
 
   }
 
-  test("writer format") {
-    val df = spark.read.tsfile(tsfilePath1)
-    df.show()
-    df.write.format("cn.edu.thu.tsfile").save(outputPath)
-    val newDf = spark.read.tsfile(outputPathFile)
-    newDf.show()
-    Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
-  }
 
   test("writer") {
-    val df = spark.read.tsfile(tsfilePath1)
+    val df = spark.read.tsfile(tsfile1)
     df.show()
     df.write.tsfile(outputPath)
     val newDf = spark.read.tsfile(outputPathFile)
     newDf.show()
     Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
   }
-
 
   test("tsfile_qp") {
     val df = spark.read.tsfile(tsfileFolder)
@@ -115,14 +106,14 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   }
 
   test("testCount") {
-    val df = spark.read.tsfile(tsfilePath1)
+    val df = spark.read.tsfile(tsfile1)
     df.createOrReplaceTempView("tsfile_table")
     val newDf = spark.sql("select count(*) from tsfile_table")
     Assert.assertEquals(8, newDf.head().apply(0).asInstanceOf[Long])
   }
 
   test("testSelect *") {
-    val df = spark.read.tsfile(tsfilePath1)
+    val df = spark.read.tsfile(tsfile1)
     df.createOrReplaceTempView("tsfile_table")
     val newDf = spark.sql("select * from tsfile_table")
     val count = newDf.count()
@@ -130,7 +121,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   }
 
   test("testQueryData1") {
-    val df = spark.read.tsfile(tsfilePath1)
+    val df = spark.read.tsfile(tsfile1)
     df.createOrReplaceTempView("tsfile_table")
 
     val newDf = spark.sql("select s1, s3 from tsfile_table where s1 > 4 and delta_object = 'root.car.d2'").cache()
@@ -139,7 +130,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   }
 
   test("testQueryDataComplex2") {
-    val df = spark.read.tsfile(tsfilePath1)
+    val df = spark.read.tsfile(tsfile1)
     df.createOrReplaceTempView("tsfile_table")
 
     val newDf = spark.sql("select * from tsfile_table where s1 <4 and delta_object = 'root.car.d1' or s1 > 5 and delta_object = 'root.car.d2'").cache()
@@ -148,26 +139,18 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   }
 
   test("testQuerySchema") {
-    val df = spark.read.format("cn.edu.thu.tsfile").load(tsfilePath1)
+    val df = spark.read.format("cn.edu.thu.tsfile").load(tsfile1)
 
     val expected = StructType(Seq(
       StructField(SQLConstant.RESERVED_TIME, LongType, nullable = true),
       StructField(SQLConstant.RESERVED_DELTA_OBJECT, StringType, nullable = true),
       StructField("s3", FloatType, nullable = true),
       StructField("s4", DoubleType, nullable = true),
+      StructField("s5", StringType, nullable = true),
       StructField("s1", IntegerType, nullable = true),
       StructField("s2", LongType, nullable = true)
     ))
     Assert.assertEquals(expected, df.schema)
   }
-
-//  test("testQuerySchema1") {
-//    val df = spark.read.format("cn.edu.thu.tsfile").load("/testdata/test1.tsfile")
-//    df.createOrReplaceTempView("tsfile")
-//
-//    println(spark.sql("select * from tsfile").schema)
-//
-//    spark.sql("select * from tsfile").show()
-//  }
 
 }

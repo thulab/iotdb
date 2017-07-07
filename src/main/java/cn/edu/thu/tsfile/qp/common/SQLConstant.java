@@ -18,7 +18,7 @@ public class SQLConstant {
     public static final String INT64 = "INT64";
     public static final String FLOAT = "FLOAT";
     public static final String DOUBLE = "DOUBLE";
-    public static final String DEFAULT_ENCODING = "RLE";
+    public static final String BYTE_ARRAY = "BYTE_ARRAY";
 
     public static final int KW_AND = 1;
     public static final int KW_OR = 2;
