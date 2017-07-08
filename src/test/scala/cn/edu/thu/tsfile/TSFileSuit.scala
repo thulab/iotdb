@@ -8,6 +8,7 @@ import org.apache.spark.sql.types._
 import org.junit.Assert
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import cn.edu.thu.tsfile.qp.common.SQLConstant
+import scala.collection.mutable
 
 
 class TSFileSuit extends FunSuite with BeforeAndAfterAll {
@@ -68,6 +69,18 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     val newDf = spark.read.tsfile(outputPathFile)
     newDf.show()
     Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
+  }
+
+  test("test options") {
+    val options = new mutable.HashMap[String, String]()
+    options.put("column1", "car")
+    options.put("column2", "device")
+    val df = spark.read.options(options).tsfile(tsfile1)
+    df.createOrReplaceTempView("tsfile_table")
+
+    spark.sql("select * from tsfile_table where device = 'd1' and car = 'car' and time < 10").show()
+    val newDf = spark.sql("select * from tsfile_table where device = 'd1'")
+    Assert.assertEquals(4, newDf.count())
   }
 
   test("tsfile_qp") {

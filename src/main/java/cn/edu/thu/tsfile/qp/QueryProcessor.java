@@ -15,6 +15,7 @@ import cn.edu.thu.tsfile.qp.optimizer.RemoveNotOptimizer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -29,7 +30,8 @@ import java.util.List;
 public class QueryProcessor {
 
     //construct logical query plans first, then convert them to physical ones
-    public List<TSQueryPlan> generatePlans(FilterOperator filter, List<String> paths, TSRandomAccessFileReader in, Long start, Long end) throws QueryProcessorException, IOException {
+    public List<TSQueryPlan> generatePlans(FilterOperator filter, List<String> paths, Map<String, Integer> columnNameIndex,
+                                           TSRandomAccessFileReader in, Long start, Long end) throws QueryProcessorException, IOException {
 
         List<TSQueryPlan> queryPlans = new ArrayList<>();
 
@@ -46,20 +48,20 @@ public class QueryProcessor {
             List<FilterOperator> filterOperators = splitFilter(filter);
 
             for (FilterOperator filterOperator : filterOperators) {
-                SingleQuery singleQuery = constructSelectPlan(filterOperator);
+                SingleQuery singleQuery = constructSelectPlan(filterOperator, columnNameIndex);
                 if (singleQuery != null) {
-                    queryPlans.addAll(new PhysicalOptimizer().optimize(singleQuery, paths, in, start, end));
+                    queryPlans.addAll(new PhysicalOptimizer(columnNameIndex).optimize(singleQuery, paths, in, start, end));
                 }
             }
         } else {
-            queryPlans.addAll(new PhysicalOptimizer().optimize(null, paths, in, start, end));
+            queryPlans.addAll(new PhysicalOptimizer(columnNameIndex).optimize(null, paths, in, start, end));
         }
         return queryPlans;
     }
 
     private List<FilterOperator> splitFilter(FilterOperator filterOperator) {
         if (filterOperator.isSingle() || filterOperator.getTokenIntType() != SQLConstant.KW_OR) {
-            List<FilterOperator> ret = new ArrayList<FilterOperator>();
+            List<FilterOperator> ret = new ArrayList<>();
             ret.add(filterOperator);
             return ret;
         }
@@ -67,11 +69,11 @@ public class QueryProcessor {
         return filterOperator.childOperators;
     }
 
-    private SingleQuery constructSelectPlan(FilterOperator filterOperator) throws QueryOperatorException {
-
+    private SingleQuery constructSelectPlan(FilterOperator filterOperator, Map<String, Integer> columnNames) throws QueryOperatorException {
         FilterOperator timeFilter = null;
         FilterOperator valueFilter = null;
-        FilterOperator deltaObjectFilterOperator = null;
+        List<FilterOperator> columnFilterOperators = new ArrayList<>();
+
         List<FilterOperator> singleFilterList = null;
 
         if (filterOperator.isSingle()) {
@@ -93,24 +95,26 @@ public class QueryProcessor {
             if (!child.isSingle()) {
                 valueList.add(child);
             } else {
-                switch (child.getSinglePath()) {
-                    case SQLConstant.RESERVED_TIME:
-                        if (timeFilter != null) {
-                            throw new QueryOperatorException(
-                                    "time filter has been specified more than once");
-                        }
-                        timeFilter = child;
-                        break;
-                    case SQLConstant.RESERVED_DELTA_OBJECT:
-                        if (deltaObjectFilterOperator != null) {
-                            throw new QueryOperatorException(
-                                    "delta object filter has been specified more than once");
-                        }
-                        deltaObjectFilterOperator = child;
-                        break;
-                    default:
-                        valueList.add(child);
-                        break;
+                String singlePath = child.getSinglePath();
+                if (columnNames.containsKey(singlePath)) {
+                    if(!columnFilterOperators.contains(child))
+                        columnFilterOperators.add(child);
+                    else
+                        throw new QueryOperatorException(
+                                "The same key filter has been specified more than once: " + singlePath);
+                } else {
+                    switch (child.getSinglePath()) {
+                        case SQLConstant.RESERVED_TIME:
+                            if (timeFilter != null) {
+                                throw new QueryOperatorException(
+                                        "time filter has been specified more than once");
+                            }
+                            timeFilter = child;
+                            break;
+                        default:
+                            valueList.add(child);
+                            break;
+                    }
                 }
             }
         }
@@ -123,7 +127,7 @@ public class QueryProcessor {
             valueFilter.childOperators = valueList;
         }
 
-        return new SingleQuery(deltaObjectFilterOperator, timeFilter, valueFilter);
+        return new SingleQuery(columnFilterOperators, timeFilter, valueFilter);
     }
 
 }

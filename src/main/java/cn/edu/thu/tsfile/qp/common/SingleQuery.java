@@ -1,6 +1,8 @@
 package cn.edu.thu.tsfile.qp.common;
 
 
+import java.util.List;
+
 /**
  * This class is constructed with a single getIndex plan. Single getIndex means it could be processed by
  * reading API by one pass directly.<br>
@@ -8,21 +10,21 @@ package cn.edu.thu.tsfile.qp.common;
  */
 public class SingleQuery {
 
-    private FilterOperator deltaObjectFilterOperator;
+    private List<FilterOperator> columnFilterOperators;
     private FilterOperator timeFilterOperator;
     private FilterOperator valueFilterOperator;
 
-    public SingleQuery(FilterOperator deltaObjectFilterOperator,
+    public SingleQuery(List<FilterOperator> columnFilterOperators,
                        FilterOperator timeFilter, FilterOperator valueFilter) {
         super();
-        this.deltaObjectFilterOperator = deltaObjectFilterOperator;
+        this.columnFilterOperators = columnFilterOperators;
         this.timeFilterOperator = timeFilter;
         this.valueFilterOperator = valueFilter;
     }
 
-    public FilterOperator getDeltaObjectFilterOperator() {
+    public List<FilterOperator> getColumnFilterOperator() {
 
-        return deltaObjectFilterOperator;
+        return columnFilterOperators;
     }
 
     public FilterOperator getTimeFilterOperator() {
@@ -35,7 +37,7 @@ public class SingleQuery {
 
     @Override
     public String toString() {
-        return "SingleQuery: \n" + deltaObjectFilterOperator + "\n" + timeFilterOperator + "\n" + valueFilterOperator;
+        return "SingleQuery: \n" + columnFilterOperators + "\n" + timeFilterOperator + "\n" + valueFilterOperator;
     }
 
 

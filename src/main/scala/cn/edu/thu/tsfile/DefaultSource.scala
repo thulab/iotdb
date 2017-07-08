@@ -60,7 +60,21 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
     //get union series in TsFile
     val tsfileSchema = Converter.getUnionSeries(files, conf)
 
-    Converter.toSqlSchema(tsfileSchema)
+    var i = 1
+    var useDelta_object = true
+    DefaultSource.columnNameIndex.clear()
+    while(options.contains(SQLConstant.COLUMN+i)) {
+      val value = options.get(SQLConstant.COLUMN+i).orNull
+      DefaultSource.columnNameIndex.put(value, i)
+      i = i + 1
+      useDelta_object = false
+    }
+
+    if (useDelta_object) {
+      DefaultSource.columnNameIndex.put(SQLConstant.RESERVED_DELTA_OBJECT, 0)
+    }
+
+    Converter.toSqlSchema(tsfileSchema, DefaultSource.columnNameIndex)
   }
 
   override def isSplitable(
@@ -98,10 +112,11 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       parameters.put(QueryConstant.PARTITION_START_OFFSET, file.start.asInstanceOf[java.lang.Long])
       parameters.put(QueryConstant.PARTITION_END_OFFSET, (file.start + file.length).asInstanceOf[java.lang.Long])
 
-      //convert tsfilequery to QueryConfigs
-      val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, file.start.asInstanceOf[java.lang.Long], (file.start + file.length).asInstanceOf[java.lang.Long])
+      //convert tsfile query to QueryConfigs
+      val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, DefaultSource.columnNameIndex,
+        file.start.asInstanceOf[java.lang.Long], (file.start + file.length).asInstanceOf[java.lang.Long])
 
-      //use QueryConfigs to query cn.edu.thu.tsfile
+      //use QueryConfigs to query data in tsfile
       val dataSets = Executor.query(in, queryConfigs.toList, parameters)
 
       case class Record(record: RowRecord, index: Int)
@@ -140,6 +155,8 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
         // Used to convert `Row`s containing data columns into `InternalRow`s.
         private val encoderForDataColumns = RowEncoder(requiredSchema)
 
+        private var deltaObjectId = "null"
+
         override def hasNext: Boolean = {
           var hasNext = false
 
@@ -154,6 +171,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
             if (curRecord == null || tmpRecord.record.timestamp != curRecord.record.timestamp ||
               !tmpRecord.record.getFields.get(0).deltaObjectId.equals(curRecord.record.getFields.get(0).deltaObjectId)) {
               curRecord = tmpRecord
+              deltaObjectId = curRecord.record.getFields.get(0).deltaObjectId
               hasNext = true
             }
           }
@@ -175,7 +193,11 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
             if (field.name == SQLConstant.RESERVED_TIME) {
               rowBuffer(index) = curRecord.record.timestamp
             } else if (field.name == SQLConstant.RESERVED_DELTA_OBJECT) {
-              rowBuffer(index) = curRecord.record.getFields.get(0).deltaObjectId
+              rowBuffer(index) = deltaObjectId
+            } else if (DefaultSource.columnNameIndex.contains(field.name)) {
+              val columnIndex = DefaultSource.columnNameIndex(field.name)
+              val columns = deltaObjectId.split(SQLConstant.REGEX_PATH_SEPARATOR)
+              rowBuffer(index) = columns(columnIndex)
             } else {
               rowBuffer(index) = Converter.toSqlValue(fields.getOrElse(field.name, null))
             }
@@ -202,6 +224,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
 private[tsfile] object DefaultSource {
   val path = "path"
+  val columnNameIndex = new mutable.HashMap[String, Integer]()
 
   class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
     private def writeObject(out: ObjectOutputStream): Unit = {

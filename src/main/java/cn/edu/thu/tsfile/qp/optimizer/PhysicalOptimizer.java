@@ -1,15 +1,13 @@
 package cn.edu.thu.tsfile.qp.optimizer;
 
+import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryEngine;
 import cn.edu.thu.tsfile.qp.common.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by qiaojialin on 2017/4/27.
@@ -18,18 +16,22 @@ public class PhysicalOptimizer {
 
     //determine whether to query all delta_objects from TSFile. true means do query.
     private boolean flag;
+    private List<String> validDeltaObjects = new ArrayList<>();
+    private Map<String, Integer> columnNameIndex;
 
-    public List<TSQueryPlan> optimize(SingleQuery singleQuery, List<String> paths, TSRandomAccessFileReader in, Long start, Long end) throws IOException {
+    public PhysicalOptimizer(Map<String, Integer> columnNameIndex) {
+        this.columnNameIndex = columnNameIndex;
+    }
 
+    public List<TSQueryPlan> optimize(SingleQuery singleQuery, List<String> paths,
+                                      TSRandomAccessFileReader in, Long start, Long end) throws IOException {
         QueryEngine queryEngine = new QueryEngine(in);
         List<String> actualDeltaObjects = queryEngine.getAllDeltaObjectUIDByPartition(start, end);
         List<SeriesSchema> actualSeries = queryEngine.getAllSeriesSchema();
 
-        List<String> validDeltaObjects = new ArrayList<>();
-
         List<String> selectedSeries = new ArrayList<>();
         for(String path: paths) {
-            if(!path.equals(SQLConstant.RESERVED_DELTA_OBJECT) && !path.equals(SQLConstant.RESERVED_TIME)) {
+            if(!columnNameIndex.containsKey(path) && !path.equals(SQLConstant.RESERVED_TIME)) {
                 selectedSeries.add(path);
             }
         }
@@ -51,20 +53,15 @@ public class PhysicalOptimizer {
             }
 
             flag = true;
-            Set<String> selectDeltaObjects = mergeDeltaObject(singleQuery.getDeltaObjectFilterOperator());
+            Map<String, Set<String>> selectColumns = mergeColumns(singleQuery.getColumnFilterOperator());
             if(!flag) {
-                //e.g. where delta_object = 'd1' and delta_object = 'd2', should not query
+                //e.g. where column1 = 'd1' and column2 = 'd2', should not query
                 return new ArrayList<>();
             }
 
             //if select deltaObject, then match with measurement
-            if(selectDeltaObjects != null && !selectDeltaObjects.isEmpty()) {
-                //check whether selected deltaObjects belong to file
-                for(String deltaObject: selectDeltaObjects) {
-                    if(actualDeltaObjects.contains(deltaObject)) {
-                        validDeltaObjects.add(deltaObject);
-                    }
-                }
+            if(!selectColumns.isEmpty()) {
+                combination(actualDeltaObjects, selectColumns, selectColumns.keySet().toArray(), 0, new String[selectColumns.size()]);
             } else {
                 validDeltaObjects.addAll(queryEngine.getAllDeltaObjectUIDByPartition(start, end));
             }
@@ -88,7 +85,6 @@ public class PhysicalOptimizer {
             selectedSeries.removeIf(path -> !seriesSet.contains(path));
         }
 
-
         List<TSQueryPlan> tsFileQueries = new ArrayList<>();
         for(String deltaObject: validDeltaObjects) {
             List<String> newPaths = new ArrayList<>();
@@ -107,42 +103,100 @@ public class PhysicalOptimizer {
         return tsFileQueries;
     }
 
+    /**
+     * calculate combinations of selected columns and add valid deltaObjects to validDeltaObjects
+     *
+     * @param actualDeltaObjects deltaObjects from file
+     * @param columnValues e.g. (device:{d1,d2}) (board:{c1,c2}) or (delta_object:{d1,d2})
+     * @param columns e.g. device, board
+     * @param beginIndex current recursion list index
+     * @param values combination of column values
+     */
+    private void combination(List<String> actualDeltaObjects, Map<String, Set<String>> columnValues, Object[] columns, int beginIndex, String[] values) {
+        //use delta_object column
+        if (columnValues.containsKey(SQLConstant.RESERVED_DELTA_OBJECT)) {
+            Set<String> delta_objects = columnValues.get(SQLConstant.RESERVED_DELTA_OBJECT);
+            for(String delta_object: delta_objects) {
+                if(actualDeltaObjects.contains(delta_object))
+                    validDeltaObjects.add(delta_object);
+            }
+            return;
+        }
 
-    private Set<String> mergeDeltaObject(FilterOperator deltaFilterOperator) {
-        if (deltaFilterOperator == null) {
+        if(beginIndex == columns.length){
+            for(String deltaObject: actualDeltaObjects) {
+                boolean valid = true;
+                //if deltaObject is root.column1_value.column2_value then
+                //actualValues is [root, column1_value, column2_value]
+                String[] actualValues = deltaObject.split(SQLConstant.REGEX_PATH_SEPARATOR);
+                for(int i = 0; i < columns.length; i++) {
+                    int columnIndex = columnNameIndex.get(columns[i].toString());
+                    if(!actualValues[columnIndex].equals(values[i])) {
+                        valid = false;
+                    }
+                }
+                if(valid)
+                    validDeltaObjects.add(deltaObject);
+            }
+            return;
+        }
+
+        for(String c: columnValues.get(columns[beginIndex].toString())){
+            values[beginIndex] = c;
+            combination(actualDeltaObjects, columnValues, columns, beginIndex + 1, values);
+        }
+    }
+
+    private Map<String, Set<String>> mergeColumns(List<FilterOperator> columnFilterOperators) {
+        Map<String, Set<String>> column_values_map = new HashMap<>();
+        for(FilterOperator filterOperator: columnFilterOperators) {
+            Pair<String, Set<String>> column_values = mergeColumn(filterOperator);
+            if (column_values!= null && !column_values.right.isEmpty())
+                column_values_map.put(column_values.left, column_values.right);
+        }
+        return column_values_map;
+    }
+
+    /**
+     * merge one column filterOperator
+     * @param columnFilterOperator column filter
+     * @return selected values of the column filter
+     */
+    private Pair<String, Set<String>> mergeColumn(FilterOperator columnFilterOperator) {
+        if (columnFilterOperator == null) {
             return null;
         }
-        if (deltaFilterOperator.isLeaf()) {
-            Set<String> r = new HashSet<>();
-            r.add(((BasicOperator)deltaFilterOperator).getSeriesValue());
-            return r;
+        if (columnFilterOperator.isLeaf()) {
+            Set<String> ret = new HashSet<>();
+            ret.add(((BasicOperator)columnFilterOperator).getSeriesValue());
+            return new Pair<>(columnFilterOperator.getSinglePath(), ret);
         }
-        List<FilterOperator> children = deltaFilterOperator.getChildren();
+        List<FilterOperator> children = columnFilterOperator.getChildren();
         if (children == null || children.isEmpty()) {
-            return new HashSet<>();
+            return new Pair<>(null, new HashSet<>());
         }
-        Set<String> ret = mergeDeltaObject(children.get(0));
+        Pair<String, Set<String>> ret = mergeColumn(children.get(0));
         if(ret == null){
             return null;
         }
         for (int i = 1; i < children.size(); i++) {
-            Set<String> temp = mergeDeltaObject(children.get(i));
+            Pair<String, Set<String>> temp = mergeColumn(children.get(i));
             if(temp == null) {
                 return null;
             }
-            switch (deltaFilterOperator.getTokenIntType()) {
+            switch (columnFilterOperator.getTokenIntType()) {
                 case SQLConstant.KW_AND:
-                    ret.retainAll(temp);
-                    //example: "where delta_object = d1 and delta_object = d2" should not query data
-                    if(ret.isEmpty()) {
+                    ret.right.retainAll(temp.right);
+                    //example: "where device = d1 and device = d2" should not query data
+                    if(ret.right.isEmpty()) {
                         flag = false;
                     }
                     break;
                 case SQLConstant.KW_OR:
-                    ret.addAll(temp);
+                    ret.right.addAll(temp.right);
                     break;
                 default:
-                    throw new UnsupportedOperationException("given error token type:"+deltaFilterOperator.getTokenIntType());
+                    throw new UnsupportedOperationException("given error token type:"+columnFilterOperator.getTokenIntType());
             }
         }
         return ret;

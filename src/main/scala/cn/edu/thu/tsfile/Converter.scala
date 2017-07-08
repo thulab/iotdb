@@ -69,12 +69,16 @@ object Converter {
     * Convert TSFile columns to sparkSQL schema.
     *
     * @param tsfileSchema all time series information in TSFile
+    * @param columns e.g. {device:1, board:2} or {delta_object:0}
     * @return sparkSQL table schema
     */
-  def toSqlSchema(tsfileSchema: util.ArrayList[SeriesSchema]): Option[StructType] = {
+  def toSqlSchema(tsfileSchema: util.ArrayList[SeriesSchema], columns: mutable.HashMap[String, Integer]): Option[StructType] = {
     val fields = new ListBuffer[StructField]()
     fields += StructField(SQLConstant.RESERVED_TIME, LongType, nullable = false)
-    fields += StructField(SQLConstant.RESERVED_DELTA_OBJECT, StringType, nullable = false)
+
+    columns.foreach(f => {
+      fields += StructField(f._1, StringType, nullable = false)
+    })
 
     tsfileSchema.foreach((series: SeriesSchema) => {
       fields += StructField(series.name, series.dataType match {
@@ -163,11 +167,18 @@ object Converter {
     * @param in file input stream
     * @param requiredSchema The schema of the data that should be output for each row.
     * @param filters A set of filters than can optionally be used to reduce the number of rows output
+    * @param columnNameIndex e.g. {device:1, board:2}
     * @param start the start offset in file partition
     * @param end the end offset in file partition
     * @return TSFile physical query plans
     */
-  def toQueryConfigs(in: TSRandomAccessFileReader, requiredSchema: StructType, filters: Seq[Filter], start : java.lang.Long, end : java.lang.Long): Array[QueryConfig] = {
+  def toQueryConfigs(
+                      in: TSRandomAccessFileReader,
+                      requiredSchema: StructType,
+                      filters: Seq[Filter],
+                      columnNameIndex: mutable.HashMap[String, Integer],
+                      start : java.lang.Long,
+                      end : java.lang.Long): Array[QueryConfig] = {
 
     val queryConfigs = new ArrayBuffer[QueryConfig]()
 
@@ -187,7 +198,7 @@ object Converter {
 
       //generatePlans operatorTree to TSQueryPlan list
       val queryProcessor = new QueryProcessor()
-      val tsfileQuerys = queryProcessor.generatePlans(null, paths, in, start, end).toArray
+      val tsfileQuerys = queryProcessor.generatePlans(null, paths, columnNameIndex, in, start, end).toArray
 
       //construct TSQueryPlan list to QueryConfig list
       tsfileQuerys.foreach(f => {
@@ -205,7 +216,7 @@ object Converter {
 
       //generatePlans operatorTree to TSQueryPlan list
       val queryProcessor = new QueryProcessor()
-      val queryPlans = queryProcessor.generatePlans(operator, paths, in, start, end).toArray
+      val queryPlans = queryProcessor.generatePlans(operator, paths, columnNameIndex, in, start, end).toArray
 
       //construct TSQueryPlan list to QueryConfig list
       queryPlans.foreach(f => {
