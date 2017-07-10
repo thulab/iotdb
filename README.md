@@ -39,7 +39,7 @@ The set of time-series data in section "Time-series Data" is used here to illust
 
 <center>
 <table style="text-align:center">
-	<tr><th colspan="6">delta\_object:root.car.turbine1</th></tr>
+	<tr><th colspan="6">delta_object:root.car.turbine1</th></tr>
 	<tr><th colspan="2">sensor_1</th><th colspan="2">sensor_2</th><th colspan="2">sensor_3</th></tr>
 	<tr><th>time</th><th>value</td><th>time</th><th>value</td><th>time</th><th>value</td>
 	<tr><td>1</td><td>1.2</td><td>1</td><td>20</td><td>2</td><td>50</td></tr>
@@ -59,7 +59,7 @@ The SparkSQL Table Structure is as follow:
 
 <center>
 	<table style="text-align:center">
-	<tr><th>time(LongType)</th><th> delta\_object(StringType)</th><th>sensor_1(FloatType)</th><th>sensor_2(IntType)</th><th>sensor_3(IntType)</th></tr>
+	<tr><th>time(LongType)</th><th> delta_object(StringType)</th><th>sensor_1(FloatType)</th><th>sensor_2(IntType)</th><th>sensor_3(IntType)</th></tr>
 	<tr><td>1</td><td> root.car.turbine1 </td><td>1.2</td><td>20</td><td>null</td></tr>
 	<tr><td>2</td><td> root.car.turbine1 </td><td>null</td><td>20</td><td>50</td></tr>
 	<tr><td>3</td><td> root.car.turbine1 </td><td>1.4</td><td>21</td><td>null</td></tr>
@@ -114,7 +114,7 @@ Then you can group by any level in delta_object.
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//read data in TsFile and create a table
-	val df = spark.read.tsfile("test.ts")
+	val df = spark.read.tsfile("test.tsfile")
 	df.createOrReplaceTempView("TsFile_table")
 
 	//query with filter
@@ -147,7 +147,7 @@ Then you can group by any level in delta_object.
 	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//create a table in SparkSQL and build relation with a TsFile
-	spark.sql("create temporary view TsFile using cn.edu.thu.tsfile options(path = \"test.ts\")")
+	spark.sql("create temporary view TsFile using cn.edu.thu.tsfile options(path = \"test.tsfile\")")
 
 	spark.sql("select * from TsFile where sensor_1 > 1.2").show()
 
@@ -158,13 +158,14 @@ Then you can group by any level in delta_object.
 	```scala
 	import cn.edu.thu.tsfile._
 	import org.apache.spark.sql.SparkSession
-	   	
+	import scala.collection.mutable
+
 	val spark = SparkSession.builder().master("local").getOrCreate()
 		
 	val options = new mutable.HashMap[String, String]()
 	options.put("column1", "car")
 	options.put("column2", "device")
-	val df = spark.read.options(options).tsfile(tsfile1)
+	val df = spark.read.options(options).tsfile("test.tsfile")
 	    
 	//create a table in SparkSQL and build relation with a TsFile
 	df.createOrReplaceTempView("tsfile_table")
