@@ -39,9 +39,9 @@ public class JDBCExample2 {
 		Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
 		Connection connection = null;
 		connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
-		
 		createSchema(schemaFilePath, connection);
 		insertData(sqlFile);
+		connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
 		Statement statement = connection.createStatement();
 		System.out.println(statement.execute("close"));
 		connection.close();
