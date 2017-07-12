@@ -44,18 +44,18 @@ public class TsfileDBDescriptor {
 			try {
 			    inputStream = new FileInputStream(new File(url));
 			} catch (Exception e) {
-			    LOGGER.error("Fail to find config file {}", url, e);
+			    LOGGER.warn("Fail to find config file {}", url, e);
 			    return;
 			}
 			
 		} else {
-			url = tsfileHome + "/conf/"+TsfileDBConfig.CONFIG_NAME;
+			url = tsfileHome + File.pathSeparator+"conf"+ File.pathSeparator+TsfileDBConfig.CONFIG_NAME;
 			try {
 				File file = new File(url);
 				inputStream = new FileInputStream(file);
 			} catch (FileNotFoundException e) {
-				LOGGER.error("Fail to find config file {}", url, e);
-				System.exit(1);
+				LOGGER.warn("Fail to find config file {}", url, e);
+				return;
 			}
 		}
 		LOGGER.info("Start to read config file {}", url);
@@ -80,6 +80,10 @@ public class TsfileDBDescriptor {
 			conf.maxOpenFolder = Integer.parseInt(properties.getProperty("max_opened_folder", conf.maxOpenFolder + ""));
 			
 			conf.fetchSize = Integer.parseInt(properties.getProperty("fetch_size", conf.fetchSize + ""));
+			
+			conf.periodTimeForClose = Long.parseLong(properties.getProperty("period_time_for_close_in_second", conf.periodTimeForClose+"").trim());
+			conf.periodTimeForMerge = Long.parseLong(properties.getProperty("period_time_for_merge_in_second", conf.periodTimeForMerge+"").trim());
+			
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file, use default configuration", e);
 		} catch (Exception e) {
