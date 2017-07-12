@@ -1,11 +1,9 @@
 package cn.edu.thu.tsfiledb;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,8 +17,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JDBCExample2 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(JDBCExample2.class);
+public class JDBCExample3 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(JDBCExample3.class);
 	private static String schemaFilePath = "src/main/resources/schema.csv";
 	private static String sqlFile = "src/main/resources/sqlfile";
 	private static String sourceFilePath = "D:\\datayingyeda";
@@ -33,7 +31,7 @@ public class JDBCExample2 {
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static long startTime = 0;
 	private static long endTime = 0;
-	private static long wstarttime;
+	private static long wstarttime = 0;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 
@@ -68,13 +66,21 @@ public class JDBCExample2 {
 
 	private static void insertOneData(String line, Statement statement) {
 
-		count++;
+		
 		try {
-			statement.execute(line);
+			statement.addBatch(line);
 		} catch (SQLException e) {
 			LOGGER.error(e.getMessage());
 		}
-
+		count++;
+		if(count%100==0){
+			try {
+				statement.executeBatch();
+				statement.clearBatch();
+			} catch (SQLException e) {
+				LOGGER.error(e.getMessage());
+			}
+		}
 		if (count % 10000 == 0) {
 			wstarttime = System.currentTimeMillis();
 			long wendtime = System.currentTimeMillis();
