@@ -37,9 +37,9 @@ public class JDBCExample3 {
 
 		Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
 		Connection connection = null;
-		connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
-		createSchema(schemaFilePath, connection);
-		insertData(sqlFile);
+//		connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
+//		createSchema(schemaFilePath, connection);
+//		insertData(sqlFile);
 		connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
 		Statement statement = connection.createStatement();
 		System.out.println(statement.execute("close"));
@@ -73,7 +73,7 @@ public class JDBCExample3 {
 			LOGGER.error(e.getMessage());
 		}
 		count++;
-		if(count%100==0){
+		if(count%1000==0){
 			try {
 				statement.executeBatch();
 				statement.clearBatch();
@@ -87,7 +87,7 @@ public class JDBCExample3 {
 			System.out.println("The size of set is " + set.size() + ", The count is " + count + " time is "
 					+ (wendtime - startTime) / 1000);
 			wstarttime = System.currentTimeMillis();
-			if (count == 2000000) {
+			if (count == 4000000) {
 				endTime = System.currentTimeMillis();
 				System.out.println((endTime - startTime) / 1000);
 				System.exit(0);

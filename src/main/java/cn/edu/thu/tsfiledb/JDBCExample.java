@@ -83,7 +83,7 @@ public class JDBCExample {
 		}
 		if (count % 10000 == 0) {
 			System.out.println("The size of set is " + set.size() + ", The count is " + count);
-			if (count == 2000000) {
+			if (count == 10000000) {
 				try {
 					endTime = System.currentTimeMillis();
 					System.out.println((endTime - startTime) / 1000);
