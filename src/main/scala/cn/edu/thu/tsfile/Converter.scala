@@ -446,14 +446,13 @@ object Converter {
       }
     }
     val tsRecord = new TSRecord(time, delta_object)
-    var i = 1
     schema.fields.filter(f => {
-      !SQLConstant.isReservedPath(f.name)
+      !SQLConstant.isReservedPath(f.name) && !columnNames.contains(f.name)
     }).foreach(f => {
       val name = f.name
       val dataType = getTsDataType(f.dataType)
-      i = i + 1
-      if (!row.isNullAt(i)) {
+      val index = row.fieldIndex(name)
+      if (!row.isNullAt(index)) {
         val value = f.dataType match {
           case IntegerType => row.getAs[Int](name)
           case LongType => row.getAs[Long](name)

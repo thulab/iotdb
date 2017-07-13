@@ -52,7 +52,6 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
                             spark: SparkSession,
                             options: Map[String, String],
                             files: Seq[FileStatus]): Option[StructType] = {
-
     val conf = spark.sparkContext.hadoopConfiguration
 
     //check if the path is given
@@ -216,6 +215,19 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
                             job: Job,
                             options: Map[String, String],
                             dataSchema: StructType): OutputWriterFactory = {
+    DefaultSource.columnNames.clear()
+
+    //unfold delta_object
+    if (options.contains(SQLConstant.DELTA_OBJECT_NAME)) {
+      val columns = options(SQLConstant.DELTA_OBJECT_NAME).split(SQLConstant.REGEX_PATH_SEPARATOR)
+      columns.foreach( f => {
+        DefaultSource.columnNames += f
+      })
+    } else {
+      //using delta_object
+      DefaultSource.columnNames += SQLConstant.RESERVED_DELTA_OBJECT
+    }
+
     new TsFileWriterFactory(options, DefaultSource.columnNames)
   }
 

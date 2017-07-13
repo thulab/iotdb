@@ -19,6 +19,8 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   private val tsfile2 = "src/test/resources/tsfile/test2.tsfile"
   private val outputPath = "src/test/resources/output"
   private val outputPathFile = outputPath + "/part-m-00000"
+  private val outputPath2 = "src/test/resources/output2"
+  private val outputPathFile2 = outputPath2 + "/part-m-00000"
   private var spark: SparkSession = _
 
   override protected def beforeAll(): Unit = {
@@ -31,7 +33,10 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
       tsfile_folder.mkdirs()
     val output = new File(outputPath)
     if (output.exists())
-      output.delete()
+      deleteDir(output)
+    val output2 = new File(outputPath2)
+    if (output2.exists())
+      deleteDir(output2)
     new CreateTSFile().createTSFile1(tsfile1)
     new CreateTSFile().createTSFile2(tsfile2)
     spark = SparkSession
@@ -44,6 +49,8 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
   override protected def afterAll(): Unit = {
     val out = new File(outputPath)
     deleteDir(out)
+    val out2 = new File(outputPath2)
+    deleteDir(out2)
     try {
       spark.sparkContext.stop()
     } finally {
@@ -71,8 +78,15 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
   }
 
+  test("test write options") {
+    val df = spark.read.option("delta_object_name", "root.carId.deviceId").tsfile(tsfile1)
+    df.write.option("delta_object_name", "root.carId.deviceId")tsfile(outputPath2)
+    val newDf = spark.read.option("delta_object_name", "root.carId.deviceId").tsfile(outputPathFile2)
+    newDf.show()
+    Assert.assertEquals(newDf.collectAsList(), df.collectAsList())
+  }
 
-  test("test options") {
+  test("test read options") {
     val options = new mutable.HashMap[String, String]()
     options.put(SQLConstant.DELTA_OBJECT_NAME, "root.carId.deviceId")
     val df = spark.read.options(options).tsfile(tsfile1)
