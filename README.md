@@ -205,7 +205,7 @@ mvn clean scala:compile compile package
 		
 	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("test.tsfile")
 	    
-	df.write.option("delta_object_name", "root.device.turbine").tsfile(out)
+	df.write.option("delta_object_name", "root.device.turbine").tsfile("out")
 	```
 
 
