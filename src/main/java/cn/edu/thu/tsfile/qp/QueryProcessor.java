@@ -24,7 +24,6 @@ import java.util.List;
  * TSFile's SQL: select s1,s2 from root.car.d1 where s1 = 10
  * SparkSQL's SQL: select s1,s2 from XXX where delta_object = d1
  *
- * @author QJL、KR
  */
 public class QueryProcessor {
 

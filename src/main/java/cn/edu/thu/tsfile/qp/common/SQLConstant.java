@@ -5,8 +5,6 @@ import java.util.Map;
 
 /**
  * this class contains several constants used in SQL.
- * 
- * @author kangrong
  *
  */
 public class SQLConstant {

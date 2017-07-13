@@ -12,8 +12,6 @@ import java.util.List;
  * it may consist of more than two child FilterOperator, but if it's not leaf operator, the relation
  * is same among all of its children.(AND or OR). It's identified by tokenType.
  *
- * @author kangrong
- *
  */
 public class FilterOperator extends Operator implements Comparable<FilterOperator> {
 

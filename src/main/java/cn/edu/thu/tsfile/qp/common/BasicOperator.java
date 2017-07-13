@@ -5,8 +5,6 @@ import cn.edu.thu.tsfile.qp.exception.BasicOperatorException;
 
 /**
  * basic operators include < > >= <= !=.
- * 
- * @author kangrong
  *
  */
 

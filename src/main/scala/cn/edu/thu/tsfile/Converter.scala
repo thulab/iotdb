@@ -27,7 +27,6 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 /**
   * This object contains methods that are used to convert schema and data between sparkSQL and TSFile.
   *
-  * @author QJL
   */
 object Converter {
 

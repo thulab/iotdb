@@ -4,8 +4,6 @@ package cn.edu.thu.tsfile.qp.exception;
 /**
  * This exception is threw whiling meeting error in BasicOperator
  *
- * @author kangrong
- *
  */
 public class BasicOperatorException extends QueryProcessorException {
 

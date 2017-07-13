@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * One cn.edu.thu.tsfile logical query plan that can be performed at one time
+ * One tsfile logical query plan that can be performed at one time
  *
  */
 public class TSQueryPlan {

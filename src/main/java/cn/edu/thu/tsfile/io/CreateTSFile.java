@@ -16,7 +16,6 @@ import java.io.File;
 /**
  * create a TSFile for test
  *
- * @author QJL
  */
 public class CreateTSFile {
 

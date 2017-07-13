@@ -6,9 +6,6 @@ import org.apache.spark.sql.types.StructType
 
 import scala.collection.mutable.ArrayBuffer
 
-/**
-  * @author qiaojialin
-  */
 private[tsfile] class TsFileWriterFactory(options: Map[String, String], columnNames: ArrayBuffer[String]) extends OutputWriterFactory{
 
   override def newInstance(

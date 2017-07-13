@@ -2,7 +2,6 @@ package cn.edu.thu.tsfile.qp.common;
 
 /**
  * This class is a superclass of all operator. 
- * @author kangrong
  *
  */
 public abstract class Operator {

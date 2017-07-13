@@ -29,13 +29,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-/**
-  * TSFile data source
-  *
-  * @author QJL
-  * @author MXW
-  *
-  */
+
 private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
   class TSFileDataSourceException(message: String, cause: Throwable)

@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * This class used to execute Querys on TSFile
+ * This class used to execute Queries on TSFile
  */
 public class Executor {
     public static List<QueryDataSet> query(TSRandomAccessFileReader in, List<QueryConfig> queryConfigs, HashMap<String, Long> parameters) {

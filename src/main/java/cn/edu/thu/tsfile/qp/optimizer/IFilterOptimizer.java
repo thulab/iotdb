@@ -7,8 +7,6 @@ import cn.edu.thu.tsfile.qp.exception.RemoveNotException;
 
 /**
  * provide a filter operator, optimize it.
- * 
- * @author kangrong
  *
  */
 public interface IFilterOptimizer {

@@ -19,9 +19,9 @@ public class DNFFilterOptimizer implements IFilterOptimizer {
      * Before invoking getDNF function, make sure that operator tree must be binary tree.
      * In other words, each non-leaf node has exactly two children.
      *
-     * @param filter
+     * @param filter filter operator to be optimized
      * @return FilterOperator
-     * @throws DNFOptimizeException
+     * @throws DNFOptimizeException exception in DNF optimizing
      */
     @Override
     public FilterOperator optimize(FilterOperator filter) throws DNFOptimizeException {

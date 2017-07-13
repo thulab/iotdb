@@ -14,7 +14,6 @@ import java.io.OutputStream;
  * This class is used to wrap the {@link}FSDataOutputStream and implement the
  * interface {@link}TSRandomAccessFileWriter
  *
- * @author liukun
  */
 public class HDFSOutputStream implements TSRandomAccessFileWriter {
 

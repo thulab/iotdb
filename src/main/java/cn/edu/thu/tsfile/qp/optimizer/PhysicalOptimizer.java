@@ -9,9 +9,6 @@ import cn.edu.thu.tsfile.qp.common.*;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Created by qiaojialin on 2017/4/27.
- */
 public class PhysicalOptimizer {
 
     //determine whether to query all delta_objects from TSFile. true means do query.

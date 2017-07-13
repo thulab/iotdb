@@ -11,7 +11,6 @@ import java.io.IOException;
  * This class is used to wrap the {@link}FSDataInputStream and implement the
  * interface {@link}TSRandomAccessFileReader.
  *
- * @author liukun
  */
 public class HDFSInputStream implements TSRandomAccessFileReader {
 

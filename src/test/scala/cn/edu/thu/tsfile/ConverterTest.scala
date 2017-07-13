@@ -18,9 +18,7 @@ import cn.edu.thu.tsfile.qp.common.SQLConstant
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
-/**
-  * @author QJL
-  */
+
 class ConverterTest extends FunSuite with BeforeAndAfterAll {
 
   private val tsfilePath: String = "src/test/resources/test.tsfile"

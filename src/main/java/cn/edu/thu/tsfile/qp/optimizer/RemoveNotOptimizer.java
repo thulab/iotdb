@@ -22,9 +22,10 @@ public class RemoveNotOptimizer implements IFilterOptimizer {
     /**
      * get DNF(disjunctive normal form) for this filter operator tree. Before getDNF, this op tree
      * must be binary, in another word, each non-leaf node has exactly two children.
-     * 
-     * @return
-     * @throws RemoveNotException
+     *
+     * @param filter filter operator to be optimized
+     * @return optimized filter operator
+     * @throws RemoveNotException excepiton in remove not optimizing
      */
     @Override
     public FilterOperator optimize(FilterOperator filter) throws RemoveNotException {
