@@ -27,6 +27,7 @@ import java.io.{ObjectInputStream, ObjectOutputStream}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * TSFile data source
@@ -60,21 +61,20 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
     //get union series in TsFile
     val tsfileSchema = Converter.getUnionSeries(files, conf)
 
-    var i = 1
-    var useDelta_object = true
-    DefaultSource.columnNameIndex.clear()
-    while(options.contains(SQLConstant.COLUMN+i)) {
-      val value = options.get(SQLConstant.COLUMN+i).orNull
-      DefaultSource.columnNameIndex.put(value, i)
-      i = i + 1
-      useDelta_object = false
+    DefaultSource.columnNames.clear()
+
+    //unfold delta_object
+    if (options.contains(SQLConstant.DELTA_OBJECT_NAME)) {
+      val columns = options(SQLConstant.DELTA_OBJECT_NAME).split(SQLConstant.REGEX_PATH_SEPARATOR)
+      columns.foreach( f => {
+        DefaultSource.columnNames += f
+      })
+    } else {
+      //using delta_object
+      DefaultSource.columnNames += SQLConstant.RESERVED_DELTA_OBJECT
     }
 
-    if (useDelta_object) {
-      DefaultSource.columnNameIndex.put(SQLConstant.RESERVED_DELTA_OBJECT, 0)
-    }
-
-    Converter.toSqlSchema(tsfileSchema, DefaultSource.columnNameIndex)
+    Converter.toSqlSchema(tsfileSchema, DefaultSource.columnNames)
   }
 
   override def isSplitable(
@@ -113,7 +113,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       parameters.put(QueryConstant.PARTITION_END_OFFSET, (file.start + file.length).asInstanceOf[java.lang.Long])
 
       //convert tsfile query to QueryConfigs
-      val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, DefaultSource.columnNameIndex,
+      val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, DefaultSource.columnNames,
         file.start.asInstanceOf[java.lang.Long], (file.start + file.length).asInstanceOf[java.lang.Long])
 
       //use QueryConfigs to query data in tsfile
@@ -194,8 +194,8 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
               rowBuffer(index) = curRecord.record.timestamp
             } else if (field.name == SQLConstant.RESERVED_DELTA_OBJECT) {
               rowBuffer(index) = deltaObjectId
-            } else if (DefaultSource.columnNameIndex.contains(field.name)) {
-              val columnIndex = DefaultSource.columnNameIndex(field.name)
+            } else if (DefaultSource.columnNames.contains(field.name)) {
+              val columnIndex = DefaultSource.columnNames.indexOf(field.name)
               val columns = deltaObjectId.split(SQLConstant.REGEX_PATH_SEPARATOR)
               rowBuffer(index) = columns(columnIndex)
             } else {
@@ -224,7 +224,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
 private[tsfile] object DefaultSource {
   val path = "path"
-  val columnNameIndex = new mutable.HashMap[String, Integer]()
+  val columnNames = new ArrayBuffer[String]()
 
   class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
     private def writeObject(out: ObjectOutputStream): Unit = {

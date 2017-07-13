@@ -17,10 +17,10 @@ public class PhysicalOptimizer {
     //determine whether to query all delta_objects from TSFile. true means do query.
     private boolean flag;
     private List<String> validDeltaObjects = new ArrayList<>();
-    private Map<String, Integer> columnNameIndex;
+    private List<String> columnNames;
 
-    public PhysicalOptimizer(Map<String, Integer> columnNameIndex) {
-        this.columnNameIndex = columnNameIndex;
+    public PhysicalOptimizer(List<String> columnNames) {
+        this.columnNames = columnNames;
     }
 
     public List<TSQueryPlan> optimize(SingleQuery singleQuery, List<String> paths,
@@ -31,7 +31,7 @@ public class PhysicalOptimizer {
 
         List<String> selectedSeries = new ArrayList<>();
         for(String path: paths) {
-            if(!columnNameIndex.containsKey(path) && !path.equals(SQLConstant.RESERVED_TIME)) {
+            if(!columnNames.contains(path) && !path.equals(SQLConstant.RESERVED_TIME)) {
                 selectedSeries.add(path);
             }
         }
@@ -130,7 +130,7 @@ public class PhysicalOptimizer {
                 //actualValues is [root, column1_value, column2_value]
                 String[] actualValues = deltaObject.split(SQLConstant.REGEX_PATH_SEPARATOR);
                 for(int i = 0; i < columns.length; i++) {
-                    int columnIndex = columnNameIndex.get(columns[i].toString());
+                    int columnIndex = columnNames.indexOf(columns[i].toString());
                     if(!actualValues[columnIndex].equals(values[i])) {
                         valid = false;
                     }

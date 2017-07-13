@@ -16,8 +16,7 @@ import org.junit.Assert
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import cn.edu.thu.tsfile.qp.common.SQLConstant
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * @author QJL
@@ -49,9 +48,9 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
     filters += LessThan("time", 80)
     filters += GreaterThan("time", 50)
     filters += Or(LessThan("s1", 50), GreaterThan("s1", 80))
-    val map = new mutable.HashMap[String, Integer]()
-    map.put(SQLConstant.RESERVED_DELTA_OBJECT, 0)
-    val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, map, "0".toLong, "749".toLong)
+    val columns = new ArrayBuffer[String]()
+    columns += SQLConstant.RESERVED_DELTA_OBJECT
+    val queryConfigs = Converter.toQueryConfigs(in, requiredSchema, filters, columns, "0".toLong, "749".toLong)
 
     val queryConfig0 = new QueryConfig("root.car.d2.s1", "0,(<80)&(>50)", "null", "2,root.car.d2.s1,<50")
     val queryConfig1 = new QueryConfig("root.car.d1.s1", "0,(<80)&(>50)", "null", "2,root.car.d1.s1,<50")
@@ -84,9 +83,9 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
     fields.add(new SeriesSchema("s4", TSDataType.DOUBLE, TSEncoding.PLAIN))
     fields.add(new SeriesSchema("s5", TSDataType.BOOLEAN, TSEncoding.PLAIN))
     fields.add(new SeriesSchema("s6", TSDataType.BYTE_ARRAY, TSEncoding.PLAIN))
-    val map = new mutable.HashMap[String, Integer]()
-    map.put(SQLConstant.RESERVED_DELTA_OBJECT, 0)
-    val sqlSchema = Converter.toSqlSchema(fields, map)
+    val columns = new ArrayBuffer[String]()
+    columns += SQLConstant.RESERVED_DELTA_OBJECT
+    val sqlSchema = Converter.toSqlSchema(fields, columns)
 
     val expectedFields = Array(
       StructField(SQLConstant.RESERVED_TIME, LongType, nullable = false),

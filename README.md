@@ -163,14 +163,13 @@ Then you can group by any level in delta_object.
 	val spark = SparkSession.builder().master("local").getOrCreate()
 		
 	val options = new mutable.HashMap[String, String]()
-	options.put("column1", "car")
-	options.put("column2", "device")
+	options.put("delta_object_name", "root.device.turbine")
 	val df = spark.read.options(options).tsfile("test.tsfile")
 	    
 	//create a table in SparkSQL and build relation with a TsFile
 	df.createOrReplaceTempView("tsfile_table")
 	
-	spark.sql("select * from tsfile_table where turbine = 'turbine1' and car = 'car' and time < 10").show()
+	spark.sql("select * from tsfile_table where turbine = 'turbine1' and device = 'car' and time < 10").show()
 	```
 
 

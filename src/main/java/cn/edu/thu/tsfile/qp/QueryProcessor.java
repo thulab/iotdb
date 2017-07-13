@@ -15,7 +15,6 @@ import cn.edu.thu.tsfile.qp.optimizer.RemoveNotOptimizer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -30,7 +29,7 @@ import java.util.Map;
 public class QueryProcessor {
 
     //construct logical query plans first, then convert them to physical ones
-    public List<TSQueryPlan> generatePlans(FilterOperator filter, List<String> paths, Map<String, Integer> columnNameIndex,
+    public List<TSQueryPlan> generatePlans(FilterOperator filter, List<String> paths, List<String> columnNames,
                                            TSRandomAccessFileReader in, Long start, Long end) throws QueryProcessorException, IOException {
 
         List<TSQueryPlan> queryPlans = new ArrayList<>();
@@ -48,13 +47,13 @@ public class QueryProcessor {
             List<FilterOperator> filterOperators = splitFilter(filter);
 
             for (FilterOperator filterOperator : filterOperators) {
-                SingleQuery singleQuery = constructSelectPlan(filterOperator, columnNameIndex);
+                SingleQuery singleQuery = constructSelectPlan(filterOperator, columnNames);
                 if (singleQuery != null) {
-                    queryPlans.addAll(new PhysicalOptimizer(columnNameIndex).optimize(singleQuery, paths, in, start, end));
+                    queryPlans.addAll(new PhysicalOptimizer(columnNames).optimize(singleQuery, paths, in, start, end));
                 }
             }
         } else {
-            queryPlans.addAll(new PhysicalOptimizer(columnNameIndex).optimize(null, paths, in, start, end));
+            queryPlans.addAll(new PhysicalOptimizer(columnNames).optimize(null, paths, in, start, end));
         }
         return queryPlans;
     }
@@ -69,7 +68,7 @@ public class QueryProcessor {
         return filterOperator.childOperators;
     }
 
-    private SingleQuery constructSelectPlan(FilterOperator filterOperator, Map<String, Integer> columnNames) throws QueryOperatorException {
+    private SingleQuery constructSelectPlan(FilterOperator filterOperator, List<String> columnNames) throws QueryOperatorException {
         FilterOperator timeFilter = null;
         FilterOperator valueFilter = null;
         List<FilterOperator> columnFilterOperators = new ArrayList<>();
@@ -96,7 +95,7 @@ public class QueryProcessor {
                 valueList.add(child);
             } else {
                 String singlePath = child.getSinglePath();
-                if (columnNames.containsKey(singlePath)) {
+                if (columnNames.contains(singlePath)) {
                     if(!columnFilterOperators.contains(child))
                         columnFilterOperators.add(child);
                     else

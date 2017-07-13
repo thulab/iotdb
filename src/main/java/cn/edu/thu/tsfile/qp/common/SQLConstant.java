@@ -10,7 +10,7 @@ import java.util.Map;
  *
  */
 public class SQLConstant {
-    public static final String COLUMN = "column";
+    public static final String DELTA_OBJECT_NAME = "delta_object_name";
     public static final String REGEX_PATH_SEPARATOR = "\\.";
     public static final String PATH_SEPARATOR = ".";
     public static final String RESERVED_TIME = "time";
