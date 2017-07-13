@@ -216,7 +216,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
                             job: Job,
                             options: Map[String, String],
                             dataSchema: StructType): OutputWriterFactory = {
-    new TsFileWriterFactory(options)
+    new TsFileWriterFactory(options, DefaultSource.columnNames)
   }
 
 }

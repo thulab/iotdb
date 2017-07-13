@@ -109,10 +109,10 @@ object Converter {
     * @param structType given sql schema
     * @return TsFile schema
     */
-  def toTsFileSchema(structType: StructType, options: Map[String, String]): FileSchema = {
+  def toTsFileSchema(columnNames: ArrayBuffer[String], structType: StructType, options: Map[String, String]): FileSchema = {
     val schemaBuilder = new SchemaBuilder()
     structType.fields.filter(f => {
-      !SQLConstant.isReservedPath(f.name)
+      !SQLConstant.isReservedPath(f.name) && !columnNames.contains(f.name)
     }).foreach(f => {
       val seriesSchema = getSeriesSchema(f, options)
       schemaBuilder.addSeries(seriesSchema)
@@ -427,13 +427,24 @@ object Converter {
 
   /**
     * convert row to TSRecord
+    * @param columnNames delta_object column names
     * @param row given spark sql row
     * @return TSRecord
     */
-  def toTsRecord(row: Row): TSRecord = {
+  def toTsRecord(columnNames: ArrayBuffer[String], row: Row): TSRecord = {
     val schema = row.schema
     val time = row.getAs[Long](SQLConstant.RESERVED_TIME)
-    val delta_object = row.getAs[String](SQLConstant.RESERVED_DELTA_OBJECT)
+    val delta_object = {
+      if ( columnNames.contains(SQLConstant.RESERVED_DELTA_OBJECT)) {
+        row.getAs[String](SQLConstant.RESERVED_DELTA_OBJECT)
+      } else {
+        var delta_str = "root"
+        columnNames.filter(f => !f.equals("root")) foreach (f => {
+          delta_str += SQLConstant.PATH_SEPARATOR + row.getAs[String](f)
+        })
+        delta_str
+      }
+    }
     val tsRecord = new TSRecord(time, delta_object)
     var i = 1
     schema.fields.filter(f => {
