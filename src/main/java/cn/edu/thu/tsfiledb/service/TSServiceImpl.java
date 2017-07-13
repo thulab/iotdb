@@ -235,7 +235,9 @@ public class TSServiceImpl implements TSIService.Iface {
         switch (statement) {
             case "close":
                 try {
+                	long starttime = System.currentTimeMillis();
                     FileNodeManager.getInstance().closeAll();
+                    System.out.println("time: "+(System.currentTimeMillis()-starttime));
                 } catch (FileNodeManagerException e) {
                     e.printStackTrace();
                     throw new IOException(e);

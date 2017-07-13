@@ -66,14 +66,13 @@ public class JDBCExample3 {
 
 	private static void insertOneData(String line, Statement statement) {
 
-		
 		try {
 			statement.addBatch(line);
 		} catch (SQLException e) {
 			LOGGER.error(e.getMessage());
 		}
 		count++;
-		if(count%1000==0){
+		if (count % 1000 == 0) {
 			try {
 				statement.executeBatch();
 				statement.clearBatch();
@@ -135,8 +134,24 @@ public class JDBCExample3 {
 		throw new RuntimeException(message);
 	}
 
-	private static String[] timeSeries = { "status WITH DATATYPE=BYTE_ARRAY, ENCODING=PLAIN,compressor=SNAPPY",
-			"errtype WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// private static String[] timeSeries = { "status WITH DATATYPE=BYTE_ARRAY,
+	// ENCODING=PLAIN,compressor=SNAPPY",
+	// "errtype WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "v WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
+	// "a WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
+	// "h WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
+	// "px WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
+	// "py WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
+	// "H_Result WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "A_Result WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "V_Result WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "X_Result WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "Y_Result WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "Bridge_Result WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
+	// "Pad_W WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
+	// "Pad_H WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY" };
+
+	private static String[] timeSeries = { "errtype WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
 			"v WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
 			"a WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
 			"h WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",

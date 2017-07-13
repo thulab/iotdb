@@ -69,12 +69,22 @@ public class JDBCExample {
 			}
 		}
 		words[0] = timeTrans(words[0]);
+		// String insertSql = String.format(
+		// "insert into root.Inventec.%s_%s"
+		// +
+		// "(timestamp,status,errtype,v,a,h,px,py,H_Result,A_Result,V_Result,X_Result,Y_Result,Bridge_Result,Pad_W,Pad_H)
+		// "
+		// + "VALUES (%s,'%s',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+		// words[1], words[2], words[0], words[3], words[4], words[5], words[6],
+		// words[7], words[8], words[9],
+		// words[10], words[11], words[12], words[13], words[14], words[15],
+		// words[16], words[17]);
 		String insertSql = String.format(
 				"insert into root.Inventec.%s_%s"
-						+ "(timestamp,status,errtype,v,a,h,px,py,H_Result,A_Result,V_Result,X_Result,Y_Result,Bridge_Result,Pad_W,Pad_H) "
-						+ "VALUES (%s,'%s',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-				words[1], words[2], words[0], words[3], words[4], words[5], words[6], words[7], words[8], words[9],
-				words[10], words[11], words[12], words[13], words[14], words[15], words[16], words[17]);
+						+ "(timestamp,errtype,v,a,h,px,py,H_Result,A_Result,V_Result,X_Result,Y_Result,Bridge_Result,Pad_W,Pad_H) "
+						+ "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+				words[1], words[2], words[0], words[4], words[5], words[6], words[7], words[8], words[9], words[10],
+				words[11], words[12], words[13], words[14], words[15], words[16], words[17]);
 
 		set.add(words[1] + "_" + words[2]);
 		count++;
