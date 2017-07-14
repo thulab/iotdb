@@ -23,6 +23,8 @@ public class JDBCExample {
 	private static String schemaFilePath = "src/main/resources/schema.csv";
 	private static String sqlFile = "src/main/resources/sqlfile";
 	private static BufferedWriter bufferedWriter = null;
+	StringBuilder builder = new StringBuilder();
+	
 	private static String sourceFilePath = "D:\\datayingyeda";
 	private static String host = "127.0.0.1";
 	private static String port = "6667";

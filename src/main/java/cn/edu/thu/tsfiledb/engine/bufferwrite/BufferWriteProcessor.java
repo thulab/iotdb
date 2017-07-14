@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -150,7 +151,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 		// write restore file
-		writeStoreToDisk();
+//		writeStoreToDisk();
 	}
 
 	/**
@@ -286,8 +287,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 		}
 		List<RowGroupMetaData> rowGroupMetaDatas = bufferIOWriter.getRowGroups();
 		// construct the tsfile metadate
-		List<TimeSeriesMetadata> timeSeriesList = fileSchema.getTimeSeriesMetadatas();
-
+//		List<TimeSeriesMetadata> timeSeriesList = fileSchema.getTimeSeriesMetadatas();
+		List<TimeSeriesMetadata> timeSeriesList = new ArrayList<>();
 		TSFileMetaData tsfileMetadata = new TSFileMetaData(rowGroupMetaDatas, timeSeriesList,
 				TSFileDescriptor.getInstance().getConfig().currentVersion);
 
@@ -610,7 +611,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 				if (isFlushingSync) {
 					try {
 						super.flushRowGroup(false);
-						writeStoreToDisk();
+						/*
+						 * close file and do't write rowgroup info
+						 */
+//						writeStoreToDisk();
 						filenodeFlushAction.act();
 						if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 							WriteLogManager.getInstance().endBufferWriteFlush(nameSpacePath);
@@ -646,7 +650,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 						LOGGER.info("Asynchronous flushing start,-Thread id {}", Thread.currentThread().getId());
 						try {
 							asyncFlushRowGroupToStore();
-							writeStoreToDisk();
+//							writeStoreToDisk();
 							filenodeFlushAction.act();
 							if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 								WriteLogManager.getInstance().endBufferWriteFlush(nameSpacePath);
@@ -703,7 +707,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 					deltaFileWriter.endRowGroup(deltaFileWriter.getPos() - rowGroupStart);
 				}
 				long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
-				fillInRowGroupSize(actualTotalRowGroupSize);
+//				fillInRowGroupSize(actualTotalRowGroupSize);
 				LOGGER.info("Asynchronous total row group size:{}, actual:{}, less:{}", primaryRowGroupSize,
 						actualTotalRowGroupSize, primaryRowGroupSize - actualTotalRowGroupSize);
 				LOGGER.info("Asynchronous write row group end");
