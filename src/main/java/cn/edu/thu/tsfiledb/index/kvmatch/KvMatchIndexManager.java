@@ -48,9 +48,9 @@ public class KvMatchIndexManager implements IndexManager {
     public static void main(String args[]) {  // for temporarily test only
         // TODO: produce synthetic data
 
-        IndexManager indexManager = new KvMatchIndexManager();
+        KvMatchIndexManager indexManager = KvMatchIndexManager.getInstance();
         try {
-            String nameSpacePath = "root.excavator.beijing.d1.s1";
+            String nameSpacePath = "root.excavator.shanghai.d1.s1";
 
             indexManager.build(nameSpacePath);
 
