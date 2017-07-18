@@ -5,13 +5,13 @@ import cn.edu.thu.tsfile.common.utils.Pair;
 import java.util.List;
 
 /**
- * The skeleton abstract class for a query request with specific parameters.
+ * The abstract class for a query request with specific parameters.
  *
  * @author Jiaye Wu
  */
 public abstract class QueryRequest {
 
-    protected String nameSpacePath;
+    protected String columnPath;
 
     protected long startTime;
 
@@ -19,26 +19,26 @@ public abstract class QueryRequest {
 
     protected List<Pair<Long, Double>> querySeries;
 
-    protected QueryRequest(String nameSpacePath, long startTime, long endTime, List<Pair<Long, Double>> querySeries) {
-        this.nameSpacePath = nameSpacePath;
+    protected QueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries) {
+        this.columnPath = columnPath;
         this.startTime = startTime;
         this.endTime = endTime;
         this.querySeries = querySeries;
     }
 
-    protected QueryRequest(String nameSpacePath, List<Pair<Long, Double>> querySeries) {
-        this.nameSpacePath = nameSpacePath;
+    protected QueryRequest(String columnPath, List<Pair<Long, Double>> querySeries) {
+        this.columnPath = columnPath;
         this.startTime = Long.MIN_VALUE;
         this.endTime = Long.MAX_VALUE;
         this.querySeries = querySeries;
     }
 
-    public String getNameSpacePath() {
-        return nameSpacePath;
+    public String getColumnPath() {
+        return columnPath;
     }
 
-    public void setNameSpacePath(String nameSpacePath) {
-        this.nameSpacePath = nameSpacePath;
+    public void setColumnPath(String columnPath) {
+        this.columnPath = columnPath;
     }
 
     public long getStartTime() {

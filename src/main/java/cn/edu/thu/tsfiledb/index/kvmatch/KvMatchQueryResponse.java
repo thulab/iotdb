@@ -6,7 +6,7 @@ import cn.edu.thu.tsfiledb.index.QueryResponse;
 import java.util.List;
 
 /**
- * The instance of this class represents a query response with specific candidates.
+ * An instance of this class represents a query response with specific candidates.
  *
  * @author Jiaye Wu
  */

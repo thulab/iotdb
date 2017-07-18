@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * This is the skeleton interface of index managers.
+ * This is the interface of index managers.
  *
  * @author Jiaye Wu
  */

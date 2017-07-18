@@ -12,7 +12,7 @@ import java.util.List;
  */
 public abstract class QueryResponse {
 
-    protected List<Pair<Long, Long>> candidateRanges;
+    private List<Pair<Long, Long>> candidateRanges;
 
     protected QueryResponse() {
         this.candidateRanges = new ArrayList<>();

@@ -50,12 +50,13 @@ public class KvMatchIndexManager implements IndexManager {
 
         KvMatchIndexManager indexManager = KvMatchIndexManager.getInstance();
         try {
-            String nameSpacePath = "root.excavator.shanghai.d1.s1";
+            String columnPath = "root.excavator.shanghai.d1.s1";
 
-            indexManager.build(nameSpacePath);
+            indexManager.build(columnPath);
 
             List<Pair<Long, Double>> querySeries = new ArrayList<>();
-            indexManager.query(new KvMatchQueryRequest(nameSpacePath, querySeries, 1, 1, 0));
+            KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, querySeries, 1.0).alpha(1.0).beta(0.0).build();
+            indexManager.query(queryRequest);
 
             List<File> fileList = new ArrayList<>();
             indexManager.rebuild(fileList);
@@ -65,29 +66,29 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     /**
-     * Build index for the given nameSpacePath.
+     * Build index for the given column path.
      *
-     * @param nameSpacePath building index for this nameSpacePath
+     * @param columnPath building index for this column path
      * @return whether the index building process is successful
-     * @throws PathErrorException if the given nameSpacePath is not valid
+     * @throws PathErrorException if the given column path is not valid
      */
     @Override
-    public boolean build(String nameSpacePath) throws PathErrorException {
-        return build(nameSpacePath, Long.MIN_VALUE);
+    public boolean build(String columnPath) throws PathErrorException {
+        return build(columnPath, Long.MIN_VALUE);
     }
 
     /**
-     * Build index for the given nameSpacePath after specific time.
+     * Build index for the given column path after specific time.
      *
-     * @param nameSpacePath building index for this nameSpacePath
-     * @param sinceTime     only build index for data after this time
+     * @param columnPath building index for this column path
+     * @param sinceTime  only build index for data after this time
      * @return whether the index building process is successful
-     * @throws PathErrorException if the given nameSpacePath is not valid
+     * @throws PathErrorException if the given column path is not valid
      */
     @Override
-    public boolean build(String nameSpacePath, long sinceTime) throws PathErrorException {
-        // 1. get information of file node according to nameSpacePath
-        String fileNodeName = MManager.getInstance().getFileNameByPath(nameSpacePath);
+    public boolean build(String columnPath, long sinceTime) throws PathErrorException {
+        // 1. get information of file node according to column path
+        String fileNodeName = MManager.getInstance().getFileNameByPath(columnPath);
 
         // 2. get information of all files in the file node directory
         Path path = FileSystems.getDefault().getPath(fileNodeDir, fileNodeName);
@@ -96,9 +97,11 @@ public class KvMatchIndexManager implements IndexManager {
         try {
             for (Path file : Files.newDirectoryStream(path)) {
                 logger.info("Building index for data file `{}` ...", file.toString());
+                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(file);
+                indexBuilder.build();
             }
         } catch (NoSuchFileException e) {
-            logger.error("There is no data file of `{}`. Data should be flushed before building index.", nameSpacePath);
+            logger.error("There is no data file of `{}`. Data should be flushed before building index.", columnPath);
             return false;
         } catch (IOException e) {
             logger.error(e.getMessage(), e.getCause());
@@ -109,7 +112,8 @@ public class KvMatchIndexManager implements IndexManager {
 
     @Override
     public QueryResponse query(QueryRequest queryRequest) {
-        return null;
+        KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryRequest);
+        return queryExecutor.execute();
     }
 
     @Override
