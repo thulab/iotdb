@@ -73,7 +73,7 @@ public class OverflowQueryEngine {
      * @throws ProcessorException
      */
     public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
-        And and = null;
+        Or or = null;
         List pathList = new ArrayList();
         pathList.add(path);
 
@@ -81,15 +81,15 @@ public class OverflowQueryEngine {
             FilterSeries timeSeries = FilterFactory.timeFilterSeries();
             GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
             LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
-            if (and == null) {
-                and = (And) FilterFactory.and(gtEq, ltEq);
+            if (or == null) {
+                or = (Or) FilterFactory.and(gtEq, ltEq);
             } else {
-                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
-                and = (And) FilterFactory.and(and, tmpAnd);
+                Or tmpOr = (Or) FilterFactory.or(gtEq, ltEq);
+                or = (Or) FilterFactory.and(or, tmpOr);
             }
         }
 
-        return query(pathList, and, null, null, null,  1000);
+        return query(pathList, or, null, null, null,  1000);
     }
 
     /**
