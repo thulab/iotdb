@@ -3,7 +3,6 @@ package cn.edu.thu.tsfiledb.index;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -51,7 +50,7 @@ public interface IndexManager {
      * @return whether the operation is successful
      * @throws PathErrorException if the given column path is not correct
      */
-    boolean rebuild(Path columnPath, List<File> modifiedFileList) throws PathErrorException;
+    boolean rebuild(Path columnPath, List<DataFileInfo> modifiedFileList) throws PathErrorException;
 
     /**
      * Given the new file list after merge/close, delete all index files which are not in the list,
@@ -63,7 +62,7 @@ public interface IndexManager {
      * @return whether the operation is successful
      * @throws PathErrorException if the given column path is not correct
      */
-    boolean switchIndexes(Path columnPath, List<File> newFileList) throws PathErrorException;
+    boolean switchIndexes(Path columnPath, List<DataFileInfo> newFileList) throws PathErrorException;
 
     /**
      * Query index for result.

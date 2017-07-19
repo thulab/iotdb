@@ -58,9 +58,6 @@ public class KvMatchIndexManager implements IndexManager {
             }
             KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, querySeries, 1.0).alpha(1.0).beta(0.0).build();
             indexManager.query(queryRequest);
-
-            List<File> fileList = new ArrayList<>();
-            indexManager.rebuild(columnPath, fileList);
         } catch (PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
         }
@@ -82,7 +79,7 @@ public class KvMatchIndexManager implements IndexManager {
         try {
             for (DataFileInfo fileInfo : fileInfoList) {
                 logger.info("Building index for data file `{}` ...", fileInfo.getFile().toString());
-                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath, fileInfo);
+                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath, fileInfo, true);
                 indexBuilder.build();
             }
         } catch (IOException | ProcessorException e) {
@@ -98,12 +95,22 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     @Override
-    public boolean rebuild(Path columnPath, List<File> modifiedFileList) throws PathErrorException {
-        return false;
+    public boolean rebuild(Path columnPath, List<DataFileInfo> modifiedFileList) throws PathErrorException {
+        try {
+            for (DataFileInfo fileInfo : modifiedFileList) {
+                logger.info("Building index for data file `{}` ...", fileInfo.getFile().toString());
+                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath, fileInfo, false);
+                indexBuilder.build();
+            }
+        } catch (IOException | ProcessorException e) {
+            logger.error(e.getMessage(), e.getCause());
+            return false;
+        }
+        return true;
     }
 
     @Override
-    public boolean switchIndexes(Path columnPath, List<File> newFileList) throws PathErrorException {
+    public boolean switchIndexes(Path columnPath, List<DataFileInfo> newFileList) throws PathErrorException {
         return false;
     }
 
