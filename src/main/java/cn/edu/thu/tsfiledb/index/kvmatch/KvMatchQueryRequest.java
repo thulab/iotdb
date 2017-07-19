@@ -3,7 +3,6 @@ package cn.edu.thu.tsfiledb.index.kvmatch;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,8 +18,6 @@ public class KvMatchQueryRequest extends QueryRequest {
 
     private double beta;
 
-    private List<Pair<Long, Long>> nonIndexedRanges;
-
     /**
      * Private constructor used by the nested Builder class.
      *
@@ -31,35 +28,21 @@ public class KvMatchQueryRequest extends QueryRequest {
         this.epsilon = builder.epsilon;
         this.alpha = builder.alpha;
         this.beta = builder.beta;
-        this.nonIndexedRanges = builder.nonIndexedRanges;
     }
 
     public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon) {
-        this(columnPath, startTime, endTime, querySeries, epsilon, 1.0, 0.0, new ArrayList<>());
-    }
-
-    public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
-        this(columnPath, startTime, endTime, querySeries, epsilon, alpha, beta, new ArrayList<>());
+        this(columnPath, startTime, endTime, querySeries, epsilon, 1.0, 0.0);
     }
 
     public KvMatchQueryRequest(String columnPath, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
-        this(columnPath, Long.MIN_VALUE, Long.MAX_VALUE, querySeries, epsilon, alpha, beta, new ArrayList<>());
+        this(columnPath, Long.MIN_VALUE, Long.MAX_VALUE, querySeries, epsilon, alpha, beta);
     }
 
-    public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, List<Pair<Long, Long>> nonIndexedRanges) {
-        this(columnPath, startTime, endTime, querySeries, epsilon, 1.0, 0.0, nonIndexedRanges);
-    }
-
-    public KvMatchQueryRequest(String columnPath, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta, List<Pair<Long, Long>> nonIndexedRanges) {
-        this(columnPath, Long.MIN_VALUE, Long.MAX_VALUE, querySeries, epsilon, alpha, beta, nonIndexedRanges);
-    }
-
-    public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta, List<Pair<Long, Long>> nonIndexedRanges) {
+    public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
         super(columnPath, startTime, endTime, querySeries);
         this.epsilon = epsilon;
         this.alpha = alpha;
         this.beta = beta;
-        this.nonIndexedRanges = nonIndexedRanges;
     }
 
     /**
@@ -95,14 +78,6 @@ public class KvMatchQueryRequest extends QueryRequest {
         this.beta = beta;
     }
 
-    public List<Pair<Long, Long>> getNonIndexedRanges() {
-        return nonIndexedRanges;
-    }
-
-    public void setNonIndexedRanges(List<Pair<Long, Long>> nonIndexedRanges) {
-        this.nonIndexedRanges = nonIndexedRanges;
-    }
-
     /**
      * A nested builder class to create <code>KvMatchQueryRequest</code> instances using descriptive methods.
      * <p>
@@ -113,7 +88,6 @@ public class KvMatchQueryRequest extends QueryRequest {
      *                                                       .beta(0.0)
      *                                                       .startTime(1500350823)
      *                                                       .endTime(1500350823)
-     *                                                       .nonIndexed(list)
      *                                                       .build();
      * </pre>
      */
@@ -132,8 +106,6 @@ public class KvMatchQueryRequest extends QueryRequest {
         private double alpha;
 
         private double beta;
-
-        private List<Pair<Long, Long>> nonIndexedRanges;
 
         /**
          * Constructs a new <code>Builder</code> with the minimum
@@ -155,7 +127,6 @@ public class KvMatchQueryRequest extends QueryRequest {
             this.beta = 0.0;
             this.startTime = Long.MIN_VALUE;
             this.endTime = Long.MAX_VALUE;
-            this.nonIndexedRanges = new ArrayList<>();
         }
 
         /**
@@ -199,17 +170,6 @@ public class KvMatchQueryRequest extends QueryRequest {
          */
         public Builder endTime(final long endTime) {
             this.endTime = endTime;
-            return this;
-        }
-
-        /**
-         * Sets the not indexed ranges of this query column path
-         *
-         * @param nonIndexedRanges the not indexed ranges of this query column path
-         * @return this builder, to allow method chaining
-         */
-        public Builder nonIndexed(final List<Pair<Long, Long>> nonIndexedRanges) {
-            this.nonIndexedRanges = nonIndexedRanges;
             return this;
         }
 

@@ -12,9 +12,9 @@ import java.util.List;
  */
 public interface IndexManager {
 
-    boolean build(String nameSpacePath) throws PathErrorException;
+    boolean build(String columnPath) throws PathErrorException;
 
-    boolean build(String nameSpacePath, long sinceTime) throws PathErrorException;
+    boolean build(String columnPath, long sinceTime) throws PathErrorException;
 
     QueryResponse query(QueryRequest queryRequest);
 
