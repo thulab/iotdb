@@ -94,25 +94,53 @@ public class RecordReader {
      */
     public DynamicOneColumnData getValueInOneColumnWithOverflow(String deviceUID, String sensorId,
                                                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-                                                                SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize)
+                                                                SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize, boolean onlyMemory)
             throws ProcessorException, IOException {
 
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deviceUID);
         int i = 0;
-        if (res != null) {
-            i = res.getRowGroupIndex();
-        }
-        // iterative res, res may be expand
-        for (; i < rowGroupReaderList.size(); i++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
-            res = getValueInOneColumnWithOverflow(rowGroupReader, sensorId, updateTrue, updateFalse, insertMemoryData,
-                    timeFilter, res, fetchSize);
-            res.setDeltaObjectType(rowGroupReader.getDeltaObjectType());
-            if (res.length >= fetchSize) {
-                res.hasReadAll = false;
-                return res;
+        if (!onlyMemory) {
+            if (res != null) {
+                i = res.getRowGroupIndex();
+            }
+            // iterative res, res may be expand
+            for (; i < rowGroupReaderList.size(); i++) {
+                RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
+                res = getValueInOneColumnWithOverflow(rowGroupReader, sensorId, updateTrue, updateFalse, insertMemoryData,
+                        timeFilter, res, fetchSize);
+                res.setDeltaObjectType(rowGroupReader.getDeltaObjectType());
+                if (res.length >= fetchSize) {
+                    res.hasReadAll = false;
+                    return res;
+                }
             }
         }
+
+        if (res == null) {
+            res = createAOneColRetByFullPath(deviceUID + "." + sensorId);
+        }
+        // add left insert values
+        if (insertMemoryData.hasInsertData()) {
+            res.hasReadAll = addLeftInsertValue(res, insertMemoryData, fetchSize, timeFilter, updateTrue, updateFalse);
+        } else {
+            res.hasReadAll = true;
+        }
+        return res;
+    }
+
+    /**
+     *  For kv-match index.
+     *
+     * @return
+     * @throws ProcessorException
+     * @throws IOException
+     */
+    public DynamicOneColumnData getValueInMemoryData(String deviceUID, String sensorId,
+                                                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
+                                                                SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize)
+            throws ProcessorException, IOException {
+
+        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deviceUID);
 
         if (res == null) {
             res = createAOneColRetByFullPath(deviceUID + "." + sensorId);

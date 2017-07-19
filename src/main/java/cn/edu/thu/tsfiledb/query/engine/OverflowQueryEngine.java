@@ -92,6 +92,27 @@ public class OverflowQueryEngine {
         return query(pathList, or, null, null, null,  1000);
     }
 
+    public QueryDataSet queryDataInMemory(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
+        Or or = null;
+        List pathList = new ArrayList();
+        pathList.add(path);
+
+        for (Pair pair : timeIntervals) {
+            FilterSeries timeSeries = FilterFactory.timeFilterSeries();
+            GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
+            LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
+            if (or == null) {
+                or = (Or) FilterFactory.and(gtEq, ltEq);
+            } else {
+                Or tmpOr = (Or) FilterFactory.or(gtEq, ltEq);
+                or = (Or) FilterFactory.and(or, tmpOr);
+            }
+        }
+
+        return readWithoutFilter(pathList, null, 1000, true);
+        // return query(pathList, or, null, null, null,  1000);
+    }
+
     /**
      * Basic query function.
      *
@@ -106,7 +127,7 @@ public class OverflowQueryEngine {
                               FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException, PathErrorException {
         clearQueryDataSet(queryDataSet);
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
-            return readWithoutFilter(paths, queryDataSet, fetchSize);
+            return readWithoutFilter(paths, queryDataSet, fetchSize, false);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
             return crossColumnQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
@@ -185,14 +206,14 @@ public class OverflowQueryEngine {
     /**
      * Query type 1: read without filter.
      */
-    private QueryDataSet readWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException {
+    private QueryDataSet readWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, boolean onlyMemory) throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
                 @Override
                 public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
                     try {
-                        return readOneColumnWithoutFilter(p, res, fetchSize);
+                        return readOneColumnWithoutFilter(p, res, fetchSize, onlyMemory);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -207,7 +228,7 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize, boolean onlyMemory) throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
@@ -234,7 +255,7 @@ public class OverflowQueryEngine {
         //System.out.println("---------" + recordReader.insertAllData.insertTrue);
         //System.out.println("---------" + recordReader.insertAllData.pageList.get(0));
         res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
-                updateTrue, updateFalse, recordReader.insertAllData, deleteFilter, res, fetchSize);
+                updateTrue, updateFalse, recordReader.insertAllData, deleteFilter, res, fetchSize, onlyMemory);
 
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
 
