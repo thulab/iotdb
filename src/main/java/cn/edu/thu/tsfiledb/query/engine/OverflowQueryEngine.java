@@ -6,9 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.thu.tsfile.timeseries.filter.definition.operators.SingleBinaryExpression;
-import cn.edu.thu.tsfile.timeseries.filter.definition.operators.SingleUnaryExpression;
+import cn.edu.thu.tsfile.timeseries.filter.definition.operators.*;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,36 @@ public class OverflowQueryEngine {
 
     private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
         return mManager.getSeriesType(path.getFullPath());
+    }
+
+    /**
+     * For kv-match index.
+     *
+     * @param path
+     * @param timeIntervals
+     * @return
+     * @throws PathErrorException
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
+        And and = null;
+        List pathList = new ArrayList();
+        pathList.add(path);
+
+        for (Pair pair : timeIntervals) {
+            FilterSeries timeSeries = FilterFactory.timeFilterSeries();
+            GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
+            LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
+            if (and == null) {
+                and = (And) FilterFactory.and(gtEq, ltEq);
+            } else {
+                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
+                and = (And) FilterFactory.and(and, tmpAnd);
+            }
+        }
+
+        return query(pathList, and, null, null, null,  1000);
     }
 
     /**
