@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.index.kvmatch;
 
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 
 import java.util.List;
@@ -30,15 +31,15 @@ public class KvMatchQueryRequest extends QueryRequest {
         this.beta = builder.beta;
     }
 
-    public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon) {
+    public KvMatchQueryRequest(Path columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon) {
         this(columnPath, startTime, endTime, querySeries, epsilon, 1.0, 0.0);
     }
 
-    public KvMatchQueryRequest(String columnPath, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
+    public KvMatchQueryRequest(Path columnPath, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
         this(columnPath, Long.MIN_VALUE, Long.MAX_VALUE, querySeries, epsilon, alpha, beta);
     }
 
-    public KvMatchQueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
+    public KvMatchQueryRequest(Path columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
         super(columnPath, startTime, endTime, querySeries);
         this.epsilon = epsilon;
         this.alpha = alpha;
@@ -50,7 +51,7 @@ public class KvMatchQueryRequest extends QueryRequest {
      *
      * @return a new {@link KvMatchQueryRequest.Builder} instance
      */
-    public static KvMatchQueryRequest.Builder builder(String columnPath, List<Pair<Long, Double>> querySeries, double epsilon) {
+    public static KvMatchQueryRequest.Builder builder(Path columnPath, List<Pair<Long, Double>> querySeries, double epsilon) {
         return new Builder(columnPath, querySeries, epsilon);
     }
 
@@ -93,7 +94,7 @@ public class KvMatchQueryRequest extends QueryRequest {
      */
     public static final class Builder {
 
-        private String columnPath;
+        private Path columnPath;
 
         private long startTime;
 
@@ -116,8 +117,8 @@ public class KvMatchQueryRequest extends QueryRequest {
          * @param epsilon     the distance threshold
          * @throws IllegalArgumentException if there are any non valid arguments
          */
-        private Builder(String columnPath, List<Pair<Long, Double>> querySeries, double epsilon) throws IllegalArgumentException {
-            if (columnPath.trim().isEmpty() || querySeries.isEmpty() || epsilon <= 0) {
+        private Builder(Path columnPath, List<Pair<Long, Double>> querySeries, double epsilon) throws IllegalArgumentException {
+            if (columnPath == null || querySeries.isEmpty() || epsilon <= 0) {
                 throw new IllegalArgumentException("The given query request is not valid!");
             }
             this.columnPath = columnPath;
@@ -180,8 +181,8 @@ public class KvMatchQueryRequest extends QueryRequest {
          * @throws IllegalArgumentException if either required arguments is illegal or has been set
          */
         public KvMatchQueryRequest build() {
-            if (columnPath.trim().isEmpty() || querySeries.isEmpty() || epsilon <= 0 ||
-                    alpha < 1.0 || beta < 0 || startTime < 0 || endTime < 0 || startTime > endTime) {
+            if (columnPath == null || querySeries.isEmpty() || epsilon <= 0 ||
+                    alpha < 1.0 || beta < 0 || startTime > endTime) {
                 throw new IllegalArgumentException("The given query request is not valid!");
             }
             return new KvMatchQueryRequest(this);

@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.index;
 
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public abstract class QueryRequest {
 
-    protected String columnPath;
+    protected Path columnPath;
 
     protected long startTime;
 
@@ -19,25 +20,25 @@ public abstract class QueryRequest {
 
     protected List<Pair<Long, Double>> querySeries;
 
-    protected QueryRequest(String columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries) {
+    protected QueryRequest(Path columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries) {
         this.columnPath = columnPath;
         this.startTime = startTime;
         this.endTime = endTime;
         this.querySeries = querySeries;
     }
 
-    protected QueryRequest(String columnPath, List<Pair<Long, Double>> querySeries) {
+    protected QueryRequest(Path columnPath, List<Pair<Long, Double>> querySeries) {
         this.columnPath = columnPath;
         this.startTime = Long.MIN_VALUE;
         this.endTime = Long.MAX_VALUE;
         this.querySeries = querySeries;
     }
 
-    public String getColumnPath() {
+    public Path getColumnPath() {
         return columnPath;
     }
 
-    public void setColumnPath(String columnPath) {
+    public void setColumnPath(Path columnPath) {
         this.columnPath = columnPath;
     }
 

@@ -1,23 +1,22 @@
 package cn.edu.thu.tsfiledb.index.kvmatch;
 
+import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
+import cn.edu.thu.tsfiledb.index.DataFileInfo;
 import cn.edu.thu.tsfiledb.index.IndexManager;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 import cn.edu.thu.tsfiledb.index.QueryResponse;
-import cn.edu.thu.tsfiledb.metadata.MManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * The class manage the indexes of KV-match.
@@ -30,11 +29,10 @@ public class KvMatchIndexManager implements IndexManager {
 
     private static KvMatchIndexManager manager = null;
 
-    private String fileNodeDir;
-    private String indexFileDir;
+    private String dataFileDir, indexFileDir;
 
     private KvMatchIndexManager() {
-        fileNodeDir = TsfileDBDescriptor.getInstance().getConfig().fileNodeDir;
+        dataFileDir = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir;
         indexFileDir = TsfileDBDescriptor.getInstance().getConfig().indexFileDir;
     }
 
@@ -46,64 +44,48 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     public static void main(String args[]) {  // for temporarily test only
-        // TODO: produce synthetic data
-
         KvMatchIndexManager indexManager = KvMatchIndexManager.getInstance();
         try {
-            String columnPath = "root.excavator.shanghai.d1.s1";
+            Path columnPath = new Path("root.laptop.d1.s1");
 
             indexManager.build(columnPath);
 
             List<Pair<Long, Double>> querySeries = new ArrayList<>();
+            int value = ThreadLocalRandom.current().nextInt(-5, 5);
+            for (int i = 0; i < 128; i++) {
+                querySeries.add(new Pair<>((long) i, (double) value));
+                value += ThreadLocalRandom.current().nextInt(-1, 1);
+            }
             KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, querySeries, 1.0).alpha(1.0).beta(0.0).build();
             indexManager.query(queryRequest);
 
             List<File> fileList = new ArrayList<>();
-            indexManager.rebuild(fileList);
+            indexManager.rebuild(columnPath, fileList);
         } catch (PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
         }
     }
 
-    /**
-     * Build index for the given column path.
-     *
-     * @param columnPath building index for this column path
-     * @return whether the index building process is successful
-     * @throws PathErrorException if the given column path is not valid
-     */
     @Override
-    public boolean build(String columnPath) throws PathErrorException {
+    public boolean build(Path columnPath) throws PathErrorException {
         return build(columnPath, Long.MIN_VALUE);
     }
 
-    /**
-     * Build index for the given column path after specific time.
-     *
-     * @param columnPath building index for this column path
-     * @param sinceTime  only build index for data after this time
-     * @return whether the index building process is successful
-     * @throws PathErrorException if the given column path is not valid
-     */
     @Override
-    public boolean build(String columnPath, long sinceTime) throws PathErrorException {
-        // 1. get information of file node according to column path
-        String fileNodeName = MManager.getInstance().getFileNameByPath(columnPath);
+    public boolean build(Path columnPath, long sinceTime) throws PathErrorException {
+        // 1. get information of all files containing this column path. TODO: pending for API
+//        List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().XXX(columnPath, sinceTime);
+        List<DataFileInfo> fileInfoList = new ArrayList<>();
+        fileInfoList.add(new DataFileInfo(Long.MIN_VALUE, Long.MAX_VALUE, new File(dataFileDir + File.separator + columnPath + File.separator + "1500448391760-1500448507566")));
 
-        // 2. get information of all files in the file node directory
-        Path path = FileSystems.getDefault().getPath(fileNodeDir, fileNodeName);
-
-        // 3. build index for every data file. TODO: using multi-thread to speed up
+        // 2. build index for every data file. TODO: using multi-thread to speed up
         try {
-            for (Path file : Files.newDirectoryStream(path)) {
-                logger.info("Building index for data file `{}` ...", file.toString());
-                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(file);
+            for (DataFileInfo fileInfo : fileInfoList) {
+                logger.info("Building index for data file `{}` ...", fileInfo.getFile().toString());
+                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath, fileInfo);
                 indexBuilder.build();
             }
-        } catch (NoSuchFileException e) {
-            logger.error("There is no data file of `{}`. Data should be flushed before building index.", columnPath);
-            return false;
-        } catch (IOException e) {
+        } catch (IOException | ProcessorException e) {
             logger.error(e.getMessage(), e.getCause());
             return false;
         }
@@ -111,13 +93,23 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     @Override
-    public QueryResponse query(QueryRequest queryRequest) {
-        KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryRequest);
-        return queryExecutor.execute();
+    public boolean delete(Path columnPath) throws PathErrorException {
+        return false;
     }
 
     @Override
-    public boolean rebuild(List<File> fileList) {
+    public boolean rebuild(Path columnPath, List<File> modifiedFileList) throws PathErrorException {
         return false;
+    }
+
+    @Override
+    public boolean switchIndexes(Path columnPath, List<File> newFileList) throws PathErrorException {
+        return false;
+    }
+
+    @Override
+    public QueryResponse query(QueryRequest queryRequest) {
+        KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryRequest);
+        return queryExecutor.execute();
     }
 }

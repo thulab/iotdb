@@ -22,9 +22,9 @@ public class SyntheticDataGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(SyntheticDataGenerator.class);
 
-    private static final String CREATE_TIME_SERIES_TEMPLATE = "create timeseries root.excavator.shanghai.%s.%s with datatype=%s,encoding=%s";
-    private static final String INSERT_DATA_TEMPLATE = "insert into root.excavator.shanghai.%s(timestamp,%s) values (%s,%s)";
-    private static final String SET_STORAGE_GROUP_TEMPLATE = "set storage group to root.excavator.shanghai.%s";
+    private static final String CREATE_TIME_SERIES_TEMPLATE = "create timeseries root.laptop.%s.%s with datatype=%s,encoding=%s";
+    private static final String INSERT_DATA_TEMPLATE = "insert into root.laptop.%s(timestamp,%s) values (%s,%s)";
+    private static final String SET_STORAGE_GROUP_TEMPLATE = "set storage group to root.laptop.%s";
 
     private static final String JDBC_SERVER_URL = "jdbc:tsfile://127.0.0.1:6667/";
 //	private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.15:6667/";
