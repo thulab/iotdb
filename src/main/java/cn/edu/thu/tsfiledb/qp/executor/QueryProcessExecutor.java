@@ -24,6 +24,7 @@ import cn.edu.thu.tsfiledb.qp.strategy.PhysicalGenerator;
 public abstract class QueryProcessExecutor {
 
     protected ThreadLocal<Map<String, Object>> parameters = new ThreadLocal<>();
+    protected ThreadLocal<List<String>> aggregations = new ThreadLocal<>();
     protected ThreadLocal<Integer> fetchSize = new ThreadLocal<>();
 
     public QueryProcessExecutor() {
@@ -144,6 +145,17 @@ public abstract class QueryProcessExecutor {
 
     public MManager getMManager() {
         return MManager.getInstance();
+    }
+
+
+    public void setAggregations(List<String> aggregations) {
+        for (String aggr : aggregations) {
+            this.aggregations.get().add(aggr);
+        }
+    }
+
+    public List<String> getAggregations() {
+        return this.aggregations.get();
     }
 
     public void addParameter(String key, Object value) {

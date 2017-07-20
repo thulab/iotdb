@@ -62,7 +62,7 @@ public class PhysicalPlanTest {
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        assertEquals("sum", processor.getExecutor().getParameter(SQLConstant.IS_AGGREGATION));
+        assertEquals("sum", processor.getExecutor().getAggregations().get(0));
     }
 
 }

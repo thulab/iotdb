@@ -344,13 +344,15 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			List<String> columns = new ArrayList<>();
 			// Restore column header of aggregation to func(column_name), only
 			// support single aggregation function for now
-			String aggregateFuncName = null;
+			List<String> aggregations = null;
 			try {
-				aggregateFuncName = (String) processor.getExecutor().getParameter(SQLConstant.IS_AGGREGATION);
+				aggregations = processor.getExecutor().getAggregations();
 			} catch (NullPointerException ignored) {
 			}
-			if (aggregateFuncName != null) {
-				columns.add(aggregateFuncName + "(" + paths.get(0).getFullPath() + ")");
+			if (aggregations != null && aggregations.size() != 0) {
+				for (int i = 0; i < aggregations.size(); i++) {
+					columns.add(aggregations.get(i) + "(" + paths.get(i).getFullPath() + ")");
+				}
 			} else {
 				for (Path p : paths) {
 					columns.add(p.getFullPath());
@@ -363,7 +365,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			operationHandle = new TSOperationHandle(operationId, true);
 			resp.setOperationHandle(operationHandle);
 			recordANewQuery(statement, plan);
-			resp.setOperationType(aggregateFuncName);
+			resp.setOperationType(aggregations.get(0));
 			return resp;
 		} catch (Exception e) {
 			LOGGER.error("TsFileDB Server: server internal error: {}", e.getMessage());

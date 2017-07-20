@@ -105,12 +105,17 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
             }
         }
         try {
-            if (parameters.get() != null && parameters.get().containsKey(SQLConstant.IS_AGGREGATION)) {
+            if (aggregations.get() != null && aggregations.get().size() != 0) {
                 if (lastData != null) {
                     lastData.clear();
                     return lastData;
                 }
-                String aggregateFuncName = (String) parameters.get().get(SQLConstant.IS_AGGREGATION);
+                for(int i = 0; i < aggregations.get().size(); i++) {
+                    String aggr = aggregations.get().get(i);
+                    Path path = paths.get(i);
+                }
+
+                String aggregateFuncName = aggregations.get().get(0);
                 ret = queryEngine.aggregate(paths.get(0), aggregateFuncName, timeFilter, freqFilter, valueFilter);
             } else {
                 ret = queryEngine.query(paths, timeFilter, freqFilter, valueFilter, lastData, fetchSize);

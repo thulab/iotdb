@@ -126,11 +126,6 @@ public class PhysicalGenerator {
             throw new LogicalOperatorException("startTime:" + startTime + ",endTime:" + endTime
                     + ", one of them is illegal");
         }
-        // update : where time > 503 and time <504
-        // if (startTime > endTime) {
-        // throw new LogicalOperatorException("startTime:" + startTime + ",endTime:" + endTime
-        // + ", start time cannot be greater than end time");
-        // }
 
         plan.setStartTime(startTime);
         plan.setEndTime(endTime);
@@ -142,14 +137,15 @@ public class PhysicalGenerator {
         SelectOperator selectOperator = queryOperator.getSelectOperator();
         FilterOperator filterOperator = queryOperator.getFilterOperator();
 
-        String aggregation = selectOperator.getAggregation();
-        if(aggregation != null)
-            executor.addParameter(SQLConstant.IS_AGGREGATION, aggregation);
+        List<String> aggregation = selectOperator.getAggregations();
+        executor.setAggregations(aggregation);
         ArrayList<SeriesSelectPlan> subPlans = new ArrayList<>();
         if (filterOperator == null) {
-            subPlans.add(new SeriesSelectPlan(paths, null, null, null, executor));
+            //no need to split filter, no overlapping data
+            return new SeriesSelectPlan(paths, null, null, null, executor);
         }
         else{
+            //may have overlapping data, so we need merge to remove repetition
             List<FilterOperator> parts = splitFilter(filterOperator);
             for (FilterOperator filter : parts) {
                 SeriesSelectPlan plan = constructSelectPlan(filter, paths, executor);
