@@ -73,45 +73,45 @@ public class OverflowQueryEngine {
      * @throws ProcessorException
      */
     public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
-        Or or = null;
-        List pathList = new ArrayList();
+        List<Path> pathList = new ArrayList<>();
         pathList.add(path);
 
-        for (Pair pair : timeIntervals) {
-            FilterSeries timeSeries = FilterFactory.timeFilterSeries();
-            GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
-            LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
-            if (or == null) {
-                or = (Or) FilterFactory.and(gtEq, ltEq);
+        FilterExpression fe = null;
+        for (int i = 0; i < timeIntervals.size(); i++) {
+            Pair<Long, Long> pair = timeIntervals.get(i);
+            FilterSeries<Long> timeSeries = FilterFactory.timeFilterSeries();
+            GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
+            LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
+            if (i == 0) {
+                fe = FilterFactory.and(gtEq, ltEq);
             } else {
-                Or tmpOr = (Or) FilterFactory.or(gtEq, ltEq);
-                or = (Or) FilterFactory.and(or, tmpOr);
+                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
+                fe = FilterFactory.or(fe, tmpAnd);
             }
         }
-
-        return query(pathList, or, null, null, null,  1000);
+        return query(pathList, fe, null, null, null,  1000);
     }
 
-    public QueryDataSet queryDataInMemory(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
-        Or or = null;
-        List pathList = new ArrayList();
-        pathList.add(path);
-
-        for (Pair pair : timeIntervals) {
-            FilterSeries timeSeries = FilterFactory.timeFilterSeries();
-            GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
-            LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
-            if (or == null) {
-                or = (Or) FilterFactory.and(gtEq, ltEq);
-            } else {
-                Or tmpOr = (Or) FilterFactory.or(gtEq, ltEq);
-                or = (Or) FilterFactory.and(or, tmpOr);
-            }
-        }
-
-        return readWithoutFilter(pathList, null, 1000, true);
-        // return query(pathList, or, null, null, null,  1000);
-    }
+//    public QueryDataSet queryDataInMemory(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
+//        FilterExpression fe = null;
+//        List pathList = new ArrayList();
+//        pathList.add(path);
+//
+//        for (Pair pair : timeIntervals) {
+//            FilterSeries timeSeries = FilterFactory.timeFilterSeries();
+//            GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
+//            LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
+//            if (or == null) {
+//                or = (Or) FilterFactory.and(gtEq, ltEq);
+//            } else {
+//                Or tmpOr = (Or) FilterFactory.or(gtEq, ltEq);
+//                or = (Or) FilterFactory.and(or, tmpOr);
+//            }
+//        }
+//
+//        return readWithoutFilter(pathList, null, 1000, true);
+//        // return query(pathList, or, null, null, null,  1000);
+//    }
 
     /**
      * Basic query function.
