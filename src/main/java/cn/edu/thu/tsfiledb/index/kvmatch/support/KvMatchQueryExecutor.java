@@ -1,7 +1,8 @@
-package cn.edu.thu.tsfiledb.index.kvmatch;
+package cn.edu.thu.tsfiledb.index.kvmatch.support;
 
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 import cn.edu.thu.tsfiledb.index.QueryResponse;
+import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchQueryResponse;
 
 /**
  * This is the class actually execute the KV-match index query processing.

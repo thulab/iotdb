@@ -1,9 +1,10 @@
 package cn.edu.thu.tsfiledb.index.kvmatch;
 
+import cn.edu.fudan.dsm.kvmatch.tsfiledb.KvMatchIndexBuilder;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
-import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
+import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
@@ -12,6 +13,9 @@ import cn.edu.thu.tsfiledb.index.IndexManager;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 import cn.edu.thu.tsfiledb.index.QueryResponse;
 import cn.edu.thu.tsfiledb.index.exception.IndexManagerException;
+import cn.edu.thu.tsfiledb.index.kvmatch.support.KvMatchQueryExecutor;
+import cn.edu.thu.tsfiledb.index.utils.IndexUtils;
+import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,11 +35,10 @@ public class KvMatchIndexManager implements IndexManager {
 
     private static KvMatchIndexManager manager = null;
 
-    private String dataFileDir, indexFileDir;
+    private OverflowQueryEngine overflowQueryEngine;
 
     private KvMatchIndexManager() {
-        dataFileDir = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir;
-        indexFileDir = TsfileDBDescriptor.getInstance().getConfig().indexFileDir;
+        overflowQueryEngine = new OverflowQueryEngine();
     }
 
     public static KvMatchIndexManager getInstance() {
@@ -80,10 +83,11 @@ public class KvMatchIndexManager implements IndexManager {
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, sinceTime);
 
             // 2. build index for every data file. TODO: using multi-thread to speed up
+            KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath);
             for (DataFileInfo fileInfo : fileInfoList) {
                 logger.info("Building index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
-                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath, fileInfo, true);
-                indexBuilder.build();
+                QueryDataSet dataSet = overflowQueryEngine.query(columnPath, fileInfo.getTimeInterval());
+                indexBuilder.build(dataSet, IndexUtils.getIndexFilePath(fileInfo.getFilePath()));
             }
             return true;
         } catch (FileNodeManagerException | IOException | ProcessorException | PathErrorException e) {
@@ -108,10 +112,11 @@ public class KvMatchIndexManager implements IndexManager {
     @Override
     public boolean rebuild(Path columnPath, List<DataFileInfo> modifiedFileList) throws IndexManagerException {
         try {
+            KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath);
             for (DataFileInfo fileInfo : modifiedFileList) {
-                logger.info("Building index for data file `{}` ...", fileInfo.getFilePath());
-                KvMatchIndexBuilder indexBuilder = new KvMatchIndexBuilder(columnPath, fileInfo, false);
-                indexBuilder.build();
+                logger.info("Building index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
+                QueryDataSet dataSet = overflowQueryEngine.query(columnPath, fileInfo.getTimeInterval());
+                indexBuilder.build(dataSet, IndexUtils.getIndexFilePath(fileInfo.getFilePath()) + ".new");
             }
         } catch (IOException | ProcessorException | PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());

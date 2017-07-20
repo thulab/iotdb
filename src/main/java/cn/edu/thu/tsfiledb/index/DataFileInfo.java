@@ -1,9 +1,9 @@
 package cn.edu.thu.tsfiledb.index;
 
+import cn.edu.thu.tsfile.common.utils.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import cn.edu.thu.tsfile.common.utils.Pair;
 
 /**
  * The class for storing information of a TsFile data file.

@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.index;
+package cn.edu.thu.tsfiledb.index.utils;
 
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.file.metadata.enums.TSEncoding;
