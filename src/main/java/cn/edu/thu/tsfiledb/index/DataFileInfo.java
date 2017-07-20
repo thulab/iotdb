@@ -1,10 +1,9 @@
 package cn.edu.thu.tsfiledb.index;
 
-import cn.edu.thu.tsfile.common.utils.Pair;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import cn.edu.thu.tsfile.common.utils.Pair;
 
 /**
  * The class for storing information of a TsFile data file.
@@ -17,36 +16,24 @@ public class DataFileInfo {
 
     private long endTime;
 
-    private File file;
+    private String filePath;
 
-    public DataFileInfo(long startTime, long endTime, File file) {
+    public DataFileInfo(long startTime, long endTime, String filePath) {
         this.startTime = startTime;
         this.endTime = endTime;
-        this.file = file;
+        this.filePath = filePath;
     }
 
     public long getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
     public long getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
+    public String getFile() {
+        return filePath;
     }
 
     public List<Pair<Long, Long>> getTimeInterval() {

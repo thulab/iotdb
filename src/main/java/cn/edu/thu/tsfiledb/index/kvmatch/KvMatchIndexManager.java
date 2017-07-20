@@ -4,6 +4,7 @@ import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
+import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.DataFileInfo;
 import cn.edu.thu.tsfiledb.index.IndexManager;
@@ -65,15 +66,17 @@ public class KvMatchIndexManager implements IndexManager {
 
     @Override
     public boolean build(Path columnPath) throws PathErrorException {
-        return build(columnPath, Long.MIN_VALUE);
+        return build(columnPath, 0);
     }
 
     @Override
     public boolean build(Path columnPath, long sinceTime) throws PathErrorException {
         // 1. get information of all files containing this column path. TODO: pending for API
 //        List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().XXX(columnPath, sinceTime);
-        List<DataFileInfo> fileInfoList = new ArrayList<>();
-        fileInfoList.add(new DataFileInfo(Long.MIN_VALUE, Long.MAX_VALUE, new File(dataFileDir + File.separator + columnPath + File.separator + "1500448391760-1500448507566")));
+    	int token = FileNodeManager.getInstance().beginQuery(columnPath.getDeltaObjectToString());
+    	 List<DataFileInfo> fileInfoList  = FileNodeManager.getInstance().indexBuildQuery(columnPath, sinceTime);
+    	
+    	
 
         // 2. build index for every data file. TODO: using multi-thread to speed up
         try {
@@ -86,6 +89,7 @@ public class KvMatchIndexManager implements IndexManager {
             logger.error(e.getMessage(), e.getCause());
             return false;
         }
+        FileNodeManager.getInstance().endQuery(columnPath.getDeltaObjectToString(), token);
         return true;
     }
 

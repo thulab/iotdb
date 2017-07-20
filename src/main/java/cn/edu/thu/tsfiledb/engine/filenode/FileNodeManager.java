@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.engine.filenode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
@@ -36,6 +38,7 @@ import cn.edu.thu.tsfiledb.engine.lru.LRUManager;
 import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.ErrorDebugException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
+import cn.edu.thu.tsfiledb.index.DataFileInfo;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.sys.writelog.WriteLogManager;
 
@@ -457,6 +460,36 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			}
 		}
 	}
+
+	/**
+	 * 
+	 * query just for KvMatch index
+	 * 
+	 * @param timeseries
+	 * @param startTime
+	 * @return
+	 * @throws FileNodeManagerException
+	 */
+	public List<DataFileInfo> indexBuildQuery(Path timeseries, long startTime) throws FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = null;
+		String deltaObjectId = timeseries.getDeltaObjectToString();
+		try {
+			do {
+				fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(deltaObjectId, false);
+			} while (fileNodeProcessor == null);
+			LOGGER.debug("Get the FileNodeProcessor: {}, query.", fileNodeProcessor.getNameSpacePath());
+
+			return fileNodeProcessor.indexQuery(deltaObjectId, startTime);
+		} catch (LRUManagerException e) {
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		} finally {
+			if (fileNodeProcessor != null) {
+				fileNodeProcessor.readUnlock();
+			}
+		}
+	}
+	
 
 	public void endQuery(String deltaObjectId, int token) throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = null;

@@ -52,6 +52,7 @@ import cn.edu.thu.tsfiledb.engine.exception.ProcessorRuntimException;
 import cn.edu.thu.tsfiledb.engine.lru.LRUProcessor;
 import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
+import cn.edu.thu.tsfiledb.index.DataFileInfo;
 import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.query.engine.QueryForMerge;
@@ -574,6 +575,20 @@ public class FileNodeProcessor extends LRUProcessor {
 		queryStructure = new QueryStructure(currentPage, pageList, bufferwriteDataInMemory.right,
 				bufferwriteDataInFiles, overflowData);
 		return queryStructure;
+	}
+
+	public List<DataFileInfo> indexQuery(String deltaObjectId, long startTime) {
+		List<DataFileInfo> dataFileInfos = new ArrayList<>();
+		for (IntervalFileNode intervalFileNode : newFileNodes) {
+			if (intervalFileNode.isClosed()) {
+				if (intervalFileNode.getStartTime(deltaObjectId) >= startTime) {
+					DataFileInfo dataFileInfo = new DataFileInfo(intervalFileNode.getStartTime(deltaObjectId),
+							intervalFileNode.getEndTime(deltaObjectId), intervalFileNode.filePath);
+					dataFileInfos.add(dataFileInfo);
+				}
+			}
+		}
+		return dataFileInfos;
 	}
 
 	public void merge() throws FileNodeProcessorException {
