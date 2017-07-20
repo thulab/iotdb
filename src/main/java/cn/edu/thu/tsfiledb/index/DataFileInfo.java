@@ -32,7 +32,7 @@ public class DataFileInfo {
         return endTime;
     }
 
-    public String getFile() {
+    public String getFilePath() {
         return filePath;
     }
 

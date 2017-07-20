@@ -1,7 +1,7 @@
 package cn.edu.thu.tsfiledb.index;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
-import cn.edu.thu.tsfiledb.exception.PathErrorException;
+import cn.edu.thu.tsfiledb.index.exception.IndexManagerException;
 
 import java.util.List;
 
@@ -17,9 +17,9 @@ public interface IndexManager {
      *
      * @param columnPath the column path
      * @return whether the operation is successful
-     * @throws PathErrorException if the given column path is not correct
+     * @throws IndexManagerException if the given column path is not correct
      */
-    boolean build(Path columnPath) throws PathErrorException;
+    boolean build(Path columnPath) throws IndexManagerException;
 
     /**
      * Build index for data after specific time of the given column path.
@@ -27,9 +27,9 @@ public interface IndexManager {
      * @param columnPath the column path
      * @param sinceTime  only build index for data after this time
      * @return whether the operation is successful
-     * @throws PathErrorException if the given column path is not correct
+     * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean build(Path columnPath, long sinceTime) throws PathErrorException;
+    boolean build(Path columnPath, long sinceTime) throws IndexManagerException;
 
     /**
      * Delete all index files of the given column path.
@@ -37,9 +37,9 @@ public interface IndexManager {
      *
      * @param columnPath the column path
      * @return whether the operation is successful
-     * @throws PathErrorException if the given column path is not correct
+     * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean delete(Path columnPath) throws PathErrorException;
+    boolean delete(Path columnPath) throws IndexManagerException;
 
     /**
      * Build index for data in the file list, and not overwrite exist ones,
@@ -48,9 +48,9 @@ public interface IndexManager {
      * @param columnPath       the column path
      * @param modifiedFileList the data files have been modified or created in the merge/close operation
      * @return whether the operation is successful
-     * @throws PathErrorException if the given column path is not correct
+     * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean rebuild(Path columnPath, List<DataFileInfo> modifiedFileList) throws PathErrorException;
+    boolean rebuild(Path columnPath, List<DataFileInfo> modifiedFileList) throws IndexManagerException;
 
     /**
      * Given the new file list after merge/close, delete all index files which are not in the list,
@@ -60,9 +60,9 @@ public interface IndexManager {
      * @param columnPath  the column path
      * @param newFileList new file list after merge/close
      * @return whether the operation is successful
-     * @throws PathErrorException if the given column path is not correct
+     * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean switchIndexes(Path columnPath, List<DataFileInfo> newFileList) throws PathErrorException;
+    boolean switchIndexes(Path columnPath, List<DataFileInfo> newFileList) throws IndexManagerException;
 
     /**
      * Query index for result.
