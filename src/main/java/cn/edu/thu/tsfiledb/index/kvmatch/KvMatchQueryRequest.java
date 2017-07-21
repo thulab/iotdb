@@ -36,7 +36,7 @@ public class KvMatchQueryRequest extends QueryRequest {
     }
 
     public KvMatchQueryRequest(Path columnPath, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
-        this(columnPath, Long.MIN_VALUE, Long.MAX_VALUE, querySeries, epsilon, alpha, beta);
+        this(columnPath, 0, Long.MAX_VALUE, querySeries, epsilon, alpha, beta);
     }
 
     public KvMatchQueryRequest(Path columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries, double epsilon, double alpha, double beta) {
@@ -126,7 +126,7 @@ public class KvMatchQueryRequest extends QueryRequest {
             this.epsilon = epsilon;
             this.alpha = 1.0;
             this.beta = 0.0;
-            this.startTime = Long.MIN_VALUE;
+            this.startTime = 0;
             this.endTime = Long.MAX_VALUE;
         }
 

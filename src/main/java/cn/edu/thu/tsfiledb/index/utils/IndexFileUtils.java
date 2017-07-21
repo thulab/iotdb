@@ -10,7 +10,7 @@ import java.io.File;
  *
  * @author Jiaye Wu
  */
-public class IndexUtils {
+public class IndexFileUtils {
 
     private static final String DATA_FILE_PATH, INDEX_FILE_PATH;
 

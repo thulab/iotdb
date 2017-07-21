@@ -71,5 +71,5 @@ public interface IndexManager {
      * @param queryRequest the query request with all parameters
      * @return the query response
      */
-    QueryResponse query(QueryRequest queryRequest);
+    QueryResponse query(QueryRequest queryRequest) throws IndexManagerException;
 }
