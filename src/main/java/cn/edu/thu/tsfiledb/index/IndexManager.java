@@ -1,7 +1,7 @@
 package cn.edu.thu.tsfiledb.index;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
-import cn.edu.thu.tsfiledb.index.exception.IndexManagerException;
+import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.index.exception;
+package cn.edu.thu.tsfiledb.exception;
 
 public class IndexManagerException extends Exception {
 
