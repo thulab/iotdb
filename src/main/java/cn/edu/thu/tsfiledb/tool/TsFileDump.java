@@ -52,6 +52,11 @@ public class TsFileDump {
     private static String timeFormat;
     private static boolean headerDis;
 
+	private static String host;
+	private static String port;
+	private static String username;
+	private static String password;
+    
     private static Connection connection = null;
 
     /**
@@ -78,28 +83,22 @@ public class TsFileDump {
                     return;
                 }
             } catch (ParseException e) {
-                System.out.println(e.getMessage());
+    				System.out.println("Error params input, please check or try -help");
+    				hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
                 return;
             }
 			try {
-				String host = checkRequiredArg(HOST_ARGS, HOST_NAME, commandLine);
-				String port = checkRequiredArg(PORT_ARGS, PORT_NAME, commandLine);
-				String username = checkRequiredArg(USERNAME_ARGS, USERNAME_NAME, commandLine);
+				host = checkRequiredArg(HOST_ARGS, HOST_NAME, commandLine);
+				port = checkRequiredArg(PORT_ARGS, PORT_NAME, commandLine);
+				username = checkRequiredArg(USERNAME_ARGS, USERNAME_NAME, commandLine);
 
-				String password = commandLine.getOptionValue(PASSWORD_ARGS);
+				password = commandLine.getOptionValue(PASSWORD_ARGS);
 				if (password == null) {
 					System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
 	                password = scanner.nextLine();
 				}
-				try {
-					connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username,
-							password);
-				} catch (SQLException e) {
-					System.out.println(TSFILEDB_CLI_PREFIX + "> " + e.getMessage());
-					return;
-				}
+
 			} catch (ArgsErrorException e) {
-				System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
 				return;
 			}
 			

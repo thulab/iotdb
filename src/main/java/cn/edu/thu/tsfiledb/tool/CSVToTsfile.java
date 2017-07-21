@@ -357,6 +357,7 @@ public class CSVToTsfile {
 		try {
 			commandLine = parser.parse(options, args);
 		} catch (ParseException e) {
+			System.out.println("Error params input, please check or try -help");
 			hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
 			scanner.close();
 			return;
@@ -378,7 +379,6 @@ public class CSVToTsfile {
 			}
 			
 		} catch (ArgsErrorException e) {
-			System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
 			return;
 		}
 
@@ -401,9 +401,9 @@ public class CSVToTsfile {
 			errorInsertInfo = System.getProperty(SystemConstant.TSFILE_HOME) + "/csvInsertError.error";
 			filename = commandLine.getOptionValue(FILE_ARGS);
 			if(filename == null) {
-				hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
-				 scanner.close();
-				 return;
+				System.out.println("Please input file name or try -help for more info.");
+				scanner.close();
+				return;
 			}
 		}
 		loadDataFromCSV();

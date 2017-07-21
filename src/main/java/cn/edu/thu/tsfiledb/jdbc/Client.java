@@ -76,7 +76,7 @@ public class Client extends AbstractClient {
 					return;
 				}
 			} catch (ArgsErrorException e) {
-				System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
+				//System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
 				return;
 			}
 
