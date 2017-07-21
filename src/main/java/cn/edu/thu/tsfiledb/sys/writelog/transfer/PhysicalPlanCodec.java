@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import cn.edu.thu.tsfile.common.utils.BytesUtils;
+import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.common.utils.ReadWriteStreamUtils;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
@@ -98,8 +100,9 @@ public enum PhysicalPlanCodec {
             @Override
             public byte[] encode(UpdatePlan updatePlan) throws IOException {
                 int type = OperatorType.UPDATE.ordinal();
-                byte[] startTimeBytes = BytesUtils.longToBytes(updatePlan.getStartTime());
-                byte[] endTimeBytes = BytesUtils.longToBytes(updatePlan.getEndTime());
+                Pair<Long, Long> interval = updatePlan.getIntervals().get(0);
+                byte[] startTimeBytes = BytesUtils.longToBytes(interval.left);
+                byte[] endTimeBytes = BytesUtils.longToBytes(interval.right);
 
                 byte[] valueBytes = BytesUtils.StringToBytes(updatePlan.getValue());
                 byte[] valueBytesLength = ReadWriteStreamUtils.getUnsignedVarInt(valueBytes.length);
@@ -154,7 +157,10 @@ public enum PhysicalPlanCodec {
                 bais.read(pathBytes, 0, pathLength);
                 String path = BytesUtils.bytesToString(pathBytes);
 
-                return new UpdatePlan(startTime, endTime, value, new Path(path));
+                UpdatePlan updatePlan = new UpdatePlan(value, new Path(path));
+                updatePlan.addInterval(new Pair<>(startTime, endTime));
+
+                return updatePlan;
             }
         };
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
@@ -54,7 +55,10 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			return delete(delete.getPaths(), delete.getDeleteTime());
 		case UPDATE:
 			UpdatePlan update = (UpdatePlan) plan;
-			return update(update.getPath(), update.getStartTime(), update.getEndTime(), update.getValue());
+			boolean flag = true;
+			for(Pair<Long, Long> interval: update.getIntervals())
+				flag &= update(update.getPath(), interval.left, interval.right, update.getValue());
+			return flag;
 		case INSERT:
 			InsertPlan insert = (InsertPlan) plan;
 			int result = multiInsert(insert.getDeltaObject(), insert.getTime(), insert.getMeasurements(),

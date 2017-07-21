@@ -1,5 +1,6 @@
 package cn.edu.thu.tsfiledb.qp.strategy;
 
+import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.qp.exception.GeneratePhysicalPlanException;
@@ -100,9 +101,6 @@ public class PhysicalGenerator {
             throw new LogicalOperatorException(
                     "for update command, it has non-time condition in where clause");
         }
-        if (filterOperator.getChildren().size() != 2)
-            throw new LogicalOperatorException(
-                    "for update command, time must have left and right boundaries");
 
         long startTime = -1;
         long endTime = -1;
@@ -126,14 +124,8 @@ public class PhysicalGenerator {
             throw new LogicalOperatorException("startTime:" + startTime + ",endTime:" + endTime
                     + ", one of them is illegal");
         }
-        // update : where time > 503 and time <504
-        // if (startTime > endTime) {
-        // throw new LogicalOperatorException("startTime:" + startTime + ",endTime:" + endTime
-        // + ", start time cannot be greater than end time");
-        // }
 
-        plan.setStartTime(startTime);
-        plan.setEndTime(endTime);
+        plan.addInterval(new Pair<>(startTime, endTime));
     }
 
 

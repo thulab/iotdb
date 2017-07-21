@@ -47,7 +47,7 @@ public class TestQpUpdate {
     @Test
     public void testUpdate() throws QueryProcessorException, ProcessorException, RecognitionException, ArgsErrorException {
         String sqlStr =
-                "update root.laptop.device_1.sensor_1 set value = 33000 where time >= 10 and time <= 10";
+                "update root.laptop.device_1.sensor_1 set value = 33000 where time > 20 or time < 15";
         PhysicalPlan plan1 = processor.parseSQLToPhysicalPlan(sqlStr);
         boolean upRet = processor.getExecutor().processNonQuery(plan1);
 
