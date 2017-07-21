@@ -4,6 +4,8 @@ import org.apache.commons.cli.*;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
+
 import java.io.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -79,15 +81,28 @@ public class TsFileDump {
                 System.out.println(e.getMessage());
                 return;
             }
+			try {
+				String host = checkRequiredArg(HOST_ARGS, HOST_NAME, commandLine);
+				String port = checkRequiredArg(PORT_ARGS, PORT_NAME, commandLine);
+				String username = checkRequiredArg(USERNAME_ARGS, USERNAME_NAME, commandLine);
 
-            String host = commandLine.getOptionValue(HOST_ARGS);
-            String port = commandLine.getOptionValue(PORT_ARGS);
-            String username = commandLine.getOptionValue(USERNAME_ARGS);
-            String password = commandLine.getOptionValue(PASSWORD_ARGS);
-            if (password == null) {
-                System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
-                password = scanner.nextLine();
-            }
+				String password = commandLine.getOptionValue(PASSWORD_ARGS);
+				if (password == null) {
+					System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
+	                password = scanner.nextLine();
+				}
+				try {
+					connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username,
+							password);
+				} catch (SQLException e) {
+					System.out.println(TSFILEDB_CLI_PREFIX + "> " + e.getMessage());
+					return;
+				}
+			} catch (ArgsErrorException e) {
+				System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
+				return;
+			}
+			
             headerDis = commandLine.hasOption(HEADER_DIS_ARGS);
             timeFormat = commandLine.getOptionValue(TIME_FORMAT_ARGS);
             if (timeFormat == null) {
@@ -168,6 +183,17 @@ public class TsFileDump {
         return options;
     }
 
+	private static String checkRequiredArg(String arg, String name, CommandLine commandLine) throws ArgsErrorException {
+		String str = commandLine.getOptionValue(arg);
+		if (str == null) {
+			String msg = String.format("%s: Required values for option '%s' not provided", TSFILEDB_CLI_PREFIX, name);
+			System.out.println(msg);
+			System.out.println("Use -help for more information");
+			throw new ArgsErrorException(msg);
+		}
+		return str;
+	}
+    
     /**
      * Dump files from database to CSV file
      *

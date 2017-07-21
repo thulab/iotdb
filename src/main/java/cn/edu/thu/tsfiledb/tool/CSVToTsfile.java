@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.common.constant.SystemConstant;
+import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
 
 
 /**
@@ -270,6 +271,17 @@ public class CSVToTsfile {
 		return timeseriesToType.get(timeseries);
 
 	}
+	
+	protected static String checkRequiredArg(String arg, String name, CommandLine commandLine) throws ArgsErrorException {
+		String str = commandLine.getOptionValue(arg);
+		if (str == null) {
+			String msg = String.format("%s: Required values for option '%s' not provided", TSFILEDB_CLI_PREFIX, name);
+			System.out.println(msg);
+			System.out.println("Use -help for more information");
+			throw new ArgsErrorException(msg);
+		}
+		return str;
+	}
 
 	/**
 	 * create Insert SQL statement according to every line csv data
@@ -345,29 +357,31 @@ public class CSVToTsfile {
 		try {
 			commandLine = parser.parse(options, args);
 		} catch (ParseException e) {
-			LOGGER.error("problems encountered while parsing the command line tokens.", e);
+			hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
 			scanner.close();
-			System.exit(1);
+			return;
 		}
 		if (commandLine.hasOption(HELP_ARGS)) {
 			hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
 			scanner.close();
 			return;
 		}
-		 host = commandLine.getOptionValue(HOST_ARGS);
-		 port = commandLine.getOptionValue(PORT_ARGS);
-		 username = commandLine.getOptionValue(USERNAME_ARGS);
-		 password = commandLine.getOptionValue(PASSWORD_ARGS);
-		 if (password == null) {
-			 System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
-			 password = scanner.nextLine();
-		 }
-		 
-		 if(host == null || port == null || username == null) {
-			 hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
-			 scanner.close();
-			 return;
-		 }
+		try {
+			host = checkRequiredArg(HOST_ARGS, HOST_NAME, commandLine);
+			port = checkRequiredArg(PORT_ARGS, PORT_NAME, commandLine);
+			username = checkRequiredArg(USERNAME_ARGS, USERNAME_NAME, commandLine);
+
+			password = commandLine.getOptionValue(PASSWORD_ARGS);
+			if (password == null) {
+				System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
+				password = scanner.nextLine();
+			}
+			
+		} catch (ArgsErrorException e) {
+			System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
+			return;
+		}
+
 		timeformat = commandLine.getOptionValue(TIMEFORMAT_ARGS);
 		if(timeformat == null) {
 			timeformat = "timestamps";
