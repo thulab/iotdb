@@ -89,6 +89,11 @@ public class JDBCExample3 {
 			if (count == 4000000) {
 				endTime = System.currentTimeMillis();
 				System.out.println((endTime - startTime) / 1000);
+				try {
+					statement.execute("close");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 				System.exit(0);
 			}
 
