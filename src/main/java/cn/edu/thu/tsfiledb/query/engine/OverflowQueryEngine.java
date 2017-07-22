@@ -714,11 +714,13 @@ public class OverflowQueryEngine {
         DynamicOneColumnData update = (DynamicOneColumnData) recordReader.overflowInfo.get(1);
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) recordReader.overflowInfo.get(3);
         LongInterval interval = (LongInterval) FilterVerifier.get(deleteFilter).getInterval(deleteFilter);
-        long maxDeleteTime;
-        if (interval.flag[interval.count-1]) {
-            maxDeleteTime = interval.v[interval.count-1];
-        } else {
-            maxDeleteTime = interval.v[interval.count-1] - 1;
+        long maxDeleteTime = 0;
+        if (interval.count > 0) {
+            if (interval.flag[0] && interval.v[0] > 0) {
+                maxDeleteTime = interval.v[0] - 1;
+            } else {
+                maxDeleteTime = interval.v[0];
+            }
         }
         return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, queryDataSet);
     }
