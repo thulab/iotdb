@@ -28,7 +28,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * The class manage the indexes of KV-match.
@@ -70,17 +73,19 @@ public class KvMatchIndexManager implements IndexManager {
 
             indexManager.switchIndexes(columnPath, fileInfoList);
 
+            OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
+            List<Pair<Long, Long>> timeIntervals = new ArrayList<>();
+            timeIntervals.add(new Pair<>(1500448399600L, 1500448399600L + 1024));
+            QueryDataSet queryDataSet = overflowQueryEngine.query(columnPath, timeIntervals);
             List<Pair<Long, Double>> querySeries = new ArrayList<>();
-            int value = ThreadLocalRandom.current().nextInt(-5, 5);
-            for (int i = 0; i < 128; i++) {
-                querySeries.add(new Pair<>((long) i, (double) value));
-                value += ThreadLocalRandom.current().nextInt(-1, 1);
+            while (queryDataSet.next()) {
+                querySeries.add(new Pair<>(queryDataSet.getCurrentRecord().getTime(), Double.parseDouble(queryDataSet.getCurrentRecord().getFields().get(0).getStringValue())));
             }
             KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, querySeries, 1.0).alpha(1.0).beta(0.0).build();
             indexManager.query(queryRequest);
 
             indexManager.delete(columnPath);
-        } catch (IndexManagerException | FileNodeManagerException e) {
+        } catch (IndexManagerException | FileNodeManagerException | ProcessorException | PathErrorException | IOException e) {
             logger.error(e.getMessage(), e.getCause());
         } finally {
             indexManager.executor.shutdown();
@@ -236,28 +241,40 @@ public class KvMatchIndexManager implements IndexManager {
             // 2. fetch non-indexed ranges from overflow manager
             // TODO: pending for API
 
-            // 3. search corresponding index files of data files in the query range
+            // 3. propagate query series
+            List<Double> querySeries = new ArrayList<>();
+            querySeries.add(queryRequest.getQuerySeries().get(0).right);
+            for (int i = 1; i < queryRequest.getQuerySeries().size(); i++) {
+                // amend points on the line
+                double k = (queryRequest.getQuerySeries().get(i).right - queryRequest.getQuerySeries().get(i - 1).right) / (queryRequest.getQuerySeries().get(i).left - queryRequest.getQuerySeries().get(i - 1).left);
+                for (long j = queryRequest.getQuerySeries().get(i - 1).left + 1; j < queryRequest.getQuerySeries().get(i).left; j++) {
+                    querySeries.add(queryRequest.getQuerySeries().get(i - 1).right + (j - queryRequest.getQuerySeries().get(i - 1).left) * k);
+                }
+                querySeries.add(queryRequest.getQuerySeries().get(i).right);  // add current point
+            }
+
+            // 4. search corresponding index files of data files in the query range
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
                 logger.info("Building index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
-                KvMatchQueryRequest queryRequest1 = (KvMatchQueryRequest) queryRequest;
-                QueryConfig queryConfig = new QueryConfig(queryRequest1.getQuerySeries(), queryRequest1.getEpsilon());
+                QueryConfig queryConfig = new QueryConfig(querySeries, ((KvMatchQueryRequest) queryRequest).getEpsilon());
                 KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
                 Future<QueryResult> result = executor.submit(queryExecutor);
                 futureResults.add(result);
             }
 
-            // 4. collect query results
-            List<QueryResult> results = new ArrayList<>(fileInfoList.size());
+            // 5. collect query results
+            QueryResult overallResult = new QueryResult();
             for (Future<QueryResult> result : futureResults) {
                 if (result.get() != null) {
-                    results.add(result.get());
+                    overallResult.addCandidateRanges(result.get().getCandidateRanges());
                 }
             }
 
-            // 4. merge the candidate ranges and non-indexed ranges to produce candidate ranges
+            // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
 
-            // 5. scan the data in candidate ranges and find out actual answers
+            // 7. scan the data in candidate ranges and find out actual answers
+
             return new KvMatchQueryResponse();
         } catch (FileNodeManagerException | InterruptedException | ExecutionException e) {
             logger.error(e.getMessage(), e.getCause());
