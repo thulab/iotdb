@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.SocketException;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -29,26 +30,25 @@ import java.util.concurrent.Executor;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService;
-import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCloseSessionReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchMetadataReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchMetadataResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSOpenSessionReq;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSOpenSessionResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSProtocolVersion;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TS_SessionHandle;
 
 public class TsfileConnection implements Connection {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TsfileConnection.class);
     private TsfileConnectionParams params;
     private boolean isClosed = true;
     private SQLWarning warningChain = null;
-    private TTransport transport;
-    private TSIService.Iface client = null;
-    private TS_SessionHandle sessionHandle = null;
+    private TSocket transport;
+    public TSIService.Iface client = null;
+    public TS_SessionHandle sessionHandle = null;
     private final List<TSProtocolVersion> supportedProtocols = new LinkedList<TSProtocolVersion>();
     private TSProtocolVersion protocol;
 
@@ -59,10 +59,9 @@ public class TsfileConnection implements Connection {
 	params = Utils.parseURL(url, info);
 
 	supportedProtocols.add(TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1);
-
+	
 	openTransport();
-
-	client = new TSIService.Client(new TBinaryProtocol(transport));
+	client = new TSIService.Client(new TBinaryProtocol(transport));	
 	// open client session
 	openSession();
 
@@ -96,13 +95,14 @@ public class TsfileConnection implements Connection {
 	    return;
 	TSCloseSessionReq req = new TSCloseSessionReq(sessionHandle);
 	try {
-	    client.CloseSession(req);
+	    client.closeSession(req);
 	} catch (TException e) {
 	    throw new SQLException("Error occurs when closing session at server", e);
 	} finally {
 	    isClosed = true;
-	    if (transport != null)
-		transport.close();
+	    if (transport != null){
+			transport.close();
+	    }
 	}
     }
 
@@ -196,30 +196,7 @@ public class TsfileConnection implements Connection {
 	if (isClosed) {
 	    throw new SQLException("Cannot create statement because connection is closed");
 	}
-
-	try {
-	    return getMetaDataFromServer();
-	} catch (TException e) {
-	    boolean flag = reconnect();
-	    if (flag) {
-		try {
-		    return getMetaDataFromServer();
-		} catch (TException e2) {
-		    throw new SQLException("Fail to fetch metadata after reconnecting. please check server status");
-		}
-	    } else {
-		throw new SQLException("Fail to reconnect to server when fetching metadata. please check server status");
-	    }
-	}
-    }
-
-    private DatabaseMetaData getMetaDataFromServer() throws TException, TsfileSQLException  {
-	TSFetchMetadataResp resp = client.FetchMetadata(new TSFetchMetadataReq());
-	Utils.verifySuccess(resp.getStatus());
-	Map<String, List<ColumnSchema>> seriesMap = Utils.convertAllSchema(resp.getSeriesMap());
-	Map<String, List<String>> deltaObjectMap = resp.getDeltaObjectMap();
-	String metadataInJson = resp.getMetadataInJson();
-	return new TsfileDatabaseMetadata(this, seriesMap, deltaObjectMap, metadataInJson);
+	return new TsfileDatabaseMetadata(this, client);
     }
 
     @Override
@@ -390,10 +367,15 @@ public class TsfileConnection implements Connection {
     }
 
     private void openTransport() throws TTransportException {
-	transport = new TSocket(params.getHost(), params.getPort());
-	if (!transport.isOpen()) {
-	    transport.open();
-	}
+		transport = new TSocket(params.getHost(), params.getPort(), TsfileJDBCConfig.connectionTimeoutInMs);
+		try {
+			transport.getSocket().setKeepAlive(true);
+		} catch (SocketException e) {
+		    LOGGER.error("Cannot set socket keep alive", e);
+		}
+		if (!transport.isOpen()) {
+		    transport.open();
+		}
     }
 
     private void openSession() throws SQLException {
@@ -403,7 +385,7 @@ public class TsfileConnection implements Connection {
 	openReq.setPassword(params.getPassword());
 
 	try {
-	    TSOpenSessionResp openResp = client.OpenSession(openReq);
+	    TSOpenSessionResp openResp = client.openSession(openReq);
 
 	    // validate connection
 	    Utils.verifySuccess(openResp.getStatus());
@@ -414,7 +396,7 @@ public class TsfileConnection implements Connection {
 	    sessionHandle = openResp.getSessionHandle();
 	} catch (TException e) {
 	    throw new SQLException(
-		    String.format("Can not establish connection with %s. because %s", params.getJdbcUriString()), e.getMessage());
+		    String.format("Can not establish connection with %s. because %s", params.getJdbcUriString(), e.getMessage()));
 	}
 	isClosed = false;
     }
@@ -422,8 +404,9 @@ public class TsfileConnection implements Connection {
     public boolean reconnect() {
 	boolean flag = false;
 	for (int i = 1; i <= TsfileJDBCConfig.RETRY_NUM; i++) {
-	    try {
+	    try {   	
 		if (transport != null) {
+			transport.close();
 		    openTransport();
 		    client = new TSIService.Client(new TBinaryProtocol(transport));
 		    openSession();

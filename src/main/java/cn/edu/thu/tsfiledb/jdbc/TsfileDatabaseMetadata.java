@@ -5,61 +5,115 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
+import org.apache.thrift.TException;
 
+import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
+import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchMetadataReq;
+import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchMetadataResp;
+import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService;
 
 public class TsfileDatabaseMetadata implements DatabaseMetaData {
-	
+//	private final String ROOT_PATH = "root";
 	private TsfileConnection connection;
-	private Map<String, List<ColumnSchema>> seriesMap;
-	private Map<String, List<String>> deltaObjectMap;
-	private String metadataInJson;
-	
-	public TsfileDatabaseMetadata(TsfileConnection connection, Map<String, List<ColumnSchema>> seriesMap, Map<String, List<String>> deltaObjectMap, String metadataInJson) {
+	private TSIService.Iface client;
+
+	public TsfileDatabaseMetadata(TsfileConnection connection, TSIService.Iface client) {
 		this.connection = connection;
-		this.seriesMap = seriesMap;
-		this.deltaObjectMap = deltaObjectMap;
-		this.metadataInJson = metadataInJson;
+		this.client = client;
 	}
 
-	/** 
+	/**
 	 * if deltaObjectPattern != null, return all delta object
-	 * if deltaObjectPattern == null and columnPattern != null, return column schema
-    	 * otherwise return null
-    	 */ 
+	 * if deltaObjectPattern == null and columnPattern != null, return column schema， otherwise return null
+	 */
 	@Override
-	public ResultSet getColumns(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern) throws SQLException {
-
-	    	if(deltaObjectPattern != null){
-			if(deltaObjectMap == null){
-				throw new SQLException("No delta object metadata");
+	public ResultSet getColumns(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern)
+			throws SQLException {
+		try {
+			return getColumnsOrDeltaObject(catalog, schemaPattern, columnPattern, deltaObjectPattern);
+		} catch (TException e) {
+			boolean flag = connection.reconnect();
+			this.client = connection.client;
+			if (flag) {
+				try {
+					return getColumnsOrDeltaObject(catalog, schemaPattern, columnPattern, deltaObjectPattern);
+				} catch (TException e2) {
+					throw new SQLException(String.format(
+							"Fail to get colums catalog=%s, schemaPattern=%s,"
+									+ " columnPattern=%s, deltaObjectPattern=%s after reconnecting. please check server status",
+							catalog, schemaPattern, columnPattern, deltaObjectPattern));
+				}
+			} else {
+				throw new SQLException(String.format(
+						"Fail to reconnect to server when getting colums catalog=%s, schemaPattern=%s,"
+								+ " columnPattern=%s, deltaObjectPattern=%s after reconnecting. please check server status",
+						catalog, schemaPattern, columnPattern, deltaObjectPattern));
 			}
-			List<String> deltaObjectList = deltaObjectMap.get(deltaObjectPattern);
-			if(deltaObjectList == null){
-				throw new SQLException(String.format("Cannot find delta object %s", deltaObjectPattern));
-			}
-			return new TsfileMetadataResultSet(null, deltaObjectList); 
 		}
-		
-		if(columnPattern != null){
-			if(seriesMap == null){
-				throw new SQLException("No schema for TsfileDatabaseMetadata");
+	}
+	
+	private ResultSet getColumnsOrDeltaObject(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern) throws TException, SQLException{
+	    if(deltaObjectPattern != null && !deltaObjectPattern.trim().equals("")){
+			TSFetchMetadataReq req = new TSFetchMetadataReq("DELTA_OBEJECT");
+			TSFetchMetadataResp resp;
+			try {
+				resp = client.fetchMetadata(req);
+				Utils.verifySuccess(resp.getStatus());
+				Map<String, List<String>> deltaObjectList = resp.getDeltaObjectMap();
+				if(deltaObjectList == null || !deltaObjectList.containsKey(deltaObjectPattern)){
+					new TsfileMetadataResultSet(null, new ArrayList<>());
+				}
+				return new TsfileMetadataResultSet(null, deltaObjectList.get(deltaObjectPattern));
+			} catch (TException e) {
+				throw new TException("Conncetion error when fetching delta object metadata", e);
 			}
-			List<ColumnSchema> columnSchemas = seriesMap.get(columnPattern);
 			
-			if(columnSchemas == null){
-				throw new SQLException(String.format("Cannot find table %s",columnPattern));
-			}
-
-			return new TsfileMetadataResultSet(columnSchemas, null);
 		}
-		
+
+		if(columnPattern != null && !columnPattern.trim().equals("")){
+		    	TSFetchMetadataReq req;
+		    	if(!columnPattern.endsWith("*")){
+		    	    	req = new TSFetchMetadataReq("COLUMN"); 
+		    	    	req.setColumnPath(columnPattern);
+				try {
+				    	TSFetchMetadataResp resp = client.fetchMetadata(req);
+					Utils.verifySuccess(resp.getStatus());
+					List<ColumnSchema> columnSchemaNew = new ArrayList<>();
+					if(resp.getDataType() != null){
+						columnSchemaNew.add(new ColumnSchema(columnPattern, 
+								TSDataType.valueOf(resp.getDataType()), 
+								null));
+					}
+					return new TsfileMetadataResultSet(columnSchemaNew, null);
+				} catch (TException e) {
+					throw new TException("Conncetion error when fetching column data type", e);
+				}
+		    	} else{
+		    	    	req = new TSFetchMetadataReq("ALL_COLUMNS");
+		    	    	req.setColumnPath(columnPattern);
+				try {
+				    	TSFetchMetadataResp resp = client.fetchMetadata(req);
+					Utils.verifySuccess(resp.getStatus());
+					List<ColumnSchema> columnSchemaNew = new ArrayList<>();
+					if(resp.getAllColumns() != null){
+					    for(String path : resp.getAllColumns()){
+						columnSchemaNew.add(new ColumnSchema(path, null, null));
+					    }
+					}
+					return new TsfileMetadataResultSet(columnSchemaNew, null);
+				} catch (TException e) {
+					throw new TException("Conncetion error when fetching column data type", e);
+				}
+		    	}
+		}
 		return null;
 	}
-	
+
 	@Override
 	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
 		// TODO Auto-generated method stub
@@ -189,8 +243,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 
 	@Override
 	public String getDatabaseProductName() throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLException("Method not supported");
+		return "TsFileDB";
 	}
 
 	@Override
@@ -554,8 +607,8 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 
 	@Override
 	public String getURL() throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLException("Method not supported");
+		// TODO: Return the URL for this DBMS or null if it cannot be generated
+		return null;
 	}
 
 	@Override
@@ -1117,7 +1170,32 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 	}
 
 	@Override
-	public String toString(){
-	    return metadataInJson;
+	public String toString() {
+		try {
+			return getFullTimeseries();
+		} catch (TException e) {
+			boolean flag = connection.reconnect();
+			this.client = connection.client;
+			if (flag) {
+				try {
+					return getFullTimeseries();
+				} catch (TException e2) {
+					System.out.println("Fail to get all timeseries "
+							+ "info after reconnecting. please check server status");
+				} catch (TsfileSQLException e1) {}
+			} else {
+				System.out.println("Fail to reconnect to server "
+						+ "when getting all timeseries info. please check server status");
+			}
+		} catch (TsfileSQLException e) {}
+		return null;
+	}
+	
+	private String getFullTimeseries() throws TException, TsfileSQLException{
+		TSFetchMetadataReq req = new TSFetchMetadataReq("METADATA_IN_JSON");
+		TSFetchMetadataResp resp;
+		resp = client.fetchMetadata(req);
+		Utils.verifySuccess(resp.getStatus());
+		return resp.getMetadataInJson();
 	}
 }

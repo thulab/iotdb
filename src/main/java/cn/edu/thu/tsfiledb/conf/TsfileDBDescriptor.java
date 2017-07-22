@@ -49,7 +49,7 @@ public class TsfileDBDescriptor {
 			}
 			
 		} else {
-			url = tsfileHome + File.pathSeparator+"conf"+ File.pathSeparator+TsfileDBConfig.CONFIG_NAME;
+			url = tsfileHome + File.separatorChar+"conf"+ File.separatorChar+TsfileDBConfig.CONFIG_NAME;
 			try {
 				File file = new File(url);
 				inputStream = new FileInputStream(file);
@@ -65,16 +65,14 @@ public class TsfileDBDescriptor {
 			conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",conf.rpcPort+""));
 			
 			conf.enableWal = Boolean.parseBoolean(properties.getProperty("enable_wal", conf.enableWal+""));
-			conf.walFolder = properties.getProperty("wal_folder", conf.walFolder);
+
 			conf.walCleanupThreshold = Integer.parseInt(properties.getProperty("wal_cleanup_threshold", conf.walCleanupThreshold+""));
 			conf.flushWalThreshold = Integer.parseInt(properties.getProperty("flush_wal_threshold", conf.flushWalThreshold+""));
 			conf.flushWalPeriodInMs = Integer.parseInt(properties.getProperty("flush_wal_period_in_ms", conf.flushWalPeriodInMs+""));
 			
-			conf.overflowDataDir = properties.getProperty("overflow_data_dir", conf.overflowDataDir);
-			conf.fileNodeDir = properties.getProperty("file_node_dir", conf.fileNodeDir);
-			conf.bufferWriteDir = properties.getProperty("buffer_write_dir", conf.bufferWriteDir);
-			conf.metadataDir = properties.getProperty("metadata_dir", conf.metadataDir);
-			conf.derbyHome = properties.getProperty("derby_dir", conf.derbyHome);
+			conf.dataDir = properties.getProperty("data_dir", conf.dataDir);
+			// update all data path
+			conf.updateDataPath();
 			
 			conf.mergeConcurrentThreads = Integer.parseInt(properties.getProperty("merge_concurrent_threads", conf.mergeConcurrentThreads + ""));
 			conf.maxOpenFolder = Integer.parseInt(properties.getProperty("max_opened_folder", conf.maxOpenFolder + ""));

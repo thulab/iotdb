@@ -4,8 +4,13 @@ import java.io.IOException;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.server.TThreadedSelectorServer;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -28,6 +33,7 @@ public class JDBCServer implements JDBCServerMBean {
     private TServerSocket serverTransport;
     private TThreadPoolServer.Args poolArgs;
     private TServer poolServer;
+    private TSServiceImpl impl;
 
     public JDBCServer() throws TTransportException {
         isStart = false;
@@ -72,7 +78,7 @@ public class JDBCServer implements JDBCServerMBean {
     }
 
     private synchronized void close() {
-        if (poolServer != null) {
+	if (poolServer != null) {
             poolServer.stop();
             poolServer = null;
         }
@@ -88,17 +94,19 @@ public class JDBCServer implements JDBCServerMBean {
 
         public JDBCServerThread() throws IOException {
             protocolFactory = new TBinaryProtocol.Factory();
-            processor = new TSIService.Processor<TSIService.Iface>(new TSServiceImpl());
+            impl = new TSServiceImpl();
+            processor = new TSIService.Processor<TSIService.Iface>(impl);
         }
 
         @Override
         public void run() {
             try {
-                serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().rpcPort);
+        		serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().rpcPort);
                 poolArgs = new TThreadPoolServer.Args(serverTransport);
                 poolArgs.processor(processor);
                 poolArgs.protocolFactory(protocolFactory);
                 poolServer = new TThreadPoolServer(poolArgs);
+                poolServer.setServerEventHandler(new JDBCServerEventHandler(impl));
                 poolServer.serve();
             } catch (TTransportException e) {
                 LOGGER.error("TsFileDB: failed to start jdbc server, because ", e);

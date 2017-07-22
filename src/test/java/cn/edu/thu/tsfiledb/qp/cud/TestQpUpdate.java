@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * test non-query operation, which includes insert/update/delete
@@ -43,6 +44,32 @@ public class TestQpUpdate {
         processor.getExecutor().insert(path2, 20, "20");
     }
 
+    @Test
+    public void testUpdate2() throws QueryProcessorException, ArgsErrorException, ProcessorException{
+    	// update: just time>x or time<x
+    	String sql = "update root.laptop.device_1.sensor_1 set value=100 where time>100 or (time<=50 and time>10)";
+    	PhysicalPlan plan1 = processor.parseSQLToPhysicalPlan(sql);
+    	boolean upRet = processor.getExecutor().processNonQuery(plan1);
+    	assertTrue(upRet);
+    	sql = "update root.laptop.device_1.sensor_1 set value=100 where time>100 and time<20";
+    	try{
+    		plan1 = processor.parseSQLToPhysicalPlan(sql);
+    	}catch (QueryProcessorException e) {
+    		assertEquals("For update command, time filter is invalid", e.getMessage());
+		}
+    	sql = "update root.laptop.device_1.sensor_1 set value=100 where time<-10 or time>1000";
+    	try{
+    		plan1 = processor.parseSQLToPhysicalPlan(sql);
+    	}catch (QueryProcessorException e) {
+    		assertEquals("startTime:-9223372036854775808,endTime:-10, one of them is illegal", e.getMessage());
+		}
+    	sql = "update root.laptop.device_1.sensor_1 set value=100 where time<100";
+    	try{
+    		plan1 = processor.parseSQLToPhysicalPlan(sql);
+    	}catch (QueryProcessorException e) {
+    		fail(e.getMessage());
+		}
+    }
 
     @Test
     public void testUpdate() throws QueryProcessorException, ProcessorException, RecognitionException, ArgsErrorException {
@@ -87,7 +114,31 @@ public class TestQpUpdate {
         while (iter.hasNext()) {
             QueryDataSet set = iter.next();
             while (set.hasNextRecord()) {
-                assertEquals(set.getNextRecord().toString(), expect[i++]);
+                assertEquals(expect[i++], set.getNextRecord().toString());
+            }
+        }
+        assertEquals(expect.length, i);
+    }
+
+    @Test
+    public void testDeletePaths() throws QueryProcessorException, ProcessorException, RecognitionException, ArgsErrorException {
+        String sqlStr = "delete from root.laptop.device_1.sensor_1,root.laptop.device_1.sensor_2 where time < 15";
+        PhysicalPlan plan1 = processor.parseSQLToPhysicalPlan(sqlStr);
+        boolean upRet = processor.getExecutor().processNonQuery(plan1);
+
+        assertTrue(upRet);
+        // query to assert
+        sqlStr = "select sensor_1,sensor_2 " + "from root.laptop.device_1";
+        PhysicalPlan plan2 = processor.parseSQLToPhysicalPlan(sqlStr);
+        Iterator<QueryDataSet> iter = processor.getExecutor().processQuery(plan2);
+
+        String[] expect =
+                {"20, <root.laptop.device_1.sensor_1,null> <root.laptop.device_1.sensor_2,20> "};
+        int i = 0;
+        while (iter.hasNext()) {
+            QueryDataSet set = iter.next();
+            while (set.hasNextRecord()) {
+                assertEquals(expect[i++], set.getNextRecord().toString());
             }
         }
         assertEquals(expect.length, i);

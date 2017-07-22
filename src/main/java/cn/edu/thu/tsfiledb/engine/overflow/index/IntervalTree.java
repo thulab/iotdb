@@ -50,7 +50,7 @@ public class IntervalTree {
 	public IntervalTree(TSDataType dataType) {
 		this.dataType = dataType;
 		this.memoryUsage = 0;
-		if (dataType == TSDataType.BYTE_ARRAY) {
+		if (dataType == TSDataType.TEXT) {
 			this.valueSize = -1; // -1 represents var length encoding.
 		}
 	}
@@ -329,6 +329,7 @@ public class IntervalTree {
 	 */
 	public void midOrderSerialize(OutputStream out) throws IOException {
 		midOrderSerialize(root, out);
+		out.close();
 		root = null;
 	}
 
@@ -352,7 +353,7 @@ public class IntervalTree {
 		} else if (pNode.opType.equals(OverflowOpType.UPDATE)) {
 			out.write(BytesUtils.longToBytes(pNode.start));
 			out.write(BytesUtils.longToBytes(pNode.end));
-			if (dataType == TSDataType.BYTE_ARRAY || valueSize == -1) {
+			if (dataType == TSDataType.TEXT || valueSize == -1) {
 				ReadWriteStreamUtils.writeUnsignedVarInt(pNode.value.length, out);
 				out.write(pNode.value);
 			} else {
@@ -361,7 +362,7 @@ public class IntervalTree {
 		} else {
 			out.write(BytesUtils.longToBytes(pNode.start));
 			out.write(BytesUtils.longToBytes(-pNode.end));
-			if (dataType == TSDataType.BYTE_ARRAY || valueSize == -1) {
+			if (dataType == TSDataType.TEXT || valueSize == -1) {
 				ReadWriteStreamUtils.writeUnsignedVarInt(pNode.value.length, out);
 				out.write(pNode.value);
 			} else {
@@ -611,7 +612,7 @@ public class IntervalTree {
 				break;
 			}
 			break;
-		case BYTE_ARRAY:
+		case TEXT:
 			switch (opType) {
 			case INSERT:
 				crudResult.putTimePair(s, -e);
