@@ -1,5 +1,6 @@
 package cn.edu.thu.tsfiledb.query.engine;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,9 +8,14 @@ import java.util.List;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.timeseries.basis.TsFile;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.thu.tsfile.timeseries.filter.definition.operators.*;
+import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
+import cn.edu.thu.tsfile.timeseries.filter.verifier.FilterVerifier;
+import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
+import cn.edu.thu.tsfiledb.index.utils.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,57 +62,6 @@ public class OverflowQueryEngine {
     private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
         return mManager.getSeriesType(path.getFullPath());
     }
-
-    /**
-     * For kv-match index.
-     *
-     * @param path
-     * @param timeIntervals
-     * @return
-     * @throws PathErrorException
-     * @throws IOException
-     * @throws ProcessorException
-     */
-    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
-        List<Path> pathList = new ArrayList<>();
-        pathList.add(path);
-
-        FilterExpression fe = null;
-        for (int i = 0; i < timeIntervals.size(); i++) {
-            Pair<Long, Long> pair = timeIntervals.get(i);
-            FilterSeries<Long> timeSeries = FilterFactory.timeFilterSeries();
-            GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
-            LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
-            if (i == 0) {
-                fe = FilterFactory.and(gtEq, ltEq);
-            } else {
-                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
-                fe = FilterFactory.or(fe, tmpAnd);
-            }
-        }
-        return query(pathList, fe, null, null, null,  1000);
-    }
-
-//    public QueryDataSet queryDataInMemory(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
-//        FilterExpression fe = null;
-//        List pathList = new ArrayList();
-//        pathList.add(path);
-//
-//        for (Pair pair : timeIntervals) {
-//            FilterSeries timeSeries = FilterFactory.timeFilterSeries();
-//            GtEq gtEq = FilterFactory.gtEq(timeSeries, (long) pair.left, true);
-//            LtEq ltEq = FilterFactory.ltEq(timeSeries, (long) pair.right, true);
-//            if (or == null) {
-//                or = (Or) FilterFactory.and(gtEq, ltEq);
-//            } else {
-//                Or tmpOr = (Or) FilterFactory.or(gtEq, ltEq);
-//                or = (Or) FilterFactory.and(or, tmpOr);
-//            }
-//        }
-//
-//        return readWithoutFilter(pathList, null, 1000, true);
-//        // return query(pathList, or, null, null, null,  1000);
-//    }
 
     /**
      * Basic query function.
@@ -208,7 +163,7 @@ public class OverflowQueryEngine {
                 @Override
                 public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
                     try {
-                        return readOneColumnWithoutFilter(p, res, fetchSize, onlyMemory);
+                        return readOneColumnWithoutFilter(p, res, fetchSize);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -223,7 +178,7 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize, boolean onlyMemory) throws ProcessorException, IOException, PathErrorException {
+    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
@@ -250,7 +205,7 @@ public class OverflowQueryEngine {
         //System.out.println("---------" + recordReader.insertAllData.insertTrue);
         //System.out.println("---------" + recordReader.insertAllData.pageList.get(0));
         res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
-                updateTrue, updateFalse, recordReader.insertAllData, deleteFilter, res, fetchSize, onlyMemory);
+                updateTrue, updateFalse, recordReader.insertAllData, deleteFilter, res, fetchSize);
 
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
 
@@ -287,7 +242,8 @@ public class OverflowQueryEngine {
     }
 
     private DynamicOneColumnData readOneColumnUseFilter(Path path, SingleSeriesFilterExpression timeFilter,
-                                                        SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+                                                        SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
+            throws ProcessorException, IOException, PathErrorException {
         String device = path.getDeltaObjectToString();
         String sensor = path.getMeasurementToString();
 
@@ -688,19 +644,116 @@ public class OverflowQueryEngine {
             resetRecordStatusUsingValueFilter(((CrossSeriesFilterExpression) filter).getRight(), hashSet);
         }
     }
+
+    /**
+     * For kv-match index.
+     *
+     * @param path
+     * @param timeIntervals
+     * @return
+     * @throws PathErrorException
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
+        List<Path> pathList = new ArrayList<>();
+        pathList.add(path);
+
+        FilterExpression fe = null;
+        for (int i = 0; i < timeIntervals.size(); i++) {
+            Pair<Long, Long> pair = timeIntervals.get(i);
+            FilterSeries<Long> timeSeries = FilterFactory.timeFilterSeries();
+            GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
+            LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
+            if (i == 0) {
+                fe = FilterFactory.and(gtEq, ltEq);
+            } else {
+                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
+                fe = FilterFactory.or(fe, tmpAnd);
+            }
+        }
+        return query(pathList, fe, null, null, null,  1000);
+    }
+
+    /**
+     * For third kv-index, get the OverflowData and BufferWriteData separately.
+     *
+     * @param path kv-index path
+     * @return
+     * @throws PathErrorException
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public OverflowBufferWrite getDataInBufferWriteSeparateWithOverflow(Path path) throws PathErrorException, IOException, ProcessorException {
+        String deltaObjectUID = path.getDeltaObjectToString();
+        String measurementUID = path.getMeasurementToString();
+
+        List<Path> paths = new ArrayList<>();
+        paths.add(path);
+        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
+
+        int fetchSize = 1000;
+        QueryDataSet queryDataSet = new QueryDataSet();
+        BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
+            @Override
+            public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
+                try {
+                    return readAllInBufferWrite(p, res, fetchSize);
+                } catch (PathErrorException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        };
+        queryDataSet.setBatchReaderRetGenerator(batchReaderRetGenerator);
+        clearQueryDataSet(queryDataSet);
+        queryDataSet.getBatchReaderRetGenerator().calculateRecord();
+        queryDataSet.putRecordFromBatchReadRetGenerator();
+
+        DynamicOneColumnData insert = (DynamicOneColumnData) recordReader.overflowInfo.get(0);
+        DynamicOneColumnData update = (DynamicOneColumnData) recordReader.overflowInfo.get(1);
+        SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) recordReader.overflowInfo.get(3);
+        LongInterval interval = (LongInterval) FilterVerifier.get(deleteFilter).getInterval(deleteFilter);
+        long maxDeleteTime;
+        if (interval.flag[interval.count-1]) {
+            maxDeleteTime = interval.v[interval.count-1];
+        } else {
+            maxDeleteTime = interval.v[interval.count-1] - 1;
+        }
+        return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, queryDataSet);
+    }
+
+    private DynamicOneColumnData readAllInBufferWrite(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+
+        String deltaObjectUID = path.getDeltaObjectToString();
+        String measurementUID = path.getMeasurementToString();
+
+        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
+
+        DynamicOneColumnData updateTrue = new DynamicOneColumnData(res.dataType, true);
+        DynamicOneColumnData updateFalse = new DynamicOneColumnData(res.dataType, true);
+        if (recordReader.insertAllData == null) {
+            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+                    recordReader.insertPageInMemory, updateTrue, updateFalse, null, null, null, getDataTypeByPath(path));
+        }
+        res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID, updateTrue, updateFalse, recordReader.insertAllData, null, res, fetchSize);
+
+        return res;
+    }
+
+    /**
+     * For third kv-index, get the data only in file.
+     *
+     * @param path
+     * @param filePath
+     * @return
+     * @throws IOException
+     */
+    public QueryDataSet getDataInTsFile(Path path, String filePath) throws IOException {
+        LocalFileInput input = new LocalFileInput(filePath);
+        TsFile readTsFile = new TsFile(input);
+        ArrayList<Path> paths = new ArrayList<>();
+        paths.add(path);
+        return readTsFile.query(paths, null, null);
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -94,7 +94,7 @@ public class RecordReader {
      */
     public DynamicOneColumnData getValueInOneColumnWithOverflow(String deviceUID, String sensorId,
                                                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-                                                                SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize, boolean onlyMemory)
+                                                                SingleSeriesFilterExpression timeFilter, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException {
 
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deviceUID);
