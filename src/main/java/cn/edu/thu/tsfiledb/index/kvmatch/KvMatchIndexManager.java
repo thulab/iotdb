@@ -270,6 +270,7 @@ public class KvMatchIndexManager implements IndexManager {
                     overallResult.addCandidateRanges(result.get().getCandidateRanges());
                 }
             }
+            logger.info("Answer: {}", overallResult.getCandidateRanges());
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
 
