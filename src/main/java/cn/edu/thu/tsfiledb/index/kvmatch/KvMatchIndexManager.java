@@ -18,6 +18,7 @@ import cn.edu.thu.tsfiledb.index.IndexManager;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 import cn.edu.thu.tsfiledb.index.QueryResponse;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
+import cn.edu.thu.tsfiledb.index.utils.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,7 +146,7 @@ public class KvMatchIndexManager implements IndexManager {
             // 1. get information of all files containing this column path.
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, 0);
 
-            // 2. delete all index files. TODO: using multi-thread to speed up
+            // 2. delete all index files.
             for (DataFileInfo fileInfo : fileInfoList) {
                 logger.info("Deleting index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
 
@@ -239,7 +240,7 @@ public class KvMatchIndexManager implements IndexManager {
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, queryRequest.getStartTime());
 
             // 2. fetch non-indexed ranges from overflow manager
-            // TODO: pending for API
+            OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath);
 
             // 3. propagate query series
             List<Double> querySeries = new ArrayList<>();
@@ -277,7 +278,7 @@ public class KvMatchIndexManager implements IndexManager {
             // 7. scan the data in candidate ranges and find out actual answers
 
             return new KvMatchQueryResponse();
-        } catch (FileNodeManagerException | InterruptedException | ExecutionException e) {
+        } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } finally {

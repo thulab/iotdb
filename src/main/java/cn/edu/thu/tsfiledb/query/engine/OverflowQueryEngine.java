@@ -730,8 +730,8 @@ public class OverflowQueryEngine {
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
 
-        DynamicOneColumnData updateTrue = new DynamicOneColumnData(res.dataType, true);
-        DynamicOneColumnData updateFalse = new DynamicOneColumnData(res.dataType, true);
+        DynamicOneColumnData updateTrue = new DynamicOneColumnData(getDataTypeByPath(path), true);
+        DynamicOneColumnData updateFalse = new DynamicOneColumnData(getDataTypeByPath(path), true);
         if (recordReader.insertAllData == null) {
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                     recordReader.insertPageInMemory, updateTrue, updateFalse, null, null, null, getDataTypeByPath(path));
