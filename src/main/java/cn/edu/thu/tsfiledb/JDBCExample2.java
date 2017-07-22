@@ -129,7 +129,7 @@ public class JDBCExample2 {
 		throw new RuntimeException(message);
 	}
 
-	private static String[] timeSeries = { "status WITH DATATYPE=BYTE_ARRAY, ENCODING=PLAIN,compressor=SNAPPY",
+	private static String[] timeSeries = { "status WITH DATATYPE=TEXT, ENCODING=PLAIN,compressor=SNAPPY",
 			"errtype WITH DATATYPE=INT32, ENCODING=RLE,compressor=SNAPPY",
 			"v WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
 			"a WITH DATATYPE=FLOAT, ENCODING=TS_2DIFF,compressor=SNAPPY",
