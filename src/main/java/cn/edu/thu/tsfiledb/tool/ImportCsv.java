@@ -31,7 +31,8 @@ public class ImportCsv {
     private static final String USERNAME_NAME = "username";
 
     private static final String FILE_ARGS = "f";
-    private static final String FILE_NAME = "file";
+    private static final String FILE_NAME = "file or folder";
+    private static final String FILE_SUFFIX = "csv";
 
     private static final String TIME_FORMAT_ARGS = "t";
     private static final String TIME_FORMAT_NAME = "timeformat";
@@ -76,7 +77,7 @@ public class ImportCsv {
         Option opPassword = Option.builder(PASSWORD_ARGS).longOpt(PASSWORD_NAME).optionalArg(true).argName(PASSWORD_NAME).hasArg().desc("Password (optional)").build();
         options.addOption(opPassword);
 
-        Option opFile = Option.builder(FILE_ARGS).longOpt(FILE_NAME).required().argName(FILE_NAME).hasArg().desc("Csv file path (required)").build();
+        Option opFile = Option.builder(FILE_ARGS).required().argName(FILE_NAME).hasArg().desc("If input a file path, load a csv file, otherwise load all csv file under this directory (required)").build();
         options.addOption(opFile);
 
         Option opTimeFormat = Option.builder(TIME_FORMAT_ARGS).optionalArg(true).argName(TIME_FORMAT_NAME).hasArg().desc("Time Format (optional),"
@@ -122,7 +123,7 @@ public class ImportCsv {
     /**
      * Data from csv To tsfile
      */
-    public static void loadDataFromCSV() {
+    private static void loadDataFromCSV(File file) {
         Connection connection = null;
         Statement statement = null;
         BufferedReader br = null;
@@ -132,9 +133,9 @@ public class ImportCsv {
         try {
             Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
             connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filename))));
-            errorFile.createNewFile();
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(errorFile)));
+            br = new BufferedReader(new FileReader(file));
+            if(!errorFile.exists()) errorFile.createNewFile();
+            bw = new BufferedWriter(new FileWriter(errorFile, true));
             String line = "";
             String[] strHeadInfo = br.readLine().split(",");
             deviceToColumn = new HashMap<>();
@@ -142,12 +143,12 @@ public class ImportCsv {
             headInfo = new ArrayList<>();
 
             if (strHeadInfo.length <= 1) {
-                System.out.println("The CSV file illegal, please check first line");
+                System.out.println("The CSV file" + filename + " illegal, please check first line");
                 br.close();
                 connection.close();
                 System.exit(1);
             }
-
+            long startTime = System.currentTimeMillis();
             timeseriesToType = new HashMap<>();
             DatabaseMetaData databaseMetaData = connection.getMetaData();
 
@@ -189,8 +190,7 @@ public class ImportCsv {
                             count = 0;
                         }
                     } catch (SQLException e) {
-//						LOGGER.error("{} :excuted fail!");
-                        bw.write(str);
+                        bw.write(e.getMessage());
                         bw.newLine();
                     }
                 }
@@ -198,7 +198,7 @@ public class ImportCsv {
             try {
                 statement.executeBatch();
                 statement.clearBatch();
-                System.out.println("excuted finish!");
+                System.out.println(String.format("load data from %s successfully, it cost %dms", file.getName(), (System.currentTimeMillis()-startTime)));
             } catch (SQLException e) {
                 bw.write(e.getMessage());
                 bw.newLine();
@@ -211,7 +211,7 @@ public class ImportCsv {
         } catch (ClassNotFoundException e2) {
             System.out.println("Cannot find cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
         } catch (SQLException e) {
-            System.out.println("database connection exception!" + e.getMessage());
+            System.out.println("Database connection exception!" + e.getMessage());
         } finally {
             try {
                 bw.close();
@@ -265,7 +265,6 @@ public class ImportCsv {
 
             String timestampsStr = setTimestamp(timeFormat, data[0]);
             if (timestampsStr.equals("")) {
-//				LOGGER.error("Time Format Error! {}", line);
                 bwToErrorFile.write(line);
                 bwToErrorFile.newLine();
                 continue;
@@ -354,6 +353,16 @@ public class ImportCsv {
                 return;
             }
         }
-        loadDataFromCSV();
+        
+        File file = new File(filename);
+        if(file.isFile() && file.getName().endsWith(FILE_SUFFIX)){
+        		loadDataFromCSV(file);
+        } else{
+        		for(File f : file.listFiles()){
+        			if(f.isFile() && f.getName().endsWith(FILE_SUFFIX)){
+        				loadDataFromCSV(f);
+        			}
+        		}
+        }
     }
 }

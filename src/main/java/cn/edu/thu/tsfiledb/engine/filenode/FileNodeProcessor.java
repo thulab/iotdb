@@ -956,6 +956,9 @@ public class FileNodeProcessor extends LRUProcessor {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
 			}
+			if (pathList.isEmpty()) {
+				continue;
+			}
 
 			FilterExpression timeFilter = FilterUtilsForOverflow.construct(null, null, "0",
 					"(>=" + startTime + ")&" + "(<=" + endTime + ")");
