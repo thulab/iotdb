@@ -76,7 +76,7 @@ public class KvMatchIndexManager implements IndexManager {
 
             OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
             List<Pair<Long, Long>> timeIntervals = new ArrayList<>();
-            timeIntervals.add(new Pair<>(1500448399600L, 1500448399600L + 1024));
+            timeIntervals.add(new Pair<>(1500718047182L, 1500718047182L + 128));
             QueryDataSet queryDataSet = overflowQueryEngine.query(columnPath, timeIntervals);
             List<Pair<Long, Double>> querySeries = new ArrayList<>();
             while (queryDataSet.next()) {
@@ -203,6 +203,7 @@ public class KvMatchIndexManager implements IndexManager {
 
     @Override
     public boolean switchIndexes(Path columnPath, List<DataFileInfo> newFileList) throws IndexManagerException {
+        if (newFileList.isEmpty()) return true;  // no data file, no index file
         // rename the new index files to regular names
         Set<String> newIndexFilePathPrefixes = new HashSet<>(newFileList.size());
         for (DataFileInfo newFile : newFileList) {
