@@ -14,7 +14,7 @@ import cn.edu.thu.tsfile.timeseries.filter.definition.operators.*;
 import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.thu.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
-import cn.edu.thu.tsfiledb.index.utils.OverflowBufferWrite;
+import cn.edu.thu.tsfiledb.index.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -724,13 +724,15 @@ public class OverflowQueryEngine {
         DynamicOneColumnData insert = (DynamicOneColumnData) recordReader.overflowInfo.get(0);
         DynamicOneColumnData update = (DynamicOneColumnData) recordReader.overflowInfo.get(1);
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) recordReader.overflowInfo.get(3);
-        LongInterval interval = (LongInterval) FilterVerifier.get(deleteFilter).getInterval(deleteFilter);
         long maxDeleteTime = 0;
-        if (interval.count > 0) {
-            if (interval.flag[0] && interval.v[0] > 0) {
-                maxDeleteTime = interval.v[0] - 1;
-            } else {
-                maxDeleteTime = interval.v[0];
+        if (deleteFilter != null) {
+            LongInterval interval = (LongInterval) FilterVerifier.get(deleteFilter).getInterval(deleteFilter);
+            if (interval.count > 0) {
+                if (interval.flag[0] && interval.v[0] > 0) {
+                    maxDeleteTime = interval.v[0] - 1;
+                } else {
+                    maxDeleteTime = interval.v[0];
+                }
             }
         }
         return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, queryDataSet);

@@ -18,7 +18,7 @@ import cn.edu.thu.tsfiledb.index.IndexManager;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 import cn.edu.thu.tsfiledb.index.QueryResponse;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
-import cn.edu.thu.tsfiledb.index.utils.OverflowBufferWrite;
+import cn.edu.thu.tsfiledb.index.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +76,7 @@ public class KvMatchIndexManager implements IndexManager {
 
             OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
             List<Pair<Long, Long>> timeIntervals = new ArrayList<>();
-            timeIntervals.add(new Pair<>(1500718047182L, 1500718047182L + 128));
+            timeIntervals.add(new Pair<>(1500885911634L, 1500885911634L + 512));
             QueryDataSet queryDataSet = overflowQueryEngine.query(columnPath, timeIntervals);
             List<Pair<Long, Double>> querySeries = new ArrayList<>();
             while (queryDataSet.next()) {
@@ -244,21 +244,13 @@ public class KvMatchIndexManager implements IndexManager {
             OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath);
 
             // 3. propagate query series
-            List<Double> querySeries = new ArrayList<>();
-            querySeries.add(queryRequest.getQuerySeries().get(0).right);
-            for (int i = 1; i < queryRequest.getQuerySeries().size(); i++) {
-                // amend points on the line
-                double k = (queryRequest.getQuerySeries().get(i).right - queryRequest.getQuerySeries().get(i - 1).right) / (queryRequest.getQuerySeries().get(i).left - queryRequest.getQuerySeries().get(i - 1).left);
-                for (long j = queryRequest.getQuerySeries().get(i - 1).left + 1; j < queryRequest.getQuerySeries().get(i).left; j++) {
-                    querySeries.add(queryRequest.getQuerySeries().get(i - 1).right + (j - queryRequest.getQuerySeries().get(i - 1).left) * k);
-                }
-                querySeries.add(queryRequest.getQuerySeries().get(i).right);  // add current point
-            }
+            List<Double> querySeries = amendSeries(queryRequest.getQuerySeries());
 
             // 4. search corresponding index files of data files in the query range
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
-                logger.info("Building index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
+                if (fileInfo.getEndTime() <= overflowBufferWrite.getDeleteUntil()) continue;  // deleted
+                logger.info("Querying index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
                 QueryConfig queryConfig = new QueryConfig(querySeries, ((KvMatchQueryRequest) queryRequest).getEpsilon());
                 KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
                 Future<QueryResult> result = executor.submit(queryExecutor);
@@ -272,11 +264,13 @@ public class KvMatchIndexManager implements IndexManager {
                     overallResult.addCandidateRanges(result.get().getCandidateRanges());
                 }
             }
-            logger.info("Answer: {}", overallResult.getCandidateRanges());
+            logger.info("Candidates: {}", overallResult.getCandidateRanges());
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
 
             // 7. scan the data in candidate ranges and find out actual answers
+            List<Pair<Long, Double>> answers = new ArrayList<>();
+
 
             return new KvMatchQueryResponse();
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
@@ -291,5 +285,21 @@ public class KvMatchIndexManager implements IndexManager {
                 }
             }
         }
+    }
+
+
+
+    private List<Double> amendSeries(List<Pair<Long, Double>> seriesKeyPoints) {
+        List<Double> ret = new ArrayList<>();
+        ret.add(seriesKeyPoints.get(0).right);
+        for (int i = 1; i < seriesKeyPoints.size(); i++) {
+            // amend points on the line
+            double k = (seriesKeyPoints.get(i).right - seriesKeyPoints.get(i - 1).right) / (seriesKeyPoints.get(i).left - seriesKeyPoints.get(i - 1).left);
+            for (long j = seriesKeyPoints.get(i - 1).left + 1; j < seriesKeyPoints.get(i).left; j++) {
+                ret.add(seriesKeyPoints.get(i - 1).right + (j - seriesKeyPoints.get(i - 1).left) * k);
+            }
+            ret.add(seriesKeyPoints.get(i).right);  // add current point
+        }
+        return ret;
     }
 }
