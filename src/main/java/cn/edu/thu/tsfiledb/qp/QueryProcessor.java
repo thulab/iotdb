@@ -98,6 +98,7 @@ public class QueryProcessor {
             case QUERY:
             case UPDATE:
             case DELETE:
+            case INDEXQUERY:
                 SFWOperator root = (SFWOperator) operator;
                 return optimizeSFWOperator(root);
             default:

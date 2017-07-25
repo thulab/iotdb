@@ -51,6 +51,7 @@ public abstract class Operator {
 		OVERFLOWFLUSHSTART, // 25 // ordinal()
 		OVERFLOWFLUSHEND, // 26
 		BUFFERFLUSHSTART, // 27
-		BUFFERFLUSHEND; // 28
+		BUFFERFLUSHEND, // 28
+		INDEXQUERY;
 	}
 }

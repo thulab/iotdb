@@ -1,5 +1,12 @@
 package cn.edu.thu.tsfiledb.qp.strategy;
 
+import static cn.edu.thu.tsfiledb.qp.constant.SQLConstant.KW_AND;
+import static cn.edu.thu.tsfiledb.qp.constant.SQLConstant.KW_OR;
+import static cn.edu.thu.tsfiledb.qp.constant.SQLConstant.RESERVED_TIME;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterExpression;
@@ -11,12 +18,18 @@ import cn.edu.thu.tsfile.timeseries.filter.verifier.LongFilterVerifier;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.qp.exception.GeneratePhysicalPlanException;
-import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.exception.LogicalOperatorException;
+import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.executor.QueryProcessExecutor;
 import cn.edu.thu.tsfiledb.qp.logical.Operator;
-import cn.edu.thu.tsfiledb.qp.logical.crud.*;
-import cn.edu.thu.tsfiledb.qp.logical.crud.IndexOperator.IndexType;
+import cn.edu.thu.tsfiledb.qp.logical.crud.DeleteOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.FilterOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.IndexOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.IndexQueryOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.InsertOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.QueryOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.SelectOperator;
+import cn.edu.thu.tsfiledb.qp.logical.crud.UpdateOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.LoadDataOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
@@ -24,19 +37,15 @@ import cn.edu.thu.tsfiledb.qp.logical.sys.PropertyOperator;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.DeletePlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.IndexPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.InsertPlan;
-import cn.edu.thu.tsfiledb.qp.physical.crud.UpdatePlan;
-import cn.edu.thu.tsfiledb.qp.physical.sys.MetadataPlan;
-import cn.edu.thu.tsfiledb.qp.physical.sys.PropertyPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.MergeQuerySetPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.SeriesSelectPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.UpdatePlan;
 import cn.edu.thu.tsfiledb.qp.physical.sys.AuthorPlan;
 import cn.edu.thu.tsfiledb.qp.physical.sys.LoadDataPlan;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static cn.edu.thu.tsfiledb.qp.constant.SQLConstant.*;
+import cn.edu.thu.tsfiledb.qp.physical.sys.MetadataPlan;
+import cn.edu.thu.tsfiledb.qp.physical.sys.PropertyPlan;
 
 /**
  * Used to convert logical operator to physical plan
@@ -101,10 +110,68 @@ public class PhysicalGenerator {
 		case INDEX:
 			IndexOperator indexOperator = (IndexOperator) operator;
 			IndexPlan indexPlan = new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
-					indexOperator.getStartTime(),indexOperator.getIndexType());
+					indexOperator.getStartTime(), indexOperator.getIndexType());
 			return indexPlan;
+		case INDEXQUERY:
+			IndexQueryOperator indexQueryOperator = (IndexQueryOperator) operator;
+			IndexQueryPlan indexQueryPlan = new IndexQueryPlan(indexQueryOperator.getPath(),
+					indexQueryOperator.getCsvPath(), indexQueryOperator.getEpsilon());
+			if(indexQueryOperator.isHasParameter()){
+				indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
+				indexQueryPlan.setBeta(indexQueryOperator.getBeta());
+			}
+			parseIndexTimeFilter(indexQueryOperator,indexQueryPlan);
+			return indexQueryPlan;
 		default:
 			throw new LogicalOperatorException("not supported operator type: " + operator.getType());
+		}
+	}
+	
+	private void parseIndexTimeFilter(IndexQueryOperator indexQueryOperator,IndexQueryPlan indexQueryPlan) throws LogicalOperatorException{
+		FilterOperator filterOperator = indexQueryOperator.getFilterOperator();
+		if(filterOperator==null){
+			indexQueryPlan.setStartTime(0);
+			indexQueryPlan.setEndTime(Long.MAX_VALUE);
+			return;
+		}
+		if (!filterOperator.isSingle() || !filterOperator.getSinglePath().equals(RESERVED_TIME)) {
+			throw new LogicalOperatorException("for Index query command, it has non-time condition in where clause");
+		}
+		FilterExpression timeFilter;
+		try {
+			timeFilter = filterOperator.transformToFilterExpression(executor, FilterSeriesType.TIME_FILTER);
+		} catch (QueryProcessorException e) {
+			e.printStackTrace();
+			throw new LogicalOperatorException(e.getMessage());
+		}
+		LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
+		LongInterval longInterval = filterVerifier.getInterval((SingleSeriesFilterExpression) timeFilter);
+		long startTime=-1;
+		long endTime=-1;
+		if(longInterval.count!=2){
+			throw new LogicalOperatorException("for index query command, the time filter must be a interval");
+		}
+		if (longInterval.flag[0]) {
+			startTime = longInterval.v[0];
+		} else {
+			startTime = longInterval.v[0] + 1;
+		}
+		if (longInterval.flag[1]) {
+			endTime = longInterval.v[1];
+		} else {
+			endTime = longInterval.v[1] - 1;
+		}
+		if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
+			throw new LogicalOperatorException("index query time must be greater than 0.");
+		}
+		if (startTime == Long.MIN_VALUE) {
+			startTime = 0;
+		}
+		if (endTime >= startTime){
+			indexQueryPlan.setStartTime(startTime);
+			indexQueryPlan.setEndTime(endTime);
+		}else{
+			throw new LogicalOperatorException("for index query command, the start time greater than end time");
 		}
 	}
 
@@ -127,10 +194,8 @@ public class PhysicalGenerator {
 			e.printStackTrace();
 			throw new LogicalOperatorException(e.getMessage());
 		}
-		LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier
-				.create(TSDataType.INT64);
-		LongInterval longInterval = filterVerifier
-				.getInterval((SingleSeriesFilterExpression) timeFilter);
+		LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
+		LongInterval longInterval = filterVerifier.getInterval((SingleSeriesFilterExpression) timeFilter);
 		long startTime;
 		long endTime;
 		for (int i = 0; i < longInterval.count; i = i + 2) {

@@ -157,8 +157,15 @@ public class LogicalGenerator {
 			// for TSParser.TOK_QUERY might appear in both query and insert
 			// command. Thus, do
 			// nothing and call analyze() with children nodes recursively.
+			if (astNode.getChild(0).getToken().getType() == TSParser.TOK_SELECT_INDEX) {
+				initializedOperator = new IndexQueryOperator(SQLConstant.TOK_QUERY_INDEX);
+				break;
+			}
 			initializedOperator = new QueryOperator(SQLConstant.TOK_QUERY);
 			break;
+		case TSParser.TOK_SELECT_INDEX:
+			analyzeIndexSelect(astNode);
+			return;
 		default:
 			throw new QueryProcessorException("Not supported TSParser type" + tokenIntType);
 		}
@@ -774,7 +781,7 @@ public class LogicalGenerator {
 			throw new LogicalOperatorException(
 					String.format("Not support the index %s, just support the kv-match index", indexName));
 		}
-		IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_CREATE_INDEX,IndexType.CREATE_INDEX);
+		IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_CREATE_INDEX, IndexType.CREATE_INDEX);
 		initializedOperator = indexOperator;
 		indexOperator.setPath(path);
 		int childCount = astNode.getChild(0).getChild(1).getChildCount();
@@ -806,12 +813,38 @@ public class LogicalGenerator {
 		}
 		return indexParameters;
 	}
-	private void analyzeIndexDrop(ASTNode astNode){
+
+	private void analyzeIndexDrop(ASTNode astNode) {
 		IndexOperator indexOperator = null;
 		Path path = parseRootPath(astNode.getChild(0).getChild(0));
-		indexOperator = new IndexOperator(SQLConstant.TOK_DROP_INDEX,IndexType.DROP_INDEX);
+		indexOperator = new IndexOperator(SQLConstant.TOK_DROP_INDEX, IndexType.DROP_INDEX);
 		indexOperator.setPath(path);
 		initializedOperator = indexOperator;
 	}
 
+	private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
+		String indexQueryName = astNode.getChild(0).getText();
+		if (!"subsequence_matching".equals(indexQueryName)) {
+			throw new LogicalOperatorException(String.format("Not support the index query %s", indexQueryName));
+		}
+		IndexQueryOperator indexQuery = (IndexQueryOperator) initializedOperator;
+		Path path = parseRootPath(astNode.getChild(1));
+		indexQuery.setPath(path);
+		String patternPath = astNode.getChild(2).getText();
+		if ((patternPath.startsWith("'") && patternPath.endsWith("'"))
+				|| (patternPath.startsWith("\"") && patternPath.endsWith("\""))) {
+			patternPath = patternPath.substring(1, patternPath.length() - 1);
+		}
+
+		indexQuery.setCsvPath(patternPath);
+		double epsilon = Float.valueOf(astNode.getChild(3).getText());
+		indexQuery.setEpsilon(epsilon);
+		if (astNode.getChildCount() > 4) {
+			double alpha = Float.valueOf(astNode.getChild(4).getText());
+			double beta = Float.valueOf(astNode.getChild(5).getText());
+			indexQuery.setHasParameter(true);
+			indexQuery.setAlpha(alpha);
+			indexQuery.setBeta(beta);
+		}
+	}
 }
