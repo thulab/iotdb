@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 TSParser.g 2017-07-25 11:35:49
+// $ANTLR 3.5.2 TSParser.g 2017-07-25 11:43:43
 
 package cn.edu.thu.tsfiledb.sql.parse;
 
@@ -6946,7 +6946,7 @@ public class TSParser extends Parser {
 
 
 	// $ANTLR start "selectClause"
-	// TSParser.g:614:1: selectClause : ( KW_SELECT KW_INDEX func= Identifier LPAREN p= path COMMA file= StringLiteral COMMA epsilon= Float ( COMMA alpha= Float COMMA beta= Float )? RPAREN -> ^( TOK_SELECT_INDEX $func $p $file $epsilon ( $alpha $beta)? ) | KW_SELECT clusteredPath ( COMMA clusteredPath )* -> ^( TOK_SELECT ( clusteredPath )+ ) );
+	// TSParser.g:614:1: selectClause : ( KW_SELECT KW_INDEX func= Identifier LPAREN p= timeseries COMMA file= StringLiteral COMMA epsilon= Float ( COMMA alpha= Float COMMA beta= Float )? RPAREN -> ^( TOK_SELECT_INDEX $func $p $file $epsilon ( $alpha $beta)? ) | KW_SELECT clusteredPath ( COMMA clusteredPath )* -> ^( TOK_SELECT ( clusteredPath )+ ) );
 	public final TSParser.selectClause_return selectClause() throws RecognitionException {
 		TSParser.selectClause_return retval = new TSParser.selectClause_return();
 		retval.start = input.LT(1);
@@ -6995,11 +6995,11 @@ public class TSParser extends Parser {
 		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
 		RewriteRuleTokenStream stream_KW_SELECT=new RewriteRuleTokenStream(adaptor,"token KW_SELECT");
 		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
-		RewriteRuleSubtreeStream stream_path=new RewriteRuleSubtreeStream(adaptor,"rule path");
+		RewriteRuleSubtreeStream stream_timeseries=new RewriteRuleSubtreeStream(adaptor,"rule timeseries");
 		RewriteRuleSubtreeStream stream_clusteredPath=new RewriteRuleSubtreeStream(adaptor,"rule clusteredPath");
 
 		try {
-			// TSParser.g:615:5: ( KW_SELECT KW_INDEX func= Identifier LPAREN p= path COMMA file= StringLiteral COMMA epsilon= Float ( COMMA alpha= Float COMMA beta= Float )? RPAREN -> ^( TOK_SELECT_INDEX $func $p $file $epsilon ( $alpha $beta)? ) | KW_SELECT clusteredPath ( COMMA clusteredPath )* -> ^( TOK_SELECT ( clusteredPath )+ ) )
+			// TSParser.g:615:5: ( KW_SELECT KW_INDEX func= Identifier LPAREN p= timeseries COMMA file= StringLiteral COMMA epsilon= Float ( COMMA alpha= Float COMMA beta= Float )? RPAREN -> ^( TOK_SELECT_INDEX $func $p $file $epsilon ( $alpha $beta)? ) | KW_SELECT clusteredPath ( COMMA clusteredPath )* -> ^( TOK_SELECT ( clusteredPath )+ ) )
 			int alt30=2;
 			int LA30_0 = input.LA(1);
 			if ( (LA30_0==KW_SELECT) ) {
@@ -7035,7 +7035,7 @@ public class TSParser extends Parser {
 
 			switch (alt30) {
 				case 1 :
-					// TSParser.g:615:7: KW_SELECT KW_INDEX func= Identifier LPAREN p= path COMMA file= StringLiteral COMMA epsilon= Float ( COMMA alpha= Float COMMA beta= Float )? RPAREN
+					// TSParser.g:615:7: KW_SELECT KW_INDEX func= Identifier LPAREN p= timeseries COMMA file= StringLiteral COMMA epsilon= Float ( COMMA alpha= Float COMMA beta= Float )? RPAREN
 					{
 					KW_SELECT195=(Token)match(input,KW_SELECT,FOLLOW_KW_SELECT_in_selectClause2532); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_KW_SELECT.add(KW_SELECT195);
@@ -7049,11 +7049,11 @@ public class TSParser extends Parser {
 					LPAREN197=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_selectClause2540); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN197);
 
-					pushFollow(FOLLOW_path_in_selectClause2544);
-					p=path();
+					pushFollow(FOLLOW_timeseries_in_selectClause2544);
+					p=timeseries();
 					state._fsp--;
 					if (state.failed) return retval;
-					if ( state.backtracking==0 ) stream_path.add(p.getTree());
+					if ( state.backtracking==0 ) stream_timeseries.add(p.getTree());
 					COMMA198=(Token)match(input,COMMA,FOLLOW_COMMA_in_selectClause2546); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COMMA.add(COMMA198);
 
@@ -7066,7 +7066,7 @@ public class TSParser extends Parser {
 					epsilon=(Token)match(input,Float,FOLLOW_Float_in_selectClause2556); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_Float.add(epsilon);
 
-					// TSParser.g:615:101: ( COMMA alpha= Float COMMA beta= Float )?
+					// TSParser.g:615:107: ( COMMA alpha= Float COMMA beta= Float )?
 					int alt28=2;
 					int LA28_0 = input.LA(1);
 					if ( (LA28_0==COMMA) ) {
@@ -7074,7 +7074,7 @@ public class TSParser extends Parser {
 					}
 					switch (alt28) {
 						case 1 :
-							// TSParser.g:615:102: COMMA alpha= Float COMMA beta= Float
+							// TSParser.g:615:108: COMMA alpha= Float COMMA beta= Float
 							{
 							COMMA200=(Token)match(input,COMMA,FOLLOW_COMMA_in_selectClause2559); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_COMMA.add(COMMA200);
@@ -8944,8 +8944,8 @@ public class TSParser extends Parser {
 	public static final BitSet FOLLOW_KW_SELECT_in_selectClause2532 = new BitSet(new long[]{0x0000000040000000L});
 	public static final BitSet FOLLOW_KW_INDEX_in_selectClause2534 = new BitSet(new long[]{0x0000000000010000L});
 	public static final BitSet FOLLOW_Identifier_in_selectClause2538 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000004L});
-	public static final BitSet FOLLOW_LPAREN_in_selectClause2540 = new BitSet(new long[]{0x0000000000030000L,0x0000000000000400L});
-	public static final BitSet FOLLOW_path_in_selectClause2544 = new BitSet(new long[]{0x0000000000000020L});
+	public static final BitSet FOLLOW_LPAREN_in_selectClause2540 = new BitSet(new long[]{0x0000000000010000L});
+	public static final BitSet FOLLOW_timeseries_in_selectClause2544 = new BitSet(new long[]{0x0000000000000020L});
 	public static final BitSet FOLLOW_COMMA_in_selectClause2546 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000800L});
 	public static final BitSet FOLLOW_StringLiteral_in_selectClause2550 = new BitSet(new long[]{0x0000000000000020L});
 	public static final BitSet FOLLOW_COMMA_in_selectClause2552 = new BitSet(new long[]{0x0000000000001000L});

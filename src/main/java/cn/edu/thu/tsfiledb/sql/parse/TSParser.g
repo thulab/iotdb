@@ -612,7 +612,7 @@ identifier
 //    ;
 
 selectClause
-    : KW_SELECT KW_INDEX func=Identifier LPAREN p=path COMMA file=StringLiteral COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN
+    : KW_SELECT KW_INDEX func=Identifier LPAREN p=timeseries COMMA file=StringLiteral COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN
     -> ^(TOK_SELECT_INDEX $func $p $file $epsilon ($alpha $beta)?)
     | KW_SELECT clusteredPath (COMMA clusteredPath)*
     -> ^(TOK_SELECT clusteredPath+)
