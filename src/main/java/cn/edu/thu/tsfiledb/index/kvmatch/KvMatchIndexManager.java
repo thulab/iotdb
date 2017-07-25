@@ -106,7 +106,7 @@ public class KvMatchIndexManager implements IndexManager {
             indexConfig.setWindowLength(parameters.getOrDefault(IndexConfig.PARAM_WINDOW_LENGTH, IndexConfig.DEFAULT_WINDOW_LENGTH));
             List<Future<Boolean>> results = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
-                QueryDataSet dataSet = overflowQueryEngine.query(columnPath, fileInfo.getTimeInterval());
+                QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(columnPath, fileInfo.getFilePath());
                 Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath())));
                 results.add(result);
             }
@@ -119,7 +119,7 @@ public class KvMatchIndexManager implements IndexManager {
                 }
             }
             return overallResult;
-        } catch (FileNodeManagerException | IOException | ProcessorException | PathErrorException | InterruptedException | ExecutionException e) {
+        } catch (FileNodeManagerException | IOException | InterruptedException | ExecutionException e) {
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } finally {
