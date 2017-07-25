@@ -14,22 +14,15 @@ import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
-import cn.edu.thu.tsfiledb.index.DataFileInfo;
-import cn.edu.thu.tsfiledb.index.IndexManager;
-import cn.edu.thu.tsfiledb.index.QueryRequest;
-import cn.edu.thu.tsfiledb.index.QueryResponse;
+import cn.edu.thu.tsfiledb.index.*;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
-import cn.edu.thu.tsfiledb.index.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,11 +89,11 @@ public class KvMatchIndexManager implements IndexManager {
 
     @Override
     public boolean build(Path columnPath) throws IndexManagerException {
-        return build(columnPath, 0);
+        return build(columnPath, 0, new HashMap<>());
     }
 
     @Override
-    public boolean build(Path columnPath, long sinceTime) throws IndexManagerException {
+    public boolean build(Path columnPath, long sinceTime, Map<String, Integer> parameters) throws IndexManagerException {
         int token = -1;
         try {
             token = FileNodeManager.getInstance().beginQuery(columnPath.getDeltaObjectToString());
@@ -109,10 +102,12 @@ public class KvMatchIndexManager implements IndexManager {
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, sinceTime);
 
             // 2. build index for every data file.
+            IndexConfig indexConfig = new IndexConfig();
+            indexConfig.setWindowLength(parameters.getOrDefault(IndexConfig.PARAM_WINDOW_LENGTH, IndexConfig.DEFAULT_WINDOW_LENGTH));
             List<Future<Boolean>> results = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
                 QueryDataSet dataSet = overflowQueryEngine.query(columnPath, fileInfo.getTimeInterval());
-                Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(new IndexConfig(), columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath())));
+                Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath())));
                 results.add(result);
             }
 
@@ -265,16 +260,16 @@ public class KvMatchIndexManager implements IndexManager {
                     overallResult.addCandidateRanges(result.get().getCandidateRanges());
                 }
             }
-            overallResult.setCandidateRanges(IntervalUtils.sortAndMergePair(overallResult.getCandidateRanges()));
-            logger.info("Candidates: {}", overallResult.getCandidateRanges());
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
+            overallResult.setCandidateRanges(IntervalUtils.sortAndMergePair(overallResult.getCandidateRanges()));
+            overallResult.setCandidateRanges(IntervalUtils.union(overallResult.getCandidateRanges(), overflowBufferWrite.getInsertOrUpdateIntervals()));
+            logger.info("Candidates: {}", overallResult.getCandidateRanges());
 
             // 7. scan the data in candidate ranges and find out actual answers
-            List<Pair<Long, Double>> answers = new ArrayList<>();
-
-
-            return new KvMatchQueryResponse();
+            QueryDataSet dataSet = overflowQueryEngine.query(columnPath, IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size()));
+            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(dataSet, overflowBufferWrite.getBufferWriteData());
+            return new KvMatchQueryResponse(answers);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
@@ -287,6 +282,10 @@ public class KvMatchIndexManager implements IndexManager {
                 }
             }
         }
+    }
+
+    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(QueryDataSet dataSet, QueryDataSet bufferDataSet) {
+        return null;
     }
 
     private List<Double> amendSeries(List<Pair<Long, Double>> seriesKeyPoints) {

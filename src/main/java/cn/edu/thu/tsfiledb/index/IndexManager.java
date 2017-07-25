@@ -4,6 +4,7 @@ import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This is the interface of index managers.
@@ -26,10 +27,11 @@ public interface IndexManager {
      *
      * @param columnPath the column path
      * @param sinceTime  only build index for data after this time
+     * @param parameters the parameters used to building index
      * @return whether the operation is successful
      * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean build(Path columnPath, long sinceTime) throws IndexManagerException;
+    boolean build(Path columnPath, long sinceTime, Map<String, Integer> parameters) throws IndexManagerException;
 
     /**
      * Delete all index files of the given column path.

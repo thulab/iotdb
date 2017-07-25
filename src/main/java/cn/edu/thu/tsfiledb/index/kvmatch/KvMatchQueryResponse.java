@@ -12,11 +12,17 @@ import java.util.List;
  */
 public class KvMatchQueryResponse extends QueryResponse {
 
-    public KvMatchQueryResponse() {
-        super();
+    private List<Pair<Pair<Long, Long>, Double>> answers;
+
+    public KvMatchQueryResponse(List<Pair<Pair<Long, Long>, Double>> answers) {
+        this.answers = answers;
     }
 
-    public KvMatchQueryResponse(List<Pair<Long, Long>> candidateRanges) {
-        super(candidateRanges);
+    public List<Pair<Pair<Long, Long>, Double>> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<Pair<Pair<Long, Long>, Double>> answers) {
+        this.answers = answers;
     }
 }
