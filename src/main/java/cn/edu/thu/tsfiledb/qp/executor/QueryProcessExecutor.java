@@ -9,7 +9,10 @@ import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfiledb.auth.AuthException;
 import cn.edu.thu.tsfiledb.auth.dao.Authorizer;
+import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
+import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchIndexManager;
+import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchQueryRequest;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.qp.executor.iterator.MergeQuerySetIterator;
@@ -17,6 +20,7 @@ import cn.edu.thu.tsfiledb.qp.executor.iterator.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.logical.Operator;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.MergeQuerySetPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.SeriesSelectPlan;
 import cn.edu.thu.tsfiledb.qp.strategy.PhysicalGenerator;
@@ -25,6 +29,7 @@ public abstract class QueryProcessExecutor {
 
     protected ThreadLocal<Map<String, Object>> parameters = new ThreadLocal<>();
     protected ThreadLocal<Integer> fetchSize = new ThreadLocal<>();
+    private KvMatchIndexManager kvMatchIndexManager = KvMatchIndexManager.getInstance();
 
     public QueryProcessExecutor() {
     }
@@ -53,6 +58,21 @@ public abstract class QueryProcessExecutor {
                 } else {
                     return new MergeQuerySetIterator(selectPlans, getFetchSize(), this);
                 }
+            case INDEXQUERY:
+            	IndexQueryPlan indexQueryPlan = (IndexQueryPlan) plan;
+            	KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(indexQueryPlan.getPaths().get(0), null, indexQueryPlan.getEpsilon()).build();
+            	queryRequest.setStartTime(indexQueryPlan.getStartTime());
+            	queryRequest.setEndTime(indexQueryPlan.getEndTime());
+            	if(indexQueryPlan.isHasParameter()){
+            		queryRequest.setAlpha(indexQueryPlan.getAlpha());
+            		queryRequest.setBeta(indexQueryPlan.getBeta());
+            	}
+			try {
+				kvMatchIndexManager.query(queryRequest);
+			} catch (IndexManagerException e) {
+				e.printStackTrace();
+			}
+            	return null;
             default:
                 throw new UnsupportedOperationException();
         }
