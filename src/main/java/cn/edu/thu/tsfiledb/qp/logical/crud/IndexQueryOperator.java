@@ -5,7 +5,9 @@ import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 public class IndexQueryOperator extends SFWOperator {
 
 	private Path path;
-	private String csvPath;
+	private Path patternPath;
+	private long startTime;
+	private long endTime;
 	private double epsilon;
 	private double alpha;
 	private double beta;
@@ -20,16 +22,32 @@ public class IndexQueryOperator extends SFWOperator {
 		return path;
 	}
 
+	public Path getPatternPath() {
+		return patternPath;
+	}
+
+	public void setPatternPath(Path patternPath) {
+		this.patternPath = patternPath;
+	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
+	public long getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
+
 	public void setPath(Path path) {
 		this.path = path;
-	}
-
-	public String getCsvPath() {
-		return csvPath;
-	}
-
-	public void setCsvPath(String csvPath) {
-		this.csvPath = csvPath;
 	}
 
 	public double getEpsilon() {

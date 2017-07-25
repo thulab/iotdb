@@ -9,7 +9,9 @@ import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 
 public class IndexQueryPlan extends PhysicalPlan {
 	
-	private String csvPath;
+	private Path patterPath;
+	private long patterStarTime;
+	private long patterEndTime;
 	private double epsilon;
 	private double alpha;
 	private double beta;
@@ -17,12 +19,14 @@ public class IndexQueryPlan extends PhysicalPlan {
 	private List<Path> paths;
 	private long startTime;
 	private long endTime;
-	public IndexQueryPlan(Path path,String csvPath,double epsilon) {
+	public IndexQueryPlan(Path path,Path patterPath,double epsilon,long patterStarTime,long patterEndTime) {
 		super(true, OperatorType.INDEXQUERY);
 		paths = new ArrayList<>();
 		paths.add(path);
-		this.csvPath = csvPath;
+		this.patterPath = patterPath;
 		this.epsilon = epsilon;
+		this.patterStarTime = patterStarTime;
+		this.patterEndTime = patterEndTime;
 	}
 
 	@Override
@@ -54,10 +58,7 @@ public class IndexQueryPlan extends PhysicalPlan {
 		this.hasParameter = hasParameter;
 	}
 
-	public String getCsvPath() {
-		return csvPath;
-	}
-
+	
 	public double getEpsilon() {
 		return epsilon;
 	}
@@ -77,4 +78,17 @@ public class IndexQueryPlan extends PhysicalPlan {
 	public void setEndTime(long endTime) {
 		this.endTime = endTime;
 	}
+
+	public Path getPatterPath() {
+		return patterPath;
+	}
+
+	public long getPatterStarTime() {
+		return patterStarTime;
+	}
+
+	public long getPatterEndTime() {
+		return patterEndTime;
+	}
+	
 }

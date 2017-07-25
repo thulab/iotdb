@@ -368,8 +368,8 @@ public class LogicalGenerator {
 					"For delete command, time filter must be less than or less than or equal to");
 		}
 		long time = Long.valueOf(((BasicFunctionOperator) filterOperator).getValue());
-		if(filterOperator.getTokenIntType()==LESSTHAN){
-			time = time -1;
+		if (filterOperator.getTokenIntType() == LESSTHAN) {
+			time = time - 1;
 		}
 		// time must greater than 0 now
 		if (time <= 0) {
@@ -826,23 +826,28 @@ public class LogicalGenerator {
 	private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
 		String indexQueryName = astNode.getChild(0).getText();
 		if (!"subsequence_matching".equals(indexQueryName)) {
-			throw new LogicalOperatorException(String.format("Not support the index query %s, only support the subsequence_matching() query", indexQueryName));
+			throw new LogicalOperatorException(String.format(
+					"Not support the index query %s, only support the subsequence_matching() query", indexQueryName));
 		}
 		IndexQueryOperator indexQuery = (IndexQueryOperator) initializedOperator;
 		Path path = parseRootPath(astNode.getChild(1));
 		indexQuery.setPath(path);
-		String patternPath = astNode.getChild(2).getText();
-		if ((patternPath.startsWith("'") && patternPath.endsWith("'"))
-				|| (patternPath.startsWith("\"") && patternPath.endsWith("\""))) {
-			patternPath = patternPath.substring(1, patternPath.length() - 1);
-		}
+		path = parseRootPath(astNode.getChild(2));
+		indexQuery.setPatternPath(path);
 
-		indexQuery.setCsvPath(patternPath);
-		double epsilon = Float.valueOf(astNode.getChild(3).getText());
+		long startTime = Long.valueOf(astNode.getChild(3).getText());
+		long endTime = Long.valueOf(astNode.getChild(4).getText());
+		if (startTime > endTime || startTime <= 0) {
+			throw new LogicalOperatorException(
+					String.format("The startTime %s and endTime %s are error in index pattern ", startTime, endTime));
+		}
+		indexQuery.setStartTime(startTime);
+		indexQuery.setEndTime(endTime);
+		double epsilon = Float.valueOf(astNode.getChild(5).getText());
 		indexQuery.setEpsilon(epsilon);
-		if (astNode.getChildCount() > 4) {
-			double alpha = Float.valueOf(astNode.getChild(4).getText());
-			double beta = Float.valueOf(astNode.getChild(5).getText());
+		if (astNode.getChildCount() > 6) {
+			double alpha = Float.valueOf(astNode.getChild(6).getText());
+			double beta = Float.valueOf(astNode.getChild(7).getText());
 			indexQuery.setHasParameter(true);
 			indexQuery.setAlpha(alpha);
 			indexQuery.setBeta(beta);
