@@ -118,6 +118,7 @@ public class PhysicalGenerator {
 					indexQueryOperator.getPatternPath(), indexQueryOperator.getEpsilon(),
 					indexQueryOperator.getStartTime(), indexQueryOperator.getEndTime());
 			if (indexQueryOperator.isHasParameter()) {
+				indexQueryPlan.setHasParameter(true);
 				indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
 				indexQueryPlan.setBeta(indexQueryOperator.getBeta());
 			}
