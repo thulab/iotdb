@@ -243,18 +243,33 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		}
 	}
 
-
 	@Override
 	public List<String> getAllPaths(String originPath) throws PathErrorException {
 		return getMManager().getPaths(originPath);
 	}
-	
-	private boolean operateIndex(IndexPlan indexPlan) throws ProcessorException{
-		try {
-			kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getStartTime(), indexPlan.getParameters());
-		} catch (IndexManagerException e) {
-			e.printStackTrace();
-			throw new ProcessorException(e.getMessage());
+
+	private boolean operateIndex(IndexPlan indexPlan) throws ProcessorException {
+
+		switch (indexPlan.getIndexType()) {
+		case CREATE_INDEX:
+			try {
+				kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getStartTime(),
+						indexPlan.getParameters());
+			} catch (IndexManagerException e) {
+				e.printStackTrace();
+				throw new ProcessorException(e.getMessage());
+			}
+			break;
+		case DROP_INDEX:
+			try {
+				kvMatchIndexManager.delete(indexPlan.getPaths().get(0));
+			} catch (IndexManagerException e) {
+				e.printStackTrace();
+				throw new ProcessorException(e.getMessage());
+			}
+			break;
+		default:
+			throw new ProcessorException(String.format("Not support the index type %s", indexPlan.getIndexType()));
 		}
 		return true;
 	}

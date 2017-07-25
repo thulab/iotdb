@@ -16,6 +16,7 @@ import cn.edu.thu.tsfiledb.qp.exception.LogicalOperatorException;
 import cn.edu.thu.tsfiledb.qp.executor.QueryProcessExecutor;
 import cn.edu.thu.tsfiledb.qp.logical.Operator;
 import cn.edu.thu.tsfiledb.qp.logical.crud.*;
+import cn.edu.thu.tsfiledb.qp.logical.crud.IndexOperator.IndexType;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.LoadDataOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
@@ -100,7 +101,7 @@ public class PhysicalGenerator {
 		case INDEX:
 			IndexOperator indexOperator = (IndexOperator) operator;
 			IndexPlan indexPlan = new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
-					indexOperator.getStartTime());
+					indexOperator.getStartTime(),indexOperator.getIndexType());
 			return indexPlan;
 		default:
 			throw new LogicalOperatorException("not supported operator type: " + operator.getType());

@@ -52,5 +52,13 @@ public class IndexTest {
 		indexPlan = (IndexPlan) processor.parseSQLToPhysicalPlan(createIndex);
 		assertEquals(101, indexPlan.getStartTime());
 	}
+	
+	@Test
+	public void testDropIndex() throws QueryProcessorException, ArgsErrorException{
+		String sql = "drop index on root.laptop.d1.s1";
+		QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
+		IndexPlan indexPlan = (IndexPlan) processor.parseSQLToPhysicalPlan(sql);
+		assertEquals(indexPlan.getPaths().get(0).getFullPath(), "root.laptop.d1.s1");
+	}
 
 }

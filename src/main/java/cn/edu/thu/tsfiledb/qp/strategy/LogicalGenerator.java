@@ -14,6 +14,7 @@ import cn.edu.thu.tsfiledb.qp.exception.LogicalOperatorException;
 import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.logical.RootOperator;
 import cn.edu.thu.tsfiledb.qp.logical.crud.*;
+import cn.edu.thu.tsfiledb.qp.logical.crud.IndexOperator.IndexType;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
 import cn.edu.thu.tsfiledb.qp.logical.sys.LoadDataOperator;
@@ -132,7 +133,16 @@ public class LogicalGenerator {
 			}
 			return;
 		case TSParser.TOK_DROP:
-			analyzeAuthorDrop(astNode);
+			switch (astNode.getChild(0).getType()) {
+			case TSParser.TOK_USER:
+				analyzeAuthorDrop(astNode);
+				break;
+			case TSParser.TOK_INDEX:
+				analyzeIndexDrop(astNode);
+				break;
+			default:
+				break;
+			}
 			return;
 		case TSParser.TOK_GRANT:
 			analyzeAuthorGrant(astNode);
@@ -764,7 +774,7 @@ public class LogicalGenerator {
 			throw new LogicalOperatorException(
 					String.format("Not support the index %s, just support the kv-match index", indexName));
 		}
-		IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_CREATE_INDEX);
+		IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_CREATE_INDEX,IndexType.CREATE_INDEX);
 		initializedOperator = indexOperator;
 		indexOperator.setPath(path);
 		int childCount = astNode.getChild(0).getChild(1).getChildCount();
@@ -795,6 +805,13 @@ public class LogicalGenerator {
 			indexParameters.put(key, value);
 		}
 		return indexParameters;
+	}
+	private void analyzeIndexDrop(ASTNode astNode){
+		IndexOperator indexOperator = null;
+		Path path = parseRootPath(astNode.getChild(0).getChild(0));
+		indexOperator = new IndexOperator(SQLConstant.TOK_DROP_INDEX,IndexType.DROP_INDEX);
+		indexOperator.setPath(path);
+		initializedOperator = indexOperator;
 	}
 
 }
