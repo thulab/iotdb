@@ -10,6 +10,7 @@ import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.thu.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.IndexManagerException;
@@ -239,15 +240,16 @@ public class KvMatchIndexManager implements IndexManager {
             // 2. fetch non-indexed ranges from overflow manager
             OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath);
 
-            // 3. propagate query series
+            // 3. propagate query series and configurations
             List<Double> querySeries = amendSeries(queryRequest.getQuerySeries());
+            KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
+            QueryConfig queryConfig = new QueryConfig(querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta());
 
             // 4. search corresponding index files of data files in the query range
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
                 if (fileInfo.getEndTime() <= overflowBufferWrite.getDeleteUntil()) continue;  // deleted
                 logger.info("Querying index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
-                QueryConfig queryConfig = new QueryConfig(querySeries, ((KvMatchQueryRequest) queryRequest).getEpsilon());
                 KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
                 Future<QueryResult> result = executor.submit(queryExecutor);
                 futureResults.add(result);
@@ -267,8 +269,10 @@ public class KvMatchIndexManager implements IndexManager {
             logger.info("Candidates: {}", overallResult.getCandidateRanges());
 
             // 7. scan the data in candidate ranges and find out actual answers
-            QueryDataSet dataSet = overflowQueryEngine.query(columnPath, IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size()));
-            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(dataSet, overflowBufferWrite.getBufferWriteData());
+            List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
+            QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals);
+            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, overflowBufferWrite.getBufferWriteData(), querySeries, request);
+            logger.info("Answers: {}", answers);
             return new KvMatchQueryResponse(answers);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
@@ -284,21 +288,150 @@ public class KvMatchIndexManager implements IndexManager {
         }
     }
 
-    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(QueryDataSet dataSet, QueryDataSet bufferDataSet) {
-        return null;
+    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, QueryDataSet bufferDataSet, List<Double> querySeries, KvMatchQueryRequest request) {
+        List<Pair<Pair<Long, Long>, Double>> result = new ArrayList<>();
+
+        // do z-normalization on query data
+        int lenQ = querySeries.size();
+        List<Double> normalizedQuerySeries = new ArrayList<>(lenQ);
+        double ex = 0, ex2 = 0;
+        for (double value : querySeries) {
+            ex += value;
+            ex2 += value * value;
+        }
+        double meanQ = ex / lenQ, stdQ = Math.sqrt(ex2 / lenQ - meanQ * meanQ);
+        for (double value : querySeries) {
+            normalizedQuerySeries.add((value - meanQ) / stdQ);
+        }
+        // sort the query data
+        List<Integer> order = new ArrayList<>(lenQ);
+        List<Pair<Double, Integer>> tmpQuery = new ArrayList<>(lenQ);
+        for (int i = 0; i < lenQ; i++) {
+            tmpQuery.add(new Pair<>(normalizedQuerySeries.get(i), i));
+        }
+        tmpQuery.sort((o1, o2) -> o2.left.compareTo(o1.left));
+        for (int i = 0; i < lenQ; i++) {
+            normalizedQuerySeries.set(i, tmpQuery.get(i).left);
+            order.add(tmpQuery.get(i).right);
+        }
+
+        // find answers in candidate ranges
+        Pair<Long, Double> lastKeyPoint = null;
+        for (Pair<Long, Long> scanInterval : scanIntervals) {
+            List<Pair<Long, Double>> keyPoints = new ArrayList<>();
+            while (dataSet.next()) {
+                RowRecord row = dataSet.getCurrentRecord();
+                double value = Double.parseDouble(row.getFields().get(0).getStringValue());
+                if (keyPoints.isEmpty() && row.getTime() > scanInterval.left) {
+                    if (lastKeyPoint == null) {
+                        keyPoints.add(new Pair<>(scanInterval.left, value));
+                    } else {
+                        keyPoints.add(lastKeyPoint);
+                    }
+                }
+                keyPoints.add(new Pair<>(row.getTime(), value));
+                if (row.getTime() >= scanInterval.right) break;
+            }
+            lastKeyPoint = keyPoints.get(keyPoints.size() - 1);
+            List<Double> series = amendSeries(keyPoints, scanInterval);
+
+            ex = 0;  ex2 = 0;
+            double[] T = new double[2 * lenQ];
+            for (int i = 0; i < series.size(); i++) {
+                double value = series.get(i);
+                ex += value;
+                ex2 += value * value;
+                T[i % lenQ] = value;
+                T[(i % lenQ) + lenQ] = value;
+
+                if (i >= lenQ - 1) {
+                    int j = (i + 1) % lenQ;  // the current starting location of T
+                    double mean = ex / lenQ;  // z
+                    double std = Math.sqrt(ex2 / lenQ - mean * mean);
+
+                    if ((request.getAlpha() == 1.0 && request.getBeta() == 0) ||
+                            (Math.abs(mean - meanQ) <= request.getBeta() && std / stdQ <= request.getBeta() && std/stdQ >= 1.0/request.getAlpha())) {
+                        double dist = 0;
+                        for (int k = 0; k < lenQ && dist <= request.getEpsilon() * request.getEpsilon(); k++) {
+                            double x = (T[(order.get(k) + j)] - mean) / std;
+                            dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
+                        }
+                        if (dist <= request.getEpsilon() * request.getEpsilon()) {
+                            result.add(new Pair<>(new Pair<>(scanInterval.left + i - lenQ + 1, scanInterval.left + i), Math.sqrt(dist)));
+                        }
+                    }
+
+                    ex -= T[j];
+                    ex2 -= T[j] * T[j];
+                }
+            }
+        }
+
+        // find answers in buffer-write range
+        long lastTime = 0;
+        double lastValue = 0;
+        ex = 0;  ex2 = 0;
+        int i = 0;
+        double[] T = new double[2 * lenQ];
+        while (bufferDataSet.next()) {
+            RowRecord row = bufferDataSet.getCurrentRecord();
+
+            long curTime = row.getTime();
+            double curValue = Double.parseDouble(row.getFields().get(0).getStringValue());  // TODO: improve for performance
+            if (lastTime == 0) {  // TODO: the first window is not right
+                lastTime = curTime - 1;
+                lastValue = curValue;
+            }
+            double deltaValue = (curValue - lastValue) / (curTime - lastTime);
+            for (long time = lastTime + 1; time <= curTime; time++) {
+                double value = lastValue + deltaValue * (time - lastTime);
+                ex += value;
+                ex2 += value * value;
+                T[i % lenQ] = value;
+                T[(i % lenQ) + lenQ] = value;
+
+                if (i >= lenQ - 1) {
+                    int j = (i + 1) % lenQ;  // the current starting location of T
+                    double mean = ex / lenQ;  // z
+                    double std = Math.sqrt(ex2 / lenQ - mean * mean);
+
+                    if ((request.getAlpha() == 1.0 && request.getBeta() == 0) ||
+                            (Math.abs(mean - meanQ) <= request.getBeta() && std / stdQ <= request.getBeta() && std/stdQ >= 1.0/request.getAlpha())) {
+                        double dist = 0;
+                        for (int k = 0; k < lenQ && dist <= request.getEpsilon() * request.getEpsilon(); k++) {
+                            double x = (T[(order.get(k) + j)] - mean) / std;
+                            dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
+                        }
+                        if (dist <= request.getEpsilon() * request.getEpsilon()) {
+                            result.add(new Pair<>(new Pair<>(time - lenQ + 1, time), Math.sqrt(dist)));
+                        }
+                    }
+
+                    ex -= T[j];
+                    ex2 -= T[j] * T[j];
+                }
+                i++;
+            }
+        }
+
+        return result;
     }
 
-    private List<Double> amendSeries(List<Pair<Long, Double>> seriesKeyPoints) {
+    private List<Double> amendSeries(List<Pair<Long, Double>> keyPoints, Pair<Long, Long> interval) {
         List<Double> ret = new ArrayList<>();
-        ret.add(seriesKeyPoints.get(0).right);
-        for (int i = 1; i < seriesKeyPoints.size(); i++) {
-            // amend points on the line
-            double k = 1.0 * (seriesKeyPoints.get(i).right - seriesKeyPoints.get(i - 1).right) / (seriesKeyPoints.get(i).left - seriesKeyPoints.get(i - 1).left);
-            for (long j = seriesKeyPoints.get(i - 1).left + 1; j < seriesKeyPoints.get(i).left; j++) {
-                ret.add(seriesKeyPoints.get(i - 1).right + (j - seriesKeyPoints.get(i - 1).left) * k);
+        if (keyPoints.get(0).left >= interval.left) ret.add(keyPoints.get(0).right);
+        for (int i = 1; i < keyPoints.size(); i++) {
+            double k = 1.0 * (keyPoints.get(i).right - keyPoints.get(i - 1).right) / (keyPoints.get(i).left - keyPoints.get(i - 1).left);
+            for (long j = keyPoints.get(i - 1).left + 1; j <= keyPoints.get(i).left; j++) {
+                if (j >= interval.left && j <= interval.right) {
+                    ret.add(keyPoints.get(i - 1).right + (j - keyPoints.get(i - 1).left) * k);
+                }
             }
-            ret.add(seriesKeyPoints.get(i).right);  // add current point
         }
         return ret;
+    }
+
+    private List<Double> amendSeries(List<Pair<Long, Double>> keyPoints) {
+        return amendSeries(keyPoints, new Pair<>(keyPoints.get(0).left, keyPoints.get(keyPoints.size() - 1).left));
     }
 }
