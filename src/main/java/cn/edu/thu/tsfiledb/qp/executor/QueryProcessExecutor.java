@@ -24,7 +24,6 @@ import cn.edu.thu.tsfiledb.qp.strategy.PhysicalGenerator;
 public abstract class QueryProcessExecutor {
 
     protected ThreadLocal<Map<String, Object>> parameters = new ThreadLocal<>();
-    protected ThreadLocal<List<String>> aggregations = new ThreadLocal<>();
     protected ThreadLocal<Integer> fetchSize = new ThreadLocal<>();
 
     public QueryProcessExecutor() {
@@ -44,15 +43,19 @@ public abstract class QueryProcessExecutor {
             case QUERY:
                 SeriesSelectPlan query = (SeriesSelectPlan) plan;
                 FilterExpression[] filterExpressions = query.getFilterExpressions();
-                return new QueryDataSetIterator(query.getPaths(), getFetchSize(), this,
-                        filterExpressions[0], filterExpressions[1], filterExpressions[2]);
+                return new QueryDataSetIterator(query.getPaths(), getFetchSize(),
+                        this, filterExpressions[0], filterExpressions[1],
+                        filterExpressions[2], query.getAggregations());
             case MERGEQUERY:
                 MergeQuerySetPlan mergeQuery = (MergeQuerySetPlan) plan;
                 List<SeriesSelectPlan> selectPlans = mergeQuery.getSeriesSelectPlans();
                 if (selectPlans.size() == 1) {
-                    return processQuery(selectPlans.get(0));
+                    SeriesSelectPlan seriesSelectPlan = selectPlans.get(0);
+                    seriesSelectPlan.setAggregations(mergeQuery.getAggregations());
+                    return processQuery(seriesSelectPlan);
                 } else {
-                    return new MergeQuerySetIterator(selectPlans, getFetchSize(), this);
+                    return new MergeQuerySetIterator(selectPlans, getFetchSize(),
+                            this, mergeQuery.getAggregations());
                 }
             default:
                 throw new UnsupportedOperationException();
@@ -91,7 +94,7 @@ public abstract class QueryProcessExecutor {
 
     public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter,
             FilterExpression freqFilter, FilterExpression valueFilter, int fetchSize,
-            QueryDataSet lastData) throws ProcessorException;
+            QueryDataSet lastData, List<String> aggregations) throws ProcessorException;
 
     /**
      * execute update command and return whether the operator is successful.
@@ -147,18 +150,6 @@ public abstract class QueryProcessExecutor {
         return MManager.getInstance();
     }
 
-    public void setAggregations(List<String> aggregations) {
-        if(this.aggregations.get() == null) {
-            this.aggregations.set(new ArrayList<>());
-        }
-        for (String aggr : aggregations) {
-            this.aggregations.get().add(aggr);
-        }
-    }
-
-    public List<String> getAggregations() {
-        return this.aggregations.get();
-    }
 
     public void addParameter(String key, Object value) {
         if(parameters.get() == null){
@@ -174,9 +165,6 @@ public abstract class QueryProcessExecutor {
     public void clearParameters(){
         if (parameters.get() != null){
             parameters.get().clear();
-        }
-        if (aggregations.get() != null) {
-            aggregations.get().clear();
         }
         if (fetchSize.get() != null) {
             fetchSize.remove();

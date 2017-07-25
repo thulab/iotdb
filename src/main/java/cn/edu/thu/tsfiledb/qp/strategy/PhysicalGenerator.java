@@ -165,10 +165,9 @@ public class PhysicalGenerator {
 		FilterOperator filterOperator = queryOperator.getFilterOperator();
 
 		List<String> aggregations = selectOperator.getAggregations();
-		executor.setAggregations(aggregations);
 		ArrayList<SeriesSelectPlan> subPlans = new ArrayList<>();
 		if (filterOperator == null) {
-			subPlans.add(new SeriesSelectPlan(paths, null, null, null, executor));
+			subPlans.add(new SeriesSelectPlan(paths, null, null, null, executor, null));
 		} else {
 			List<FilterOperator> parts = splitFilter(filterOperator);
 			for (FilterOperator filter : parts) {
@@ -177,7 +176,7 @@ public class PhysicalGenerator {
 					subPlans.add(plan);
 			}
 		}
-		return new MergeQuerySetPlan(subPlans);
+		return new MergeQuerySetPlan(subPlans, aggregations);
 	}
 
 	private SeriesSelectPlan constructSelectPlan(FilterOperator filterOperator, List<Path> paths,
@@ -228,7 +227,7 @@ public class PhysicalGenerator {
 			valueFilter.setChildren(valueList);
 		}
 
-		return new SeriesSelectPlan(paths, timeFilter, freqFilter, valueFilter, conf);
+		return new SeriesSelectPlan(paths, timeFilter, freqFilter, valueFilter, conf, null);
 	}
 
 	/**

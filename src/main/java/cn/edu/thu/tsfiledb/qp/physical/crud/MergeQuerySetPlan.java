@@ -25,17 +25,23 @@ import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
 public class MergeQuerySetPlan extends PhysicalPlan {
     private static Logger LOG = LoggerFactory.getLogger(MergeQuerySetPlan.class);
     private List<SeriesSelectPlan> seriesSelectPlans;
+    private List<String> aggregations = new ArrayList<>();
     
     public List<SeriesSelectPlan> getSeriesSelectPlans() {
         return seriesSelectPlans;
     }
 
-    public MergeQuerySetPlan(ArrayList<SeriesSelectPlan> selectPlans) {
+    public MergeQuerySetPlan(ArrayList<SeriesSelectPlan> selectPlans, List<String> aggregations) {
         super(true, OperatorType.MERGEQUERY);
         if (selectPlans == null || selectPlans.isEmpty()) {
             LOG.error("cannot input an null or empty plan list into QuerySetMergePlan! ");
         }
         this.seriesSelectPlans = selectPlans;
+        this.aggregations = aggregations;
+    }
+
+    public List<String> getAggregations() {
+        return aggregations;
     }
 
     @Override

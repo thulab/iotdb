@@ -10,6 +10,7 @@ import java.util.Map;
 
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
+import cn.edu.thu.tsfiledb.qp.physical.crud.MergeQuerySetPlan;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;
 import org.slf4j.Logger;
@@ -325,7 +326,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			}
 
 			String statement = req.getStatement();
-			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement);
+			MergeQuerySetPlan plan = (MergeQuerySetPlan) processor.parseSQLToPhysicalPlan(statement);
 
 			List<Path> paths;
 			paths = plan.getPaths();
@@ -353,7 +354,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			// support single aggregation function for now
 			List<String> aggregations = null;
 			try {
-				aggregations = processor.getExecutor().getAggregations();
+				aggregations = plan.getAggregations();
 			} catch (NullPointerException ignored) {
 			}
 			if (aggregations != null && aggregations.size() != 0) {

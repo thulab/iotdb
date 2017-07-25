@@ -100,7 +100,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
 	@Override
 	public QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException {
+			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData, List<String> aggregations) throws ProcessorException {
 		QueryDataSet ret;
 		for (Path path : paths) {
 			if (!mManager.pathExist(path.getFullPath())) {
@@ -113,13 +113,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			}
 		}
 		try {
-			if (parameters.get() != null && parameters.get().containsKey(SQLConstant.IS_AGGREGATION)) {
+			if (aggregations != null && aggregations.size() != 0) {
 				if (lastData != null) {
 					lastData.clear();
 					return lastData;
 				}
-				String aggregateFuncName = (String) parameters.get().get(SQLConstant.IS_AGGREGATION);
-				ret = queryEngine.aggregate(paths.get(0), aggregateFuncName, timeFilter, freqFilter, valueFilter);
+				ret = queryEngine.aggregate(paths.get(0), aggregations.get(0), timeFilter, freqFilter, valueFilter);
 			} else {
 				ret = queryEngine.query(paths, timeFilter, freqFilter, valueFilter, lastData, fetchSize);
 			}

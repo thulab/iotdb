@@ -9,6 +9,7 @@ import cn.edu.thu.tsfiledb.qp.QueryProcessor;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.MergeQuerySetPlan;
 import cn.edu.thu.tsfiledb.qp.physical.sys.AuthorPlan;
 import cn.edu.thu.tsfiledb.qp.physical.sys.MetadataPlan;
 import cn.edu.thu.tsfiledb.qp.physical.sys.PropertyPlan;
@@ -73,10 +74,10 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "select sum(device_1.sensor_1) " + "from root.laptop "
                         + "where time <= 51 or !(time != 100 and time < 460)";
-        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        MergeQuerySetPlan plan = (MergeQuerySetPlan) processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        assertEquals("sum", processor.getExecutor().getAggregations().get(0));
+        assertEquals("sum", plan.getAggregations().get(0));
     }
 
 }

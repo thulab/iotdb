@@ -40,13 +40,15 @@ public class SeriesSelectPlan extends PhysicalPlan {
 
     private static final Logger LOG = LoggerFactory.getLogger(SeriesSelectPlan.class);
     private List<Path> paths = new ArrayList<>();
+    private List<String> aggregations = new ArrayList<>();
     private FilterOperator timeFilterOperator;
     private FilterOperator freqFilterOperator;
     private FilterOperator valueFilterOperator;
     private FilterExpression[] filterExpressions;
 
-    public SeriesSelectPlan(List<Path> paths,
-                            FilterOperator timeFilter, FilterOperator freqFilter, FilterOperator valueFilter, QueryProcessExecutor executor) throws QueryProcessorException {
+    public SeriesSelectPlan(List<Path> paths, FilterOperator timeFilter,
+                            FilterOperator freqFilter, FilterOperator valueFilter,
+                            QueryProcessExecutor executor, List<String> aggregations) throws QueryProcessorException {
         super(true, OperatorType.QUERY);
         this.paths = paths;
         this.timeFilterOperator = timeFilter;
@@ -57,6 +59,15 @@ public class SeriesSelectPlan extends PhysicalPlan {
         checkPaths(executor);
         LOG.debug(Arrays.toString(paths.toArray()));
         filterExpressions = transformToFilterExpressions(executor);
+        this.aggregations = aggregations;
+    }
+
+    public void setAggregations(List<String> aggregations) {
+        this.aggregations = aggregations;
+    }
+
+    public List<String> getAggregations() {
+        return aggregations;
     }
 
     /**
@@ -198,7 +209,7 @@ public class SeriesSelectPlan extends PhysicalPlan {
                 return false;
             if (data == null || !data.hasNextRecord())
                 try {
-                    data = executor.query(paths, timeFilter, freqFilter, valueFilter, fetchSize, data);
+                    data = executor.query(paths, timeFilter, freqFilter, valueFilter, fetchSize, data, aggregations);
                 } catch (ProcessorException e) {
                     throw new RuntimeException(e.getMessage());
                 }
