@@ -64,24 +64,15 @@ public class KvMatchIndexManager implements IndexManager {
             indexManager.build(columnPath);
 
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, 0);
-
             indexManager.rebuild(columnPath, fileInfoList);
-
             indexManager.switchIndexes(columnPath, fileInfoList);
 
-            OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
-            List<Pair<Long, Long>> timeIntervals = new ArrayList<>();
-            timeIntervals.add(new Pair<>(1500885911634L, 1500885911634L + 512 - 1));
-            QueryDataSet queryDataSet = overflowQueryEngine.query(columnPath, timeIntervals);
-            List<Pair<Long, Double>> querySeries = new ArrayList<>();
-            while (queryDataSet.next()) {
-                querySeries.add(new Pair<>(queryDataSet.getCurrentRecord().getTime(), Double.parseDouble(queryDataSet.getCurrentRecord().getFields().get(0).getStringValue())));
-            }
-            KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, querySeries, 1.0).alpha(1.0).beta(0.0).build();
-            indexManager.query(queryRequest);
+            long startTime = 1500885911634L, endTime = startTime + 512;
+            KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, columnPath, startTime, endTime, 1.0).alpha(1.0).beta(0.0).build();
+            indexManager.query(queryRequest, 100);
 
             indexManager.delete(columnPath);
-        } catch (IndexManagerException | FileNodeManagerException | ProcessorException | PathErrorException | IOException e) {
+        } catch (IndexManagerException | FileNodeManagerException e) {
             logger.error(e.getMessage(), e.getCause());
         }
     }
@@ -226,7 +217,7 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     @Override
-    public QueryResponse query(QueryRequest queryRequest) throws IndexManagerException {
+    public QueryDataSet query(QueryRequest queryRequest, int limitSize) throws IndexManagerException {
         Path columnPath = queryRequest.getColumnPath();
         int token = -1;
         try {
@@ -239,8 +230,8 @@ public class KvMatchIndexManager implements IndexManager {
             OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath);
 
             // 3. propagate query series and configurations
-            List<Double> querySeries = amendSeries(queryRequest.getQuerySeries());
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
+            List<Double> querySeries = getQuerySeries(request);
             QueryConfig queryConfig = new QueryConfig(querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta());
 
             // 4. search corresponding index files of data files in the query range
@@ -271,7 +262,7 @@ public class KvMatchIndexManager implements IndexManager {
             QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals);
             List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, overflowBufferWrite.getBufferWriteData(), querySeries, request);
             logger.info("Answers: {}", answers);
-            return new KvMatchQueryResponse(answers);
+            return constructQueryDataSet(answers);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
@@ -284,6 +275,24 @@ public class KvMatchIndexManager implements IndexManager {
                 }
             }
         }
+    }
+
+    private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers) {
+        return null;
+//        QueryDataSet dataSet = new QueryDataSet();
+//        dataSet.putRecordFromBatchReadRetGenerator();
+    }
+
+    private List<Double> getQuerySeries(KvMatchQueryRequest request) throws ProcessorException, PathErrorException, IOException {
+        List<Pair<Long, Long>> timeInterval = new ArrayList<>();
+        timeInterval.add(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime()));
+        List<Pair<Long, Double>> keyPoints = new ArrayList<>();
+        QueryDataSet dataSet = overflowQueryEngine.query(request.getQueryPath(), timeInterval);
+        while (dataSet.next()) {
+            RowRecord row = dataSet.getCurrentRecord();
+            keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
+        }
+        return amendSeries(keyPoints);
     }
 
     private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, QueryDataSet bufferDataSet, List<Double> querySeries, KvMatchQueryRequest request) {

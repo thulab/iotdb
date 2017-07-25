@@ -1,9 +1,6 @@
 package cn.edu.thu.tsfiledb.index;
 
-import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
-
-import java.util.List;
 
 /**
  * The abstract class for a query request with specific parameters.
@@ -18,20 +15,16 @@ public abstract class QueryRequest {
 
     protected long endTime;
 
-    protected List<Pair<Long, Double>> querySeries;
-
-    protected QueryRequest(Path columnPath, long startTime, long endTime, List<Pair<Long, Double>> querySeries) {
+    protected QueryRequest(Path columnPath, long startTime, long endTime) {
         this.columnPath = columnPath;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.querySeries = querySeries;
     }
 
-    protected QueryRequest(Path columnPath, List<Pair<Long, Double>> querySeries) {
+    protected QueryRequest(Path columnPath) {
         this.columnPath = columnPath;
-        this.startTime = Long.MIN_VALUE;
+        this.startTime = 0;
         this.endTime = Long.MAX_VALUE;
-        this.querySeries = querySeries;
     }
 
     public Path getColumnPath() {
@@ -56,13 +49,5 @@ public abstract class QueryRequest {
 
     public void setEndTime(long endTime) {
         this.endTime = endTime;
-    }
-
-    public List<Pair<Long, Double>> getQuerySeries() {
-        return querySeries;
-    }
-
-    public void setQuerySeries(List<Pair<Long, Double>> querySeries) {
-        this.querySeries = querySeries;
     }
 }

@@ -16,6 +16,7 @@ import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchQueryRequest;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.qp.executor.iterator.MergeQuerySetIterator;
+import cn.edu.thu.tsfiledb.qp.executor.iterator.PatternQueryDataSetIterator;
 import cn.edu.thu.tsfiledb.qp.executor.iterator.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.logical.Operator;
@@ -29,7 +30,6 @@ public abstract class QueryProcessExecutor {
 
 	protected ThreadLocal<Map<String, Object>> parameters = new ThreadLocal<>();
 	protected ThreadLocal<Integer> fetchSize = new ThreadLocal<>();
-	private KvMatchIndexManager kvMatchIndexManager = KvMatchIndexManager.getInstance();
 
 	public QueryProcessExecutor() {
 	}
@@ -61,19 +61,15 @@ public abstract class QueryProcessExecutor {
 		case INDEXQUERY:
 			IndexQueryPlan indexQueryPlan = (IndexQueryPlan) plan;
 			KvMatchQueryRequest queryRequest = KvMatchQueryRequest
-					.builder(indexQueryPlan.getPaths().get(0), null, indexQueryPlan.getEpsilon()).build();
-			queryRequest.setStartTime(indexQueryPlan.getStartTime());
-			queryRequest.setEndTime(indexQueryPlan.getEndTime());
+					.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(), indexQueryPlan.getPatterStarTime(), indexQueryPlan.getPatterEndTime(), indexQueryPlan.getEpsilon())
+					.startTime(indexQueryPlan.getStartTime())
+					.endTime(indexQueryPlan.getEndTime())
+					.build();
 			if (indexQueryPlan.isHasParameter()) {
 				queryRequest.setAlpha(indexQueryPlan.getAlpha());
 				queryRequest.setBeta(indexQueryPlan.getBeta());
 			}
-			try {
-				kvMatchIndexManager.query(queryRequest);
-			} catch (IndexManagerException e) {
-				e.printStackTrace();
-			}
-			return null;
+			return new PatternQueryDataSetIterator(queryRequest, getFetchSize());
 		default:
 			throw new UnsupportedOperationException();
 		}
@@ -111,6 +107,7 @@ public abstract class QueryProcessExecutor {
 
 	public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
 			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
+
 
 	/**
 	 * execute update command and return whether the operator is successful.

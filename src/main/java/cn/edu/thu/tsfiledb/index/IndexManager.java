@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.index;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
+import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 
 import java.util.List;
@@ -71,7 +72,8 @@ public interface IndexManager {
      * All modified/new time intervals need to be scanned in brute-force method in order to keep no false dismissals.
      *
      * @param queryRequest the query request with all parameters
+     * @param limitSize    the limitation of number of answers
      * @return the query response
      */
-    QueryResponse query(QueryRequest queryRequest) throws IndexManagerException;
+    QueryDataSet query(QueryRequest queryRequest, int limitSize) throws IndexManagerException;
 }
