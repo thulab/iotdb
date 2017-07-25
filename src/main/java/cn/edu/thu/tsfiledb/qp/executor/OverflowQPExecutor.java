@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
+import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.PropertyOperator;
@@ -31,6 +32,7 @@ import cn.edu.thu.tsfiledb.auth.AuthException;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
+import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchIndexManager;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
@@ -41,6 +43,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	private OverflowQueryEngine queryEngine;
 	private FileNodeManager fileNodeManager;
 	private MManager mManager = MManager.getInstance();
+	private KvMatchIndexManager kvMatchIndexManager = KvMatchIndexManager.getInstance();
 
 	public OverflowQPExecutor() {
 		queryEngine = new OverflowQueryEngine();
@@ -81,6 +84,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		case PROPERTY:
 			PropertyPlan property = (PropertyPlan) plan;
 			return operateProperty(property);
+		case INDEX:
+			IndexPlan indexPlan = (IndexPlan) plan;
+			return operateIndex(indexPlan);
 		default:
 			throw new UnsupportedOperationException(
 					String.format("operation %s does not support", plan.getOperatorType()));
@@ -241,6 +247,16 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	@Override
 	public List<String> getAllPaths(String originPath) throws PathErrorException {
 		return getMManager().getPaths(originPath);
+	}
+	
+	private boolean operateIndex(IndexPlan indexPlan) throws ProcessorException{
+		try {
+			kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getStartTime());
+		} catch (IndexManagerException e) {
+			e.printStackTrace();
+			throw new ProcessorException(e.getMessage());
+		}
+		return true;
 	}
 
 	private boolean operateAuthor(AuthorPlan author) throws ProcessorException {
