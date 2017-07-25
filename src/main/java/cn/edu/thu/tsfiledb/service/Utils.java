@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.thu.tsfile.common.utils.BytesUtils;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
@@ -65,47 +64,47 @@ public class Utils {
 		for(int i = 0 ; i < dynamicOneColumnData.timeLength; i ++){
 				timeRetList.add(dynamicOneColumnData.getTime(i));
 		}
-		TSDynamicOneColumnData tsDynamicOneColumnData = new TSDynamicOneColumnData(dynamicOneColumnData.getDeltaObjectType(), dynamicOneColumnData.dataType.toString(), dynamicOneColumnData.length, timeRetList);
+		TSDynamicOneColumnData tsDynamicOneColumnData = new TSDynamicOneColumnData(dynamicOneColumnData.getDeltaObjectType(), dynamicOneColumnData.dataType.toString(), dynamicOneColumnData.valueLength, timeRetList);
 		
 		switch (dynamicOneColumnData.dataType) {
 		case BOOLEAN:
 			List<Boolean> boolList = new ArrayList<>();
-			for(int i = 0 ; i < dynamicOneColumnData.length; i ++){
+			for(int i = 0 ; i < dynamicOneColumnData.valueLength; i ++){
 					boolList.add(dynamicOneColumnData.getBoolean(i));
 			}
 			tsDynamicOneColumnData.setBoolList(boolList);
 			break;
 		case INT32:
 			List<Integer> intList = new ArrayList<>();
-			for(int i = 0 ; i < dynamicOneColumnData.length; i ++){
+			for(int i = 0 ; i < dynamicOneColumnData.valueLength; i ++){
 					intList.add(dynamicOneColumnData.getInt(i));
 			}
 			tsDynamicOneColumnData.setI32List(intList);
 			break;
 		case INT64:
 			List<Long> longList = new ArrayList<>();
-			for(int i = 0 ; i < dynamicOneColumnData.length; i ++){
+			for(int i = 0 ; i < dynamicOneColumnData.valueLength; i ++){
 					longList.add(dynamicOneColumnData.getLong(i));
 			}
 			tsDynamicOneColumnData.setI64List(longList);
 			break;
 		case FLOAT:
 			List<Double> floatList = new ArrayList<>();
-			for(int i = 0 ; i < dynamicOneColumnData.length; i ++){
+			for(int i = 0 ; i < dynamicOneColumnData.valueLength; i ++){
 					floatList.add((double) dynamicOneColumnData.getFloat(i));
 			}
 			tsDynamicOneColumnData.setFloatList(floatList);
 			break;
 		case DOUBLE:
 			List<Double> doubleList = new ArrayList<>();
-			for(int i = 0 ; i < dynamicOneColumnData.length; i ++){
+			for(int i = 0 ; i < dynamicOneColumnData.valueLength; i ++){
 					doubleList.add(dynamicOneColumnData.getDouble(i));
 			}
 			tsDynamicOneColumnData.setDoubleList(doubleList);
 			break;
 		case TEXT:
 			List<ByteBuffer> binaryList = new ArrayList<>();
-			for(int i = 0 ; i < dynamicOneColumnData.length; i ++){
+			for(int i = 0 ; i < dynamicOneColumnData.valueLength; i ++){
 			    		binaryList.add(ByteBuffer.wrap(dynamicOneColumnData.getBinary(i).values));
 			}
 			tsDynamicOneColumnData.setBinaryList(binaryList);

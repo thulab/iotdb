@@ -269,7 +269,7 @@ public class FileNodeManagerMulTest {
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
 			fileNodeManager.endQuery(deltaObjectId0, token);
 			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
-			assertEquals(1, insert.length);
+			assertEquals(1, insert.valueLength);
 			assertEquals(5, insert.getTime(0));
 			assertEquals(5, insert.getInt(0));
 
@@ -426,7 +426,7 @@ public class FileNodeManagerMulTest {
 			// query check
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
 			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
-			assertEquals(1, insert.length);
+			assertEquals(1, insert.valueLength);
 			assertEquals(10, insert.getTime(0));
 			assertEquals(5, insert.getInt(0));
 		} catch (FileNodeManagerException e) {
@@ -437,6 +437,9 @@ public class FileNodeManagerMulTest {
 		try {
 			fileNodeManager.mergeAll();
 			Thread.sleep(5000);
+			while(!fileNodeManager.closeAll()){
+				Thread.sleep(1000);
+			}
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
 			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
 			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
@@ -499,7 +502,7 @@ public class FileNodeManagerMulTest {
 			// query check
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
 			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
-			assertEquals(1, insert.length);
+			assertEquals(1, insert.valueLength);
 			assertEquals(10, insert.getTime(0));
 			assertEquals(5, insert.getInt(0));
 		} catch (FileNodeManagerException e) {
@@ -518,7 +521,9 @@ public class FileNodeManagerMulTest {
 		// merge
 		try {
 			fileNodeManager.mergeAll();
-			Thread.sleep(4000);
+			while(!fileNodeManager.closeAll()){
+				Thread.sleep(1000);
+			}
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
 			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
 			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
@@ -639,7 +644,7 @@ public class FileNodeManagerMulTest {
 					assertEquals(200, temp.getEndTime(deltaObjectId2));
 					DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0 + 2);
 					assertEquals(true, insert != null);
-					assertEquals(1, insert.length);
+					assertEquals(1, insert.valueLength);
 					assertEquals(2, insert.getTime(0));
 				}
 			} else {

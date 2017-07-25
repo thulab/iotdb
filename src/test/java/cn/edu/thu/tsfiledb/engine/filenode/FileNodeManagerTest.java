@@ -170,7 +170,7 @@ public class FileNodeManagerTest {
 
 			List<Object> overflowResult = queryResult.getAllOverflowData();
 			DynamicOneColumnData insertData = (DynamicOneColumnData) overflowResult.get(0);
-			assertEquals(overflowInsert1.length, insertData.length);
+			assertEquals(overflowInsert1.length, insertData.valueLength);
 			for (int i = 0; i < overflowInsert1.length; i++) {
 				assertEquals(overflowInsert1[i], insertData.getTime(i));
 				assertEquals(overflowInsert1[i], insertData.getInt(i));
@@ -189,7 +189,7 @@ public class FileNodeManagerTest {
 			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 			List<Object> overflowResult = queryResult.getAllOverflowData();
 			DynamicOneColumnData insertData = (DynamicOneColumnData) overflowResult.get(0);
-			assertEquals(overflowInsert1.length + overflowInsert2.length, insertData.length);
+			assertEquals(overflowInsert1.length + overflowInsert2.length, insertData.valueLength);
 			for (int i = 0; i < overflowInsert1.length; i++) {
 				assertEquals(overflowInsert1[i], insertData.getTime(i));
 				assertEquals(overflowInsert1[i], insertData.getInt(i));
@@ -227,7 +227,7 @@ public class FileNodeManagerTest {
 			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 			List<Object> overflowResult = queryResult.getAllOverflowData();
 			DynamicOneColumnData updateData = (DynamicOneColumnData) overflowResult.get(1);
-			assertEquals(1, updateData.length);
+			assertEquals(1, updateData.valueLength);
 			assertEquals(2, updateData.timeLength);
 			assertEquals(150, updateData.getTime(0));
 			assertEquals(170, updateData.getTime(1));
@@ -638,11 +638,13 @@ public class FileNodeManagerTest {
 		}
 		// check query before merge
 		QueryStructure queryStructure;
+		String originFilePath = null;
 		try {
 			int token = fileNodeManager.beginQuery(deltaObjectId);
 			queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
 			fileNodeManager.endQuery(deltaObjectId, token);
 			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
+			originFilePath = queryStructure.getBufferwriteDataInFiles().get(0).filePath;
 			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
 			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 			assertEquals(100, temp.getStartTime(deltaObjectId));
@@ -652,6 +654,8 @@ public class FileNodeManagerTest {
 			e1.printStackTrace();
 			fail(e1.getMessage());
 		}
+		File fileBeforeMerge = new File(originFilePath);
+		assertEquals(true, fileBeforeMerge.exists());
 		// merge
 		try {
 			fileNodeManager.mergeAll();
@@ -662,6 +666,8 @@ public class FileNodeManagerTest {
 		// wait to end of merge
 		waitToSleep(3000);
 		// check query after merge: no tsfile data and no overflow data
+		fileBeforeMerge = new File(originFilePath);
+		assertEquals(false, fileBeforeMerge.exists());
 		try {
 			int token = fileNodeManager.beginQuery(deltaObjectId);
 			queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
@@ -701,7 +707,7 @@ public class FileNodeManagerTest {
 			assertEquals(null, queryStructure.getBufferwriteDataInDisk());
 			assertEquals(0, queryStructure.getBufferwriteDataInFiles().size());
 			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
-			assertEquals(2, insert.length);
+			assertEquals(2, insert.valueLength);
 			assertEquals(5, insert.getTime(0));
 			assertEquals(10, insert.getTime(1));
 			assertEquals(5, insert.getInt(0));

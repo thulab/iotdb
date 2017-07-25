@@ -147,8 +147,10 @@ public abstract class QueryProcessExecutor {
         return MManager.getInstance();
     }
 
-
     public void setAggregations(List<String> aggregations) {
+        if(this.aggregations.get() == null) {
+            this.aggregations.set(new ArrayList<>());
+        }
         for (String aggr : aggregations) {
             this.aggregations.get().add(aggr);
         }
@@ -172,6 +174,9 @@ public abstract class QueryProcessExecutor {
     public void clearParameters(){
         if (parameters.get() != null){
             parameters.get().clear();
+        }
+        if (aggregations.get() != null) {
+            aggregations.get().clear();
         }
         if (fetchSize.get() != null) {
             fetchSize.remove();
@@ -248,7 +253,6 @@ public abstract class QueryProcessExecutor {
         return plan;
     }
 
-    public List<String> getAllPaths(String fullPath) throws PathErrorException {
-        return getMManager().getPaths(fullPath);
-    }
+    public abstract List<String> getAllPaths(String originPath) throws PathErrorException;
+
 }

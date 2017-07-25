@@ -10,6 +10,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.io.Console;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -17,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 
 public abstract class AbstractClient {
@@ -38,7 +42,6 @@ public abstract class AbstractClient {
 	protected static String timeFormat = "default";
 	protected static final String TIME_KEY_WORD = "time";
 	protected static DateTimeZone timeZone = DateTimeZone.getDefault();
-
 	
 	protected static final String MAX_PRINT_ROW_COUNT_ARGS = "maxPRC";
 	protected static final String MAX_PRINT_ROW_COUNT_NAME = "maxPrintRowCount";
@@ -72,6 +75,7 @@ public abstract class AbstractClient {
 		keywordSet.add("-"+USERNAME_ARGS);
 		keywordSet.add("-"+ISO8601_ARGS);
 		keywordSet.add("-"+MAX_PRINT_ROW_COUNT_ARGS);
+		
 	}
 	
 	public static void output(ResultSet res, boolean printToConsole, String statement) {
@@ -165,7 +169,7 @@ public abstract class AbstractClient {
 		case "number":
 			return timestamp+"";
 		case "default":
-		case "ISO8601":
+		case "iso8601":
 			return new DateTime(timestamp, timeZone).toString(ISODateTimeFormat.dateHourMinuteSecondMillis());
 		default:
 			return new DateTime(timestamp, timeZone).toString(timeFormat);
@@ -184,23 +188,25 @@ public abstract class AbstractClient {
 	}
 
 	protected static void setTimeFormat(String newTimeFormat) {
-		switch (newTimeFormat) {
+		switch (newTimeFormat.toLowerCase()) {
 		case "long":
 		case "number":
 			maxTimeLength = maxValueLength;
+			timeFormat = newTimeFormat.toLowerCase();
 			break;
 		case "default":
-		case "ISO8601":
+		case "iso8601":
 			maxTimeLength = ISO_DATETIME_LEN;
+			timeFormat = newTimeFormat.toLowerCase();
 			break;
 		default:
 			// use java default SimpleDateFormat to check whether input time format is legal
 			// if illegal, it will throw an exception
 			new SimpleDateFormat(newTimeFormat);
 			maxTimeLength = TIMESTAMP_STR.length() > newTimeFormat.length() ? TIMESTAMP_STR.length() : newTimeFormat.length();
+			timeFormat = newTimeFormat;
 			break;
 		}
-		timeFormat = newTimeFormat;
 		formatTime = "%" + maxTimeLength + "s|";
 	}
 	
@@ -290,7 +296,7 @@ public abstract class AbstractClient {
 				System.out.println(String.format("time display format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("time display type has set to "+values[1]);
+			System.out.println("time display type has set to "+cmd.split("=")[1]);
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 		
@@ -333,6 +339,17 @@ public abstract class AbstractClient {
 		    	}
 		}
 		return OPERATION_RESULT.NO_OPER;
+	}
+	
+	protected static String readPassword() {
+		Console c = System.console();
+		if (c == null) { // IN ECLIPSE IDE
+			System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
+			Scanner scanner = new Scanner(System.in);
+			return scanner.nextLine();
+		} else { // Outside Eclipse IDE
+			return new String(c.readPassword(TSFILEDB_CLI_PREFIX + "> please input password: "));
+		}
 	}
 
 	enum OPERATION_RESULT{

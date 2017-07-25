@@ -54,7 +54,7 @@ public class SeriesSelectPlan extends PhysicalPlan {
         this.valueFilterOperator = valueFilter;
         removeStarsInPath(executor);
         LOG.debug(Arrays.toString(paths.toArray()));
-        removeNotExistsPaths(executor);
+        checkPaths(executor);
         LOG.debug(Arrays.toString(paths.toArray()));
         filterExpressions = transformToFilterExpressions(executor);
     }
@@ -74,19 +74,15 @@ public class SeriesSelectPlan extends PhysicalPlan {
      *
      * @param executor query process executor
      */
-    private void removeStarsInPath(QueryProcessExecutor executor) {
+    private void removeStarsInPath(QueryProcessExecutor executor) throws PathErrorException {
         LinkedHashMap<String, Integer> pathMap = new LinkedHashMap<>();
         for (Path path : paths) {
             List<String> all;
-            try {
-                all = executor.getAllPaths(path.getFullPath());
-                for (String subPath : all) {
-                    if (!pathMap.containsKey(subPath)) {
-                        pathMap.put(subPath, 1);
-                    }
+            all = executor.getAllPaths(path.getFullPath());
+            for (String subPath : all) {
+                if (!pathMap.containsKey(subPath)) {
+                    pathMap.put(subPath, 1);
                 }
-            } catch (PathErrorException e) {
-                LOG.error("path error:" + e.getMessage());
             }
         }
         paths = new ArrayList<>();
@@ -96,22 +92,13 @@ public class SeriesSelectPlan extends PhysicalPlan {
     }
 
     /**
-     * remove paths that do not exit
+     * check if all paths exist
      */
-    private void removeNotExistsPaths(QueryProcessExecutor executor) {
-        List<Path> existsPaths = new ArrayList<>();
-        List<Path> notExistsPaths = new ArrayList<>();
+    private void checkPaths(QueryProcessExecutor executor) throws QueryProcessorException {
         for (Path path : paths) {
-            if (executor.judgePathExists(path))
-                existsPaths.add(path);
-            else
-                notExistsPaths.add(path);
+            if (!executor.judgePathExists(path))
+                throw new QueryProcessorException("Path doesn't exist: " + path);
         }
-        if (!notExistsPaths.isEmpty()) {
-            LOG.warn("following paths don't exist:{}", notExistsPaths.toString());
-        }
-        this.paths = existsPaths;
-
     }
 
     /**

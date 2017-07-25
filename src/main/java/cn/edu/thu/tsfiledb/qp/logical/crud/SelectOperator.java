@@ -16,7 +16,7 @@ import cn.edu.thu.tsfiledb.qp.logical.Operator;
 public final class SelectOperator extends Operator {
 
     private List<Path> suffixList;
-    List<String> aggregations;
+    private List<String> aggregations;
 
     public SelectOperator(int tokenIntType) {
         super(tokenIntType);

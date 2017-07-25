@@ -27,6 +27,7 @@ public class WinClient extends AbstractClient {
 		CommandLineParser parser = new DefaultParser();
 
 		if (args == null || args.length == 0) {
+			System.out.println("Require more params input, please check the following hint.");
 			hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
 			return;
 		}
@@ -57,11 +58,11 @@ public class WinClient extends AbstractClient {
 				}
 			}
 		} catch (ParseException e) {
+			System.out.println("Require more params input, please check the following hint.");
 			hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
 			return;
 		}
-
-		Scanner scanner = new Scanner(System.in);
+		Scanner scanner = null;
 		try {
 			String s;
 
@@ -72,8 +73,7 @@ public class WinClient extends AbstractClient {
 
 				String password = commandLine.getOptionValue(PASSWORD_ARGS);
 				if (password == null) {
-					System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
-					password = scanner.nextLine();
+					password = readPassword();
 				}
 				try {
 					connection = DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username,
@@ -83,14 +83,14 @@ public class WinClient extends AbstractClient {
 					return;
 				}
 			} catch (ArgsErrorException e) {
-				System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
+//				System.out.println(TSFILEDB_CLI_PREFIX + ": " + e.getMessage());
 				return;
 			}
 
 			displayLogo();
 
 			System.out.println(TSFILEDB_CLI_PREFIX + "> login successfully");
-
+			scanner = new Scanner(System.in);
 			while (true) {
 				System.out.print(TSFILEDB_CLI_PREFIX + "> ");
 				s = scanner.nextLine();

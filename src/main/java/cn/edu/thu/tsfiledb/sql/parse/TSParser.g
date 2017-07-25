@@ -17,6 +17,7 @@ TOK_MERGE;
 TOK_QUIT;
 TOK_PRIVILEGES;
 TOK_USER;
+TOK_INDEX;
 TOK_ROLE;
 TOK_CREATE;
 TOK_DROP;
@@ -40,7 +41,9 @@ TOK_ISNULL;
 TOK_ISNOTNULL;
 TOK_DATETIME;
 TOK_DELETE;
-
+TOK_INDEX_KV;
+TOK_FUNC;
+TOK_SELECT_INDEX;
 
 /*
   BELOW IS THE METADATA TOKEN
@@ -116,6 +119,8 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
         xlateMap.put("KW_DESCRIBE", "DESCRIBE");
 
         xlateMap.put("KW_TO", "TO");
+        xlateMap.put("KW_ON", "ON");
+        xlateMap.put("KW_USING", "USING");
 
         xlateMap.put("KW_DATETIME", "DATETIME");
         xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
@@ -277,6 +282,7 @@ execStatement
     | metadataStatement
     | mergeStatement
 //    | loadStatement
+    | indexStatement
     | quitStatement
     ;
 
@@ -449,47 +455,47 @@ createUser
     ;
 
 dropUser
-    : KW_DROP KW_USER userName=identifier
+    : KW_DROP KW_USER userName=Identifier
     -> ^(TOK_DROP ^(TOK_USER $userName))
     ;
 
 createRole
-    : KW_CREATE KW_ROLE roleName=identifier
+    : KW_CREATE KW_ROLE roleName=Identifier
     -> ^(TOK_CREATE ^(TOK_ROLE $roleName))
     ;
 
 dropRole
-    : KW_DROP KW_ROLE roleName=identifier
+    : KW_DROP KW_ROLE roleName=Identifier
     -> ^(TOK_DROP ^(TOK_ROLE $roleName))
     ;
 
 grantUser
-    : KW_GRANT KW_USER userName = identifier privileges KW_ON path
+    : KW_GRANT KW_USER userName = Identifier privileges KW_ON path
     -> ^(TOK_GRANT ^(TOK_USER $userName) privileges path)
     ;
 
 grantRole
-    : KW_GRANT KW_ROLE roleName=identifier privileges KW_ON path
+    : KW_GRANT KW_ROLE roleName=Identifier privileges KW_ON path
     -> ^(TOK_GRANT ^(TOK_ROLE $roleName) privileges path)
     ;
 
 revokeUser
-    : KW_REVOKE KW_USER userName = identifier privileges KW_ON path
+    : KW_REVOKE KW_USER userName = Identifier privileges KW_ON path
     -> ^(TOK_REVOKE ^(TOK_USER $userName) privileges path)
     ;
 
 revokeRole
-    : KW_REVOKE KW_ROLE roleName = identifier privileges KW_ON path
+    : KW_REVOKE KW_ROLE roleName = Identifier privileges KW_ON path
     -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) privileges path)
     ;
 
 grantRoleToUser
-    : KW_GRANT roleName = identifier KW_TO userName = identifier
+    : KW_GRANT roleName = Identifier KW_TO userName = Identifier
     -> ^(TOK_GRANT ^(TOK_ROLE $roleName) ^(TOK_USER $userName))
     ;
 
 revokeRoleFromUser
-    : KW_REVOKE roleName = identifier KW_FROM userName = identifier
+    : KW_REVOKE roleName = Identifier KW_FROM userName = Identifier
     -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) ^(TOK_USER $userName))
     ;
 
@@ -519,8 +525,8 @@ Assit to multi insert, target grammar:  insert into root.<deviceType>.<deviceNam
 
 multidentifier
 	:
-	LPAREN KW_TIMESTAMP (COMMA identifier)* RPAREN
-	-> ^(TOK_MULT_IDENTIFIER TOK_TIME identifier*)
+	LPAREN KW_TIMESTAMP (COMMA Identifier)* RPAREN
+	-> ^(TOK_MULT_IDENTIFIER TOK_TIME Identifier*)
 	;
 multiValue
 	:
@@ -536,11 +542,53 @@ deleteStatement
    ;
 
 updateStatement
-   : KW_UPDATE path KW_SET KW_VALUE EQUAL value=numberOrStringWidely (whereClause)?
-   -> ^(TOK_UPDATE path ^(TOK_VALUE $value) whereClause?)
-   | KW_UPDATE KW_USER userName=StringLiteral KW_SET KW_PASSWORD psw=StringLiteral
+   : KW_UPDATE path (COMMA path)* KW_SET KW_VALUE EQUAL value=numberOrStringWidely (whereClause)?
+   -> ^(TOK_UPDATE path+ ^(TOK_VALUE $value) whereClause?)
+   | KW_UPDATE KW_USER userName=Identifier KW_SET KW_PASSWORD psw=numberOrString
    -> ^(TOK_UPDATE ^(TOK_UPDATE_PSWD $userName $psw))
    ;
+
+
+
+/*
+****
+*************
+Index Statment
+*************
+****
+*/
+
+indexStatement
+    : createIndexStatement
+    | dropIndexStatement
+    ;
+
+createIndexStatement
+    : KW_CREATE KW_INDEX KW_ON p=timeseries KW_USING func=Identifier indexWithClause? whereClause?
+    -> ^(TOK_CREATE ^(TOK_INDEX $p ^(TOK_FUNC $func indexWithClause? whereClause?)))
+    ;
+
+
+indexWithClause
+    : KW_WITH indexWithEqualExpression (COMMA indexWithEqualExpression)?
+    -> ^(TOK_WITH indexWithEqualExpression+)
+    ;
+
+indexWithEqualExpression
+    : k=Identifier EQUAL v=Integer
+    -> ^(TOK_INDEX_KV $k $v)
+    ;
+
+//indexWhereClause
+//    : KW_WHERE name=Identifier GREATERTHAN value=dateFormatWithNumber
+//    -> ^(TOK_WHERE $name $value)
+//    ;
+
+
+dropIndexStatement
+    : KW_DROP KW_INDEX KW_ON p=path
+    -> ^(TOK_DROP ^(TOK_INDEX $p))
+    ;
 
 /*
 ****
@@ -564,7 +612,9 @@ identifier
 //    ;
 
 selectClause
-    : KW_SELECT clusteredPath (COMMA clusteredPath)*
+    : KW_SELECT KW_INDEX func=Identifier LPAREN p=path COMMA file=StringLiteral COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN
+    -> ^(TOK_SELECT_INDEX $func $p $file $epsilon ($alpha $beta)?)
+    | KW_SELECT clusteredPath (COMMA clusteredPath)*
     -> ^(TOK_SELECT clusteredPath+)
     ;
 

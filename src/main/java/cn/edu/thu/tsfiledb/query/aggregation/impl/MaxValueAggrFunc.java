@@ -57,7 +57,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
                 result.data.setTime(0, count);
             }
         } else {
-            if (dataInThisPage.length == 0) {
+            if (dataInThisPage.valueLength == 0) {
                 return;
             }
             Comparable<?> maxv = getMaxValue(dataInThisPage);
@@ -75,7 +75,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
 
     private Comparable<?> getMaxValue(DynamicOneColumnData dataInThisPage) {
         Comparable<?> v = dataInThisPage.getAnObject(0);
-        for (int i = 1; i < dataInThisPage.length; i++) {
+        for (int i = 1; i < dataInThisPage.valueLength; i++) {
             Comparable<?> nextV = dataInThisPage.getAnObject(i);
             if (compare(v, nextV) < 0) {
                 v = nextV;
@@ -96,10 +96,10 @@ public class MaxValueAggrFunc extends AggregateFunction {
                 return ((Float) o1).compareTo((Float) o2);
             case DOUBLE:
                 return ((Double) o1).compareTo((Double) o2);
-            case FIXED_LEN_BYTE_ARRAY:
+            case TEXT:
                 return ((Binary) o1).compareTo((Binary) o2);
             default:
-                throw new UnSupportedDataTypeException("Aggregation UnSupportDataType:" + dataType);
+                throw new UnSupportedDataTypeException("Aggregation UnSupportDataType: " + dataType);
         }
     }
 
