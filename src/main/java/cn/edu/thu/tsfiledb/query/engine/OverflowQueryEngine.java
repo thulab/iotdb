@@ -270,10 +270,10 @@ public class OverflowQueryEngine {
                                                  SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, CrossSeriesFilterExpression valueFilter,
                                                  QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException, PathErrorException {
 
-        LOGGER.info("start cross columns getIndex...");
+        //LOGGER.info("start cross columns getIndex...");
         clearQueryDataSet(queryDataSet);
         // Step 1: calculate common timestamp
-        LOGGER.info("step 1: init time value generator...");
+        //LOGGER.info("step 1: init time value generator...");
         if (queryDataSet == null) {
             // reset status of RecordReader used ValueFilter
             resetRecordStatusUsingValueFilter(valueFilter, new HashSet<String>());
@@ -283,7 +283,7 @@ public class OverflowQueryEngine {
                 public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
                                                                SingleSeriesFilterExpression valueFilter) throws ProcessorException, IOException {
                     try {
-                        return readOneColumnValueUseValueFilter(timeFilter, valueFilter, freqFilter, res, fetchSize);
+                        return readOneColumnUseValueFilter(valueFilter, freqFilter, res, fetchSize);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -292,20 +292,19 @@ public class OverflowQueryEngine {
             };
         }
 
-        LOGGER.info("step 1 done.");
-        LOGGER.info("step 2: calculate timeRet...");
-        long[] timeRet = queryDataSet.timeQueryDataSet.generateTimes();
-        LOGGER.info("step 2 done. timeRet size is: " + timeRet.length + ", FetchSize is: " + fetchSize);
-
+        // LOGGER.info("step 1 done.");
+        // LOGGER.info("step 2: calculate timeRet...");
+        // LOGGER.info("step 2 done. timeRet size is: " + timeRet.length + ", FetchSize is: " + fetchSize);
         // Step 3: Get result using common timestamp
-        LOGGER.info("step 3: Get result using common timestamp");
+        // LOGGER.info("step 3: Get result using common timestamp");
+        long[] timeRet = queryDataSet.timeQueryDataSet.generateTimes();
 
         QueryDataSet ret = queryDataSet;
         for (Path path : paths) {
 
             String deltaObject = path.getDeltaObjectToString();
             String measurement = path.getMeasurementToString();
-            String aggKey = deltaObject + "." + measurement;
+            String pathName = deltaObject + "." + measurement;
 
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObject, measurement, null, null, null);
 
@@ -327,9 +326,9 @@ public class OverflowQueryEngine {
                 recordReader.insertAllData.setCurrentPageBuffer(insertTrue);
             }
 
-            DynamicOneColumnData oneColDataList = recordReader.getValuesUseTimeValueWithOverflow(deltaObject, measurement,
+            DynamicOneColumnData oneColDataList = recordReader.getValuesUseTimestampsWithOverflow(deltaObject, measurement,
                     timeRet, updateTrue, recordReader.insertAllData, deleteFilter);
-            ret.mapRet.put(aggKey, oneColDataList);
+            ret.mapRet.put(pathName, oneColDataList);
 
             // recordReader.closeFromFactory();
         }
@@ -342,8 +341,8 @@ public class OverflowQueryEngine {
     /**
      *  This function is only used for CrossQueryTimeGenerator.
      */
-    private DynamicOneColumnData readOneColumnValueUseValueFilter(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
-                                                                         SingleSeriesFilterExpression freqFilter, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+    private DynamicOneColumnData readOneColumnUseValueFilter(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
+                                                                  DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getDeltaObjectUID();
         String measurementUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getMeasurementUID();
@@ -367,6 +366,7 @@ public class OverflowQueryEngine {
 
         res = recordReader.getValueWithFilterAndOverflow(deltaObjectUID, measurementUID, updateTrue, updateFalse, recordReader.insertAllData,
                 deleteFilter, freqFilter, valueFilter, res, fetchSize);
+        // reset the insertTrue
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
 
         recordReader.closeFromFactory();
@@ -388,6 +388,7 @@ public class OverflowQueryEngine {
 
             DynamicOneColumnData overflowInsertTrue = (DynamicOneColumnData) overflowParams.get(0);
             // add insert records from memory in BufferWriter stage
+            //TODO need try only has bufferwrite data? if not new a DynamicOneColumnData.
             if (overflowInsertTrue == null) {
                 overflowInsertTrue = insertDataInMemory;
             } else {
