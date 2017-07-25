@@ -21,6 +21,7 @@ import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
 import cn.edu.thu.tsfiledb.qp.logical.sys.PropertyOperator;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.DeletePlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.IndexPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.InsertPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.UpdatePlan;
 import cn.edu.thu.tsfiledb.qp.physical.sys.MetadataPlan;
@@ -95,6 +96,11 @@ public class PhysicalGenerator {
 		case QUERY:
 			QueryOperator query = (QueryOperator) operator;
 			return transformQuery(query);
+		case INDEX:
+			IndexOperator indexOperator = (IndexOperator) operator;
+			IndexPlan indexPlan = new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
+					indexOperator.getStartTime());
+			return indexPlan;
 		default:
 			throw new LogicalOperatorException("not supported operator type: " + operator.getType());
 		}
@@ -112,7 +118,7 @@ public class PhysicalGenerator {
 			throw new LogicalOperatorException("for update command, it has non-time condition in where clause");
 		}
 		// transfer the filter operator to FilterExpression
-		FilterExpression timeFilter = null;
+		FilterExpression timeFilter;
 		try {
 			timeFilter = filterOperator.transformToFilterExpression(executor, FilterSeriesType.TIME_FILTER);
 		} catch (QueryProcessorException e) {
@@ -121,10 +127,9 @@ public class PhysicalGenerator {
 		}
 		LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier
 				.get((SingleSeriesFilterExpression) timeFilter);
-		LongInterval longInterval = (LongInterval) filterVerifier
-				.getInterval((SingleSeriesFilterExpression) timeFilter);
-		long startTime = -1;
-		long endTime = -1;
+		LongInterval longInterval = filterVerifier.getInterval((SingleSeriesFilterExpression) timeFilter);
+		long startTime;
+		long endTime;
 		for (int i = 0; i < longInterval.count; i = i + 2) {
 			if (longInterval.flag[i]) {
 				startTime = longInterval.v[i];
@@ -137,14 +142,14 @@ public class PhysicalGenerator {
 				endTime = longInterval.v[i + 1] - 1;
 			}
 			if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
-				throw new LogicalOperatorException(
-						"startTime:" + startTime + ",endTime:" + endTime + ", one of them is illegal");
+				throw new LogicalOperatorException("update time must be greater than 0.");
 			}
 			if (startTime == Long.MIN_VALUE) {
 				startTime = 1;
 			}
 
-			plan.addInterval(new Pair<Long, Long>(startTime, endTime));
+			if (endTime >= startTime)
+				plan.addInterval(new Pair<>(startTime, endTime));
 		}
 		if (plan.getIntervals().isEmpty()) {
 			throw new LogicalOperatorException("For update command, time filter is invalid");
