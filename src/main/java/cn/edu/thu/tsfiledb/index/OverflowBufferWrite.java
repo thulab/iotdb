@@ -1,9 +1,9 @@
 package cn.edu.thu.tsfiledb.index;
 
+import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.IntervalUtils;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.thu.tsfiledb.index.utils.IntervalUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +23,17 @@ public class OverflowBufferWrite {
         this.deleteUntil = deleteUntil;
         this.bufferWriteData = bufferWriteData;
 
-        List<Pair<Long, Long>> insertIntervals = new ArrayList<>(insert.timeLength);
-        for (int i = 0; i < insert.timeLength; i++) {
-            insertOrUpdateIntervals.add(new Pair<>(insert.getTime(i), insert.getTime(i)));
+        List<Pair<Long, Long>> insertIntervals = new ArrayList<>();
+        if (insert != null) {
+            for (int i = 0; i < insert.timeLength; i++) {
+                insertOrUpdateIntervals.add(new Pair<>(insert.getTime(i), insert.getTime(i)));
+            }
         }
-        List<Pair<Long, Long>> updateIntervals = new ArrayList<>(update.timeLength / 2);
-        for (int i = 0; i < update.timeLength; i += 2) {
-            insertOrUpdateIntervals.add(new Pair<>(update.getTime(i), update.getTime(i+1)));
+        List<Pair<Long, Long>> updateIntervals = new ArrayList<>();
+        if (update != null) {
+            for (int i = 0; i < update.timeLength; i += 2) {
+                insertOrUpdateIntervals.add(new Pair<>(update.getTime(i), update.getTime(i + 1)));
+            }
         }
         insertOrUpdateIntervals = IntervalUtils.union(insertIntervals, updateIntervals);
     }

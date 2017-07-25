@@ -5,6 +5,7 @@ import cn.edu.fudan.dsm.kvmatch.tsfiledb.KvMatchQueryExecutor;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.IndexConfig;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.QueryConfig;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.QueryResult;
+import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.IntervalUtils;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
@@ -76,7 +77,7 @@ public class KvMatchIndexManager implements IndexManager {
 
             OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
             List<Pair<Long, Long>> timeIntervals = new ArrayList<>();
-            timeIntervals.add(new Pair<>(1500885911634L, 1500885911634L + 512));
+            timeIntervals.add(new Pair<>(1500885911634L, 1500885911634L + 512 - 1));
             QueryDataSet queryDataSet = overflowQueryEngine.query(columnPath, timeIntervals);
             List<Pair<Long, Double>> querySeries = new ArrayList<>();
             while (queryDataSet.next()) {
@@ -264,6 +265,7 @@ public class KvMatchIndexManager implements IndexManager {
                     overallResult.addCandidateRanges(result.get().getCandidateRanges());
                 }
             }
+            overallResult.setCandidateRanges(IntervalUtils.sortAndMergePair(overallResult.getCandidateRanges()));
             logger.info("Candidates: {}", overallResult.getCandidateRanges());
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
@@ -287,14 +289,12 @@ public class KvMatchIndexManager implements IndexManager {
         }
     }
 
-
-
     private List<Double> amendSeries(List<Pair<Long, Double>> seriesKeyPoints) {
         List<Double> ret = new ArrayList<>();
         ret.add(seriesKeyPoints.get(0).right);
         for (int i = 1; i < seriesKeyPoints.size(); i++) {
             // amend points on the line
-            double k = (seriesKeyPoints.get(i).right - seriesKeyPoints.get(i - 1).right) / (seriesKeyPoints.get(i).left - seriesKeyPoints.get(i - 1).left);
+            double k = 1.0 * (seriesKeyPoints.get(i).right - seriesKeyPoints.get(i - 1).right) / (seriesKeyPoints.get(i).left - seriesKeyPoints.get(i - 1).left);
             for (long j = seriesKeyPoints.get(i - 1).left + 1; j < seriesKeyPoints.get(i).left; j++) {
                 ret.add(seriesKeyPoints.get(i - 1).right + (j - seriesKeyPoints.get(i - 1).left) * k);
             }
