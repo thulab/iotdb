@@ -305,7 +305,7 @@ public class OverflowQueryEngine {
 
             String deltaObject = path.getDeltaObjectToString();
             String measurement = path.getMeasurementToString();
-            String device_sensor = deltaObject + "." + measurement;
+            String aggKey = deltaObject + "." + measurement;
 
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObject, measurement, null, null, null);
 
@@ -329,7 +329,7 @@ public class OverflowQueryEngine {
 
             DynamicOneColumnData oneColDataList = recordReader.getValuesUseTimeValueWithOverflow(deltaObject, measurement,
                     timeRet, updateTrue, recordReader.insertAllData, deleteFilter);
-            ret.mapRet.put(device_sensor, oneColDataList);
+            ret.mapRet.put(aggKey, oneColDataList);
 
             // recordReader.closeFromFactory();
         }
