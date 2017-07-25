@@ -586,7 +586,7 @@ indexWithEqualExpression
 
 
 dropIndexStatement
-    : KW_DROP KW_INDEX KW_ON p=path
+    : KW_DROP KW_INDEX KW_ON p=timeseries
     -> ^(TOK_DROP ^(TOK_INDEX $p))
     ;
 

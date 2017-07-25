@@ -854,7 +854,7 @@ public class SQLParserTest {
     @Test
     public void dropIndex() throws ParseException, RecognitionException {
     	ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_DROP", "TOK_INDEX", 
-    			"TOK_PATH", "root", "a", "b", "c"));
+    			"TOK_ROOT", "a", "b", "c"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST("drop index on root.a.b.c");
         astTree = ParseUtils.findRootNonNullToken(astTree);

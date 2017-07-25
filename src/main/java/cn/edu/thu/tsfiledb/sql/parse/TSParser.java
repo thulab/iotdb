@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 TSParser.g 2017-07-24 21:18:45
+// $ANTLR 3.5.2 TSParser.g 2017-07-25 11:35:49
 
 package cn.edu.thu.tsfiledb.sql.parse;
 
@@ -6780,7 +6780,7 @@ public class TSParser extends Parser {
 
 
 	// $ANTLR start "dropIndexStatement"
-	// TSParser.g:588:1: dropIndexStatement : KW_DROP KW_INDEX KW_ON p= path -> ^( TOK_DROP ^( TOK_INDEX $p) ) ;
+	// TSParser.g:588:1: dropIndexStatement : KW_DROP KW_INDEX KW_ON p= timeseries -> ^( TOK_DROP ^( TOK_INDEX $p) ) ;
 	public final TSParser.dropIndexStatement_return dropIndexStatement() throws RecognitionException {
 		TSParser.dropIndexStatement_return retval = new TSParser.dropIndexStatement_return();
 		retval.start = input.LT(1);
@@ -6798,11 +6798,11 @@ public class TSParser extends Parser {
 		RewriteRuleTokenStream stream_KW_DROP=new RewriteRuleTokenStream(adaptor,"token KW_DROP");
 		RewriteRuleTokenStream stream_KW_INDEX=new RewriteRuleTokenStream(adaptor,"token KW_INDEX");
 		RewriteRuleTokenStream stream_KW_ON=new RewriteRuleTokenStream(adaptor,"token KW_ON");
-		RewriteRuleSubtreeStream stream_path=new RewriteRuleSubtreeStream(adaptor,"rule path");
+		RewriteRuleSubtreeStream stream_timeseries=new RewriteRuleSubtreeStream(adaptor,"rule timeseries");
 
 		try {
-			// TSParser.g:589:5: ( KW_DROP KW_INDEX KW_ON p= path -> ^( TOK_DROP ^( TOK_INDEX $p) ) )
-			// TSParser.g:589:7: KW_DROP KW_INDEX KW_ON p= path
+			// TSParser.g:589:5: ( KW_DROP KW_INDEX KW_ON p= timeseries -> ^( TOK_DROP ^( TOK_INDEX $p) ) )
+			// TSParser.g:589:7: KW_DROP KW_INDEX KW_ON p= timeseries
 			{
 			KW_DROP191=(Token)match(input,KW_DROP,FOLLOW_KW_DROP_in_dropIndexStatement2454); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_KW_DROP.add(KW_DROP191);
@@ -6813,11 +6813,11 @@ public class TSParser extends Parser {
 			KW_ON193=(Token)match(input,KW_ON,FOLLOW_KW_ON_in_dropIndexStatement2458); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_KW_ON.add(KW_ON193);
 
-			pushFollow(FOLLOW_path_in_dropIndexStatement2462);
-			p=path();
+			pushFollow(FOLLOW_timeseries_in_dropIndexStatement2462);
+			p=timeseries();
 			state._fsp--;
 			if (state.failed) return retval;
-			if ( state.backtracking==0 ) stream_path.add(p.getTree());
+			if ( state.backtracking==0 ) stream_timeseries.add(p.getTree());
 			// AST REWRITE
 			// elements: p
 			// token labels: 
@@ -8939,8 +8939,8 @@ public class TSParser extends Parser {
 	public static final BitSet FOLLOW_Integer_in_indexWithEqualExpression2415 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_KW_DROP_in_dropIndexStatement2454 = new BitSet(new long[]{0x0000000040000000L});
 	public static final BitSet FOLLOW_KW_INDEX_in_dropIndexStatement2456 = new BitSet(new long[]{0x0000010000000000L});
-	public static final BitSet FOLLOW_KW_ON_in_dropIndexStatement2458 = new BitSet(new long[]{0x0000000000030000L,0x0000000000000400L});
-	public static final BitSet FOLLOW_path_in_dropIndexStatement2462 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_KW_ON_in_dropIndexStatement2458 = new BitSet(new long[]{0x0000000000010000L});
+	public static final BitSet FOLLOW_timeseries_in_dropIndexStatement2462 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_KW_SELECT_in_selectClause2532 = new BitSet(new long[]{0x0000000040000000L});
 	public static final BitSet FOLLOW_KW_INDEX_in_selectClause2534 = new BitSet(new long[]{0x0000000000010000L});
 	public static final BitSet FOLLOW_Identifier_in_selectClause2538 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000004L});
