@@ -726,7 +726,7 @@ public class OverflowQueryEngine {
         SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) recordReader.overflowInfo.get(3);
         long maxDeleteTime = 0;
         if (deleteFilter != null) {
-            LongInterval interval = (LongInterval) FilterVerifier.get(deleteFilter).getInterval(deleteFilter);
+            LongInterval interval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(deleteFilter);
             if (interval.count > 0) {
                 if (interval.flag[0] && interval.v[0] > 0) {
                     maxDeleteTime = interval.v[0] - 1;
