@@ -776,9 +776,9 @@ public class LogicalGenerator {
 	private void analyzeIndexCreate(ASTNode astNode) throws LogicalOperatorException {
 		Path path = parseRootPath(astNode.getChild(0).getChild(0));
 		String indexName = astNode.getChild(0).getChild(1).getChild(0).getText();
-		if (!"kv-match".equals(indexName)) {
+		if (!"kv-match".equals(indexName.toLowerCase())) {
 			throw new LogicalOperatorException(
-					String.format("Not support the index %s, just support the kv-match index", indexName));
+					String.format("Not support the index %s, only support the KV-match index", indexName));
 		}
 		IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_CREATE_INDEX, IndexType.CREATE_INDEX);
 		initializedOperator = indexOperator;
@@ -824,7 +824,7 @@ public class LogicalGenerator {
 	private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
 		String indexQueryName = astNode.getChild(0).getText();
 		if (!"subsequence_matching".equals(indexQueryName)) {
-			throw new LogicalOperatorException(String.format("Not support the index query %s", indexQueryName));
+			throw new LogicalOperatorException(String.format("Not support the index query %s, only support the subsequence_matching() query", indexQueryName));
 		}
 		IndexQueryOperator indexQuery = (IndexQueryOperator) initializedOperator;
 		Path path = parseRootPath(astNode.getChild(1));

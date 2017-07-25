@@ -135,7 +135,7 @@ public class PhysicalGenerator {
 			return;
 		}
 		if (!filterOperator.isSingle() || !filterOperator.getSinglePath().equals(RESERVED_TIME)) {
-			throw new LogicalOperatorException("for Index query command, it has non-time condition in where clause");
+			throw new LogicalOperatorException("for index query command, it has non-time condition in where clause");
 		}
 		FilterExpression timeFilter;
 		try {
@@ -149,7 +149,7 @@ public class PhysicalGenerator {
 		long startTime=-1;
 		long endTime=-1;
 		if(longInterval.count!=2){
-			throw new LogicalOperatorException("for index query command, the time filter must be a interval");
+			throw new LogicalOperatorException("for index query command, the time filter must be an interval");
 		}
 		if (longInterval.flag[0]) {
 			startTime = longInterval.v[0];

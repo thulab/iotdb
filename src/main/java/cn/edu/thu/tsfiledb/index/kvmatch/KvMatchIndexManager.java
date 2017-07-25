@@ -83,8 +83,6 @@ public class KvMatchIndexManager implements IndexManager {
             indexManager.delete(columnPath);
         } catch (IndexManagerException | FileNodeManagerException | ProcessorException | PathErrorException | IOException e) {
             logger.error(e.getMessage(), e.getCause());
-        } finally {
-            indexManager.executor.shutdown();
         }
     }
 
