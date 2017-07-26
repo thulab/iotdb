@@ -271,7 +271,7 @@ public class KvMatchIndexManager implements IndexManager {
             // 7. scan the data in candidate ranges and find out actual answers
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
             QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals);
-            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, overflowBufferWrite.getBufferWriteData(), querySeries, request);
+            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, querySeries, request);
             answers.sort(Comparator.comparingDouble(o -> o.right));
             logger.info("Answers: {}", answers);
             return constructQueryDataSet(answers);
@@ -328,7 +328,7 @@ public class KvMatchIndexManager implements IndexManager {
         return amendSeries(keyPoints);
     }
 
-    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, QueryDataSet bufferDataSet, List<Double> querySeries, KvMatchQueryRequest request) {
+    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, List<Double> querySeries, KvMatchQueryRequest request) {
         List<Pair<Pair<Long, Long>, Double>> result = new ArrayList<>();
 
         // do z-normalization on query data
@@ -404,53 +404,6 @@ public class KvMatchIndexManager implements IndexManager {
                     ex -= T[j];
                     ex2 -= T[j] * T[j];
                 }
-            }
-        }
-
-        // find answers in buffer-write range
-        long lastTime = 0;
-        double lastValue = 0;
-        ex = 0;  ex2 = 0;
-        int i = 0;
-        double[] T = new double[2 * lenQ];
-        while (bufferDataSet.next()) {
-            RowRecord row = bufferDataSet.getCurrentRecord();
-
-            long curTime = row.getTime();
-            double curValue = Double.parseDouble(row.getFields().get(0).getStringValue());  // TODO: improve for performance
-            if (lastTime == 0) {  // TODO: the first window is not right
-                lastTime = curTime - 1;
-                lastValue = curValue;
-            }
-            double deltaValue = (curValue - lastValue) / (curTime - lastTime);
-            for (long time = lastTime + 1; time <= curTime; time++) {
-                double value = lastValue + deltaValue * (time - lastTime);
-                ex += value;
-                ex2 += value * value;
-                T[i % lenQ] = value;
-                T[(i % lenQ) + lenQ] = value;
-
-                if (i >= lenQ - 1) {
-                    int j = (i + 1) % lenQ;  // the current starting location of T
-                    double mean = ex / lenQ;  // z
-                    double std = Math.sqrt(ex2 / lenQ - mean * mean);
-
-                    if ((request.getAlpha() == 1.0 && request.getBeta() == 0) ||
-                            (Math.abs(mean - meanQ) <= request.getBeta() && std / stdQ <= request.getBeta() && std/stdQ >= 1.0/request.getAlpha())) {
-                        double dist = 0;
-                        for (int k = 0; k < lenQ && dist <= request.getEpsilon() * request.getEpsilon(); k++) {
-                            double x = (T[(order.get(k) + j)] - mean) / std;
-                            dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
-                        }
-                        if (dist <= request.getEpsilon() * request.getEpsilon()) {
-                            result.add(new Pair<>(new Pair<>(time - lenQ + 1, time), Math.sqrt(dist)));
-                        }
-                    }
-
-                    ex -= T[j];
-                    ex2 -= T[j] * T[j];
-                }
-                i++;
             }
         }
 

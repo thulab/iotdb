@@ -17,22 +17,21 @@ public class OverflowBufferWrite {
 
     private long deleteUntil;
 
-    private long bufferWriteBeginTime;
-
     public OverflowBufferWrite(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, long bufferWriteBeginTime) {
         this.deleteUntil = deleteUntil;
-        this.bufferWriteBeginTime = bufferWriteBeginTime;
 
         List<Pair<Long, Long>> insertIntervals = new ArrayList<>();
         if (insert != null) {
             for (int i = 0; i < insert.timeLength; i++) {
-                insertOrUpdateIntervals.add(new Pair<>(insert.getTime(i), insert.getTime(i)));
+                insertIntervals.add(new Pair<>(insert.getTime(i), insert.getTime(i)));
             }
         }
+        insertIntervals.add(new Pair<>(bufferWriteBeginTime, Long.MAX_VALUE));
+        insertIntervals = IntervalUtils.sortAndMergePair(insertIntervals);
         List<Pair<Long, Long>> updateIntervals = new ArrayList<>();
         if (update != null) {
             for (int i = 0; i < update.timeLength; i += 2) {
-                insertOrUpdateIntervals.add(new Pair<>(update.getTime(i), update.getTime(i + 1)));
+                updateIntervals.add(new Pair<>(update.getTime(i), update.getTime(i + 1)));
             }
         }
         insertOrUpdateIntervals = IntervalUtils.union(insertIntervals, updateIntervals);
@@ -44,9 +43,5 @@ public class OverflowBufferWrite {
 
     public long getDeleteUntil() {
         return deleteUntil;
-    }
-
-    public long getBufferWriteBeginTime() {
-        return bufferWriteBeginTime;
     }
 }
