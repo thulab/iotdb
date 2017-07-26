@@ -347,9 +347,11 @@ public class OverflowQueryEngine {
         String deltaObjectUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getDeltaObjectUID();
         String measurementUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getMeasurementUID();
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, freqFilter, valueFilter);
+        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                null, freqFilter, valueFilter);
         // Get 4 params
-        List<Object> params = getOverflowInfoAndFilterDataInMem( null, freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+        List<Object> params = getOverflowInfoAndFilterDataInMem( null, freqFilter, valueFilter,
+                res, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -376,7 +378,7 @@ public class OverflowQueryEngine {
 
     private static List<Object> getOverflowInfoAndFilterDataInMem(SingleSeriesFilterExpression timeFilter,
                                                                   SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
-            , DynamicOneColumnData res, DynamicOneColumnData insertDataInMemory, List<Object> overflowParams) throws ProcessorException {
+            , DynamicOneColumnData res, DynamicOneColumnData insertDataInBufferWrite, List<Object> overflowParams) throws ProcessorException {
 
         List<Object> paramList = new ArrayList<>();
 
@@ -385,15 +387,15 @@ public class OverflowQueryEngine {
             timeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
 
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) overflowParams.get(1);
-            insertDataInMemory = getSatisfiedData(updateTrue, timeFilter, freqFilter, valueFilter, insertDataInMemory);
+            insertDataInBufferWrite = getSatisfiedData(updateTrue, timeFilter, freqFilter, valueFilter, insertDataInBufferWrite);
 
             DynamicOneColumnData overflowInsertTrue = (DynamicOneColumnData) overflowParams.get(0);
             // add insert records from memory in BufferWriter stage
             //TODO need try only has bufferwrite data? if not new a DynamicOneColumnData.
             if (overflowInsertTrue == null) {
-                overflowInsertTrue = insertDataInMemory;
+                overflowInsertTrue = insertDataInBufferWrite;
             } else {
-                overflowInsertTrue = mergeOverflowAndMemory(overflowInsertTrue, insertDataInMemory);
+                overflowInsertTrue = mergeOverflowAndMemory(overflowInsertTrue, insertDataInBufferWrite);
             }
             paramList.add(overflowInsertTrue);
             paramList.add(overflowParams.get(1));
