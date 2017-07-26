@@ -367,6 +367,7 @@ public class OverflowQueryEngine {
         res = recordReader.getValueWithFilterAndOverflow(deltaObjectUID, measurementUID, updateTrue, updateFalse, recordReader.insertAllData,
                 deleteFilter, freqFilter, valueFilter, res, fetchSize);
         // reset the insertTrue
+        // TODO what's the meaning of below?
         res.putOverflowInfo(insertTrue, updateTrue, updateFalse, deleteFilter);
 
         recordReader.closeFromFactory();
