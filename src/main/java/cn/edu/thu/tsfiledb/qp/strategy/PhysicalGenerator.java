@@ -109,9 +109,8 @@ public class PhysicalGenerator {
 			return transformQuery(query);
 		case INDEX:
 			IndexOperator indexOperator = (IndexOperator) operator;
-			IndexPlan indexPlan = new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
+			return new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
 					indexOperator.getStartTime(), indexOperator.getIndexType());
-			return indexPlan;
 		case INDEXQUERY:
 			IndexQueryOperator indexQueryOperator = (IndexQueryOperator) operator;
 			IndexQueryPlan indexQueryPlan = new IndexQueryPlan(indexQueryOperator.getPath(),

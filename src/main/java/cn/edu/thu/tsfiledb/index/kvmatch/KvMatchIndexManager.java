@@ -8,7 +8,9 @@ import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.QueryResult;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.IntervalUtils;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
+import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
@@ -270,9 +272,14 @@ public class KvMatchIndexManager implements IndexManager {
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
             QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals);
             List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, overflowBufferWrite.getBufferWriteData(), querySeries, request);
+            answers.sort(Comparator.comparingDouble(o -> o.right));
             logger.info("Answers: {}", answers);
             return constructQueryDataSet(answers);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
+            logger.error(e.getMessage(), e.getCause());
+            throw new IndexManagerException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } finally {
@@ -286,10 +293,27 @@ public class KvMatchIndexManager implements IndexManager {
         }
     }
 
-    private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers) {
-        return null;
-//        QueryDataSet dataSet = new QueryDataSet();
-//        dataSet.putRecordFromBatchReadRetGenerator();
+    private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers) throws IOException, ProcessorException {
+        QueryDataSet dataSet = new QueryDataSet();
+        DynamicOneColumnData startTime = new DynamicOneColumnData(TSDataType.INT64, true);
+        startTime.setDeltaObjectType("Start Time");
+        DynamicOneColumnData endTime = new DynamicOneColumnData(TSDataType.INT64, true);
+        endTime.setDeltaObjectType("End Time");
+        DynamicOneColumnData distance = new DynamicOneColumnData(TSDataType.DOUBLE, true);
+        distance.setDeltaObjectType("Distance");
+        for (int i = 0; i < answers.size(); i++) {
+            Pair<Pair<Long, Long>, Double> answer = answers.get(i);
+            startTime.putTime(i);
+            startTime.putLong(answer.left.left);
+            endTime.putTime(i);
+            endTime.putLong(answer.left.right);
+            distance.putTime(i);
+            distance.putDouble(answer.right);
+        }
+        dataSet.mapRet.put("Start.Time", startTime);
+        dataSet.mapRet.put("End.Time", endTime);
+        dataSet.mapRet.put("Distance.", distance);
+        return dataSet;
     }
 
     private List<Double> getQuerySeries(KvMatchQueryRequest request) throws ProcessorException, PathErrorException, IOException {
