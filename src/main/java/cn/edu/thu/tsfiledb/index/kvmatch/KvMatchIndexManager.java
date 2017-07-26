@@ -64,8 +64,8 @@ public class KvMatchIndexManager implements IndexManager {
             indexManager.build(columnPath);
 
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, 0);
-            indexManager.rebuild(columnPath, fileInfoList);
-            indexManager.switchIndexes(columnPath, fileInfoList);
+            indexManager.rebuild(new ArrayList<>(Collections.singletonList(columnPath)), fileInfoList);
+            indexManager.switchIndexes(new ArrayList<>(Collections.singletonList(columnPath)), fileInfoList);
 
             long startTime = 1500885911634L, endTime = startTime + 512;
             KvMatchQueryRequest queryRequest = KvMatchQueryRequest.builder(columnPath, columnPath, startTime, endTime, 1.0).alpha(1.0).beta(0.0).build();
@@ -165,19 +165,21 @@ public class KvMatchIndexManager implements IndexManager {
     @Override
     public boolean rebuild(List<Path> columnPaths, List<DataFileInfo> modifiedFileList) throws IndexManagerException {
         try {
-            // 1. build index for every data file.
-            List<Future<Boolean>> results = new ArrayList<>(modifiedFileList.size());
-            for (DataFileInfo fileInfo : modifiedFileList) {
-                QueryDataSet dataSet = overflowQueryEngine.query(columnPath, fileInfo.getTimeInterval());
-                Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(new IndexConfig(), columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()) + ".new"));
-                results.add(result);
-            }
-
-            // 2. collect building results.
             boolean overallResult = true;
-            for (Future<Boolean> result : results) {
-                if (!result.get()) {
-                    overallResult = false;
+            for (Path columnPath : columnPaths) {
+                // 1. build index for every data file.
+                List<Future<Boolean>> results = new ArrayList<>(modifiedFileList.size());
+                for (DataFileInfo fileInfo : modifiedFileList) {
+                    QueryDataSet dataSet = overflowQueryEngine.query(columnPath, fileInfo.getTimeInterval());
+                    Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(new IndexConfig(), columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()) + ".new"));
+                    results.add(result);
+                }
+
+                // 2. collect building results.
+                for (Future<Boolean> result : results) {
+                    if (!result.get()) {
+                        overallResult = false;
+                    }
                 }
             }
             return overallResult;
@@ -190,25 +192,27 @@ public class KvMatchIndexManager implements IndexManager {
     @Override
     public boolean switchIndexes(List<Path> columnPaths, List<DataFileInfo> newFileList) throws IndexManagerException {
         if (newFileList.isEmpty()) return true;  // no data file, no index file
-        // rename the new index files to regular names
-        Set<String> newIndexFilePathPrefixes = new HashSet<>(newFileList.size());
-        for (DataFileInfo newFile : newFileList) {
-            newIndexFilePathPrefixes.add(IndexFileUtils.getIndexFilePathPrefix(newFile.getFilePath()));
-            String filename = IndexFileUtils.getIndexFilePath(columnPath, newFile.getFilePath());
-            File indexFile = new File(filename + ".new");
-            if (!indexFile.renameTo(new File(filename))) {
-                logger.error("Can not rename new index file '{}'", filename);
-                return false;
+        for (Path columnPath : columnPaths) {
+            // rename the new index files to regular names
+            Set<String> newIndexFilePathPrefixes = new HashSet<>(newFileList.size());
+            for (DataFileInfo newFile : newFileList) {
+                newIndexFilePathPrefixes.add(IndexFileUtils.getIndexFilePathPrefix(newFile.getFilePath()));
+                String filename = IndexFileUtils.getIndexFilePath(columnPath, newFile.getFilePath());
+                File indexFile = new File(filename + ".new");
+                if (!indexFile.renameTo(new File(filename))) {
+                    logger.error("Can not rename new index file '{}'", filename);
+                    return false;
+                }
             }
-        }
-        // get all exist index files, and delete files not in new file list
-        File indexFileDir = new File(IndexFileUtils.getIndexFilePathPrefix(newFileList.get(0).getFilePath())).getParentFile();
-        File[] indexFiles = indexFileDir.listFiles();
-        if (indexFiles != null) {
-            for (File file : indexFiles) {
-                if (!newIndexFilePathPrefixes.contains(IndexFileUtils.getIndexFilePathPrefix(file))) {
-                    if (!file.delete()) {
-                        logger.warn("Can not delete obsolete index file '{}'", file);
+            // get all exist index files, and delete files not in new file list
+            File indexFileDir = new File(IndexFileUtils.getIndexFilePathPrefix(newFileList.get(0).getFilePath())).getParentFile();
+            File[] indexFiles = indexFileDir.listFiles();
+            if (indexFiles != null) {
+                for (File file : indexFiles) {
+                    if (!newIndexFilePathPrefixes.contains(IndexFileUtils.getIndexFilePathPrefix(file))) {
+                        if (!file.delete()) {
+                            logger.warn("Can not delete obsolete index file '{}'", file);
+                        }
                     }
                 }
             }
