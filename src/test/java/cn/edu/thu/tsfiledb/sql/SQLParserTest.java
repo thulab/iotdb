@@ -856,6 +856,27 @@ public class SQLParserTest {
             i++;
         }
     }    
+
+    @Test
+    public void selectIndex3() throws ParseException, RecognitionException {
+    	ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_QUERY", 
+    			"TOK_SELECT_INDEX", "subsequence_matching", 
+    			"TOK_ROOT", "a", "b", "c", 
+    			"TOK_ROOT", "a", "b", "c", 
+    			"TOK_DATETIME", "2016-11-16T16:22:33+08:00",
+    			"TOK_DATETIME", "now",
+    			"123.1", "0.123", "0.5"));
+        ArrayList<String> rec = new ArrayList<>();
+        ASTNode astTree = ParseGenerator.generateAST("select index subsequence_matching(root.a.b.c, root.a.b.c, 2016-11-16T16:22:33+08:00, now() , 123.1, 0.123, 0.5)");
+        astTree = ParseUtils.findRootNonNullToken(astTree);
+        recursivePrintSon(astTree, rec);
+
+        int i = 0;
+        while (i <= rec.size() - 1) {
+            assertEquals(rec.get(i), ans.get(i));
+            i++;
+        }
+    }  
     
     @Test
     public void dropIndex() throws ParseException, RecognitionException {
