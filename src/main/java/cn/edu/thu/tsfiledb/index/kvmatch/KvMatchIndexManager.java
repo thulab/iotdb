@@ -163,7 +163,7 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     @Override
-    public boolean rebuild(Path columnPath, List<DataFileInfo> modifiedFileList) throws IndexManagerException {
+    public boolean rebuild(List<Path> columnPaths, List<DataFileInfo> modifiedFileList) throws IndexManagerException {
         try {
             // 1. build index for every data file.
             List<Future<Boolean>> results = new ArrayList<>(modifiedFileList.size());
@@ -188,7 +188,7 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     @Override
-    public boolean switchIndexes(Path columnPath, List<DataFileInfo> newFileList) throws IndexManagerException {
+    public boolean switchIndexes(List<Path> columnPaths, List<DataFileInfo> newFileList) throws IndexManagerException {
         if (newFileList.isEmpty()) return true;  // no data file, no index file
         // rename the new index files to regular names
         Set<String> newIndexFilePathPrefixes = new HashSet<>(newFileList.size());
@@ -238,10 +238,15 @@ public class KvMatchIndexManager implements IndexManager {
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
                 if (fileInfo.getEndTime() <= overflowBufferWrite.getDeleteUntil()) continue;  // deleted
-                logger.info("Querying index for '{}': [{}, {}] ({})", columnPath, fileInfo.getStartTime(), fileInfo.getEndTime(), fileInfo.getFilePath());
-                KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
-                Future<QueryResult> result = executor.submit(queryExecutor);
-                futureResults.add(result);
+                if (fileInfo.getStartTime() > queryRequest.getEndTime() || fileInfo.getEndTime() < queryRequest.getStartTime()) continue;  // not in query range
+                File indexFile = new File(IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
+                if (indexFile.exists()) {
+                    KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, indexFile.getAbsolutePath());
+                    Future<QueryResult> result = executor.submit(queryExecutor);
+                    futureResults.add(result);
+                } else {  // the file has not built index
+                    overflowBufferWrite.getInsertOrUpdateIntervals().add(fileInfo.getTimeInterval().get(0));
+                }
             }
 
             // 5. collect query results

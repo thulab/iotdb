@@ -825,9 +825,9 @@ public class LogicalGenerator {
 
 	private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
 		String indexQueryName = astNode.getChild(0).getText();
-		if (!"subsequence_matching".equals(indexQueryName)) {
+		if (!"subsequence_matching".equals(indexQueryName.toLowerCase()) && !"subm".equals(indexQueryName.toLowerCase())) {
 			throw new LogicalOperatorException(String.format(
-					"Not support the index query %s, only support the subsequence_matching() query", indexQueryName));
+					"Not support the index query %s, only support the subsequence_matching(subm) query", indexQueryName));
 		}
 		IndexQueryOperator indexQuery = (IndexQueryOperator) initializedOperator;
 		Path path = parseRootPath(astNode.getChild(1));
