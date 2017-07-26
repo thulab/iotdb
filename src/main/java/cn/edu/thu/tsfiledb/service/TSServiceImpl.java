@@ -358,9 +358,9 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			}
 			if (aggregateFuncName != null) {
 				if(aggregateFuncName.equals(SQLConstant.INDEX_QUERY)){
-					columns.add("            Start Time");
-					columns.add("              End Time");
-					columns.add("              Distance");
+					columns.add("             Start Time");
+					columns.add("               End Time");
+					columns.add("               Distance");
 				} else{
 					columns.add(aggregateFuncName + "(" + paths.get(0).getFullPath() + ")");
 				}		

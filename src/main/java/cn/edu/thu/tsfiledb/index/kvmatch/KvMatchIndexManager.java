@@ -250,8 +250,9 @@ public class KvMatchIndexManager implements IndexManager {
                     KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, indexFile.getAbsolutePath());
                     Future<QueryResult> result = executor.submit(queryExecutor);
                     futureResults.add(result);
-                } else {  // the file has not built index
+                } else {  // the index of this file has not been built, this will not happen in normal circumstance
                     overflowBufferWrite.getInsertOrUpdateIntervals().add(fileInfo.getTimeInterval().get(0));
+                    overflowBufferWrite.setInsertOrUpdateIntervals(IntervalUtils.sortAndMergePair(overflowBufferWrite.getInsertOrUpdateIntervals()));
                 }
             }
 
@@ -359,6 +360,7 @@ public class KvMatchIndexManager implements IndexManager {
         Pair<Long, Double> lastKeyPoint = null;
         for (Pair<Long, Long> scanInterval : scanIntervals) {
             List<Pair<Long, Double>> keyPoints = new ArrayList<>();
+            if (!dataSet.hasNextRecord()) break;
             while (dataSet.next()) {
                 RowRecord row = dataSet.getCurrentRecord();
                 double value = Double.parseDouble(row.getFields().get(0).getStringValue());

@@ -702,8 +702,6 @@ public class OverflowQueryEngine {
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
 
-        List<Path> paths = new ArrayList<>();
-        paths.add(path);
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
 
         long bufferWriteBeginTime = Long.MAX_VALUE;
