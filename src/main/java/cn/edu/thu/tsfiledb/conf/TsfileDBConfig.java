@@ -124,5 +124,6 @@ public class TsfileDBConfig {
 		metadataDir = dataDir + metadataDir;
 		derbyHome = dataDir + derbyHome;
 		walFolder = dataDir + walFolder;
+		indexFileDir = dataDir + indexFileDir;
 	}
 }

@@ -318,10 +318,9 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     private List<Double> getQuerySeries(KvMatchQueryRequest request) throws ProcessorException, PathErrorException, IOException {
-        List<Pair<Long, Long>> timeInterval = new ArrayList<>();
-        timeInterval.add(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime()));
-        List<Pair<Long, Double>> keyPoints = new ArrayList<>();
+        List<Pair<Long, Long>> timeInterval = new ArrayList<>(Collections.singleton(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime())));
         QueryDataSet dataSet = overflowQueryEngine.query(request.getQueryPath(), timeInterval);
+        List<Pair<Long, Double>> keyPoints = new ArrayList<>();
         while (dataSet.next()) {
             RowRecord row = dataSet.getCurrentRecord();
             keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
