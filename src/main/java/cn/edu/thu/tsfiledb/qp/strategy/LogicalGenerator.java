@@ -243,10 +243,13 @@ public class LogicalGenerator {
 	}
 
 	private void analyzeMetadataDelete(ASTNode astNode) {
-		Path series = parseRootPath(astNode.getChild(0).getChild(0));
+		List<Path> deletePaths = new ArrayList<>();
+		for(int i = 0; i < astNode.getChild(0).getChildCount(); i++){
+			deletePaths.add(parsePath(astNode.getChild(0).getChild(i)));
+		}
 		MetadataOperator metadataOperator = new MetadataOperator(SQLConstant.TOK_METADATA_DELETE,
 				NamespaceType.DELETE_PATH);
-		metadataOperator.setPath(series);
+		metadataOperator.setDeletePathList(deletePaths);
 		initializedOperator = metadataOperator;
 	}
 
@@ -363,15 +366,17 @@ public class LogicalGenerator {
 			throw new LogicalOperatorException(
 					"For delete command, where clause must be like : time < XXX or time <= XXX");
 		}
-
 		if (filterOperator.getTokenIntType() != LESSTHAN && filterOperator.getTokenIntType() != LESSTHANOREQUALTO) {
 			throw new LogicalOperatorException(
 					"For delete command, time filter must be less than or less than or equal to");
 		}
 		long time = Long.valueOf(((BasicFunctionOperator) filterOperator).getValue());
-
-		if (time < 0) {
-			throw new LogicalOperatorException("delete Time:" + time + ", time must >= 0");
+		if (filterOperator.getTokenIntType() == LESSTHAN) {
+			time = time - 1;
+		}
+		// time must greater than 0 now
+		if (time <= 0) {
+			throw new LogicalOperatorException("delete Time:" + time + ", time must > 0");
 		}
 		return time;
 	}
@@ -823,24 +828,39 @@ public class LogicalGenerator {
 
 	private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
 		String indexQueryName = astNode.getChild(0).getText();
-		if (!"subsequence_matching".equals(indexQueryName)) {
-			throw new LogicalOperatorException(String.format("Not support the index query %s, only support the subsequence_matching() query", indexQueryName));
+		if (!"subsequence_matching".equals(indexQueryName.toLowerCase()) && !"subm".equals(indexQueryName.toLowerCase())) {
+			throw new LogicalOperatorException(String.format(
+					"Not support the index query %s, only support the subsequence_matching(subm) query", indexQueryName));
 		}
 		IndexQueryOperator indexQuery = (IndexQueryOperator) initializedOperator;
 		Path path = parseRootPath(astNode.getChild(1));
 		indexQuery.setPath(path);
-		String patternPath = astNode.getChild(2).getText();
-		if ((patternPath.startsWith("'") && patternPath.endsWith("'"))
-				|| (patternPath.startsWith("\"") && patternPath.endsWith("\""))) {
-			patternPath = patternPath.substring(1, patternPath.length() - 1);
+		path = parseRootPath(astNode.getChild(2));
+		indexQuery.setPatternPath(path);
+		long startTime = 0;
+		long endTime = 0;
+		if(astNode.getChild(3).getType()==TSParser.TOK_DATETIME){
+			startTime = Long.valueOf(parseTokenTime(astNode.getChild(3)));
+		}else{
+			startTime = Long.valueOf(astNode.getChild(3).getText());
 		}
-
-		indexQuery.setCsvPath(patternPath);
-		double epsilon = Float.valueOf(astNode.getChild(3).getText());
+		if(astNode.getChild(4).getType()==TSParser.TOK_DATETIME){
+			endTime = Long.valueOf(parseTokenTime(astNode.getChild(4)));
+		}else{
+			endTime = Long.valueOf(astNode.getChild(4).getText());
+		}
+		
+		if (startTime > endTime || startTime <= 0) {
+			throw new LogicalOperatorException(
+					String.format("The startTime %s and endTime %s are error in index pattern ", startTime, endTime));
+		}
+		indexQuery.setStartTime(startTime);
+		indexQuery.setEndTime(endTime);
+		double epsilon = Float.valueOf(astNode.getChild(5).getText());
 		indexQuery.setEpsilon(epsilon);
-		if (astNode.getChildCount() > 4) {
-			double alpha = Float.valueOf(astNode.getChild(4).getText());
-			double beta = Float.valueOf(astNode.getChild(5).getText());
+		if (astNode.getChildCount() > 6) {
+			double alpha = Float.valueOf(astNode.getChild(6).getText());
+			double beta = Float.valueOf(astNode.getChild(7).getText());
 			indexQuery.setHasParameter(true);
 			indexQuery.setAlpha(alpha);
 			indexQuery.setBeta(beta);

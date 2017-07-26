@@ -70,7 +70,7 @@ public class PhysicalGenerator {
 		case METADATA:
 			MetadataOperator metadata = (MetadataOperator) operator;
 			return new MetadataPlan(metadata.getNamespaceType(), metadata.getPath(), metadata.getDataType(),
-					metadata.getEncoding(), metadata.getEncodingArgs());
+					metadata.getEncoding(), metadata.getEncodingArgs(), metadata.getDeletePathList());
 		case PROPERTY:
 			PropertyOperator property = (PropertyOperator) operator;
 			return new PropertyPlan(property.getPropertyType(), property.getPropertyPath(), property.getMetadataPath());
@@ -109,27 +109,29 @@ public class PhysicalGenerator {
 			return transformQuery(query);
 		case INDEX:
 			IndexOperator indexOperator = (IndexOperator) operator;
-			IndexPlan indexPlan = new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
+			return new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
 					indexOperator.getStartTime(), indexOperator.getIndexType());
-			return indexPlan;
 		case INDEXQUERY:
 			IndexQueryOperator indexQueryOperator = (IndexQueryOperator) operator;
 			IndexQueryPlan indexQueryPlan = new IndexQueryPlan(indexQueryOperator.getPath(),
-					indexQueryOperator.getCsvPath(), indexQueryOperator.getEpsilon());
-			if(indexQueryOperator.isHasParameter()){
+					indexQueryOperator.getPatternPath(), indexQueryOperator.getEpsilon(),
+					indexQueryOperator.getStartTime(), indexQueryOperator.getEndTime());
+			if (indexQueryOperator.isHasParameter()) {
+				indexQueryPlan.setHasParameter(true);
 				indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
 				indexQueryPlan.setBeta(indexQueryOperator.getBeta());
 			}
-			parseIndexTimeFilter(indexQueryOperator,indexQueryPlan);
+			parseIndexTimeFilter(indexQueryOperator, indexQueryPlan);
 			return indexQueryPlan;
 		default:
 			throw new LogicalOperatorException("not supported operator type: " + operator.getType());
 		}
 	}
-	
-	private void parseIndexTimeFilter(IndexQueryOperator indexQueryOperator,IndexQueryPlan indexQueryPlan) throws LogicalOperatorException{
+
+	private void parseIndexTimeFilter(IndexQueryOperator indexQueryOperator, IndexQueryPlan indexQueryPlan)
+			throws LogicalOperatorException {
 		FilterOperator filterOperator = indexQueryOperator.getFilterOperator();
-		if(filterOperator==null){
+		if (filterOperator == null) {
 			indexQueryPlan.setStartTime(0);
 			indexQueryPlan.setEndTime(Long.MAX_VALUE);
 			return;
@@ -146,9 +148,9 @@ public class PhysicalGenerator {
 		}
 		LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
 		LongInterval longInterval = filterVerifier.getInterval((SingleSeriesFilterExpression) timeFilter);
-		long startTime=-1;
-		long endTime=-1;
-		if(longInterval.count!=2){
+		long startTime = -1;
+		long endTime = -1;
+		if (longInterval.count != 2) {
 			throw new LogicalOperatorException("for index query command, the time filter must be an interval");
 		}
 		if (longInterval.flag[0]) {
@@ -167,10 +169,10 @@ public class PhysicalGenerator {
 		if (startTime == Long.MIN_VALUE) {
 			startTime = 0;
 		}
-		if (endTime >= startTime){
+		if (endTime >= startTime) {
 			indexQueryPlan.setStartTime(startTime);
 			indexQueryPlan.setEndTime(endTime);
-		}else{
+		} else {
 			throw new LogicalOperatorException("for index query command, the start time greater than end time");
 		}
 	}
