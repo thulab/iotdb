@@ -109,7 +109,7 @@ public class RecordReader {
                 res = rowGroupReader.getValueReaders().get(sensorId)
                         .getValuesWithOverFlow(updateTrue, updateFalse, insertMemoryData, timeFilter, null, null, res, fetchSize);
                 res.setDeltaObjectType(rowGroupReader.getDeltaObjectType());
-                if (res.length >= fetchSize) {
+                if (res.valueLength >= fetchSize) {
                     res.hasReadAll = false;
                     return res;
                 }
@@ -152,7 +152,7 @@ public class RecordReader {
                         .getValuesWithOverFlow(updateTrue, updateFalse, insertMemoryData, timeFilter, freqFilter, valueFilter, res,
                                 fetchSize);
                 res.setDeltaObjectType(rowGroupReader.getDeltaObjectType());
-                if (res.length >= fetchSize) {
+                if (res.valueLength >= fetchSize) {
                     res.hasReadAll = false;
                     return res;
                 }
@@ -237,17 +237,19 @@ public class RecordReader {
             // no need to consider update data, because insertMemoryData has dealed with update data.
             if (oldResIdx < oldRes.timeLength && timestamps[i] == oldRes.getTime(oldResIdx)) {
                 if (insertMemoryData != null && insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= timestamps[i]) {
-                    res.putTime(insertMemoryData.getCurrentMinTime());
-                    putValueUseDataType(res, insertMemoryData);
-                    if (insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= timestamps[i]) {
+                    if (insertMemoryData.getCurrentMinTime() == timestamps[i]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        putValueUseDataType(res, insertMemoryData);
+                        insertMemoryData.removeCurrentValue();
                         oldResIdx++;
+                        continue;
+                    } else {
+                        insertMemoryData.removeCurrentValue();
                     }
-                    insertMemoryData.removeCurrentValue();
-                } else {
-                    oldResIdx++;
-                    res.putTime(timestamps[i]);
-                    res.putAValueFromDynamicOneColumnData(oldRes, oldResIdx);
                 }
+                res.putTime(timestamps[i]);
+                res.putAValueFromDynamicOneColumnData(oldRes, oldResIdx);
+                oldResIdx++;
             }
 
             // deal with insert data
@@ -301,8 +303,8 @@ public class RecordReader {
             timeVisitor = new SingleValueVisitor(timeFilter);
         }
         long maxTime;
-        if (res.length > 0) {
-            maxTime = res.getTime(res.length - 1);
+        if (res.valueLength > 0) {
+            maxTime = res.getTime(res.valueLength - 1);
         } else {
             maxTime = -1;
         }
@@ -315,7 +317,7 @@ public class RecordReader {
                 insertMemoryData.removeCurrentValue();
             }
             // when the length reach to fetchSize, stop put values and return false
-            if (res.length >= fetchSize) {
+            if (res.valueLength >= fetchSize) {
                 return false;
             }
         }

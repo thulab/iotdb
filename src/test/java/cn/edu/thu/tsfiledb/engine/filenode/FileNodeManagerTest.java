@@ -28,6 +28,8 @@ import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.lru.MetadataManagerHelper;
 import cn.edu.thu.tsfiledb.engine.overflow.io.EngineTestHelper;
+import cn.edu.thu.tsfiledb.exception.MetadataArgsErrorException;
+import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.sys.writelog.WriteLogManager;
 
@@ -45,8 +47,9 @@ public class FileNodeManagerTest {
 	private String deltaObjectId = "root.vehicle.d0";
 	private String deltaObjectId2 = "root.vehicle.d1";
 	private String measurementId = "s0";
+	private String measurementId6 = "s6";
 	private TSDataType dataType = TSDataType.INT32;
-	
+
 	private String FileNodeDir;
 	private String BufferWriteDir;
 	private String overflowDataDir;
@@ -61,7 +64,7 @@ public class FileNodeManagerTest {
 		FileNodeDir = tsdbconfig.fileNodeDir;
 		BufferWriteDir = tsdbconfig.bufferWriteDir;
 		overflowDataDir = tsdbconfig.overflowDataDir;
-		
+
 		tsdbconfig.fileNodeDir = "filenode" + File.separatorChar;
 		tsdbconfig.bufferWriteDir = "bufferwrite";
 		tsdbconfig.overflowDataDir = "overflow";
@@ -91,16 +94,94 @@ public class FileNodeManagerTest {
 		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
 		EngineTestHelper.delete(tsdbconfig.walFolder);
 		EngineTestHelper.delete(tsdbconfig.metadataDir);
-		
+
 		tsdbconfig.fileNodeDir = FileNodeDir;
 		tsdbconfig.overflowDataDir = overflowDataDir;
 		tsdbconfig.bufferWriteDir = BufferWriteDir;
-		
+
 		tsconfig.groupSizeInByte = rowGroupSize;
 		tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
+	}
+
+	@Test
+	public void testBufferwriteAndAddMetadata() {
+		createBufferwriteInMemory(new Pair<Long, Long>(1000L, 1001L), measurementId);
+		fManager = FileNodeManager.getInstance();
+
+		// add metadata
+		MManager mManager = MManager.getInstance();
+		assertEquals(false, mManager.pathExist(deltaObjectId + "." + measurementId6));
+		try {
+			mManager.addPathToMTree(deltaObjectId + "." + measurementId6, "INT32", "RLE", new String[0]);
+		} catch (PathErrorException | MetadataArgsErrorException | IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertEquals(true, mManager.pathExist(deltaObjectId + "." + measurementId6));
+		// check level
+		String nsp = null;
+		try {
+			nsp = mManager.getFileNameByPath(deltaObjectId + "." + measurementId6);
+		} catch (PathErrorException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		try {
+			fManager.closeOneFileNode(nsp);
+		} catch (FileNodeManagerException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		createBufferwriteInMemory(new Pair<Long, Long>(200L, 302L), measurementId6);
+		// write data
+		try {
+			fManager.closeAll();
+		} catch (FileNodeManagerException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testBufferwriteAndAddMetadata2(){
+		createBufferwriteInMemory(new Pair<Long, Long>(10L, 101L), measurementId);
+		fManager = FileNodeManager.getInstance();
+
+		// add metadata
+		MManager mManager = MManager.getInstance();
+		assertEquals(false, mManager.pathExist(deltaObjectId + "." + measurementId6));
+		try {
+			mManager.addPathToMTree(deltaObjectId + "." + measurementId6, "INT32", "RLE", new String[0]);
+		} catch (PathErrorException | MetadataArgsErrorException | IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertEquals(true, mManager.pathExist(deltaObjectId + "." + measurementId6));
+		// check level
+		String nsp = null;
+		try {
+			nsp = mManager.getFileNameByPath(deltaObjectId + "." + measurementId6);
+		} catch (PathErrorException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		try {
+			fManager.closeOneFileNode(nsp);
+		} catch (FileNodeManagerException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		createBufferwriteInMemory(new Pair<Long, Long>(200L, 302L), measurementId6);
+		// write data
+		try {
+			fManager.closeAll();
+		} catch (FileNodeManagerException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
@@ -113,7 +194,7 @@ public class FileNodeManagerTest {
 		pairList.add(new Pair<Long, Long>(700L, 800L));
 		createBufferwriteFiles(pairList, deltaObjectId);
 
-		createBufferwriteInMemory(new Pair<Long, Long>(900L, 1000L));
+		createBufferwriteInMemory(new Pair<Long, Long>(900L, 1000L), measurementId);
 
 		fManager = FileNodeManager.getInstance();
 		try {
@@ -170,7 +251,7 @@ public class FileNodeManagerTest {
 
 			List<Object> overflowResult = queryResult.getAllOverflowData();
 			DynamicOneColumnData insertData = (DynamicOneColumnData) overflowResult.get(0);
-			assertEquals(overflowInsert1.length, insertData.length);
+			assertEquals(overflowInsert1.length, insertData.valueLength);
 			for (int i = 0; i < overflowInsert1.length; i++) {
 				assertEquals(overflowInsert1[i], insertData.getTime(i));
 				assertEquals(overflowInsert1[i], insertData.getInt(i));
@@ -189,7 +270,7 @@ public class FileNodeManagerTest {
 			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 			List<Object> overflowResult = queryResult.getAllOverflowData();
 			DynamicOneColumnData insertData = (DynamicOneColumnData) overflowResult.get(0);
-			assertEquals(overflowInsert1.length + overflowInsert2.length, insertData.length);
+			assertEquals(overflowInsert1.length + overflowInsert2.length, insertData.valueLength);
 			for (int i = 0; i < overflowInsert1.length; i++) {
 				assertEquals(overflowInsert1[i], insertData.getTime(i));
 				assertEquals(overflowInsert1[i], insertData.getInt(i));
@@ -227,7 +308,7 @@ public class FileNodeManagerTest {
 			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 			List<Object> overflowResult = queryResult.getAllOverflowData();
 			DynamicOneColumnData updateData = (DynamicOneColumnData) overflowResult.get(1);
-			assertEquals(1, updateData.length);
+			assertEquals(1, updateData.valueLength);
 			assertEquals(2, updateData.timeLength);
 			assertEquals(150, updateData.getTime(0));
 			assertEquals(170, updateData.getTime(1));
@@ -396,7 +477,7 @@ public class FileNodeManagerTest {
 
 	@Test
 	public void testRecoveryMerge() {
-		
+
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
 		pairList.add(new Pair<Long, Long>(100L, 200L));
 		pairList.add(new Pair<Long, Long>(300L, 400L));
@@ -707,7 +788,7 @@ public class FileNodeManagerTest {
 			assertEquals(null, queryStructure.getBufferwriteDataInDisk());
 			assertEquals(0, queryStructure.getBufferwriteDataInFiles().size());
 			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
-			assertEquals(2, insert.length);
+			assertEquals(2, insert.valueLength);
 			assertEquals(5, insert.getTime(0));
 			assertEquals(10, insert.getTime(1));
 			assertEquals(5, insert.getInt(0));
@@ -716,8 +797,7 @@ public class FileNodeManagerTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		
-		
+
 		// merge: only overflow data
 		try {
 			fileNodeManager.mergeAll();
@@ -807,7 +887,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	private void createBufferwriteInMemory(Pair<Long, Long> timePair) {
+	private void createBufferwriteInMemory(Pair<Long, Long> timePair, String measurementId) {
 		long startTime = timePair.left;
 		long endTime = timePair.right;
 		// create bufferwrite file
