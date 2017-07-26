@@ -122,6 +122,7 @@ public class PhysicalGenerator {
 				indexQueryPlan.setBeta(indexQueryOperator.getBeta());
 			}
 			parseIndexTimeFilter(indexQueryOperator, indexQueryPlan);
+			executor.addParameter(SQLConstant.IS_AGGREGATION, SQLConstant.INDEX_QUERY);
 			return indexQueryPlan;
 		default:
 			throw new LogicalOperatorException("not supported operator type: " + operator.getType());

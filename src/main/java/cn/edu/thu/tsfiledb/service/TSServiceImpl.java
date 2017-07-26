@@ -357,7 +357,13 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			} catch (NullPointerException ignored) {
 			}
 			if (aggregateFuncName != null) {
-				columns.add(aggregateFuncName + "(" + paths.get(0).getFullPath() + ")");
+				if(aggregateFuncName.equals(SQLConstant.INDEX_QUERY)){
+					columns.add("Start Time");
+					columns.add("End Time");
+					columns.add("Distance");
+				} else{
+					columns.add(aggregateFuncName + "(" + paths.get(0).getFullPath() + ")");
+				}		
 			} else {
 				for (Path p : paths) {
 					columns.add(p.getFullPath());
