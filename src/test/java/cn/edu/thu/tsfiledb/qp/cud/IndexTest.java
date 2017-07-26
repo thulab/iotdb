@@ -134,4 +134,20 @@ public class IndexTest {
 			fail(e.getMessage());
 		}
 	}
+	@Test
+	public void testSelectIndex4(){
+		String sql = "select index subsequence_matching(root.laptop.d1.s1, root.a.b.c,2016-11-16T16:22:33+08:00, now(),123.1,11.1,22.2) where time<2016-11-16T16:22:33+08:00";
+		QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
+		IndexQueryPlan indexQueryPlan;
+		try {
+			indexQueryPlan = (IndexQueryPlan) processor.parseSQLToPhysicalPlan(sql);
+			assertEquals("root.laptop.d1.s1", indexQueryPlan.getPaths().get(0).getFullPath());
+			assertEquals("root.a.b.c", indexQueryPlan.getPatterPath().getFullPath());
+			assertEquals(11.1, indexQueryPlan.getAlpha(), 1E-2);
+			assertEquals(22.2, indexQueryPlan.getBeta(), 1E-2);
+		} catch (QueryProcessorException | ArgsErrorException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
 }

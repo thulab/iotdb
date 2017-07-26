@@ -834,9 +834,19 @@ public class LogicalGenerator {
 		indexQuery.setPath(path);
 		path = parseRootPath(astNode.getChild(2));
 		indexQuery.setPatternPath(path);
-
-		long startTime = Long.valueOf(astNode.getChild(3).getText());
-		long endTime = Long.valueOf(astNode.getChild(4).getText());
+		long startTime = 0;
+		long endTime = 0;
+		if(astNode.getChild(3).getType()==TSParser.TOK_DATETIME){
+			startTime = Long.valueOf(parseTokenTime(astNode.getChild(3)));
+		}else{
+			startTime = Long.valueOf(astNode.getChild(3).getText());
+		}
+		if(astNode.getChild(4).getType()==TSParser.TOK_DATETIME){
+			endTime = Long.valueOf(parseTokenTime(astNode.getChild(4)));
+		}else{
+			endTime = Long.valueOf(astNode.getChild(4).getText());
+		}
+		
 		if (startTime > endTime || startTime <= 0) {
 			throw new LogicalOperatorException(
 					String.format("The startTime %s and endTime %s are error in index pattern ", startTime, endTime));
