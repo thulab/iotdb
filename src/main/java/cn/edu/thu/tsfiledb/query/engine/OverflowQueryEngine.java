@@ -114,7 +114,7 @@ public class OverflowQueryEngine {
                 (SingleSeriesFilterExpression) valueFilter);
 
         // Get 4 params
-        List<Object> params = getOverflowInfoMergeWithBwMemPage((SingleSeriesFilterExpression) freqFilter,
+        List<Object> params = getOverflowInfoMergeWithBwMemPage((SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                 (SingleSeriesFilterExpression) valueFilter, null, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
@@ -177,7 +177,7 @@ public class OverflowQueryEngine {
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
 
         // Get 4 params
-        List<Object> params = getOverflowInfoMergeWithBwMemPage( null, null, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+        List<Object> params = getOverflowInfoMergeWithBwMemPage( null,null, null, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
@@ -242,7 +242,7 @@ public class OverflowQueryEngine {
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(device, sensor, timeFilter, freqFilter, valueFilter);
 
         // Get 4 params
-        List<Object> params = getOverflowInfoMergeWithBwMemPage(freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+        List<Object> params = getOverflowInfoMergeWithBwMemPage(timeFilter, freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -312,7 +312,7 @@ public class OverflowQueryEngine {
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObject, measurement, null, null, null);
 
             // Get 4 params
-            List<Object> params = getOverflowInfoMergeWithBwMemPage( null, null, null, recordReader.insertPageInMemory, recordReader.overflowInfo);
+            List<Object> params = getOverflowInfoMergeWithBwMemPage( null,null, null, null, recordReader.insertPageInMemory, recordReader.overflowInfo);
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
             DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -357,7 +357,7 @@ public class OverflowQueryEngine {
                 null, freqFilter, valueFilter);
 
         // Get 4 params, if res != null, the four return ans will use the res
-        List<Object> params = getOverflowInfoMergeWithBwMemPage(freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+        List<Object> params = getOverflowInfoMergeWithBwMemPage(null, freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -386,13 +386,17 @@ public class OverflowQueryEngine {
      * The insertTrue is merged with insertPageInMemory of BufferWrite.
      *
      */
-    private static List<Object> getOverflowInfoMergeWithBwMemPage(SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
+    private static List<Object> getOverflowInfoMergeWithBwMemPage(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
             , DynamicOneColumnData res, DynamicOneColumnData insertDataInBufferWrite, List<Object> overflowParams) throws ProcessorException {
 
         List<Object> paramList = new ArrayList<>();
 
         if (res == null) {
-            SingleSeriesFilterExpression timeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
+            // time filter of overflow is not null, time filter should be as same as time filter of overflow.
+            if (overflowParams.get(3) != null) {
+                timeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
+            }
+
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) overflowParams.get(1);
             // getSatisfiedData() method will instantiate a new object
             DynamicOneColumnData dataInBwSatisfyUpdate = getSatisfiedData(updateTrue, timeFilter, freqFilter, valueFilter, insertDataInBufferWrite);
@@ -406,7 +410,7 @@ public class OverflowQueryEngine {
             paramList.add(overflowInsertTrue);
             paramList.add(overflowParams.get(1));
             paramList.add(overflowParams.get(2));
-            paramList.add(overflowParams.get(3));
+            paramList.add(timeFilter);
         } else {
             paramList.add(res.insertTrue);
             paramList.add(res.updateTrue);
