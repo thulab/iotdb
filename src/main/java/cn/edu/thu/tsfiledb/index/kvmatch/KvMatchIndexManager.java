@@ -274,7 +274,7 @@ public class KvMatchIndexManager implements IndexManager {
             List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, querySeries, request);
             answers.sort(Comparator.comparingDouble(o -> o.right));
             logger.info("Answers: {}", answers);
-            return constructQueryDataSet(answers);
+            return constructQueryDataSet(answers, limitSize);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
@@ -293,15 +293,15 @@ public class KvMatchIndexManager implements IndexManager {
         }
     }
 
-    private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers) throws IOException, ProcessorException {
+    private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers, int limitSize) throws IOException, ProcessorException {
         QueryDataSet dataSet = new QueryDataSet();
         DynamicOneColumnData startTime = new DynamicOneColumnData(TSDataType.INT64, true);
-        startTime.setDeltaObjectType("Start Time");
+        startTime.setDeltaObjectType("Start Time");  // useless names
         DynamicOneColumnData endTime = new DynamicOneColumnData(TSDataType.INT64, true);
         endTime.setDeltaObjectType("End Time");
         DynamicOneColumnData distance = new DynamicOneColumnData(TSDataType.DOUBLE, true);
         distance.setDeltaObjectType("Distance");
-        for (int i = 0; i < answers.size(); i++) {
+        for (int i = 0; i < Math.min(limitSize, answers.size()); i++) {
             Pair<Pair<Long, Long>, Double> answer = answers.get(i);
             startTime.putTime(i);
             startTime.putLong(answer.left.left);
@@ -310,7 +310,7 @@ public class KvMatchIndexManager implements IndexManager {
             distance.putTime(i);
             distance.putDouble(answer.right);
         }
-        dataSet.mapRet.put("Start.Time", startTime);
+        dataSet.mapRet.put("Start.Time", startTime);  // useless names
         dataSet.mapRet.put("End.Time", endTime);
         dataSet.mapRet.put("Distance.", distance);
         return dataSet;
