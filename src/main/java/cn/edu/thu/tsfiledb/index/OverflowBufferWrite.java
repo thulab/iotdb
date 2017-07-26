@@ -17,11 +17,11 @@ public class OverflowBufferWrite {
 
     private long deleteUntil;
 
-    private QueryDataSet bufferWriteData;
+    private long bufferWriteBeginTime;
 
-    public OverflowBufferWrite(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, QueryDataSet bufferWriteData) {
+    public OverflowBufferWrite(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, long bufferWriteBeginTime) {
         this.deleteUntil = deleteUntil;
-        this.bufferWriteData = bufferWriteData;
+        this.bufferWriteBeginTime = bufferWriteBeginTime;
 
         List<Pair<Long, Long>> insertIntervals = new ArrayList<>();
         if (insert != null) {
@@ -46,7 +46,7 @@ public class OverflowBufferWrite {
         return deleteUntil;
     }
 
-    public QueryDataSet getBufferWriteData() {
-        return bufferWriteData;
+    public long getBufferWriteBeginTime() {
+        return bufferWriteBeginTime;
     }
 }

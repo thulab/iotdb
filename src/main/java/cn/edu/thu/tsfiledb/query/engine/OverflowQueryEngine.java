@@ -7,6 +7,8 @@ import java.util.List;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfile.format.Digest;
+import cn.edu.thu.tsfile.format.PageHeader;
 import cn.edu.thu.tsfile.timeseries.basis.TsFile;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
@@ -14,6 +16,7 @@ import cn.edu.thu.tsfile.timeseries.filter.definition.operators.*;
 import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.thu.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
+import cn.edu.thu.tsfile.timeseries.read.PageReader;
 import cn.edu.thu.tsfiledb.index.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
@@ -687,7 +690,7 @@ public class OverflowQueryEngine {
     }
 
     /**
-     * For third kv-index, get the OverflowData and BufferWriteData separately.
+     * For third kv-index, get the OverflowData and BufferWriteData separately only in memory.
      *
      * @param path kv-index path
      * @return
@@ -703,23 +706,14 @@ public class OverflowQueryEngine {
         paths.add(path);
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
 
-        int fetchSize = 1000;
-        QueryDataSet queryDataSet = new QueryDataSet();
-        BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
-            @Override
-            public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
-                try {
-                    return readAllInBufferWrite(p, res, fetchSize);
-                } catch (PathErrorException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-        };
-        queryDataSet.setBatchReaderRetGenerator(batchReaderRetGenerator);
-        clearQueryDataSet(queryDataSet);
-        queryDataSet.getBatchReaderRetGenerator().calculateRecord();
-        queryDataSet.putRecordFromBatchReadRetGenerator();
+        long bufferWriteBeginTime = Long.MAX_VALUE;
+        if (recordReader.bufferWritePageList != null && recordReader.bufferWritePageList.size() > 0) {
+            PageReader pageReader = new PageReader(recordReader.bufferWritePageList.get(0), recordReader.compressionTypeName);
+            PageHeader pageHeader = pageReader.getNextPageHeader();
+            bufferWriteBeginTime = pageHeader.data_page_header.min_timestamp;
+        } else if (recordReader.insertPageInMemory != null && recordReader.insertPageInMemory.timeLength > 0) {
+            bufferWriteBeginTime = recordReader.insertPageInMemory.getTime(0);
+        }
 
         DynamicOneColumnData insert = (DynamicOneColumnData) recordReader.overflowInfo.get(0);
         DynamicOneColumnData update = (DynamicOneColumnData) recordReader.overflowInfo.get(1);
@@ -735,25 +729,7 @@ public class OverflowQueryEngine {
                 }
             }
         }
-        return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, queryDataSet);
-    }
-
-    private DynamicOneColumnData readAllInBufferWrite(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
-
-        String deltaObjectUID = path.getDeltaObjectToString();
-        String measurementUID = path.getMeasurementToString();
-
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
-
-        DynamicOneColumnData updateTrue = new DynamicOneColumnData(getDataTypeByPath(path), true);
-        DynamicOneColumnData updateFalse = new DynamicOneColumnData(getDataTypeByPath(path), true);
-        if (recordReader.insertAllData == null) {
-            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    recordReader.insertPageInMemory, updateTrue, updateFalse, null, null, null, getDataTypeByPath(path));
-        }
-        res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID, updateTrue, updateFalse, recordReader.insertAllData, null, res, fetchSize);
-
-        return res;
+        return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, bufferWriteBeginTime);
     }
 
     /**
