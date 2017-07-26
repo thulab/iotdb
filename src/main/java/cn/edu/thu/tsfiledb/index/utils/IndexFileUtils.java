@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.index.utils;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 
 import java.io.File;
 
@@ -15,7 +16,7 @@ public class IndexFileUtils {
     private static final String DATA_FILE_PATH, INDEX_FILE_PATH;
 
     static {
-        TsfileDBConfig config = new TsfileDBConfig();
+        TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         DATA_FILE_PATH = File.separator + config.bufferWriteDir + File.separator;
         INDEX_FILE_PATH = File.separator + config.indexFileDir + File.separator;
     }
