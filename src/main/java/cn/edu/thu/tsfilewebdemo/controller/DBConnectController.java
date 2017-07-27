@@ -81,6 +81,7 @@ public class DBConnectController {
                 }
                 result.put(i, obj);
             }
+            logger.info("query finished");
             return result.toString();
         } catch (Exception e) {
             logger.error(e.toString());
