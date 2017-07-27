@@ -37,11 +37,17 @@ public class RecordReaderFactory {
 		fileStreamManager = FileStreamManager.getInstance();
 	}
 
-	public RecordReader getRecordReader(String deltaObjectUID, String measurementID,
+	/**
+	 *
+	 * @param normalFormNum this variable is used for disjunctive normal form of analytical query.
+	 * @return
+	 * @throws ProcessorException
+	 */
+	public RecordReader getRecordReader(int normalFormNum, String deltaObjectUID, String measurementID,
 			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
 			throws ProcessorException {
 		int token = readLockManager.lock(deltaObjectUID, measurementID);
-		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectUID, measurementID)) {
+		if (readLockManager.recordReaderCache.containsRecordReader(normalFormNum + "." + deltaObjectUID, measurementID)) {
 			return readLockManager.recordReaderCache.get(deltaObjectUID, measurementID);
 		} else {
 			QueryStructure queryStructure;
@@ -52,7 +58,7 @@ public class RecordReaderFactory {
 				throw new ProcessorException(e.getMessage());
 			}
 			RecordReader recordReader = createANewRecordReader(deltaObjectUID, measurementID, queryStructure, token);
-			readLockManager.recordReaderCache.put(deltaObjectUID, measurementID, recordReader);
+			readLockManager.recordReaderCache.put(normalFormNum + "." + deltaObjectUID, measurementID, recordReader);
 			return recordReader;
 		}
 	}

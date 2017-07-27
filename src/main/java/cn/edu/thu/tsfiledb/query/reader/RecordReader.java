@@ -11,6 +11,7 @@ import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.thu.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.thu.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
+import com.sun.prism.impl.Disposer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ import cn.edu.thu.tsfile.common.exception.ProcessorException;
 
 public class RecordReader {
 
-    static final Logger LOG = LoggerFactory.getLogger(RecordReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RecordReader.class);
     private ReaderManager readerManager;
     private int lockToken;  // for lock
     private String deltaObjectUID, measurementID;
@@ -211,8 +212,7 @@ public class RecordReader {
      * @throws ProcessorException
      * @throws IOException
      */
-    public DynamicOneColumnData getValuesUseTimestampsWithOverflow(String deviceUID, String sensorId, long[] timestamps,
-                                                                   DynamicOneColumnData updateTrue, InsertDynamicData insertMemoryData, SingleSeriesFilterExpression deleteFilter)
+    public DynamicOneColumnData getValuesUseTimestampsWithOverflow(String deviceUID, String sensorId, long[] timestamps, InsertDynamicData insertMemoryData)
             throws ProcessorException, IOException {
         TSDataType dataType;
         String deviceType;
@@ -349,6 +349,7 @@ public class RecordReader {
         }
     }
 
+
     /**
      * {NEWFUNC} use {@code RecordReaderFactory} to manage all RecordReader
      *
@@ -366,7 +367,7 @@ public class RecordReader {
     }
 
     /**
-     * {NEWFUNC} close current RecordReader
+     * close current RecordReader file stream.
      *
      * @throws IOException
      * @throws ProcessorException
