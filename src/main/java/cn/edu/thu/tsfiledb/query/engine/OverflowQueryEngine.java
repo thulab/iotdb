@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.*;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.thu.tsfile.timeseries.filter.definition.operators.SingleBinaryExpression;
 import cn.edu.thu.tsfile.timeseries.filter.definition.operators.SingleUnaryExpression;
@@ -74,6 +75,15 @@ public class OverflowQueryEngine {
             return readOneColumnUseFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         }
+    }
+
+    /**
+     * New aggregate function for collection of disjunctive normal form.
+     *
+     * @return
+     */
+    public QueryDataSet aggregate(List<Pair<String, Path>> aggFunctions, List<FilterStructure> filters) {
+        return null;
     }
 
     /**
