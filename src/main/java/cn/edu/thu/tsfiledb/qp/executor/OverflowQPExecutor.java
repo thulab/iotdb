@@ -1,26 +1,5 @@
 package cn.edu.thu.tsfiledb.qp.executor;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
-import cn.edu.thu.tsfiledb.exception.IndexManagerException;
-import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
-import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
-import cn.edu.thu.tsfiledb.qp.logical.sys.PropertyOperator;
-import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
-import cn.edu.thu.tsfiledb.qp.physical.crud.*;
-import cn.edu.thu.tsfiledb.qp.physical.sys.AuthorPlan;
-import cn.edu.thu.tsfiledb.qp.physical.sys.LoadDataPlan;
-import cn.edu.thu.tsfiledb.qp.physical.sys.MetadataPlan;
-import cn.edu.thu.tsfiledb.qp.physical.sys.PropertyPlan;
-import cn.edu.thu.tsfiledb.utils.LoadDataUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
@@ -32,11 +11,34 @@ import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfiledb.auth.AuthException;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
+import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
+import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchIndexManager;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
+import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
+import cn.edu.thu.tsfiledb.qp.logical.sys.MetadataOperator;
+import cn.edu.thu.tsfiledb.qp.logical.sys.PropertyOperator;
+import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.DeletePlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.IndexPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.InsertPlan;
+import cn.edu.thu.tsfiledb.qp.physical.crud.UpdatePlan;
+import cn.edu.thu.tsfiledb.qp.physical.sys.AuthorPlan;
+import cn.edu.thu.tsfiledb.qp.physical.sys.LoadDataPlan;
+import cn.edu.thu.tsfiledb.qp.physical.sys.MetadataPlan;
+import cn.edu.thu.tsfiledb.qp.physical.sys.PropertyPlan;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
+import cn.edu.thu.tsfiledb.utils.LoadDataUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class OverflowQPExecutor extends QueryProcessExecutor {
 
@@ -250,26 +252,39 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	}
 
 	private boolean operateIndex(IndexPlan indexPlan) throws ProcessorException {
-
 		switch (indexPlan.getIndexType()) {
-		case CREATE_INDEX:
-			try {
-				kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getParameters());
-			} catch (IndexManagerException e) {
-				e.printStackTrace();
-				throw new ProcessorException(e.getMessage());
-			}
-			break;
-		case DROP_INDEX:
-			try {
-				kvMatchIndexManager.delete(indexPlan.getPaths().get(0));
-			} catch (IndexManagerException e) {
-				e.printStackTrace();
-				throw new ProcessorException(e.getMessage());
-			}
-			break;
-		default:
-			throw new ProcessorException(String.format("Not support the index type %s", indexPlan.getIndexType()));
+			case CREATE_INDEX:
+				try {
+					String path = indexPlan.getPaths().get(0).getFullPath();
+					// check index
+					if (mManager.checkPathIndex(path)) {
+						throw new ProcessorException(String.format("The timeseries %s has already been indexed", path));
+					}
+					// delete index
+					if (kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getParameters())) {
+						mManager.addIndexForOneTimeseries(path);
+					}
+				} catch (IndexManagerException | PathErrorException e) {
+					e.printStackTrace();
+					throw new ProcessorException(e.getMessage());
+				}
+				break;
+			case DROP_INDEX:
+				try {
+					String path = indexPlan.getPaths().get(0).getFullPath();
+					if (!mManager.checkPathIndex(path)) {
+						throw new ProcessorException(String.format("The timeseries %s hasn't been indexed", path));
+					}
+					if (kvMatchIndexManager.delete(indexPlan.getPaths().get(0))) {
+						mManager.deleteIndexForOneTimeseries(path);
+					}
+				} catch (IndexManagerException | PathErrorException e) {
+					e.printStackTrace();
+					throw new ProcessorException(e.getMessage());
+				}
+				break;
+			default:
+				throw new ProcessorException(String.format("Not support the index operation %s", indexPlan.getIndexType()));
 		}
 		return true;
 	}

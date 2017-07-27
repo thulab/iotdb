@@ -14,12 +14,21 @@ public class ColumnSchema implements Serializable {
 	public TSDataType dataType;
 	public TSEncoding encoding;
 	private Map<String, String> args;
+	private boolean hasIndex;
 
 	public ColumnSchema(String name, TSDataType dataType, TSEncoding encoding) {
 		this.name = name;
 		this.dataType = dataType;
 		this.encoding = encoding;
 		this.args = new HashMap<>();
+	}
+	
+	public boolean isHasIndex() {
+		return hasIndex;
+	}
+
+	public void setHasIndex(boolean hasIndex) {
+		this.hasIndex = hasIndex;
 	}
 
 	public void putKeyValueToArgs(String key, String value) {

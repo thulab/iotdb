@@ -546,6 +546,72 @@ public class MManager {
 			lock.readLock().unlock();
 		}
 	}
+	/**
+	 * Get all timeseries path which have index
+	 * @param path
+	 * @return
+	 * @throws PathErrorException
+	 */
+	public List<String> getAllIndexPaths(String path) throws PathErrorException{
+		lock.readLock().lock();
+		try{
+			List<String> ret = new ArrayList<>();
+			ArrayList<String> paths = getPaths(path);
+			for(String timesereis:paths){
+				if(getSchemaForOnePath(timesereis).isHasIndex()){
+					ret.add(timesereis);
+				}
+			}
+			return ret;
+		}finally {
+			lock.readLock().unlock();
+		}
+	}
+	/**
+	 * check the timeseries has index or not
+	 * @param path
+	 * @return
+	 * @throws PathErrorException
+	 */
+	public boolean checkPathIndex(String path) throws PathErrorException{
+		lock.readLock().lock();
+		try{
+			if(getSchemaForOnePath(path).isHasIndex()){
+				return true;
+			}else{
+				return false;
+			}
+		}finally {
+			lock.readLock().unlock();
+		}
+	}
+	/**
+	 * add index for one timeseries
+	 * @param path
+	 * @throws PathErrorException
+	 */
+	public void addIndexForOneTimeseries(String path) throws PathErrorException{
+		lock.writeLock().lock();
+		try {
+			getSchemaForOnePath(path).setHasIndex(true);
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+
+	/**
+	 * drop index for one timeseries
+	 * @param path
+	 * @throws PathErrorException
+	 */
+	public void deleteIndexForOneTimeseries(String path) throws PathErrorException{
+		lock.writeLock().lock();
+		try {
+			getSchemaForOnePath(path).setHasIndex(false);
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
 
 	public static MManager getInstance() {
 		synchronized (manager) {
