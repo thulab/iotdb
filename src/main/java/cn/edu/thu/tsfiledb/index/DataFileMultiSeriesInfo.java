@@ -3,6 +3,7 @@ package cn.edu.thu.tsfiledb.index;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,12 +21,22 @@ public class DataFileMultiSeriesInfo {
 
     public DataFileMultiSeriesInfo(String filePath) {
         this.filePath = filePath;
+        columnPaths = new ArrayList<>();
+        timeRanges = new ArrayList<>();
     }
 
     public DataFileMultiSeriesInfo(String filePath, List<Path> columnPaths, List<Pair<Long, Long>> timeRanges) {
         this.filePath = filePath;
         this.columnPaths = columnPaths;
         this.timeRanges = timeRanges;
+    }
+    
+    public void addColumnPath(Path path){
+    	columnPaths.add(path);
+    }
+    
+    public void addTimeRanges(Pair<Long, Long> pair){
+    	timeRanges.add(pair);
     }
 
     public String getFilePath() {
@@ -50,5 +61,9 @@ public class DataFileMultiSeriesInfo {
 
     public void setTimeRanges(List<Pair<Long, Long>> timeRanges) {
         this.timeRanges = timeRanges;
+    }
+    
+    public boolean isEmpty(){
+    	return columnPaths.isEmpty();
     }
 }

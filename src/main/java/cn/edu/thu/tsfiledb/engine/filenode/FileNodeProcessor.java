@@ -54,6 +54,7 @@ import cn.edu.thu.tsfiledb.engine.lru.LRUProcessor;
 import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.DataFileInfo;
+import cn.edu.thu.tsfiledb.index.DataFileMultiSeriesInfo;
 import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchIndexManager;
 import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
 import cn.edu.thu.tsfiledb.metadata.MManager;
@@ -713,10 +714,62 @@ public class FileNodeProcessor extends LRUProcessor {
 		// change status from merge to wait
 		//
 		switchMergeToWaitingv2(backupIntervalFiles, needEmtpy);
+
+		//
+		// merge index begin
+		//
+		switchMergeIndex();
+		//
+		// merge index end
+		//
+		switchMergeIndex();
 		//
 		// change status from wait to work
 		//
 		switchWaitingToWorkingv2(backupIntervalFiles);
+	}
+
+	private void switchMergeIndex() {
+		try {
+			List<String> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+			if (!allIndexSeries.isEmpty()) {
+				LOGGER.info(
+						"merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
+						nameSpacePath, allIndexSeries);
+				List<Path> paths = new ArrayList<>();
+				List<DataFileMultiSeriesInfo> dataFileMultiSeriesInfos = new ArrayList<>();
+				for (String series : allIndexSeries) {
+					paths.add(new Path(series));
+				}
+				for (IntervalFileNode intervalFileNode : newFileNodes) {
+					if (intervalFileNode.isClosed()) {
+						String filePath = intervalFileNode.filePath;
+						DataFileMultiSeriesInfo dataFileMultiSeriesInfo = new DataFileMultiSeriesInfo(filePath);
+						for (Path path : paths) {
+							String deltaObjectId = path.getDeltaObjectToString();
+							if (intervalFileNode.getStartTime(deltaObjectId) != -1) {
+								long startTime = intervalFileNode.getStartTime(deltaObjectId);
+								long endTime = intervalFileNode.getEndTime(deltaObjectId);
+								dataFileMultiSeriesInfo.addColumnPath(path);
+								dataFileMultiSeriesInfo.addTimeRanges(new Pair<Long, Long>(startTime, endTime));
+							}
+						}
+						if (!dataFileMultiSeriesInfo.isEmpty()) {
+							dataFileMultiSeriesInfos.add(dataFileMultiSeriesInfo);
+						}
+					}
+				}
+				/*
+				 * merge build
+				 */
+				if(!dataFileMultiSeriesInfos.isEmpty()){
+					KvMatchIndexManager.getInstance().mergeBuild(newFileList);
+				}
+			}
+		} catch (PathErrorException e) {
+			LOGGER.error(e.getMessage());
+			throw new FileNodeProcessorException(e.getMessage());
+		}
 	}
 
 	private List<IntervalFileNode> switchFileNodeToMergev2() throws FileNodeProcessorException {
@@ -1171,6 +1224,9 @@ public class FileNodeProcessor extends LRUProcessor {
 					}
 					KvMatchIndexManager.getInstance().closeBuild(paths, dataFileInfo);
 				}
+				/*
+				 * add index for close end
+				 */
 			} catch (BufferWriteProcessorException e) {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
