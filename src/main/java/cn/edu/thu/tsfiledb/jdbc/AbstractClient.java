@@ -46,9 +46,7 @@ public abstract class AbstractClient {
 	protected static int maxPrintRowCount = 1000;
 
 	protected static final String SET_TIMESTAMP_DISPLAY = "set time_display_type";
-	protected static final String SHOW_TIMESTAMP_DISPLAY = "show time_display_type";
 	protected static final String SET_TIME_ZONE = "set time_zone";
-	protected static final String SHOW_TIMEZONE = "show time_zone";
 	
 	protected static final String TSFILEDB_CLI_PREFIX = "TsFileDB";
 	private static final String QUIT_COMMAND = "quit";
@@ -188,7 +186,7 @@ public abstract class AbstractClient {
 	}
 
 	protected static void setTimeFormat(String newTimeFormat) {
-		switch (newTimeFormat.trim().toLowerCase()) {
+		switch (newTimeFormat.toLowerCase()) {
 		case "long":
 		case "number":
 			maxTimeLength = maxValueLength;
@@ -313,14 +311,6 @@ public abstract class AbstractClient {
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
 			System.out.println("time zone has set to "+values[1]);
-			return OPERATION_RESULT.CONTINUE_OPER;
-		}
-		if(specialCmd.startsWith(SHOW_TIMEZONE)){
-			System.out.println(timeZone);
-			return OPERATION_RESULT.CONTINUE_OPER;
-		}
-		if(specialCmd.startsWith(SHOW_TIMESTAMP_DISPLAY)){
-			System.out.println(timeFormat);
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 		Statement statement = null;
