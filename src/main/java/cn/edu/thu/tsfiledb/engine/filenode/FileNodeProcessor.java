@@ -54,6 +54,7 @@ import cn.edu.thu.tsfiledb.engine.lru.LRUProcessor;
 import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.DataFileInfo;
+import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchIndexManager;
 import cn.edu.thu.tsfiledb.metadata.ColumnSchema;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.query.engine.QueryForMerge;
@@ -1154,7 +1155,26 @@ public class FileNodeProcessor extends LRUProcessor {
 				}
 				bufferWriteProcessor.close();
 				bufferWriteProcessor = null;
+				/*
+				 * add index for close
+				 */
+				// check the timeseries has index or not in this nameSpacePath
+				List<String> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+				if (!allIndexSeries.isEmpty()) {
+					LOGGER.info(
+							"Close bufferwrite file and append index file, the nameSpacePath is {}, the index path is {}",
+							nameSpacePath, allIndexSeries);
+					DataFileInfo dataFileInfo = new DataFileInfo(-1, -1, currentIntervalFileNode.filePath);
+					List<Path> paths = new ArrayList<>();
+					for (String series : allIndexSeries) {
+						paths.add(new Path(series));
+					}
+					KvMatchIndexManager.getInstance().closeBuild(paths, dataFileInfo);
+				}
 			} catch (BufferWriteProcessorException e) {
+				e.printStackTrace();
+				throw new FileNodeProcessorException(e);
+			} catch (PathErrorException e) {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
 			}
