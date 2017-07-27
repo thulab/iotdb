@@ -425,7 +425,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			return resp;
 		} catch (Exception e) {
 			LOGGER.error("TsFileDB Server: server Internal Error: {}", e.getMessage());
-			return getTSFetchResultsResp(TS_StatusCode.ERROR_STATUS, "Server Internal Error");
+			return getTSFetchResultsResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 
 	}

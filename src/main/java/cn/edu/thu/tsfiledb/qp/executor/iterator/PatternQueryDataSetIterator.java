@@ -35,7 +35,7 @@ public class PatternQueryDataSetIterator implements Iterator<QueryDataSet> {
         try {
             data = kvMatchIndexManager.query(queryRequest, fetchSize);
         } catch (IndexManagerException e) {
-            throw new RuntimeException("error occurred in index query processing " + Arrays.toString(e.getStackTrace()));
+            throw new RuntimeException(e.getMessage());
         }
         noNext = true;
         return true;

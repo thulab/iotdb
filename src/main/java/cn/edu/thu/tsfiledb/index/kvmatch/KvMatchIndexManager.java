@@ -292,6 +292,9 @@ public class KvMatchIndexManager implements IndexManager {
             // 3. propagate query series and configurations
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
             List<Double> querySeries = getQuerySeries(request);
+            if (querySeries.size() < 2 * indexConfig.getWindowLength() - 1) {
+                throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) +")");
+            }
             QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta());
 
             // 4. search corresponding index files of data files in the query range
@@ -334,7 +337,7 @@ public class KvMatchIndexManager implements IndexManager {
             logger.info("Answers: {}", answers);
 
             return constructQueryDataSet(answers, limitSize);
-        } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException e) {
+        } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException | IllegalArgumentException e) {
             logger.error(e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } catch (Exception e) {
