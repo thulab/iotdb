@@ -49,24 +49,22 @@ public interface IndexManager {
      * Build index for data in the file list, and not overwrite exist ones,
      * pending for merge manager to call the {@link this.mergeSwitch()} method to switch index files.
      *
-     * @param columnPaths    the column paths in the file list need to build index, some one may has no data in some data file
-     * @param newFileList    the data files leaves after the merge operation
+     * @param newFileList    the data files leaves after the merge operation, the column paths in the file list need to build index, some one may has no data in some data file
      * @return whether the operation is successful
      * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean mergeBuild(List<Path> columnPaths, List<DataFileInfo> newFileList) throws IndexManagerException;
+    boolean mergeBuild(List<DataFileMultiSeriesInfo> newFileList) throws IndexManagerException;
 
     /**
      * Given the new file list after merge, delete all index files which are not in the list,
      * and switch to the new index files along with the new data files.
      * Call this method after the merge operation has completed. Block index read and write during this process.
      *
-     * @param columnPaths    the column paths in the file list need to build index, some one may has no data in some data file
-     * @param newFileList    new file list after the merge operation
+     * @param newFileList    the data files leaves after the merge operation, the column paths in the file list need to build index, some one may has no data in some data file
      * @return whether the operation is successful
      * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
-    boolean mergeSwitch(List<Path> columnPaths, List<DataFileInfo> newFileList) throws IndexManagerException;
+    boolean mergeSwitch(List<DataFileMultiSeriesInfo> newFileList) throws IndexManagerException;
 
     /**
      * Query index for result.
