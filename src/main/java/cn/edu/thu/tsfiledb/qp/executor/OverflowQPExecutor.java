@@ -275,8 +275,17 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			break;
 		case DROP_INDEX:
 			try {
-				kvMatchIndexManager.delete(indexPlan.getPaths().get(0));
+				String path = indexPlan.getPaths().get(0).getFullPath();
+				if(mManager.checkPathIndex(path)){
+					kvMatchIndexManager.delete(indexPlan.getPaths().get(0));
+				}else{
+					throw new ProcessorException(String.format("This timeseries %s don't have index", path));
+				}
+				
 			} catch (IndexManagerException e) {
+				e.printStackTrace();
+				throw new ProcessorException(e.getMessage());
+			} catch (PathErrorException e) {
 				e.printStackTrace();
 				throw new ProcessorException(e.getMessage());
 			}
