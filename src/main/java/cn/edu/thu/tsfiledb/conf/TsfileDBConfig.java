@@ -85,7 +85,7 @@ public class TsfileDBConfig {
 	 * The amount of data that is read every time in batches. In a session, user
 	 * can set by himself, and it will only take effect in current session.
 	 */
-	public int fetchSize = 10000;
+	public int fetchSize = 5;
 
 	/**
 	 * the maximum number of writing instances existing in same time.
