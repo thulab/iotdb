@@ -52,6 +52,7 @@ import cn.edu.thu.tsfiledb.engine.exception.OverflowProcessorException;
 import cn.edu.thu.tsfiledb.engine.exception.ProcessorRuntimException;
 import cn.edu.thu.tsfiledb.engine.lru.LRUProcessor;
 import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
+import cn.edu.thu.tsfiledb.exception.IndexManagerException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.DataFileInfo;
 import cn.edu.thu.tsfiledb.index.DataFileMultiSeriesInfo;
@@ -729,7 +730,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		switchWaitingToWorkingv2(backupIntervalFiles);
 	}
 
-	private void switchMergeIndex() {
+	private void switchMergeIndex() throws FileNodeProcessorException {
 		try {
 			List<String> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
 			if (!allIndexSeries.isEmpty()) {
@@ -763,11 +764,14 @@ public class FileNodeProcessor extends LRUProcessor {
 				 * merge build
 				 */
 				if(!dataFileMultiSeriesInfos.isEmpty()){
-					KvMatchIndexManager.getInstance().mergeBuild(newFileList);
+					KvMatchIndexManager.getInstance().mergeBuild(dataFileMultiSeriesInfos);
 				}
 			}
 		} catch (PathErrorException e) {
 			LOGGER.error(e.getMessage());
+			throw new FileNodeProcessorException(e.getMessage());
+		} catch (IndexManagerException e) {
+			e.printStackTrace();
 			throw new FileNodeProcessorException(e.getMessage());
 		}
 	}
@@ -1222,7 +1226,12 @@ public class FileNodeProcessor extends LRUProcessor {
 					for (String series : allIndexSeries) {
 						paths.add(new Path(series));
 					}
-					KvMatchIndexManager.getInstance().closeBuild(paths, dataFileInfo);
+					try {
+						KvMatchIndexManager.getInstance().closeBuild(paths, dataFileInfo);
+					} catch (IndexManagerException e) {
+						e.printStackTrace();
+						throw new FileNodeProcessorException(e);
+					}
 				}
 				/*
 				 * add index for close end
