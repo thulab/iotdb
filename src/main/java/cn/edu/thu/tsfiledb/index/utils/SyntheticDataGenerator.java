@@ -43,7 +43,7 @@ public class SyntheticDataGenerator {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
         long time = System.currentTimeMillis();
-        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 10000, 10);
+        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 1000000, 10);
         generator1.start(time);
 //		SyntheticDataGenerator generator2 = new SyntheticDataGenerator("d2", 1000000, 100);
 //		generator2.start(time);
@@ -75,6 +75,9 @@ public class SyntheticDataGenerator {
         }
 
         for (int i = 0; i < length; i++) {
+            if (i % 10000 == 0) {
+                logger.info("{}", i);
+            }
             insertData(t, s1.get(i) - s1Min, s2.get(i) - s2Min);
             t += timeInterval;
         }
@@ -127,9 +130,7 @@ public class SyntheticDataGenerator {
                     statement.execute(sql);
                 } catch (Exception e) {
                     logger.error("Execute {} failed!", sql, e);
-                    continue;
                 }
-                logger.info("Execute {} successfully!", sql);
             }
         } catch (SQLException e) {
             logger.error("Failed to execute {} because ", sqls, e);

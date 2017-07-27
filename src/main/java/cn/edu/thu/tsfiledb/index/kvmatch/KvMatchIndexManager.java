@@ -419,6 +419,7 @@ public class KvMatchIndexManager implements IndexManager {
 
             ex = 0;
             ex2 = 0;
+            int idx = 0;
             double[] T = new double[2 * lenQ];
             for (int i = 0; i < series.size(); i++) {
                 double value = series.get(i);
@@ -429,18 +430,23 @@ public class KvMatchIndexManager implements IndexManager {
 
                 if (i >= lenQ - 1) {
                     int j = (i + 1) % lenQ;  // the current starting location of T
-                    double mean = ex / lenQ;  // z
-                    double std = Math.sqrt(ex2 / lenQ - mean * mean);
 
-                    if ((request.getAlpha() == 1.0 && request.getBeta() == 0) ||
-                            (Math.abs(mean - meanQ) <= request.getBeta() && std / stdQ <= request.getBeta() && std / stdQ >= 1.0 / request.getAlpha())) {
-                        double dist = 0;
-                        for (int k = 0; k < lenQ && dist <= request.getEpsilon() * request.getEpsilon(); k++) {
-                            double x = (T[(order.get(k) + j)] - mean) / std;
-                            dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
-                        }
-                        if (dist <= request.getEpsilon() * request.getEpsilon()) {
-                            result.add(new Pair<>(new Pair<>(scanInterval.left + i - lenQ + 1, scanInterval.left + i), Math.sqrt(dist)));
+                    long left = scanInterval.left + i - lenQ + 1;
+                    if (left == keyPoints.get(idx).left) {  // remove non-exist timestamp
+                        idx++;
+                        double mean = ex / lenQ;  // z
+                        double std = Math.sqrt(ex2 / lenQ - mean * mean);
+
+                        if ((request.getAlpha() == 1.0 && request.getBeta() == 0) ||
+                                (Math.abs(mean - meanQ) <= request.getBeta() && std / stdQ <= request.getBeta() && std / stdQ >= 1.0 / request.getAlpha())) {
+                            double dist = 0;
+                            for (int k = 0; k < lenQ && dist <= request.getEpsilon() * request.getEpsilon(); k++) {
+                                double x = (T[(order.get(k) + j)] - mean) / std;
+                                dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
+                            }
+                            if (dist <= request.getEpsilon() * request.getEpsilon()) {
+                                result.add(new Pair<>(new Pair<>(left, scanInterval.left + i), Math.sqrt(dist)));
+                            }
                         }
                     }
 
