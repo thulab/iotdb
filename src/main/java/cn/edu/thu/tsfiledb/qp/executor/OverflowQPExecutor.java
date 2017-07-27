@@ -254,9 +254,21 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		switch (indexPlan.getIndexType()) {
 		case CREATE_INDEX:
 			try {
-				kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getStartTime(),
+				String path = indexPlan.getPaths().get(0).getFullPath();
+				// check index
+				if(mManager.checkPathIndex(path)){
+					throw new ProcessorException(String.format("This timeseries %s already has index", path));
+				}
+				boolean ret = kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getStartTime(),
 						indexPlan.getParameters());
+				// add index
+				if(ret){
+					mManager.addIndexForOneTimeseries(path);
+				}
 			} catch (IndexManagerException e) {
+				e.printStackTrace();
+				throw new ProcessorException(e.getMessage());
+			} catch (PathErrorException e) {
 				e.printStackTrace();
 				throw new ProcessorException(e.getMessage());
 			}

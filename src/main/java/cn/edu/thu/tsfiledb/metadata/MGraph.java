@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.exception.MetadataArgsErrorException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
@@ -175,7 +176,7 @@ public class MGraph implements Serializable {
 		}
 		return res;
 	}
-
+	
 	/**
 	 * Get the full Metadata info.
 	 * @return A {@code Metadata} instance which stores all metadata info
