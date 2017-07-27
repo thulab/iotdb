@@ -254,8 +254,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		switch (indexPlan.getIndexType()) {
 		case CREATE_INDEX:
 			try {
-				kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getStartTime(),
-						indexPlan.getParameters());
+				kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getParameters());
 			} catch (IndexManagerException e) {
 				e.printStackTrace();
 				throw new ProcessorException(e.getMessage());
