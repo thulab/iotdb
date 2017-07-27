@@ -3,7 +3,7 @@ Grafana下载地址：https://grafana.com/grafana/download
 
 版本：4.4.1
 
-选择相应的操作系统下载并安装，启动Grafana
+选择相应的操作系统下载并安装，启动 Grafana
 
 # 数据源插件安装
 基于simple-json-datasource数据源插件连接TsFileDB数据库。
@@ -17,14 +17,15 @@ Grafana下载地址：https://grafana.com/grafana/download
 参考：http://git.oschina.net/xingtanzjr/tsfiledb
 
 # 后端数据源连接器安装
+下载源代码
 ```
 git clone https://git.oschina.net/zdyfjh2017/tsfiledb-grafana.git
 ```
-进入目录，输入命令
+进入目录，打成war包
 ```
 mvn package
 ```
-打成war包，将`application.properties`文件从`src/main/resources/`目录复制到`target`目录下，并编辑属性值
+将`application.properties`文件从`src/main/resources/`目录复制到`target`目录下，并编辑属性值
 ```
 spring.datasource.url = jdbc:tsfile://127.0.0.1:6667/
 spring.datasource.username = root
@@ -46,10 +47,14 @@ server.port = 8888
 cd target/
 java -jar tsfile-web-demo-0.0.1-SNAPSHOT.war
 ```
-Grafana的默认端口为 3000，在浏览器中访问http://localhost:3000，出现首页。
+Grafana的默认端口为 3000，在浏览器中访问 http://localhost:3000
+
+用户名和密码都为 admin
 
 # 添加数据源
-在首页点击左上角的图标，选择`Data Sources`，点击右上角`Add data source`图标，填写`data source`相关配置，在`Config`中`Type`选择`SimpleJson`，`Url`填写http://localhost:8888，端口号和数据源连接器的端口号一致，填写完整后选择`Add`，数据源添加成功。
+在首页点击左上角的图标，选择`Data Sources`，点击右上角`Add data source`图标，填写`data source`相关配置，在`Config`中`Type`选择`SimpleJson`，`Url`填写http://localhost:8888
+
+端口号和数据源连接器的端口号一致，填写完整后选择`Add`，数据源添加成功。
 
 # 设计并制作仪表板
 在首页点击左上角的图标，选择`Dashboards` - `New`，新建仪表板。在面板中可添加多种类型的图表。
