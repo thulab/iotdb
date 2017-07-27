@@ -177,6 +177,52 @@ public class MManager {
 			linkMNodeToPTree(args[1], args[2]);
 		} else if (args[0].equals(MetadataOperationType.UNLINK_MNODE_FROM_PTREE)) {
 			unlinkMNodeFromPTree(args[1], args[2]);
+		} else if (args[0].equals(MetadataOperationType.ADD_INDEX_TO_PATH)){
+			addIndexForOneTimeseries(args[1]);
+		}else if(args[0].equals(MetadataOperationType.DELETE_INDEX_FROM_PATH)){
+			addIndexForOneTimeseries(args[1]);
+		}
+	}
+
+	/**
+	 * add index for one timeseries
+	 * 
+	 * @param path
+	 * @throws PathErrorException
+	 * @throws IOException 
+	 */
+	public void addIndexForOneTimeseries(String path) throws PathErrorException, IOException {
+		lock.writeLock().lock();
+		try {
+			getSchemaForOnePath(path).setHasIndex(true);
+			if (writeToLog) {
+				bw.write(MetadataOperationType.ADD_INDEX_TO_PATH + "," + path);
+				bw.newLine();
+				bw.flush();
+			}
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+
+	/**
+	 * drop index for one timeseries
+	 * 
+	 * @param path
+	 * @throws PathErrorException
+	 * @throws IOException 
+	 */
+	public void deleteIndexForOneTimeseries(String path) throws PathErrorException, IOException {
+		lock.writeLock().lock();
+		try {
+			getSchemaForOnePath(path).setHasIndex(false);
+			if (writeToLog) {
+				bw.write(MetadataOperationType.DELETE_INDEX_FROM_PATH + "," + path);
+				bw.newLine();
+				bw.flush();
+			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 
@@ -546,70 +592,47 @@ public class MManager {
 			lock.readLock().unlock();
 		}
 	}
+
 	/**
 	 * Get all timeseries path which have index
+	 * 
 	 * @param path
 	 * @return
 	 * @throws PathErrorException
 	 */
-	public List<String> getAllIndexPaths(String path) throws PathErrorException{
+	public List<String> getAllIndexPaths(String path) throws PathErrorException {
 		lock.readLock().lock();
-		try{
+		try {
 			List<String> ret = new ArrayList<>();
 			ArrayList<String> paths = getPaths(path);
-			for(String timesereis:paths){
-				if(getSchemaForOnePath(timesereis).isHasIndex()){
+			for (String timesereis : paths) {
+				if (getSchemaForOnePath(timesereis).isHasIndex()) {
 					ret.add(timesereis);
 				}
 			}
 			return ret;
-		}finally {
-			lock.readLock().unlock();
-		}
-	}
-	/**
-	 * check the timeseries has index or not
-	 * @param path
-	 * @return
-	 * @throws PathErrorException
-	 */
-	public boolean checkPathIndex(String path) throws PathErrorException{
-		lock.readLock().lock();
-		try{
-			if(getSchemaForOnePath(path).isHasIndex()){
-				return true;
-			}else{
-				return false;
-			}
-		}finally {
-			lock.readLock().unlock();
-		}
-	}
-	/**
-	 * add index for one timeseries
-	 * @param path
-	 * @throws PathErrorException
-	 */
-	public void addIndexForOneTimeseries(String path) throws PathErrorException{
-		lock.writeLock().lock();
-		try {
-			getSchemaForOnePath(path).setHasIndex(true);
 		} finally {
-			lock.writeLock().unlock();
+			lock.readLock().unlock();
 		}
 	}
 
 	/**
-	 * drop index for one timeseries
+	 * check the timeseries has index or not
+	 * 
 	 * @param path
+	 * @return
 	 * @throws PathErrorException
 	 */
-	public void deleteIndexForOneTimeseries(String path) throws PathErrorException{
-		lock.writeLock().lock();
+	public boolean checkPathIndex(String path) throws PathErrorException {
+		lock.readLock().lock();
 		try {
-			getSchemaForOnePath(path).setHasIndex(false);
+			if (getSchemaForOnePath(path).isHasIndex()) {
+				return true;
+			} else {
+				return false;
+			}
 		} finally {
-			lock.writeLock().unlock();
+			lock.readLock().unlock();
 		}
 	}
 

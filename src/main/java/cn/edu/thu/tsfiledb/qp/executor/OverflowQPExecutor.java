@@ -264,7 +264,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					if (kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getParameters())) {
 						mManager.addIndexForOneTimeseries(path);
 					}
-				} catch (IndexManagerException | PathErrorException e) {
+				} catch (IndexManagerException | PathErrorException | IOException e) {
 					e.printStackTrace();
 					throw new ProcessorException(e.getMessage());
 				}
@@ -278,7 +278,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					if (kvMatchIndexManager.delete(indexPlan.getPaths().get(0))) {
 						mManager.deleteIndexForOneTimeseries(path);
 					}
-				} catch (IndexManagerException | PathErrorException e) {
+				} catch (IndexManagerException | PathErrorException | IOException e) {
 					e.printStackTrace();
 					throw new ProcessorException(e.getMessage());
 				}
