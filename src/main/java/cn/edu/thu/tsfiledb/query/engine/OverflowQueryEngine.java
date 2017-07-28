@@ -81,7 +81,7 @@ public class OverflowQueryEngine {
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         } else {
             return readOneColumnUseFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
-                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
+                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, -1);
         }
     }
 
@@ -213,7 +213,8 @@ public class OverflowQueryEngine {
      * Query type 2: read one series with filter.
      */
     private QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
-                                                SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException {
+                                                SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+                                                QueryDataSet queryDataSet, int fetchSize, int readToken) throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
@@ -707,7 +708,7 @@ public class OverflowQueryEngine {
             }
         }
 
-        return readWithoutFilter(pathList, null, 1000, readToken);
+        return readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) fe, null, null, null, 10000, readToken);
     }
 
     /**
