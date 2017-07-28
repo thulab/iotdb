@@ -454,7 +454,7 @@ public class MManager {
 		try {
 			return mGraph.getFileNameByPath(path);
 		} catch (PathErrorException e) {
-			throw new PathErrorException(String.format(e.getMessage()));
+			throw new PathErrorException(e.getMessage());
 		} finally {
 			lock.readLock().unlock();
 		}
