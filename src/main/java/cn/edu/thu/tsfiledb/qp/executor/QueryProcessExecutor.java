@@ -58,11 +58,37 @@ public abstract class QueryProcessExecutor {
 			}
 		case INDEXQUERY:
 			IndexQueryPlan indexQueryPlan = (IndexQueryPlan) plan;
+			MManager mManager = MManager.getInstance();
+			// check path and storage group
+			Path path = indexQueryPlan.getPaths().get(0);
+			if (!mManager.pathExist(path.getFullPath())) {
+				throw new QueryProcessorException(String.format("The timeseries %s does not exist", path));
+			}
+			try {
+				mManager.getFileNameByPath(path.getFullPath());
+			} catch (PathErrorException e) {
+				e.printStackTrace();
+				throw new QueryProcessorException(e.getMessage());
+			}
+			Path patterPath = indexQueryPlan.getPatterPath();
+			if (!mManager.pathExist(patterPath.getFullPath())) {
+				throw new QueryProcessorException(String.format("The timeseries %s does not exist", patterPath));
+			}
+			try {
+				mManager.getFileNameByPath(patterPath.getFullPath());
+			} catch (PathErrorException e) {
+				e.printStackTrace();
+				throw new QueryProcessorException(e.getMessage());
+			}
+			// check index for metadata
+			if (!mManager.checkPathIndex(path.getFullPath())) {
+				throw new QueryProcessorException(String.format("The timeseries %s hasn't been indexed", path));
+			}
 			KvMatchQueryRequest queryRequest = KvMatchQueryRequest
-					.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(), indexQueryPlan.getPatterStarTime(), indexQueryPlan.getPatterEndTime(), indexQueryPlan.getEpsilon())
-					.startTime(indexQueryPlan.getStartTime())
-					.endTime(indexQueryPlan.getEndTime())
-					.build();
+					.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(),
+							indexQueryPlan.getPatterStarTime(), indexQueryPlan.getPatterEndTime(),
+							indexQueryPlan.getEpsilon())
+					.startTime(indexQueryPlan.getStartTime()).endTime(indexQueryPlan.getEndTime()).build();
 			if (indexQueryPlan.isHasParameter()) {
 				queryRequest.setAlpha(indexQueryPlan.getAlpha());
 				queryRequest.setBeta(indexQueryPlan.getBeta());
@@ -105,7 +131,6 @@ public abstract class QueryProcessExecutor {
 
 	public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
 			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
-
 
 	/**
 	 * execute update command and return whether the operator is successful.

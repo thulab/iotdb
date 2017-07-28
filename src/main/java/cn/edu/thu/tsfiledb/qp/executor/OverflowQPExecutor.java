@@ -256,11 +256,17 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			case CREATE_INDEX:
 				try {
 					String path = indexPlan.getPaths().get(0).getFullPath();
+					// check path
+					if(!mManager.pathExist(path)){
+						throw new ProcessorException(String.format("The timeseries %s does not exist", path));
+					}
+					// check storage group
+					mManager.getFileNameByPath(path);
 					// check index
 					if (mManager.checkPathIndex(path)) {
 						throw new ProcessorException(String.format("The timeseries %s has already been indexed", path));
 					}
-					// delete index
+					// create index
 					if (kvMatchIndexManager.build(indexPlan.getPaths().get(0), indexPlan.getParameters())) {
 						mManager.addIndexForOneTimeseries(path);
 					}
@@ -272,6 +278,11 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			case DROP_INDEX:
 				try {
 					String path = indexPlan.getPaths().get(0).getFullPath();
+					// check path
+					if(!mManager.pathExist(path)){
+						throw new ProcessorException(String.format("The timeseries %s does not exist", path));
+					}
+					// check index
 					if (!mManager.checkPathIndex(path)) {
 						throw new ProcessorException(String.format("The timeseries %s hasn't been indexed", path));
 					}

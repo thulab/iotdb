@@ -13,17 +13,26 @@ import java.util.List;
  */
 public class OverflowBufferWrite {
 
-    private List<Pair<Long, Long>> insertOrUpdateIntervals;
+    private DynamicOneColumnData insert;
+
+    private DynamicOneColumnData update;
 
     private long deleteUntil;
 
-    public OverflowBufferWrite(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, long bufferWriteBeginTime) {
-        this.deleteUntil = deleteUntil;
+    private long bufferWriteBeginTime;
 
+    public OverflowBufferWrite(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, long bufferWriteBeginTime) {
+        this.insert = insert;
+        this.update = update;
+        this.deleteUntil = deleteUntil;
+        this.bufferWriteBeginTime = bufferWriteBeginTime;
+    }
+
+    public List<Pair<Long, Long>> getInsertOrUpdateIntervals(int lenQ) {
         List<Pair<Long, Long>> insertIntervals = new ArrayList<>();
         if (insert != null) {
             for (int i = 0; i < insert.timeLength; i++) {
-                insertIntervals.add(new Pair<>(insert.getTime(i), insert.getTime(i)));
+                insertIntervals.add(new Pair<>(insert.getTime(i) - lenQ + 1, insert.getTime(i) + lenQ - 1));
             }
         }
         if (bufferWriteBeginTime < Long.MAX_VALUE) {
@@ -33,25 +42,13 @@ public class OverflowBufferWrite {
         List<Pair<Long, Long>> updateIntervals = new ArrayList<>();
         if (update != null) {
             for (int i = 0; i < update.timeLength; i += 2) {
-                updateIntervals.add(new Pair<>(update.getTime(i), update.getTime(i + 1)));
+                updateIntervals.add(new Pair<>(update.getTime(i) - lenQ + 1, update.getTime(i + 1) + lenQ - 1));
             }
         }
-        insertOrUpdateIntervals = IntervalUtils.union(insertIntervals, updateIntervals);
-    }
-
-    public List<Pair<Long, Long>> getInsertOrUpdateIntervals() {
-        return insertOrUpdateIntervals;
-    }
-
-    public void setInsertOrUpdateIntervals(List<Pair<Long, Long>> insertOrUpdateIntervals) {
-        this.insertOrUpdateIntervals = insertOrUpdateIntervals;
+        return IntervalUtils.union(insertIntervals, updateIntervals);
     }
 
     public long getDeleteUntil() {
         return deleteUntil;
-    }
-
-    public void setDeleteUntil(long deleteUntil) {
-        this.deleteUntil = deleteUntil;
     }
 }
