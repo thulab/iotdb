@@ -1,7 +1,5 @@
 package cn.edu.thu.tsfiledb.qp.executor;
 
-import java.util.*;
-
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterExpression;
@@ -13,16 +11,18 @@ import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchQueryRequest;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
+import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.executor.iterator.MergeQuerySetIterator;
 import cn.edu.thu.tsfiledb.qp.executor.iterator.PatternQueryDataSetIterator;
 import cn.edu.thu.tsfiledb.qp.executor.iterator.QueryDataSetIterator;
-import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.logical.Operator;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.MergeQuerySetPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.SeriesSelectPlan;
 import cn.edu.thu.tsfiledb.qp.strategy.PhysicalGenerator;
+
+import java.util.*;
 
 public abstract class QueryProcessExecutor {
 
@@ -43,59 +43,59 @@ public abstract class QueryProcessExecutor {
 
 	public Iterator<QueryDataSet> processQuery(PhysicalPlan plan) throws QueryProcessorException {
 		switch (plan.getOperatorType()) {
-		case QUERY:
-			SeriesSelectPlan query = (SeriesSelectPlan) plan;
-			FilterExpression[] filterExpressions = query.getFilterExpressions();
-			return new QueryDataSetIterator(query.getPaths(), getFetchSize(), this, filterExpressions[0],
-					filterExpressions[1], filterExpressions[2]);
-		case MERGEQUERY:
-			MergeQuerySetPlan mergeQuery = (MergeQuerySetPlan) plan;
-			List<SeriesSelectPlan> selectPlans = mergeQuery.getSeriesSelectPlans();
-			if (selectPlans.size() == 1) {
-				return processQuery(selectPlans.get(0));
-			} else {
-				return new MergeQuerySetIterator(selectPlans, getFetchSize(), this);
-			}
-		case INDEXQUERY:
-			IndexQueryPlan indexQueryPlan = (IndexQueryPlan) plan;
-			MManager mManager = MManager.getInstance();
-			// check path and storage group
-			Path path = indexQueryPlan.getPaths().get(0);
-			if (!mManager.pathExist(path.getFullPath())) {
-				throw new QueryProcessorException(String.format("The timeseries %s does not exist", path));
-			}
-			try {
-				mManager.getFileNameByPath(path.getFullPath());
-			} catch (PathErrorException e) {
-				e.printStackTrace();
-				throw new QueryProcessorException(e.getMessage());
-			}
-			Path patterPath = indexQueryPlan.getPatterPath();
-			if (!mManager.pathExist(patterPath.getFullPath())) {
-				throw new QueryProcessorException(String.format("The timeseries %s does not exist", patterPath));
-			}
-			try {
-				mManager.getFileNameByPath(patterPath.getFullPath());
-			} catch (PathErrorException e) {
-				e.printStackTrace();
-				throw new QueryProcessorException(e.getMessage());
-			}
-			// check index for metadata
-			if (!mManager.checkPathIndex(path.getFullPath())) {
-				throw new QueryProcessorException(String.format("The timeseries %s hasn't been indexed", path));
-			}
-			KvMatchQueryRequest queryRequest = KvMatchQueryRequest
-					.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(),
-							indexQueryPlan.getPatterStarTime(), indexQueryPlan.getPatterEndTime(),
-							indexQueryPlan.getEpsilon())
-					.startTime(indexQueryPlan.getStartTime()).endTime(indexQueryPlan.getEndTime()).build();
-			if (indexQueryPlan.isHasParameter()) {
-				queryRequest.setAlpha(indexQueryPlan.getAlpha());
-				queryRequest.setBeta(indexQueryPlan.getBeta());
-			}
-			return new PatternQueryDataSetIterator(queryRequest, getFetchSize());
-		default:
-			throw new UnsupportedOperationException();
+			case QUERY:
+				SeriesSelectPlan query = (SeriesSelectPlan) plan;
+				FilterExpression[] filterExpressions = query.getFilterExpressions();
+				return new QueryDataSetIterator(query.getPaths(), getFetchSize(), this,
+						filterExpressions[0], filterExpressions[1], filterExpressions[2]);
+			case MERGEQUERY:
+				MergeQuerySetPlan mergeQuery = (MergeQuerySetPlan) plan;
+				List<SeriesSelectPlan> selectPlans = mergeQuery.getSeriesSelectPlans();
+				if (selectPlans.size() == 1) {
+					return processQuery(selectPlans.get(0));
+				} else {
+					return new MergeQuerySetIterator(selectPlans, getFetchSize(), this);
+				}
+			case INDEXQUERY:
+				IndexQueryPlan indexQueryPlan = (IndexQueryPlan) plan;
+				MManager mManager = MManager.getInstance();
+				// check path and storage group
+				Path path = indexQueryPlan.getPaths().get(0);
+				if (!mManager.pathExist(path.getFullPath())) {
+					throw new QueryProcessorException(String.format("The timeseries %s does not exist", path));
+				}
+				try {
+					mManager.getFileNameByPath(path.getFullPath());
+				} catch (PathErrorException e) {
+					e.printStackTrace();
+					throw new QueryProcessorException(e.getMessage());
+				}
+				Path patterPath = indexQueryPlan.getPatterPath();
+				if (!mManager.pathExist(patterPath.getFullPath())) {
+					throw new QueryProcessorException(String.format("The timeseries %s does not exist", patterPath));
+				}
+				try {
+					mManager.getFileNameByPath(patterPath.getFullPath());
+				} catch (PathErrorException e) {
+					e.printStackTrace();
+					throw new QueryProcessorException(e.getMessage());
+				}
+				// check index for metadata
+				if (!mManager.checkPathIndex(path.getFullPath())) {
+					throw new QueryProcessorException(String.format("The timeseries %s hasn't been indexed", path));
+				}
+				KvMatchQueryRequest queryRequest = KvMatchQueryRequest
+						.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(),
+								indexQueryPlan.getPatterStarTime(), indexQueryPlan.getPatterEndTime(),
+								indexQueryPlan.getEpsilon())
+						.startTime(indexQueryPlan.getStartTime()).endTime(indexQueryPlan.getEndTime()).build();
+				if (indexQueryPlan.isHasParameter()) {
+					queryRequest.setAlpha(indexQueryPlan.getAlpha());
+					queryRequest.setBeta(indexQueryPlan.getBeta());
+				}
+				return new PatternQueryDataSetIterator(queryRequest, getFetchSize());
+			default:
+				throw new UnsupportedOperationException();
 		}
 	}
 
@@ -129,20 +129,15 @@ public abstract class QueryProcessExecutor {
 		return fetchSize.get();
 	}
 
-	public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
+	public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
 
 	/**
 	 * execute update command and return whether the operator is successful.
-	 * 
-	 * @param path
-	 *            : update series path
-	 * @param startTime
-	 *            start time in update command
-	 * @param endTime
-	 *            end time in update command
-	 * @param value
-	 *            - in type of string
+	 *
+	 * @param path : update series path
+	 * @param startTime start time in update command
+	 * @param endTime end time in update command
+	 * @param value - in type of string
 	 * @return - whether the operator is successful.
 	 */
 	public abstract boolean update(Path path, long startTime, long endTime, String value) throws ProcessorException;
@@ -150,53 +145,59 @@ public abstract class QueryProcessExecutor {
 	/**
 	 * execute delete command and return whether the operator is successful.
 	 *
-	 * @param paths
-	 *            : delete series paths
-	 * @param deleteTime
-	 *            end time in delete command
+	 * @param paths : delete series paths
+	 * @param deleteTime end time in delete command
 	 * @return - whether the operator is successful.
 	 */
 	public boolean delete(List<Path> paths, long deleteTime) throws ProcessorException {
-		boolean result = true;
-		for (Path path : paths) {
-			result &= delete(path, deleteTime);
+		try {
+			boolean result = true;
+			MManager mManager = MManager.getInstance();
+			Set<String> pathSet = new HashSet<>();
+			for (Path p : paths) {
+				if (!mManager.pathExist(p.getFullPath())) {
+					throw new ProcessorException(String.format("Timeseries %s does not exist and cannot be delete its data", p.getFullPath()));
+				}
+				pathSet.addAll(mManager.getPaths(p.getFullPath()));
+			}
+			List<String> fullPath = new ArrayList<>();
+			fullPath.addAll(pathSet);
+			for (String path : fullPath) {
+				result &= delete(new Path(path), deleteTime);
+			}
+			return result;
+		} catch (PathErrorException e) {
+			throw new ProcessorException(e.getMessage());
 		}
-		return result;
 	}
 
 	/**
 	 * execute delete command and return whether the operator is successful.
-	 * 
-	 * @param path
-	 *            : delete series path
-	 * @param deleteTime
-	 *            end time in delete command
+	 *
+	 * @param path : delete series path
+	 * @param deleteTime end time in delete command
 	 * @return - whether the operator is successful.
 	 */
 	public abstract boolean delete(Path path, long deleteTime) throws ProcessorException;
 
 	/**
 	 * execute insert command and return whether the operator is successful.
-	 * 
-	 * @param path
-	 *            path to be inserted
-	 * @param insertTime
-	 *            - it's time point but not a range
-	 * @param value
-	 *            value to be inserted
+	 *
+	 * @param path path to be inserted
+	 * @param insertTime - it's time point but not a range
+	 * @param value value to be inserted
 	 * @return - Operate Type.
 	 */
 	public abstract int insert(Path path, long insertTime, String value) throws ProcessorException;
 
-	public abstract int multiInsert(String deltaObject, long insertTime, List<String> measurementList,
-			List<String> insertValues) throws ProcessorException;
+	public abstract int multiInsert(String deltaObject, long insertTime, List<String> measurementList, List<String> insertValues) throws ProcessorException;
 
 	public MManager getMManager() {
 		return MManager.getInstance();
 	}
 
 	public void addParameter(String key, Object value) {
-		if (parameters.get() == null) {
+		if(parameters.get() == null) {
 			parameters.set(new HashMap<>());
 		}
 		parameters.get().put(key, value);
@@ -217,15 +218,12 @@ public abstract class QueryProcessExecutor {
 
 	/**
 	 *
-	 * @param username
-	 *            updated user's name
-	 * @param newPassword
-	 *            new password
+	 * @param username updated user's name
+	 * @param newPassword new password
 	 * @return boolean
-	 * @throws AuthException
-	 *             exception in update user
+	 * @throws AuthException exception in update user
 	 */
-	public boolean updateUser(String username, String newPassword) throws AuthException {
+	public boolean updateUser(String username,String newPassword) throws AuthException{
 		return Authorizer.updateUserPassword(username, newPassword);
 	}
 
