@@ -38,7 +38,7 @@ public class PatternQueryDataSetIterator implements Iterator<QueryDataSet> {
             throw new RuntimeException(e.getMessage());
         }
         noNext = true;
-        return true;
+        return data.hasNextRecord();
     }
 
     @Override

@@ -184,7 +184,7 @@ public class KvMatchIndexManager implements IndexManager {
         try {
             for (Path columnPath : columnPaths) {
                 // 0. get configuration from store
-                IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath, new IndexConfig());
+                IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath.getFullPath(), new IndexConfig());
 
                 // 1. build index asynchronously
                 QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(columnPath, newFile.getFilePath());
@@ -212,7 +212,7 @@ public class KvMatchIndexManager implements IndexManager {
                     Pair<Long, Long> timeRange = fileInfo.getTimeRanges().get(i);
 
                     // 0. get configuration from store
-                    IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath, new IndexConfig());
+                    IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath.getFullPath(), new IndexConfig());
                     if (timeRange.right < indexConfig.getSinceTime()) continue;  // not in index range
 
                     // 1. build index for every data series.
@@ -270,7 +270,7 @@ public class KvMatchIndexManager implements IndexManager {
             token = FileNodeManager.getInstance().beginQuery(columnPath.getDeltaObjectToString());
 
             // 0. get configuration from store
-            IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath, new IndexConfig());
+            IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath.getFullPath(), new IndexConfig());
 
             // 1. get information of all files containing this column path.
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, queryRequest.getStartTime());
@@ -285,6 +285,7 @@ public class KvMatchIndexManager implements IndexManager {
                 throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) +")");
             }
             QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta());
+            List<Pair<Long, Long>> insertOrUpdateIntervals = overflowBufferWrite.getInsertOrUpdateIntervals(querySeries.size());
 
             // 4. search corresponding index files of data files in the query range
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
@@ -300,8 +301,8 @@ public class KvMatchIndexManager implements IndexManager {
                     Future<QueryResult> result = executor.submit(queryExecutor);
                     futureResults.add(result);
                 } else {  // the index of this file has not been built, this will not happen in normal circumstance (likely to happen between close operation and index building of new file finished)
-                    overflowBufferWrite.getInsertOrUpdateIntervals().add(fileInfo.getTimeInterval().get(0));
-                    overflowBufferWrite.setInsertOrUpdateIntervals(IntervalUtils.sortAndMergePair(overflowBufferWrite.getInsertOrUpdateIntervals()));
+                    insertOrUpdateIntervals.add(fileInfo.getTimeInterval().get(0));
+                    insertOrUpdateIntervals = IntervalUtils.sortAndMergePair(insertOrUpdateIntervals);
                 }
             }
 
@@ -315,15 +316,15 @@ public class KvMatchIndexManager implements IndexManager {
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
             overallResult.setCandidateRanges(IntervalUtils.sortAndMergePair(overallResult.getCandidateRanges()));
-            overallResult.setCandidateRanges(IntervalUtils.union(overallResult.getCandidateRanges(), overflowBufferWrite.getInsertOrUpdateIntervals()));
-            logger.info("Candidates: {}", overallResult.getCandidateRanges());
+            overallResult.setCandidateRanges(IntervalUtils.union(overallResult.getCandidateRanges(), insertOrUpdateIntervals));
+            logger.debug("Candidates: {}", overallResult.getCandidateRanges());
 
             // 7. scan the data in candidate ranges and find out actual answers
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
             QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals);
-            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, querySeries, request);
+            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, queryConfig);
             answers.sort(Comparator.comparingDouble(o -> o.right));
-            logger.info("Answers: {}", answers);
+            logger.debug("Answers: {}", answers);
 
             return constructQueryDataSet(answers, limitSize);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException | IllegalArgumentException e) {
@@ -378,31 +379,36 @@ public class KvMatchIndexManager implements IndexManager {
         return amendSeries(keyPoints);
     }
 
-    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, List<Double> querySeries, KvMatchQueryRequest request) {
+    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, QueryConfig queryConfig) {
         List<Pair<Pair<Long, Long>, Double>> result = new ArrayList<>();
 
-        // do z-normalization on query data
-        int lenQ = querySeries.size();
+        int lenQ = queryConfig.getQuerySeries().size();
+
         List<Double> normalizedQuerySeries = new ArrayList<>(lenQ);
-        double ex = 0, ex2 = 0;
-        for (double value : querySeries) {
-            ex += value;
-            ex2 += value * value;
-        }
-        double meanQ = ex / lenQ, stdQ = Math.sqrt(ex2 / lenQ - meanQ * meanQ);
-        for (double value : querySeries) {
-            normalizedQuerySeries.add((value - meanQ) / stdQ);
-        }
-        // sort the query data
         List<Integer> order = new ArrayList<>(lenQ);
-        List<Pair<Double, Integer>> tmpQuery = new ArrayList<>(lenQ);
-        for (int i = 0; i < lenQ; i++) {
-            tmpQuery.add(new Pair<>(normalizedQuerySeries.get(i), i));
-        }
-        tmpQuery.sort((o1, o2) -> o2.left.compareTo(o1.left));
-        for (int i = 0; i < lenQ; i++) {
-            normalizedQuerySeries.set(i, tmpQuery.get(i).left);
-            order.add(tmpQuery.get(i).right);
+        double meanQ = 0, stdQ = 0;
+        if (queryConfig.isNormalization()) {
+            // do z-normalization on query data
+            double ex = 0, ex2 = 0;
+            for (double value : queryConfig.getQuerySeries()) {
+                ex += value;
+                ex2 += value * value;
+            }
+            meanQ = ex / lenQ;
+            stdQ = Math.sqrt(ex2 / lenQ - meanQ * meanQ);
+            for (double value : queryConfig.getQuerySeries()) {
+                normalizedQuerySeries.add((value - meanQ) / stdQ);
+            }
+            // sort the query data
+            List<Pair<Double, Integer>> tmpQuery = new ArrayList<>(lenQ);
+            for (int i = 0; i < lenQ; i++) {
+                tmpQuery.add(new Pair<>(normalizedQuerySeries.get(i), i));
+            }
+            tmpQuery.sort((o1, o2) -> o2.left.compareTo(o1.left));
+            for (int i = 0; i < lenQ; i++) {
+                normalizedQuerySeries.set(i, tmpQuery.get(i).left);
+                order.add(tmpQuery.get(i).right);
+            }
         }
 
         // find answers in candidate ranges
@@ -426,8 +432,7 @@ public class KvMatchIndexManager implements IndexManager {
             lastKeyPoint = keyPoints.get(keyPoints.size() - 1);
             List<Double> series = amendSeries(keyPoints, scanInterval);
 
-            ex = 0;
-            ex2 = 0;
+            double ex = 0, ex2 = 0;
             int idx = 0;
             double[] T = new double[2 * lenQ];
             for (int i = 0; i < series.size(); i++) {
@@ -443,17 +448,28 @@ public class KvMatchIndexManager implements IndexManager {
                     long left = scanInterval.left + i - lenQ + 1;
                     if (left == keyPoints.get(idx).left) {  // remove non-exist timestamp
                         idx++;
-                        double mean = ex / lenQ;  // z
-                        double std = Math.sqrt(ex2 / lenQ - mean * mean);
 
-                        if ((request.getAlpha() == 1.0 && request.getBeta() == 0) ||
-                                (Math.abs(mean - meanQ) <= request.getBeta() && std / stdQ <= request.getBeta() && std / stdQ >= 1.0 / request.getAlpha())) {
-                            double dist = 0;
-                            for (int k = 0; k < lenQ && dist <= request.getEpsilon() * request.getEpsilon(); k++) {
-                                double x = (T[(order.get(k) + j)] - mean) / std;
-                                dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
+                        if (queryConfig.isNormalization()) {
+                            double mean = ex / lenQ;  // z
+                            double std = Math.sqrt(ex2 / lenQ - mean * mean);
+
+                            if (Math.abs(mean - meanQ) <= queryConfig.getBeta() && std / stdQ <= queryConfig.getBeta() && std / stdQ >= 1.0 / queryConfig.getAlpha()) {
+                                double dist = 0;
+                                for (int k = 0; k < lenQ && dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon(); k++) {
+                                    double x = (T[(order.get(k) + j)] - mean) / std;
+                                    dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
+                                }
+                                if (dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon()) {
+                                    result.add(new Pair<>(new Pair<>(left, scanInterval.left + i), Math.sqrt(dist)));
+                                }
                             }
-                            if (dist <= request.getEpsilon() * request.getEpsilon()) {
+                        } else {
+                            double dist = 0;
+                            for (int k = 0; k < lenQ && dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon(); k++) {
+                                double x = T[k + j];
+                                dist += (x - queryConfig.getQuerySeries().get(k)) * (x - queryConfig.getQuerySeries().get(k));
+                            }
+                            if (dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon()) {
                                 result.add(new Pair<>(new Pair<>(left, scanInterval.left + i), Math.sqrt(dist)));
                             }
                         }
