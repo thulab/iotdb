@@ -473,6 +473,28 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		}
 	}
 
+	public List<IntervalFileNode> collectQuery(String nameSpacePath, Map<String, Long> startTimes, long endTime)
+			throws FileNodeManagerException {
+		
+		FileNodeProcessor fileNodeProcessor = null;
+		try {
+			do {
+				fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(nameSpacePath, false);
+			} while (fileNodeProcessor == null);
+			LOGGER.debug("Get the FileNodeProcessor: {}, query.", fileNodeProcessor.getNameSpacePath());
+			List<IntervalFileNode> queryRet = fileNodeProcessor.collectQuery(startTimes, endTime);
+			return queryRet;
+		} catch (LRUManagerException e) {
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		} finally {
+			if (fileNodeProcessor != null) {
+				fileNodeProcessor.readUnlock();
+			}
+		}
+
+	}
+
 	public synchronized boolean mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
@@ -487,8 +509,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			return false;
 		}
 	}
-	
-	public synchronized boolean closeOneFileNode(String namespacePath) throws FileNodeManagerException{
+
+	public synchronized boolean closeOneFileNode(String namespacePath) throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
