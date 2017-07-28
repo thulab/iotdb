@@ -2,7 +2,6 @@ package cn.edu.thu.tsfiledb.engine.filenode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +37,7 @@ import cn.edu.thu.tsfiledb.engine.lru.LRUManager;
 import cn.edu.thu.tsfiledb.engine.overflow.io.OverflowProcessor;
 import cn.edu.thu.tsfiledb.exception.ErrorDebugException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
-import cn.edu.thu.tsfiledb.index.DataFileInfo;
+import cn.edu.thu.tsfiledb.index.common.DataFileInfo;
 import cn.edu.thu.tsfiledb.metadata.MManager;
 import cn.edu.thu.tsfiledb.sys.writelog.WriteLogManager;
 

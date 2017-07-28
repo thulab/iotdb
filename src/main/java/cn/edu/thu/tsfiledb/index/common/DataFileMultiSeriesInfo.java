@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.index;
+package cn.edu.thu.tsfiledb.index.common;
 
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;

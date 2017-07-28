@@ -3,6 +3,8 @@ package cn.edu.thu.tsfiledb.index;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfiledb.exception.IndexManagerException;
+import cn.edu.thu.tsfiledb.index.common.DataFileInfo;
+import cn.edu.thu.tsfiledb.index.common.DataFileMultiSeriesInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -38,8 +40,8 @@ public interface IndexManager {
      * Build index for data in the file, which should be a new data file flushed by close operation.
      * This process should be asynchronous, and not influence the close operation to complete immediately.
      *
-     * @param columnPaths    the column paths in the file need to build index, some one may has no data in the data file
-     * @param newFile        the data file created in the close operation
+     * @param columnPaths the column paths in the file need to build index, some one may has no data in the data file
+     * @param newFile     the data file created in the close operation
      * @return whether the operation is successful
      * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
@@ -47,9 +49,9 @@ public interface IndexManager {
 
     /**
      * Build index for data in the file list, and not overwrite exist ones,
-     * pending for merge manager to call the {@link this.mergeSwitch()} method to switch index files.
+     * pending for merge manager to call the {@link this#mergeSwitch(List)} method to switch index files.
      *
-     * @param newFileList    the data files leaves after the merge operation, the column paths in the file list need to build index, some one may has no data in some data file
+     * @param newFileList the data files leaves after the merge operation, the column paths in the file list need to build index, some one may has no data in some data file
      * @return whether the operation is successful
      * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */
@@ -60,7 +62,7 @@ public interface IndexManager {
      * and switch to the new index files along with the new data files.
      * Call this method after the merge operation has completed. Block index read and write during this process.
      *
-     * @param newFileList    the data files leaves after the merge operation, the column paths in the file list need to build index, some one may has no data in some data file
+     * @param newFileList the data files leaves after the merge operation, the column paths in the file list need to build index, some one may has no data in some data file
      * @return whether the operation is successful
      * @throws IndexManagerException if the given column path is not correct or some base service occurred error
      */

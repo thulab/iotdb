@@ -7,7 +7,6 @@ import java.util.List;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.thu.tsfile.common.utils.Pair;
-import cn.edu.thu.tsfile.format.Digest;
 import cn.edu.thu.tsfile.format.PageHeader;
 import cn.edu.thu.tsfile.timeseries.basis.TsFile;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterFactory;
@@ -17,7 +16,7 @@ import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.thu.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 import cn.edu.thu.tsfile.timeseries.read.PageReader;
-import cn.edu.thu.tsfiledb.index.OverflowBufferWrite;
+import cn.edu.thu.tsfiledb.index.common.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
