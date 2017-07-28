@@ -45,7 +45,8 @@ public class FileNodeManagerTest {
 	private FileNodeManager fManager = null;
 
 	private String deltaObjectId = "root.vehicle.d0";
-	private String deltaObjectId2 = "root.vehicle.d1";
+	private String deltaObjectId1 = "root.vehicle.d1";
+	private String deltaObjectId2 = "root.vehicle.d2";
 	private String measurementId = "s0";
 	private String measurementId6 = "s6";
 	private TSDataType dataType = TSDataType.INT32;
@@ -107,6 +108,105 @@ public class FileNodeManagerTest {
 	}
 
 	@Test
+	public void testCollectQuery() {
+
+		// set root.vehicle
+		MetadataManagerHelper.initMetadata2();
+		// create bufferwrite data
+		// deltaObjectId0
+		List<Pair<Long, Long>> d1TimeList = new ArrayList<>();
+		d1TimeList.add(new Pair<Long, Long>(100L, 200L));
+		d1TimeList.add(new Pair<Long, Long>(250L, 300L));
+		d1TimeList.add(new Pair<Long, Long>(400L, 500L));
+		createBufferwriteFiles(d1TimeList, deltaObjectId);
+		// deltaObjectId1
+		List<Pair<Long, Long>> d2TimeList = new ArrayList<>();
+		d2TimeList.add(new Pair<Long, Long>(50L, 120L));
+		d2TimeList.add(new Pair<Long, Long>(150L, 200L));
+		d2TimeList.add(new Pair<Long, Long>(250L, 500L));
+		d2TimeList.add(new Pair<Long, Long>(600L, 1000L));
+		createBufferwriteFiles(d2TimeList, deltaObjectId1);
+		// deltaObjectId2
+		List<Pair<Long, Long>> d3TimeList = new ArrayList<>();
+		d3TimeList.add(new Pair<Long, Long>(1000L, 2000L));
+		d3TimeList.add(new Pair<Long, Long>(3000L, 4000L));
+		d3TimeList.add(new Pair<Long, Long>(4500L, 5000L));
+		d3TimeList.add(new Pair<Long, Long>(6000L, 10000L));
+		createBufferwriteFiles(d3TimeList, deltaObjectId2);
+		
+		// query for collection
+		fManager = FileNodeManager.getInstance();
+		String nsp = null;
+		try {
+			List<String> fileNodeNames = MManager.getInstance().getAllFileNames();
+			assertEquals(1, fileNodeNames.size());
+			assertEquals("root.vehicle", fileNodeNames.get(0));
+			nsp = fileNodeNames.get(0);
+		} catch (PathErrorException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		try {
+			int token = fManager.beginQuery(nsp);
+			assertEquals(0, token);
+			List<IntervalFileNode> files = fManager.collectQuery(nsp, new HashMap<>(), 200);
+			assertEquals(3, files.size());
+			IntervalFileNode temp = files.get(0);
+			assertEquals(100, temp.getStartTime(deltaObjectId));
+			assertEquals(200, temp.getEndTime(deltaObjectId));
+			temp = files.get(1);
+			assertEquals(50, temp.getStartTime(deltaObjectId1));
+			assertEquals(120, temp.getEndTime(deltaObjectId1));
+			temp = files.get(2);
+			assertEquals(150, temp.getStartTime(deltaObjectId1));
+			assertEquals(200, temp.getEndTime(deltaObjectId1));
+
+			// for next qury startTime map
+			Map<String , Long> startTimes = new HashMap<>();
+			startTimes.put(deltaObjectId, 200L);
+			startTimes.put(deltaObjectId1, 200L);
+			int token2 = fManager.beginQuery(nsp);
+			assertEquals(1, token2);
+			fManager.endQuery(nsp, token);
+			// for next query
+			files = fManager.collectQuery(nsp, startTimes, 4000L);
+			assertEquals(6, files.size());
+			
+			temp = files.get(0);
+			assertEquals(250, temp.getStartTime(deltaObjectId));
+			assertEquals(300, temp.getEndTime(deltaObjectId));
+			temp = files.get(1);
+			assertEquals(400, temp.getStartTime(deltaObjectId));
+			assertEquals(500, temp.getEndTime(deltaObjectId));
+			
+			temp = files.get(2);
+			assertEquals(250, temp.getStartTime(deltaObjectId1));
+			assertEquals(500, temp.getEndTime(deltaObjectId1));
+			temp = files.get(3);
+			assertEquals(600, temp.getStartTime(deltaObjectId1));
+			assertEquals(1000, temp.getEndTime(deltaObjectId1));
+			
+			temp = files.get(4);
+			assertEquals(1000, temp.getStartTime(deltaObjectId2));
+			assertEquals(2000, temp.getEndTime(deltaObjectId2));
+			temp = files.get(5);
+			assertEquals(3000, temp.getStartTime(deltaObjectId2));
+			assertEquals(4000, temp.getEndTime(deltaObjectId2));
+			
+			fManager.endQuery(nsp, token2);
+			
+			fManager.closeAll();
+			
+		} catch (FileNodeManagerException e) {
+			e.printStackTrace();
+		}
+	
+		
+		
+	}
+
+	@Test
 	public void testBufferwriteAndAddMetadata() {
 		createBufferwriteInMemory(new Pair<Long, Long>(1000L, 1001L), measurementId);
 		fManager = FileNodeManager.getInstance();
@@ -144,9 +244,9 @@ public class FileNodeManagerTest {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	@Test
-	public void testBufferwriteAndAddMetadata2(){
+	public void testBufferwriteAndAddMetadata2() {
 		createBufferwriteInMemory(new Pair<Long, Long>(10L, 101L), measurementId);
 		fManager = FileNodeManager.getInstance();
 
@@ -503,7 +603,7 @@ public class FileNodeManagerTest {
 			// range 1: 2-208
 			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 			assertEquals(100, temp.getStartTime(deltaObjectId));
-			assertEquals(-1, temp.getStartTime(deltaObjectId2));
+			assertEquals(-1, temp.getStartTime(deltaObjectId1));
 			assertEquals(200, temp.getEndTime(deltaObjectId));
 			// range 2: 202-400
 			temp = bufferwriteFiles.get(1);
@@ -605,17 +705,17 @@ public class FileNodeManagerTest {
 		pairList.add(new Pair<Long, Long>(500L, 600L));
 		pairList.add(new Pair<Long, Long>(700L, 800L));
 		createBufferwriteFiles(pairList, deltaObjectId);
-		createBufferwriteFiles(pairList, deltaObjectId2);
+		createBufferwriteFiles(pairList, deltaObjectId1);
 		long[] overflowInsert1 = { 2, 4, 6, 8 };
 		long[] overflowInsert2 = { 202, 204, 206, 208 };
 		// new file: 2-208 300-400 500-600 700-800
 
 		// not close
 		createOverflowInserts(overflowInsert1, deltaObjectId);
-		createOverflowInserts(overflowInsert1, deltaObjectId2);
+		createOverflowInserts(overflowInsert1, deltaObjectId1);
 		// not close
 		createOverflowInserts(overflowInsert2, deltaObjectId);
-		createOverflowInserts(overflowInsert2, deltaObjectId2);
+		createOverflowInserts(overflowInsert2, deltaObjectId1);
 
 		fManager = FileNodeManager.getInstance();
 		try {
@@ -635,7 +735,7 @@ public class FileNodeManagerTest {
 			// range 1: 2-208
 			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 			assertEquals(100, temp.getStartTime(deltaObjectId));
-			assertEquals(-1, temp.getStartTime(deltaObjectId2));
+			assertEquals(-1, temp.getStartTime(deltaObjectId1));
 			assertEquals(200, temp.getEndTime(deltaObjectId));
 			// range 2: 202-400
 			temp = bufferwriteFiles.get(1);

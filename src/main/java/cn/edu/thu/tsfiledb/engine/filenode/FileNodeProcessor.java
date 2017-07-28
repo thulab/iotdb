@@ -595,6 +595,7 @@ public class FileNodeProcessor extends LRUProcessor {
 				}
 			}
 		} else {
+			// just select the file whose time interval is between startTime and endTime
 			for (IntervalFileNode fileNode : newFileNodes) {
 				if (fileNode.isClosed()) {
 					boolean isSatisfied = true;
@@ -606,13 +607,13 @@ public class FileNodeProcessor extends LRUProcessor {
 							break;
 						}
 						if (startTimes.containsKey(deltaObjectId)) {
-							if(startTime>startTimes.get(deltaObjectId)){
+							if (startTime < startTimes.get(deltaObjectId)) {
 								isSatisfied = false;
 								break;
 							}
 						}
 					}
-					if(isSatisfied){
+					if (isSatisfied) {
 						queryRet.add(fileNode.backUp());
 					}
 				}
