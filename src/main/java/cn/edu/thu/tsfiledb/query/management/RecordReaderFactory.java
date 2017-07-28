@@ -38,9 +38,13 @@ public class RecordReaderFactory {
 	}
 
 	public RecordReader getRecordReader(String deltaObjectUID, String measurementID,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
+			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, int readToken)
 			throws ProcessorException {
-		int token = readLockManager.lock(deltaObjectUID, measurementID);
+		// no lock read upper
+		int token = readToken;
+		if (readToken == -1) {
+			token = readLockManager.lock(deltaObjectUID, measurementID);
+		}
 		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectUID, measurementID)) {
 			return readLockManager.recordReaderCache.get(deltaObjectUID, measurementID);
 		} else {

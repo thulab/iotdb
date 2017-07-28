@@ -9,6 +9,7 @@ import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.IntervalUtils;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.thu.tsfile.timeseries.read.ReaderManager;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
@@ -25,6 +26,8 @@ import cn.edu.thu.tsfiledb.index.common.DataFileMultiSeriesInfo;
 import cn.edu.thu.tsfiledb.index.common.OverflowBufferWrite;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
+import cn.edu.thu.tsfiledb.query.management.ReadLockManager;
+import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -276,11 +279,11 @@ public class KvMatchIndexManager implements IndexManager {
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, queryRequest.getStartTime());
 
             // 2. fetch non-indexed ranges from overflow manager
-            OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath);
+            OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath, token);
 
             // 3. propagate query series and configurations
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
-            List<Double> querySeries = getQuerySeries(request);
+            List<Double> querySeries = getQuerySeries(request, token);
             if (querySeries.size() < 2 * indexConfig.getWindowLength() - 1) {
                 throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) +")");
             }
@@ -320,11 +323,14 @@ public class KvMatchIndexManager implements IndexManager {
 
             // 7. scan the data in candidate ranges and find out actual answers
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
-            QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals);
+            RecordReaderFactory.getInstance().removeRecordReader(columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());
+
+            QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals, token);
             List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, querySeries, request);
             answers.sort(Comparator.comparingDouble(o -> o.right));
             logger.info("Answers: {}", answers);
 
+            RecordReaderFactory.getInstance().removeRecordReader(columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());
             return constructQueryDataSet(answers, limitSize);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException | IllegalArgumentException e) {
             logger.error(e.getMessage(), e.getCause());
@@ -367,9 +373,9 @@ public class KvMatchIndexManager implements IndexManager {
         return dataSet;
     }
 
-    private List<Double> getQuerySeries(KvMatchQueryRequest request) throws ProcessorException, PathErrorException, IOException {
+    private List<Double> getQuerySeries(KvMatchQueryRequest request, int readToekn) throws ProcessorException, PathErrorException, IOException {
         List<Pair<Long, Long>> timeInterval = new ArrayList<>(Collections.singleton(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime())));
-        QueryDataSet dataSet = overflowQueryEngine.query(request.getQueryPath(), timeInterval);
+        QueryDataSet dataSet = overflowQueryEngine.query(request.getQueryPath(), timeInterval, readToekn);
         List<Pair<Long, Double>> keyPoints = new ArrayList<>();
         while (dataSet.next()) {
             RowRecord row = dataSet.getCurrentRecord();

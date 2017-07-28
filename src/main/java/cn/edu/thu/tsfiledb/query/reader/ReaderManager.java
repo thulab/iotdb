@@ -97,6 +97,8 @@ public class ReaderManager {
     }
 
     /**
+     * Close file stream.
+     *
      * @throws IOException
      */
     public void close() throws IOException {

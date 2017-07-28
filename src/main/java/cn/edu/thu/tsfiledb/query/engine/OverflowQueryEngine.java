@@ -75,7 +75,7 @@ public class OverflowQueryEngine {
                               FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize) throws ProcessorException, IOException, PathErrorException {
         clearQueryDataSet(queryDataSet);
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
-            return readWithoutFilter(paths, queryDataSet, fetchSize, false);
+            return readWithoutFilter(paths, queryDataSet, fetchSize, -1);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
             return crossColumnQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
@@ -117,7 +117,7 @@ public class OverflowQueryEngine {
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 (SingleSeriesFilterExpression) timeFilter,
                 (SingleSeriesFilterExpression) freqFilter,
-                (SingleSeriesFilterExpression) valueFilter);
+                (SingleSeriesFilterExpression) valueFilter, -1);
 
         // Get 4 params
         List<Object> params = getOverflowInfoAndFilterDataInMem((SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
@@ -150,14 +150,14 @@ public class OverflowQueryEngine {
     /**
      * Query type 1: read without filter.
      */
-    private QueryDataSet readWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, boolean onlyMemory) throws ProcessorException, IOException {
+    private QueryDataSet readWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, int readToken) throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
                 @Override
                 public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
                     try {
-                        return readOneColumnWithoutFilter(p, res, fetchSize);
+                        return readOneColumnWithoutFilter(p, res, fetchSize, readToken);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -175,12 +175,13 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize, int readToken) throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectID = path.getDeltaObjectToString();
         String measurementID = path.getMeasurementToString();
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID, null, null, null);
+        RecordReader recordReader = RecordReaderFactory.getInstance().
+                getRecordReader(deltaObjectID, measurementID, null, null, null, readToken);
 
         if (res == null) {
             // get four overflow params
@@ -242,7 +243,7 @@ public class OverflowQueryEngine {
         String deltaObjectId = path.getDeltaObjectToString();
         String measurementId = path.getMeasurementToString();
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId, timeFilter, freqFilter, valueFilter);
+        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId, timeFilter, freqFilter, valueFilter, -1);
 
         if (res == null) {
             // get four overflow params
@@ -333,7 +334,7 @@ public class OverflowQueryEngine {
             String measurement = path.getMeasurementToString();
             String device_sensor = deltaObject + "." + measurement;
 
-            RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObject, measurement, null, null, null);
+            RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObject, measurement, null, null, null, -1);
 
             // Get 4 params
             List<Object> params = getOverflowInfoAndFilterDataInMem(null, null, null, null, recordReader.insertPageInMemory, recordReader.overflowInfo);
@@ -374,7 +375,7 @@ public class OverflowQueryEngine {
         String deltaObjectUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getDeltaObjectUID();
         String measurementUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getMeasurementUID();
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, freqFilter, valueFilter);
+        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, freqFilter, valueFilter, -1);
         // Get 4 params
         List<Object> params = getOverflowInfoAndFilterDataInMem( null, freqFilter, valueFilter, res, recordReader.insertPageInMemory, recordReader.overflowInfo);
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
@@ -662,7 +663,7 @@ public class OverflowQueryEngine {
                 String key = series.getDeltaObjectUID() + "." + series.getMeasurementUID();
                 if (!hashSet.contains(key)) {
                     RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(series.getDeltaObjectUID(), series.getMeasurementUID(),
-                            null, null, null);
+                            null, null, null, -1);
                     if (recordReader.insertAllData != null) {
                         recordReader.insertAllData.readStatusReset();
                     }
@@ -688,7 +689,7 @@ public class OverflowQueryEngine {
      * @throws IOException
      * @throws ProcessorException
      */
-    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals) throws PathErrorException, IOException, ProcessorException {
+    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals, int readToken) throws PathErrorException, IOException, ProcessorException {
         List<Path> pathList = new ArrayList<>();
         pathList.add(path);
 
@@ -705,11 +706,13 @@ public class OverflowQueryEngine {
                 fe = FilterFactory.or(fe, tmpAnd);
             }
         }
-        return query(pathList, fe, null, null, null,  1000);
+
+        return readWithoutFilter(pathList, null, 1000, readToken);
     }
 
     /**
      * For third kv-index, get the OverflowData and BufferWriteData separately only in memory.
+     * No use to release read lock, because this method will not use alone.
      *
      * @param path kv-index path
      * @return
@@ -717,11 +720,12 @@ public class OverflowQueryEngine {
      * @throws IOException
      * @throws ProcessorException
      */
-    public OverflowBufferWrite getDataInBufferWriteSeparateWithOverflow(Path path) throws PathErrorException, IOException, ProcessorException {
+    public OverflowBufferWrite getDataInBufferWriteSeparateWithOverflow(Path path, int readToken) throws PathErrorException, IOException, ProcessorException {
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID, null, null, null);
+        RecordReader recordReader = RecordReaderFactory.getInstance().
+                getRecordReader(deltaObjectUID, measurementUID, null, null, null, readToken);
 
         long bufferWriteBeginTime = Long.MAX_VALUE;
         if (recordReader.bufferWritePageList != null && recordReader.bufferWritePageList.size() > 0) {
@@ -746,6 +750,8 @@ public class OverflowQueryEngine {
                 }
             }
         }
+
+        RecordReaderFactory.getInstance().removeRecordReader(deltaObjectUID, measurementUID);
         return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, bufferWriteBeginTime);
     }
 
