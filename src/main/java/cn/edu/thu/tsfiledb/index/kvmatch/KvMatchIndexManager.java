@@ -59,6 +59,12 @@ public class KvMatchIndexManager implements IndexManager {
         executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
         overflowQueryEngine = new OverflowQueryEngine();
         try {
+            File file = new File(CONFIG_FILE_PATH);
+            if (!file.getParentFile().exists()) {
+                if (!file.getParentFile().mkdirs()) {
+                    throw new IOException("Can not create directory " + file.getParent());
+                }
+            }
             indexConfigStore = serializeUtil.deserialize(CONFIG_FILE_PATH).orElse(new HashMap<>());
         } catch (IOException e) {
             logger.error(e.getMessage(), e.getCause());

@@ -55,30 +55,16 @@ public class SyntheticDataGenerator {
 
         createTimeSeriesMetadata();
 
-        List<Integer> s1 = new ArrayList<>(length);
-        List<Long> s2 = new ArrayList<>(length);
-        int s1Min = Integer.MAX_VALUE;
-        long s2Min = Long.MAX_VALUE;
-
+        Statement statement = connection.createStatement();
         int x1 = ThreadLocalRandom.current().nextInt(-5, 5);
-        long x2 = ThreadLocalRandom.current().nextLong(-5, 5);
-        for (int i = 0; i < length; i++) {
-            s1.add(x1);
-            s2.add(x2);
-
-            if (x1 < s1Min) s1Min = x1;
-            if (x2 < s2Min) s2Min = x2;
-
-            int step = ThreadLocalRandom.current().nextInt(-1, 1);
-            x1 += step;
-            x2 += step;
-        }
-
         for (int i = 0; i < length; i++) {
             if (i % 10000 == 0) {
                 logger.info("{}", i);
             }
-            insertData(t, s1.get(i) - s1Min, s2.get(i) - s2Min);
+
+            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, x1));
+
+            x1 += ThreadLocalRandom.current().nextInt(-1, 1);
             t += timeInterval;
         }
 
