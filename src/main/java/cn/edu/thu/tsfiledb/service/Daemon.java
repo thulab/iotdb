@@ -36,6 +36,7 @@ public class Daemon {
     private MBeanServer mbs;
     private DBDao dBdao;
     private JDBCServerMBean jdbcMBean;
+    private DataCollectServer dataCollectServer;
 
     public Daemon() {
         mbs = ManagementFactory.getPlatformMBeanServer();
@@ -74,6 +75,8 @@ public class Daemon {
         registJDBCServer();
 
         startCloseAndMergeServer();
+        startDataCollectServer();
+        
     }
 
     private void maybeInitJmx() {
@@ -120,6 +123,11 @@ public class Daemon {
         FileNodeManager.getInstance().managerRecovery();
     }
 
+    private void startDataCollectServer(){
+    		dataCollectServer = new DataCollectServer();
+    		dataCollectServer.startServer();
+    }
+    
     /**
      * Recover data using system log.
      *

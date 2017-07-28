@@ -63,6 +63,7 @@ public class TsfileDBDescriptor {
 		try {
 			properties.load(inputStream);
 			conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",conf.rpcPort+""));
+			conf.dataCollectPort = Integer.parseInt(properties.getProperty("data_collect_port", conf.dataCollectPort+""));
 			
 			conf.enableWal = Boolean.parseBoolean(properties.getProperty("enable_wal", conf.enableWal+""));
 

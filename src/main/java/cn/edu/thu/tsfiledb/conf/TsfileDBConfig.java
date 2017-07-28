@@ -13,6 +13,11 @@ public class TsfileDBConfig {
 	public int rpcPort = 6667;
 
 	/**
+	 * Port which DataCollect server listens to
+	 */
+	public int dataCollectPort = 6668;
+
+	/**
 	 * Is write ahead log enable
 	 */
 	public boolean enableWal = false;

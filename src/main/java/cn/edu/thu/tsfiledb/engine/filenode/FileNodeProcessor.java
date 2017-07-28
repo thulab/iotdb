@@ -577,6 +577,51 @@ public class FileNodeProcessor extends LRUProcessor {
 		return queryStructure;
 	}
 
+	public List<IntervalFileNode> collectQuery(Map<String, Long> startTimes, long endTime) {
+		List<IntervalFileNode> queryRet = new ArrayList<>();
+		if (startTimes.isEmpty()) {
+			for (IntervalFileNode fileNode : newFileNodes) {
+				if (fileNode.isClosed()) {
+					boolean isSatisfied = true;
+					for (long time : fileNode.getEndTimeMap().values()) {
+						if (time > endTime) {
+							isSatisfied = false;
+							break;
+						}
+					}
+					if (isSatisfied) {
+						queryRet.add(fileNode.backUp());
+					}
+				}
+			}
+		} else {
+			// just select the file whose time interval is between startTime and endTime
+			for (IntervalFileNode fileNode : newFileNodes) {
+				if (fileNode.isClosed()) {
+					boolean isSatisfied = true;
+					for (Entry<String, Long> entry : fileNode.getStartTimeMap().entrySet()) {
+						String deltaObjectId = entry.getKey();
+						long startTime = entry.getValue();
+						if (fileNode.getEndTime(deltaObjectId) > endTime) {
+							isSatisfied = false;
+							break;
+						}
+						if (startTimes.containsKey(deltaObjectId)) {
+							if (startTime < startTimes.get(deltaObjectId)) {
+								isSatisfied = false;
+								break;
+							}
+						}
+					}
+					if (isSatisfied) {
+						queryRet.add(fileNode.backUp());
+					}
+				}
+			}
+		}
+		return queryRet;
+	}
+
 	public void merge() throws FileNodeProcessorException {
 
 		LOGGER.debug("Merge: the nameSpacePath {} is begining to merge. {}", nameSpacePath, LOCK_SIGNAL);

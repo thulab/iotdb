@@ -11,7 +11,6 @@ import java.util.Map;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import org.apache.thrift.TException;
-import org.apache.thrift.server.ServerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +63,7 @@ import cn.edu.thu.tsfiledb.sys.writelog.WriteLogManager;
  * Thrift RPC implementation at server side
  */
 
-public class TSServiceImpl implements TSIService.Iface, ServerContext {
+public class TSServiceImpl implements TSIService.Iface {
 
 	private WriteLogManager writeLogManager;
 	private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());

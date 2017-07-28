@@ -320,3 +320,40 @@ struct TSColumnSchema{
 	3: optional string encoding;
 	4: optional map<string, string> otherArgs;
 }
+
+service TSDataCollectService{
+    TSFileNodeNameAllResp getAllFileNodeName();
+    TSFileNodeNameResp getFileNode(1:TSFileNodeNameReq req);
+    TSBackFileNodeResp backFileNode(1:TSBackFileNodeReq req);
+}
+
+struct TSFileNodeNameAllResp {
+    1: required list<string> fileNodesList;
+}
+
+struct TSFileNodeNameReq {
+    1: required string nameSpacePath;
+    2: required map<string, i64> startTimes;
+    3: required i64 endTime;
+}
+
+struct TSFileNodeNameResp {
+    1: required list<TSFileInfo> fileInfoList;
+    2: required i32 token;
+}
+
+struct TSBackFileNodeReq {
+    1: required string nameSpacePath;
+    2: required list<TSFileInfo> fileInfoList;
+    3: required i32 token;
+}
+
+struct TSBackFileNodeResp {
+    1: required bool status;
+}
+
+struct TSFileInfo {
+    1: required string filePath;
+    2: required map<string,i64> startTimes
+    3: required map<string,i64> endTimes
+}
