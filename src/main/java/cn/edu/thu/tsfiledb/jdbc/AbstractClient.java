@@ -82,7 +82,7 @@ public abstract class AbstractClient {
 		
 	}
 	
-	public static void output(ResultSet res, boolean printToConsole, String statement) {
+	public static void output(ResultSet res, boolean printToConsole, String statement) throws TsfileSQLException {
 		try {
 			int cnt = 0;
 			ResultSetMetaData resultSetMetaData = res.getMetaData();
@@ -134,8 +134,8 @@ public abstract class AbstractClient {
 			}
 			printBlockLine(printTimestamp, colCount, res);
 			System.out.println("record number = " + cnt);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
+		} catch (SQLException e) {
+			throw new TsfileSQLException(e.getMessage());
 		}
 	}
 
