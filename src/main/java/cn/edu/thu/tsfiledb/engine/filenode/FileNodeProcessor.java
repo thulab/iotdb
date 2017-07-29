@@ -719,26 +719,37 @@ public class FileNodeProcessor extends LRUProcessor {
 		//
 		// merge index begin
 		//
-		switchMergeIndex();
+		List<DataFileMultiSeriesInfo> newFileListForIndex = getMergeIndexFiles();
+		MergeIndex(newFileListForIndex);
 		//
 		// merge index end
 		//
-		switchMergeIndex();
+
 		//
 		// change status from wait to work
 		//
 		switchWaitingToWorkingv2(backupIntervalFiles);
 	}
 
-	private void switchMergeIndex() throws FileNodeProcessorException {
+	private void swithMeregeIndex(List<DataFileMultiSeriesInfo> newFileListForIndex) throws FileNodeProcessorException {
+		if (!newFileListForIndex.isEmpty()) {
+			try {
+				KvMatchIndexManager.getInstance().mergeSwitch(newFileListForIndex);
+			} catch (IndexManagerException e) {
+				e.printStackTrace();
+				throw new FileNodeProcessorException(e.getMessage());
+			}
+		}
+	}
+
+	private List<DataFileMultiSeriesInfo> getMergeIndexFiles() throws FileNodeProcessorException {
 		try {
 			List<String> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+			List<DataFileMultiSeriesInfo> dataFileMultiSeriesInfos = new ArrayList<>();
 			if (!allIndexSeries.isEmpty()) {
-				LOGGER.info(
-						"merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
+				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
 						nameSpacePath, allIndexSeries);
 				List<Path> paths = new ArrayList<>();
-				List<DataFileMultiSeriesInfo> dataFileMultiSeriesInfos = new ArrayList<>();
 				for (String series : allIndexSeries) {
 					paths.add(new Path(series));
 				}
@@ -760,19 +771,23 @@ public class FileNodeProcessor extends LRUProcessor {
 						}
 					}
 				}
-				/*
-				 * merge build
-				 */
-				if(!dataFileMultiSeriesInfos.isEmpty()){
-					KvMatchIndexManager.getInstance().mergeBuild(dataFileMultiSeriesInfos);
-				}
 			}
+			return dataFileMultiSeriesInfos;
 		} catch (PathErrorException e) {
 			LOGGER.error(e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
-		} catch (IndexManagerException e) {
-			e.printStackTrace();
-			throw new FileNodeProcessorException(e.getMessage());
+		}
+
+	}
+
+	private void MergeIndex(List<DataFileMultiSeriesInfo> dataFileMultiSeriesInfos) throws FileNodeProcessorException {
+		if (!dataFileMultiSeriesInfos.isEmpty()) {
+			try {
+				KvMatchIndexManager.getInstance().mergeBuild(dataFileMultiSeriesInfos);
+			} catch (IndexManagerException e) {
+				e.printStackTrace();
+				throw new FileNodeProcessorException(e.getMessage());
+			}
 		}
 	}
 
@@ -961,6 +976,15 @@ public class FileNodeProcessor extends LRUProcessor {
 						fileNode.overflowChangeType = OverflowChangeType.CHANGED;
 					}
 				}
+				//
+				// switch the index file
+				//
+				List<DataFileMultiSeriesInfo> newFileListForIndex = getMergeIndexFiles();
+				swithMeregeIndex(newFileListForIndex);
+				//
+				// switch the index file end
+				//
+
 				// overflow switch
 				overflowProcessor.switchMergeToWorking();
 				// write status to file
