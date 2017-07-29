@@ -1,23 +1,16 @@
 package cn.edu.thu.tsfiledb.service;
 
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import cn.edu.thu.tsfiledb.service.rpc.thrift.*;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSBackFileNodeReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSBackFileNodeResp;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSDataCollectService;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileInfo;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameAllResp;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameResp;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class DataCollectClient {
@@ -49,7 +42,8 @@ public class DataCollectClient {
     			}
     			if (!transport.isOpen()) {
     			    transport.open();
-    			}        		client = new TSDataCollectService.Client(new TBinaryProtocol(transport));
+    			}
+    			client = new TSDataCollectService.Client(new TBinaryProtocol(transport));
         		TSFileNodeNameAllResp resp = client.getAllFileNodeName();
         		return resp;
 		} catch (Exception e) {

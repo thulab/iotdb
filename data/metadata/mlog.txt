@@ -1,0 +1,7 @@
+0,root.vehicle.d0.s0,INT32,RLE
+0,root.vehicle.d0.s1,INT64,RLE
+0,root.vehicle.d0.s2,FLOAT,RLE
+0,root.vehicle.d1.s0,INT32,RLE
+0,root.vehicle.d1.s2,FLOAT,RLE
+2,root.vehicle
+0,root.vehicle.d0.s3,INT32,RLE
