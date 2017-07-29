@@ -1,7 +1,6 @@
 package cn.edu.thu.tsfiledb.jdbc;
 
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -11,11 +10,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +38,8 @@ public abstract class AbstractClient {
 	
 	protected static final String MAX_PRINT_ROW_COUNT_ARGS = "maxPRC";
 	protected static final String MAX_PRINT_ROW_COUNT_NAME = "maxPrintRowCount";
+	
+	protected static final String SET_MAX_DISPLAY_NUM = "set max_display_num";
 	protected static int maxPrintRowCount = 1000;
 
 	protected static final String SET_TIMESTAMP_DISPLAY = "set time_display_type";
@@ -109,11 +106,15 @@ public abstract class AbstractClient {
 
 				for (int i = 1; i < colCount; i++) {
 					if (printToConsole && cnt < maxPrintRowCount) {
-					    	if(resultSetMetaData.getColumnLabel(i).trim().toLowerCase().indexOf(TIME_KEY_WORD) != -1){
-					    	    	System.out.printf(formatValue, formatDatetime(res.getLong(i)));
-					    	} else{
+						if (resultSetMetaData.getColumnLabel(i).trim().toLowerCase().indexOf(TIME_KEY_WORD) != -1) {
+							try {
+								System.out.printf(formatValue, formatDatetime(res.getLong(i)));
+							} catch (Exception e) {
+								System.out.printf(formatValue, "null");
+							}
+						} else {
 							System.out.printf(formatValue, String.valueOf(res.getString(i)));
-					    	}
+						}
 					}
 				}
 
@@ -196,17 +197,17 @@ public abstract class AbstractClient {
 		case "long":
 		case "number":
 			maxTimeLength = maxValueLength;
-			timeFormat = newTimeFormat.toLowerCase();
+			timeFormat = newTimeFormat.trim().toLowerCase();
 			break;
 		case "default":
 		case "iso8601":
 			maxTimeLength = ISO_DATETIME_LEN;
-			timeFormat = newTimeFormat.toLowerCase();
+			timeFormat = newTimeFormat.trim().toLowerCase();
 			break;
 		default:
 			// use java default SimpleDateFormat to check whether input time format is legal
 			// if illegal, it will throw an exception
-			new SimpleDateFormat(newTimeFormat);
+			new SimpleDateFormat(newTimeFormat.trim());
 			maxTimeLength = TIMESTAMP_STR.length() > newTimeFormat.length() ? TIMESTAMP_STR.length() : newTimeFormat.length();
 			timeFormat = newTimeFormat;
 			break;
@@ -221,13 +222,22 @@ public abstract class AbstractClient {
 	private static void setFetchSize(String fetchSizeString){
 		fetchSize = Integer.parseInt(fetchSizeString.trim());
 	}
+	
+	protected static void setMaxDisplayNumber(String maxDisplayNum){
+		maxPrintRowCount = Integer.parseInt(maxDisplayNum.trim());
+		if (maxPrintRowCount < 0) {
+			maxPrintRowCount = Integer.MAX_VALUE;
+		}
+	}
 
 	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSet res) throws SQLException {
 		StringBuilder blockLine = new StringBuilder();
+		int tmp = Integer.MIN_VALUE;
 		for (int i = 0; i < colCount - 1; i++) {
 			int len = res.getMetaData().getColumnLabel(i + 1).length();
-			maxValueLength = maxValueLength < len ? len : maxValueLength;
+			tmp = tmp > len ? tmp : len;
 		}
+		maxValueLength = tmp;
 		if (printTimestamp) {
 			blockLine.append("+").append(StringUtils.repeat('-', maxTimeLength)).append("+");
 		} else {
@@ -339,7 +349,23 @@ public abstract class AbstractClient {
 			System.out.println("fetch size has set to "+values[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
-		
+
+		if(specialCmd.startsWith(SET_MAX_DISPLAY_NUM)) {
+			String[] values = specialCmd.split("=");
+			if(values.length != 2){
+				System.out.println(String.format("max display number format error, please input like %s = 10000", SET_MAX_DISPLAY_NUM));
+				return OPERATION_RESULT.CONTINUE_OPER;
+			}
+			try {
+				setMaxDisplayNumber(cmd.split("=")[1]);
+			} catch (Exception e) {
+				System.out.println(String.format("max display number format error, %s", e.getMessage()));
+				return OPERATION_RESULT.CONTINUE_OPER;
+			}
+			System.out.println("max display number has set to "+values[1].trim());
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
+
 		if(specialCmd.startsWith(SHOW_TIMEZONE)){
 			System.out.println("Current time zone: "+timeZone);
 			return OPERATION_RESULT.CONTINUE_OPER;
@@ -352,6 +378,7 @@ public abstract class AbstractClient {
 			System.out.println("Current fetch size: "+fetchSize);
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
+
 			
 		Statement statement = null;
 		try {

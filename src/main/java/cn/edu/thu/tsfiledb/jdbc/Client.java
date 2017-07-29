@@ -20,9 +20,10 @@ public class Client extends AbstractClient {
 
 	private static final String[] args = new String[]{
 			"show", "set", "select", "drop", "update", "delete", "create", "insert",
-			"timeseries", "time_display_type", "time_zone", "storage", "group", "time", "timestamp", "values", "now()", "index", "fetch_size",
+			"timeseries", "time_display_type", "time_zone", "storage", "group",
+			"time", "timestamp", "values", "now()", "index", "fetch_size", "max_display_num",
 			"count", "max_time", "min_time", "max_value", "min_value", "subsequence_matching", "kv-match",
-			"from", "where", "to", "on", "with", "using",
+			"from", "where", "to", "on",
 			"and", "or",
 			"user", "role",
 			"exit", "quit"};
@@ -54,10 +55,7 @@ public class Client extends AbstractClient {
 			}
 			if (commandLine.hasOption(MAX_PRINT_ROW_COUNT_ARGS)) {
 				try {
-					maxPrintRowCount = Integer.valueOf(commandLine.getOptionValue(MAX_PRINT_ROW_COUNT_ARGS));
-					if (maxPrintRowCount < 0) {
-						maxPrintRowCount = Integer.MAX_VALUE;
-					}
+					setMaxDisplayNumber(commandLine.getOptionValue(MAX_PRINT_ROW_COUNT_ARGS));
 				} catch (NumberFormatException e) {
 					System.out.println(
 							TSFILEDB_CLI_PREFIX + "> error format of max print row count, it should be number");

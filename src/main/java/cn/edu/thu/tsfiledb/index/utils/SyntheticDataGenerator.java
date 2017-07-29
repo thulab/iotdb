@@ -43,7 +43,7 @@ public class SyntheticDataGenerator {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
         long time = System.currentTimeMillis();
-        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 1000000, 10);
+        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 10000000, 10);
         generator1.start(time);
 //		SyntheticDataGenerator generator2 = new SyntheticDataGenerator("d2", 1000000, 100);
 //		generator2.start(time);
