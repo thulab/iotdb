@@ -38,16 +38,22 @@ public class RecordReaderFactory {
 	}
 
 	/**
+	 * Construct a RecordReader which contains QueryStructure and read lock token.
 	 *
-	 * @param normalFormNum this variable is used for disjunctive normal form of analytical query.
+	 * @param readLock
 	 * @return
 	 * @throws ProcessorException
 	 */
 	public RecordReader getRecordReader(int normalFormNum, String deltaObjectUID, String measurementID,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
+			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, Integer readLock)
 			throws ProcessorException {
-		int token = readLockManager.lock(deltaObjectUID, measurementID);
-		if (readLockManager.recordReaderCache.containsRecordReader(normalFormNum + "." + deltaObjectUID, measurementID)) {
+		int token = 0;
+		if (readLock == null) {
+			token = readLockManager.lock(deltaObjectUID, measurementID);
+		} else {
+			token = readLock;
+		}
+		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectUID, measurementID)) {
 			return readLockManager.recordReaderCache.get(deltaObjectUID, measurementID);
 		} else {
 			QueryStructure queryStructure;
