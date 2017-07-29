@@ -207,18 +207,34 @@ public class KvMatchIndexManager implements IndexManager {
     @Override
     public boolean mergeBuild(List<DataFileMultiSeriesInfo> newFileList) throws IndexManagerException {
         try {
+            // 1. get all exist index files in the file node
+            Set<String> existIndexFilePathPrefixes = new HashSet<>();
+            File indexFileDir = new File(IndexFileUtils.getIndexFilePathPrefix(newFileList.get(0).getFilePath())).getParentFile();
+            File[] indexFiles = indexFileDir.listFiles();
+            if (indexFiles != null) {
+                for (File file : indexFiles) {
+                    existIndexFilePathPrefixes.add(IndexFileUtils.getIndexFilePathPrefix(file));
+                }
+            }
+
             boolean overallResult = true;
             for (DataFileMultiSeriesInfo fileInfo : newFileList) {
+                // 0. test whether the file is new, omit old files
+                if (existIndexFilePathPrefixes.contains(IndexFileUtils.getIndexFilePathPrefix(fileInfo.getFilePath()))) {
+                    continue;
+                }
+
+                // 1. build index for every series in the new file
                 List<Future<Boolean>> results = new ArrayList<>(fileInfo.getColumnPaths().size());
                 for (int i = 0; i < fileInfo.getColumnPaths().size(); i++) {
                     Path columnPath = fileInfo.getColumnPaths().get(i);
                     Pair<Long, Long> timeRange = fileInfo.getTimeRanges().get(i);
 
-                    // 0. get configuration from store
+                    // get configuration from store
                     IndexConfig indexConfig = indexConfigStore.getOrDefault(columnPath.getFullPath(), new IndexConfig());
-                    if (timeRange.right < indexConfig.getSinceTime()) continue;  // not in index range
+                    if (timeRange.right < indexConfig.getSinceTime()) continue;  // not in index range, omit
 
-                    // 1. build index for every data series.
+                    // build index
                     QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(columnPath, fileInfo.getFilePath());
                     Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath())));
                     results.add(result);
@@ -245,11 +261,13 @@ public class KvMatchIndexManager implements IndexManager {
     @Override
     public boolean mergeSwitch(List<DataFileMultiSeriesInfo> newFileList) throws IndexManagerException {
         if (newFileList.isEmpty()) return true;  // no data file, no index file
-        Set<String> newIndexFilePathPrefixes = new HashSet<>(newFileList.size());
+
         // get all index file path should be left
+        Set<String> newIndexFilePathPrefixes = new HashSet<>(newFileList.size());
         for (DataFileMultiSeriesInfo newFile : newFileList) {
             newIndexFilePathPrefixes.add(IndexFileUtils.getIndexFilePathPrefix(newFile.getFilePath()));
         }
+
         // get all exist index files, and delete files not in new file list
         File indexFileDir = new File(IndexFileUtils.getIndexFilePathPrefix(newFileList.get(0).getFilePath())).getParentFile();
         File[] indexFiles = indexFileDir.listFiles();
