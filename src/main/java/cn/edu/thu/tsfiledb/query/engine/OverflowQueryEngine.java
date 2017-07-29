@@ -211,9 +211,9 @@ public class OverflowQueryEngine {
     /**
      * Query type 2: read one series with filter.
      */
-    private QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
-                                                SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize,
-                                                Integer readLock) throws ProcessorException, IOException {
+    public QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
+                                               SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize,
+                                               Integer readLock) throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
@@ -680,36 +680,36 @@ public class OverflowQueryEngine {
         }
     }
 
-    /**
-     * For kv-match index.
-     *
-     * @param path
-     * @param timeIntervals
-     * @return
-     * @throws PathErrorException
-     * @throws IOException
-     * @throws ProcessorException
-     */
-    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals, int readToken) throws PathErrorException, IOException, ProcessorException {
-        List<Path> pathList = new ArrayList<>();
-        pathList.add(path);
-
-        FilterExpression fe = null;
-        for (int i = 0; i < timeIntervals.size(); i++) {
-            Pair<Long, Long> pair = timeIntervals.get(i);
-            FilterSeries<Long> timeSeries = FilterFactory.timeFilterSeries();
-            GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
-            LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
-            if (i == 0) {
-                fe = FilterFactory.and(gtEq, ltEq);
-            } else {
-                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
-                fe = FilterFactory.or(fe, tmpAnd);
-            }
-        }
-
-        return readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) fe, null, null, null, 10000, readToken);
-    }
+//    /**
+//     * For kv-match index.
+//     *
+//     * @param path
+//     * @param timeIntervals
+//     * @return
+//     * @throws PathErrorException
+//     * @throws IOException
+//     * @throws ProcessorException
+//     */
+//    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals, int readToken) throws PathErrorException, IOException, ProcessorException {
+//        List<Path> pathList = new ArrayList<>();
+//        pathList.add(path);
+//
+//        FilterExpression fe = null;
+//        for (int i = 0; i < timeIntervals.size(); i++) {
+//            Pair<Long, Long> pair = timeIntervals.get(i);
+//            FilterSeries<Long> timeSeries = FilterFactory.timeFilterSeries();
+//            GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
+//            LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
+//            if (i == 0) {
+//                fe = FilterFactory.and(gtEq, ltEq);
+//            } else {
+//                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
+//                fe = FilterFactory.or(fe, tmpAnd);
+//            }
+//        }
+//
+//        return readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) fe, null, null, null, 10000, readToken);
+//    }
 
     /**
      * For third kv-index, get the OverflowData and BufferWriteData separately only in memory.
