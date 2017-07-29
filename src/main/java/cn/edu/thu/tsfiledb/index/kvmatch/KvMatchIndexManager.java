@@ -23,7 +23,8 @@ import cn.edu.thu.tsfiledb.index.IndexManager;
 import cn.edu.thu.tsfiledb.index.QueryRequest;
 import cn.edu.thu.tsfiledb.index.common.DataFileInfo;
 import cn.edu.thu.tsfiledb.index.common.DataFileMultiSeriesInfo;
-import cn.edu.thu.tsfiledb.index.common.OverflowBufferWrite;
+import cn.edu.thu.tsfiledb.index.common.OverflowBufferWriteInfo;
+import cn.edu.thu.tsfiledb.index.common.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
 import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
@@ -278,7 +279,7 @@ public class KvMatchIndexManager implements IndexManager {
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, queryRequest.getStartTime());
 
             // 2. fetch non-indexed ranges from overflow manager
-            OverflowBufferWrite overflowBufferWrite = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath, token);
+            OverflowBufferWriteInfo overflowBufferWriteInfo = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath, token);
 
             // 3. propagate query series and configurations
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
@@ -288,12 +289,12 @@ public class KvMatchIndexManager implements IndexManager {
                 throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) +")");
             }
             QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta());
-            List<Pair<Long, Long>> insertOrUpdateIntervals = overflowBufferWrite.getInsertOrUpdateIntervals(querySeries.size());
+            List<Pair<Long, Long>> insertOrUpdateIntervals = overflowBufferWriteInfo.getInsertOrUpdateIntervals(querySeries.size());
 
             // 4. search corresponding index files of data files in the query range
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
-                if (fileInfo.getEndTime() <= overflowBufferWrite.getDeleteUntil()) continue;  // deleted
+                if (fileInfo.getEndTime() <= overflowBufferWriteInfo.getDeleteUntil()) continue;  // deleted
                 if (fileInfo.getStartTime() > queryRequest.getEndTime() || fileInfo.getEndTime() < queryRequest.getStartTime())
                     continue;  // not in query range
                 if (fileInfo.getEndTime() < indexConfig.getSinceTime())
@@ -324,8 +325,8 @@ public class KvMatchIndexManager implements IndexManager {
 
             // 7. scan the data in candidate ranges and find out actual answers
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
-            QueryDataSet dataSet = overflowQueryEngine.query(columnPath, scanIntervals, token);
-            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, dataSet, queryConfig);
+            QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, columnPath, scanIntervals, token);
+            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, queryDataSetIterator, queryConfig);
             RecordReaderFactory.getInstance().removeRecordReader(columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());
 
             // 8. sort the answers by their distance
@@ -376,16 +377,16 @@ public class KvMatchIndexManager implements IndexManager {
 
     private List<Double> getQuerySeries(KvMatchQueryRequest request, int readToken) throws ProcessorException, PathErrorException, IOException {
         List<Pair<Long, Long>> timeInterval = new ArrayList<>(Collections.singleton(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime())));
-        QueryDataSet dataSet = overflowQueryEngine.query(request.getQueryPath(), timeInterval, readToken);
+        QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, request.getQueryPath(), timeInterval, readToken);
         List<Pair<Long, Double>> keyPoints = new ArrayList<>();
-        while (dataSet.next()) {
-            RowRecord row = dataSet.getCurrentRecord();
+        while (queryDataSetIterator.hasNext()) {
+            RowRecord row = queryDataSetIterator.getRowRecord();
             keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
         }
         return amendSeries(keyPoints);
     }
 
-    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSet dataSet, QueryConfig queryConfig) {
+    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSetIterator queryDataSetIterator, QueryConfig queryConfig) throws IOException, ProcessorException {
         List<Pair<Pair<Long, Long>, Double>> result = new ArrayList<>();
 
         int lenQ = queryConfig.getQuerySeries().size();
@@ -421,9 +422,8 @@ public class KvMatchIndexManager implements IndexManager {
         Pair<Long, Double> lastKeyPoint = null;
         for (Pair<Long, Long> scanInterval : scanIntervals) {
             List<Pair<Long, Double>> keyPoints = new ArrayList<>();
-            if (!dataSet.hasNextRecord()) break;
-            while (dataSet.next()) {
-                RowRecord row = dataSet.getCurrentRecord();
+            while (queryDataSetIterator.hasNext()) {
+                RowRecord row = queryDataSetIterator.getRowRecord();
                 double value = Double.parseDouble(row.getFields().get(0).getStringValue());
                 if (keyPoints.isEmpty() && row.getTime() > scanInterval.left) {
                     if (lastKeyPoint == null) {
@@ -435,6 +435,7 @@ public class KvMatchIndexManager implements IndexManager {
                 keyPoints.add(new Pair<>(row.getTime(), value));
                 if (row.getTime() >= scanInterval.right) break;
             }
+            if (keyPoints.isEmpty()) break;
             lastKeyPoint = keyPoints.get(keyPoints.size() - 1);
             List<Double> series = amendSeries(keyPoints, scanInterval);
 

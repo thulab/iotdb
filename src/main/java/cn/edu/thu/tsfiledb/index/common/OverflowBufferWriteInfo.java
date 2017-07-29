@@ -10,8 +10,10 @@ import java.util.List;
 
 /**
  * Used for KV-match, get overflow data and buffer-write data separately.
+ *
+ * @author CGF, Jiaye Wu
  */
-public class OverflowBufferWrite {
+public class OverflowBufferWriteInfo {
 
     private DynamicOneColumnData insert;
 
@@ -21,7 +23,7 @@ public class OverflowBufferWrite {
 
     private long bufferWriteBeginTime;
 
-    public OverflowBufferWrite(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, long bufferWriteBeginTime) {
+    public OverflowBufferWriteInfo(DynamicOneColumnData insert, DynamicOneColumnData update, long deleteUntil, long bufferWriteBeginTime) {
         this.insert = insert;
         this.update = update;
         this.deleteUntil = deleteUntil;

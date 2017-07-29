@@ -3,7 +3,6 @@ package cn.edu.thu.tsfiledb.service;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,19 +11,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
  */
-public class KvIndexTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KvIndexTest.class);
+public class KvMatchTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(KvMatchTest.class);
+
     private final String FOLDER_HEADER = "src/test/resources";
-    private static final String TIMESTAMP_STR = "Time";
-    private final String d0s0 = "root.vehicle.d0.s0";
-    private final String d0s1 = "root.vehicle.d0.s1";
-    private final String d0s2 = "root.vehicle.d0.s2";
-    private final String d0s3 = "root.vehicle.d0.s3";
+
     private static final String INSERT_DATA_TEMPLATE = "insert into root.vehicle.%s(timestamp,%s) values (%s,%s)";
 
     private String[] sqls = new String[]{
@@ -40,8 +36,8 @@ public class KvIndexTest {
     private String bufferWriteDirPre;
     private String metadataDirPre;
     private String derbyHomePre;
-    private String indexHomePre;
-    private int length = 20000;
+    private String indexFileDirPre;
+    private String walFolerPre;
 
     private Daemon deamon;
     private Connection connection = null;
@@ -56,8 +52,10 @@ public class KvIndexTest {
         bufferWriteDirPre = config.bufferWriteDir;
         metadataDirPre = config.metadataDir;
         derbyHomePre = config.derbyHome;
-        indexHomePre = config.indexFileDir;
+        indexFileDirPre = config.indexFileDir;
+        walFolerPre = config.walFolder;
 
+        config.dataDir = FOLDER_HEADER + "/data";
         config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
         config.fileNodeDir = FOLDER_HEADER + "/data/digest";
         config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
@@ -69,8 +67,9 @@ public class KvIndexTest {
         deamon.active();
     }
 
-    // @After
+    //@After
     public void tearDown() throws Exception {
+        LOGGER.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         deamon.stop();
         Thread.sleep(5000);
 
@@ -80,6 +79,8 @@ public class KvIndexTest {
         FileUtils.deleteDirectory(new File(config.bufferWriteDir));
         FileUtils.deleteDirectory(new File(config.metadataDir));
         FileUtils.deleteDirectory(new File(config.derbyHome));
+        FileUtils.deleteDirectory(new File(config.indexFileDir));
+        FileUtils.deleteDirectory(new File(config.walFolder));
         FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
 
         config.overflowDataDir = overflowDataDirPre;
@@ -87,37 +88,8 @@ public class KvIndexTest {
         config.bufferWriteDir = bufferWriteDirPre;
         config.metadataDir = metadataDirPre;
         config.derbyHome = derbyHomePre;
-    }
-
-    private void insertSQL() throws ClassNotFoundException, SQLException {
-        try {
-            Statement statement = connection.createStatement();
-            for (String sql : sqls) {
-                statement.execute(sql);
-            }
-
-            int s0Value = 10;
-            double s1Value = 10.0;
-            for (int i = 1; i < length; i++) {
-                if (i % 10000 == 0) {
-                    LOGGER.info("{}", i);
-                }
-
-                if (i >= 9000 && i <= 12000) {
-                    statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s0", i, 1000));
-                    statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s1", i, 1000.0));
-                    continue;
-                }
-                statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s0", i, s0Value));
-                statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s1", i, s1Value));
-                s0Value += 10;
-                s1Value += 10.0;
-            }
-
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        config.indexFileDir = indexFileDirPre;
+        config.walFolder = walFolerPre;
     }
 
     @Test
@@ -135,33 +107,30 @@ public class KvIndexTest {
         }
     }
 
-    private void selectAllSQLTest() throws ClassNotFoundException, SQLException {
+    private void insertSQL() throws ClassNotFoundException, SQLException {
         try {
             Statement statement = connection.createStatement();
-//            try {
-//                boolean hasResultSet = statement.execute("select index subm(root.vehicle.d0.s0, root.vehicle.d0.s1, 10000, 11000, 5.0) where time < 150000");
-//            } catch (Exception e) {
-//                Assert.assertEquals("The timeseries root.vehicle.d0.s0 hasn't been indexed", e.getMessage());
-//            }
+            for (String sql : sqls) {
+                statement.execute(sql);
+            }
 
-            statement.execute("CREATE INDEX ON root.vehicle.d0.s0 USING kv-match");
-            statement.execute("close");
-            try {
-                boolean hasResultSet = statement.execute("select index subm(root.vehicle.d0.s0, root.vehicle.d0.s1, 10000, 11000, 50.0) where time < 150000");
-                if (hasResultSet) {
-                    ResultSet resultSet = statement.getResultSet();
-                    int cnt = 0;
-                    while (resultSet.next()) {
-                        String ans = resultSet.getString(0) + "," + resultSet.getString(1) +
-                                "," + resultSet.getString(2) + "," + resultSet.getString(3);
-                        System.out.println("==========" + ans);
-                        //Assert.assertEquals(ans, retArray[cnt]);
-                        cnt++;
-                    }
-                    // Assert.assertEquals(0, cnt);
+            int s0Value = 10;
+            double s1Value = 10.0;
+            int length = 20000;
+            for (int i = 1; i <= length; i++) {
+                if (i % 10000 == 0) {
+                    LOGGER.info("{}", i);
                 }
-            } catch (Exception e) {
-                Assert.assertEquals("The timeseries root.vehicle.d0.s0 hasn't been indexed", e.getMessage());
+
+                if (i >= 9000 && i <= 12000) {
+                    statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s0", i, 1000));
+                    statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s1", i, 1000.0));
+                } else {
+                    statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s0", i, s0Value));
+                    statement.execute(String.format(INSERT_DATA_TEMPLATE, "d0", "s1", i, s1Value));
+                    s0Value += 10;
+                    s1Value += 10.0;
+                }
             }
 
             statement.close();
@@ -170,4 +139,31 @@ public class KvIndexTest {
         }
     }
 
+    private void selectAllSQLTest() throws ClassNotFoundException, SQLException {
+        try {
+            Statement statement = connection.createStatement();
+            try {
+                statement.execute("select index subm(root.vehicle.d0.s0, root.vehicle.d0.s1, 10000, 11000, 5.0)");
+            } catch (Exception e) {
+                Assert.assertEquals("The timeseries root.vehicle.d0.s0 hasn't been indexed", e.getMessage());
+            }
+
+            statement.execute("CREATE INDEX ON root.vehicle.d0.s0 USING KV-match");
+            //statement.execute("close");
+            boolean hasResultSet = statement.execute("select index subm(root.vehicle.d0.s0, root.vehicle.d0.s1, 10000, 11000, 5.0)");
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 0;
+                while (resultSet.next()) {
+                    LOGGER.debug("{} {} {} {}", resultSet.getString(0), resultSet.getString(1), resultSet.getString(2), resultSet.getString(3));
+                    cnt++;
+                }
+                Assert.assertEquals(2001, cnt);
+            }
+
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

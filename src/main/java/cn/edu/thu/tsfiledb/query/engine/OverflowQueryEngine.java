@@ -6,17 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 
 import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.format.PageHeader;
 import cn.edu.thu.tsfile.timeseries.basis.TsFile;
-import cn.edu.thu.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.thu.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.thu.tsfile.timeseries.filter.definition.operators.*;
 import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.thu.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
 import cn.edu.thu.tsfile.timeseries.read.PageReader;
-import cn.edu.thu.tsfiledb.index.common.OverflowBufferWrite;
+import cn.edu.thu.tsfiledb.index.common.OverflowBufferWriteInfo;
 import cn.edu.thu.tsfiledb.query.dataset.InsertDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -680,37 +678,6 @@ public class OverflowQueryEngine {
         }
     }
 
-//    /**
-//     * For kv-match index.
-//     *
-//     * @param path
-//     * @param timeIntervals
-//     * @return
-//     * @throws PathErrorException
-//     * @throws IOException
-//     * @throws ProcessorException
-//     */
-//    public QueryDataSet query(Path path, List<Pair<Long,Long>> timeIntervals, int readToken) throws PathErrorException, IOException, ProcessorException {
-//        List<Path> pathList = new ArrayList<>();
-//        pathList.add(path);
-//
-//        FilterExpression fe = null;
-//        for (int i = 0; i < timeIntervals.size(); i++) {
-//            Pair<Long, Long> pair = timeIntervals.get(i);
-//            FilterSeries<Long> timeSeries = FilterFactory.timeFilterSeries();
-//            GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
-//            LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
-//            if (i == 0) {
-//                fe = FilterFactory.and(gtEq, ltEq);
-//            } else {
-//                And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
-//                fe = FilterFactory.or(fe, tmpAnd);
-//            }
-//        }
-//
-//        return readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) fe, null, null, null, 10000, readToken);
-//    }
-
     /**
      * For third kv-index, get the OverflowData and BufferWriteData separately only in memory.
      * No use to release read lock, because this method will not use alone.
@@ -721,7 +688,7 @@ public class OverflowQueryEngine {
      * @throws IOException
      * @throws ProcessorException
      */
-    public OverflowBufferWrite getDataInBufferWriteSeparateWithOverflow(Path path, int readToken) throws PathErrorException, IOException, ProcessorException {
+    public OverflowBufferWriteInfo getDataInBufferWriteSeparateWithOverflow(Path path, int readToken) throws PathErrorException, IOException, ProcessorException {
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
 
@@ -753,7 +720,7 @@ public class OverflowQueryEngine {
         }
 
         RecordReaderFactory.getInstance().removeRecordReader(deltaObjectUID, measurementUID);
-        return new OverflowBufferWrite(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, bufferWriteBeginTime);
+        return new OverflowBufferWriteInfo(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, bufferWriteBeginTime);
     }
 
     /**
