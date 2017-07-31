@@ -158,12 +158,11 @@ public class TsfileStatement implements Statement {
 		    return executeSQL(sql);
 		} catch (TException e2) {
 		    throw new SQLException(
-			    String.format("Fail to execute %s after reconnecting. please check server status", sql));
+			    String.format("Failed to execute %s after reconnecting. Please check server status", sql));
 		}
 	    } else {
 		throw new SQLException(
-			String.format("Fail to reconnect to server when executing %s. please check server status"),
-			sql);
+			String.format("Failed to reconnect to server when executing %s. Please check server status", sql));
 	    }
 	}
     }
