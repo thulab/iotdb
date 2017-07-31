@@ -32,7 +32,7 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
     private int token;
 
     public KvMatchCandidateValidator(Path columnPath, List<Pair<Long, Long>> scanIntervals, QueryConfig queryConfig, int token) {
-        this.columnPath = new Path(columnPath.getFullPath());
+        this.columnPath = new Path(columnPath.getFullPath());  // There is a bug! The path will be modified in query process. Have to make a copy.
         this.scanIntervals = scanIntervals;
         this.queryConfig = queryConfig;
         this.token = token;
