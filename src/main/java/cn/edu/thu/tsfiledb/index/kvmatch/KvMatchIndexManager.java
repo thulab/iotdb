@@ -6,6 +6,7 @@ import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.IndexConfig;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.QueryConfig;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.common.QueryResult;
 import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.IntervalUtils;
+import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.SeriesUtils;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
@@ -44,15 +45,17 @@ import java.util.concurrent.*;
 public class KvMatchIndexManager implements IndexManager {
 
     private static final Logger logger = LoggerFactory.getLogger(KvMatchIndexManager.class);
+    private static final SerializeUtil<ConcurrentHashMap<String, IndexConfig>> serializeUtil = new SerializeUtil<>();
     private static final String CONFIG_FILE_PATH = TsfileDBDescriptor.getInstance().getConfig().indexFileDir + File.separator + ".metadata";
+    private static final int PARALLELISM = Runtime.getRuntime().availableProcessors() - 1;
+
     private static KvMatchIndexManager manager = null;
-    private ExecutorService executor;
-    private OverflowQueryEngine overflowQueryEngine;
-    private ConcurrentHashMap<String, IndexConfig> indexConfigStore;
-    private SerializeUtil<ConcurrentHashMap<String, IndexConfig>> serializeUtil = new SerializeUtil<>();
+    private static ExecutorService executor;
+    private static OverflowQueryEngine overflowQueryEngine;
+    private static ConcurrentHashMap<String, IndexConfig> indexConfigStore;
 
     private KvMatchIndexManager() {
-        executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+        executor = Executors.newFixedThreadPool(PARALLELISM);
         overflowQueryEngine = new OverflowQueryEngine();
         try {
             File file = new File(CONFIG_FILE_PATH);
@@ -333,12 +336,9 @@ public class KvMatchIndexManager implements IndexManager {
             overallResult.setCandidateRanges(IntervalUtils.excludeNotIn(overallResult.getCandidateRanges(), validTimeInterval));
             logger.trace("Candidates: {}", overallResult.getCandidateRanges());
 
-            // 7. scan the data in candidate ranges and find out actual answers
+            // 7. scan the data in candidate ranges to find out actual answers and sort them by distances
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
-            QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, columnPath, scanIntervals, token);
-            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, queryDataSetIterator, queryConfig);
-
-            // 8. sort the answers by their distance
+            List<Pair<Pair<Long, Long>, Double>> answers = validateCandidatesInParallel(scanIntervals, columnPath, queryConfig, token);
             answers.sort(Comparator.comparingDouble(o -> o.right));
             logger.trace("Answers: {}", answers);
 
@@ -359,6 +359,41 @@ public class KvMatchIndexManager implements IndexManager {
                 }
             }
         }
+    }
+
+    private List<Double> getQuerySeries(KvMatchQueryRequest request, int readToken) throws ProcessorException, PathErrorException, IOException {
+        List<Pair<Long, Long>> timeInterval = new ArrayList<>(Collections.singleton(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime())));
+        QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, request.getQueryPath(), timeInterval, readToken);
+        List<Pair<Long, Double>> keyPoints = new ArrayList<>();
+        while (queryDataSetIterator.hasNext()) {
+            RowRecord row = queryDataSetIterator.getRowRecord();
+            keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
+        }
+        if (keyPoints.isEmpty()) {
+            throw new IllegalArgumentException(String.format("There is no value in the given time interval [%s, %s] for the query series %s.",  request.getQueryStartTime(), request.getQueryEndTime(), request.getQueryPath()));
+        }
+        return SeriesUtils.amend(keyPoints);
+    }
+
+    private List<Pair<Pair<Long, Long>, Double>> validateCandidatesInParallel(List<Pair<Long, Long>> scanIntervals, Path columnPath, QueryConfig queryConfig, int token) throws ExecutionException, InterruptedException, PathErrorException, ProcessorException, IOException {
+        List<Future<List<Pair<Pair<Long, Long>, Double>>>> futureResults = new ArrayList<>(PARALLELISM);
+        int intervalsPerTask = Math.max(1, (int) Math.ceil(1.0 * scanIntervals.size() / PARALLELISM)), i = 0;
+        while (i < scanIntervals.size()) {
+            List<Pair<Long, Long>> partialScanIntervals = scanIntervals.subList(i, Math.min(scanIntervals.size(), i + intervalsPerTask));
+            i += intervalsPerTask;
+            // schedule validating task
+            KvMatchCandidateValidator validator = new KvMatchCandidateValidator(columnPath, partialScanIntervals, queryConfig, token);
+            Future<List<Pair<Pair<Long, Long>, Double>>> result = executor.submit(validator);
+            futureResults.add(result);
+        }
+        // collect results
+        List<Pair<Pair<Long, Long>, Double>> overallResult = new ArrayList<>();
+        for (Future<List<Pair<Pair<Long, Long>, Double>>> result : futureResults) {
+            if (result.get() != null) {
+                overallResult.addAll(result.get());
+            }
+        }
+        return overallResult;
     }
 
     private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers, int limitSize) throws IOException, ProcessorException {
@@ -382,142 +417,5 @@ public class KvMatchIndexManager implements IndexManager {
         dataSet.mapRet.put("End.Time", endTime);
         dataSet.mapRet.put("Distance.", distance);
         return dataSet;
-    }
-
-    private List<Double> getQuerySeries(KvMatchQueryRequest request, int readToken) throws ProcessorException, PathErrorException, IOException {
-        List<Pair<Long, Long>> timeInterval = new ArrayList<>(Collections.singleton(new Pair<>(request.getQueryStartTime(), request.getQueryEndTime())));
-        QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, request.getQueryPath(), timeInterval, readToken);
-        List<Pair<Long, Double>> keyPoints = new ArrayList<>();
-        while (queryDataSetIterator.hasNext()) {
-            RowRecord row = queryDataSetIterator.getRowRecord();
-            keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
-        }
-        if (keyPoints.isEmpty()) {
-            throw new IllegalArgumentException(String.format("There is no value in the given time interval [%s, %s] for the query series %s.",  request.getQueryStartTime(), request.getQueryEndTime(), request.getQueryPath()));
-        }
-        return amendSeries(keyPoints);
-    }
-
-    private List<Pair<Pair<Long, Long>, Double>> validateCandidates(List<Pair<Long, Long>> scanIntervals, QueryDataSetIterator queryDataSetIterator, QueryConfig queryConfig) throws IOException, ProcessorException {
-        List<Pair<Pair<Long, Long>, Double>> result = new ArrayList<>();
-
-        int lenQ = queryConfig.getQuerySeries().size();
-
-        List<Double> normalizedQuerySeries = new ArrayList<>(lenQ);
-        List<Integer> order = new ArrayList<>(lenQ);
-        double meanQ = 0, stdQ = 0;
-        if (queryConfig.isNormalization()) {
-            // do z-normalization on query data
-            double ex = 0, ex2 = 0;
-            for (double value : queryConfig.getQuerySeries()) {
-                ex += value;
-                ex2 += value * value;
-            }
-            meanQ = ex / lenQ;
-            stdQ = Math.sqrt(ex2 / lenQ - meanQ * meanQ);
-            for (double value : queryConfig.getQuerySeries()) {
-                normalizedQuerySeries.add((value - meanQ) / stdQ);
-            }
-            // sort the query data
-            List<Pair<Double, Integer>> tmpQuery = new ArrayList<>(lenQ);
-            for (int i = 0; i < lenQ; i++) {
-                tmpQuery.add(new Pair<>(normalizedQuerySeries.get(i), i));
-            }
-            tmpQuery.sort((o1, o2) -> o2.left.compareTo(o1.left));
-            for (int i = 0; i < lenQ; i++) {
-                normalizedQuerySeries.set(i, tmpQuery.get(i).left);
-                order.add(tmpQuery.get(i).right);
-            }
-        }
-
-        // find answers in candidate ranges
-        Pair<Long, Double> lastKeyPoint = null;
-        for (Pair<Long, Long> scanInterval : scanIntervals) {
-            List<Pair<Long, Double>> keyPoints = new ArrayList<>();
-            while (queryDataSetIterator.hasNext()) {
-                RowRecord row = queryDataSetIterator.getRowRecord();
-                double value = Double.parseDouble(row.getFields().get(0).getStringValue());
-                if (keyPoints.isEmpty() && row.getTime() > scanInterval.left) {
-                    if (lastKeyPoint == null) {
-                        keyPoints.add(new Pair<>(scanInterval.left, value));
-                    } else {
-                        keyPoints.add(lastKeyPoint);
-                    }
-                }
-                keyPoints.add(new Pair<>(row.getTime(), value));
-                if (row.getTime() >= scanInterval.right) break;
-            }
-            if (keyPoints.isEmpty()) break;
-            lastKeyPoint = keyPoints.get(keyPoints.size() - 1);
-            List<Double> series = amendSeries(keyPoints, scanInterval);
-
-            double ex = 0, ex2 = 0;
-            int idx = 0;
-            double[] T = new double[2 * lenQ];
-            for (int i = 0; i < series.size(); i++) {
-                double value = series.get(i);
-                ex += value;
-                ex2 += value * value;
-                T[i % lenQ] = value;
-                T[(i % lenQ) + lenQ] = value;
-
-                if (i >= lenQ - 1) {
-                    int j = (i + 1) % lenQ;  // the current starting location of T
-
-                    long left = scanInterval.left + i - lenQ + 1;
-                    if (left == keyPoints.get(idx).left) {  // remove non-exist timestamp
-                        idx++;
-
-                        if (queryConfig.isNormalization()) {
-                            double mean = ex / lenQ;  // z
-                            double std = Math.sqrt(ex2 / lenQ - mean * mean);
-
-                            if (Math.abs(mean - meanQ) <= queryConfig.getBeta() && std / stdQ <= queryConfig.getBeta() && std / stdQ >= 1.0 / queryConfig.getAlpha()) {
-                                double dist = 0;
-                                for (int k = 0; k < lenQ && dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon(); k++) {
-                                    double x = (T[(order.get(k) + j)] - mean) / std;
-                                    dist += (x - normalizedQuerySeries.get(k)) * (x - normalizedQuerySeries.get(k));
-                                }
-                                if (dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon()) {
-                                    result.add(new Pair<>(new Pair<>(left, scanInterval.left + i), Math.sqrt(dist)));
-                                }
-                            }
-                        } else {
-                            double dist = 0;
-                            for (int k = 0; k < lenQ && dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon(); k++) {
-                                double x = T[k + j];
-                                dist += (x - queryConfig.getQuerySeries().get(k)) * (x - queryConfig.getQuerySeries().get(k));
-                            }
-                            if (dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon()) {
-                                result.add(new Pair<>(new Pair<>(left, scanInterval.left + i), Math.sqrt(dist)));
-                            }
-                        }
-                    }
-
-                    ex -= T[j];
-                    ex2 -= T[j] * T[j];
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private List<Double> amendSeries(List<Pair<Long, Double>> keyPoints, Pair<Long, Long> interval) {
-        List<Double> ret = new ArrayList<>();
-        if (keyPoints.get(0).left >= interval.left) ret.add(keyPoints.get(0).right);
-        for (int i = 1; i < keyPoints.size(); i++) {
-            double k = 1.0 * (keyPoints.get(i).right - keyPoints.get(i - 1).right) / (keyPoints.get(i).left - keyPoints.get(i - 1).left);
-            for (long j = keyPoints.get(i - 1).left + 1; j <= keyPoints.get(i).left; j++) {
-                if (j >= interval.left && j <= interval.right) {
-                    ret.add(keyPoints.get(i - 1).right + (j - keyPoints.get(i - 1).left) * k);
-                }
-            }
-        }
-        return ret;
-    }
-
-    private List<Double> amendSeries(List<Pair<Long, Double>> keyPoints) {
-        return amendSeries(keyPoints, new Pair<>(keyPoints.get(0).left, keyPoints.get(keyPoints.size() - 1).left));
     }
 }
