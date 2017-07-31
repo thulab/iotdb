@@ -27,16 +27,14 @@ import cn.edu.thu.tsfiledb.index.common.OverflowBufferWriteInfo;
 import cn.edu.thu.tsfiledb.index.common.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * The class manage the indexes of KV-match.
@@ -46,28 +44,20 @@ import java.util.concurrent.Future;
 public class KvMatchIndexManager implements IndexManager {
 
     private static final Logger logger = LoggerFactory.getLogger(KvMatchIndexManager.class);
-
-    private static KvMatchIndexManager manager = null;
-
-    private ExecutorService executor;
-
-    private OverflowQueryEngine overflowQueryEngine;
-
     private static final String CONFIG_FILE_PATH = TsfileDBDescriptor.getInstance().getConfig().indexFileDir + File.separator + ".metadata";
-    private Map<String, IndexConfig> indexConfigStore;
-    private SerializeUtil<Map<String, IndexConfig>> serializeUtil = new SerializeUtil<>();
+    private static KvMatchIndexManager manager = null;
+    private ExecutorService executor;
+    private OverflowQueryEngine overflowQueryEngine;
+    private ConcurrentHashMap<String, IndexConfig> indexConfigStore;
+    private SerializeUtil<ConcurrentHashMap<String, IndexConfig>> serializeUtil = new SerializeUtil<>();
 
     private KvMatchIndexManager() {
         executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
         overflowQueryEngine = new OverflowQueryEngine();
         try {
             File file = new File(CONFIG_FILE_PATH);
-            if (!file.getParentFile().exists()) {
-                if (!file.getParentFile().mkdirs()) {
-                    throw new IOException("Can not create directory " + file.getParent());
-                }
-            }
-            indexConfigStore = serializeUtil.deserialize(CONFIG_FILE_PATH).orElse(new HashMap<>());
+            FileUtils.forceMkdirParent(file);
+            indexConfigStore = serializeUtil.deserialize(CONFIG_FILE_PATH).orElse(new ConcurrentHashMap<>());
         } catch (IOException e) {
             logger.error(e.getMessage(), e.getCause());
         }
@@ -303,7 +293,7 @@ public class KvMatchIndexManager implements IndexManager {
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
             List<Double> querySeries = getQuerySeries(request, token);
             if (querySeries.size() < 2 * indexConfig.getWindowLength() - 1) {
-                throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) +")");
+                throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) + ")");
             }
             Pair<Long, Long> validTimeInterval = new Pair<>(Math.max(queryRequest.getStartTime(), Math.max(overflowBufferWriteInfo.getDeleteUntil() + 1, indexConfig.getSinceTime())), queryRequest.getEndTime());
             QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta(), validTimeInterval);
@@ -312,7 +302,8 @@ public class KvMatchIndexManager implements IndexManager {
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
             for (int i = 0; i < fileInfoList.size(); i++) {
                 DataFileInfo fileInfo = fileInfoList.get(i);
-                if (fileInfo.getStartTime() > validTimeInterval.right || fileInfo.getEndTime() < validTimeInterval.left) continue;  // exclude deleted, not in query range, non-indexed time intervals
+                if (fileInfo.getStartTime() > validTimeInterval.right || fileInfo.getEndTime() < validTimeInterval.left)
+                    continue;  // exclude deleted, not in query range, non-indexed time intervals
                 File indexFile = new File(IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
                 if (indexFile.exists()) {
                     KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, indexFile.getAbsolutePath());
