@@ -62,7 +62,7 @@ public abstract class QueryProcessExecutor {
 				// check path and storage group
 				Path path = indexQueryPlan.getPaths().get(0);
 				if (!mManager.pathExist(path.getFullPath())) {
-					throw new QueryProcessorException(String.format("The timeseries %s does not exist", path));
+					throw new QueryProcessorException(String.format("The timeseries %s does not exist.", path));
 				}
 				try {
 					mManager.getFileNameByPath(path.getFullPath());
@@ -72,7 +72,7 @@ public abstract class QueryProcessExecutor {
 				}
 				Path patterPath = indexQueryPlan.getPatterPath();
 				if (!mManager.pathExist(patterPath.getFullPath())) {
-					throw new QueryProcessorException(String.format("The timeseries %s does not exist", patterPath));
+					throw new QueryProcessorException(String.format("The timeseries %s does not exist.", patterPath));
 				}
 				try {
 					mManager.getFileNameByPath(patterPath.getFullPath());
@@ -82,7 +82,7 @@ public abstract class QueryProcessExecutor {
 				}
 				// check index for metadata
 				if (!mManager.checkPathIndex(path.getFullPath())) {
-					throw new QueryProcessorException(String.format("The timeseries %s hasn't been indexed", path));
+					throw new QueryProcessorException(String.format("The timeseries %s hasn't been indexed.", path));
 				}
 				KvMatchQueryRequest queryRequest = KvMatchQueryRequest
 						.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(),

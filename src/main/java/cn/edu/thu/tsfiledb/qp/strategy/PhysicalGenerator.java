@@ -138,7 +138,7 @@ public class PhysicalGenerator {
 			return;
 		}
 		if (!filterOperator.isSingle() || !filterOperator.getSinglePath().equals(RESERVED_TIME)) {
-			throw new LogicalOperatorException("for index query command, it has non-time condition in where clause");
+			throw new LogicalOperatorException("For index query statement, non-time condition is not allowed in the where clause.");
 		}
 		FilterExpression timeFilter;
 		try {
@@ -149,10 +149,10 @@ public class PhysicalGenerator {
 		}
 		LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
 		LongInterval longInterval = filterVerifier.getInterval((SingleSeriesFilterExpression) timeFilter);
-		long startTime = -1;
-		long endTime = -1;
+		long startTime;
+		long endTime;
 		if (longInterval.count != 2) {
-			throw new LogicalOperatorException("for index query command, the time filter must be an interval");
+			throw new LogicalOperatorException("For index query statement, the time filter must be an interval.");
 		}
 		if (longInterval.flag[0]) {
 			startTime = longInterval.v[0];
@@ -165,7 +165,7 @@ public class PhysicalGenerator {
 			endTime = longInterval.v[1] - 1;
 		}
 		if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
-			throw new LogicalOperatorException("index query time must be greater than 0.");
+			throw new LogicalOperatorException("The time of index query must be greater than 0.");
 		}
 		if (startTime == Long.MIN_VALUE) {
 			startTime = 0;
@@ -174,7 +174,7 @@ public class PhysicalGenerator {
 			indexQueryPlan.setStartTime(startTime);
 			indexQueryPlan.setEndTime(endTime);
 		} else {
-			throw new LogicalOperatorException("for index query command, the start time greater than end time");
+			throw new LogicalOperatorException("For index query statement, the start time should be greater than end time.");
 		}
 	}
 

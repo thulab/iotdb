@@ -293,7 +293,7 @@ public class KvMatchIndexManager implements IndexManager {
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
             List<Double> querySeries = getQuerySeries(request, token);
             if (querySeries.size() < 2 * indexConfig.getWindowLength() - 1) {
-                throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) + ")");
+                throw new IllegalArgumentException(String.format("The length of query series should be greater than 2*<window_length>-1. (%s < 2*%s-1=%s)", querySeries.size(), indexConfig.getWindowLength(), (2 * indexConfig.getWindowLength() - 1)));
             }
             Pair<Long, Long> validTimeInterval = new Pair<>(Math.max(queryRequest.getStartTime(), Math.max(overflowBufferWriteInfo.getDeleteUntil() + 1, indexConfig.getSinceTime())), queryRequest.getEndTime());
             QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta(), validTimeInterval);
@@ -391,6 +391,9 @@ public class KvMatchIndexManager implements IndexManager {
         while (queryDataSetIterator.hasNext()) {
             RowRecord row = queryDataSetIterator.getRowRecord();
             keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
+        }
+        if (keyPoints.isEmpty()) {
+            throw new IllegalArgumentException(String.format("There is no value in the given time interval [%s, %s] for the query series %s.",  request.getQueryStartTime(), request.getQueryEndTime(), request.getQueryPath()));
         }
         return amendSeries(keyPoints);
     }

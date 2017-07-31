@@ -808,7 +808,7 @@ public class LogicalGenerator {
 	}
 
 	private Map<String, Integer> parseIndexWithParameters(ASTNode astNode) {
-		Map<String, Integer> indexParameters = new HashMap<String, Integer>();
+		Map<String, Integer> indexParameters = new HashMap<>();
 		for (int i = 0; i < astNode.getChildCount(); i++) {
 			ASTNode child = astNode.getChild(i);
 			String key = child.getChild(0).getText();
@@ -819,9 +819,8 @@ public class LogicalGenerator {
 	}
 
 	private void analyzeIndexDrop(ASTNode astNode) {
-		IndexOperator indexOperator = null;
 		Path path = parseRootPath(astNode.getChild(0).getChild(0));
-		indexOperator = new IndexOperator(SQLConstant.TOK_DROP_INDEX, IndexType.DROP_INDEX);
+		IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_DROP_INDEX, IndexType.DROP_INDEX);
 		indexOperator.setPath(path);
 		initializedOperator = indexOperator;
 	}
@@ -830,15 +829,15 @@ public class LogicalGenerator {
 		String indexQueryName = astNode.getChild(0).getText();
 		if (!"subsequence_matching".equals(indexQueryName.toLowerCase()) && !"subm".equals(indexQueryName.toLowerCase())) {
 			throw new LogicalOperatorException(String.format(
-					"Not support the index query %s, only support the subsequence_matching(subm) query", indexQueryName));
+					"Not support the index query %s, only support subsequence_matching(subm).", indexQueryName));
 		}
 		IndexQueryOperator indexQuery = (IndexQueryOperator) initializedOperator;
 		Path path = parseRootPath(astNode.getChild(1));
 		indexQuery.setPath(path);
 		path = parseRootPath(astNode.getChild(2));
 		indexQuery.setPatternPath(path);
-		long startTime = 0;
-		long endTime = 0;
+		long startTime;
+		long endTime;
 		if(astNode.getChild(3).getType()==TSParser.TOK_DATETIME){
 			startTime = Long.valueOf(parseTokenTime(astNode.getChild(3)));
 		}else{
@@ -852,7 +851,7 @@ public class LogicalGenerator {
 		
 		if (startTime > endTime || startTime <= 0) {
 			throw new LogicalOperatorException(
-					String.format("The startTime %s and endTime %s are error in index pattern ", startTime, endTime));
+					String.format("The start time should be greater than the end time. (%s < %s)", startTime, endTime));
 		}
 		indexQuery.setStartTime(startTime);
 		indexQuery.setEndTime(endTime);
