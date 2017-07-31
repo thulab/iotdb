@@ -25,6 +25,8 @@ public class SyntheticDataGenerator {
     private static final String CREATE_TIME_SERIES_TEMPLATE = "create timeseries root.laptop.%s.%s with datatype=%s,encoding=%s";
     private static final String INSERT_DATA_TEMPLATE = "insert into root.laptop.%s(timestamp,%s) values (%s,%s)";
     private static final String SET_STORAGE_GROUP_TEMPLATE = "set storage group to root.laptop.%s";
+    private static final String CREATE_INDEX_TEMPLATE = "create index on root.laptop.%s.%s using kv-match";
+    private static final String CLOSE_TEMPLATE = "close";
 
     private static final String JDBC_SERVER_URL = "jdbc:tsfile://127.0.0.1:6667/";
 //	private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.15:6667/";
@@ -45,8 +47,6 @@ public class SyntheticDataGenerator {
         long time = System.currentTimeMillis();
         SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 10000000, 10);
         generator1.start(time);
-//		SyntheticDataGenerator generator2 = new SyntheticDataGenerator("d2", 1000000, 100);
-//		generator2.start(time);
     }
 
     public void start(long t) throws ClassNotFoundException, SQLException {
@@ -60,6 +60,9 @@ public class SyntheticDataGenerator {
         for (int i = 0; i < length; i++) {
             if (i % 10000 == 0) {
                 logger.info("{}", i);
+            }
+            if (i % 1000000 == 0) {
+                statement.execute(CLOSE_TEMPLATE);
             }
 
             statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, x1));
@@ -76,13 +79,7 @@ public class SyntheticDataGenerator {
         sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s1", TSDataType.INT32, TSEncoding.RLE));
         sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s2", TSDataType.INT64, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
-        executeSQL(sqls);
-    }
-
-    private void insertData(long t, int s1, long s2) throws SQLException {
-        List<String> sqls = new ArrayList<>();
-        sqls.add(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, s1));
-        sqls.add(String.format(INSERT_DATA_TEMPLATE, deviceName, "s2", t, s2));
+        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s1"));
         executeSQL(sqls);
     }
 
