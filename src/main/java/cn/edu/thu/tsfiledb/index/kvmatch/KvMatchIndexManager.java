@@ -87,7 +87,7 @@ public class KvMatchIndexManager implements IndexManager {
             // 2. build index for every data file.
             List<Future<Boolean>> results = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
-                QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(columnPath, fileInfo.getFilePath());
+                QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(new Path(columnPath.getFullPath()), fileInfo.getFilePath());  // There is a bug: the path will be modified in the query process! Have to copy a new one.
                 Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath())));
                 results.add(result);
             }
