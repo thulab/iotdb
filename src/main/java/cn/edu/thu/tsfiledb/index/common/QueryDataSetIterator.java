@@ -14,6 +14,7 @@ import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
+import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -65,8 +66,13 @@ public class QueryDataSetIterator {
         } else {
             queryDataSet = overflowQueryEngine.readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) filterExpression, null, null,
                     queryDataSet, 10000, readToken);
+            if (queryDataSet.next()) {
+                return true;
+            } else {
+                RecordReaderFactory.getInstance().removeRecordReader(pathList.get(0).getDeltaObjectToString(), pathList.get(0).getMeasurementToString());
+                return false;
+            }
         }
-        return queryDataSet.next();
     }
 
     public RowRecord getRowRecord() {

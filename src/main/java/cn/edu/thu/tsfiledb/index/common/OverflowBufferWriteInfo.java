@@ -30,11 +30,11 @@ public class OverflowBufferWriteInfo {
         this.bufferWriteBeginTime = bufferWriteBeginTime;
     }
 
-    public List<Pair<Long, Long>> getInsertOrUpdateIntervals(int lenQ) {
+    public List<Pair<Long, Long>> getInsertOrUpdateIntervals() {
         List<Pair<Long, Long>> insertIntervals = new ArrayList<>();
         if (insert != null) {
             for (int i = 0; i < insert.timeLength; i++) {
-                insertIntervals.add(new Pair<>(insert.getTime(i) - lenQ + 1, insert.getTime(i) + lenQ - 1));
+                insertIntervals.add(new Pair<>(insert.getTime(i), insert.getTime(i)));
             }
         }
         if (bufferWriteBeginTime < Long.MAX_VALUE) {
@@ -44,7 +44,7 @@ public class OverflowBufferWriteInfo {
         List<Pair<Long, Long>> updateIntervals = new ArrayList<>();
         if (update != null) {
             for (int i = 0; i < update.timeLength; i += 2) {
-                updateIntervals.add(new Pair<>(update.getTime(i) - lenQ + 1, update.getTime(i + 1) + lenQ - 1));
+                updateIntervals.add(new Pair<>(update.getTime(i), update.getTime(i + 1)));
             }
         }
         return IntervalUtils.union(insertIntervals, updateIntervals);

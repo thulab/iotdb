@@ -1,8 +1,10 @@
-package cn.edu.thu.tsfiledb.service;
+package cn.edu.thu.tsfiledb.index;
 
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
+import cn.edu.thu.tsfiledb.service.Daemon;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +15,7 @@ import java.io.File;
 import java.sql.*;
 
 /**
- *
+ * @author Jiaye Wu, CGF
  */
 public class KvMatchTest {
 
@@ -37,7 +39,7 @@ public class KvMatchTest {
     private String metadataDirPre;
     private String derbyHomePre;
     private String indexFileDirPre;
-    private String walFolerPre;
+    private String walFolderPre;
 
     private Daemon deamon;
     private Connection connection = null;
@@ -53,7 +55,7 @@ public class KvMatchTest {
         metadataDirPre = config.metadataDir;
         derbyHomePre = config.derbyHome;
         indexFileDirPre = config.indexFileDir;
-        walFolerPre = config.walFolder;
+        walFolderPre = config.walFolder;
 
         config.dataDir = FOLDER_HEADER + "/data";
         config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
@@ -67,9 +69,8 @@ public class KvMatchTest {
         deamon.active();
     }
 
-    //@After
+    @After
     public void tearDown() throws Exception {
-        LOGGER.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         deamon.stop();
         Thread.sleep(5000);
 
@@ -89,7 +90,7 @@ public class KvMatchTest {
         config.metadataDir = metadataDirPre;
         config.derbyHome = derbyHomePre;
         config.indexFileDir = indexFileDirPre;
-        config.walFolder = walFolerPre;
+        config.walFolder = walFolderPre;
     }
 
     @Test
@@ -149,13 +150,24 @@ public class KvMatchTest {
             }
 
             statement.execute("CREATE INDEX ON root.vehicle.d0.s0 USING KV-match");
-            //statement.execute("close");
             boolean hasResultSet = statement.execute("select index subm(root.vehicle.d0.s0, root.vehicle.d0.s1, 10000, 11000, 5.0)");
             if (hasResultSet) {
                 ResultSet resultSet = statement.getResultSet();
                 int cnt = 0;
                 while (resultSet.next()) {
                     LOGGER.debug("{} {} {} {}", resultSet.getString(0), resultSet.getString(1), resultSet.getString(2), resultSet.getString(3));
+                    cnt++;
+                }
+                Assert.assertEquals(2001, cnt);
+            }
+
+            statement.execute("close");
+            Thread.sleep(5000);
+            hasResultSet = statement.execute("select index subm(root.vehicle.d0.s0, root.vehicle.d0.s1, 10000, 11000, 5.0)");
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 0;
+                while (resultSet.next()) {
                     cnt++;
                 }
                 Assert.assertEquals(2001, cnt);

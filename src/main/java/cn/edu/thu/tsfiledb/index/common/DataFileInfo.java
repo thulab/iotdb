@@ -36,9 +36,7 @@ public class DataFileInfo {
         return filePath;
     }
 
-    public List<Pair<Long, Long>> getTimeInterval() {
-        List<Pair<Long, Long>> ret = new ArrayList<>(1);
-        ret.add(new Pair<>(this.startTime, this.endTime));
-        return ret;
+    public Pair<Long, Long> getTimeInterval() {
+        return new Pair<>(this.startTime, this.endTime);
     }
 }

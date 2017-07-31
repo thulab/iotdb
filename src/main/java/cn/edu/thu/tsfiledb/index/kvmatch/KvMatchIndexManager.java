@@ -27,7 +27,6 @@ import cn.edu.thu.tsfiledb.index.common.OverflowBufferWriteInfo;
 import cn.edu.thu.tsfiledb.index.common.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
-import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -298,33 +297,32 @@ public class KvMatchIndexManager implements IndexManager {
 
             // 2. fetch non-indexed ranges from overflow manager
             OverflowBufferWriteInfo overflowBufferWriteInfo = overflowQueryEngine.getDataInBufferWriteSeparateWithOverflow(columnPath, token);
+            List<Pair<Long, Long>> insertOrUpdateIntervals = overflowBufferWriteInfo.getInsertOrUpdateIntervals();
 
             // 3. propagate query series and configurations
             KvMatchQueryRequest request = (KvMatchQueryRequest) queryRequest;
             List<Double> querySeries = getQuerySeries(request, token);
-            RecordReaderFactory.getInstance().removeRecordReader(columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());  // remove the lock after multi-batch read
             if (querySeries.size() < 2 * indexConfig.getWindowLength() - 1) {
                 throw new IllegalArgumentException("The length of query series can not shorter than 2*<window_length>-1 (" + querySeries.size() + " < " + (2 * indexConfig.getWindowLength() - 1) +")");
             }
-            QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta());
-            List<Pair<Long, Long>> insertOrUpdateIntervals = overflowBufferWriteInfo.getInsertOrUpdateIntervals(querySeries.size());
+            Pair<Long, Long> validTimeInterval = new Pair<>(Math.max(queryRequest.getStartTime(), Math.max(overflowBufferWriteInfo.getDeleteUntil() + 1, indexConfig.getSinceTime())), queryRequest.getEndTime());
+            QueryConfig queryConfig = new QueryConfig(indexConfig, querySeries, request.getEpsilon(), request.getAlpha(), request.getBeta(), validTimeInterval);
 
             // 4. search corresponding index files of data files in the query range
             List<Future<QueryResult>> futureResults = new ArrayList<>(fileInfoList.size());
-            for (DataFileInfo fileInfo : fileInfoList) {
-                if (fileInfo.getEndTime() <= overflowBufferWriteInfo.getDeleteUntil()) continue;  // deleted
-                if (fileInfo.getStartTime() > queryRequest.getEndTime() || fileInfo.getEndTime() < queryRequest.getStartTime())
-                    continue;  // not in query range
-                if (fileInfo.getEndTime() < indexConfig.getSinceTime())
-                    continue;  // not indexed files are not allowed to query
+            for (int i = 0; i < fileInfoList.size(); i++) {
+                DataFileInfo fileInfo = fileInfoList.get(i);
+                if (fileInfo.getStartTime() > validTimeInterval.right || fileInfo.getEndTime() < validTimeInterval.left) continue;  // exclude deleted, not in query range, non-indexed time intervals
                 File indexFile = new File(IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath()));
                 if (indexFile.exists()) {
                     KvMatchQueryExecutor queryExecutor = new KvMatchQueryExecutor(queryConfig, columnPath, indexFile.getAbsolutePath());
                     Future<QueryResult> result = executor.submit(queryExecutor);
                     futureResults.add(result);
                 } else {  // the index of this file has not been built, this will not happen in normal circumstance (likely to happen between close operation and index building of new file finished)
-                    insertOrUpdateIntervals.add(fileInfo.getTimeInterval().get(0));
-                    insertOrUpdateIntervals = IntervalUtils.sortAndMergePair(insertOrUpdateIntervals);
+                    insertOrUpdateIntervals.add(fileInfo.getTimeInterval());
+                }
+                if (i > 0) {  // add time intervals between file
+                    insertOrUpdateIntervals.add(new Pair<>(fileInfo.getStartTime(), fileInfo.getStartTime()));
                 }
             }
 
@@ -337,19 +335,21 @@ public class KvMatchIndexManager implements IndexManager {
             }
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
+            insertOrUpdateIntervals = IntervalUtils.extendBoth(insertOrUpdateIntervals, querySeries.size());
+            insertOrUpdateIntervals = IntervalUtils.sortAndMergePair(insertOrUpdateIntervals);
             overallResult.setCandidateRanges(IntervalUtils.sortAndMergePair(overallResult.getCandidateRanges()));
             overallResult.setCandidateRanges(IntervalUtils.union(overallResult.getCandidateRanges(), insertOrUpdateIntervals));
-            logger.debug("Candidates: {}", overallResult.getCandidateRanges());
+            overallResult.setCandidateRanges(IntervalUtils.excludeNotIn(overallResult.getCandidateRanges(), validTimeInterval));
+            logger.trace("Candidates: {}", overallResult.getCandidateRanges());
 
             // 7. scan the data in candidate ranges and find out actual answers
             List<Pair<Long, Long>> scanIntervals = IntervalUtils.extendAndMerge(overallResult.getCandidateRanges(), querySeries.size());
             QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, columnPath, scanIntervals, token);
             List<Pair<Pair<Long, Long>, Double>> answers = validateCandidates(scanIntervals, queryDataSetIterator, queryConfig);
-            RecordReaderFactory.getInstance().removeRecordReader(columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());
 
             // 8. sort the answers by their distance
             answers.sort(Comparator.comparingDouble(o -> o.right));
-            logger.debug("Answers: {}", answers);
+            logger.trace("Answers: {}", answers);
 
             return constructQueryDataSet(answers, limitSize);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException | IllegalArgumentException e) {
