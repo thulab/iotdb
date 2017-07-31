@@ -30,13 +30,13 @@ public class DataFileMultiSeriesInfo {
         this.columnPaths = columnPaths;
         this.timeRanges = timeRanges;
     }
-    
-    public void addColumnPath(Path path){
-    	columnPaths.add(path);
+
+    public void addColumnPath(Path path) {
+        columnPaths.add(path);
     }
-    
-    public void addTimeRanges(Pair<Long, Long> pair){
-    	timeRanges.add(pair);
+
+    public void addTimeRanges(Pair<Long, Long> pair) {
+        timeRanges.add(pair);
     }
 
     public String getFilePath() {
@@ -62,8 +62,8 @@ public class DataFileMultiSeriesInfo {
     public void setTimeRanges(List<Pair<Long, Long>> timeRanges) {
         this.timeRanges = timeRanges;
     }
-    
-    public boolean isEmpty(){
-    	return columnPaths.isEmpty();
+
+    public boolean isEmpty() {
+        return columnPaths.isEmpty();
     }
 }
