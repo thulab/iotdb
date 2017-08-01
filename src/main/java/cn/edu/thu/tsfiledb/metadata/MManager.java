@@ -180,7 +180,7 @@ public class MManager {
 		} else if (args[0].equals(MetadataOperationType.ADD_INDEX_TO_PATH)){
 			addIndexForOneTimeseries(args[1]);
 		}else if(args[0].equals(MetadataOperationType.DELETE_INDEX_FROM_PATH)){
-			addIndexForOneTimeseries(args[1]);
+			deleteIndexForOneTimeseries(args[1]);
 		}
 	}
 
