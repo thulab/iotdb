@@ -154,10 +154,6 @@ public class TransferThread extends java.util.TimerTask {
         File file = new File(path);
         File[] files = file.listFiles();
         loadFileRecord(files);
-        for (File file2 : files) {
-            setMap(file2.getAbsolutePath(),Long.valueOf(0));
-        }
-
         while (file.exists() && files.length>0) {//thread中断，server可连接
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ClientConfigure.clientNTread);
             for (File file2 : files) {
@@ -186,20 +182,32 @@ public class TransferThread extends java.util.TimerTask {
             File file=new File(absolutePath);
             if(file.exists()){
                 ObjectInputStream ois = null;
+                ObjectOutputStream oos=null;
                 try {
                     ois = new ObjectInputStream(new FileInputStream(file));
                     FilePositionRecord filePositionRecord=(FilePositionRecord) ois.readObject();
                     setMap(filePositionRecord.getAbsolutePath(),filePositionRecord.getBytePosition());
-                } catch (IOException e) {
-                    setMap(file2.getAbsolutePath(),0L);
                 } catch (ClassNotFoundException e) {
                     setMap(file2.getAbsolutePath(),0L);
-                }finally{
-                    ois.close();
+                    oos = new ObjectOutputStream(new FileOutputStream(file));
+                    oos.writeObject(new FilePositionRecord(file2.getAbsolutePath(),0L));
+                    setMap(file2.getAbsolutePath(),0L);
+                } catch (IOException e){
+                    setMap(file2.getAbsolutePath(),0L);
+                    oos = new ObjectOutputStream(new FileOutputStream(file));
+                    oos.writeObject(new FilePositionRecord(file2.getAbsolutePath(),0L));
+                    setMap(file2.getAbsolutePath(),0L);
+                } finally{
+                    if(ois!=null)ois.close();
+                    if(oos!=null)oos.close();
                 }
 
             }else{
+                file.createNewFile();
+                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+                oos.writeObject(new FilePositionRecord(file2.getAbsolutePath(),0L));
                 setMap(file2.getAbsolutePath(),0L);
+                oos.close();
             }
         }
     }

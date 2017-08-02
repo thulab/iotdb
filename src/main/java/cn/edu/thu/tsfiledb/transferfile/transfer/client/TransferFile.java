@@ -16,7 +16,6 @@ public class TransferFile extends Thread {
     private String absolutePath;
     private String MD5;
     private Long bytePosition;
-    private String initString="hello!";
 
     public TransferFile(Socket socket, String absolutePath, Long bytePosition) {
         this.socket = socket;
@@ -119,7 +118,6 @@ public class TransferFile extends Thread {
         }finally{
             oos.close();
         }
-
     }
 
     private static boolean deleteFile(String absolutePath) {

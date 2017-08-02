@@ -13,7 +13,7 @@ public class Client {
     private static Long timeInterval = 180000L;
     private static Long delay_time = 0L;
     private static boolean _switch;
-    private static Long startTime ; //10:00
+    private static Long startTime;
     private static Timer timer;
     private static boolean timerTaskRunning=false;
 

@@ -38,8 +38,6 @@ public class ReceiveFiles extends Thread {
         BufferedReader br =new BufferedReader(isr);
         byte[] buffer = new byte[1024];
 
-        //is.read(buffer);
-
         String info =null;
         String[] args=new String[5];
         int i=0;
