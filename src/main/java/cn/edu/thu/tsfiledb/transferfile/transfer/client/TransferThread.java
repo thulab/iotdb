@@ -165,7 +165,7 @@ public class TransferThread extends java.util.TimerTask {
                 try {
                     Socket socket = new Socket(ClientConfigure.server_address, ClientConfigure.port);//1024-65535的某个端口
                     System.out.println("socket success");
-                    fixedThreadPool.submit(new MyThread(socket, file2.getAbsolutePath(), filemap.get(file2.getAbsolutePath())));
+                    fixedThreadPool.submit(new TransferFile(socket, file2.getAbsolutePath(), filemap.get(file2.getAbsolutePath())));
                 }catch (IOException e){
                 }
             }

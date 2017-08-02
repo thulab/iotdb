@@ -25,7 +25,7 @@ public class Server {
         }
         while(true){
             Socket socket = serverSocket.accept();
-            fixedThreadPool.submit(new MyThread(socket));
+            fixedThreadPool.submit(new ReceiveFiles(socket));
         }
     }
 }

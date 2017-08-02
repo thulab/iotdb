@@ -11,14 +11,14 @@ import java.util.Date;
 /**
  * Created by dell on 2017/7/24.
  */
-public class MyThread extends Thread {
+public class TransferFile extends Thread {
     private Socket socket;
     private String absolutePath;
     private String MD5;
     private Long bytePosition;
     private String initString="hello!";
 
-    public MyThread(Socket socket, String absolutePath,Long bytePosition) {
+    public TransferFile(Socket socket, String absolutePath, Long bytePosition) {
         this.socket = socket;
         this.absolutePath = absolutePath.substring(0, absolutePath.length());
         this.bytePosition=bytePosition;

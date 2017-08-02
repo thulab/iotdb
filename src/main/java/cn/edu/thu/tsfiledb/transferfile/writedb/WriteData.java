@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.transferfile.getfromdb;
+package cn.edu.thu.tsfiledb.transferfile.writedb;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

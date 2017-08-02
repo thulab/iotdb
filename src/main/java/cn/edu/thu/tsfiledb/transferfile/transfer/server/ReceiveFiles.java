@@ -10,13 +10,13 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Created by dell on 2017/7/24.
  */
-public class MyThread extends Thread {
+public class ReceiveFiles extends Thread {
     private Socket socket;
     private String receive_filePath;
     private int fileSize;
     private String initString="hello!";
 
-    public MyThread(Socket socket){
+    public ReceiveFiles(Socket socket){
         this.socket = socket;
     }
     /**
