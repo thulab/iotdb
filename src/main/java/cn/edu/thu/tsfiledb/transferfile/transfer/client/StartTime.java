@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.transferfile;
+package cn.edu.thu.tsfiledb.transferfile.transfer.client;
 
 import java.io.Serializable;
 
