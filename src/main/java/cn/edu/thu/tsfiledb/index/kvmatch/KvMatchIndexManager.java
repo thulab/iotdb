@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The class manages the indexes of KV-match.
+ * This is a singleton class manages the indexes of KV-match.
  *
  * @author Jiaye Wu
  */
@@ -49,7 +49,6 @@ public class KvMatchIndexManager implements IndexManager {
     private static final String CONFIG_FILE_PATH = TsfileDBDescriptor.getInstance().getConfig().indexFileDir + File.separator + ".metadata";
     private static final int PARALLELISM = Runtime.getRuntime().availableProcessors() - 1;
 
-    private static KvMatchIndexManager manager = new KvMatchIndexManager();
     private static ExecutorService executor;
     private static OverflowQueryEngine overflowQueryEngine;
     private static ConcurrentHashMap<String, IndexConfig> indexConfigStore;
@@ -66,8 +65,12 @@ public class KvMatchIndexManager implements IndexManager {
         }
     }
 
+    private static class KvMatchIndexManagerHolder {
+        static final KvMatchIndexManager INSTANCE = new KvMatchIndexManager();
+    }
+
     public static KvMatchIndexManager getInstance() {
-        return manager;
+        return KvMatchIndexManagerHolder.INSTANCE;
     }
 
     @Override
