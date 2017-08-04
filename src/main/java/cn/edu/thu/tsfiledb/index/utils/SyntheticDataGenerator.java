@@ -45,7 +45,7 @@ public class SyntheticDataGenerator {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
         long time = System.currentTimeMillis();
-        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 10000000, 10);
+        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 1000000, 10);
         generator1.start(time);
     }
 
@@ -56,19 +56,22 @@ public class SyntheticDataGenerator {
         createTimeSeriesMetadata();
 
         Statement statement = connection.createStatement();
-        double x1 = ThreadLocalRandom.current().nextInt(-5, 5);
-        for (int i = 0; i < length; i++) {
+        double x1 = ThreadLocalRandom.current().nextDouble(-5, 5);
+        double x2 = ThreadLocalRandom.current().nextDouble(-5, 5);
+        for (int i = 1; i <= length; i++) {
+            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, x1));
+            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s2", t, x2));
+
+            x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
+            x2 += ThreadLocalRandom.current().nextDouble(-1, 1);
+            t += timeInterval;
+
             if (i % 10000 == 0) {
                 logger.info("{}", i);
             }
             if (i % 1000000 == 0) {
                 statement.execute(CLOSE_TEMPLATE);
             }
-
-            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, (int) x1));
-
-            x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
-            t += timeInterval;
         }
 
         disconnectServer();
@@ -76,10 +79,11 @@ public class SyntheticDataGenerator {
 
     private void createTimeSeriesMetadata() throws SQLException {
         List<String> sqls = new ArrayList<>();
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s1", TSDataType.INT32, TSEncoding.RLE));
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s2", TSDataType.INT64, TSEncoding.RLE));
+        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s1", TSDataType.DOUBLE, TSEncoding.RLE));
+        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s2", TSDataType.DOUBLE, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
         sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s1"));
+        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
         executeSQL(sqls);
     }
 
