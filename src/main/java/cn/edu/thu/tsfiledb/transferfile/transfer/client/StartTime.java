@@ -6,27 +6,28 @@ import java.io.Serializable;
  * Created by lylw on 2017/7/28.
  */
 public class StartTime implements Serializable {
-    private String device;
-    private Long startTime;
+	private static final long serialVersionUID = 5485945375774889393L;
+	private String device;
+	private long startTime;
 
-    public StartTime(String device,long startTime){
-        this.device=device.substring(0,device.length());
-        this.startTime=startTime;
-    }
+	public StartTime(String device, long startTime) {
+		this.device = device;
+		this.startTime = startTime;
+	}
 
-    public String getDevice() {
-        return device;
-    }
+	public String getDevice() {
+		return device;
+	}
 
-    public void setDevice(String device) {
-        this.device = device;
-    }
+	public void setDevice(String device) {
+		this.device = device;
+	}
 
-    public Long getStartTime() {
-        return startTime;
-    }
+	public long getStartTime() {
+		return startTime;
+	}
 
-    public void setStartTime(Long startTime) {
-        this.startTime = startTime;
-    }
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
 }

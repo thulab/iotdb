@@ -6,8 +6,9 @@ import java.io.Serializable;
  * Created by lylw on 2017/8/2.
  */
 public class FilePositionRecord implements Serializable {
-    String absolutePath;
-    Long bytePosition;
+	private static final long serialVersionUID = 2314510818613179964L;
+	private String absolutePath;
+    private long bytePosition;
 
     public FilePositionRecord(String absolutePath, Long bytePosition) {
         this.absolutePath = absolutePath;
@@ -22,11 +23,11 @@ public class FilePositionRecord implements Serializable {
         this.absolutePath = absolutePath;
     }
 
-    public Long getBytePosition() {
+    public long getBytePosition() {
         return bytePosition;
     }
 
-    public void setBytePosition(Long bytePosition) {
+    public void setBytePosition(long bytePosition) {
         this.bytePosition = bytePosition;
     }
 }

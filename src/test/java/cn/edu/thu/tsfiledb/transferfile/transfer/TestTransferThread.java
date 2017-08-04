@@ -1,5 +1,6 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer.client;
+package cn.edu.thu.tsfiledb.transferfile.transfer;
 
+import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferFile;
 import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
 
 import java.io.File;
