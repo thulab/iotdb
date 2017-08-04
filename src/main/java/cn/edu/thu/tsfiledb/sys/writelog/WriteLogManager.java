@@ -8,18 +8,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.metadata.MManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 
 public class WriteLogManager {
-    private static final Logger LOG = LoggerFactory.getLogger(WriteLogManager.class);
-    private static WriteLogManager instance = new WriteLogManager();
+//    private static final Logger LOG = LoggerFactory.getLogger(WriteLogManager.class);
+//    private static WriteLogManager instance = new WriteLogManager();
+    
+    private static class WriteLogManagerHolder {  
+        private static final WriteLogManager INSTANCE = new WriteLogManager();  
+    } 
+    
     private static ConcurrentHashMap<String, WriteLogNode> logNodeMaps;
     public static final int BUFFERWRITER = 0, OVERFLOW = 1;
     private static List<String> recoveryPathList = new ArrayList<>();
@@ -48,8 +54,8 @@ public class WriteLogManager {
         }
     }
 
-    public static WriteLogManager getInstance() {
-        return instance;
+    public static final WriteLogManager getInstance() {
+        return WriteLogManagerHolder.INSTANCE;
     }
 
     private static WriteLogNode getWriteLogNode(String fileNode) {
@@ -61,9 +67,16 @@ public class WriteLogManager {
     }
 
     public void write(PhysicalPlan plan) throws IOException, PathErrorException {
-    		for(int i = 0;i < plan.getPaths().size(); i++){
-    			getWriteLogNode(MManager.getInstance().getFileNameByPath(plan.getPaths().get(i).getFullPath())).write(plan);
-    		}
+		List<Path> paths = plan.getPaths();
+		MManager mManager = MManager.getInstance();
+		Set<String> pathSet = new HashSet<>();
+		for(Path p : paths){
+			// already checked whether path exists at PhysicalGenerator
+			pathSet.addAll(mManager.getPaths(p.getFullPath()));
+		}
+		for(String p : pathSet){
+			getWriteLogNode(MManager.getInstance().getFileNameByPath(p)).write(plan);
+		}
     }
 
     public void write(TSRecord record, int type) throws IOException, PathErrorException {
@@ -118,6 +131,7 @@ public class WriteLogManager {
             if (plan != null) {
                 return plan;
             } else {
+            	node.closeReadStream();
                 iterator.remove();
             }
         }

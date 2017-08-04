@@ -4,7 +4,6 @@ import cn.edu.thu.tsfile.common.utils.BytesUtils;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
-import cn.edu.thu.tsfiledb.qp.logical.Operator;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.InsertPlan;
 import cn.edu.thu.tsfiledb.sys.writelog.impl.LocalFileLogReader;
@@ -167,7 +166,10 @@ public class WriteLogNode {
             // Don't forget to close the stream.
             writerV2.close();
             oldReader.close();
-            writer.close();
+            
+            if (writer != null) {
+            	writer.close();	
+            }
             writer = null;
             if (!new File(filePath).delete()) {
                 LOG.error("Error in compact log : old log file can not delete");

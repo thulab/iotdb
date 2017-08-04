@@ -2,11 +2,13 @@ package cn.edu.thu.tsfiledb.conf;
 
 import java.io.File;
 
+import org.joda.time.DateTimeZone;
+
 public class TsfileDBConfig {
 
 	public static final String CONFIG_NAME = "tsfile-engine.properties";
 	public static final String CONFIG_DEFAULT_PATH = "tsfiledb/conf/" + CONFIG_NAME;
-
+	
 	/**
 	 * Port which JDBC server listens to
 	 */
@@ -87,8 +89,7 @@ public class TsfileDBConfig {
 	public int maxOpenFolder = 100;
 
 	/**
-	 * The amount of data that is read every time in batches. In a session, user
-	 * can set by himself, and it will only take effect in current session.
+	 * The amount of data that is read every time when IoTDB merge data.
 	 */
 	public int fetchSize = 10000;
 
@@ -108,6 +109,8 @@ public class TsfileDBConfig {
 	 * second.
 	 */
 	public long periodTimeForMerge = 7200;
+
+	public DateTimeZone timeZone = DateTimeZone.getDefault();
 
 	public TsfileDBConfig() {
 

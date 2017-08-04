@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,14 +16,16 @@ import cn.edu.thu.tsfile.common.constant.SystemConstant;
 public class TsfileDBDescriptor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
 
-	private static TsfileDBDescriptor descriptor = new TsfileDBDescriptor();
-
+	private static class TsfileDBDescriptorHolder{
+		private static final TsfileDBDescriptor INSTANCE = new TsfileDBDescriptor();
+	}
+	
 	private TsfileDBDescriptor() {
 		loadProps();
 	}
 
-	public static TsfileDBDescriptor getInstance() {
-		return descriptor;
+	public static final TsfileDBDescriptor getInstance() {
+		return TsfileDBDescriptorHolder.INSTANCE;
 	}
 
 	public TsfileDBConfig getConfig() {
@@ -83,6 +86,14 @@ public class TsfileDBDescriptor {
 			conf.periodTimeForClose = Long.parseLong(properties.getProperty("period_time_for_close_in_second", conf.periodTimeForClose+"").trim());
 			conf.periodTimeForMerge = Long.parseLong(properties.getProperty("period_time_for_merge_in_second", conf.periodTimeForMerge+"").trim());
 			
+			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
+			try {
+				conf.timeZone = DateTimeZone.forID(tmpTimeZone.trim());
+				LOGGER.info("Time zone has been set to {}", conf.timeZone);
+			} catch (Exception e) {
+				LOGGER.error("Time zone foramt error {}, use default configuration {}", tmpTimeZone, conf.timeZone);
+			}
+
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file, use default configuration", e);
 		} catch (Exception e) {

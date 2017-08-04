@@ -1,6 +1,8 @@
 package cn.edu.thu.tsfiledb.jdbc;
 
+import cn.edu.thu.tsfiledb.conf.TsFileDBConstant;
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -10,17 +12,12 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.io.Console;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
-import java.util.Scanner;
 import java.util.Set;
 
 public abstract class AbstractClient {
@@ -41,16 +38,23 @@ public abstract class AbstractClient {
 	protected static final String ISO8601_ARGS = "disableISO8601";
 	protected static String timeFormat = "default";
 	protected static final String TIME_KEY_WORD = "time";
-	protected static DateTimeZone timeZone = DateTimeZone.getDefault();
 	
 	protected static final String MAX_PRINT_ROW_COUNT_ARGS = "maxPRC";
 	protected static final String MAX_PRINT_ROW_COUNT_NAME = "maxPrintRowCount";
+	
+	protected static final String SET_MAX_DISPLAY_NUM = "set max_display_num";
 	protected static int maxPrintRowCount = 1000;
 
 	protected static final String SET_TIMESTAMP_DISPLAY = "set time_display_type";
+	protected static final String SHOW_TIMESTAMP_DISPLAY = "show time_display_type";
 	protected static final String SET_TIME_ZONE = "set time_zone";
+	protected static final String SHOW_TIMEZONE = "show time_zone";
 	
-	protected static final String TSFILEDB_CLI_PREFIX = "TsFileDB";
+	protected static final String SET_FETCH_SIZE = "set fetch_size";
+	protected static final String SHOW_FETCH_SIZE = "show fetch_size";
+	protected static int fetchSize = 10000;
+	
+	protected static final String TSFILEDB_CLI_PREFIX = "IoTDB";
 	private static final String QUIT_COMMAND = "quit";
 	private static final String EXIT_COMMAND = "exit";
 	private static final String SHOW_METADATA_COMMAND = "show timeseries";
@@ -78,7 +82,7 @@ public abstract class AbstractClient {
 		
 	}
 	
-	public static void output(ResultSet res, boolean printToConsole, String statement) {
+	public static void output(ResultSet res, boolean printToConsole, String statement, DateTimeZone timeZone) {
 		try {
 			int cnt = 0;
 			ResultSetMetaData resultSetMetaData = res.getMetaData();
@@ -99,14 +103,19 @@ public abstract class AbstractClient {
 				if (cnt < maxPrintRowCount) {
 					System.out.print("|");
 					if (printTimestamp) {
-						System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR)));
+						System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
 					}
 				}
 
 				for (int i = 1; i < colCount; i++) {
 					if (printToConsole && cnt < maxPrintRowCount) {
 					    	if(resultSetMetaData.getColumnLabel(i).indexOf(TIME_KEY_WORD) != -1){
-					    	    	System.out.printf(formatValue, formatDatetime(res.getLong(i)));
+					    		try {
+					    			System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+							} catch (Exception e) {
+								System.out.printf(formatValue, "null");
+							}
+					    	    	
 					    	} else{
 							System.out.printf(formatValue, String.valueOf(res.getString(i)));
 					    	}
@@ -163,7 +172,7 @@ public abstract class AbstractClient {
 		return options;
 	}
 
-	private static String formatDatetime(long timestamp) {
+	private static String formatDatetime(long timestamp, DateTimeZone timeZone) {
 		switch (timeFormat) {
 		case "long":
 		case "number":
@@ -188,21 +197,21 @@ public abstract class AbstractClient {
 	}
 
 	protected static void setTimeFormat(String newTimeFormat) {
-		switch (newTimeFormat.toLowerCase()) {
+		switch (newTimeFormat.trim().toLowerCase()) {
 		case "long":
 		case "number":
 			maxTimeLength = maxValueLength;
-			timeFormat = newTimeFormat.toLowerCase();
+			timeFormat = newTimeFormat.trim().toLowerCase();
 			break;
 		case "default":
 		case "iso8601":
 			maxTimeLength = ISO_DATETIME_LEN;
-			timeFormat = newTimeFormat.toLowerCase();
+			timeFormat = newTimeFormat.trim().toLowerCase();
 			break;
 		default:
 			// use java default SimpleDateFormat to check whether input time format is legal
 			// if illegal, it will throw an exception
-			new SimpleDateFormat(newTimeFormat);
+			new SimpleDateFormat(newTimeFormat.trim());
 			maxTimeLength = TIMESTAMP_STR.length() > newTimeFormat.length() ? TIMESTAMP_STR.length() : newTimeFormat.length();
 			timeFormat = newTimeFormat;
 			break;
@@ -210,16 +219,25 @@ public abstract class AbstractClient {
 		formatTime = "%" + maxTimeLength + "s|";
 	}
 	
-	private static void setTimeZone(String timeZoneString){
-		timeZone = DateTimeZone.forID(timeZoneString);
+	private static void setFetchSize(String fetchSizeString){
+		fetchSize = Integer.parseInt(fetchSizeString.trim());
+	}
+	
+	protected static void setMaxDisplayNumber(String maxDisplayNum){
+		maxPrintRowCount = Integer.parseInt(maxDisplayNum.trim());
+		if (maxPrintRowCount < 0) {
+			maxPrintRowCount = Integer.MAX_VALUE;
+		}
 	}
 
 	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSet res) throws SQLException {
 		StringBuilder blockLine = new StringBuilder();
+		int tmp = Integer.MIN_VALUE;
 		for (int i = 0; i < colCount - 1; i++) {
 			int len = res.getMetaData().getColumnLabel(i + 1).length();
-			maxValueLength = maxValueLength < len ? len : maxValueLength;
+			tmp = tmp > len ? tmp : len;
 		}
+		maxValueLength = tmp;
 		if (printTimestamp) {
 			blockLine.append("+").append(StringUtils.repeat('-', maxTimeLength)).append("+");
 		} else {
@@ -260,15 +278,17 @@ public abstract class AbstractClient {
 	}
 
 	protected static void displayLogo(){
-		System.out.println(" _______________________________.___.__          \n"
-				+ " \\__    ___/   _____/\\_   _____/|   |  |   ____  \n"
-				+ "   |    |  \\_____  \\  |    __)  |   |  | _/ __ \\ \n"
-				+ "   |    |  /        \\ |     \\   |   |  |_\\  ___/ \n"
-				+ "   |____| /_______  / \\___  /   |___|____/\\___  >   version 0.0.1\n"
-				+ "                  \\/      \\/                  \\/ \n");
+		System.out.println(
+				" _____       _________  ______   ______    \n" +
+				"|_   _|     |  _   _  ||_   _ `.|_   _ \\   \n" +
+				"  | |   .--.|_/ | | \\_|  | | `. \\ | |_) |  \n" +
+				"  | | / .'`\\ \\  | |      | |  | | |  __'.  \n" +
+				" _| |_| \\__. | _| |_    _| |_.' /_| |__) | \n" +
+				"|_____|'.__.' |_____|  |______.'|_______/  version"+TsFileDBConstant.VERSION+"\n" +
+				"                                           \n");
 	}
 
-	protected static OPERATION_RESULT handleInputInputCmd(String cmd, Connection connection){
+	protected static OPERATION_RESULT handleInputInputCmd(String cmd, TsfileConnection connection){
 		String specialCmd = cmd.toLowerCase().trim();
 
 		if (specialCmd.equals(QUIT_COMMAND) || specialCmd.equals(EXIT_COMMAND)) {
@@ -296,7 +316,7 @@ public abstract class AbstractClient {
 				System.out.println(String.format("time display format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("time display type has set to "+cmd.split("=")[1]);
+			System.out.println("time display type has set to "+cmd.split("=")[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 		
@@ -307,22 +327,73 @@ public abstract class AbstractClient {
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
 			try {
-				setTimeZone(cmd.split("=")[1]);
+				connection.setTimeZone(cmd.split("=")[1].trim());
 			} catch (Exception e) {
 				System.out.println(String.format("time zone format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("time zone has set to "+values[1]);
+			System.out.println("time zone has set to "+values[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 		
+		if(specialCmd.startsWith(SET_FETCH_SIZE)){
+			String[] values = specialCmd.split("=");
+			if(values.length != 2){
+				System.out.println(String.format("fetch size format error, please input like %s=10000", SET_FETCH_SIZE));
+				return OPERATION_RESULT.CONTINUE_OPER;
+			}
+			try {
+				setFetchSize(cmd.split("=")[1]);
+			} catch (Exception e) {
+				System.out.println(String.format("fetch size format error, %s", e.getMessage()));
+				return OPERATION_RESULT.CONTINUE_OPER;
+			}
+			System.out.println("fetch size has set to "+values[1].trim());
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
+
+		if(specialCmd.startsWith(SET_MAX_DISPLAY_NUM)) {
+			String[] values = specialCmd.split("=");
+			if(values.length != 2){
+				System.out.println(String.format("max display number format error, please input like %s = 10000", SET_MAX_DISPLAY_NUM));
+				return OPERATION_RESULT.CONTINUE_OPER;
+			}
+			try {
+				setMaxDisplayNumber(cmd.split("=")[1]);
+			} catch (Exception e) {
+				System.out.println(String.format("max display number format error, %s", e.getMessage()));
+				return OPERATION_RESULT.CONTINUE_OPER;
+			}
+			System.out.println("max display number has set to "+values[1].trim());
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
+
+		if(specialCmd.startsWith(SHOW_TIMEZONE)){
+			try {
+				System.out.println("Current time zone: "+connection.getTimeZone());
+			} catch (Exception e) {
+				System.out.println("Cannot get time zone from server side because: "+e.getMessage());
+			}
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
+		if(specialCmd.startsWith(SHOW_TIMESTAMP_DISPLAY)){
+			System.out.println("Current time format: "+timeFormat);
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
+		if(specialCmd.startsWith(SHOW_FETCH_SIZE)){
+			System.out.println("Current fetch size: "+fetchSize);
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
+
 		Statement statement = null;
 		try {
+			DateTimeZone timeZone = DateTimeZone.forID(connection.getTimeZone());
 			statement = connection.createStatement();
+			statement.setFetchSize(fetchSize);
 			boolean hasResultSet = statement.execute(cmd.trim());
 			if (hasResultSet) {
 				ResultSet resultSet = statement.getResultSet();
-				output(resultSet, printToConsole, cmd.trim());
+				output(resultSet, printToConsole, cmd.trim(), timeZone);
 			}
 			System.out.println("execute successfully.");
 		} catch (TsfileSQLException e) {
@@ -339,17 +410,6 @@ public abstract class AbstractClient {
 		    	}
 		}
 		return OPERATION_RESULT.NO_OPER;
-	}
-	
-	protected static String readPassword() {
-		Console c = System.console();
-		if (c == null) { // IN ECLIPSE IDE
-			System.out.print(TSFILEDB_CLI_PREFIX + "> please input password: ");
-			Scanner scanner = new Scanner(System.in);
-			return scanner.nextLine();
-		} else { // Outside Eclipse IDE
-			return new String(c.readPassword(TSFILEDB_CLI_PREFIX + "> please input password: "));
-		}
 	}
 
 	enum OPERATION_RESULT{

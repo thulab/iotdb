@@ -9,6 +9,9 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import cn.edu.thu.tsfiledb.conf.TsFileDBConstant;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService.Processor;
@@ -22,27 +25,40 @@ public class JDBCServer extends AbstractServer implements JDBCServerMBean {
     private Processor<TSIService.Iface> processor;
     private TSServiceImpl impl;
 
-    public JDBCServer() {
+	@Override
+	public String getJDBCServerStatus() {
+		if(isStart) return "UP";
+		else return "DOWN";
+	}
+	
+	@Override
+	public int getRPCPort() {
+		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		return config.rpcPort;
+	}
+	
+    public JDBCServer() throws TTransportException {
         isStart = false;
     }
 
     @Override
     public synchronized void startServer() {
         if (isStart) {
-            LOGGER.info("TsFileDB: jdbc server has been already running now");
+            LOGGER.info("{}: jdbc server has been already running now", TsFileDBConstant.GLOBAL_DB_NAME);
             return;
         }
-        LOGGER.info("TsFileDB: start jdbc server...");
+        LOGGER.info("{}: start jdbc server...",TsFileDBConstant.GLOBAL_DB_NAME);
 
         try {
             thread = new Thread(new JDBCServerThread());
         } catch (IOException e) {
-            LOGGER.error("TsFileDB: failed to start jdbc server. {}", e.getMessage());
+            LOGGER.error("{}: failed to start jdbc server. {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
             return;
         }
         thread.start();
 
-        LOGGER.info("TsFileDB: start jdbc server successfully, listening on port {}",TsfileDBDescriptor.getInstance().getConfig().rpcPort);
+        LOGGER.info("{}: start jdbc server successfully, listening on port {}",
+        		TsFileDBConstant.GLOBAL_DB_NAME, TsfileDBDescriptor.getInstance().getConfig().rpcPort);
         isStart = true;
     }
 
@@ -55,13 +71,13 @@ public class JDBCServer extends AbstractServer implements JDBCServerMBean {
     @Override
     public synchronized void stopServer() {
         if (!isStart) {
-            LOGGER.info("TsFileDB: jdbc server isn't running now");
+            LOGGER.info("{}: jdbc server isn't running now",TsFileDBConstant.GLOBAL_DB_NAME);
             return;
 
         }
-        LOGGER.info("TsFileDB: closing jdbc server...");
+        LOGGER.info("{}: closing jdbc server...", TsFileDBConstant.GLOBAL_DB_NAME);
         close();
-        LOGGER.info("TsFileDB: close jdbc server successfully");
+        LOGGER.info("{}: close jdbc server successfully", TsFileDBConstant.GLOBAL_DB_NAME);
     }
 
     private class JDBCServerThread implements Runnable {
@@ -83,12 +99,12 @@ public class JDBCServer extends AbstractServer implements JDBCServerMBean {
 				poolServer.setServerEventHandler(new JDBCServerEventHandler(impl));
 				poolServer.serve();
             } catch (TTransportException e) {
-                LOGGER.error("TsFileDB: failed to start jdbc server, because ", e);
+                LOGGER.error("{}: failed to start jdbc server, because ",TsFileDBConstant.GLOBAL_DB_NAME, e);
             } catch (Exception e) {
-                LOGGER.error("TsFileDB: jdbc server exit, because ", e);
+                LOGGER.error("{}: jdbc server exit, because ",TsFileDBConstant.GLOBAL_DB_NAME, e);
             } finally {
                 close();
-                LOGGER.info("TsFileDB: close TThreadPoolServer and TServerSocket for jdbc server");
+                LOGGER.info("{}: close TThreadPoolServer and TServerSocket for jdbc server",TsFileDBConstant.GLOBAL_DB_NAME);
             }
         }
     }
@@ -97,4 +113,8 @@ public class JDBCServer extends AbstractServer implements JDBCServerMBean {
         JDBCServer server = new JDBCServer();
         server.startServer();
     }
+
+
+
+
 }

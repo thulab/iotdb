@@ -20,6 +20,10 @@ service TSIService {
 	TSCancelOperationResp cancelOperation(1:TSCancelOperationReq req);
 
 	TSCloseOperationResp closeOperation(1:TSCloseOperationReq req);
+	
+	TSGetTimeZoneResp getTimeZone();
+	
+	TSSetTimeZoneResp setTimeZone(1:TSSetTimeZoneReq req);
 }
 
 enum TSProtocolVersion {
@@ -356,4 +360,16 @@ struct TSFileInfo {
     1: required string filePath;
     2: required map<string,i64> startTimes
     3: required map<string,i64> endTimes
+
+struct TSGetTimeZoneResp {
+    1: required TS_Status status
+    2: required string timeZone
+}
+
+struct TSSetTimeZoneReq {
+    1: required string timeZone
+}
+
+struct TSSetTimeZoneResp {
+    1: required TS_Status status
 }

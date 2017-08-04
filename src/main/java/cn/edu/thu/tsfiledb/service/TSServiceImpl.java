@@ -8,9 +8,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.thu.tsfiledb.conf.TsFileDBConstant;
+import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import org.apache.thrift.TException;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +50,7 @@ import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchMetadataReq;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchMetadataResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchResultsReq;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFetchResultsResp;
+import cn.edu.thu.tsfiledb.service.rpc.thrift.TSGetTimeZoneResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSHandleIdentifier;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSOpenSessionReq;
@@ -54,6 +58,8 @@ import cn.edu.thu.tsfiledb.service.rpc.thrift.TSOpenSessionResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSOperationHandle;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSProtocolVersion;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSQueryDataSet;
+import cn.edu.thu.tsfiledb.service.rpc.thrift.TSSetTimeZoneReq;
+import cn.edu.thu.tsfiledb.service.rpc.thrift.TSSetTimeZoneResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TS_SessionHandle;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TS_Status;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TS_StatusCode;
@@ -72,6 +78,8 @@ public class TSServiceImpl implements TSIService.Iface {
 	private ThreadLocal<String> username = new ThreadLocal<>();
 	private ThreadLocal<HashMap<String, PhysicalPlan>> queryStatus = new ThreadLocal<>();
 	private ThreadLocal<HashMap<String, Iterator<QueryDataSet>>> queryRet = new ThreadLocal<>();
+	private ThreadLocal<DateTimeZone> timeZone = new ThreadLocal<>();
+	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
 
@@ -83,8 +91,7 @@ public class TSServiceImpl implements TSIService.Iface {
 
 	@Override
 	public TSOpenSessionResp openSession(TSOpenSessionReq req) throws TException {
-
-		LOGGER.info("TsFileDB Server: receive open session request from username {}", req.getUsername());
+		LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
 		boolean status;
 		try {
@@ -97,6 +104,7 @@ public class TSServiceImpl implements TSIService.Iface {
 			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 			ts_status.setErrorMessage("login successfully.");
 			username.set(req.getUsername());
+			timeZone.set(config.timeZone);
 			initForOneSession();
 		} else {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
@@ -105,7 +113,7 @@ public class TSServiceImpl implements TSIService.Iface {
 		TSOpenSessionResp resp = new TSOpenSessionResp(ts_status, TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1);
 		resp.setSessionHandle(new TS_SessionHandle(new TSHandleIdentifier(ByteBuffer.wrap(req.getUsername().getBytes()),
 				ByteBuffer.wrap((req.getPassword().getBytes())))));
-		LOGGER.info("TsFileDB Server: Login status: {}. User : {}", ts_status.getErrorMessage(), req.getUsername());
+		LOGGER.info("{}: Login status: {}. User : {}",TsFileDBConstant.GLOBAL_DB_NAME, ts_status.getErrorMessage(), req.getUsername());
 
 		return resp;
 	}
@@ -117,14 +125,20 @@ public class TSServiceImpl implements TSIService.Iface {
 
 	@Override
 	public TSCloseSessionResp closeSession(TSCloseSessionReq req) throws TException {
-		LOGGER.info("TsFileDB Server: receive close session");
+		LOGGER.info("{}: receive close session",TsFileDBConstant.GLOBAL_DB_NAME);
 		TS_Status ts_status;
 		if (username.get() == null) {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			ts_status.setErrorMessage("Has not logged in");
+			if(timeZone.get() != null){
+				timeZone.remove();
+			}
 		} else {
 			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 			username.remove();
+			if(timeZone.get() != null){
+				timeZone.remove();
+			}
 		}
 		return new TSCloseSessionResp(ts_status);
 	}
@@ -136,7 +150,7 @@ public class TSServiceImpl implements TSIService.Iface {
 
 	@Override
 	public TSCloseOperationResp closeOperation(TSCloseOperationReq req) throws TException {
-		LOGGER.info("TsFileDB Server: receive close operation");
+		LOGGER.info("{}: receive close operation",TsFileDBConstant.GLOBAL_DB_NAME);
 		try {
 			ReadLockManager.getInstance().unlockForOneRequest();
 			clearAllStatusForCurrentRequest();
@@ -161,7 +175,7 @@ public class TSServiceImpl implements TSIService.Iface {
 	public TSFetchMetadataResp fetchMetadata(TSFetchMetadataReq req) throws TException {
 		TS_Status status;
 		if (!checkLogin()) {
-			LOGGER.info("TsFileDB Server: Not login.");
+			LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
 			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			status.setErrorMessage("Not login");
 			return new TSFetchMetadataResp(status);
@@ -250,38 +264,37 @@ public class TSServiceImpl implements TSIService.Iface {
 	public TSExecuteBatchStatementResp executeBatchStatement(TSExecuteBatchStatementReq req) throws TException {
 		try {
 			if (!checkLogin()) {
-				LOGGER.info("TsFileDB Server: Not login.");
+				LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
 				return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login", null);
 			}
 			List<String> statements = req.getStatements();
 			List<Integer> result = new ArrayList<>();
 			for (String statement : statements) {
 				try {
-					PhysicalPlan physicalPlan = processor.parseSQLToPhysicalPlan(statement);
+					PhysicalPlan physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
 					if (physicalPlan.isQuery()) {
 						return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "statement is query :" + statement,
 								result);
 					}
 					ExecuteUpdateStatement(physicalPlan);
+					result.add(1);
 				} catch (Exception e) {
-					LOGGER.error("Fail generate physcial plan for statement {}", statement);
+					LOGGER.error("Fail to generate physcial plan and execute for statement {}", statement);
+					result.add(-1);
 				}
 			}
-
-			return getTSBathExecuteStatementResp(TS_StatusCode.SUCCESS_STATUS, "Execute statements successfully",
-					result);
+			return getTSBathExecuteStatementResp(TS_StatusCode.SUCCESS_STATUS, "Execute batch statements successfully", result);
 		} catch (Exception e) {
-			LOGGER.error("TsFileDB Server: error occurs when executing statements", e);
+			LOGGER.error("{}: error occurs when executing statements",TsFileDBConstant.GLOBAL_DB_NAME, e);
 			return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage(), null);
 		}
-
 	}
 
 	@Override
 	public TSExecuteStatementResp executeStatement(TSExecuteStatementReq req) throws TException {
 		try {
 			if (!checkLogin()) {
-				LOGGER.info("TsFileDB Server: Not login.");
+				LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login");
 			}
 			String statement = req.getStatement();
@@ -297,7 +310,7 @@ public class TSServiceImpl implements TSIService.Iface {
 
 			PhysicalPlan physicalPlan;
 			try {
-				physicalPlan = processor.parseSQLToPhysicalPlan(statement);
+				physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
 			} catch (IllegalASTFormatException e) {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS,
 						"Statement format is not right:" + e.getMessage());
@@ -319,12 +332,12 @@ public class TSServiceImpl implements TSIService.Iface {
 
 		try {
 			if (!checkLogin()) {
-				LOGGER.info("TsFileDB Server: Not login.");
+				LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login");
 			}
 
 			String statement = req.getStatement();
-			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement);
+			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
 
 			List<Path> paths;
 			paths = plan.getPaths();
@@ -372,7 +385,7 @@ public class TSServiceImpl implements TSIService.Iface {
 			resp.setOperationType(aggregateFuncName);
 			return resp;
 		} catch (Exception e) {
-			LOGGER.error("TsFileDB Server: server internal error: {}", e.getMessage());
+			LOGGER.error("{}: Internal server error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 	}
@@ -417,8 +430,8 @@ public class TSServiceImpl implements TSIService.Iface {
 			resp.setQueryDataSet(tsQueryDataSet);
 			return resp;
 		} catch (Exception e) {
-			LOGGER.error("TsFileDB Server: server Internal Error: {}", e.getMessage());
-			return getTSFetchResultsResp(TS_StatusCode.ERROR_STATUS, "Server Internal Error");
+			LOGGER.error("{}: Internal server error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			return getTSFetchResultsResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 
 	}
@@ -434,7 +447,7 @@ public class TSServiceImpl implements TSIService.Iface {
 		} catch (ProcessorException e) {
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		} catch (Exception e) {
-			LOGGER.error("TsFileDB Server: server Internal Error: {}", e.getMessage());
+			LOGGER.error("{}: server Internal Error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 	}
@@ -472,7 +485,7 @@ public class TSServiceImpl implements TSIService.Iface {
 			LOGGER.error(e.getMessage());
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		} catch (IOException e) {
-			LOGGER.error("TsFileDB Server: write preLog error", e);
+			LOGGER.error("{}: write preLog error",TsFileDBConstant.GLOBAL_DB_NAME, e);
 			return getTSExecuteStatementResp(TS_StatusCode.SUCCESS_STATUS, "Write log error");
 		}
 	}
@@ -482,7 +495,7 @@ public class TSServiceImpl implements TSIService.Iface {
 
 		PhysicalPlan physicalPlan;
 		try {
-			physicalPlan = processor.parseSQLToPhysicalPlan(statement);
+			physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
 		} catch (QueryProcessorException | ArgsErrorException e) {
 			e.printStackTrace();
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
@@ -590,5 +603,35 @@ public class TSServiceImpl implements TSIService.Iface {
 	public void handleClientExit() throws TException {
 		closeOperation(null);
 		closeSession(null);
+	}
+
+	@Override
+	public TSGetTimeZoneResp getTimeZone() throws TException {
+		TS_Status ts_status = null;
+		TSGetTimeZoneResp resp = null;
+		try {
+			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
+			resp = new TSGetTimeZoneResp(ts_status, timeZone.get().getID());
+		} catch (Exception e) {
+			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+			ts_status.setErrorMessage(e.getMessage());
+			resp = new TSGetTimeZoneResp(ts_status, "Unknown time zone");
+		}
+		return resp;
+	}
+
+	@Override
+	public TSSetTimeZoneResp setTimeZone(TSSetTimeZoneReq req) throws TException {
+		TS_Status ts_status = null;
+		try {
+			String timeZoneID = req.getTimeZone();
+			timeZone.set(DateTimeZone.forID(timeZoneID.trim()));
+			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
+		} catch (Exception e) {
+			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+			ts_status.setErrorMessage(e.getMessage());
+		}
+		TSSetTimeZoneResp resp = new TSSetTimeZoneResp(ts_status);
+		return resp;
 	}
 }
