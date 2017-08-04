@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.transferfile.transfer.server;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
 import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ServerConfigure;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
@@ -15,7 +16,7 @@ public class ReceiveFiles extends Thread {
     private int fileSize;
 
     private final String messageSplitSig="\n";
-
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReceiveFiles.class);
     public ReceiveFiles(Socket socket){
         this.socket = socket;
     }
@@ -27,7 +28,7 @@ public class ReceiveFiles extends Thread {
             readFileFromClient(socket);
             socket.close();
         } catch (IOException e) {
-            System.out.println("IOException occurs while reading files from client!");
+            LOGGER.error("IOException occurs while reading files from client!");
         }
     }
     private void readFileFromClient(Socket socket) throws IOException{
@@ -46,7 +47,7 @@ public class ReceiveFiles extends Thread {
         }
 
         String path = args[0];
-        System.out.println("path "+path);
+        //System.out.println("path "+path);
 
         fileSize=Integer.parseInt(args[1].substring(0,args[1].length()));
         String[] args1 = path.split(messageSplitSig);
@@ -55,7 +56,7 @@ public class ReceiveFiles extends Thread {
         String temp= ServerConfigure.storage_directory.concat(new File(fileName).getName());
         receive_filePath=temp.substring(0,temp.length());
         Long startPosition= Long.parseLong(args[2]);
-        System.out.println("receivePath "+receive_filePath);
+        //System.out.println("receivePath "+receive_filePath);
         File receive_file=new File(receive_filePath);
         if(!receive_file.exists()){
             receive_file.createNewFile();
@@ -67,7 +68,7 @@ public class ReceiveFiles extends Thread {
         FileOutputStream fos= new FileOutputStream(temp_file);
 
         byte[] copyfile=new byte[128];
-        System.out.println("startPosition "+startPosition);
+        //System.out.println("startPosition "+startPosition);
         int read=0;
         int total_read=0;
         while(total_read<startPosition){
@@ -77,6 +78,7 @@ public class ReceiveFiles extends Thread {
         }
         fos.close();
         fis.close();
+
         int tempsize=0;
         fis=new FileInputStream(temp_file);
         fos=new FileOutputStream(receive_file);
@@ -85,15 +87,18 @@ public class ReceiveFiles extends Thread {
             fos.write(copyfile);
         }
         fis.close();
+
         if(!temp_file.delete()){
-            System.out.println("delete file "+temp_file.getAbsoluteFile()+" fail");
+            LOGGER.error("delete file "+temp_file.getAbsoluteFile()+" fail");
+        }else{
+            LOGGER.info("delete file "+temp_file.getAbsoluteFile()+" success");
         }
-        OutputStream ous=socket.getOutputStream();
+        OutputStream ous= socket.getOutputStream();
+
         PrintWriter pw=new PrintWriter(ous);
         pw.write("ok\n");
         pw.flush();
         ous.flush();
-
         Long receive_size=startPosition;
         int readSize=0;
 
@@ -105,14 +110,15 @@ public class ReceiveFiles extends Thread {
             pw.flush();
             ous.flush();
         }
-        System.out.println("finish receive a file,sending md5...");
+        LOGGER.info("finish receive a file,sending md5...");
         String md5= Md5CalculateUtil.getFileMD5(receive_filePath);
-
         pw.write(md5+"\n");
+        /**flush OutputStream*/
         pw.flush();
         ous.flush();
-        fos.close();
+        /**close streams*/
         br.close();
+        fos.close();
         isr.close();
         is.close();
         ous.close();

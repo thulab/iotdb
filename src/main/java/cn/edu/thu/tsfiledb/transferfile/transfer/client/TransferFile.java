@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.transferfile.transfer.client;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
 import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
@@ -16,6 +17,7 @@ public class TransferFile extends Thread {
     private String MD5;
     private long bytePosition;
     private final String messageSplitSig="\n";
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TransferFile.class);
 
     public TransferFile(Socket socket, String absolutePath,long bytePosition) {
         this.socket = socket;
@@ -34,18 +36,18 @@ public class TransferFile extends Thread {
             ins.read(input);
             t=t && MD5.equals(new String(input).split(messageSplitSig)[0]);
 
-            System.out.println(new Date().toString() + " ------ finish send file " + new File(absolutePath).getName());
+            LOGGER.info(new Date().toString() + " ------ finish send file " + new File(absolutePath).getName());
 
             if (t) {
                 deleteFile(absolutePath);
             }
         }  catch (IOException e) {
-            System.out.println("errors occur in socket InputStream or OutputStream!");
+            LOGGER.error("errors occur in socket InputStream or OutputStream!");
         }finally{
             if(ins!=null) try {
                 ins.close();
             } catch (IOException e) {
-                System.out.println("fail to close socket InputStream!");
+                LOGGER.error("fail to close socket InputStream!");
             }
         }
     }
@@ -87,12 +89,12 @@ public class TransferFile extends Thread {
                 updateBytePosition(absolutePath,bytePosition);
             }
         } catch (IOException e) {
-            System.out.println("errors occur while transferring file "+absolutePath);
+            LOGGER.error("errors occur while transferring file "+absolutePath);
         }finally{
             try {
                 if(in!=null) in.close();
             } catch (IOException e) {
-                System.out.println("fail to close FileInputStream while writing file "+absolutePath+" to server!");
+                LOGGER.error("fail to close FileInputStream while writing file "+absolutePath+" to server!");
             }
         }
         t=(bytePosition==file.length());
@@ -107,9 +109,11 @@ public class TransferFile extends Thread {
         try {
             oos = new ObjectOutputStream(new FileOutputStream(filePath));
             oos.writeObject(new FilePositionRecord(absolutePath,bytePosition));
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Can't find file "+filePath);
         } catch (IOException e) {
-            e.printStackTrace();
-        }finally{
+            LOGGER.error("write object fail");
+        } finally{
             oos.close();
         }
     }

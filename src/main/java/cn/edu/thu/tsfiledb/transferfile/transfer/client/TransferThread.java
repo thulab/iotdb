@@ -6,9 +6,11 @@ import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameAllResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameResp;
 import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,12 +24,12 @@ import java.util.concurrent.Executors;
 public class TransferThread extends java.util.TimerTask {
     private String startTimePath=ClientConfigure.startTimePath;
     private String snapShotPath=ClientConfigure.snapshotDirectory;
-
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TransferThread.class);
     public void run() {
         File file = new File(ClientConfigure.snapshotDirectory);
         File[] files = file.listFiles();
         if(Client.isTimerTaskRunning() && files.length>0){
-            System.out.println("Still transferring");
+            LOGGER.info("Still transferring");
             return;
         }
         Client.setTimerTaskRunning(true);
@@ -36,10 +38,10 @@ public class TransferThread extends java.util.TimerTask {
                 /**request for files,store in snapshot Directory*/
                 getFileFromDB();
             }
-            System.out.println(new Date().toString() + " ------ transfer files");
+            LOGGER.info(new Date().toString() + " ------ transfer files");
             writeFilesToServer(ClientConfigure.snapshotDirectory);
         }catch(IOException e){
-            System.out.println("errors occur in TransferThread: Not finish copying files to snapShotDirectory!");
+            LOGGER.error("errors occur in TransferThread: Not finish copying files to snapShotDirectory!");
         }
     }
     public void getFileFromDB() throws IOException {
@@ -51,10 +53,11 @@ public class TransferThread extends java.util.TimerTask {
             String namespace=fileNodeList.get(i);
             Map<String,Long> startTimes=loadStartTimes(namespace);
             /**show start times for every device in nameSpace*/
-            System.out.println("show start times");
+            String startTimeInfo="show start times\n";
             for(Map.Entry<String,Long> entry:startTimes.entrySet()){
-                System.out.println(entry.getKey()+" start time: "+entry.getValue());
+                startTimeInfo.concat("\t"+entry.getKey()+" start time: "+entry.getValue()+"\n");
             }
+            LOGGER.info(startTimeInfo);
             TSFileNodeNameResp tsFileNodeNameResp=client.getFileNode(namespace,startTimes,System.currentTimeMillis());
             int token=tsFileNodeNameResp.getToken();
             List<TSFileInfo> tsFileInfoList=tsFileNodeNameResp.getFileInfoList();//tsFileInfo
@@ -70,7 +73,7 @@ public class TransferThread extends java.util.TimerTask {
     }
 
     private void copyFileSnapShot(String tsFilePath, String snapShotPath) throws IOException {
-        System.out.println("copy file from tsFilePath to snapShotPath...");
+        LOGGER.info("copy file from tsFilePath to snapShotPath...");
         File inputFile=new File(tsFilePath);
         File outputFile=new File(snapShotPath.concat(inputFile.getName()));
         FileInputStream fis=null;
@@ -83,13 +86,13 @@ public class TransferThread extends java.util.TimerTask {
                 fos.write(copyfile);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("no file to copy...");
+            LOGGER.error("no file to copy...");
         } finally{
             try {
                 if(fis!=null) fis.close();
                 if(fos!=null) fos.close();
             } catch (IOException e) {
-                System.out.println("fail to close file after copy!");
+                LOGGER.error("fail to close file after copy!");
             }
         }
     }
@@ -106,7 +109,7 @@ public class TransferThread extends java.util.TimerTask {
                 oos = new ObjectOutputStream(new FileOutputStream(filePath));
                 oos.writeObject(new StartTime(entry.getKey(),entry.getValue()+1));
             }catch (IOException e) {
-                System.out.println("update startTime for device "+entry.getKey()+" fail!");
+                LOGGER.error("update startTime for device "+entry.getKey()+" fail!");
             } finally {
                 IOUtils.closeQuietly(oos);
             }
@@ -126,15 +129,18 @@ public class TransferThread extends java.util.TimerTask {
                     StartTime startTime=(StartTime) ois.readObject();
                     startTimes.put(startTime.getDevice(),startTime.getStartTime());
                 } catch (FileNotFoundException e) {
+                    LOGGER.error("Can't find file "+file.getName());
                 } catch (IOException e) {
                     startTimes.put(file.getName(),0L);
+                    LOGGER.warn("file "+file.getName()+":reset startTime to 0");
                 } catch (ClassNotFoundException e) {
                     startTimes.put(file.getName(),0L);
+                    LOGGER.warn("file "+file.getName()+":reset startTime to 0");
                 }finally{
                     if(ois!=null) try {
                         ois.close();
                     } catch (IOException e) {
-                        System.out.println("fail to close file "+file.getName());
+                        LOGGER.error("fail to close file "+file.getName());
                     }
                 }
             }
@@ -149,13 +155,16 @@ public class TransferThread extends java.util.TimerTask {
         while (file.exists() && files.length>0) {/**thread interruption,file re_transfer*/
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ClientConfigure.clientNTread);
             for (File traverseFile : files) {
-                System.out.println(new Date().toString() + " ------ transfer a file " + traverseFile.getName());
+                LOGGER.info(new Date().toString() + " ------ transfer a file " + traverseFile.getName());
                 try {
                     Socket socket = new Socket(ClientConfigure.server_address, ClientConfigure.port);//port from 1024-65535
-                    System.out.println("socket success");
+                    LOGGER.info("socket success for file "+path);
 
                     fixedThreadPool.submit(new TransferFile(socket, traverseFile.getAbsolutePath(),getFileBytePosition(traverseFile.getAbsolutePath())));
-                }catch (IOException e){
+                } catch (UnknownHostException e) {
+                    LOGGER.error("build socket error!");
+                } catch (IOException e) {
+                    LOGGER.error("build socket error!");
                 }
             }
             fixedThreadPool.shutdown();
@@ -188,21 +197,24 @@ public class TransferThread extends java.util.TimerTask {
                 FilePositionRecord filePositionRecord=(FilePositionRecord) ois.readObject();
                 return filePositionRecord.bytePosition;
             } catch (FileNotFoundException e) {
+                LOGGER.error("Can't find record file for file "+file.getName()+",reset bytePosition to 0");
                 return 0L;
             } catch (IOException e) {
                 try {
                     oos = new ObjectOutputStream(new FileOutputStream(recordFile));
                     oos.writeObject(new FilePositionRecord(file.getAbsolutePath(),0L));
                 } catch (IOException e1) {
-                    System.out.println("fail to rewrite recordFile...");
+                    LOGGER.error("fail to rewrite recordFile...");
                 }
+                LOGGER.info("file : "+file.getName()+",reset bytePosition to 0");
                 return 0L;
             } catch (ClassNotFoundException e) {
+                LOGGER.info("file : "+file.getName()+",reset bytePosition to 0");
                 try {
                     oos = new ObjectOutputStream(new FileOutputStream(recordFile));
                     oos.writeObject(new FilePositionRecord(file.getAbsolutePath(),0L));
                 } catch (IOException e1) {
-                    System.out.println("fail to read recordFile...");
+                    LOGGER.error("fail to rewrite recordFile...");
                 }
                 return 0L;
             }
@@ -213,12 +225,12 @@ public class TransferThread extends java.util.TimerTask {
                 oos = new ObjectOutputStream(new FileOutputStream(recordFile));
                 oos.writeObject(new FilePositionRecord(file.getAbsolutePath(),0L));
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("fail to rewrite recordFile...");
             }finally{
                 try {
                     if(oos!=null) oos.close();
                 } catch (IOException e) {
-                    System.out.println("fail to close recordFile!");
+                    LOGGER.error("fail to close recordFile!");
                 }
             }
         }
