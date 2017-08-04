@@ -59,23 +59,16 @@ public class TransferFile extends Thread {
         os.flush();
     }
 
-    private boolean writeFileToServer(String absolutePath,Long bytePosition) {
+    private boolean writeFileToServer(String absolutePath,Long bytePosition) throws IOException {
         boolean t = true;
         MD5= Md5CalculateUtil.getFileMD5(absolutePath);
 
         OutputStream os = null;
-        try {
-            os = socket.getOutputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        os = socket.getOutputStream();
+
         File file = new File(absolutePath);
         FileInputStream in = null;
-        try {
-            in = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        in = new FileInputStream(file);
         byte[] buffer = new byte[Math.toIntExact(ClientConfigure.fileSegmentSize)];
         int size = 0;
         Long sendSize=Long.valueOf(0);
@@ -91,10 +84,10 @@ public class TransferFile extends Thread {
                 ins.read(readAccept);
                 String temp=new String(readAccept);
                 bytePosition+=Long.parseLong(temp.split("\n")[0]);
-                //TransferThread.setMap(absolutePath,bytePosition);
                 updateBytePosition(absolutePath,bytePosition);
             }
         } catch (IOException e) {
+            System.out.println("errors occur while transferring file "+absolutePath);
         }finally{
             try {
                 if(in!=null) in.close();

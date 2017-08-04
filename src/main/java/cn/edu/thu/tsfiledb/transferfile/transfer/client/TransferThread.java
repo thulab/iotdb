@@ -31,14 +31,18 @@ public class TransferThread extends java.util.TimerTask {
             return;
         }
         Client.setTimerTaskRunning(true);
-        if(files.length==0){
-            /**request for files,store in snapshot Directory*/
-            getFileFromDB();
+        try {
+            if (files.length == 0) {
+                /**request for files,store in snapshot Directory*/
+                getFileFromDB();
+            }
+            System.out.println(new Date().toString() + " ------ transfer files");
+            writeFilesToServer(ClientConfigure.snapshotDirectory);
+        }catch(IOException e){
+            System.out.println("errors occur in TransferThread: Not finish copying files to snapShotDirectory!");
         }
-        System.out.println(new Date().toString() + " ------ transfer files");
-        writeFilesToServer(ClientConfigure.snapshotDirectory);
     }
-    public void getFileFromDB() {
+    public void getFileFromDB() throws IOException {
         DataCollectClient client = new DataCollectClient(ClientConfigure.readDBHost, ClientConfigure.readDBPort);
         TSFileNodeNameAllResp tsFileNodeNameAllResp=client.getFileAllNode();
         List<String> fileNodeList=tsFileNodeNameAllResp.getFileNodesList();
@@ -65,7 +69,7 @@ public class TransferThread extends java.util.TimerTask {
         client.DataCollectClientClose();
     }
 
-    private void copyFileSnapShot(String tsFilePath, String snapShotPath) {
+    private void copyFileSnapShot(String tsFilePath, String snapShotPath) throws IOException {
         System.out.println("copy file from tsFilePath to snapShotPath...");
         File inputFile=new File(tsFilePath);
         File outputFile=new File(snapShotPath.concat(inputFile.getName()));
@@ -80,9 +84,7 @@ public class TransferThread extends java.util.TimerTask {
             }
         } catch (FileNotFoundException e) {
             System.out.println("no file to copy...");
-        } catch (IOException e) {
-            System.out.println("errors occur while copying file");
-        }finally{
+        } finally{
             try {
                 if(fis!=null) fis.close();
                 if(fos!=null) fos.close();
