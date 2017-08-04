@@ -1,7 +1,7 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferThread;
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -64,9 +64,8 @@ public class TestClient1 {
 
     public static void main(String[] args) throws IOException {
         //读取配置文件，设置配置项
-        ClientConfigure.loadProperties();
         //传送文件
-        Scanner in = new Scanner(System.in);
+//        Scanner in = new Scanner(System.in);
         timer=new Timer();
         startTime=System.currentTimeMillis()+delay_time;
         timer.schedule(new TestTransferThread(),delay_time,timeInterval);

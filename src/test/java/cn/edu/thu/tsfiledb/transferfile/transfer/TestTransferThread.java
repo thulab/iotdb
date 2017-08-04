@@ -1,7 +1,7 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferFile;
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,12 +32,13 @@ public class TestTransferThread extends TimerTask{
         File file = new File(path);
         File[] files = file.listFiles();
         System.out.println(files.length);
+        ClientConfig config = ClientConfig.getInstance();
         while (file.exists() && files.length>0) {
-            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ClientConfigure.clientNTread);
+            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(config.clientNTread);
             for (File file2 : files) {
                 System.out.println(new Date().toString() + " ------ transfer a file " + file2.getName());
                 try {
-                    Socket socket = new Socket(ClientConfigure.server_address, ClientConfigure.port);//1024-65535的某个端口
+                    Socket socket = new Socket(config.serverAddress, config.port);//1024-65535的某个端口
                     System.out.println("test client1 socket success");
                     fixedThreadPool.submit(new TransferFile(socket, file2.getAbsolutePath(), 0L));
                 }catch (IOException e){

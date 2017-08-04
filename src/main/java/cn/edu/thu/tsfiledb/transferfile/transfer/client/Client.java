@@ -1,16 +1,16 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.client;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
-
 import java.util.Scanner;
 import java.util.Timer;
+
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
 
 /**
  * Created by lylw on 2017/7/17.
  */
 public class Client {
 	private long timeInterval = 180000L;
-	private long delay_time = 0L;
+	private long delayTime = 0L;
 	private boolean switchTiming;
 	private long startTime;
 	private Timer timer;
@@ -21,7 +21,7 @@ public class Client {
 	}
 
 	public static void setTimerTaskRunning(boolean timerTaskRunning) {
-		timerTaskRunning = timerTaskRunning;
+		Client.timerTaskRunning = timerTaskRunning;
 	}
 
 	public long getStartTime() {
@@ -30,13 +30,13 @@ public class Client {
 
 	public void clientService() {
 		/** load properties for client */
-		ClientConfigure.loadProperties();
+//		ClientConfig.loadProperties();
 
 		/** transfer files */
 		Scanner in = new Scanner(System.in);
 		timer = new Timer();
-		startTime = System.currentTimeMillis() + delay_time;
-		timer.schedule(new TransferThread(), delay_time, timeInterval);
+		startTime = System.currentTimeMillis() + delayTime;
+		timer.schedule(new TransferThread(), delayTime, timeInterval);
 
 		/** waiting for input */
 		try {
@@ -45,15 +45,15 @@ public class Client {
 				String cmd = in.nextLine();
 				if (cmd.equals("set")) {
 					System.out.print("input delay time: ");
-					delay_time = in.nextLong();
-					startTime = System.currentTimeMillis() + delay_time;
+					delayTime = in.nextLong();
+					startTime = System.currentTimeMillis() + delayTime;
 					System.out.print("input time interval: ");
 					timeInterval = in.nextLong();
 
 					timer.cancel();
 					timer.purge();
 					timer = new Timer();
-					timer.schedule(new TransferThread(), delay_time, timeInterval);
+					timer.schedule(new TransferThread(), delayTime, timeInterval);
 				} else if (cmd.equals("transfer now")) {
 					Thread thread = new Thread(new TransferThread());
 					thread.start();
@@ -70,9 +70,9 @@ public class Client {
 							startTime += timeInterval;
 						}
 
-						delay_time = startTime - System.currentTimeMillis();
+						delayTime = startTime - System.currentTimeMillis();
 						timer = new Timer();
-						timer.schedule(new TransferThread(), delay_time, timeInterval);
+						timer.schedule(new TransferThread(), delayTime, timeInterval);
 					} else if (!switchTiming) {
 						timer.cancel();
 						timer.purge();

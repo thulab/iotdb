@@ -1,7 +1,9 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.server;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ServerConfigure;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ServerConfig;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,14 +15,13 @@ import java.util.concurrent.Executors;
  * Created by lylw on 2017/7/17.
  */
 public class Server {
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
     public static void main(String[] args) throws IOException, InterruptedException {
-        /**read settings from settings.properties*/
-        ServerConfigure.loadProperties();
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ServerConfigure.server_NThread);
+    		ServerConfig config = ServerConfig.getInstance();
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(config.serverNThread);
         ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(ServerConfigure.port);
+            serverSocket = new ServerSocket(config.port);
         } catch (IOException e) {
             LOGGER.error("fail to get ServerSocket!");
         }

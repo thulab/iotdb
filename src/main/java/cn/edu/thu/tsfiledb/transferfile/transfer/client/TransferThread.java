@@ -4,8 +4,10 @@ import cn.edu.thu.tsfiledb.service.DataCollectClient;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileInfo;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameAllResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameResp;
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
+
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
@@ -15,19 +17,21 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * Created by dell on 2017/7/25.
  */
-public class TransferThread extends java.util.TimerTask {
-	private String startTimePath = ClientConfigure.startTimePath;
-	private String snapShotPath = ClientConfigure.snapshotDirectory;
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TransferThread.class);
-
+public class TransferThread extends TimerTask {
+//	private String startTimePath = ClientConfig.startTimePath;
+//	private String snapShotPath = ClientConfig.snapshotDirectory;
+	private static final Logger LOGGER = LoggerFactory.getLogger(TransferThread.class);
+	private static ClientConfig config = ClientConfig.getInstance();
 	public void run() {
-		File file = new File(ClientConfigure.snapshotDirectory);
+		
+		File file = new File(config.snapshotDirectory);
 		File[] files = file.listFiles();
 		if (Client.isTimerTaskRunning() && files.length > 0) {
 			LOGGER.info("Still transferring");
@@ -40,14 +44,15 @@ public class TransferThread extends java.util.TimerTask {
 				getFileFromDB();
 			}
 			LOGGER.info(new Date().toString() + " ------ transfer files");
-			writeFilesToServer(ClientConfigure.snapshotDirectory);
+			writeFilesToServer(config.snapshotDirectory);
 		} catch (IOException e) {
 			LOGGER.error("errors occur in TransferThread: Not finish copying files to snapShotDirectory!");
 		}
 	}
 
 	public void getFileFromDB() throws IOException {
-		DataCollectClient client = new DataCollectClient(ClientConfigure.readDBHost, ClientConfigure.readDBPort);
+		ClientConfig config = ClientConfig.getInstance();
+		DataCollectClient client = new DataCollectClient(config.readDBHost, config.readDBPort);
 		TSFileNodeNameAllResp tsFileNodeNameAllResp = client.getFileAllNode();
 		List<String> fileNodeList = tsFileNodeNameAllResp.getFileNodesList();
 
@@ -68,7 +73,7 @@ public class TransferThread extends java.util.TimerTask {
 			for (int j = 0; j < tsFileInfoList.size(); j++) {
 				String tsFilePath = tsFileInfoList.get(j).getFilePath();// device
 																		// dir
-				copyFileSnapShot(tsFilePath, snapShotPath);
+				copyFileSnapShot(tsFilePath, config.snapshotDirectory);
 				updateStartTimes(namespace, tsFileInfoList.get(j).getEndTimes());
 			}
 			client.backFileNode(namespace, tsFileInfoList, token);
@@ -105,7 +110,7 @@ public class TransferThread extends java.util.TimerTask {
 
 	private void updateStartTimes(String namespace, Map<String, Long> newStartTime) {
 		ObjectOutputStream oos = null;
-		String dirPath = startTimePath.concat(namespace + System.getProperty("file.separator"));
+		String dirPath = config.startTimePath.concat(namespace + System.getProperty("file.separator"));
 
 		for (Map.Entry<String, Long> entry : newStartTime.entrySet()) {
 			try {
@@ -125,7 +130,7 @@ public class TransferThread extends java.util.TimerTask {
 
 	private Map<String, Long> loadStartTimes(String namespace) {
 		Map<String, Long> startTimes = new HashMap<>();
-		String path = startTimePath.concat(namespace);
+		String path = config.startTimePath.concat(namespace);
 		File dir = new File(path);
 		ObjectInputStream ois = null;
 		if (dir.exists()) {
@@ -164,11 +169,11 @@ public class TransferThread extends java.util.TimerTask {
 				&& files.length > 0) {/**
 										 * thread interruption,file re_transfer
 										 */
-			ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ClientConfigure.clientNTread);
+			ExecutorService fixedThreadPool = Executors.newFixedThreadPool(config.clientNTread);
 			for (File traverseFile : files) {
 				LOGGER.info(new Date().toString() + " ------ transfer a file " + traverseFile.getName());
 				try {
-					Socket socket = new Socket(ClientConfigure.server_address, ClientConfigure.port);// port
+					Socket socket = new Socket(config.serverAddress, config.port);// port
 																										// from
 																										// 1024-65535
 					LOGGER.info("socket success for file " + path);
@@ -200,7 +205,7 @@ public class TransferThread extends java.util.TimerTask {
 	private long getFileBytePosition(String filePath) {
 		long bytePosition = 0;
 		File file = new File(filePath);
-		String fileRecordPath = ClientConfigure.filePositionRecord.concat("record_" + file.getName());
+		String fileRecordPath = config.filePositionRecord.concat("record_" + file.getName());
 
 		ObjectInputStream ois = null;
 		ObjectOutputStream oos = null;

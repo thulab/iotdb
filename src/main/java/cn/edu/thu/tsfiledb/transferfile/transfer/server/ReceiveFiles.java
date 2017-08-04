@@ -1,7 +1,8 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.server;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ServerConfigure;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ServerConfig;
+
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
@@ -36,7 +37,7 @@ public class ReceiveFiles extends Thread {
         InputStreamReader isr =new InputStreamReader(is);
         BufferedReader br =new BufferedReader(isr);
         byte[] buffer = new byte[1024];
-
+        ServerConfig config = ServerConfig.getInstance();
         String info =null;
         String[] args=new String[5];
         int i=0;
@@ -53,7 +54,7 @@ public class ReceiveFiles extends Thread {
         String[] args1 = path.split(messageSplitSig);
         String fileName = args1[args1.length - 1];
 
-        String temp= ServerConfigure.storage_directory.concat(new File(fileName).getName());
+        String temp= config.storageDirectory.concat(new File(fileName).getName());
         receive_filePath=temp.substring(0,temp.length());
         Long startPosition= Long.parseLong(args[2]);
         //System.out.println("receivePath "+receive_filePath);
@@ -64,7 +65,7 @@ public class ReceiveFiles extends Thread {
 
         FileInputStream fis = new FileInputStream(receive_file);
 
-        File temp_file=new File(ServerConfigure.storage_directory+"temp_"+new File(fileName).getName());
+        File temp_file=new File(config.storageDirectory+"temp_"+new File(fileName).getName());
         FileOutputStream fos= new FileOutputStream(temp_file);
 
         byte[] copyfile=new byte[128];
