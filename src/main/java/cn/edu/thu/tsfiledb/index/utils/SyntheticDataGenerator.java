@@ -24,6 +24,7 @@ public class SyntheticDataGenerator {
 
     private static final String CREATE_TIME_SERIES_TEMPLATE = "create timeseries root.laptop.%s.%s with datatype=%s,encoding=%s";
     private static final String INSERT_DATA_TEMPLATE = "insert into root.laptop.%s(timestamp,%s) values (%s,%s)";
+    private static final String INSERT_2DATA_TEMPLATE = "insert into root.laptop.%s(timestamp,%s,%s) values (%s,%s,%s)";
     private static final String SET_STORAGE_GROUP_TEMPLATE = "set storage group to root.laptop.%s";
     private static final String CREATE_INDEX_TEMPLATE = "create index on root.laptop.%s.%s using kv-match";
     private static final String CLOSE_TEMPLATE = "close";
@@ -59,8 +60,7 @@ public class SyntheticDataGenerator {
         double x1 = ThreadLocalRandom.current().nextDouble(-5, 5);
         double x2 = ThreadLocalRandom.current().nextDouble(-5, 5);
         for (int i = 1; i <= length; i++) {
-            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, x1));
-            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s2", t, x2));
+            statement.execute(String.format(INSERT_2DATA_TEMPLATE, deviceName, "s1", "s2", t, x1, x2));
 
             x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
             x2 += ThreadLocalRandom.current().nextDouble(-1, 1);
