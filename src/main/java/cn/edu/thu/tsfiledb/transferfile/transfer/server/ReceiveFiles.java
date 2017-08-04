@@ -1,11 +1,10 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.server;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ServerConfigure;
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
+import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ServerConfigure;
 
 import java.io.*;
 import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by dell on 2017/7/24.
@@ -14,25 +13,24 @@ public class ReceiveFiles extends Thread {
     private Socket socket;
     private String receive_filePath;
     private int fileSize;
-    private String initString="hello!";
+
+    private final String messageSplitSig="\n";
 
     public ReceiveFiles(Socket socket){
         this.socket = socket;
     }
     /**
-     * write data for communication with main.java.cn.edu.fudan.client
+     * write data for communication with main.java.cn.edu.thu.tsfiledb.transferfile.transfer.client
      */
     public void run(){
         try {
             readFileFromClient(socket);
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            System.out.println("IOException occurs while reading files from client!");
         }
     }
-    private void readFileFromClient(Socket socket) throws IOException, NoSuchAlgorithmException {
+    private void readFileFromClient(Socket socket) throws IOException{
         InputStream is = socket.getInputStream();
         InputStreamReader isr =new InputStreamReader(is);
         BufferedReader br =new BufferedReader(isr);
@@ -51,19 +49,21 @@ public class ReceiveFiles extends Thread {
         System.out.println("path "+path);
 
         fileSize=Integer.parseInt(args[1].substring(0,args[1].length()));
-        String[] args1 = path.split("\\\\");
+        String[] args1 = path.split(messageSplitSig);
         String fileName = args1[args1.length - 1];
 
-        String temp= ServerConfigure.storage_directory.concat(fileName);
+        String temp= ServerConfigure.storage_directory.concat(new File(fileName).getName());
         receive_filePath=temp.substring(0,temp.length());
         Long startPosition= Long.parseLong(args[2]);
-
+        System.out.println("receivePath "+receive_filePath);
         File receive_file=new File(receive_filePath);
         if(!receive_file.exists()){
             receive_file.createNewFile();
         }
-        FileInputStream fis=new FileInputStream(receive_file);
-        File temp_file=new File(ServerConfigure.storage_directory+"temp_"+fileName);
+
+        FileInputStream fis = new FileInputStream(receive_file);
+
+        File temp_file=new File(ServerConfigure.storage_directory+"temp_"+new File(fileName).getName());
         FileOutputStream fos= new FileOutputStream(temp_file);
 
         byte[] copyfile=new byte[128];
@@ -99,7 +99,7 @@ public class ReceiveFiles extends Thread {
 
         while((receive_size<fileSize) && ((readSize=is.read(buffer))!=-1)){
             receive_size+=readSize;
-            //System.out.println("receive_size "+receive_size);
+            //System.out.println("server receive_size "+receive_size);
             fos.write(buffer,0,readSize);
             pw.write(readSize+"\n");
             pw.flush();

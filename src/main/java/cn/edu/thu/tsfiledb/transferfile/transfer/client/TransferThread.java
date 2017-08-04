@@ -20,65 +20,53 @@ import java.util.concurrent.Executors;
  * Created by dell on 2017/7/25.
  */
 public class TransferThread extends java.util.TimerTask {
-    private static Map<String,Long> filemap=new HashMap<>();
-    static String startTimePath=ClientConfigure.startTimePath;
-    static String snapShotPath=ClientConfigure.snapshootDirectory;
+    private String startTimePath=ClientConfigure.startTimePath;
+    private String snapShotPath=ClientConfigure.snapshotDirectory;
 
     public void run() {
-        File file = new File(ClientConfigure.snapshootDirectory);
+        File file = new File(ClientConfigure.snapshotDirectory);
         File[] files = file.listFiles();
-        Long curTime=System.currentTimeMillis();
         if(Client.isTimerTaskRunning() && files.length>0){
             System.out.println("Still transferring");
             return;
         }
         Client.setTimerTaskRunning(true);
         if(files.length==0){
-            //请求文件列表，存储到 snapshootDirectory
-            try {
-                getFileFromDB();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            /**request for files,store in snapshot Directory*/
+            getFileFromDB();
         }
-
-        try {
-            System.out.println(new Date().toString() + " ------ transfer files");
-            writeFilesToServer(ClientConfigure.snapshootDirectory);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println(new Date().toString() + " ------ transfer files");
+        writeFilesToServer(ClientConfigure.snapshotDirectory);
     }
-    public void getFileFromDB() throws IOException {
-        DataCollectClient client = new DataCollectClient("127.0.0.1", 6668);
+    public void getFileFromDB() {
+        DataCollectClient client = new DataCollectClient(ClientConfigure.readDBHost, ClientConfigure.readDBPort);
         TSFileNodeNameAllResp tsFileNodeNameAllResp=client.getFileAllNode();
         List<String> fileNodeList=tsFileNodeNameAllResp.getFileNodesList();
 
         for(int i=0;i<fileNodeList.size();i++){
             String namespace=fileNodeList.get(i);
-            Map<String,Long> startTimes=loadStartTimes(namespace);//namespace中 每个device startTime
-
+            Map<String,Long> startTimes=loadStartTimes(namespace);
+            /**show start times for every device in nameSpace*/
             System.out.println("show start times");
             for(Map.Entry<String,Long> entry:startTimes.entrySet()){
-                System.out.println(entry.getKey()+" "+entry.getValue());
+                System.out.println(entry.getKey()+" start time: "+entry.getValue());
             }
             TSFileNodeNameResp tsFileNodeNameResp=client.getFileNode(namespace,startTimes,System.currentTimeMillis());
             int token=tsFileNodeNameResp.getToken();
-            List<TSFileInfo> tsFileInfoList=tsFileNodeNameResp.getFileInfoList();//tsfileInfo
+            List<TSFileInfo> tsFileInfoList=tsFileNodeNameResp.getFileInfoList();//tsFileInfo
 
             for(int j=0;j<tsFileInfoList.size();j++){
                 String tsFilePath=tsFileInfoList.get(j).getFilePath();//device dir
                 copyFileSnapShot(tsFilePath,snapShotPath);
                 updateStartTimes(namespace,tsFileInfoList.get(j).getEndTimes());
-                Map<String,Long> endTimeMap=tsFileInfoList.get(j).getEndTimes();
             }
             client.backFileNode(namespace, tsFileInfoList, token);
         }
         client.DataCollectClientClose();
     }
 
-    private static void copyFileSnapShot(String tsFilePath, String snapShotPath) throws IOException {
-        System.out.println("copy files");
+    private void copyFileSnapShot(String tsFilePath, String snapShotPath) {
+        System.out.println("copy file from tsFilePath to snapShotPath...");
         File inputFile=new File(tsFilePath);
         File outputFile=new File(snapShotPath.concat(inputFile.getName()));
         FileInputStream fis=null;
@@ -91,37 +79,39 @@ public class TransferThread extends java.util.TimerTask {
                 fos.write(copyfile);
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("no file to copy...");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("errors occur while copying file");
         }finally{
-            fis.close();
-            fos.close();
+            try {
+                if(fis!=null) fis.close();
+                if(fos!=null) fos.close();
+            } catch (IOException e) {
+                System.out.println("fail to close file after copy!");
+            }
         }
     }
 
-    private static void updateStartTimes(String namespace, Map<String,Long> newStartTime) {
+    private void updateStartTimes(String namespace, Map<String,Long> newStartTime) {
         ObjectOutputStream oos = null;
-        String dirPath=startTimePath.concat(namespace+"\\");
+        String dirPath=startTimePath.concat(namespace+System.getProperty("file.separator"));
 
-        try {
-            for (Map.Entry<String, Long> entry : newStartTime.entrySet()) {
-                String filePath= dirPath.concat(entry.getKey()+".txt");
+        for (Map.Entry<String, Long> entry : newStartTime.entrySet()) {
+            try {
+                String filePath= dirPath.concat(entry.getKey());
                 File dir=new File(dirPath);
                 if(!dir.exists())dir.mkdirs();
                 oos = new ObjectOutputStream(new FileOutputStream(filePath));
                 oos.writeObject(new StartTime(entry.getKey(),entry.getValue()+1));
+            }catch (IOException e) {
+                System.out.println("update startTime for device "+entry.getKey()+" fail!");
+            } finally {
+                IOUtils.closeQuietly(oos);
             }
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(oos);
-
         }
     }
 
-    private static Map<String,Long> loadStartTimes(String namespace) {
+    private Map<String,Long> loadStartTimes(String namespace) {
         Map<String,Long> startTimes=new HashMap<>();
         String path=startTimePath.concat(namespace);
         File dir=new File(path);
@@ -133,41 +123,47 @@ public class TransferThread extends java.util.TimerTask {
                     ois = new ObjectInputStream(new FileInputStream(file));
                     StartTime startTime=(StartTime) ois.readObject();
                     startTimes.put(startTime.getDevice(),startTime.getStartTime());
-                    ois.close();
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    startTimes.put(file.getName(),0L);
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    startTimes.put(file.getName(),0L);
+                }finally{
+                    if(ois!=null) try {
+                        ois.close();
+                    } catch (IOException e) {
+                        System.out.println("fail to close file "+file.getName());
+                    }
                 }
             }
         }
         return startTimes;
     }
 
-    public static void setMap(String file,Long bytePosition){
-        filemap.put(file,bytePosition);
-    }
-
-    public static void writeFilesToServer(String path) throws IOException {
+    public void writeFilesToServer(String path) {
         File file = new File(path);
         File[] files = file.listFiles();
-        loadFileRecord(files);
-        while (file.exists() && files.length>0) {//thread中断，server可连接
+
+        while (file.exists() && files.length>0) {/**thread interruption,file re_transfer*/
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ClientConfigure.clientNTread);
-            for (File file2 : files) {
-                System.out.println(new Date().toString() + " ------ transfer a file " + file2.getName());
+            for (File traverseFile : files) {
+                System.out.println(new Date().toString() + " ------ transfer a file " + traverseFile.getName());
                 try {
-                    Socket socket = new Socket(ClientConfigure.server_address, ClientConfigure.port);//1024-65535的某个端口
+                    Socket socket = new Socket(ClientConfigure.server_address, ClientConfigure.port);//port from 1024-65535
                     System.out.println("socket success");
-                    fixedThreadPool.submit(new TransferFile(socket, file2.getAbsolutePath(), filemap.get(file2.getAbsolutePath())));
+
+                    fixedThreadPool.submit(new TransferFile(socket, traverseFile.getAbsolutePath(),getFileBytePosition(traverseFile.getAbsolutePath())));
                 }catch (IOException e){
                 }
             }
             fixedThreadPool.shutdown();
 
-            while(!fixedThreadPool.isTerminated());
+            while(!fixedThreadPool.isTerminated()) {
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                }
+            }
 
             fixedThreadPool.shutdownNow();
             file = new File(path);
@@ -176,39 +172,54 @@ public class TransferThread extends java.util.TimerTask {
         }
     }
 
-    private static void loadFileRecord(File[] files) throws IOException {
-        for(File file2 : files){
-            String absolutePath = ClientConfigure.filePositionRecord.concat("record_"+file2.getName());
-            File file=new File(absolutePath);
-            if(file.exists()){
-                ObjectInputStream ois = null;
-                ObjectOutputStream oos=null;
-                try {
-                    ois = new ObjectInputStream(new FileInputStream(file));
-                    FilePositionRecord filePositionRecord=(FilePositionRecord) ois.readObject();
-                    setMap(filePositionRecord.getAbsolutePath(),filePositionRecord.getBytePosition());
-                } catch (ClassNotFoundException e) {
-                    setMap(file2.getAbsolutePath(),0L);
-                    oos = new ObjectOutputStream(new FileOutputStream(file));
-                    oos.writeObject(new FilePositionRecord(file2.getAbsolutePath(),0L));
-                    setMap(file2.getAbsolutePath(),0L);
-                } catch (IOException e){
-                    setMap(file2.getAbsolutePath(),0L);
-                    oos = new ObjectOutputStream(new FileOutputStream(file));
-                    oos.writeObject(new FilePositionRecord(file2.getAbsolutePath(),0L));
-                    setMap(file2.getAbsolutePath(),0L);
-                } finally{
-                    if(ois!=null)ois.close();
-                    if(oos!=null)oos.close();
-                }
+    private long getFileBytePosition(String filePath) {
+        long bytePosition=0;
+        File file=new File(filePath);
+        String fileRecordPath = ClientConfigure.filePositionRecord.concat("record_"+file.getName());
 
-            }else{
-                file.createNewFile();
-                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-                oos.writeObject(new FilePositionRecord(file2.getAbsolutePath(),0L));
-                setMap(file2.getAbsolutePath(),0L);
-                oos.close();
+        ObjectInputStream ois = null;
+        ObjectOutputStream oos= null;
+        File recordFile=new File(fileRecordPath);
+        if(recordFile.exists()){
+            try{
+                ois = new ObjectInputStream(new FileInputStream(recordFile));
+                FilePositionRecord filePositionRecord=(FilePositionRecord) ois.readObject();
+                return filePositionRecord.bytePosition;
+            } catch (FileNotFoundException e) {
+                return 0L;
+            } catch (IOException e) {
+                try {
+                    oos = new ObjectOutputStream(new FileOutputStream(recordFile));
+                    oos.writeObject(new FilePositionRecord(file.getAbsolutePath(),0L));
+                } catch (IOException e1) {
+                    System.out.println("fail to rewrite recordFile...");
+                }
+                return 0L;
+            } catch (ClassNotFoundException e) {
+                try {
+                    oos = new ObjectOutputStream(new FileOutputStream(recordFile));
+                    oos.writeObject(new FilePositionRecord(file.getAbsolutePath(),0L));
+                } catch (IOException e1) {
+                    System.out.println("fail to read recordFile...");
+                }
+                return 0L;
             }
         }
+        else{
+            try {
+                recordFile.createNewFile();
+                oos = new ObjectOutputStream(new FileOutputStream(recordFile));
+                oos.writeObject(new FilePositionRecord(file.getAbsolutePath(),0L));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }finally{
+                try {
+                    if(oos!=null) oos.close();
+                } catch (IOException e) {
+                    System.out.println("fail to close recordFile!");
+                }
+            }
+        }
+        return bytePosition;
     }
 }

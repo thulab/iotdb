@@ -20,7 +20,7 @@ public class Md5CalculateUtil {
         }
         return sbr.toString();
     }
-    public static String getFileMD5(String absolutePath) throws NoSuchAlgorithmException {
+    public static String getFileMD5(String absolutePath){
         File file = new File(absolutePath);
         String md5 = null;
         FileInputStream fileInputStream = null;
@@ -40,9 +40,11 @@ public class Md5CalculateUtil {
             //System.out.println(absolutePath+" "+md5+"\n");
             fileInputStream.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            return null;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("fail to close FileInputStream after calculating MD5!");
+        } catch (NoSuchAlgorithmException e) {
+            return null;
         }
         return md5;
     }

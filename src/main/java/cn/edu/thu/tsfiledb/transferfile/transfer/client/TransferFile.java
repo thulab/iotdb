@@ -5,7 +5,6 @@ import cn.edu.thu.tsfiledb.transferfile.transfer.configure.ClientConfigure;
 
 import java.io.*;
 import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
 /**
@@ -15,33 +14,39 @@ public class TransferFile extends Thread {
     private Socket socket;
     private String absolutePath;
     private String MD5;
-    private Long bytePosition;
+    private long bytePosition;
+    private final String messageSplitSig="\n";
 
-    public TransferFile(Socket socket, String absolutePath, Long bytePosition) {
+    public TransferFile(Socket socket, String absolutePath,long bytePosition) {
         this.socket = socket;
         this.absolutePath = absolutePath.substring(0, absolutePath.length());
         this.bytePosition=bytePosition;
     }
 
     public void run() {
+        InputStream ins=null;
         try {
-            InputStream ins = socket.getInputStream();
+            ins = socket.getInputStream();
             sendFileNameAndLength(absolutePath);
             byte[] input = new byte[1024];
             ins.read(input);
             boolean t = writeFileToServer(absolutePath,bytePosition);
             ins.read(input);
-            t=t && MD5.equals(new String(input).split("\n")[0]);
+            t=t && MD5.equals(new String(input).split(messageSplitSig)[0]);
 
             System.out.println(new Date().toString() + " ------ finish send file " + new File(absolutePath).getName());
 
             if (t) {
                 deleteFile(absolutePath);
             }
-        } catch (IOException e) {
-            //e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+        }  catch (IOException e) {
+            System.out.println("errors occur in socket InputStream or OutputStream!");
+        }finally{
+            if(ins!=null) try {
+                ins.close();
+            } catch (IOException e) {
+                System.out.println("fail to close socket InputStream!");
+            }
         }
     }
 
@@ -49,12 +54,12 @@ public class TransferFile extends Thread {
         File file = new File(absolutePath);
         OutputStream os = socket.getOutputStream();
         PrintWriter pw = new PrintWriter(os);
-        pw.write(absolutePath + "\n" + file.length() + "\n"+bytePosition+"\n");
+        pw.write(absolutePath + messageSplitSig + file.length() + messageSplitSig + bytePosition + messageSplitSig);
         pw.flush();
         os.flush();
     }
 
-    private boolean writeFileToServer(String absolutePath,Long bytePosition) throws NoSuchAlgorithmException {
+    private boolean writeFileToServer(String absolutePath,Long bytePosition) {
         boolean t = true;
         MD5= Md5CalculateUtil.getFileMD5(absolutePath);
 
@@ -76,7 +81,7 @@ public class TransferFile extends Thread {
         Long sendSize=Long.valueOf(0);
         try {
             while ((size = in.read(buffer)) != -1) {
-                //System.out.println("客户端发送数据包，大小为" + size);
+                //System.out.println("sending package,size = " + size);
                 sendSize+=size;
                 if(sendSize<=bytePosition)continue;
                 os.write(buffer, 0, size);
@@ -86,22 +91,18 @@ public class TransferFile extends Thread {
                 ins.read(readAccept);
                 String temp=new String(readAccept);
                 bytePosition+=Long.parseLong(temp.split("\n")[0]);
-                TransferThread.setMap(absolutePath,bytePosition);
+                //TransferThread.setMap(absolutePath,bytePosition);
                 updateBytePosition(absolutePath,bytePosition);
             }
         } catch (IOException e) {
+        }finally{
             try {
-                in.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
+                if(in!=null) in.close();
+            } catch (IOException e) {
+                System.out.println("fail to close FileInputStream while writing file "+absolutePath+" to server!");
             }
         }
         t=(bytePosition==file.length());
-        try {
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return t;
     }
 
@@ -125,14 +126,14 @@ public class TransferFile extends Thread {
         File file = new File(absolutePath);
         if (file.exists() && file.isFile()) {
             if (file.delete()) {
-                System.out.println("删除单个文件" + absolutePath + "成功！");
+                System.out.println("delete file " + absolutePath + "success!");
                 t = true;
             } else {
-                System.out.println("删除单个文件" + absolutePath + "失败！");
+                System.out.println("delete file " + absolutePath + "fail!");
                 t = false;
             }
         } else {
-            System.out.println("删除单个文件失败：" + absolutePath + "不存在！");
+            System.out.println("delete file fail: " + absolutePath + "not exist!");
             t = false;
         }
         return t;

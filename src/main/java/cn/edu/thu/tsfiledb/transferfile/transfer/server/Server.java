@@ -14,14 +14,14 @@ import java.util.concurrent.Executors;
 public class Server {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // 读服务器端配置文件
+        /**read settings from settings.properties*/
         ServerConfigure.loadProperties();
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(ServerConfigure.server_NThread);
         ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(ServerConfigure.port);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("fail to get ServerSocket!");
         }
         while(true){
             Socket socket = serverSocket.accept();
