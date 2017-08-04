@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The class manage the indexes of KV-match.
+ * The class manages the indexes of KV-match.
  *
  * @author Jiaye Wu
  */
@@ -49,7 +49,7 @@ public class KvMatchIndexManager implements IndexManager {
     private static final String CONFIG_FILE_PATH = TsfileDBDescriptor.getInstance().getConfig().indexFileDir + File.separator + ".metadata";
     private static final int PARALLELISM = Runtime.getRuntime().availableProcessors() - 1;
 
-    private static KvMatchIndexManager manager = null;
+    private static KvMatchIndexManager manager = new KvMatchIndexManager();
     private static ExecutorService executor;
     private static OverflowQueryEngine overflowQueryEngine;
     private static ConcurrentHashMap<String, IndexConfig> indexConfigStore;
@@ -67,9 +67,6 @@ public class KvMatchIndexManager implements IndexManager {
     }
 
     public static KvMatchIndexManager getInstance() {
-        if (manager == null) {
-            manager = new KvMatchIndexManager();
-        }
         return manager;
     }
 
@@ -90,7 +87,8 @@ public class KvMatchIndexManager implements IndexManager {
             // 2. build index for every data file.
             List<Future<Boolean>> results = new ArrayList<>(fileInfoList.size());
             for (DataFileInfo fileInfo : fileInfoList) {
-                QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(new Path(columnPath.getFullPath()), fileInfo.getFilePath());  // There is a bug: the path will be modified in the query process! Have to copy a new one.
+                // TODO: There is a bug: the path will be modified in the query process! Have to copy a new one.
+                QueryDataSet dataSet = overflowQueryEngine.getDataInTsFile(new Path(columnPath.getFullPath()), fileInfo.getFilePath());
                 Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, columnPath, dataSet, IndexFileUtils.getIndexFilePath(columnPath, fileInfo.getFilePath())));
                 results.add(result);
             }

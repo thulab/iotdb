@@ -32,6 +32,6 @@ public class IndexFileUtils {
     public static String getIndexFilePathPrefix(File indexFile) {
         String str = indexFile.getAbsolutePath();
         int idx = str.lastIndexOf("-");
-        return str.substring(0, idx);
+        return idx != -1 ? str.substring(0, idx) : str;
     }
 }

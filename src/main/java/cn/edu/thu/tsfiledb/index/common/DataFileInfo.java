@@ -3,7 +3,7 @@ package cn.edu.thu.tsfiledb.index.common;
 import cn.edu.thu.tsfile.common.utils.Pair;
 
 /**
- * The class for storing information of a TsFile data file.
+ * The class is used for storing information of a TsFile data file.
  *
  * @author Jiaye Wu
  */

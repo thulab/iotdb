@@ -12,6 +12,7 @@ import cn.edu.thu.tsfile.timeseries.filter.definition.operators.LtEq;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfile.timeseries.read.support.RowRecord;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
 import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
@@ -21,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * An iterator wrap class for multi-batch fetching query data set in query process.
+ * This is an iterator wrap class used for multi-batch fetching query data set in query process.
  *
  * @author CGF, Jiaye Wu
  */
@@ -57,7 +58,7 @@ public class QueryDataSetIterator {
         this.overflowQueryEngine = overflowQueryEngine;
         this.readToken = readToken;
         this.queryDataSet = this.overflowQueryEngine.readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) filterExpression, null, null,
-                null, 10000, readToken);
+                null, TsfileDBDescriptor.getInstance().getConfig().fetchSize, readToken);
     }
 
     public boolean hasNext() throws IOException, ProcessorException {
@@ -65,7 +66,7 @@ public class QueryDataSetIterator {
             return true;
         } else {
             queryDataSet = overflowQueryEngine.readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) filterExpression, null, null,
-                    queryDataSet, 10000, readToken);
+                    queryDataSet, TsfileDBDescriptor.getInstance().getConfig().fetchSize, readToken);
             if (queryDataSet.next()) {
                 return true;
             } else {

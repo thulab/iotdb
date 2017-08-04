@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * The class generate synthetic data series to TsFileDB for index building.
+ * The class generates synthetic data series to TsFileDB for index building.
  *
  * @author Jiaye Wu
  */
@@ -56,7 +56,7 @@ public class SyntheticDataGenerator {
         createTimeSeriesMetadata();
 
         Statement statement = connection.createStatement();
-        int x1 = ThreadLocalRandom.current().nextInt(-5, 5);
+        double x1 = ThreadLocalRandom.current().nextInt(-5, 5);
         for (int i = 0; i < length; i++) {
             if (i % 10000 == 0) {
                 logger.info("{}", i);
@@ -65,9 +65,9 @@ public class SyntheticDataGenerator {
                 statement.execute(CLOSE_TEMPLATE);
             }
 
-            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, x1));
+            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, (int) x1));
 
-            x1 += ThreadLocalRandom.current().nextInt(-1, 1);
+            x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
             t += timeInterval;
         }
 

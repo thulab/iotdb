@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Used for KV-match, get overflow data and buffer-write data separately.
+ * The class is used for index query, storing overflow data and buffer-write information separately.
  *
  * @author CGF, Jiaye Wu
  */

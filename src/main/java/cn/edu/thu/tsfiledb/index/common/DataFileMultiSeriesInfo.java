@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The class for storing information of a TsFile data file.
+ * The class is used for storing information of a TsFile data file.
  *
  * @author Jiaye Wu
  */
