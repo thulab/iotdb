@@ -402,11 +402,11 @@ public class TsfileConnection implements Connection {
 	    setProtocol(openResp.getServerProtocolVersion());
 	    sessionHandle = openResp.getSessionHandle();
 	    
-	    if(timeZone != null){
-	    		setTimeZone(timeZone.getID());
-	    } else {
-	    		timeZone = DateTimeZone.forID(getTimeZone());
-	    }
+//	    if(timeZone != null){
+//	    		setTimeZone(timeZone.getID());
+//	    } else {
+//	    		timeZone = DateTimeZone.forID(getTimeZone());
+//	    }
 	    
 	} catch (TException e) {
 	    throw new SQLException(
