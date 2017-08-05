@@ -66,11 +66,6 @@
 			<artifactId>jline</artifactId>
 			<version>${jline.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>cn.edu.thu</groupId>
-            <artifactId>tsfiledb</artifactId>
-            <version>0.0.1</version>
-        </dependency>
 
     </dependencies>
 
