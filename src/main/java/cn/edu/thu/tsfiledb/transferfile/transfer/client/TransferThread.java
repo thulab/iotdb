@@ -200,7 +200,6 @@ public class TransferThread extends TimerTask {
 			fixedThreadPool.shutdownNow();
 			file = new File(path);
 			files = file.listFiles();
-			fixedThreadPool.shutdown();
 		}
 	}
 

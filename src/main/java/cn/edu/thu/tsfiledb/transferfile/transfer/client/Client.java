@@ -3,8 +3,6 @@ package cn.edu.thu.tsfiledb.transferfile.transfer.client;
 import java.util.Scanner;
 import java.util.Timer;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
-
 /**
  * Created by lylw on 2017/7/17.
  */
@@ -29,8 +27,6 @@ public class Client {
 	}
 
 	public void clientService() {
-		/** load properties for client */
-//		ClientConfig.loadProperties();
 
 		/** transfer files */
 		Scanner in = new Scanner(System.in);
@@ -69,7 +65,6 @@ public class Client {
 						while (startTime < nowtime) {
 							startTime += timeInterval;
 						}
-
 						delayTime = startTime - System.currentTimeMillis();
 						timer = new Timer();
 						timer.schedule(new TransferThread(), delayTime, timeInterval);
