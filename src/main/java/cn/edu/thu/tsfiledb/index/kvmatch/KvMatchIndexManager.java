@@ -10,6 +10,8 @@ import cn.edu.fudan.dsm.kvmatch.tsfiledb.utils.SeriesUtils;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.thu.tsfile.timeseries.filter.utils.Interval;
+import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
@@ -380,7 +382,7 @@ public class KvMatchIndexManager implements IndexManager {
 
     private List<Pair<Pair<Long, Long>, Double>> validateCandidatesInParallel(List<Pair<Long, Long>> scanIntervals, Path columnPath, QueryConfig queryConfig, int token) throws ExecutionException, InterruptedException, PathErrorException, ProcessorException, IOException {
         List<Future<List<Pair<Pair<Long, Long>, Double>>>> futureResults = new ArrayList<>(PARALLELISM);
-        int intervalsPerTask = Math.max(1, (int) Math.ceil(1.0 * scanIntervals.size() / PARALLELISM)), i = 0;
+        int intervalsPerTask = Math.min(Math.max(1, (int) Math.ceil(1.0 * scanIntervals.size() / PARALLELISM)), (new LongInterval()).v.length), i = 0;  // TODO: change LongInterval.arrayMaxn to public static field
         while (i < scanIntervals.size()) {
             List<Pair<Long, Long>> partialScanIntervals = scanIntervals.subList(i, Math.min(scanIntervals.size(), i + intervalsPerTask));
             i += intervalsPerTask;
