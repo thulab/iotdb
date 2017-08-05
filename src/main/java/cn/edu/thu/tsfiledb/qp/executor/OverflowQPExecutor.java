@@ -433,8 +433,16 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	private void deleteDataOfTimeSeries(MManager mManager, List<String> pathList)
 			throws PathErrorException, ProcessorException {
 		for (String p : pathList) {
+			Path path = new Path(p);
+			if (mManager.checkPathIndex(p)) {
+				try {
+					kvMatchIndexManager.delete(path);
+				} catch (IndexManagerException e) {
+					// no operation
+				}
+			}
 			DeletePlan deletePlan = new DeletePlan();
-			deletePlan.addPath(new Path(p));
+			deletePlan.addPath(path);
 			deletePlan.setDeleteTime(Long.MAX_VALUE);
 			processNonQuery(deletePlan);
 		}
