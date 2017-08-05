@@ -211,9 +211,22 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		    	} catch (PathErrorException e) {}
 		    	status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 		    	break;
+		case "INDEX":
+			try {
+				if (!MManager.getInstance().checkPathIndex(req.getColumnPath())) {
+					resp.setIsIndexExisted(false);
+				} else{
+					resp.setIsIndexExisted(true);
+				}
+				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
+			} catch (PathErrorException e) {
+				status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+				status.setErrorMessage(e.getMessage());
+			}
+			break;
 		default:
 			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-			status.setErrorMessage(String.format("Unsuport fetch metadata operation %s", req.getType()));
+			status.setErrorMessage(String.format("Unsupport fetch metadata operation %s", req.getType()));
 			break;
 		}
 		resp.setStatus(status);

@@ -20,10 +20,15 @@ public class JDBCClientTest {
 //				System.out.println(String.format("column %s, type %s", resultSet.getString(0), resultSet.getString(1)));
 //			}
 			
-			ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
+//			ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
+//			while(resultSet.next()){
+//				//System.out.println(String.format("column %s, type %s", resultSet.getString("COLUMN_NAME"), resultSet.getString("COLUMN_TYPE")));
+//				System.out.println(String.format("column %s", resultSet.getString(0)));
+//			}
+			
+			ResultSet resultSet = databaseMetaData.getIndexInfo(null, null, "xxx.xxx.xxx.xxx", false, false);
 			while(resultSet.next()){
-				//System.out.println(String.format("column %s, type %s", resultSet.getString("COLUMN_NAME"), resultSet.getString("COLUMN_TYPE")));
-				System.out.println(String.format("column %s", resultSet.getString(0)));
+				System.out.println(String.format("column %s, isExisted %b", resultSet.getString(0), resultSet.getBoolean(1)));
 			}
 		} finally {
 			connection.close();
