@@ -1,16 +1,11 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.conf;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
+import cn.edu.thu.tsfile.common.constant.SystemConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfile.common.constant.SystemConstant;
+import java.io.*;
+import java.util.Properties;
 
 /**
  * Created by dell on 2017/7/25.
@@ -35,7 +30,7 @@ public class ClientConfig {
 	public int port = 10086;
 	public String serverAddress = "127.0.0.1";
 	public String snapshotDirectory = "testFile";
-	public long fileSegmentSize = 128;
+	public int fileSegmentSize = 128;
 	public int clientNTread = 5;
 	public String startTimePath = "tsfiledb_test/startTime";
 	public String readDBHost = "127.0.0.1";
@@ -71,7 +66,7 @@ public class ClientConfig {
 			port = Integer.parseInt(p.getProperty("SERVER_PORT", port+""));
 			serverAddress = p.getProperty("SERVER_ADDRESS", serverAddress);
 			snapshotDirectory = p.getProperty("SNAPSHOT_DIRECTORY", snapshotDirectory);
-			fileSegmentSize = Long.parseLong(p.getProperty("FILE_SEGMENT_SIZE", fileSegmentSize+""));
+			fileSegmentSize = Integer.parseInt(p.getProperty("FILE_SEGMENT_SIZE", fileSegmentSize+""));
 			clientNTread = Integer.parseInt(p.getProperty("CLIENT_NTHREAD", clientNTread+""));
 			startTimePath = p.getProperty("START_TIME_PATH", startTimePath);
 			readDBHost = p.getProperty("READ_DB_HOST", readDBHost);

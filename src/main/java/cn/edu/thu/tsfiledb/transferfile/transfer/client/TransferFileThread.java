@@ -45,8 +45,8 @@ public class TransferFileThread extends Thread {
 			ins.read(input);
 			boolean t = writeFileToServer(absolutePath, bytePosition);
 			ins.read(input);
-			t = t && MD5.equals(new String(input).split(TransferConstants.messageSplitSig)[0]);
-
+			if(MD5!=null) t = t && MD5.equals(new String(input).split(TransferConstants.messageSplitSig)[0]);
+			else t=false;
 			LOGGER.info("Finish send file {}", new File(absolutePath).getName());
 
 			if (t) {

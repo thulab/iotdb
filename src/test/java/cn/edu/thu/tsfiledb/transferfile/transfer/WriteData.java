@@ -1,9 +1,6 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,6 +13,28 @@ import java.util.TimerTask;
  */
 public class WriteData {
     public static void main(String[] args) throws SQLException {
+        Connection connection = null;
+        Statement statement = null;
+        FileInputStream fis=null;
+        BufferedReader br=null;
+        try{
+            Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+
+            statement = connection.createStatement();
+            fis=new FileInputStream("G:\\tsfiledb_test\\sqlInsert\\create.txt");
+            br=new BufferedReader(new InputStreamReader(fis));
+            String createSql=null;
+            while((createSql=br.readLine())!=null){
+                statement.execute(createSql);
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Timer timer=new Timer();
         timer.schedule(new WriteToDB(),0,30000);
     }
