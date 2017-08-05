@@ -3,15 +3,12 @@ package cn.edu.thu.tsfiledb.transferfile.transfer.client;
 import java.util.Scanner;
 import java.util.Timer;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
-
 /**
  * Created by lylw on 2017/7/17.
  */
 public class Client {
 	private long timeInterval = 180000L;
 	private long delayTime = 0L;
-	private boolean switchTiming;
 	private long startTime;
 	private Timer timer;
 	private static boolean timerTaskRunning = false;
@@ -29,8 +26,6 @@ public class Client {
 	}
 
 	public void clientService() {
-		/** load properties for client */
-//		ClientConfig.loadProperties();
 
 		/** transfer files */
 		Scanner in = new Scanner(System.in);
@@ -38,34 +33,57 @@ public class Client {
 		startTime = System.currentTimeMillis() + delayTime;
 		timer.schedule(new TransferThread(), delayTime, timeInterval);
 
-		/** waiting for input */
+		/** waiting for input command */
 		try {
+			
 			while (true) {
-				System.out.print("input a command:\n");
+				System.out.println("Input a command or try help for more info:");
 				String cmd = in.nextLine();
-				if (cmd.equals("set")) {
-					System.out.print("input delay time: ");
-					delayTime = in.nextLong();
+				if(cmd == null || cmd.trim().equals("")){
+					continue;
+				}
+				
+				if (cmd.trim().equals("set")) {
+					System.out.print("Input delay time: ");
+					try {
+						delayTime = in.nextLong();
+					} catch (Exception e) {
+						System.out.println("Error input delay time, it must be a number");
+						continue;
+					}
+					
 					startTime = System.currentTimeMillis() + delayTime;
-					System.out.print("input time interval: ");
-					timeInterval = in.nextLong();
-
+					System.out.print("Input time interval: ");
+					
+					try {
+						timeInterval = in.nextLong();
+					} catch (Exception e) {
+						System.out.println("Error input time interval, it must be a number");
+						continue;
+					}
+					
 					timer.cancel();
 					timer.purge();
 					timer = new Timer();
 					timer.schedule(new TransferThread(), delayTime, timeInterval);
-				} else if (cmd.equals("transfer now")) {
+				} else if (cmd.trim().equals("transfer now")) {
 					Thread thread = new Thread(new TransferThread());
 					thread.start();
-				} else if (cmd.equals("switch")) {
-					System.out.print("set timing task on(1) or off(0):");
-					int getbool = in.nextInt();
-					switchTiming = (getbool == 0) ? false : true;
+				} else if (cmd.trim().equals("switch")) {
+					System.out.print("set timing task on(false) or off(true):");
+					boolean switchTiming;
+					try {
+						switchTiming = in.nextBoolean();
+					} catch (Exception e) {
+						System.out.println("Error input format, it must be false or true");
+						continue;
+					}
+					
 					if (switchTiming) {
 						/** start schedule */
 						timer.cancel();
 						timer.purge();
-						Long nowtime = System.currentTimeMillis();
+						long nowtime = System.currentTimeMillis();
 						while (startTime < nowtime) {
 							startTime += timeInterval;
 						}
@@ -73,14 +91,19 @@ public class Client {
 						delayTime = startTime - System.currentTimeMillis();
 						timer = new Timer();
 						timer.schedule(new TransferThread(), delayTime, timeInterval);
-					} else if (!switchTiming) {
+					} else {
 						timer.cancel();
 						timer.purge();
 					}
+				} else if (cmd.trim().equals("quit") || cmd.trim().equals("exit")) {
+					System.out.println("Exit normally");
+					break;
+				} else {
+					System.out.println("Unknown input command, please try help for more info");
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(String.format("Error occurs because: ", e.getMessage()));
 		} finally {
 			in.close();
 		}

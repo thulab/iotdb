@@ -18,17 +18,11 @@ import java.util.Map;
 public class DataCollectClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataCollectClient.class);
 
-    private String host;
-    private int port;
-    private int timeoutInMs;
-
-	TSocket transport = null;
-	TSDataCollectService.Iface client = null;
+    private TSocket transport = null;
+    private TSDataCollectService.Iface client = null;
     
     public DataCollectClient(String host, int port, int timeoutInMs){
-		this.host = host;
-		this.port = port;
-		this.timeoutInMs = timeoutInMs;
+
 		try {
 			transport = new TSocket(host, port, timeoutInMs);
 			try {
@@ -49,7 +43,7 @@ public class DataCollectClient {
     		this(host, port, 10000);
     }
 
-    public void DataCollectClientClose(){
+    public void close(){
     	transport.close();
 	}
     

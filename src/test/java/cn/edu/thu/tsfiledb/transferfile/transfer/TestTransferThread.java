@@ -1,6 +1,6 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferFile;
+import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferFileThread;
 import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
 
 import java.io.File;
@@ -40,7 +40,7 @@ public class TestTransferThread extends TimerTask{
                 try {
                     Socket socket = new Socket(config.serverAddress, config.port);//1024-65535的某个端口
                     System.out.println("test client1 socket success");
-                    fixedThreadPool.submit(new TransferFile(socket, file2.getAbsolutePath(), 0L));
+                    fixedThreadPool.submit(new TransferFileThread(socket, file2.getAbsolutePath(), 0L));
                 }catch (IOException e){
                 }
             }
