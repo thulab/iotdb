@@ -16,18 +16,28 @@ import java.util.concurrent.Executors;
  */
 public class Server {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
-    public static void main(String[] args) throws IOException, InterruptedException {
+    
+    public static void main(String[] args) {
     		ServerConfig config = ServerConfig.getInstance();
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(config.serverNThread);
         ServerSocket serverSocket = null;
+
         try {
-            serverSocket = new ServerSocket(config.port);
-        } catch (IOException e) {
-            LOGGER.error("fail to get ServerSocket!");
-        }
-        while(true){
-            Socket socket = serverSocket.accept();
-            fixedThreadPool.submit(new ReceiveFiles(socket));
-        }
+        		serverSocket = new ServerSocket(config.port);
+            while(true){
+                Socket socket = serverSocket.accept();
+                fixedThreadPool.submit(new ReceiveFileThread(socket));
+            }
+		} catch (IOException e) {
+			LOGGER.error("error occurs for server", e);
+		} finally {
+			if(serverSocket!= null){
+				try {
+					serverSocket.close();
+				} catch (IOException e) {					
+				}
+			}
+		}
+
     }
 }

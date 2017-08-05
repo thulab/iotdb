@@ -79,6 +79,10 @@ public class ServerConfig {
 				}
 			}
 		}
-
 	}
+	
+    public static void main(String[] args) {
+        ServerConfig config = ServerConfig.getInstance();
+        System.out.println(config.port);
+    }
 }

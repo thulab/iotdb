@@ -16,7 +16,7 @@ import cn.edu.thu.tsfile.common.constant.SystemConstant;
  * Created by dell on 2017/7/25.
  */
 public class ClientConfig {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
 	private static final String CONFIG_NAME = "data-collect-client.properties";
 	private static final String CONFIG_DEFAULT_PATH = "tsfiledb/conf/" + CONFIG_NAME;
 
@@ -91,4 +91,9 @@ public class ClientConfig {
 			}
 		}
 	}
+	
+    public static void main(String[] args) {
+    		ClientConfig config = ClientConfig.getInstance();
+        System.out.println(config.port);
+    }
 }
