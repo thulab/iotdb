@@ -110,7 +110,7 @@ public class TransferFile extends Thread {
 		ObjectOutputStream oos = null;
 		File file = new File(absolutePath);
 		ClientConfig config = ClientConfig.getInstance();
-		String filePath = config.filePositionRecord.concat("record_" + file.getName());
+		String filePath = config.filePositionRecord.concat(System.getProperty("file.separator")+"record_" + file.getName());
 
 		try {
 			oos = new ObjectOutputStream(new FileOutputStream(filePath));

@@ -66,8 +66,13 @@
 			<artifactId>jline</artifactId>
 			<version>${jline.version}</version>
 		</dependency>
-		
-	</dependencies>
+        <dependency>
+            <groupId>cn.edu.thu</groupId>
+            <artifactId>tsfiledb</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>

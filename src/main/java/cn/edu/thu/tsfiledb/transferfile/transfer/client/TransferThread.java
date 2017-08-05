@@ -31,8 +31,10 @@ public class TransferThread extends TimerTask {
 	private static ClientConfig config = ClientConfig.getInstance();
 	public void run() {
 		
-		File file = new File(config.snapshotDirectory);
-		File[] files = file.listFiles();
+		File dir = new File(config.snapshotDirectory);
+		if(!dir.exists())dir.mkdir();
+		System.out.println("config.snapshotDirectory "+config.snapshotDirectory);
+		File[] files = dir.listFiles();
 		if (Client.isTimerTaskRunning() && files.length > 0) {
 			LOGGER.info("Still transferring");
 			return;
@@ -84,7 +86,7 @@ public class TransferThread extends TimerTask {
 	private void copyFileSnapShot(String tsFilePath, String snapShotPath) throws IOException {
 		LOGGER.info("copy file from tsFilePath to snapShotPath...");
 		File inputFile = new File(tsFilePath);
-		File outputFile = new File(snapShotPath.concat(inputFile.getName()));
+		File outputFile = new File(snapShotPath.concat(System.getProperty("file.separator")+inputFile.getName()));
 		FileInputStream fis = null;
 		FileOutputStream fos = null;
 		try {
@@ -110,7 +112,7 @@ public class TransferThread extends TimerTask {
 
 	private void updateStartTimes(String namespace, Map<String, Long> newStartTime) {
 		ObjectOutputStream oos = null;
-		String dirPath = config.startTimePath.concat(namespace + System.getProperty("file.separator"));
+		String dirPath = config.startTimePath.concat(System.getProperty("file.separator")+namespace + System.getProperty("file.separator"));
 
 		for (Map.Entry<String, Long> entry : newStartTime.entrySet()) {
 			try {
@@ -130,7 +132,7 @@ public class TransferThread extends TimerTask {
 
 	private Map<String, Long> loadStartTimes(String namespace) {
 		Map<String, Long> startTimes = new HashMap<>();
-		String path = config.startTimePath.concat(namespace);
+		String path = config.startTimePath.concat(System.getProperty("file.separator")+namespace);
 		File dir = new File(path);
 		ObjectInputStream ois = null;
 		if (dir.exists()) {
@@ -205,7 +207,9 @@ public class TransferThread extends TimerTask {
 	private long getFileBytePosition(String filePath) {
 		long bytePosition = 0;
 		File file = new File(filePath);
-		String fileRecordPath = config.filePositionRecord.concat("record_" + file.getName());
+		File dir=new File(config.filePositionRecord);
+		if(!dir.exists())dir.mkdir();
+		String fileRecordPath = config.filePositionRecord.concat(System.getProperty("file.separator")+"record_" + file.getName());
 
 		ObjectInputStream ois = null;
 		ObjectOutputStream oos = null;
