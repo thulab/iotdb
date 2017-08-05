@@ -29,6 +29,7 @@ public class TransferFileThread extends Thread {
 	private long bytePosition;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferFileThread.class);
+	private final int messageSize=1024;
 
 	public TransferFileThread(Socket socket, String absolutePath, long bytePosition) {
 		this.socket = socket;
@@ -41,7 +42,7 @@ public class TransferFileThread extends Thread {
 		try {
 			ins = socket.getInputStream();
 			sendFileNameAndLength(absolutePath);
-			byte[] input = new byte[1024];
+			byte[] input = new byte[messageSize];
 			ins.read(input);
 			boolean t = writeFileToServer(absolutePath, bytePosition);
 			ins.read(input);
@@ -95,7 +96,7 @@ public class TransferFileThread extends Thread {
 				os.write(buffer, 0, size);
 				os.flush();
 				InputStream ins = socket.getInputStream();
-				byte[] readAccept = new byte[128];
+				byte[] readAccept = new byte[messageSize];
 				ins.read(readAccept);
 				String temp = new String(readAccept);
 				bytePosition += Long.parseLong(temp.split(TransferConstants.messageSplitSig)[0]);
@@ -137,6 +138,4 @@ public class TransferFileThread extends Thread {
 			}
 		}
 	}
-
-
 }

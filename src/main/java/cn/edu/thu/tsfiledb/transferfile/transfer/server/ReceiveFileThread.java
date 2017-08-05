@@ -28,6 +28,8 @@ public class ReceiveFileThread extends Thread {
 	private String receiveFilePath;
 	private long fileSize;
 	private long startPosition;
+	private final int copyFileSegment = 128;
+	private final int receiveFileSegment = 1024;
 
 	public ReceiveFileThread(Socket socket) {
 		this.socket = socket;
@@ -92,6 +94,7 @@ public class ReceiveFileThread extends Thread {
 
 	private void rewriteReceiveFile(OutputStream os) throws IOException {
 		File receiveFile = new File(receiveFilePath);
+		boolean reWriteSuccess=true;
 		if (!receiveFile.exists()) {
 			receiveFile.createNewFile();
 		}
@@ -99,7 +102,7 @@ public class ReceiveFileThread extends Thread {
 		File tempFile = new File(config.storageDirectory + File.separator + "temp_" + receiveFile.getName());
 		FileInputStream fis = null;
 		FileOutputStream fos = null;
-		byte[] copyfile = new byte[128];
+		byte[] copyfile = new byte[copyFileSegment];
 		try {
 			// copy exist file part from receiveFile to tempFile
 			fis = new FileInputStream(receiveFile);
@@ -112,10 +115,18 @@ public class ReceiveFileThread extends Thread {
 				totalRead += read;
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			reWriteSuccess=false;
 		} finally {
 			if(fos != null) fos.close();
 			if(fis != null) fis.close();
+			if(!reWriteSuccess){
+				if (!tempFile.delete()) {
+					LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
+				} else {
+					LOGGER.info("delete file {} success", tempFile.getAbsoluteFile());
+				}
+				return;
+			}
 		}
 		
 		try {
@@ -128,10 +139,18 @@ public class ReceiveFileThread extends Thread {
 				fos.write(copyfile);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			reWriteSuccess=false;
 		} finally {
 			if(fos != null) fos.close();
 			if(fis != null) fis.close();
+			if(!reWriteSuccess){
+				if (!tempFile.delete()) {
+					LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
+				} else {
+					LOGGER.info("delete file {} success", tempFile.getAbsoluteFile());
+				}
+				return;
+			}
 		}
 
 		if (!tempFile.delete()) {
@@ -147,7 +166,7 @@ public class ReceiveFileThread extends Thread {
 		FileOutputStream fos = new FileOutputStream(receiveFilePath);
 		PrintWriter pw = new PrintWriter(os);
 		try {
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[receiveFileSegment];
 			while ((receiveSize < fileSize) && ((readSize = is.read(buffer)) != -1)) {
 				receiveSize += readSize;
 				fos.write(buffer, 0, readSize);

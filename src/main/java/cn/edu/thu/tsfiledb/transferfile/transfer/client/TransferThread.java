@@ -32,6 +32,7 @@ import java.util.concurrent.Executors;
 public class TransferThread extends TimerTask {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferThread.class);
 	private static ClientConfig config = ClientConfig.getInstance();
+	private final int copyFileSegment=1024;
 
 	public void run() {
 		File dir = new File(config.snapshotDirectory);
@@ -45,7 +46,6 @@ public class TransferThread extends TimerTask {
 		Client.setTimerTaskRunning(true);
 		try {
 			if (files.length == 0) {
-				// request for files, store in snapshot directory
 				getFileFromDB();
 			}
 			LOGGER.info(" ------ transfer files");
@@ -103,7 +103,7 @@ public class TransferThread extends TimerTask {
 		try {
 			fis = new FileInputStream(inputFile);
 			fos = new FileOutputStream(outputFile);
-			byte[] copyfile = new byte[1024];
+			byte[] copyfile = new byte[copyFileSegment];
 			while (fis.read(copyfile) != -1) {
 				fos.write(copyfile);
 			}
