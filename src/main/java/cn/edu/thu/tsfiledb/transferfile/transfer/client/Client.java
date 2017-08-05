@@ -26,7 +26,6 @@ public class Client {
 	}
 
 	public void clientService() {
-
 		/** transfer files */
 		Scanner in = new Scanner(System.in);
 		timer = new Timer();
@@ -35,7 +34,6 @@ public class Client {
 
 		/** waiting for input command */
 		try {
-			
 			while (true) {
 				System.out.println("Input a command or try help for more info:");
 				String cmd = in.nextLine();
@@ -65,6 +63,7 @@ public class Client {
 					timer.cancel();
 					timer.purge();
 					timer = new Timer();
+					while(delayTime<0)delayTime+=timeInterval;
 					timer.schedule(new TransferThread(), delayTime, timeInterval);
 				} else if (cmd.trim().equals("transfer now")) {
 					Thread thread = new Thread(new TransferThread());
@@ -89,6 +88,7 @@ public class Client {
 						}
 						delayTime = startTime - System.currentTimeMillis();
 						timer = new Timer();
+						while(delayTime<0)delayTime+=timeInterval;
 						timer.schedule(new TransferThread(), delayTime, timeInterval);
 					} else {
 						timer.cancel();
@@ -97,8 +97,12 @@ public class Client {
 				} else if (cmd.trim().equals("quit") || cmd.trim().equals("exit")) {
 					System.out.println("Exit normally");
 					break;
+				} else if (cmd.trim().equals("help")){
+					System.out.println("All legal commands:");
+					showLegalCommands();
 				} else {
-					System.out.println("Unknown input command, please try help for more info");
+					System.out.println("Unknown input command, please try commands below:");
+					showLegalCommands();
 				}
 			}
 		} catch (Exception e) {
@@ -106,6 +110,15 @@ public class Client {
 		} finally {
 			in.close();
 		}
+	}
+
+	private void showLegalCommands() {
+		System.out.println("set		-Set parameters for timing task");
+		System.out.println("transfer now	-Start TransferThread now");
+		System.out.println("switch		-Start or stop timing task");
+		System.out.println("help	-Show all commands");
+		System.out.println("quit	-quit program");
+		System.out.println("exit	-exit program");
 	}
 
 	public static void main(String[] args) {
