@@ -7,6 +7,7 @@ import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.thu.tsfiledb.index.common.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
+import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
             List<Pair<Long, Double>> keyPoints = new ArrayList<>();
             while (queryDataSetIterator.hasNext()) {
                 RowRecord row = queryDataSetIterator.getRowRecord();
-                double value = Double.parseDouble(row.getFields().get(0).getStringValue());
+                double value = SeriesUtils.getValue(row.getFields().get(0));  // one column only
                 if (keyPoints.isEmpty() && row.getTime() > scanInterval.left) {
                     if (lastKeyPoint == null) {
                         keyPoints.add(new Pair<>(scanInterval.left, value));
@@ -68,13 +69,13 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
 
             double ex = 0, ex2 = 0;
             int lenQ = queryConfig.getQuerySeries().size(), idx = 0;
-            double[] T = new double[2 * lenQ];
+            double[] circularArray = new double[2 * lenQ];
             for (int i = 0; i < series.size(); i++) {
                 double value = series.get(i);
                 ex += value;
                 ex2 += value * value;
-                T[i % lenQ] = value;
-                T[(i % lenQ) + lenQ] = value;
+                circularArray[i % lenQ] = value;
+                circularArray[(i % lenQ) + lenQ] = value;
 
                 if (i >= lenQ - 1) {
                     int j = (i + 1) % lenQ;  // the current starting location of T
@@ -90,7 +91,7 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
                             if (Math.abs(mean - queryConfig.getMeanQ()) <= queryConfig.getBeta() && std / queryConfig.getStdQ() <= queryConfig.getBeta() && std / queryConfig.getStdQ() >= 1.0 / queryConfig.getAlpha()) {
                                 double dist = 0;
                                 for (int k = 0; k < lenQ && dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon(); k++) {
-                                    double x = (T[(queryConfig.getOrder().get(k) + j)] - mean) / std;
+                                    double x = (circularArray[(queryConfig.getOrder().get(k) + j)] - mean) / std;
                                     dist += (x - queryConfig.getNormalizedQuerySeries().get(k)) * (x - queryConfig.getNormalizedQuerySeries().get(k));
                                 }
                                 if (dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon()) {
@@ -100,7 +101,7 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
                         } else {
                             double dist = 0;
                             for (int k = 0; k < lenQ && dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon(); k++) {
-                                double x = T[k + j];
+                                double x = circularArray[k + j];
                                 dist += (x - queryConfig.getQuerySeries().get(k)) * (x - queryConfig.getQuerySeries().get(k));
                             }
                             if (dist <= queryConfig.getEpsilon() * queryConfig.getEpsilon()) {
@@ -109,13 +110,14 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
                         }
                     }
 
-                    ex -= T[j];
-                    ex2 -= T[j] * T[j];
+                    ex -= circularArray[j];
+                    ex2 -= circularArray[j] * circularArray[j];
                 }
             }
         }
-        logger.info("Finished validating candidate intervals: {}", scanIntervals);
+        RecordReaderFactory.getInstance().removeRecordReader(columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());
 
+        logger.info("Finished validating candidate intervals: {}", scanIntervals);
         return result;
     }
 }

@@ -67,12 +67,7 @@ public class QueryDataSetIterator {
         } else {
             queryDataSet = overflowQueryEngine.readOneColumnUseFilter(pathList, (SingleSeriesFilterExpression) filterExpression, null, null,
                     queryDataSet, TsfileDBDescriptor.getInstance().getConfig().fetchSize, readToken);
-            if (queryDataSet.next()) {
-                return true;
-            } else {
-                RecordReaderFactory.getInstance().removeRecordReader(pathList.get(0).getDeltaObjectToString(), pathList.get(0).getMeasurementToString());
-                return false;
-            }
+            return queryDataSet.next();
         }
     }
 

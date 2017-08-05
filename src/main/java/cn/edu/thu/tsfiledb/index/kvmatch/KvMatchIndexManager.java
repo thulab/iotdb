@@ -28,6 +28,7 @@ import cn.edu.thu.tsfiledb.index.common.OverflowBufferWriteInfo;
 import cn.edu.thu.tsfiledb.index.common.QueryDataSetIterator;
 import cn.edu.thu.tsfiledb.index.utils.IndexFileUtils;
 import cn.edu.thu.tsfiledb.query.engine.OverflowQueryEngine;
+import cn.edu.thu.tsfiledb.query.management.RecordReaderFactory;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -368,8 +369,9 @@ public class KvMatchIndexManager implements IndexManager {
         List<Pair<Long, Double>> keyPoints = new ArrayList<>();
         while (queryDataSetIterator.hasNext()) {
             RowRecord row = queryDataSetIterator.getRowRecord();
-            keyPoints.add(new Pair<>(row.getTime(), Double.parseDouble(row.getFields().get(0).getStringValue())));
+            keyPoints.add(new Pair<>(row.getTime(), SeriesUtils.getValue(row.getFields().get(0))));  // one column only
         }
+        RecordReaderFactory.getInstance().removeRecordReader(request.getQueryPath().getDeltaObjectToString(), request.getQueryPath().getMeasurementToString());
         if (keyPoints.isEmpty()) {
             throw new IllegalArgumentException(String.format("There is no value in the given time interval [%s, %s] for the query series %s.",  request.getQueryStartTime(), request.getQueryEndTime(), request.getQueryPath()));
         }
