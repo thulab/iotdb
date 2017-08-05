@@ -229,8 +229,6 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 			return currentColumn.name;
 		case "COLUMN_TYPE":
 			return currentColumn.dataType.toString();
-		case "COLUMN_INDEX":
-			return String.valueOf(currentColumn.isHasIndex());
 		case "DELTA_OBJECT":
 			return currentDeltaObject;
 		default:
