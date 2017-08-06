@@ -310,6 +310,7 @@ struct TSFetchMetadataResp{
 		3: optional map<string, list<string>> deltaObjectMap
 		4: optional string dataType
 		5: optional list<string> allColumns
+		6: optional bool isIndexExisted;
 }
 
 struct TSFetchMetadataReq{

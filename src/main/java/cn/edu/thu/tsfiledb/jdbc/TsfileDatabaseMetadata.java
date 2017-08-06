@@ -67,9 +67,9 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 				Utils.verifySuccess(resp.getStatus());
 				Map<String, List<String>> deltaObjectList = resp.getDeltaObjectMap();
 				if(deltaObjectList == null || !deltaObjectList.containsKey(deltaObjectPattern)){
-					new TsfileMetadataResultSet(null, new ArrayList<>());
+					new TsfileMetadataResultSet(null, new ArrayList<>(), null);
 				}
-				return new TsfileMetadataResultSet(null, deltaObjectList.get(deltaObjectPattern));
+				return new TsfileMetadataResultSet(null, deltaObjectList.get(deltaObjectPattern), null);
 			} catch (TException e) {
 				throw new TException("Conncetion error when fetching delta object metadata", e);
 			}
@@ -90,7 +90,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 								TSDataType.valueOf(resp.getDataType()), 
 								null));
 					}
-					return new TsfileMetadataResultSet(columnSchemaNew, null);
+					return new TsfileMetadataResultSet(columnSchemaNew, null, null);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column data type", e);
 				}
@@ -106,7 +106,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 						columnSchemaNew.add(new ColumnSchema(path, null, null));
 					    }
 					}
-					return new TsfileMetadataResultSet(columnSchemaNew, null);
+					return new TsfileMetadataResultSet(columnSchemaNew, null, null);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column data type", e);
 				}
@@ -320,10 +320,50 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 	}
 
 	@Override
-	public ResultSet getIndexInfo(String arg0, String arg1, String arg2, boolean arg3, boolean arg4)
+	public ResultSet getIndexInfo(String catalog, String schemaPattern, String columnPattern, boolean arg3, boolean arg4)
 			throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLException("Method not supported");
+		try {
+			return checkIndexInfo(catalog, schemaPattern, columnPattern, arg3, arg4);
+		} catch (TException e) {
+			boolean flag = connection.reconnect();
+			this.client = connection.client;
+			if (flag) {
+				try {
+					return checkIndexInfo(catalog, schemaPattern, columnPattern, arg3, arg4);
+				} catch (TException e2) {
+					throw new SQLException(String.format(
+							"Fail to get colums catalog=%s, schemaPattern=%s,"
+									+ " columnPattern=%s after reconnecting. please check server status",
+							catalog, schemaPattern, columnPattern));
+				}
+			} else {
+				throw new SQLException(String.format(
+						"Fail to reconnect to server when getting index catalog=%s, schemaPattern=%s,"
+								+ " columnPattern=%s after reconnecting. please check server status",
+						catalog, schemaPattern, columnPattern));
+			}
+		}
+
+	}
+	
+	private ResultSet checkIndexInfo(String catalog, String schemaPattern, String columnPattern, 
+			boolean arg3, boolean arg4) throws TException, TsfileSQLException{
+		if(columnPattern != null){
+			TSFetchMetadataReq req = new TSFetchMetadataReq("INDEX");
+			req.setColumnPath(columnPattern);
+			TSFetchMetadataResp resp;
+			try {
+				resp = client.fetchMetadata(req);
+				Utils.verifySuccess(resp.getStatus());
+				boolean isExisted = resp.isIsIndexExisted();
+				List<IndexMetadata> indexMetadatas = new ArrayList<>();
+				indexMetadatas.add(new IndexMetadata(columnPattern, isExisted));
+				return new TsfileMetadataResultSet(null, null, indexMetadatas);
+			} catch (TException e) {
+				throw new TException("Conncetion error when fetching delta object metadata", e);
+			}
+		}
+		return null;
 	}
 
 	@Override

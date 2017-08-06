@@ -19,21 +19,28 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 	private Iterator<?> columnItr;
 	private ColumnSchema currentColumn;
 	private String currentDeltaObject;
+	private IndexMetadata currentIndex;
 	private MetadataType type;
+	
+	private final String COLUMN_NAME = "COLUMN_NAME";
+	private final String COLUMN_TYPE = "COLUMN_TYPE";
+	private final String DELTA_OBJECT = "DELTA_OBJECT";
+	private final String COLUMN_INDEX = "COLUMN_INDEX";
+	private final String COLUMN_INDEX_EXISTED = "COLUMN_INDEX_EXISTED";
+	
 
-	public TsfileMetadataResultSet(List<ColumnSchema> columnSchemas, List<String> deltaObjectList) {
+	public TsfileMetadataResultSet(List<ColumnSchema> columnSchemas, List<String> deltaObjectList, 
+			List<IndexMetadata> indexMetadatas) {
 		if (columnSchemas != null) {
 			columnItr = columnSchemas.iterator();
 			type = MetadataType.COLUMN;
 		} else if (deltaObjectList != null) {
 			columnItr = deltaObjectList.iterator();
 			type = MetadataType.DELTA_OBJECT;
+		} else if (indexMetadatas != null) {
+			columnItr = indexMetadatas.iterator();
+			type = MetadataType.INDEX;
 		}
-	}
-
-	@Override
-	public void close() throws SQLException {
-		throw new SQLException("Method not supported");
 	}
 
 	@Override
@@ -63,12 +70,12 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		throw new SQLException("Method not supported");
+		return Boolean.valueOf(getString(columnIndex));
 	}
 
 	@Override
 	public boolean getBoolean(String columnName) throws SQLException {
-		throw new SQLException("Method not supported");
+		return Boolean.valueOf(getString(columnName));
 	}
 
 	@Override
@@ -164,12 +171,17 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 			if (hasNext) {
 				currentColumn = (ColumnSchema)columnItr.next();
 			}
-			return hasNext;			
+			return hasNext;
 		case DELTA_OBJECT:
 			if (hasNext) {
 				currentDeltaObject = (String)columnItr.next();
 			}
-			return hasNext;		
+			return hasNext;
+		case INDEX:
+			if(hasNext){
+				currentIndex = (IndexMetadata)columnItr.next();
+			}
+			return hasNext;
 		default:
 			break;
 		}
@@ -206,14 +218,20 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 		switch (type) {
 		case DELTA_OBJECT:
 			if(columnIndex == 0){
-				return getString("DELTA_OBJECT");
+				return getString(DELTA_OBJECT);
 			}
 			break;
 		case COLUMN:
 			if(columnIndex == 0){
-				return getString("COLUMN_NAME");
+				return getString(COLUMN_NAME);
 			} else if (columnIndex == 1) {
-				return getString("COLUMN_TYPE");
+				return getString(COLUMN_TYPE);
+			}
+		case INDEX:
+			if(columnIndex == 0){
+				return getString(COLUMN_INDEX);
+			} else if (columnIndex == 1){
+				return getString(COLUMN_INDEX_EXISTED);
 			}
 		default:
 			break;
@@ -225,12 +243,16 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 	public String getString(String columnName) throws SQLException {
 	    	// use special key word to judge return content
 		switch (columnName) {
-		case "COLUMN_NAME":
+		case COLUMN_NAME:
 			return currentColumn.name;
-		case "COLUMN_TYPE":
+		case COLUMN_TYPE:
 			return currentColumn.dataType.toString();
-		case "DELTA_OBJECT":
+		case DELTA_OBJECT:
 			return currentDeltaObject;
+		case COLUMN_INDEX:
+			return currentIndex.timeseries;
+		case COLUMN_INDEX_EXISTED:
+			return String.valueOf(currentIndex.isIndexExisted);
 		default:
 			break;
 		}
@@ -268,6 +290,6 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 	}
 
 	private enum MetadataType{
-		DELTA_OBJECT, COLUMN
+		DELTA_OBJECT, COLUMN, INDEX
 	}
 }
