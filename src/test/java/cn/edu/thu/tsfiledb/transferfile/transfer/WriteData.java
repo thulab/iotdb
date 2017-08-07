@@ -36,7 +36,7 @@ public class WriteData {
             e.printStackTrace();
         }
         Timer timer=new Timer();
-        timer.schedule(new WriteToDB(),0,30000);
+        timer.schedule(new WriteToDB(),0,120000);
     }
 }
 class WriteToDB extends TimerTask{
@@ -66,7 +66,7 @@ class WriteToDB extends TimerTask{
 
             String insertsql=null;
             while((insertsql=br.readLine())!=null){
-                for(int i=0;i<500;i++){
+                for(int i=0;i<250000;i++){
                     statement.execute(insertsql.concat("("+System.currentTimeMillis()+","+i+")"));
                 }
             }
