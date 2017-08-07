@@ -6,6 +6,7 @@ import java.util.Timer;
  * Created by lylw on 2017/8/7.
  */
 public class WriteDB {
+    public static boolean createdTimeseries=false;
     public static void main(String[] args){
         try {
             Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
