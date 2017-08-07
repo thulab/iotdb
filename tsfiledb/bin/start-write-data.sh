@@ -7,7 +7,7 @@ fi
 TSFILE_CONF=${TSFILE_HOME}/conf
 TSFILE_LOGS=${TSFILE_HOME}/logs
 
-MAIN_CLASS=cn.edu.thu.tsfiledb.writedata.WriteDB
+MAIN_CLASS=cn.edu.thu.tsfiledb.transferfile.transfer.writedata.WriteDB
 
 
 CLASSPATH=""
