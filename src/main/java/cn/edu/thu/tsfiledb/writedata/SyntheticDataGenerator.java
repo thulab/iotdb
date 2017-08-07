@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer;
+package cn.edu.thu.tsfiledb.writedata;
 
 import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.file.metadata.enums.TSEncoding;
@@ -30,7 +30,7 @@ public class SyntheticDataGenerator extends TimerTask{
     private static final String CREATE_INDEX_TEMPLATE = "create index on root.laptop.%s.%s using kv-match";
     private static final String CLOSE_TEMPLATE = "close";
 
-    private static final String JDBC_SERVER_URL = "jdbc:tsfile://127.0.0.1:6667/";
+    private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.19:6667/";
 //	private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.15:6667/";
 
     private Connection connection = null;
@@ -38,6 +38,7 @@ public class SyntheticDataGenerator extends TimerTask{
     private String deviceName;
     private int length;
     private long timeInterval;
+    private boolean createdTimeseries=false;
 
     public SyntheticDataGenerator(String deviceName, int length, long timeInterval){
         this.deviceName = deviceName;
@@ -50,7 +51,10 @@ public class SyntheticDataGenerator extends TimerTask{
         Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
         connectServer();
 
-        createTimeSeriesMetadata();
+        if(!createdTimeseries){
+            createTimeSeriesMetadata();
+            createdTimeseries=true;
+        }
 
         Statement statement = connection.createStatement();
         double x1 = ThreadLocalRandom.current().nextDouble(-5, 5);

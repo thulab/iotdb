@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer;
+package cn.edu.thu.tsfiledb.writedata;
 
 import java.util.Timer;
 
