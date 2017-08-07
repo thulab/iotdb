@@ -46,7 +46,7 @@ public class SyntheticDataGenerator {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
         long time = System.currentTimeMillis();
-        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 1000000, 10);
+        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 2000000, 10);
         generator1.start(time);
     }
 
@@ -83,7 +83,7 @@ public class SyntheticDataGenerator {
         sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s2", TSDataType.DOUBLE, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
         sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s1"));
-        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
+//        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
         executeSQL(sqls);
     }
 
