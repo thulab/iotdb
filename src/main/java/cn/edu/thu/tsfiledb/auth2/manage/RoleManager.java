@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,8 @@ public class RoleManager {
 	private static String roleFolder = Rolemeta.getRoleFolder();
 	private static String roleInfoFile = "roleInfo";
 	
-	private HashMap<String, Role> roles = new HashMap<>();
+	private HashMap<String, Role> roleNameMap = new HashMap<>();
+	private HashMap<Integer, Role> roleIDMap = new HashMap<>();
 	
 	private RoleManager() {
 		
@@ -46,18 +48,20 @@ public class RoleManager {
 		RandomAccessFile raf = new RandomAccessFile(infoFile, "r");
 		while(raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
 			Role role = Role.readObject(raf);
-			if(!role.getRoleName().equals(""))
-				roles.put(role.getRoleName(), role);
+			if(!role.getRoleName().equals("")) {
+				roleNameMap.put(role.getRoleName(), role);
+				roleIDMap.put(role.getID(), role);
+			}
 		}
 		raf.close();
 	}
 	
 	public Role findRole(String roleName) {
-		return roles.get(roleName);
+		return roleNameMap.get(roleName);
 	}
 	
-	public boolean createRole(String roleName) throws IOException {
-		if(roles.get(roleName) != null) {
+	synchronized public boolean createRole(String roleName) throws IOException {
+		if(roleNameMap.get(roleName) != null) {
 			return false;
 		}
 		Rolemeta rolemeta = Rolemeta.getInstance();
@@ -66,7 +70,8 @@ public class RoleManager {
 		flushRole(role);
 		rolemeta.increaseMaxRID();
 		
-		roles.put(roleName, role);
+		roleNameMap.put(roleName, role);
+		roleIDMap.put(rid, role);
 		return true;
 	}
 	
@@ -78,19 +83,20 @@ public class RoleManager {
 	}
 	
 	public boolean deleteRole(String roleName) throws IOException {
-		Role role = roles.get(roleName);
+		Role role = roleNameMap.get(roleName);
 		if(role == null) {
 			logger.warn("Attemp to delete non-exist role {}",roleName);
 			return false;
 		}
 		Role blankRole = new Role("", role.getID());
 		flushRole(blankRole);
-		roles.remove(roleName);
+		roleNameMap.remove(roleName);
+		roleIDMap.remove(role.getID());
 		return true;
 	}
 	
 	public boolean grantPermission(String roleName, long permission) throws IOException {
-		Role role = roles.get(roleName);
+		Role role = roleNameMap.get(roleName);
 		if(role == null) {
 			logger.warn("Attemp to grant permission for non-exist role {}",roleName);
 			return false;
@@ -101,7 +107,7 @@ public class RoleManager {
 	}
 	
 	public boolean revokePermission(String roleName, long permission) throws NoSuchPermException, IOException {
-		Role role = roles.get(roleName);
+		Role role = roleNameMap.get(roleName);
 		if(role == null) {
 			logger.warn("Attemp to revoke permission for non-exist role {}",roleName);
 			return false;
@@ -115,5 +121,17 @@ public class RoleManager {
 		role.setPermission(Permission.revoke(oldPermission, permission));
 		flushRole(role);
 		return true;
+	}
+	
+	public long rolesToPermission(Set<Integer> roleIDs) {
+		Integer[] IDArray = roleIDs.toArray(new Integer[0]);
+		long permission = 0l;
+		for(int i = 0; i < IDArray.length; i++) {
+			Role role = roleIDMap.get(IDArray[i]);
+			if(role != null) {
+				Permission.combine(permission, role.getPermission());
+			}
+		}
+		return permission;
 	}
 }

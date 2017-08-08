@@ -52,10 +52,23 @@ public class PermTreeNode {
 		}
 	}
 
-	public static PermTreeNode readObject(RandomAccessFile raf) throws IOException {
+	public static PermTreeNode readObject(RandomAccessFile raf) throws IOException, UnknownNodeTypeException {
 		PermTreeNode node = new PermTreeNode();
 		node.header = PermTreeHeader.readObject(raf);
-		node.content = PermTreeContent.readObject(raf);
+		int nodeType = node.header.getNodeType();
+		switch (nodeType) {
+		case PermTreeHeader.NORMAL_NODE:
+		case PermTreeHeader.SUBNODE_EXTENSION:
+			node.content = SubnodeContent.readObject(raf);
+			break;
+		case PermTreeHeader.ROLE_EXTENSION:
+			node.content = RoleContent.readObject(raf);
+			break;
+		default:
+			logger.error("unrecognized node type {} when init node for {}", nodeType, node.header.getNodeName());
+			throw new UnknownNodeTypeException();
+		}
+		
 		return node;
 	}
 
@@ -71,11 +84,20 @@ public class PermTreeNode {
 		return node;
 	}
 
+	/** add a child with given info in THIS node
+	 * caller should check exist
+	 * @param childName
+	 * @param cid
+	 * @return true if success, false if THIS node is full
+	 * @throws WrongNodetypeException
+	 * @throws PathAlreadyExistException
+	 */
 	public boolean addChild(String childName, int cid) throws WrongNodetypeException, PathAlreadyExistException {
-		if (findChild(childName) != -1){
+		// caller check
+		/*if (findChild(childName) != -1){
 			logger.error(childName + " already exists");
 			throw new PathAlreadyExistException(childName);
-		}
+		}*/
 		if (header.getNodeType() != PermTreeHeader.NORMAL_NODE
 				&& header.getNodeType() != PermTreeHeader.SUBNODE_EXTENSION) {
 			logger.error("add child to a role extension");
@@ -123,7 +145,7 @@ public class PermTreeNode {
 		if (content instanceof RoleContent) {
 			RoleContent roleContent = (RoleContent) content;
 			for (int i = 0; i < roleContent.getRoleNum(); i++) {
-				if (header.getRoles()[i] == rid)
+				if (roleContent.getRoles()[i] == rid)
 					return true;
 			}
 		}
@@ -181,6 +203,7 @@ public class PermTreeNode {
 
 	/**
 	 * try to add a role by ID with in this node
+	 * caller should check exist
 	 * 
 	 * @param roleID
 	 * @return true if the role is added, false when the node is full depending on
@@ -189,9 +212,10 @@ public class PermTreeNode {
 	 */
 	public boolean addRole(int roleID) throws RoleAlreadyExistException {
 		boolean added = false;
-		if (findRole(roleID)) {
+		// caller check
+		/*if (findRole(roleID)) {
 			throw new RoleAlreadyExistException("the role has already been granted to the node");
-		}
+		}*/
 		// try to add in header
 		if (header.getEmptyRoleNum() > 0) {
 			for (int i = 0; i < header.getRoleNum(); i++) {

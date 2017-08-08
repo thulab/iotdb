@@ -1,14 +1,11 @@
 package cn.edu.thu.tsfiledb.auth2.exception;
 
-public class UnknownNodeTypeException extends AuthException {
+import java.io.IOException;
+
+public class UnknownNodeTypeException extends IOException {
 
 	public UnknownNodeTypeException() {
 		super();
-	}
-
-	public UnknownNodeTypeException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
 	public UnknownNodeTypeException(String message, Throwable cause) {

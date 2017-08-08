@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.auth2.permTree;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 
 import cn.edu.thu.tsfiledb.utils.SerializeUtils;
 
@@ -25,22 +26,10 @@ public class PermTreeHeader {
 	private int[] roles = new int[MAX_ROLE_NUM];
 	
 	public PermTreeHeader() {
-		
-	}
-	
-	public static PermTreeHeader readObject(RandomAccessFile raf) throws IOException {
-		PermTreeHeader header = new PermTreeHeader();
-		header.parentIndex = raf.readInt();
-		header.currentIndex = raf.readInt();
-		header.nodeType = raf.readInt();
-		header.nodeName = SerializeUtils.readString(raf, MAX_NODENAME_LENGTH);
-		header.subnodeExtIndex = raf.readInt();
-		header.roleExtIndex = raf.readInt();
-		header.roleNum = raf.readInt();
-		header.setEmptyRoleNum(raf.readInt());
-		for (int i = 0; i < header.roles.length; i++)
-			header.roles[i] = raf.readInt();
-		return header;
+		this.subnodeExtIndex = -1;
+		this.roleExtIndex = -1;
+		this.roleNum = 0;
+		this.emptyRoleNum = 0;
 	}
 	
 	public static PermTreeHeader initRootHeader() {
@@ -55,18 +44,41 @@ public class PermTreeHeader {
 		header.emptyRoleNum = 0;
 		return header;
 	}
+	
+	public static PermTreeHeader readObject(RandomAccessFile raf) throws IOException {
+		byte[] bytes = new byte[RECORD_SIZE];
+		raf.readFully(bytes);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+		
+		PermTreeHeader header = new PermTreeHeader();
+		header.parentIndex = byteBuffer.getInt();
+		header.currentIndex = byteBuffer.getInt();
+		header.nodeType = byteBuffer.getInt();
+		byte[] strBuffer = new byte[MAX_NODENAME_LENGTH];
+		byteBuffer.get(strBuffer);
+ 		header.nodeName = SerializeUtils.bytesToStr(strBuffer);
+		header.subnodeExtIndex = byteBuffer.getInt();
+		header.roleExtIndex = byteBuffer.getInt();
+		header.roleNum = byteBuffer.getInt();
+		header.setEmptyRoleNum(byteBuffer.getInt());
+		for (int i = 0; i < header.roles.length; i++)
+			header.roles[i] = byteBuffer.getInt();
+		return header;
+	}
 
 	public void writeObject(RandomAccessFile raf) throws IOException {
-		raf.writeInt(parentIndex);
-		raf.writeInt(currentIndex);
-		raf.writeInt(nodeType);
-		SerializeUtils.writeString(raf, nodeName, MAX_NODENAME_LENGTH);
-		raf.writeInt(subnodeExtIndex);
-		raf.writeInt(roleExtIndex);
-		raf.writeInt(roleNum);
-		raf.writeInt(getEmptyRoleNum());
+		ByteBuffer buffer = ByteBuffer.allocate(RECORD_SIZE);
+		buffer.putInt(parentIndex);
+		buffer.putInt(currentIndex);
+		buffer.putInt(nodeType);
+		buffer.put(SerializeUtils.strToBytes(nodeName, MAX_NODENAME_LENGTH));
+		buffer.putInt(subnodeExtIndex);
+		buffer.putInt(roleExtIndex);
+		buffer.putInt(roleNum);
+		buffer.putInt(getEmptyRoleNum());
 		for (int i = 0; i < roles.length; i++)
-			raf.writeInt(roles[i]);
+			buffer.putInt(roles[i]);
+		raf.write(buffer.array());
 	}
 	
 	public int getParentIndex() {

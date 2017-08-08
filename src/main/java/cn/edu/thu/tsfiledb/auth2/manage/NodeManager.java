@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.auth2.manage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
@@ -69,8 +70,8 @@ public class NodeManager {
 			initMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			RandomAccessFile permFileRaf = new RandomAccessFile(uid + PERMFILE_SUFFIX, "rw");
-			RandomAccessFile permMetaRaf = new RandomAccessFile(uid + PERMMETA_SUFFIX, "rw");
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
+			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
 
 			PermTreeNode root = PermTreeNode.initRootNode();
 			root.writeObject(permFileRaf);
@@ -92,10 +93,10 @@ public class NodeManager {
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			File permFile = new File(uid + PERMFILE_SUFFIX);
-			File permMeta = new File(uid + PERMMETA_SUFFIX);
-			permFile.deleteOnExit();
-			permMeta.deleteOnExit();
+			File permFile = new File(PERM_FOLDER + uid + PERMFILE_SUFFIX);
+			File permMeta = new File(PERM_FOLDER + uid + PERMMETA_SUFFIX);
+			permFile.delete();
+			permMeta.delete();
 		}
 	}
 
@@ -108,6 +109,7 @@ public class NodeManager {
 	 * @param nodeIndex
 	 * @return
 	 * @throws IOException
+	 * @throws UnknownNodeTypeException 
 	 */
 	public PermTreeNode getNode(int uid, int nodeIndex) throws IOException {
 		if (nodeIndex < 0) {
@@ -127,7 +129,7 @@ public class NodeManager {
 			if (node != null)
 				return node;
 
-			RandomAccessFile permFileRaf = new RandomAccessFile(uid + PERMFILE_SUFFIX, "rw");
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
 			long offset = nodeIndex * PermTreeNode.RECORD_SIZE;
 			if (offset > permFileRaf.length()) {
 				logger.error("node index {} out of bound {}", nodeIndex,
@@ -139,7 +141,6 @@ public class NodeManager {
 			permFileRaf.close();
 			nodeCache.put(index, node);
 			LRUList.addFirst(index);
-			;
 
 			if (nodeCache.size() > MAX_CACHE_CAPACITY) {
 				index = LRUList.removeLast();
@@ -169,7 +170,7 @@ public class NodeManager {
 			nodeCache.put(index, node);
 			LRUList.remove(index);
 			LRUList.addFirst(index);
-			RandomAccessFile permFileRaf = new RandomAccessFile(uid + PERMFILE_SUFFIX, "rw");
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
 			permFileRaf.seek(nodeIndex * PermTreeNode.RECORD_SIZE);
 			node.writeObject(permFileRaf);
 			permFileRaf.close();
@@ -178,6 +179,12 @@ public class NodeManager {
 
 	public void putNode(int uid, PermTreeNode node) throws IOException {
 		putNode(uid, node.getIndex(), node);
+	}
+	
+	public int getMaxID(int uid) throws IOException {
+		RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
+		int maxUID = permMetaRaf.readInt();
+		return maxUID;
 	}
 	
 	/**
@@ -195,8 +202,8 @@ public class NodeManager {
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			RandomAccessFile permFileRaf = new RandomAccessFile(uid + PERMFILE_SUFFIX, "rw");
-			RandomAccessFile permMetaRaf = new RandomAccessFile(uid + PERMMETA_SUFFIX, "rw");
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
+			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
 
 			byte[] emptyBuffer = new byte[PermTreeNode.RECORD_SIZE];
 			permFileRaf.seek(permFileRaf.length());
@@ -213,7 +220,9 @@ public class NodeManager {
 	}
 	
 	public PermTreeNode allocateNode(int uid, int pid, String nodeName, int nodeType) throws UnknownNodeTypeException, IOException {
-		return new PermTreeNode(nodeName, nodeType, allocateID(uid), pid);
+		PermTreeNode node = new PermTreeNode(nodeName, nodeType, allocateID(uid), pid);
+		putNode(uid, node);
+		return node;
 	}
 
 	public boolean findRole(int uid, PermTreeNode node, int rid) throws IOException {
@@ -346,7 +355,8 @@ public class NodeManager {
 	}
 
 	/**	Get the lead node corresponding to <path> of user <uid>.
-	 * Internal nodes are created when not existing.
+	 * Internal nodes are created when not existing, so this method can be
+	 * used as a mkdir.
 	 * @param uid
 	 * @param path
 	 * @return node of the last level of the path
@@ -386,27 +396,27 @@ public class NodeManager {
 	 */
 	public boolean addRole(int uid, PermTreeNode node, int rid) throws IOException, RoleAlreadyExistException, UnknownNodeTypeException {
 		if(findRole(uid, node, rid)) {
-			logger.error("role {} already in {}", node.getName());
+			logger.error("role {} already in {}", rid, node.getName());
 			throw new RoleAlreadyExistException(rid + " in " + node.getName());
 		}
 		PermTreeNode curnode = node;
 		boolean added = curnode.addRole(rid);
 		int curIndex = curnode.getIndex();
-		int nextIndex = curnode.getSubnodeExt();
+		int nextIndex = curnode.getRoleExt();
 		// try adding in existing nodes
 		while (!added && nextIndex != -1) {
 			curnode = getNode(uid, nextIndex);
 			added = curnode.addRole(rid);
 			curIndex = nextIndex;
-			nextIndex = curnode.getSubnodeExt();
+			nextIndex = curnode.getRoleExt();
 		}
 		// if all nodes are full, allocate a new node as extension
 		if (!added) {
 			nextIndex = allocateID(uid);
-			PermTreeNode newNode = new PermTreeNode(curnode.getName(), PermTreeHeader.SUBNODE_EXTENSION, nextIndex,
+			PermTreeNode newNode = new PermTreeNode(curnode.getName(), PermTreeHeader.ROLE_EXTENSION, nextIndex,
 					curIndex);
 			newNode.addRole(rid);
-			curnode.setSubnodeExt(nextIndex);
+			curnode.setRoleExt(nextIndex);
 			putNode(uid, curnode.getIndex(), curnode);
 			putNode(uid, nextIndex, newNode);
 		} else {
@@ -425,8 +435,8 @@ public class NodeManager {
 	public boolean deleteRole(int uid, PermTreeNode node, int rid) throws IOException {
 		boolean deleted = node.deleteRole(rid);
 		PermTreeNode next = node;
-		while (!deleted && next.getSubnodeExt() != -1) {
-			next = getNode(uid, next.getSubnodeExt());
+		while (!deleted && next.getRoleExt() != -1) {
+			next = getNode(uid, next.getRoleExt());
 			deleted = next.deleteRole(rid);
 		}
 		if (deleted) {

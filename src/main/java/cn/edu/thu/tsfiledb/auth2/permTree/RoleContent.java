@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.auth2.permTree;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 
 /** this contains addtional roles (ID) of a path node
  * @author jt
@@ -19,20 +20,26 @@ public class RoleContent extends PermTreeContent {
 	}
 	
 	public static PermTreeContent readObject(RandomAccessFile raf) throws IOException {
+		byte[] buffer = new byte[RECORD_SIZE];
+		raf.readFully(buffer);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
 		RoleContent content = new RoleContent();
-		content.setRoleNum(raf.readInt());
-		content.setEmptyRoleNum(raf.readInt());
+		content.roleNum = byteBuffer.getInt();
+		content.emptyRoleNum = byteBuffer.getInt();
 		for(int i = 0; i < MAX_CAPACITY; i++) {
-			content.getRoles()[i] = raf.readInt();
+			content.roles[i] = byteBuffer.getInt();
 		}
 		return content;
 	}
 	
 	public void writeObject(RandomAccessFile raf) throws IOException {
-		raf.writeInt(getRoleNum());
-		raf.writeInt(getEmptyRoleNum());
-		for(int i = 0; i < MAX_CAPACITY; i++)
-			raf.writeInt(getRoles()[i]);
+		ByteBuffer byteBuffer = ByteBuffer.allocate(RECORD_SIZE);
+		byteBuffer.putInt(roleNum);
+		byteBuffer.putInt(emptyRoleNum);
+		for(int i = 0; i < MAX_CAPACITY; i++) {
+			byteBuffer.putInt(roles[i]);
+		}
+		raf.write(byteBuffer.array());
 	}
 	
 	public boolean addRole(int roleID) {

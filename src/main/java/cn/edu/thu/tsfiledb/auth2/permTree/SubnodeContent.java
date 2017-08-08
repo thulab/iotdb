@@ -2,6 +2,7 @@ package cn.edu.thu.tsfiledb.auth2.permTree;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 
 import cn.edu.thu.tsfiledb.utils.SerializeUtils;
 
@@ -29,17 +30,6 @@ public class SubnodeContent extends PermTreeContent {
 		return size;
 	}
 	
-	public static PermTreeContent readObject(RandomAccessFile raf) throws IOException {
-		SubnodeContent content = new SubnodeContent();
-		content.size = raf.readInt();
-		content.emptyNum = raf.readInt();
-		for(int i = 0; i < MAX_CAPACITY; i++) {
-			content.getSubnodeNames()[i] = SerializeUtils.readString(raf, MAX_NODENAME_LENGTH);
-			content.getSubnodeIndex()[i] = raf.readInt();
-		}
-		return content;
-	}
-	
 	public static PermTreeContent initRootContent() {
 		SubnodeContent content = new SubnodeContent();
 		content.size = 0;
@@ -47,13 +37,32 @@ public class SubnodeContent extends PermTreeContent {
 		return content;
 	}
 	
-	public void writeObject(RandomAccessFile raf) throws IOException {
-		raf.writeInt(size);
-		raf.writeInt(emptyNum);
+	public static PermTreeContent readObject(RandomAccessFile raf) throws IOException {
+		byte[] bytes = new byte[RECORD_SIZE];
+		raf.readFully(bytes);
+		ByteBuffer buffer = ByteBuffer.wrap(bytes);
+		
+		SubnodeContent content = new SubnodeContent();
+		content.size = buffer.getInt();
+		content.emptyNum = buffer.getInt();
 		for(int i = 0; i < MAX_CAPACITY; i++) {
-			SerializeUtils.writeString(raf, getSubnodeNames()[i], MAX_NODENAME_LENGTH);
-			raf.writeInt(getSubnodeIndex()[i]);
+			byte[] strBuffer = new byte[MAX_NODENAME_LENGTH];
+			buffer.get(strBuffer, 0, MAX_NODENAME_LENGTH);
+			content.getSubnodeNames()[i] = SerializeUtils.bytesToStr(strBuffer);
+			content.getSubnodeIndex()[i] = buffer.getInt();
 		}
+		return content;
+	}
+	
+	public void writeObject(RandomAccessFile raf) throws IOException {
+		ByteBuffer buffer = ByteBuffer.allocate(RECORD_SIZE);
+		buffer.putInt(size);
+		buffer.putInt(emptyNum);
+		for(int i = 0; i < MAX_CAPACITY; i++) {
+			buffer.put(SerializeUtils.strToBytes(getSubnodeNames()[i], MAX_NODENAME_LENGTH));
+			buffer.putInt(getSubnodeIndex()[i]);
+		}
+		raf.write(buffer.array());
 	}
 	
 	public boolean addChild(String childName, int childIndex) {
