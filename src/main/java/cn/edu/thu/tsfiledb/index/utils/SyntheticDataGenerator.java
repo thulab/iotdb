@@ -83,7 +83,7 @@ public class SyntheticDataGenerator {
         sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Energy", TSDataType.FLOAT, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
         sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "Speed"));
-//        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
+        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "Energy"));
         executeSQL(sqls);
     }
 
