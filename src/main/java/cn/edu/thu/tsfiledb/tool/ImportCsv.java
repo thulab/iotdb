@@ -192,7 +192,7 @@ public class ImportCsv extends AbstractCsvTool{
             		statement.clearBatch();
             		count = 0;
                 tmp.clear();
-                System.out.println(String.format("[INFO] Load data from %s successfully, it cost %dms", file.getName(), (System.currentTimeMillis()-startTime)));
+                System.out.println(String.format("[INFO] Load data from %s successfully, it takes %dms", file.getName(), (System.currentTimeMillis()-startTime)));
             } catch (SQLException e) {
                 bw.write(e.getMessage());
                 bw.newLine();
