@@ -283,7 +283,7 @@ public abstract class AbstractClient {
 				"  | |   .--.|_/ | | \\_|  | | `. \\ | |_) |  \n" +
 				"  | | / .'`\\ \\  | |      | |  | | |  __'.  \n" +
 				" _| |_| \\__. | _| |_    _| |_.' /_| |__) | \n" +
-				"|_____|'.__.' |_____|  |______.'|_______/  version"+TsFileDBConstant.VERSION+"\n" +
+				"|_____|'.__.' |_____|  |______.'|_______/  version "+TsFileDBConstant.VERSION+"\n" +
 				"                                           \n");
 	}
 
