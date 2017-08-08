@@ -22,15 +22,15 @@ public class SyntheticDataGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(SyntheticDataGenerator.class);
 
-    private static final String CREATE_TIME_SERIES_TEMPLATE = "create timeseries root.laptop.%s.%s with datatype=%s,encoding=%s";
-    private static final String INSERT_DATA_TEMPLATE = "insert into root.laptop.%s(timestamp,%s) values (%s,%s)";
-    private static final String INSERT_2DATA_TEMPLATE = "insert into root.laptop.%s(timestamp,%s,%s) values (%s,%s,%s)";
-    private static final String SET_STORAGE_GROUP_TEMPLATE = "set storage group to root.laptop.%s";
-    private static final String CREATE_INDEX_TEMPLATE = "create index on root.laptop.%s.%s using kv-match";
+    private static final String CREATE_TIME_SERIES_TEMPLATE = "create timeseries root.turbine.Beijing.%s.%s with datatype=%s,encoding=%s";
+    private static final String INSERT_DATA_TEMPLATE = "insert into root.turbine.Beijing.%s(timestamp,%s) values (%s,%s)";
+    private static final String INSERT_2DATA_TEMPLATE = "insert into root.turbine.Beijing.%s(timestamp,%s,%s) values (%s,%s,%s)";
+    private static final String SET_STORAGE_GROUP_TEMPLATE = "set storage group to root.turbine.Beijing.%s";
+    private static final String CREATE_INDEX_TEMPLATE = "create index on root.turbine.Beijing.%s.%s using kv-match";
     private static final String CLOSE_TEMPLATE = "close";
 
     private static final String JDBC_SERVER_URL = "jdbc:tsfile://127.0.0.1:6667/";
-//	private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.15:6667/";
+//	private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.19:6667/";
 
     private Connection connection = null;
 
@@ -46,7 +46,7 @@ public class SyntheticDataGenerator {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
         long time = System.currentTimeMillis();
-        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d1", 1000000, 10);
+        SyntheticDataGenerator generator1 = new SyntheticDataGenerator("d3", 2000000, 10);
         generator1.start(time);
     }
 
@@ -60,7 +60,7 @@ public class SyntheticDataGenerator {
         double x1 = ThreadLocalRandom.current().nextDouble(-5, 5);
         double x2 = ThreadLocalRandom.current().nextDouble(-5, 5);
         for (int i = 1; i <= length; i++) {
-            statement.execute(String.format(INSERT_2DATA_TEMPLATE, deviceName, "s1", "s2", t, x1, x2));
+            statement.execute(String.format(INSERT_2DATA_TEMPLATE, deviceName, "Speed", "Energy", t, x1, x2));
 
             x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
             x2 += ThreadLocalRandom.current().nextDouble(-1, 1);
@@ -79,11 +79,11 @@ public class SyntheticDataGenerator {
 
     private void createTimeSeriesMetadata() throws SQLException {
         List<String> sqls = new ArrayList<>();
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s1", TSDataType.DOUBLE, TSEncoding.RLE));
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s2", TSDataType.DOUBLE, TSEncoding.RLE));
+        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Speed", TSDataType.DOUBLE, TSEncoding.RLE));
+        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Energy", TSDataType.DOUBLE, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
-        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s1"));
-        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
+        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "Speed"));
+//        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
         executeSQL(sqls);
     }
 
