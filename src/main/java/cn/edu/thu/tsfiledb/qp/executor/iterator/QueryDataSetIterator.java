@@ -51,10 +51,11 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
                 throw new RuntimeException("meet error in hasNext" + Arrays.toString(e.getStackTrace()));
             }
         if (data == null) {
-            logger.error(
-                    "data is null! parameters: paths:{},timeFilter:{}, freqFilter:{}, valueFilter:{}, fetchSize:{}, usedData:{}",
-                    paths, timeFilter, freqFilter, valueFilter, fetchSize, usedData);
-            throw new RuntimeException("data is null! parameters: paths:" + paths);
+            return false;
+//            logger.error(
+//                    "data is null! parameters: paths:{},timeFilter:{}, freqFilter:{}, valueFilter:{}, fetchSize:{}, usedData:{}",
+//                    paths, timeFilter, freqFilter, valueFilter, fetchSize, usedData);
+//            throw new RuntimeException("data is null! parameters: paths:" + paths);
         }
         if (data.hasNextRecord())
             return true;
