@@ -9,6 +9,7 @@ import java.io.RandomAccessFile;
 import org.junit.Test;
 
 import cn.edu.thu.tsfiledb.auth2.exception.WriteObjectException;
+import cn.edu.thu.tsfiledb.auth2.manage.UserManager;
 import cn.edu.thu.tsfiledb.auth2.model.User;
 
 public class UserTest {
@@ -56,6 +57,44 @@ public class UserTest {
 		assertTrue(user2.getUsername().equals(nUser3.getUsername()));
 		assertTrue(user2.getPassword().equals(nUser3.getPassword()));
 		iStream.close();
+	}
+	
+	@Test
+	public void createTest() throws IOException {
+		UserManager manager = UserManager.getInstance();
+		String username = "admin", password = "nimda";
+		manager.createUser(username, password);
+		
+		assertTrue(manager.authorize(username, password));
+		assertFalse(manager.createUser(username, password));
+		assertFalse(manager.authorize(username, password + "wrong"));
+		assertFalse(manager.authorize(username + "wrong", password));
+	}
+	
+	@Test
+	public void deleteTest() throws IOException {
+		UserManager manager = UserManager.getInstance();
+		String username = "admin2", password = "2nimda";
+		manager.createUser(username, password);
+		assertTrue(manager.authorize(username, password));
+		
+		manager.deleteUser(username);
+		assertFalse(manager.authorize(username, password));
+		assertTrue(manager.createUser(username, password));
+	}
+	
+	@Test
+	public void modifyPWTest() throws IOException {
+		UserManager manager = UserManager.getInstance();
+		String username = "admin3", password = "3nimda";
+		manager.deleteUser(username);
+		manager.createUser(username, password);
+		assertTrue(manager.authorize(username, password));
+		
+		String newPW = "3nimdawen";
+		assertTrue(manager.modifyPW(username, newPW));
+		assertFalse(manager.authorize(username, password));
+		assertTrue(manager.authorize(username, newPW));
 	}
 
 }

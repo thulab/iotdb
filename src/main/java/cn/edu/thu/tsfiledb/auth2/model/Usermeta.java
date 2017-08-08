@@ -1,11 +1,12 @@
 package cn.edu.thu.tsfiledb.auth2.model;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class Usermeta {
-	private static Integer metaMutex;
+	private static Integer metaMutex = new Integer(0);
 	private static String metaPath = "userInfo.meta";
 	private static String userFolder = "user/";
 
@@ -15,7 +16,7 @@ public class Usermeta {
 
 	}
 
-	public static Usermeta getInstance() {
+	public static Usermeta getInstance() throws IOException {
 		if (instance == null) {
 			instance = new Usermeta();
 			instance.init();
@@ -23,14 +24,21 @@ public class Usermeta {
 		return instance;
 	}
 
-	private void init() {
-		File roleFolder = new File(userFolder);
+	private void init() throws IOException {
+		File roleFolder = new File(getUserFolder());
 		roleFolder.mkdirs();
+		File metaFile = new File(userFolder + metaPath);{
+			if(!metaFile.exists() || metaFile.length() < Integer.BYTES) {
+				RandomAccessFile raf = new RandomAccessFile(metaFile, "rw");
+				raf.writeInt(0);
+				raf.close();
+			}
+		}
 	}
 
-	public static int getMaxUID() throws IOException {
+	public int getMaxUID() throws IOException {
 		synchronized (metaMutex) {
-			RandomAccessFile raf = new RandomAccessFile(metaPath, "r");
+			RandomAccessFile raf = new RandomAccessFile(userFolder + metaPath, "rw");
 			return raf.readInt();
 		}
 	}
@@ -38,16 +46,14 @@ public class Usermeta {
 	/**
 	 * add 1 to MaxUID and write it back to the file
 	 * 
-	 * @return the MaxUID before increment
 	 * @throws IOException
 	 */
-	public static int increaseMaxRID() throws IOException {
+	public void increaseMaxRID() throws IOException {
 		synchronized (metaMutex) {
-			RandomAccessFile raf = new RandomAccessFile(metaPath, "rw");
+			RandomAccessFile raf = new RandomAccessFile(userFolder + metaPath, "rw");
 			int maxRID = raf.readInt();
 			raf.seek(0);
 			raf.writeInt(maxRID + 1);
-			return maxRID;
 		}
 	}
 
@@ -57,5 +63,13 @@ public class Usermeta {
 
 	public static void setMetaPath(String metaPath) {
 		Usermeta.metaPath = metaPath;
+	}
+
+	public static String getUserFolder() {
+		return userFolder;
+	}
+
+	public static void setUserFolder(String userFolder) {
+		Usermeta.userFolder = userFolder;
 	}
 }

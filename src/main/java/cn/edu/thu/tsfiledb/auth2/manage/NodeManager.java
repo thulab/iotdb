@@ -58,6 +58,20 @@ public class NodeManager {
 			permFileRaf.close();
 		}
 	}
+	
+	public void cleanForUser(int uid) {
+		Integer mutex = accessMutexMap.get(uid);
+		if (mutex == null) {
+			mutex = new Integer(uid);
+			accessMutexMap.put(uid, mutex);
+		}
+		synchronized (mutex) {
+			File permFile = new File(uid + PERMFILE_SUFFIX);
+			File permMeta = new File(uid + PERMMETA_SUFFIX);
+			permFile.deleteOnExit();
+			permMeta.deleteOnExit();
+		}
+	}
 
 	public PermTreeNode getNode(int uid, int nodeIndex) throws IOException {
 		Integer mutex = accessMutexMap.get(uid);

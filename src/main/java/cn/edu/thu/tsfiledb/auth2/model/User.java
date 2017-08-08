@@ -25,6 +25,12 @@ public class User{
 		this.setPassword(password);
 	}
 	
+	public User(String username, String password, int newUserID) {
+		this.setUsername(username);
+		this.setPassword(password);
+		this.setID(newUserID);
+	}
+
 	public static User readObject(RandomAccessFile raf) throws IOException, ReadObjectException {
 		User user = new User();
 		user.setID(raf.readInt());
