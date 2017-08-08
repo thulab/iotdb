@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.thu.tsfiledb.auth2.exception.PathAlreadyExistException;
 import cn.edu.thu.tsfiledb.auth2.exception.RoleAlreadyExistException;
 import cn.edu.thu.tsfiledb.auth2.exception.UnknownNodeTypeException;
 import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
@@ -25,8 +26,10 @@ public class PermTreeNode {
 	/**
 	 * @param nodeName
 	 * @param nodeType
-	 * @param ID ID of this node
-	 * @param PID ID of parent node
+	 * @param ID
+	 *            ID of this node
+	 * @param PID
+	 *            ID of parent node
 	 * @throws UnknownNodeTypeException
 	 */
 	public PermTreeNode(String nodeName, int nodeType, int ID, int PID) throws UnknownNodeTypeException {
@@ -68,8 +71,32 @@ public class PermTreeNode {
 		return node;
 	}
 
+	public boolean addChild(String childName, int cid) throws WrongNodetypeException, PathAlreadyExistException {
+		if (findChild(childName) != -1){
+			logger.error(childName + " already exists");
+			throw new PathAlreadyExistException(childName);
+		}
+		if (header.getNodeType() != PermTreeHeader.NORMAL_NODE
+				&& header.getNodeType() != PermTreeHeader.SUBNODE_EXTENSION) {
+			logger.error("add child to a role extension");
+			throw new WrongNodetypeException(String.valueOf(header.getNodeType()));
+		}
+		SubnodeContent subnodeContent = (SubnodeContent) content;
+		return subnodeContent.addChild(childName, cid);
+	}
+
+	public boolean deleteChild(String childName) throws WrongNodetypeException {
+		if (header.getNodeType() != PermTreeHeader.NORMAL_NODE
+				&& header.getNodeType() != PermTreeHeader.SUBNODE_EXTENSION) {
+			logger.error("add child to a role extension");
+			throw new WrongNodetypeException(String.valueOf(header.getNodeType()));
+		}
+		SubnodeContent subnodeContent = (SubnodeContent) content;
+		return subnodeContent.deleteChild(childName);
+	}
+
 	/**
-	 * try to find a child by name within this node
+	 * Try to find a child by name within this node.
 	 * 
 	 * @param childName
 	 * @return the index of this child, -1 when no child found
@@ -88,6 +115,21 @@ public class PermTreeNode {
 		return -1;
 	}
 
+	public boolean findRole(int rid) {
+		for (int i = 0; i < header.getRoleNum(); i++) {
+			if (header.getRoles()[i] == rid)
+				return true;
+		}
+		if (content instanceof RoleContent) {
+			RoleContent roleContent = (RoleContent) content;
+			for (int i = 0; i < roleContent.getRoleNum(); i++) {
+				if (header.getRoles()[i] == rid)
+					return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * collect the roles in the header, if this node is a role-extension also
 	 * collect the roles in the content
@@ -132,17 +174,7 @@ public class PermTreeNode {
 		}
 		if (content instanceof RoleContent && !deleted) {
 			RoleContent roleContent = (RoleContent) content;
-			for (int i = 0; i < roleContent.getRoleNum(); i++) {
-				if (roleContent.getRoles()[i] == roleID) {
-					roleContent.getRoles()[i] = -1;
-					deleted = true;
-					if (i == roleContent.getRoleNum() - 1) {
-						roleContent.setRoleNum(roleContent.getRoleNum() - 1);
-					} else {
-						roleContent.setEmptyRoleNum(roleContent.getEmptyRoleNum() + 1);
-					}
-				}
-			}
+			deleted = roleContent.deleteRole(roleID);
 		}
 		return deleted;
 	}
@@ -157,8 +189,7 @@ public class PermTreeNode {
 	 */
 	public boolean addRole(int roleID) throws RoleAlreadyExistException {
 		boolean added = false;
-		Set<Integer> roles = findRoles();
-		if (roles.contains(roleID)) {
+		if (findRole(roleID)) {
 			throw new RoleAlreadyExistException("the role has already been granted to the node");
 		}
 		// try to add in header
@@ -178,51 +209,39 @@ public class PermTreeNode {
 		// try to add in content
 		if (content instanceof RoleContent) {
 			RoleContent rContent = (RoleContent) content;
-			if (rContent.getEmptyRoleNum() > 0) {
-				for (int i = 0; i < rContent.getRoleNum(); i++) {
-					if (rContent.getRoles()[i] == -1) {
-						rContent.getRoles()[i] = roleID;
-						added = true;
-						rContent.setEmptyRoleNum(rContent.getEmptyRoleNum() - 1);
-					}
-				}
-			} else if (rContent.getRoleNum() < RoleContent.MAX_CAPACITY) {
-				rContent.getRoles()[rContent.getRoleNum()] = roleID;
-				added = true;
-				rContent.setRoleNum(rContent.getRoleNum() + 1);
-			}
+			added = rContent.addRole(roleID);
 		}
 		return added;
 	}
-	
+
 	public void setParent(int index) {
 		header.setParentIndex(index);
 	}
-	
+
 	public int getParent() {
 		return header.getParentIndex();
 	}
-	
+
 	public void setSubnodeExt(int index) {
 		header.setSubnodeExtIndex(index);
 	}
-	
+
 	public int getSubnodeExt() {
 		return header.getSubnodeExtIndex();
 	}
-	
+
 	public void setRoleExt(int index) {
 		header.setRoleExtIndex(index);
 	}
-	
+
 	public int getRoleExt() {
 		return header.getRoleExtIndex();
 	}
-	
+
 	public int getIndex() {
 		return header.getCurrentIndex();
 	}
-	
+
 	public String getName() {
 		return header.getNodeName();
 	}

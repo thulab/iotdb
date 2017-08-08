@@ -57,7 +57,7 @@ public class SerializeUtils {
 			byte[] buffer = new byte[maxLength];
 			byte[] nameBytes = source.getBytes("utf-8");
 			if (nameBytes.length >= maxLength) {
-				logger.error("String {} is too long", source);
+				logger.error("String {} is too long {} > {}", source, nameBytes.length, maxLength);
 				throw new WriteObjectException();
 			}
 			System.arraycopy(nameBytes, 0, buffer, 0, nameBytes.length);

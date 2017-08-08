@@ -34,6 +34,36 @@ public class RoleContent extends PermTreeContent {
 		for(int i = 0; i < MAX_CAPACITY; i++)
 			raf.writeInt(getRoles()[i]);
 	}
+	
+	public boolean addRole(int roleID) {
+		if(emptyRoleNum > 0) {
+			for(int i = 0; i < roleNum; i++) {
+				if(roles[i] == -1) {
+					roles[i] = roleID;
+					return true;
+				}
+			}
+		} else if(roleNum < MAX_CAPACITY) {
+			roles[roleNum++] = roleID;
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean deleteRole(int roleID) {
+		for(int i = 0; i < roleNum; i++) {
+			if(roles[i] == roleID) {
+				roles[i] = -1;
+				if(i == roleNum - 1) {
+					roleNum--;
+				} else {
+					emptyRoleNum ++;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public int[] getRoles() {
 		return roles;

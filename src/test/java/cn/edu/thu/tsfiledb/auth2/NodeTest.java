@@ -22,10 +22,10 @@ public class NodeTest {
 		PermTreeNode root = nodeManager.getNode(uid, 0);
 		assertTrue(root.getHeader().getNodeName().equals("root"));
 		
-		int nextPage = nodeManager.allocateNode(uid);
+		int nextPage = nodeManager.allocateID(uid);
 		PermTreeNode roleExt = new PermTreeNode("roleExt", PermTreeHeader.ROLE_EXTENSION, nextPage, 0);
 		nodeManager.putNode(uid, nextPage, roleExt);
-		nextPage = nodeManager.allocateNode(uid);
+		nextPage = nodeManager.allocateID(uid);
 		PermTreeNode childExt = new PermTreeNode("childExt", PermTreeHeader.SUBNODE_EXTENSION, nextPage, 0);
 		nodeManager.putNode(uid, nextPage, childExt);
 		root.setRoleExt(roleExt.getIndex());

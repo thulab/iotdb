@@ -3,8 +3,6 @@ package cn.edu.thu.tsfiledb.auth2.permTree;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.apache.derby.iapi.services.stream.HeaderPrintWriter;
-
 import cn.edu.thu.tsfiledb.utils.SerializeUtils;
 
 public class PermTreeHeader {

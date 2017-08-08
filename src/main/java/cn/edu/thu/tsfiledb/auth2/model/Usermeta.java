@@ -1,7 +1,6 @@
 package cn.edu.thu.tsfiledb.auth2.model;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -27,13 +26,13 @@ public class Usermeta {
 	private void init() throws IOException {
 		File roleFolder = new File(getUserFolder());
 		roleFolder.mkdirs();
-		File metaFile = new File(userFolder + metaPath);{
-			if(!metaFile.exists() || metaFile.length() < Integer.BYTES) {
-				RandomAccessFile raf = new RandomAccessFile(metaFile, "rw");
-				raf.writeInt(0);
-				raf.close();
-			}
+		File metaFile = new File(userFolder + metaPath);
+		if (!metaFile.exists() || metaFile.length() < Integer.BYTES) {
+			RandomAccessFile raf = new RandomAccessFile(metaFile, "rw");
+			raf.writeInt(0);
+			raf.close();
 		}
+
 	}
 
 	public int getMaxUID() throws IOException {
