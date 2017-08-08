@@ -8,7 +8,6 @@ import cn.edu.thu.tsfile.common.constant.QueryConstant
 import cn.edu.thu.tsfile.DefaultSource.SerializableConfiguration
 import cn.edu.thu.tsfile.io.HDFSInputStream
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet
-import cn.edu.thu.tsfile.timeseries.read.readSupport.{Field, RowRecord}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.hadoop.mapreduce.Job
@@ -24,6 +23,8 @@ import org.slf4j.LoggerFactory
 import cn.edu.thu.tsfile.qp.Executor
 import cn.edu.thu.tsfile.qp.common.SQLConstant
 import java.io.{ObjectInputStream, ObjectOutputStream}
+
+import cn.edu.thu.tsfile.timeseries.read.support.{Field, RowRecord}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable

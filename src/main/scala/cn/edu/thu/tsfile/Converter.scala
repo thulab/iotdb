@@ -8,13 +8,13 @@ import cn.edu.thu.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
 import cn.edu.thu.tsfile.io.HDFSInputStream
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema
 import cn.edu.thu.tsfile.timeseries.read.query.{QueryConfig, QueryEngine}
-import cn.edu.thu.tsfile.timeseries.read.readSupport.Field
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileStatus
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types._
 import cn.edu.thu.tsfile.qp.QueryProcessor
 import cn.edu.thu.tsfile.qp.common.{BasicOperator, FilterOperator, SQLConstant, TSQueryPlan}
+import cn.edu.thu.tsfile.timeseries.read.support.Field
 import cn.edu.thu.tsfile.timeseries.write.desc.MeasurementDescriptor
 import cn.edu.thu.tsfile.timeseries.write.record.{DataPoint, TSRecord}
 import cn.edu.thu.tsfile.timeseries.write.schema.{FileSchema, SchemaBuilder}
@@ -87,7 +87,7 @@ object Converter {
         case TSDataType.FLOAT => FloatType
         case TSDataType.DOUBLE => DoubleType
         case TSDataType.ENUMS => StringType
-        case TSDataType.BYTE_ARRAY => StringType
+        case TSDataType.TEXT => StringType
         case TSDataType.FIXED_LEN_BYTE_ARRAY => BinaryType
         case other => throw new UnsupportedOperationException(s"Unsupported type $other")
       }, nullable = true)
@@ -130,11 +130,11 @@ object Converter {
     val conf = TSFileDescriptor.getInstance.getConfig
     val dataType = getTsDataType(field.dataType)
     val encodingStr = dataType match {
-      case TSDataType.INT32 => options.getOrElse(SQLConstant.INT32, conf.defaultSeriesEncoder)
-      case TSDataType.INT64 => options.getOrElse(SQLConstant.INT64, conf.defaultSeriesEncoder)
-      case TSDataType.FLOAT => options.getOrElse(SQLConstant.FLOAT, conf.defaultSeriesEncoder)
-      case TSDataType.DOUBLE => options.getOrElse(SQLConstant.DOUBLE, conf.defaultSeriesEncoder)
-      case TSDataType.BYTE_ARRAY => options.getOrElse(SQLConstant.BYTE_ARRAY, TSEncoding.PLAIN.toString)
+      case TSDataType.INT32 => options.getOrElse(SQLConstant.INT32, TSEncoding.RLE.toString)
+      case TSDataType.INT64 => options.getOrElse(SQLConstant.INT64, TSEncoding.RLE.toString)
+      case TSDataType.FLOAT => options.getOrElse(SQLConstant.FLOAT, TSEncoding.RLE.toString)
+      case TSDataType.DOUBLE => options.getOrElse(SQLConstant.DOUBLE, TSEncoding.RLE.toString)
+      case TSDataType.TEXT => options.getOrElse(SQLConstant.BYTE_ARRAY, TSEncoding.PLAIN.toString)
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
     }
     val encoding = TSEncoding.valueOf(encodingStr)
@@ -154,7 +154,7 @@ object Converter {
       case BooleanType => TSDataType.BOOLEAN
       case FloatType => TSDataType.FLOAT
       case DoubleType => TSDataType.DOUBLE
-      case StringType => TSDataType.BYTE_ARRAY
+      case StringType => TSDataType.TEXT
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
     }
   }
@@ -417,7 +417,7 @@ object Converter {
       case TSDataType.FLOAT => field.getFloatV
       case TSDataType.DOUBLE => field.getDoubleV
       case TSDataType.FIXED_LEN_BYTE_ARRAY => field.getStringValue
-      case TSDataType.BYTE_ARRAY => field.getStringValue
+      case TSDataType.TEXT => field.getStringValue
       case TSDataType.ENUMS => field.getStringValue
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
     }

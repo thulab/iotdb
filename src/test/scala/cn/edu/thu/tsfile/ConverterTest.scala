@@ -9,12 +9,12 @@ import cn.edu.thu.tsfile.io.CreateTSFile
 import cn.edu.thu.tsfile.timeseries.read.LocalFileInput
 import cn.edu.thu.tsfile.timeseries.read.metadata.SeriesSchema
 import cn.edu.thu.tsfile.timeseries.read.query.QueryConfig
-import cn.edu.thu.tsfile.timeseries.read.readSupport.Field
 import org.apache.spark.sql.sources.{Filter, GreaterThan, LessThan, Or}
 import org.apache.spark.sql.types._
 import org.junit.Assert
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import cn.edu.thu.tsfile.qp.common.SQLConstant
+import cn.edu.thu.tsfile.timeseries.read.support.Field
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
@@ -80,7 +80,7 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
     fields.add(new SeriesSchema("s3", TSDataType.FLOAT, TSEncoding.PLAIN))
     fields.add(new SeriesSchema("s4", TSDataType.DOUBLE, TSEncoding.PLAIN))
     fields.add(new SeriesSchema("s5", TSDataType.BOOLEAN, TSEncoding.PLAIN))
-    fields.add(new SeriesSchema("s6", TSDataType.BYTE_ARRAY, TSEncoding.PLAIN))
+    fields.add(new SeriesSchema("s6", TSDataType.TEXT, TSEncoding.PLAIN))
     val columns = new ArrayBuffer[String]()
     columns += SQLConstant.RESERVED_DELTA_OBJECT
     val sqlSchema = Converter.toSqlSchema(fields, columns)
@@ -112,7 +112,7 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
     floatField.setFloatV(3.14f)
     val doubleField = new Field(TSDataType.DOUBLE, "s1")
     doubleField.setDoubleV(0.618d)
-    val stringField = new Field(TSDataType.BYTE_ARRAY, "s1")
+    val stringField = new Field(TSDataType.TEXT, "s1")
     stringField.setBinaryV(new Binary("pass"))
 
     Assert.assertEquals(Converter.toSqlValue(boolField), true)
