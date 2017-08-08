@@ -14,6 +14,10 @@ public class RoleContent extends PermTreeContent {
 	private int emptyRoleNum = 0;
 	private int[] roles = new int[MAX_CAPACITY];
 	
+	public RoleContent() {
+		
+	}
+	
 	public static PermTreeContent readObject(RandomAccessFile raf) throws IOException {
 		RoleContent content = new RoleContent();
 		content.setRoleNum(raf.readInt());

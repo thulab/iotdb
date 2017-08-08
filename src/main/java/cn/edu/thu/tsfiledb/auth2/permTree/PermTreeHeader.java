@@ -25,7 +25,11 @@ public class PermTreeHeader {
 	private int roleNum = 0;
 	private int emptyRoleNum = 0;			// the number of roles deleted but not reused
 	private int[] roles = new int[MAX_ROLE_NUM];
-
+	
+	public PermTreeHeader() {
+		
+	}
+	
 	public static PermTreeHeader readObject(RandomAccessFile raf) throws IOException {
 		PermTreeHeader header = new PermTreeHeader();
 		header.parentIndex = raf.readInt();

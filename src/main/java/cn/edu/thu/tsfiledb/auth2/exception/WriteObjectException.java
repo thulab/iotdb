@@ -4,9 +4,6 @@ import java.io.IOException;
 
 public class WriteObjectException extends IOException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -8913608185239367250L;
 
 	public WriteObjectException() {

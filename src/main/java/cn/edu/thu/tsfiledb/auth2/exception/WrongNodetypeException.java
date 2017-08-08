@@ -1,10 +1,7 @@
 package cn.edu.thu.tsfiledb.auth2.exception;
 
-public class WrongNodetypeException extends Exception {
+public class WrongNodetypeException extends AuthException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8098359585172582614L;
 
 	public WrongNodetypeException() {

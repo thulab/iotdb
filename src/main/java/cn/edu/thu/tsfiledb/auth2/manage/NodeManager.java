@@ -1,5 +1,6 @@
 package cn.edu.thu.tsfiledb.auth2.manage;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
@@ -12,6 +13,9 @@ import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
 public class NodeManager {
 	private static String PERMFILE_SUFFIX = ".perm";
 	private static String PERMMETA_SUFFIX = ".perm.meta";
+	private static String PERM_FOLDER = "perms/";
+	
+	private static NodeManager instance;
 
 	private int MAX_CACHE_CAPACITY = 1000;
 	Map<Pair<Integer, Integer>, PermTreeNode> nodeCache = new HashMap<>();
@@ -20,6 +24,23 @@ public class NodeManager {
 	HashMap<Integer, Integer> initMutexMap = new HashMap<>();
 	HashMap<Integer, Integer> accessMutexMap = new HashMap<>();
 
+	private NodeManager() {
+		
+	}
+	
+	public static NodeManager getInstance() {
+		if(instance == null) {
+			instance = new NodeManager();
+			instance.init();
+		}
+		return instance;
+	}
+	
+	private void init() {
+		File permFolder = new File(PERM_FOLDER);
+		permFolder.mkdirs();
+	}
+	
 	public void initForUser(int uid) throws IOException {
 		Integer mutex = initMutexMap.get(uid);
 		if (mutex == null) {
@@ -49,7 +70,6 @@ public class NodeManager {
 			PermTreeNode node = nodeCache.get(index);
 			LRUList.remove(index);
 			LRUList.addFirst(index);
-			;
 			if (node != null)
 				return node;
 
@@ -76,6 +96,10 @@ public class NodeManager {
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
+			Pair<Integer, Integer> index = new Pair<Integer, Integer>(uid, nodeIndex);
+			nodeCache.put(index, node);
+			LRUList.remove(index);
+			LRUList.addFirst(index);
 			RandomAccessFile permFileRaf = new RandomAccessFile(uid + PERMFILE_SUFFIX, "rw");
 			permFileRaf.seek(nodeIndex * PermTreeNode.RECORD_SIZE);
 			node.writeObject(permFileRaf);

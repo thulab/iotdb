@@ -20,6 +20,10 @@ public class SubnodeContent extends PermTreeContent {
 	private String[] subnodeNames = new String[MAX_CAPACITY];
 	private int[] subnodeIndex = new int[MAX_CAPACITY];
 	
+	public SubnodeContent() {
+		
+	}
+	
 	public int getSize() {
 		return size;
 	}

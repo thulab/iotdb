@@ -1,13 +1,34 @@
 package cn.edu.thu.tsfiledb.auth2.model;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class Rolemeata {
+	private static String RoleFolder = "role/"; 
 	private static String metaPath = "roleInfo.meta";
 	private static Integer metaMutex = new Integer(0);
 	
-	public static int getMaxRID() throws IOException {
+	private static Rolemeata instance;
+	
+	private Rolemeata() {
+		
+	}
+	
+	public static Rolemeata getInstance() {
+		if(instance == null) {
+			instance = new Rolemeata();
+			instance.init();
+		}
+		return instance;
+	}
+	
+	private void init() {
+		File roleFolder = new File(RoleFolder);
+		roleFolder.mkdirs();
+	}
+	
+	public int getMaxRID() throws IOException {
 		synchronized (metaMutex) {
 			RandomAccessFile raf = new RandomAccessFile(metaPath, "r");
 			return raf.readInt();
@@ -18,7 +39,7 @@ public class Rolemeata {
 	 * @return the MaxRID before increment
 	 * @throws IOException
 	 */
-	public static int increaseMaxRID() throws IOException {
+	public int increaseMaxRID() throws IOException {
 		synchronized (metaMutex) {
 			RandomAccessFile raf = new RandomAccessFile(metaPath, "rw");
 			int maxRID = raf.readInt();
@@ -28,11 +49,11 @@ public class Rolemeata {
 		}
 	}
 
-	public static String getMetaPath() {
+	public String getMetaPath() {
 		return metaPath;
 	}
 
-	public static void setMetaPath(String metaPath) {
+	public void setMetaPath(String metaPath) {
 		Rolemeata.metaPath = metaPath;
 	}
 }

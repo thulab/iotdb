@@ -1,10 +1,7 @@
 package cn.edu.thu.tsfiledb.auth2.exception;
 
-public class RoleAlreadyExistException extends Exception {
+public class RoleAlreadyExistException extends AuthException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5819742872055007657L;
 
 	public RoleAlreadyExistException() {

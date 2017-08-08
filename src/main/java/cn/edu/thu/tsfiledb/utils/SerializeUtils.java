@@ -48,17 +48,20 @@ public class SerializeUtils {
 	 * @param raf
 	 * @param source
 	 * @param maxLength
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public static void writeString(RandomAccessFile raf, String source, int maxLength)
-			throws IOException {
-		byte[] buffer = new byte[maxLength];
-		byte[] nameBytes = source.getBytes("utf-8");
-		if (nameBytes.length >= maxLength) {
-			logger.error("String {} is too long", source);
-			throw new WriteObjectException();
+	public static void writeString(RandomAccessFile raf, String source, int maxLength) throws IOException {
+		if (source == null) {
+			raf.write(new byte[maxLength]);
+		} else {
+			byte[] buffer = new byte[maxLength];
+			byte[] nameBytes = source.getBytes("utf-8");
+			if (nameBytes.length >= maxLength) {
+				logger.error("String {} is too long", source);
+				throw new WriteObjectException();
+			}
+			System.arraycopy(nameBytes, 0, buffer, 0, nameBytes.length);
+			raf.write(buffer);
 		}
-		System.arraycopy(nameBytes, 0, buffer, 0, nameBytes.length);
-		raf.write(buffer);
 	}
 }
