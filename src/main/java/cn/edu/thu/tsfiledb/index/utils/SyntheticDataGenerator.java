@@ -79,8 +79,8 @@ public class SyntheticDataGenerator {
 
     private void createTimeSeriesMetadata() throws SQLException {
         List<String> sqls = new ArrayList<>();
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Speed", TSDataType.DOUBLE, TSEncoding.RLE));
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Energy", TSDataType.DOUBLE, TSEncoding.RLE));
+        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Speed", TSDataType.INT32, TSEncoding.RLE));
+        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "Energy", TSDataType.FLOAT, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
         sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "Speed"));
 //        sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
