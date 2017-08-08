@@ -60,7 +60,7 @@ public class SyntheticDataGenerator {
         double x1 = ThreadLocalRandom.current().nextDouble(-5, 5);
         double x2 = ThreadLocalRandom.current().nextDouble(-5, 5);
         for (int i = 1; i <= length; i++) {
-            statement.execute(String.format(INSERT_2DATA_TEMPLATE, deviceName, "Speed", "Energy", t, x1, x2));
+            statement.execute(String.format(INSERT_2DATA_TEMPLATE, deviceName, "Speed", "Energy", t, (int) x1, x2));
 
             x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
             x2 += ThreadLocalRandom.current().nextDouble(-1, 1);
