@@ -30,9 +30,9 @@ public class SyntheticDataGenerator extends TimerTask{
     private static final String CREATE_INDEX_TEMPLATE = "create index on root.laptop.%s.%s using kv-match";
     private static final String CLOSE_TEMPLATE = "close";
 
-//    private static final String JDBC_SERVER_URL = "jdbc:tsfile://127.0.0.1:6667/";
+    private static final String JDBC_SERVER_URL = "jdbc:tsfile://127.0.0.1:6667/";
 
-    private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.19:6667/";
+//    private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.19:6667/";
 //	private static final String JDBC_SERVER_URL = "jdbc:tsfile://192.168.130.15:6667/";
 
     private Connection connection = null;
@@ -40,12 +40,14 @@ public class SyntheticDataGenerator extends TimerTask{
     private String deviceName;
     private int length;
     private long timeInterval;
+    private boolean create;
 
 
-    public SyntheticDataGenerator(String deviceName, int length, long timeInterval){
+    public SyntheticDataGenerator(String deviceName, int length, long timeInterval, boolean create){
         this.deviceName = deviceName;
         this.length = length;
         this.timeInterval = timeInterval;
+        this.create=create;
     }
 
 
@@ -53,39 +55,33 @@ public class SyntheticDataGenerator extends TimerTask{
         Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
         connectServer();
 
-        if(!WriteDB.createdTimeseries){
+        if(create){
             createTimeSeriesMetadata();
-            WriteDB.createdTimeseries=true;
         }
 
         Statement statement = connection.createStatement();
         double x1 = ThreadLocalRandom.current().nextDouble(-5, 5);
-        double x2 = ThreadLocalRandom.current().nextDouble(-5, 5);
         for (int i = 1; i <= length; i++) {
-            statement.execute(String.format(INSERT_2DATA_TEMPLATE, deviceName, "s1", "s2", t, x1, x2));
+            statement.execute(String.format(INSERT_DATA_TEMPLATE, deviceName, "s1", t, x1));
 
             x1 += ThreadLocalRandom.current().nextDouble(-1, 1);
-            x2 += ThreadLocalRandom.current().nextDouble(-1, 1);
             t += timeInterval;
 
             if (i % 10000 == 0) {
                 logger.info("{}", i);
             }
-            if (i % 1000000 == 0) {
+            if ((!create) && (i % 10000 == 0)) {
                 statement.execute(CLOSE_TEMPLATE);
             }
         }
-
+        if(create) statement.execute(CLOSE_TEMPLATE);
         disconnectServer();
     }
 
     private void createTimeSeriesMetadata() throws SQLException {
         List<String> sqls = new ArrayList<>();
         sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s1", TSDataType.DOUBLE, TSEncoding.RLE));
-        sqls.add(String.format(CREATE_TIME_SERIES_TEMPLATE, deviceName, "s2", TSDataType.DOUBLE, TSEncoding.RLE));
         sqls.add(String.format(SET_STORAGE_GROUP_TEMPLATE, deviceName));
-        //sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s1"));
-        //sqls.add(String.format(CREATE_INDEX_TEMPLATE, deviceName, "s2"));
         executeSQL(sqls);
     }
 

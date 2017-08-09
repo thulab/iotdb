@@ -18,7 +18,7 @@ public class Server {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
     
     public static void main(String[] args) {
-    		ServerConfig config = ServerConfig.getInstance();
+    	ServerConfig config = ServerConfig.getInstance();
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(config.serverNThread);
         ServerSocket serverSocket = null;
 

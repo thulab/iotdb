@@ -37,7 +37,7 @@ public class TransferThread extends TimerTask {
 	public void run() {
 		File dir = new File(config.snapshotDirectory);
 		if (!dir.exists())
-			dir.mkdir();
+			MakeDir(dir.getAbsolutePath());
 		File[] files = dir.listFiles();
 		if (Client.isTimerTaskRunning() && files.length > 0) {
 			LOGGER.info("Still transferring");
@@ -145,6 +145,9 @@ public class TransferThread extends TimerTask {
 		Map<String, Long> startTimes = new HashMap<>();
 		String path = config.startTimePath.concat(File.separatorChar + namespace);
 		File dir = new File(path);
+		if(!dir.exists()){
+			MakeDir(dir.getAbsolutePath());
+		}
 		ObjectInputStream ois = null;
 		if (dir.exists()) {
 			File[] files = dir.listFiles();
@@ -182,7 +185,7 @@ public class TransferThread extends TimerTask {
 				LOGGER.info(" ------ transfer a file {}", traverseFile.getName());
 				try {
 					Socket socket = new Socket(config.serverAddress, config.port);
-					LOGGER.info("socket success for file {}", path);
+					LOGGER.info("socket success for fileDir {}", path);
 
 					fixedThreadPool.submit(new TransferFileThread(socket, traverseFile.getAbsolutePath(),
 							getFileBytePosition(traverseFile.getAbsolutePath())));
@@ -200,7 +203,7 @@ public class TransferThread extends TimerTask {
 				} catch (InterruptedException e) {
 				}
 			}
-
+			fixedThreadPool.shutdownNow();
 			file = new File(path);
 			files = file.listFiles();
 		}
@@ -209,9 +212,10 @@ public class TransferThread extends TimerTask {
 	private long getFileBytePosition(String filePath) {
 		long bytePosition = 0;
 		File file = new File(filePath);
-		File dir = new File(config.filePositionRecord);
-		if (!dir.exists())
-			dir.mkdir();
+		File dir = new File(config.filePositionRecord+File.separatorChar);
+		LOGGER.info("fileRecord Dir "+dir.getAbsolutePath());
+		if(!dir.exists())
+			MakeDir(dir.getAbsolutePath());
 		String fileRecordPath = config.filePositionRecord.concat(File.separatorChar + "record_" + file.getName());
 
 		ObjectInputStream ois = null;
@@ -251,6 +255,7 @@ public class TransferThread extends TimerTask {
 			}
 		} else {
 			try {
+				//LOGGER.info("recordFile "+recordFile.getAbsolutePath());
 				recordFile.createNewFile();
 				oos = new ObjectOutputStream(new FileOutputStream(recordFile));
 				oos.writeObject(new FilePositionRecord(file.getAbsolutePath(), 0L));
@@ -272,5 +277,13 @@ public class TransferThread extends TimerTask {
 			}
 		}
 		return bytePosition;
+	}
+
+	private void MakeDir(String absolutePath) {
+		File dir=new File(absolutePath);
+		if(!dir.exists()){
+			MakeDir(dir.getParent());
+			dir.mkdir();
+		}
 	}
 }

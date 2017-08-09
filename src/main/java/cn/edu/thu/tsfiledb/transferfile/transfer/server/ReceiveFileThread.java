@@ -28,8 +28,9 @@ public class ReceiveFileThread extends Thread {
 	private String receiveFilePath;
 	private long fileSize;
 	private long startPosition;
-	private final int copyFileSegment = 128;
-	private final int receiveFileSegment = 1024;
+	private final int copyFileSegment = 512;
+	private final int receiveFileSegment = 512;
+	private final ServerConfig config = ServerConfig.getInstance();
 
 	public ReceiveFileThread(Socket socket) {
 		this.socket = socket;
@@ -63,13 +64,15 @@ public class ReceiveFileThread extends Thread {
 	private void readFileNameAndLength(InputStream is, OutputStream os) throws IOException {
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(isr);
-		ServerConfig config = ServerConfig.getInstance();
+
 		String info = null;
 		String[] args = new String[5];
 		int i = 0;
+		LOGGER.info("Ready to receive fileInfo");
 		while ((i < 3) && (!((info = br.readLine()) == ""))) {
 			args[i] = info;
-			i++;
+			LOGGER.info(args[i]+" "+i);
+			if(args[i]!=null)i++;
 		}
 
 		String path = args[0];
@@ -85,14 +88,16 @@ public class ReceiveFileThread extends Thread {
 		String temp = config.storageDirectory.concat(File.separatorChar + new File(fileName).getName());
 		receiveFilePath = temp;
 		startPosition = Long.parseLong(args[2]);
-		rewriteReceiveFile(os);
+		rewriteReceiveFile();
 		PrintWriter pw = new PrintWriter(os);
+		LOGGER.info("Receive fileInfo Successfully");
 		pw.write("ok\n");
 		pw.flush();
 		os.flush();
+		LOGGER.info("Ready to receive files!");
 	}
 
-	private void rewriteReceiveFile(OutputStream os) throws IOException {
+	private void rewriteReceiveFile() throws IOException {
 		File receiveFile = new File(receiveFilePath);
 		boolean reWriteSuccess=true;
 		if (!receiveFile.exists()) {
@@ -111,7 +116,7 @@ public class ReceiveFileThread extends Thread {
 			int totalRead = 0;
 			while (totalRead < startPosition) {
 				read = fis.read(copyfile);
-				fos.write(copyfile);
+				fos.write(copyfile,0,read);
 				totalRead += read;
 			}
 		} catch (Exception e) {
@@ -121,22 +126,23 @@ public class ReceiveFileThread extends Thread {
 			if(fis != null) fis.close();
 			if(!reWriteSuccess){
 				if (!tempFile.delete()) {
-					LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
+					LOGGER.error("delete file {} fail1", tempFile.getAbsoluteFile());
 				} else {
-					LOGGER.info("delete file {} success", tempFile.getAbsoluteFile());
+					LOGGER.info("delete file {} success1", tempFile.getAbsoluteFile());
 				}
 				return;
 			}
 		}
-		
+
 		try {
 			// copy from tempFile to receiveFile
 			int tempsize = 0;
 			fis = new FileInputStream(tempFile);
 			fos = new FileOutputStream(receiveFile);
 			while (tempsize < startPosition) {
-				tempsize += fis.read(copyfile);
-				fos.write(copyfile);
+				int read= fis.read(copyfile);
+				tempsize += read;
+				fos.write(copyfile,0,read);
 			}
 		} catch (Exception e) {
 			reWriteSuccess=false;
@@ -145,14 +151,14 @@ public class ReceiveFileThread extends Thread {
 			if(fis != null) fis.close();
 			if(!reWriteSuccess){
 				if (!tempFile.delete()) {
-					LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
+					LOGGER.error("delete file {} fail2", tempFile.getAbsoluteFile());
 				} else {
-					LOGGER.info("delete file {} success", tempFile.getAbsoluteFile());
+					LOGGER.info("delete file {} success2", tempFile.getAbsoluteFile());
 				}
 				return;
 			}
 		}
-
+		LOGGER.info("fileSize "+tempFile.length());
 		if (!tempFile.delete()) {
 			LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
 		} else {
@@ -163,16 +169,26 @@ public class ReceiveFileThread extends Thread {
 	private void receiveFileFromClient(InputStream is, OutputStream os) throws IOException {
 		long receiveSize = startPosition;
 		int readSize = 0;
-		FileOutputStream fos = new FileOutputStream(receiveFilePath);
+		FileOutputStream fos = new FileOutputStream(receiveFilePath,true);
 		PrintWriter pw = new PrintWriter(os);
 		try {
 			byte[] buffer = new byte[receiveFileSegment];
 			while ((receiveSize < fileSize) && ((readSize = is.read(buffer)) != -1)) {
+				LOGGER.info("readSize "+readSize);
 				receiveSize += readSize;
 				fos.write(buffer, 0, readSize);
-				pw.write(readSize + "\n");
+				if (receiveSize%config.fileSegmentSize == 0) {
+					pw.write(receiveSize + "\n");
+					pw.flush();
+					os.flush();
+					LOGGER.info("Server receiveSize1 "+receiveSize);
+				}
+			}
+			if(receiveSize%config.fileSegmentSize != 0){
+				pw.write(receiveSize + "\n");
 				pw.flush();
 				os.flush();
+				LOGGER.info("Server receiveSize2 "+receiveSize);
 			}
 			LOGGER.info("Finish receiving a file, sending md5...");
 			String md5 = Md5CalculateUtil.getFileMD5(receiveFilePath);

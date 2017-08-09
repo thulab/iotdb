@@ -65,7 +65,7 @@ public class DataCollectClient {
 		} catch (TException e) {
 			e.printStackTrace();
 		}
-		return resp;
+ 		return resp;
 	}
     
 	public TSBackFileNodeResp backFileNode(String nameSpacePath, List<TSFileInfo> fileInfos, int token) {

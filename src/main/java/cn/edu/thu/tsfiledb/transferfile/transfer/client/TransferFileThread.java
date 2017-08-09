@@ -27,31 +27,40 @@ public class TransferFileThread extends Thread {
 	private String absolutePath;
 	private String MD5;
 	private long bytePosition;
-	
+	private int fileSegmentSize;
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferFileThread.class);
 	private final int messageSize=1024;
-
+	private static ClientConfig config = ClientConfig.getInstance();
 	public TransferFileThread(Socket socket, String absolutePath, long bytePosition) {
+		fileSegmentSize = config.fileSegmentSize;
 		this.socket = socket;
 		this.absolutePath = absolutePath;
-		this.bytePosition = bytePosition;
+		this.bytePosition = (bytePosition/fileSegmentSize)*fileSegmentSize;
 	}
 
 	public void run() {
 		InputStream ins = null;
 		try {
 			ins = socket.getInputStream();
+			LOGGER.info("Start sending file");
 			sendFileNameAndLength(absolutePath);
 			byte[] input = new byte[messageSize];
 			ins.read(input);
+			LOGGER.info("Receive ok from server");
 			boolean t = writeFileToServer(absolutePath, bytePosition);
+			LOGGER.info("Ready to read Md5 from server");
 			ins.read(input);
-			if(MD5!=null) t = t && MD5.equals(new String(input).split(TransferConstants.messageSplitSig)[0]);
+			LOGGER.info("Finish reading MD5");
+			String serverMD5 = new String(input).split(TransferConstants.messageSplitSig)[0];
+			if(MD5!=null) t = t && MD5.equals(serverMD5);
 			else t=false;
 			LOGGER.info("Finish send file {}", new File(absolutePath).getName());
 
 			if (t) {
 				TransferUtils.deleteFile(absolutePath);
+			}
+			else{
+				updateBytePosition(absolutePath,0L);
 			}
 		} catch (IOException e) {
 			LOGGER.error("Errors occur in socket InputStream or OutputStream!", e);
@@ -79,6 +88,7 @@ public class TransferFileThread extends Thread {
 	}
 
 	private boolean writeFileToServer(String absolutePath, long bytePosition) throws IOException {
+		LOGGER.info("start send file size: " + bytePosition);
 		boolean t = true;
 		MD5 = Md5CalculateUtil.getFileMD5(absolutePath);
 		OutputStream os = socket.getOutputStream();
@@ -88,9 +98,11 @@ public class TransferFileThread extends Thread {
 		byte[] buffer = new byte[Math.toIntExact(config.fileSegmentSize)];
 		int size = 0;
 		long sendSize = 0;
+
 		try {
 			while ((size = in.read(buffer)) != -1) {
 				sendSize += size;
+				LOGGER.info("Client send size "+sendSize);
 				if (sendSize <= bytePosition)
 					continue;
 				os.write(buffer, 0, size);
@@ -99,7 +111,8 @@ public class TransferFileThread extends Thread {
 				byte[] readAccept = new byte[messageSize];
 				ins.read(readAccept);
 				String temp = new String(readAccept);
-				bytePosition += Long.parseLong(temp.split(TransferConstants.messageSplitSig)[0]);
+				bytePosition = Long.parseLong(temp.split(TransferConstants.messageSplitSig)[0]);
+				LOGGER.info("file size: " + bytePosition);
 				updateBytePosition(absolutePath, bytePosition);
 			}
 		} catch (IOException e) {

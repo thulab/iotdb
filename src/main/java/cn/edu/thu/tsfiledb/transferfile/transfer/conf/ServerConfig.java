@@ -1,16 +1,11 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.conf;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
+import cn.edu.thu.tsfile.common.constant.SystemConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfile.common.constant.SystemConstant;
+import java.io.*;
+import java.util.Properties;
 
 /**
  * Created by dell on 2017/7/25.
@@ -35,6 +30,7 @@ public class ServerConfig {
 	public String storageDirectory = "receiveFile";
 	public int port = 10086;
 	public int serverNThread = 5;
+	public int fileSegmentSize = 4096;
 
 	public void loadProperties() {
 		String tsfileHome = System.getProperty(SystemConstant.TSFILE_HOME, CONFIG_DEFAULT_PATH);
@@ -66,6 +62,7 @@ public class ServerConfig {
 			storageDirectory = p.getProperty("STORAGE_DIRECTORY", storageDirectory);
 			port = Integer.parseInt(p.getProperty("SERVER_PORT", port+""));
 			serverNThread = Integer.parseInt(p.getProperty("SERVER_NTHREAD", serverNThread+""));
+			fileSegmentSize = Integer.parseInt(p.getProperty("FILE_SEGMENT_SIZE",fileSegmentSize+""));
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file, use default configuration", e);
 		} catch (Exception e) {
