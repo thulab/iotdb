@@ -120,6 +120,11 @@ public class DBConnectController {
 
     private void setJSONTimeseries(JSONObject obj, String target, Pair<ZonedDateTime, ZonedDateTime> timeRange) {
         List<TimeValues> timeValues = DBConnectService.querySeries(target, timeRange);
+        if (timeValues.size() > 1000) {
+            logger.info("query size:" + timeValues.size() + "; last value is " + timeValues.get(timeValues.size() - 1),toString());
+        } else {
+            logger.info("query size:" + timeValues.size() + "; values are " + timeValues);
+        }
         JSONArray dataPoints = new JSONArray();
         for (TimeValues tv : timeValues) {
             long time = tv.getTime();
