@@ -33,7 +33,7 @@ public class IndexTest {
 		QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
 		IndexPlan indexPlan = (IndexPlan) processor.parseSQLToPhysicalPlan(createIndex);
 		assertEquals("root.laptop.d1.s1", indexPlan.getPaths().get(0).getFullPath());
-		assertEquals(0, indexPlan.getParameters().keySet().size());
+		assertEquals(1, indexPlan.getParameters().keySet().size());
 		assertEquals(0, indexPlan.getStartTime());
 	}
 
@@ -43,10 +43,10 @@ public class IndexTest {
 		QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
 		IndexPlan indexPlan = (IndexPlan) processor.parseSQLToPhysicalPlan(createIndex);
 		assertEquals("root.laptop.d1.s1", indexPlan.getPaths().get(0).getFullPath());
-		assertEquals(2, indexPlan.getParameters().keySet().size());
+		assertEquals(3, indexPlan.getParameters().keySet().size());
 		Map<String, Object> map = indexPlan.getParameters();
-		assertEquals((long) 20, (long) map.get("b"));
-		assertEquals((long) 50, (long) map.get("a"));
+		assertEquals(20, (int) map.get("b"));
+		assertEquals(50, (int) map.get("a"));
 		assertEquals(100, indexPlan.getStartTime());
 		assertEquals(IndexType.CREATE_INDEX, indexPlan.getIndexType());
 		createIndex = "create index on root.laptop.d1.s1 using kv-match with b=20,a=50 where time>100";
@@ -109,14 +109,14 @@ public class IndexTest {
 			assertEquals(123, indexQueryPlan.getPatterStarTime());
 			assertEquals(132, indexQueryPlan.getPatterEndTime());
 		} catch (QueryProcessorException | ArgsErrorException e) {
-			assertEquals("for index query command, the time filter must be an interval", e.getMessage());
+			assertEquals("For index query statement, the time filter must be an interval.", e.getMessage());
 		}
 		sql = "select index subsequence_matching(root.laptop.d1.s1, root.a.b.c,123,132,123.1,11.1,22.2) where time<-1 and time>-100";
 		try {
 			indexQueryPlan = (IndexQueryPlan) processor.parseSQLToPhysicalPlan(sql);
 			assertEquals("root.laptop.d1.s1", indexQueryPlan.getPaths().get(0).getFullPath());
 		} catch (QueryProcessorException | ArgsErrorException e) {
-			assertEquals("index query time must be greater than 0.", e.getMessage());
+			assertEquals("The time of index query must be greater than 0.", e.getMessage());
 		}
 
 		sql = "select index subsequence_matching(root.laptop.d1.s1, root.a.b.c,123,132,123.1,11.1,22.2) where time<100";
