@@ -589,43 +589,11 @@ public class SQLParserTest {
     }
     
     @Test
-    public void grantUser() throws ParseException {
-        // template for test case
-        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_GRANT", "TOK_USER", "myusername", "TOK_PRIVILEGES", "'create'", "'delete'","TOK_PATH", "root", "laptop", "d1", "s1"));
-        ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("grant user myusername privileges 'create','delete' on root.laptop.d1.s1");
-        astTree = ParseUtils.findRootNonNullToken(astTree);
-        recursivePrintSon(astTree, rec);
-
-        int i = 0;
-        while (i <= rec.size() - 1) {
-            assertEquals(rec.get(i), ans.get(i));
-            i++;
-        }
-    }
-    
-    @Test
     public void grantRole() throws ParseException {
         // template for test case
-        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_GRANT", "TOK_ROLE", "admin", "TOK_PRIVILEGES", "'create'", "'delete'","TOK_PATH", "root", "laptop", "d1", "s1"));
+        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_GRANT", "TOK_ROLE", "admin", "TOK_PRIVILEGES", "'create'", "'delete'"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("grant role admin privileges 'create','delete' on root.laptop.d1.s1");
-        astTree = ParseUtils.findRootNonNullToken(astTree);
-        recursivePrintSon(astTree, rec);
-
-        int i = 0;
-        while (i <= rec.size() - 1) {
-            assertEquals(rec.get(i), ans.get(i));
-            i++;
-        }
-    }
-    
-    @Test
-    public void revokeUser() throws ParseException {
-        // template for test case
-        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_REVOKE", "TOK_USER", "myusername", "TOK_PRIVILEGES", "'create'", "'delete'","TOK_PATH", "root", "laptop", "d1", "s1"));
-        ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("revoke user myusername privileges 'create','delete' on root.laptop.d1.s1");
+        ASTNode astTree = ParseGenerator.generateAST("grant role admin privileges 'create','delete'");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -639,9 +607,9 @@ public class SQLParserTest {
     @Test
     public void revokeRole() throws ParseException {
         // template for test case
-        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_REVOKE", "TOK_ROLE", "admin", "TOK_PRIVILEGES", "'create'", "'delete'","TOK_PATH", "root", "laptop", "d1", "s1"));
+        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_REVOKE", "TOK_ROLE", "admin", "TOK_PRIVILEGES", "'create'", "'delete'"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("revoke role admin privileges 'create','delete' on root.laptop.d1.s1");
+        ASTNode astTree = ParseGenerator.generateAST("revoke role admin privileges 'create','delete'");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -655,9 +623,10 @@ public class SQLParserTest {
     @Test
     public void grantRoleToUser() throws ParseException {
         // template for test case
-        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_GRANT", "TOK_ROLE", "admin", "TOK_USER", "Tom"));
+        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_GRANT", "TOK_ROLE", "admin","TOK_USER", "Tom", "TOK_PATH", "node", "a", "b", "c"));
+        
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("grant admin to Tom");
+        ASTNode astTree = ParseGenerator.generateAST("grant to user Tom role admin on node.a.b.c");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -670,10 +639,10 @@ public class SQLParserTest {
     
     @Test
     public void revokeRoleFromUser() throws ParseException {
-        // template for test case
-        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_REVOKE", "TOK_ROLE", "admin", "TOK_USER", "Tom"));
+        // template for test case 
+        ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_REVOKE", "TOK_ROLE", "admin","TOK_USER", "Tom", "TOK_PATH", "node", "a", "b", "c"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("revoke admin from Tom");
+        ASTNode astTree = ParseGenerator.generateAST("revoke from user Tom role admin on node.a.b.c");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 

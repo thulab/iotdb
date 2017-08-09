@@ -39,12 +39,10 @@ public class TSPlanContextAuthorTest {
                 {"DROP USER username", emptyPaths},
                 {"CREATE ROLE rolename", emptyPaths},
                 {"DROP ROLE rolename", emptyPaths},
-                {"GRANT USER username PRIVILEGES 'create','insert' ON node1.a.b", testPaths},
-                {"REVOKE USER username PRIVILEGES 'create','insert' ON node1.a.b", testPaths},
-                {"GRANT ROLE rolename PRIVILEGES 'create','insert' ON node1.a.b", testPaths},
-                {"REVOKE ROLE rolename PRIVILEGES 'create','insert' ON node1.a.b", testPaths},
-                {"GRANT rolename TO username", emptyPaths},
-                {"REVOKE rolename FROM username", emptyPaths}});
+                {"GRANT ROLE rolename PRIVILEGES 'create','insert'", emptyPaths},
+                {"REVOKE ROLE rolename PRIVILEGES 'create','insert'", emptyPaths},
+                {"GRANT TO USER username ROLE rolename ON node1.a.b", testPaths},
+                {"REVOKE FROM USER username ROLE rolename ON node1.a.b", testPaths}});
     }
 
     public TSPlanContextAuthorTest(String inputSQL, Path[] paths) {
