@@ -7,7 +7,7 @@ import java.util.Timer;
  * Created by lylw on 2017/7/17.
  */
 public class Client {
-	private long timeInterval = 180000L;
+	private long timeInterval = 60000L;
 	private long delayTime = 0L;
 	private long startTime;
 	private Timer timer;
