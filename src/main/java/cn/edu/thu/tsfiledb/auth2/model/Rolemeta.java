@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import cn.edu.thu.tsfiledb.auth2.manage.AuthConfig;
+
 public class Rolemeta {
-	private static String roleFolder = "role/";
+	private static String roleFolder = AuthConfig.roleFolder;
 	private static String metaPath = "roleInfo.meta";
 	private static Integer metaMutex = new Integer(0);
 

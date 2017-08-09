@@ -13,10 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.common.utils.Pair;
-import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.InvalidNodeIndexException;
 import cn.edu.thu.tsfiledb.auth2.exception.PathAlreadyExistException;
-import cn.edu.thu.tsfiledb.auth2.exception.RoleAlreadyExistException;
 import cn.edu.thu.tsfiledb.auth2.exception.UnknownNodeTypeException;
 import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeHeader;
@@ -28,7 +26,7 @@ public class NodeManager {
 	private static Logger logger = LoggerFactory.getLogger(NodeManager.class);
 	private static String PERMFILE_SUFFIX = ".perm";
 	private static String PERMMETA_SUFFIX = ".perm.meta";
-	private static String PERM_FOLDER = "perms/";
+	private static String PERM_FOLDER = AuthConfig.permFolder;
 
 	private static NodeManager instance;
 
@@ -367,7 +365,7 @@ public class NodeManager {
 	 * @throws UnknownNodeTypeException
 	 * @throws PathAlreadyExistException 
 	 */
-	public PermTreeNode getLeaf(int uid, String path) throws PathErrorException, IOException, AuthException {
+	public PermTreeNode getLeaf(int uid, String path) throws PathErrorException, IOException, WrongNodetypeException, PathAlreadyExistException {
 		String[] pathLevels = PathUtils.getPathLevels(path);
 		PermTreeNode next = getNode(uid, 0);
 		for(int i = 1; i < pathLevels.length; i++) {
@@ -392,13 +390,12 @@ public class NodeManager {
 	 * @param rid
 	 * @return true if the role is added, false if the role already exist
 	 * @throws IOException 
-	 * @throws RoleAlreadyExistException 
 	 * @throws UnknownNodeTypeException 
 	 */
-	public boolean addRole(int uid, PermTreeNode node, int rid) throws IOException, RoleAlreadyExistException, UnknownNodeTypeException {
+	public boolean addRole(int uid, PermTreeNode node, int rid) throws IOException, UnknownNodeTypeException {
 		if(findRole(uid, node, rid)) {
 			logger.error("role {} already in {}", rid, node.getName());
-			throw new RoleAlreadyExistException(rid + " in " + node.getName());
+			return false;
 		}
 		PermTreeNode curnode = node;
 		boolean added = curnode.addRole(rid);

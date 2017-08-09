@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.model.User;
 import cn.edu.thu.tsfiledb.auth2.model.Usermeta;
 
 public class UserManager {
-	private static String userFolder = Usermeta.getUserFolder();
+	private static String userFolder = AuthConfig.userFolder;
 	private static String userInfoFile = "userInfo";
 	private static UserManager instance;
 	
@@ -41,6 +42,10 @@ public class UserManager {
 				users.put(user.getUsername(), user);
 		}
 		raf.close();
+		
+		if(findUser("root") == null) {
+			createUser("root", "root");
+		}
 	}
 	
 	public User findUser(String username) {
@@ -93,13 +98,17 @@ public class UserManager {
 		raf.close();
 	}
 	
-	public boolean modifyPW(String username, String newPassword) throws IOException {
+	public boolean modifyPW(String username, String newPassword) throws IOException, NoSuchUserException {
 		User user = users.get(username);
 		if(user == null) {
-			return false;
+			throw new NoSuchUserException(username);
 		}
 		user.setPassword(newPassword);
 		flushUser(user);
 		return true;
+	}
+	
+	public User[] getAllUsers() {
+		return users.values().toArray(new User[0]);
 	}
 }

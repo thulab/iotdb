@@ -210,7 +210,7 @@ public class PermTreeNode {
 	 *         node manager to issue another attempt
 	 * @throws RoleAlreadyExistException
 	 */
-	public boolean addRole(int roleID) throws RoleAlreadyExistException {
+	public boolean addRole(int roleID) {
 		boolean added = false;
 		// caller check
 		/*if (findRole(roleID)) {

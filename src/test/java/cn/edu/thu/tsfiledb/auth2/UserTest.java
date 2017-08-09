@@ -8,6 +8,7 @@ import java.io.RandomAccessFile;
 
 import org.junit.Test;
 
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.exception.WriteObjectException;
 import cn.edu.thu.tsfiledb.auth2.manage.UserManager;
 import cn.edu.thu.tsfiledb.auth2.model.User;
@@ -84,7 +85,7 @@ public class UserTest {
 	}
 	
 	@Test
-	public void modifyPWTest() throws IOException {
+	public void modifyPWTest() throws IOException, NoSuchUserException {
 		UserManager manager = UserManager.getInstance();
 		String username = "admin3", password = "3nimda";
 		manager.deleteUser(username);

@@ -12,7 +12,7 @@ public class PermTreeHeader {
 	public static final int ROLE_EXTENSION = 2;
 
 	public static final int MAX_NODENAME_LENGTH = 256;
-	public static final int MAX_ROLE_NUM = 170;
+	public static final int MAX_ROLE_NUM = 169;
 	public static final int RECORD_SIZE = MAX_NODENAME_LENGTH + Integer.BYTES * (7 + MAX_ROLE_NUM); // should be 960B
 
 	private int parentIndex;

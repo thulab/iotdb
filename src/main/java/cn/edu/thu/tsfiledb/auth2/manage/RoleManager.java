@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchRoleException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.auth2.model.Rolemeta;
@@ -19,7 +20,7 @@ public class RoleManager {
 	private static Logger logger = LoggerFactory.getLogger(RoleManager.class);
 	private static RoleManager instance;
 	
-	private static String roleFolder = Rolemeta.getRoleFolder();
+	private static String roleFolder = AuthConfig.roleFolder;
 	private static String roleInfoFile = "roleInfo";
 	
 	private HashMap<String, Role> roleNameMap = new HashMap<>();
@@ -99,10 +100,12 @@ public class RoleManager {
 		return true;
 	}
 	
-	public boolean grantPermission(String roleName, long permission) throws IOException {
+	public boolean grantPermission(String roleName, long permission) throws IOException, NoSuchRoleException {
 		Role role = roleNameMap.get(roleName);
 		if(role == null) {
-			logger.warn("Attemp to grant permission for non-exist role {}",roleName);
+			throw new NoSuchRoleException(roleName);
+		}
+		if(Permission.test(role.getPermission(), permission)) {
 			return false;
 		}
 		role.setPermission(Permission.combine(role.getPermission(), permission));
@@ -110,17 +113,16 @@ public class RoleManager {
 		return true;
 	}
 	
-	public boolean revokePermission(String roleName, long permission) throws NoSuchPermException, IOException {
+	public boolean revokePermission(String roleName, long permission) throws IOException, NoSuchRoleException {
 		Role role = roleNameMap.get(roleName);
 		if(role == null) {
-			logger.warn("Attemp to revoke permission for non-exist role {}",roleName);
-			return false;
+			throw new NoSuchRoleException(roleName);
 		}
 		long oldPermission = role.getPermission();
 		if(!Permission.test(oldPermission, permission)) {
 			logger.error("Role {} has no permission {}. It has {}",
 					roleName, Permission.longToName(permission), Permission.longToName(role.getPermission()));
-			throw new NoSuchPermException();
+			return false;
 		}
 		role.setPermission(Permission.revoke(oldPermission, permission));
 		flushRole(role);
@@ -139,5 +141,9 @@ public class RoleManager {
 			}
 		}
 		return permission;
+	}
+	
+	public Role[] getAllRoles() {
+		return roleIDMap.values().toArray(new Role[0]);
 	}
 }

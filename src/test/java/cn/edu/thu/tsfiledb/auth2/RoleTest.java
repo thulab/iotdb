@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchRoleException;
 import cn.edu.thu.tsfiledb.auth2.manage.RoleManager;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.model.Role;
@@ -37,7 +38,7 @@ public class RoleTest {
 	}
 	
 	@Test
-	public void rolePermissionTest() throws IOException, NoSuchPermException {
+	public void rolePermissionTest() throws IOException, NoSuchPermException, NoSuchRoleException {
 		RoleManager roleManager = RoleManager.getInstance();
 		String roleName = "newRole-permission";
 		roleManager.deleteRole(roleName);

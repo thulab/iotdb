@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
+import cn.edu.thu.tsfiledb.auth2.exception.PathAlreadyExistException;
+import cn.edu.thu.tsfiledb.auth2.exception.RoleAlreadyExistException;
 import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
@@ -89,8 +91,11 @@ public class PermissionManager {
 	 * @throws IOException
 	 * @throws AuthException when the role already exists
 	 * @throws PathErrorException
+	 * @throws RoleAlreadyExistException 
+	 * @throws PathAlreadyExistException 
+	 * @throws WrongNodetypeException 
 	 */
-	public boolean grantRoleOnPath(int uid, String path, int rid) throws IOException, AuthException, PathErrorException {
+	public boolean grantRoleOnPath(int uid, String path, int rid) throws IOException, PathErrorException, RoleAlreadyExistException, WrongNodetypeException, PathAlreadyExistException {
 		NodeManager nodeManager = NodeManager.getInstance();
 		PermTreeNode leafNode = nodeManager.getLeaf(uid, path);
 		boolean success = nodeManager.addRole(uid, leafNode, rid);
@@ -113,8 +118,10 @@ public class PermissionManager {
 	 * @throws PathErrorException
 	 * @throws AuthException when the role cannot be found
 	 * @throws IOException
+	 * @throws PathAlreadyExistException 
+	 * @throws WrongNodetypeException 
 	 */
-	public boolean revokeRoleOnPath(int uid, String path, int rid) throws PathErrorException, AuthException, IOException {
+	public boolean revokeRoleOnPath(int uid, String path, int rid) throws PathErrorException, IOException, WrongNodetypeException, PathAlreadyExistException {
 		NodeManager nodeManager = NodeManager.getInstance();
 		PermTreeNode leafNode = nodeManager.getLeaf(uid, path);
 		boolean success = nodeManager.deleteRole(uid, leafNode, rid);
@@ -139,11 +146,18 @@ public class PermissionManager {
 	 * @throws WrongNodetypeException
 	 */
 	public boolean checkPermissionOnPath(int uid, String path, long permission) throws IOException, PathErrorException, WrongNodetypeException {
-		NodeManager nodeManager = NodeManager.getInstance();
 		RoleManager roleManager = RoleManager.getInstance();
 		
 		Set<Integer> roleIDs = findRolesOnPath(uid, path);
 		long userPerm = roleManager.rolesToPermission(roleIDs);
 		return Permission.test(userPerm, permission);
+	}
+	
+	public long getPermissionOnPath(int uid, String path) throws IOException, PathErrorException, WrongNodetypeException {
+		RoleManager roleManager = RoleManager.getInstance();
+		
+		Set<Integer> roleIDs = findRolesOnPath(uid, path);
+		long userPerm = roleManager.rolesToPermission(roleIDs);
+		return userPerm;
 	}
 }
