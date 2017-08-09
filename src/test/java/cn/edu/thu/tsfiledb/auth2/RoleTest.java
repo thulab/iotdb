@@ -46,16 +46,16 @@ public class RoleTest {
 		
 		// grant
 		assertTrue(roleManager.grantPermission(roleName, Permission.READ));
-		assertTrue(roleManager.grantPermission(roleName, Permission.WRITE));
+		assertTrue(roleManager.grantPermission(roleName, Permission.MODIFY));
 		Role role = roleManager.findRole(roleName);
-		long perm = Permission.combine(Permission.READ, Permission.WRITE);
+		long perm = Permission.combine(Permission.READ, Permission.MODIFY);
 		assertEquals(role.getPermission(), perm);
 		assertFalse(roleManager.grantPermission(roleName + "dummy", Permission.READ));
 		
 		// revoke
 		assertTrue(roleManager.revokePermission(roleName, Permission.READ));
 		role = roleManager.findRole(roleName);
-		assertEquals(role.getPermission(), Permission.WRITE);
+		assertEquals(role.getPermission(), Permission.MODIFY);
 		boolean caught = false;
 		try {
 			roleManager.revokePermission(roleName, Permission.READ);

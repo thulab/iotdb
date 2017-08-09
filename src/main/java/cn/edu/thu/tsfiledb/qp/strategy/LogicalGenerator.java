@@ -636,34 +636,29 @@ public class LogicalGenerator {
 	private void analyzeAuthorGrant(ASTNode astNode) throws IllegalASTFormatException {
 		int childCount = astNode.getChildCount();
 		AuthorOperator authorOperator;
-		if (childCount == 2) {
+		if (childCount == 3) {
 			// grant role to user
 			authorOperator = new AuthorOperator(SQLConstant.TOK_AUTHOR_GRANT, AuthorType.GRANT_ROLE_TO_USER);
 			authorOperator.setRoleName(astNode.getChild(0).getChild(0).getText());
 			authorOperator.setUserName(astNode.getChild(1).getChild(0).getText());
-		} else if (childCount == 3) {
-			ASTNode privilegesNode = astNode.getChild(1);
-			String[] privileges = new String[privilegesNode.getChildCount()];
-			for (int i = 0; i < privileges.length; i++) {
-				privileges[i] = parseStringWithQuoto(privilegesNode.getChild(i).getText());
-			}
 			ASTNode pathNode = astNode.getChild(2);
 			String[] nodeNameList = new String[pathNode.getChildCount()];
 			for (int i = 0; i < nodeNameList.length; i++) {
 				nodeNameList[i] = pathNode.getChild(i).getText();
 			}
-			if (astNode.getChild(0).getType() == TSParser.TOK_USER) {
-				// grant user
-				authorOperator = new AuthorOperator(SQLConstant.TOK_AUTHOR_GRANT, AuthorType.GRANT_USER);
-				authorOperator.setUserName(astNode.getChild(0).getChild(0).getText());
-				authorOperator.setPrivilegeList(privileges);
-				authorOperator.setNodeNameList(nodeNameList);
-			} else if (astNode.getChild(0).getType() == TSParser.TOK_ROLE) {
+			authorOperator.setNodeNameList(nodeNameList);
+		} else if (childCount == 2) {
+			ASTNode privilegesNode = astNode.getChild(1);
+			String[] privileges = new String[privilegesNode.getChildCount()];
+			for (int i = 0; i < privileges.length; i++) {
+				privileges[i] = parseStringWithQuoto(privilegesNode.getChild(i).getText());
+			}
+			if (astNode.getChild(0).getType() == TSParser.TOK_ROLE) {
 				// grant role
 				authorOperator = new AuthorOperator(SQLConstant.TOK_AUTHOR_GRANT, AuthorType.GRANT_ROLE);
 				authorOperator.setRoleName(astNode.getChild(0).getChild(0).getText());
 				authorOperator.setPrivilegeList(privileges);
-				authorOperator.setNodeNameList(nodeNameList);
+				
 			} else {
 				throw new IllegalASTFormatException("illegal ast tree in grant author command, please check you SQL statement");
 			}
@@ -676,34 +671,28 @@ public class LogicalGenerator {
 	private void analyzeAuthorRevoke(ASTNode astNode) throws IllegalASTFormatException {
 		int childCount = astNode.getChildCount();
 		AuthorOperator authorOperator;
-		if (childCount == 2) {
+		if (childCount == 3) {
 			// revoke role to user
 			authorOperator = new AuthorOperator(SQLConstant.TOK_AUTHOR_REVOKE, AuthorType.REVOKE_ROLE_FROM_USER);
 			authorOperator.setRoleName(astNode.getChild(0).getChild(0).getText());
 			authorOperator.setUserName(astNode.getChild(1).getChild(0).getText());
-		} else if (childCount == 3) {
-			ASTNode privilegesNode = astNode.getChild(1);
-			String[] privileges = new String[privilegesNode.getChildCount()];
-			for (int i = 0; i < privileges.length; i++) {
-				privileges[i] = parseStringWithQuoto(privilegesNode.getChild(i).getText());
-			}
 			ASTNode pathNode = astNode.getChild(2);
 			String[] nodeNameList = new String[pathNode.getChildCount()];
 			for (int i = 0; i < nodeNameList.length; i++) {
 				nodeNameList[i] = pathNode.getChild(i).getText();
 			}
-			if (astNode.getChild(0).getType() == TSParser.TOK_USER) {
-				// revoke user
-				authorOperator = new AuthorOperator(SQLConstant.TOK_AUTHOR_REVOKE, AuthorType.REVOKE_USER);
-				authorOperator.setUserName(astNode.getChild(0).getChild(0).getText());
-				authorOperator.setPrivilegeList(privileges);
-				authorOperator.setNodeNameList(nodeNameList);
-			} else if (astNode.getChild(0).getType() == TSParser.TOK_ROLE) {
+			authorOperator.setNodeNameList(nodeNameList);
+		} else if (childCount == 2) {
+			ASTNode privilegesNode = astNode.getChild(1);
+			String[] privileges = new String[privilegesNode.getChildCount()];
+			for (int i = 0; i < privileges.length; i++) {
+				privileges[i] = parseStringWithQuoto(privilegesNode.getChild(i).getText());
+			}
+			if (astNode.getChild(0).getType() == TSParser.TOK_ROLE) {
 				// revoke role
 				authorOperator = new AuthorOperator(SQLConstant.TOK_AUTHOR_REVOKE, AuthorType.REVOKE_ROLE);
 				authorOperator.setRoleName(astNode.getChild(0).getChild(0).getText());
 				authorOperator.setPrivilegeList(privileges);
-				authorOperator.setNodeNameList(nodeNameList);
 			} else {
 				throw new IllegalASTFormatException("illegal ast tree in grant author command, please check you SQL statement");
 			}

@@ -15,7 +15,6 @@ import cn.edu.thu.tsfiledb.auth2.manage.UserManager;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.auth2.model.User;
-import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
 public class PermissionTest {
@@ -43,15 +42,15 @@ public class PermissionTest {
 		String path1 = "root.a.b.c", path2 = "root.a.b";
 		assertTrue(permissionManager.grantRoleOnPath(user.getID(), path1, readerRole.getID()));
 		assertTrue(permissionManager.grantRoleOnPath(user.getID(), path2, writerRole.getID()));
-		long permission = Permission.READ | Permission.WRITE;
+		long permission = Permission.READ | Permission.MODIFY;
 		assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path1, Permission.NONE));
 		assertFalse(permissionManager.checkPermissionOnPath(user.getID(), path1, permission));
 		roleManager.grantPermission(readerRole.getRoleName(), Permission.READ);
-		roleManager.grantPermission(writerRole.getRoleName(), Permission.WRITE);
+		roleManager.grantPermission(writerRole.getRoleName(), Permission.MODIFY);
 		Set<Integer> roles = permissionManager.findRolesOnPath(user.getID(), path1);
 
 		assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path1, permission));
-		assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path2, Permission.WRITE));
+		assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path2, Permission.MODIFY));
 		assertFalse(permissionManager.checkPermissionOnPath(user.getID(), path2, permission));
 		
 		userManager.deleteUser(username);

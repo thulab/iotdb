@@ -104,20 +104,20 @@ public class AuthTest {
 		}
 		caught = false;
 		try {
-			dao.grantRolePermission("not a role", Permission.WRITE);
+			dao.grantRolePermission("not a role", Permission.MODIFY);
 		} catch (NoSuchRoleException e1) {
 			caught = true;
 		}
 		assertTrue(caught);
 		caught = false;
 		try {
-			dao.revokeRolePermission("not a role", Permission.WRITE);
+			dao.revokeRolePermission("not a role", Permission.MODIFY);
 		} catch (Exception e1) {
 			if(e1 instanceof NoSuchRoleException)
 				caught = true;
 		}
 		assertTrue(caught);
-		assertFalse(dao.revokeRolePermission(readerRoleName, Permission.WRITE));
+		assertFalse(dao.revokeRolePermission(readerRoleName, Permission.MODIFY));
 		assertTrue(dao.revokeRolePermission(readerRoleName, Permission.READ));
 		assertTrue(dao.grantRolePermission(readerRoleName, Permission.READ));
 		// grant role on path
@@ -183,20 +183,20 @@ public class AuthTest {
 		assertTrue(dao.grantRoleOnPath(username, path, readerRoleName));
 
 		// grant / revoke permission to role should influence user permission
-		assertTrue(dao.grantRolePermission(readerRoleName, Permission.WRITE));
-		assertTrue(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.WRITE));
-		assertTrue(dao.revokeRolePermission(readerRoleName, Permission.WRITE));
-		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.WRITE));
+		assertTrue(dao.grantRolePermission(readerRoleName, Permission.MODIFY));
+		assertTrue(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));
+		assertTrue(dao.revokeRolePermission(readerRoleName, Permission.MODIFY));
+		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));
 		
 		// grant / revoke role to path should influence user permission
 		String writerRoleName = "writer";
 		dao.addRole(writerRoleName);
-		dao.grantRolePermission(writerRoleName, Permission.WRITE);
-		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.WRITE));
+		dao.grantRolePermission(writerRoleName, Permission.MODIFY);
+		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));
 		dao.grantRoleOnPath(username, path, writerRoleName);
-		assertTrue(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.WRITE));
+		assertTrue(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));
 		dao.revokeRoleOnPath(username, path, readerRoleName);
-		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.WRITE));
-		assertTrue(dao.checkPermissionOnPath(username, path, Permission.WRITE));
+		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));
+		assertTrue(dao.checkPermissionOnPath(username, path, Permission.MODIFY));
 	}
 }

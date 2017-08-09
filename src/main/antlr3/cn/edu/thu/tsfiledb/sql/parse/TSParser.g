@@ -434,9 +434,7 @@ authorStatement
     | dropUser
     | createRole
     | dropRole
-    | grantUser
     | grantRole
-    | revokeUser
     | revokeRole
     | grantRoleToUser
     | revokeRoleFromUser
@@ -469,34 +467,24 @@ dropRole
     -> ^(TOK_DROP ^(TOK_ROLE $roleName))
     ;
 
-grantUser
-    : KW_GRANT KW_USER userName = Identifier privileges KW_ON path
-    -> ^(TOK_GRANT ^(TOK_USER $userName) privileges path)
-    ;
-
 grantRole
-    : KW_GRANT KW_ROLE roleName=Identifier privileges KW_ON path
-    -> ^(TOK_GRANT ^(TOK_ROLE $roleName) privileges path)
-    ;
-
-revokeUser
-    : KW_REVOKE KW_USER userName = Identifier privileges KW_ON path
-    -> ^(TOK_REVOKE ^(TOK_USER $userName) privileges path)
+    : KW_GRANT KW_ROLE roleName=Identifier privileges
+    -> ^(TOK_GRANT ^(TOK_ROLE $roleName) privileges)
     ;
 
 revokeRole
-    : KW_REVOKE KW_ROLE roleName = Identifier privileges KW_ON path
-    -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) privileges path)
+    : KW_REVOKE KW_ROLE roleName = Identifier privileges
+    -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) privileges)
     ;
 
 grantRoleToUser
-    : KW_GRANT roleName = Identifier KW_TO userName = Identifier
-    -> ^(TOK_GRANT ^(TOK_ROLE $roleName) ^(TOK_USER $userName))
+    : KW_GRANT KW_TO KW_USER userName = Identifier KW_ROLE roleName = Identifier KW_ON path
+    -> ^(TOK_GRANT ^(TOK_ROLE $roleName) ^(TOK_USER $userName) path)
     ;
 
 revokeRoleFromUser
-    : KW_REVOKE roleName = Identifier KW_FROM userName = Identifier
-    -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) ^(TOK_USER $userName))
+    : KW_REVOKE KW_FROM KW_USER userName = Identifier KW_ROLE roleName = Identifier KW_ON path
+    -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) ^(TOK_USER $userName) path)
     ;
 
 privileges

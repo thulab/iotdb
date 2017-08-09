@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
+import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
@@ -20,7 +21,7 @@ public class AuthorPlan extends PhysicalPlan {
 	private String roleName;
 	private String password;
 	private String newPassword;
-	private Set<Integer> permissions;
+	private long permission;
 	private Path nodeName;
 
 	public AuthorPlan(AuthorType authorType, String userName, String roleName, String password, String newPassword,
@@ -31,7 +32,7 @@ public class AuthorPlan extends PhysicalPlan {
 		this.roleName = roleName;
 		this.password = password;
 		this.newPassword = newPassword;
-		this.permissions = strToPermissions(authorizationList);
+		this.permission = strToPermissions(authorizationList);
 		this.nodeName = nodeName;
 
 	}
@@ -56,39 +57,21 @@ public class AuthorPlan extends PhysicalPlan {
 		return newPassword;
 	}
 
-	public Set<Integer> getPermissions() {
-		return permissions;
+	public long getPermissions() {
+		return permission;
 	}
 
 	public Path getNodeName() {
 		return nodeName;
 	}
 
-	private Set<Integer> strToPermissions(String[] authorizationList) {
-		Set<Integer> result = new HashSet<>();
+	private long strToPermissions(String[] authorizationList) {
+		long result = Permission.NONE;
 		if (authorizationList == null)
 			return result;
 		for (String s : authorizationList) {
-			s = s.toUpperCase();
-			switch (s) {
-			case "CREATE":
-				result.add(0);
-				break;
-			case "INSERT":
-				result.add(1);
-				break;
-			case "MODIFY":
-				result.add(2);
-				break;
-			case "READ":
-				result.add(3);
-				break;
-			case "DELETE":
-				result.add(4);
-				break;
-			default:
-				break;
-			}
+			long permission = Permission.nameToLong(s);
+			result = Permission.combine(result, permission);
 		}
 		return result;
 	}
@@ -99,7 +82,7 @@ public class AuthorPlan extends PhysicalPlan {
 				"\nroleName: " + roleName +
 				"\npassword: " + password +
 				"\nnewPassword: " + newPassword +
-				"\npermissions: " + permissions +
+				"\npermissions: " + Permission.longToName(permission) +
 				"\nnodeName: " + nodeName +
 				"\nauthorType: " + authorType;
 	}

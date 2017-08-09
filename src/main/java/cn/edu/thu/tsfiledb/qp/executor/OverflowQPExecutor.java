@@ -8,7 +8,7 @@ import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.thu.tsfiledb.auth.AuthException;
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
@@ -306,10 +306,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		String roleName = author.getRoleName();
 		String password = author.getPassword();
 		String newPassword = author.getNewPassword();
-		Set<Integer> permissions = author.getPermissions();
+		long permission = author.getPermissions();
 		Path nodeName = author.getNodeName();
 		try {
-			boolean flag = true;
 			switch (authorType) {
 			case UPDATE_USER:
 				return updateUser(userName, newPassword);
@@ -322,38 +321,17 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			case DROP_ROLE:
 				return deleteRole(roleName);
 			case GRANT_ROLE:
-				for (int i : permissions) {
-					if (!addPermissionToRole(roleName, nodeName.getFullPath(), i))
-						flag = false;
-				}
-				return flag;
-			case GRANT_USER:
-				for (int i : permissions) {
-					if (!addPermissionToUser(userName, nodeName.getFullPath(), i))
-						flag = false;
-				}
-				return flag;
+				return addPermissionToRole(roleName, permission);
 			case GRANT_ROLE_TO_USER:
-				return grantRoleToUser(roleName, userName);
-			case REVOKE_USER:
-				for (int i : permissions) {
-					if (!removePermissionFromUser(userName, nodeName.getFullPath(), i))
-						flag = false;
-				}
-				return flag;
+				return grantRoleToUser(roleName, userName, nodeName.getFullPath());
 			case REVOKE_ROLE:
-				for (int i : permissions) {
-					if (!removePermissionFromRole(roleName, nodeName.getFullPath(), i))
-						flag = false;
-				}
-				return flag;
+				return removePermissionFromRole(roleName, permission);
 			case REVOKE_ROLE_FROM_USER:
-				return revokeRoleFromUser(roleName, userName);
+				return revokeRoleFromUser(roleName, userName, nodeName.getFullPath());
 			default:
 				break;
-
 			}
-		} catch (AuthException e) {
+		} catch (AuthException | PathErrorException | IOException e) {
 			throw new ProcessorException(e.getMessage());
 		}
 		return false;

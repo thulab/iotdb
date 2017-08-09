@@ -46,16 +46,17 @@ public class PhysicalPlanTest {
 
     @Test
     public void testAuthor() throws QueryProcessorException, ArgsErrorException {
-        String sql = "grant role xm privileges 'create','delete' on root.laptop.d1.s1";
+        //String sql = "grant role xm privileges 'create','delete' on root.laptop.d1.s1";
+    	String sql = "grant to USER admin role xm on root.laptop.d1.s1";
         QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
         AuthorPlan plan = (AuthorPlan) processor.parseSQLToPhysicalPlan(sql);
-        assertEquals("userName: null\n" +
+        assertEquals("userName: admin\n" +
                 "roleName: xm\n" +
                 "password: null\n" +
                 "newPassword: null\n" +
-                "permissions: [0, 4]\n" +
+                "permissions: NONE\n" +
                 "nodeName: root.laptop.d1.s1\n" +
-                "authorType: GRANT_ROLE", plan.toString());
+                "authorType: GRANT_ROLE_TO_USER", plan.toString());
     }
 
     @Test

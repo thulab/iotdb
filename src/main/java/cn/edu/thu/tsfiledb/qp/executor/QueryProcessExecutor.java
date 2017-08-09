@@ -5,8 +5,8 @@ import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.thu.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.thu.tsfiledb.auth.AuthException;
-import cn.edu.thu.tsfiledb.auth.dao.Authorizer;
+import cn.edu.thu.tsfiledb.auth2.dao.AuthDao;
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchQueryRequest;
 import cn.edu.thu.tsfiledb.metadata.MManager;
@@ -22,6 +22,7 @@ import cn.edu.thu.tsfiledb.qp.physical.crud.MergeQuerySetPlan;
 import cn.edu.thu.tsfiledb.qp.physical.crud.SeriesSelectPlan;
 import cn.edu.thu.tsfiledb.qp.strategy.PhysicalGenerator;
 
+import java.io.IOException;
 import java.util.*;
 
 public abstract class QueryProcessExecutor {
@@ -222,53 +223,55 @@ public abstract class QueryProcessExecutor {
 	 * @param newPassword new password
 	 * @return boolean
 	 * @throws AuthException exception in update user
+	 * @throws IOException 
+	 * @throws NoSuchUserException 
 	 */
-	public boolean updateUser(String username,String newPassword) throws AuthException{
-		return Authorizer.updateUserPassword(username, newPassword);
+	public boolean updateUser(String username,String newPassword) throws AuthException, IOException{
+		return AuthDao.getInstance().modifyPassword(username, newPassword);
 	}
 
-	public boolean createUser(String username, String password) throws AuthException {
-		return Authorizer.createUser(username, password);
+	public boolean createUser(String username, String password) throws AuthException, IOException {
+		return AuthDao.getInstance().addUser(username, password);
 	}
 
 	public boolean addPermissionToUser(String userName, String nodeName, int permissionId) throws AuthException {
-		return Authorizer.addPmsToUser(userName, nodeName, permissionId);
+		return false;
 	}
 
 	public boolean removePermissionFromUser(String userName, String nodeName, int permissionId) throws AuthException {
-		return Authorizer.removePmsFromUser(userName, nodeName, permissionId);
+		return false;
 	}
 
-	public boolean deleteUser(String userName) throws AuthException {
-		return Authorizer.deleteUser(userName);
+	public boolean deleteUser(String userName) throws AuthException, IOException {
+		return AuthDao.getInstance().deleteUser(userName);
 	}
 
-	public boolean createRole(String roleName) throws AuthException {
-		return Authorizer.createRole(roleName);
+	public boolean createRole(String roleName) throws AuthException, IOException {
+		return AuthDao.getInstance().addRole(roleName);
 	}
 
-	public boolean addPermissionToRole(String roleName, String nodeName, int permissionId) throws AuthException {
-		return Authorizer.addPmsToRole(roleName, nodeName, permissionId);
+	public boolean addPermissionToRole(String roleName, long permission) throws AuthException, IOException {
+		return AuthDao.getInstance().grantRolePermission(roleName, permission);
 	}
 
-	public boolean removePermissionFromRole(String roleName, String nodeName, int permissionId) throws AuthException {
-		return Authorizer.removePmsFromRole(roleName, nodeName, permissionId);
+	public boolean removePermissionFromRole(String roleName, long permission) throws AuthException, IOException {
+		return AuthDao.getInstance().revokeRolePermission(roleName, permission);
 	}
 
-	public boolean deleteRole(String roleName) throws AuthException {
-		return Authorizer.deleteRole(roleName);
+	public boolean deleteRole(String roleName) throws AuthException, IOException {
+		return AuthDao.getInstance().deleteRole(roleName);
 	}
 
-	public boolean grantRoleToUser(String roleName, String username) throws AuthException {
-		return Authorizer.grantRoleToUser(roleName, username);
+	public boolean grantRoleToUser(String roleName, String username, String path) throws AuthException, PathErrorException, IOException {
+		return AuthDao.getInstance().grantRoleOnPath(username, path, roleName);
 	}
 
-	public boolean revokeRoleFromUser(String roleName, String username) throws AuthException {
-		return Authorizer.revokeRoleFromUser(roleName, username);
+	public boolean revokeRoleFromUser(String roleName, String username, String path) throws AuthException, PathErrorException, IOException {
+		return AuthDao.getInstance().revokeRoleOnPath(username, path, roleName);
 	}
 
-	public Set<Integer> getPermissionsOfUser(String username, String nodeName) throws AuthException {
-		return Authorizer.getPermission(username, nodeName);
+	public long getPermissionsOfUser(String username, String nodeName) throws AuthException, PathErrorException, IOException {
+		return AuthDao.getInstance().getPermissionOnPath(username, nodeName);
 	}
 
 	public PhysicalPlan queryPhysicalOptimize(PhysicalPlan plan) {
