@@ -1,7 +1,6 @@
 package cn.edu.thu.tsfiledb.auth2.manage;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
@@ -14,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.common.utils.Pair;
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.InvalidNodeIndexException;
 import cn.edu.thu.tsfiledb.auth2.exception.PathAlreadyExistException;
 import cn.edu.thu.tsfiledb.auth2.exception.RoleAlreadyExistException;
@@ -184,6 +184,7 @@ public class NodeManager {
 	public int getMaxID(int uid) throws IOException {
 		RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
 		int maxUID = permMetaRaf.readInt();
+		permMetaRaf.close();
 		return maxUID;
 	}
 	
@@ -366,7 +367,7 @@ public class NodeManager {
 	 * @throws UnknownNodeTypeException
 	 * @throws PathAlreadyExistException 
 	 */
-	public PermTreeNode getLeaf(int uid, String path) throws PathErrorException, IOException, WrongNodetypeException, UnknownNodeTypeException, PathAlreadyExistException {
+	public PermTreeNode getLeaf(int uid, String path) throws PathErrorException, IOException, AuthException {
 		String[] pathLevels = PathUtils.getPathLevels(path);
 		PermTreeNode next = getNode(uid, 0);
 		for(int i = 1; i < pathLevels.length; i++) {

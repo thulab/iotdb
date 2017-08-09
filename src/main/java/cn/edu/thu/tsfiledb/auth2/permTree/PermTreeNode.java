@@ -167,7 +167,7 @@ public class PermTreeNode {
 		if (content instanceof RoleContent) {
 			RoleContent roleContent = (RoleContent) content;
 			for (int i = 0; i < roleContent.getRoleNum(); i++) {
-				if (header.getRoles()[i] != -1)
+				if (roleContent.getRoles()[i] != -1)
 					roles.add(roleContent.getRoles()[i]);
 			}
 		}

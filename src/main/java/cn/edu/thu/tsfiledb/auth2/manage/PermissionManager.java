@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.thu.tsfile.common.utils.Pair;
 import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
+import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.utils.PathUtils;
@@ -47,7 +48,7 @@ public class PermissionManager {
 	 * @throws IOException
 	 * @throws WrongNodetypeException
 	 */
-	public Set<Integer> findRolesOfPath(int uid, String path) throws PathErrorException, IOException, WrongNodetypeException {
+	public Set<Integer> findRolesOnPath(int uid, String path) throws PathErrorException, IOException, WrongNodetypeException {
 		Set<Integer> roleSet;
 		Pair<Integer, String> index = new Pair<Integer, String>(uid, path);
 		roleSet = rolesCache.get(index);
@@ -67,7 +68,7 @@ public class PermissionManager {
 				throw new PathErrorException(path + " not exist");
 			}
 			next = nodeManager.getNode(uid, nextIndex);
-			roleSet.addAll(roleSet);
+			roleSet.addAll(nodeManager.findRoles(uid, next));
 		}
 		
 		rolesCache.put(index, roleSet);
@@ -80,6 +81,15 @@ public class PermissionManager {
 		return roleSet;
 	}
 	
+	/** let user <uid> have role <rid> on <path>
+	 * @param uid user id
+	 * @param path should start with "root"
+	 * @param rid role id
+	 * @return true if the permission is successfully granted
+	 * @throws IOException
+	 * @throws AuthException when the role already exists
+	 * @throws PathErrorException
+	 */
 	public boolean grantRoleOnPath(int uid, String path, int rid) throws IOException, AuthException, PathErrorException {
 		NodeManager nodeManager = NodeManager.getInstance();
 		PermTreeNode leafNode = nodeManager.getLeaf(uid, path);
@@ -95,6 +105,15 @@ public class PermissionManager {
 		return success;
 	}
 	
+	/** delete user <uid>'s role <rid> on <path>
+	 * @param uid user id
+	 * @param path should start with "root"
+	 * @param rid role id
+	 * @return true if the role is successfully deleted
+	 * @throws PathErrorException
+	 * @throws AuthException when the role cannot be found
+	 * @throws IOException
+	 */
 	public boolean revokeRoleOnPath(int uid, String path, int rid) throws PathErrorException, AuthException, IOException {
 		NodeManager nodeManager = NodeManager.getInstance();
 		PermTreeNode leafNode = nodeManager.getLeaf(uid, path);
@@ -110,4 +129,21 @@ public class PermissionManager {
 		return success;
 	}
 	
+	/** check if user <uid> has <permission> on <path> 
+	 * @param uid
+	 * @param path 
+	 * @param permission permission to be checked
+	 * @return
+	 * @throws IOException
+	 * @throws PathErrorException
+	 * @throws WrongNodetypeException
+	 */
+	public boolean checkPermissionOnPath(int uid, String path, long permission) throws IOException, PathErrorException, WrongNodetypeException {
+		NodeManager nodeManager = NodeManager.getInstance();
+		RoleManager roleManager = RoleManager.getInstance();
+		
+		Set<Integer> roleIDs = findRolesOnPath(uid, path);
+		long userPerm = roleManager.rolesToPermission(roleIDs);
+		return Permission.test(userPerm, permission);
+	}
 }

@@ -54,9 +54,7 @@ public class PermTreeHeader {
 		header.parentIndex = byteBuffer.getInt();
 		header.currentIndex = byteBuffer.getInt();
 		header.nodeType = byteBuffer.getInt();
-		byte[] strBuffer = new byte[MAX_NODENAME_LENGTH];
-		byteBuffer.get(strBuffer);
- 		header.nodeName = SerializeUtils.bytesToStr(strBuffer);
+ 		header.nodeName = SerializeUtils.readString(byteBuffer, MAX_NODENAME_LENGTH);
 		header.subnodeExtIndex = byteBuffer.getInt();
 		header.roleExtIndex = byteBuffer.getInt();
 		header.roleNum = byteBuffer.getInt();

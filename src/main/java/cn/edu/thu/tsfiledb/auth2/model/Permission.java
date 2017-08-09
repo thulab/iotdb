@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.auth2.model;
 
 public class Permission {
+	public static final long NONE = 0l;
 	public static final long READ = 1l;
 	public static final long WRITE = 1l << 1 ;
 	
@@ -26,6 +27,8 @@ public class Permission {
 		}
 		if (permStr.length() > 0) {
 			permStr.setLength(permStr.length() - 1);
+		} else {
+			permStr.append("NONE");
 		}
 		return permStr.toString();
 	}

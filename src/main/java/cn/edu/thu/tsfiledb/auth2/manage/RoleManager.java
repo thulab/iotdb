@@ -56,6 +56,10 @@ public class RoleManager {
 		raf.close();
 	}
 	
+	public Role findRole(int roleID) {
+		return roleIDMap.get(roleID);
+	}
+	
 	public Role findRole(String roleName) {
 		return roleNameMap.get(roleName);
 	}
@@ -129,7 +133,9 @@ public class RoleManager {
 		for(int i = 0; i < IDArray.length; i++) {
 			Role role = roleIDMap.get(IDArray[i]);
 			if(role != null) {
-				Permission.combine(permission, role.getPermission());
+				permission = Permission.combine(permission, role.getPermission());
+			} else {
+				logger.warn("cannot find role whose ID is {}", IDArray[i]);
 			}
 		}
 		return permission;

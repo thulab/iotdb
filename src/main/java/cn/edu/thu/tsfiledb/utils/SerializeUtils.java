@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 import org.apache.derby.iapi.store.access.conglomerate.Sort;
 import org.slf4j.Logger;
@@ -33,13 +34,13 @@ public class SerializeUtils {
 			logger.error("cannot read complete string {} < {}", readCnt, maxLength);
 			throw new ReadObjectException();
 		}
-		int lastChar = 0;
-		for (; lastChar < readCnt; lastChar++) {
-			if (buffer[lastChar] == 0) {
-				break;
-			}
-		}
-		return new String(buffer, 0, lastChar);
+		return bytesToStr(buffer);
+	}
+	
+	public static String readString(ByteBuffer buffer, int maxLength) {
+		byte[] bytes = new byte[maxLength];
+		buffer.get(bytes);
+		return bytesToStr(bytes);
 	}
 	
 	public static String bytesToStr(byte[] buffer) {

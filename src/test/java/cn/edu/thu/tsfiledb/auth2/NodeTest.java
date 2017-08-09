@@ -3,6 +3,7 @@ package cn.edu.thu.tsfiledb.auth2;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -14,6 +15,7 @@ import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
 import cn.edu.thu.tsfiledb.auth2.manage.NodeManager;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeHeader;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
+import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
 public class NodeTest {
 
@@ -44,7 +46,7 @@ public class NodeTest {
 	
 	@Test
 	public void addChildTest() throws IOException, UnknownNodeTypeException, AuthException {
-		// all add into one node
+		// all 1000 children add into one node
 		NodeManager nodeManager = NodeManager.getInstance();
 		int uid = 2;
 		
@@ -72,7 +74,7 @@ public class NodeTest {
 	
 	@Test
 	public void addChildTest2() throws IOException, WrongNodetypeException, PathAlreadyExistException {
-		// add in 10 nodes
+		// add 1000 children in 10 nodes
 		NodeManager nodeManager = NodeManager.getInstance();
 		int uid = 3;
 		
@@ -126,6 +128,8 @@ public class NodeTest {
 		assertNotEquals(root.getRoleExt(), -1);
 		assertTrue(nodeManager.findRole(uid, root, 450));
 		assertFalse(nodeManager.findRole(uid, root, 4500));
+		Set<Integer> roles = nodeManager.findRoles(uid, root);
+		assertEquals(roles.size(), 1000);
 		
 		try {
 			nodeManager.addRole(uid, root, 450);
@@ -136,5 +140,37 @@ public class NodeTest {
 		// delete role
 		assertTrue(nodeManager.deleteRole(uid, root, 450));
 		assertTrue(nodeManager.addRole(uid, root, 450));
+		nodeManager.cleanForUser(uid);
+	}
+	
+	@Test
+	public void getLeafTest() throws IOException, PathErrorException, AuthException {
+		// randomly add 1000 paths with depth of 10
+		NodeManager nodeManager = NodeManager.getInstance();
+		int uid = 5;
+		
+		nodeManager.cleanForUser(uid);
+		nodeManager.initForUser(uid);
+		
+		try {
+			nodeManager.getLeaf(uid, "not root");
+		} catch (Exception e) {
+			assertTrue(e instanceof PathErrorException);
+		}
+		
+		String rootStr = "root";
+		for(int i = 0; i < 1000; i++) {
+			String path = rootStr;
+			for(int j = 0; j < 10; j++) {
+				path += "." + i;
+			}
+			nodeManager.getLeaf(uid, path);
+		}
+		PermTreeNode root = nodeManager.getNode(uid, 0);
+		for(int i = 0; i < 10; i++) {
+			int childIndex = nodeManager.findChild(uid, root, "666");
+			assertNotEquals(childIndex, -1);
+			root = nodeManager.getNode(uid, childIndex);
+		}
 	}
 }
