@@ -71,7 +71,7 @@ public class ReceiveFileThread extends Thread {
 		LOGGER.info("Ready to receive fileInfo");
 		while ((i < 3) && (!((info = br.readLine()) == ""))) {
 			args[i] = info;
-			LOGGER.info(args[i]+" "+i);
+			//LOGGER.info(args[i]+" "+i);
 			if(args[i]!=null)i++;
 		}
 
@@ -126,9 +126,9 @@ public class ReceiveFileThread extends Thread {
 			if(fis != null) fis.close();
 			if(!reWriteSuccess){
 				if (!tempFile.delete()) {
-					LOGGER.error("delete file {} fail1", tempFile.getAbsoluteFile());
+					LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
 				} else {
-					LOGGER.info("delete file {} success1", tempFile.getAbsoluteFile());
+					LOGGER.debug("delete file {} success", tempFile.getAbsoluteFile());
 				}
 				return;
 			}
@@ -151,18 +151,18 @@ public class ReceiveFileThread extends Thread {
 			if(fis != null) fis.close();
 			if(!reWriteSuccess){
 				if (!tempFile.delete()) {
-					LOGGER.error("delete file {} fail2", tempFile.getAbsoluteFile());
+					LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
 				} else {
-					LOGGER.info("delete file {} success2", tempFile.getAbsoluteFile());
+					LOGGER.debug("delete file {} success", tempFile.getAbsoluteFile());
 				}
 				return;
 			}
 		}
-		LOGGER.info("fileSize "+tempFile.length());
+		//LOGGER.info("fileSize "+tempFile.length());
 		if (!tempFile.delete()) {
-			LOGGER.error("delete file {} fail", tempFile.getAbsoluteFile());
+			LOGGER.debug("delete file {} fail", tempFile.getAbsoluteFile());
 		} else {
-			LOGGER.info("delete file {} success", tempFile.getAbsoluteFile());
+			LOGGER.debug("delete file {} success", tempFile.getAbsoluteFile());
 		}
 	}
 
@@ -181,14 +181,14 @@ public class ReceiveFileThread extends Thread {
 					pw.write(receiveSize + "\n");
 					pw.flush();
 					os.flush();
-					LOGGER.info("Server receiveSize1 "+receiveSize);
+					LOGGER.info("Server receiveSize "+receiveSize);
 				}
 			}
 			if(receiveSize%config.fileSegmentSize != 0){
 				pw.write(receiveSize + "\n");
 				pw.flush();
 				os.flush();
-				LOGGER.info("Server receiveSize2 "+receiveSize);
+				LOGGER.info("Server receiveSize "+receiveSize);
 			}
 			LOGGER.info("Finish receiving a file, sending md5...");
 			String md5 = Md5CalculateUtil.getFileMD5(receiveFilePath);

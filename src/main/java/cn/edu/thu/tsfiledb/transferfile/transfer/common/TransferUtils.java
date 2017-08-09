@@ -8,14 +8,14 @@ public class TransferUtils {
 		File file = new File(absolutePath);
 		if (file.exists() && file.isFile()) {
 			if (file.delete()) {
-				System.out.println("delete file " + absolutePath + "success!");
+				System.out.println("delete file " + absolutePath + " success!");
 				t = true;
 			} else {
-				System.out.println("delete file " + absolutePath + "fail!");
+				System.out.println("delete file " + absolutePath + " fail!");
 				t = false;
 			}
 		} else {
-			System.out.println("delete file fail: " + absolutePath + "not exist!");
+			System.out.println("delete file fail: " + absolutePath + " not exist!");
 			t = false;
 		}
 		return t;

@@ -1,6 +1,6 @@
 @echo off
 echo ````````````````````````
-echo Starting IoTDB Client
+echo Starting Transfer Client
 echo ````````````````````````
 
 if "%OS%" == "Windows_NT" setlocal
