@@ -174,7 +174,7 @@ public class ReceiveFileThread extends Thread {
 		try {
 			byte[] buffer = new byte[receiveFileSegment];
 			while ((receiveSize < fileSize) && ((readSize = is.read(buffer)) != -1)) {
-				LOGGER.info("readSize "+readSize);
+				//LOGGER.info("readSize "+readSize);
 				receiveSize += readSize;
 				fos.write(buffer, 0, readSize);
 				if (receiveSize%config.fileSegmentSize == 0) {
