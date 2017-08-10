@@ -12,35 +12,34 @@ public class Permission {
 	public static final long INSERT = 1l << 3;
 	public static final long DELETE = 1l << 4;
 	public static final long ADMIN = 1l << 5;
-	
-	
+
 	public static long combine(long perm1, long perm2) {
 		return perm1 | perm2;
 	}
-	
+
 	public static boolean test(long src, long target) {
 		return (src & target) == target;
 	}
-	
+
 	public static long revoke(long src, long target) {
 		return src & (~target);
 	}
-	
+
 	public static String longToName(long permission) {
 		StringBuffer permStr = new StringBuffer();
-		if(test(permission, READ)) {
+		if (test(permission, READ)) {
 			permStr.append("READ,");
 		}
-		if(test(permission, MODIFY)) {
+		if (test(permission, MODIFY)) {
 			permStr.append("MODIFY,");
 		}
-		if(test(permission, CREATE)) {
+		if (test(permission, CREATE)) {
 			permStr.append("CREATE,");
 		}
-		if(test(permission, INSERT)) {
+		if (test(permission, INSERT)) {
 			permStr.append("INSERT,");
 		}
-		if(test(permission, DELETE)) {
+		if (test(permission, DELETE)) {
 			permStr.append("DELETE,");
 		}
 		if (permStr.length() > 0) {
@@ -50,7 +49,7 @@ public class Permission {
 		}
 		return permStr.toString();
 	}
-	
+
 	public static long nameToLong(String name) {
 		switch (name.toUpperCase()) {
 		case "NONE":

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
+import cn.edu.thu.tsfiledb.auth2.manage.AuthConfig;
 import cn.edu.thu.tsfiledb.utils.SerializeUtils;
 
 public class PermTreeHeader {
@@ -11,9 +12,9 @@ public class PermTreeHeader {
 	public static final int SUBNODE_EXTENSION = 1;
 	public static final int ROLE_EXTENSION = 2;
 
-	public static final int MAX_NODENAME_LENGTH = 256;
-	public static final int MAX_ROLE_NUM = 169;
-	public static final int RECORD_SIZE = MAX_NODENAME_LENGTH + Integer.BYTES * (7 + MAX_ROLE_NUM); // should be 960B
+	public static final int MAX_NODENAME_LENGTH = AuthConfig.MAX_NODENAME_LENGTH; // in byte
+	public static final int RECORD_SIZE = 960;
+	public static final int MAX_ROLE_NUM = (RECORD_SIZE - MAX_NODENAME_LENGTH - 7 * Integer.BYTES) / Integer.BYTES;
 
 	private int parentIndex;
 	private int currentIndex;
@@ -22,16 +23,16 @@ public class PermTreeHeader {
 	private int subnodeExtIndex = -1;
 	private int roleExtIndex = -1;
 	private int roleNum = 0;
-	private int emptyRoleNum = 0;			// the number of roles deleted but not reused
+	private int emptyRoleNum = 0; // the number of roles deleted but not reused
 	private int[] roles = new int[MAX_ROLE_NUM];
-	
+
 	public PermTreeHeader() {
 		this.subnodeExtIndex = -1;
 		this.roleExtIndex = -1;
 		this.roleNum = 0;
 		this.emptyRoleNum = 0;
 	}
-	
+
 	public static PermTreeHeader initRootHeader() {
 		PermTreeHeader header = new PermTreeHeader();
 		header.parentIndex = -1;
@@ -44,17 +45,17 @@ public class PermTreeHeader {
 		header.emptyRoleNum = 0;
 		return header;
 	}
-	
+
 	public static PermTreeHeader readObject(RandomAccessFile raf) throws IOException {
 		byte[] bytes = new byte[RECORD_SIZE];
 		raf.readFully(bytes);
 		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-		
+
 		PermTreeHeader header = new PermTreeHeader();
 		header.parentIndex = byteBuffer.getInt();
 		header.currentIndex = byteBuffer.getInt();
 		header.nodeType = byteBuffer.getInt();
- 		header.nodeName = SerializeUtils.readString(byteBuffer, MAX_NODENAME_LENGTH);
+		header.nodeName = SerializeUtils.readString(byteBuffer, MAX_NODENAME_LENGTH);
 		header.subnodeExtIndex = byteBuffer.getInt();
 		header.roleExtIndex = byteBuffer.getInt();
 		header.roleNum = byteBuffer.getInt();
@@ -78,7 +79,7 @@ public class PermTreeHeader {
 			buffer.putInt(roles[i]);
 		raf.write(buffer.array());
 	}
-	
+
 	public int getParentIndex() {
 		return parentIndex;
 	}

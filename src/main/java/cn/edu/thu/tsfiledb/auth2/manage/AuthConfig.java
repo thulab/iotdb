@@ -5,6 +5,7 @@ public class AuthConfig {
 	public static String roleFolder = authFolder + "role/";
 	public static String userFolder = authFolder + "user/";
 	public static String permFolder = authFolder + "perm/";
-	
+
 	public static final int PAGE_SIZE = 40960; // in bytes
+	public static final int MAX_NODENAME_LENGTH = 256;
 }

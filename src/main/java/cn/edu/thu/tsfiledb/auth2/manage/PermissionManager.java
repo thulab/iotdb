@@ -25,24 +25,26 @@ public class PermissionManager {
 	private HashMap<Pair<Integer, String>, Set<Integer>> rolesCache = new HashMap<>();
 	private LinkedList<Pair<Integer, String>> LRUList = new LinkedList<>();
 	private int cacheCapacity = 1000;
-	
+
 	private PermissionManager() {
-	
+
 	}
-	
+
 	public static PermissionManager getInstance() {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new PermissionManager();
 			instance.init();
 		}
 		return instance;
 	}
-	
+
 	private void init() {
-		
+
 	}
-	
-	/** Collect the roles granted to user “uid” in “path” 
+
+	/**
+	 * Collect the roles granted to user “uid” in “path”
+	 * 
 	 * @param uid
 	 * @param path
 	 * @return set of roleIDs
@@ -50,104 +52,123 @@ public class PermissionManager {
 	 * @throws IOException
 	 * @throws WrongNodetypeException
 	 */
-	public Set<Integer> findRolesOnPath(int uid, String path) throws PathErrorException, IOException, WrongNodetypeException {
+	public Set<Integer> findRolesOnPath(int uid, String path)
+			throws PathErrorException, IOException, WrongNodetypeException {
 		Set<Integer> roleSet;
 		Pair<Integer, String> index = new Pair<Integer, String>(uid, path);
 		roleSet = rolesCache.get(index);
-		if(roleSet != null) {
+		if (roleSet != null) {
 			return roleSet;
 		}
-		
+
 		NodeManager nodeManager = NodeManager.getInstance();
 		String[] pathLevels = PathUtils.getPathLevels(path);
-		
+
 		PermTreeNode next = nodeManager.getNode(uid, 0);
 		roleSet = nodeManager.findRoles(uid, next);
-		for(int i = 1; i < pathLevels.length; i++) {
+		for (int i = 1; i < pathLevels.length; i++) {
 			int nextIndex = nodeManager.findChild(uid, next, pathLevels[i]);
-			if(nextIndex == -1) {
+			if (nextIndex == -1) {
 				logger.error("{} in {} does not exist", pathLevels[i], path);
 				throw new PathErrorException(path + " not exist");
 			}
 			next = nodeManager.getNode(uid, nextIndex);
 			roleSet.addAll(nodeManager.findRoles(uid, next));
 		}
-		
+
 		rolesCache.put(index, roleSet);
 		LRUList.addFirst(index);
-		if(rolesCache.size() > cacheCapacity) {
+		if (rolesCache.size() > cacheCapacity) {
 			index = LRUList.removeLast();
 			rolesCache.remove(index);
 		}
-		
+
 		return roleSet;
 	}
-	
-	/** let user “uid” have role “rid” on “path”
-	 * @param uid user id
-	 * @param path should start with "root"
-	 * @param rid role id
+
+	/**
+	 * let user “uid” have role “rid” on “path”
+	 * 
+	 * @param uid
+	 *            user id
+	 * @param path
+	 *            should start with "root"
+	 * @param rid
+	 *            role id
 	 * @return true if the permission is successfully granted
 	 * @throws IOException
-	 * @throws AuthException when the role already exists
+	 * @throws AuthException
+	 *             when the role already exists
 	 * @throws PathErrorException
-	 * @throws RoleAlreadyExistException 
-	 * @throws PathAlreadyExistException 
-	 * @throws WrongNodetypeException 
+	 * @throws RoleAlreadyExistException
+	 * @throws PathAlreadyExistException
+	 * @throws WrongNodetypeException
 	 */
-	public boolean grantRoleOnPath(int uid, String path, int rid) throws IOException, PathErrorException, RoleAlreadyExistException, WrongNodetypeException, PathAlreadyExistException {
+	public boolean grantRoleOnPath(int uid, String path, int rid) throws IOException, PathErrorException,
+			RoleAlreadyExistException, WrongNodetypeException, PathAlreadyExistException {
 		NodeManager nodeManager = NodeManager.getInstance();
 		PermTreeNode leafNode = nodeManager.getLeaf(uid, path);
 		boolean success = nodeManager.addRole(uid, leafNode, rid);
-		if(success) {
+		if (success) {
 			Set<Integer> roleSet;
 			Pair<Integer, String> index = new Pair<Integer, String>(uid, path);
 			roleSet = rolesCache.get(index);
-			if(roleSet != null) {
+			if (roleSet != null) {
 				roleSet.add(rid);
 			}
 		}
 		return success;
 	}
-	
-	/** delete user “uid”'s role “rid” on “path”
-	 * @param uid user id
-	 * @param path should start with "root"
-	 * @param rid role id
+
+	/**
+	 * delete user “uid”'s role “rid” on “path”
+	 * 
+	 * @param uid
+	 *            user id
+	 * @param path
+	 *            should start with "root"
+	 * @param rid
+	 *            role id
 	 * @return true if the role is successfully deleted
 	 * @throws PathErrorException
-	 * @throws AuthException when the role cannot be found
+	 * @throws AuthException
+	 *             when the role cannot be found
 	 * @throws IOException
-	 * @throws PathAlreadyExistException 
-	 * @throws WrongNodetypeException 
+	 * @throws PathAlreadyExistException
+	 * @throws WrongNodetypeException
 	 */
-	public boolean revokeRoleOnPath(int uid, String path, int rid) throws PathErrorException, IOException, WrongNodetypeException, PathAlreadyExistException {
+	public boolean revokeRoleOnPath(int uid, String path, int rid)
+			throws PathErrorException, IOException, WrongNodetypeException, PathAlreadyExistException {
 		NodeManager nodeManager = NodeManager.getInstance();
 		PermTreeNode leafNode = nodeManager.getLeaf(uid, path);
 		boolean success = nodeManager.deleteRole(uid, leafNode, rid);
-		if(success) {
+		if (success) {
 			Set<Integer> roleSet;
 			Pair<Integer, String> index = new Pair<Integer, String>(uid, path);
 			roleSet = rolesCache.get(index);
-			if(roleSet != null) {
+			if (roleSet != null) {
 				roleSet.remove(rid);
 			}
 		}
 		return success;
 	}
-	
-	/** check if user “uid” has “permission” on “path” 
+
+	/**
+	 * check if user “uid” has “permission” on “path”
+	 * 
 	 * @param uid
-	 * @param path 
-	 * @param permission permission to be checked
+	 * @param path
+	 * @param permission
+	 *            permission to be checked
 	 * @return
 	 * @throws IOException
 	 * @throws PathErrorException
 	 * @throws WrongNodetypeException
 	 */
-	public boolean checkPermissionOnPath(int uid, String path, long permission) throws IOException,  WrongNodetypeException {
+	public boolean checkPermissionOnPath(int uid, String path, long permission)
+			throws IOException, WrongNodetypeException {
 		RoleManager roleManager = RoleManager.getInstance();
-		
+
 		Set<Integer> roleIDs;
 		try {
 			roleIDs = findRolesOnPath(uid, path);
@@ -157,10 +178,11 @@ public class PermissionManager {
 		long userPerm = roleManager.rolesToPermission(roleIDs);
 		return Permission.test(userPerm, permission);
 	}
-	
-	public long getPermissionOnPath(int uid, String path) throws IOException, PathErrorException, WrongNodetypeException {
+
+	public long getPermissionOnPath(int uid, String path)
+			throws IOException, PathErrorException, WrongNodetypeException {
 		RoleManager roleManager = RoleManager.getInstance();
-		
+
 		Set<Integer> roleIDs = findRolesOnPath(uid, path);
 		long userPerm = roleManager.rolesToPermission(roleIDs);
 		return userPerm;

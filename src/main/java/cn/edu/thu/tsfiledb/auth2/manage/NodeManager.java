@@ -107,7 +107,7 @@ public class NodeManager {
 	 * @param nodeIndex
 	 * @return
 	 * @throws IOException
-	 * @throws UnknownNodeTypeException 
+	 * @throws UnknownNodeTypeException
 	 */
 	public PermTreeNode getNode(int uid, int nodeIndex) throws IOException {
 		if (nodeIndex < 0) {
@@ -178,14 +178,14 @@ public class NodeManager {
 	public void putNode(int uid, PermTreeNode node) throws IOException {
 		putNode(uid, node.getIndex(), node);
 	}
-	
+
 	public int getMaxID(int uid) throws IOException {
 		RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
 		int maxUID = permMetaRaf.readInt();
 		permMetaRaf.close();
 		return maxUID;
 	}
-	
+
 	/**
 	 * Append a buffer whose size is the size of a node to the permission file by
 	 * uid, and increase the max uid in meta file.
@@ -217,8 +217,9 @@ public class NodeManager {
 			return maxUID;
 		}
 	}
-	
-	public PermTreeNode allocateNode(int uid, int pid, String nodeName, int nodeType) throws UnknownNodeTypeException, IOException {
+
+	public PermTreeNode allocateNode(int uid, int pid, String nodeName, int nodeType)
+			throws UnknownNodeTypeException, IOException {
 		PermTreeNode node = new PermTreeNode(nodeName, nodeType, allocateID(uid), pid);
 		putNode(uid, node);
 		return node;
@@ -235,7 +236,7 @@ public class NodeManager {
 		}
 		return found;
 	}
-	
+
 	/**
 	 * Collect roles from a given node or its extensions.
 	 * 
@@ -289,13 +290,13 @@ public class NodeManager {
 	 * @throws WrongNodetypeException
 	 * @throws IOException
 	 * @throws UnknownNodeTypeException
-	 * @throws PathAlreadyExistException 
+	 * @throws PathAlreadyExistException
 	 */
 	public boolean addChild(int uid, PermTreeNode node, String childName, int cid)
 			throws WrongNodetypeException, IOException, UnknownNodeTypeException, PathAlreadyExistException {
 		if (findChild(uid, node, childName) != -1) {
 			logger.error("{} already has child {}", node.getName(), childName);
-			throw new PathAlreadyExistException(childName + " in " + node.getName() +  " already exists");
+			throw new PathAlreadyExistException(childName + " in " + node.getName() + " already exists");
 		}
 		PermTreeNode curnode = node;
 		boolean added = curnode.addChild(childName, cid);
@@ -353,9 +354,10 @@ public class NodeManager {
 		return deleted;
 	}
 
-	/**	Get the lead node corresponding to "path" of user "uid".
-	 * Internal nodes are created when not existing, so this method can be
-	 * used as a mkdir.
+	/**
+	 * Get the lead node corresponding to "path" of user "uid". Internal nodes are
+	 * created when not existing, so this method can be used as a mkdir.
+	 * 
 	 * @param uid
 	 * @param path
 	 * @return node of the last level of the path
@@ -363,18 +365,19 @@ public class NodeManager {
 	 * @throws IOException
 	 * @throws WrongNodetypeException
 	 * @throws UnknownNodeTypeException
-	 * @throws PathAlreadyExistException 
+	 * @throws PathAlreadyExistException
 	 */
-	public PermTreeNode getLeaf(int uid, String path) throws PathErrorException, IOException, WrongNodetypeException, PathAlreadyExistException {
+	public PermTreeNode getLeaf(int uid, String path)
+			throws PathErrorException, IOException, WrongNodetypeException, PathAlreadyExistException {
 		String[] pathLevels = PathUtils.getPathLevels(path);
 		PermTreeNode next = getNode(uid, 0);
-		for(int i = 1; i < pathLevels.length; i++) {
+		for (int i = 1; i < pathLevels.length; i++) {
 			int childIndex = findChild(uid, next, pathLevels[i]);
 			// when a child does not exist, create a new node
-			if(childIndex == -1) {
+			if (childIndex == -1) {
 				childIndex = allocateID(uid);
-				PermTreeNode child = new PermTreeNode(pathLevels[i], PermTreeHeader.NORMAL_NODE,
-						childIndex, next.getIndex());
+				PermTreeNode child = new PermTreeNode(pathLevels[i], PermTreeHeader.NORMAL_NODE, childIndex,
+						next.getIndex());
 				addChild(uid, next, child);
 				putNode(uid, child);
 			}
@@ -382,18 +385,19 @@ public class NodeManager {
 		}
 		return next;
 	}
-	
 
-	/** add a role "rid" to "node" or its extensions
+	/**
+	 * add a role "rid" to "node" or its extensions
+	 * 
 	 * @param uid
 	 * @param node
 	 * @param rid
 	 * @return true if the role is added, false if the role already exist
-	 * @throws IOException 
-	 * @throws UnknownNodeTypeException 
+	 * @throws IOException
+	 * @throws UnknownNodeTypeException
 	 */
 	public boolean addRole(int uid, PermTreeNode node, int rid) throws IOException, UnknownNodeTypeException {
-		if(findRole(uid, node, rid)) {
+		if (findRole(uid, node, rid)) {
 			logger.error("role {} already in {}", rid, node.getName());
 			return false;
 		}
@@ -422,8 +426,10 @@ public class NodeManager {
 		}
 		return true;
 	}
-	
-	/** delete a role <rid> of <node>
+
+	/**
+	 * delete a role <rid> of <node>
+	 * 
 	 * @param uid
 	 * @param node
 	 * @param rid

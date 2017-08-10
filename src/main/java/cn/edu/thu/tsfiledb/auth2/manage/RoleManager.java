@@ -19,54 +19,54 @@ import cn.edu.thu.tsfiledb.auth2.model.User;
 public class RoleManager {
 	private static Logger logger = LoggerFactory.getLogger(RoleManager.class);
 	private static RoleManager instance;
-	
+
 	private static String roleFolder = AuthConfig.roleFolder;
 	private static String roleInfoFile = "roleInfo";
-	
+
 	private HashMap<String, Role> roleNameMap = new HashMap<>();
 	private HashMap<Integer, Role> roleIDMap = new HashMap<>();
-	
+
 	private RoleManager() {
-		
+
 	}
-	
+
 	public static RoleManager getInstance() throws IOException {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new RoleManager();
 			instance.init();
 		}
 		return instance;
 	}
-	
+
 	private void init() throws IOException {
 		File roleFolderFile = new File(roleFolder);
 		File infoFile = new File(roleFolder + roleInfoFile);
-		if(!roleFolderFile.exists())
+		if (!roleFolderFile.exists())
 			roleFolderFile.mkdirs();
-		if(!infoFile.exists())
+		if (!infoFile.exists())
 			infoFile.createNewFile();
-		
+
 		RandomAccessFile raf = new RandomAccessFile(infoFile, "r");
-		while(raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
+		while (raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
 			Role role = Role.readObject(raf);
-			if(!role.getRoleName().equals("")) {
+			if (!role.getRoleName().equals("")) {
 				roleNameMap.put(role.getRoleName(), role);
 				roleIDMap.put(role.getID(), role);
 			}
 		}
 		raf.close();
 	}
-	
+
 	public Role findRole(int roleID) {
 		return roleIDMap.get(roleID);
 	}
-	
+
 	public Role findRole(String roleName) {
 		return roleNameMap.get(roleName);
 	}
-	
+
 	synchronized public boolean createRole(String roleName) throws IOException {
-		if(roleNameMap.get(roleName) != null) {
+		if (roleNameMap.get(roleName) != null) {
 			return false;
 		}
 		Rolemeta rolemeta = Rolemeta.getInstance();
@@ -74,23 +74,23 @@ public class RoleManager {
 		Role role = new Role(roleName, rid);
 		flushRole(role);
 		rolemeta.increaseMaxRID();
-		
+
 		roleNameMap.put(roleName, role);
 		roleIDMap.put(rid, role);
 		return true;
 	}
-	
+
 	private void flushRole(Role role) throws IOException {
 		RandomAccessFile raf = new RandomAccessFile(roleFolder + roleInfoFile, "rw");
 		raf.seek(role.getID() * Role.RECORD_SIZE);
 		role.writeObject(raf);
 		raf.close();
 	}
-	
+
 	public boolean deleteRole(String roleName) throws IOException {
 		Role role = roleNameMap.get(roleName);
-		if(role == null) {
-			logger.warn("Attemp to delete non-exist role {}",roleName);
+		if (role == null) {
+			logger.warn("Attemp to delete non-exist role {}", roleName);
 			return false;
 		}
 		Role blankRole = new Role("", role.getID());
@@ -99,42 +99,42 @@ public class RoleManager {
 		roleIDMap.remove(role.getID());
 		return true;
 	}
-	
+
 	public boolean grantPermission(String roleName, long permission) throws IOException, NoSuchRoleException {
 		Role role = roleNameMap.get(roleName);
-		if(role == null) {
+		if (role == null) {
 			throw new NoSuchRoleException(roleName);
 		}
-		if(Permission.test(role.getPermission(), permission)) {
+		if (Permission.test(role.getPermission(), permission)) {
 			return false;
 		}
 		role.setPermission(Permission.combine(role.getPermission(), permission));
 		flushRole(role);
 		return true;
 	}
-	
+
 	public boolean revokePermission(String roleName, long permission) throws IOException, NoSuchRoleException {
 		Role role = roleNameMap.get(roleName);
-		if(role == null) {
+		if (role == null) {
 			throw new NoSuchRoleException(roleName);
 		}
 		long oldPermission = role.getPermission();
-		if(!Permission.test(oldPermission, permission)) {
-			logger.error("Role {} has no permission {}. It has {}",
-					roleName, Permission.longToName(permission), Permission.longToName(role.getPermission()));
+		if (!Permission.test(oldPermission, permission)) {
+			logger.error("Role {} has no permission {}. It has {}", roleName, Permission.longToName(permission),
+					Permission.longToName(role.getPermission()));
 			return false;
 		}
 		role.setPermission(Permission.revoke(oldPermission, permission));
 		flushRole(role);
 		return true;
 	}
-	
+
 	public long rolesToPermission(Set<Integer> roleIDs) {
 		Integer[] IDArray = roleIDs.toArray(new Integer[0]);
 		long permission = 0l;
-		for(int i = 0; i < IDArray.length; i++) {
+		for (int i = 0; i < IDArray.length; i++) {
 			Role role = roleIDMap.get(IDArray[i]);
-			if(role != null) {
+			if (role != null) {
 				permission = Permission.combine(permission, role.getPermission());
 			} else {
 				logger.warn("cannot find role whose ID is {}", IDArray[i]);
@@ -142,7 +142,7 @@ public class RoleManager {
 		}
 		return permission;
 	}
-	
+
 	public Role[] getAllRoles() {
 		return roleIDMap.values().toArray(new Role[0]);
 	}

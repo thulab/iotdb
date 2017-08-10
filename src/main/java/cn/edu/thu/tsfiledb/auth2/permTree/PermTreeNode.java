@@ -68,7 +68,7 @@ public class PermTreeNode {
 			logger.error("unrecognized node type {} when init node for {}", nodeType, node.header.getNodeName());
 			throw new UnknownNodeTypeException("node type " + nodeType + " is unknown");
 		}
-		
+
 		return node;
 	}
 
@@ -84,8 +84,9 @@ public class PermTreeNode {
 		return node;
 	}
 
-	/** add a child with given info in THIS node
-	 * caller should check exist
+	/**
+	 * add a child with given info in THIS node caller should check exist
+	 * 
 	 * @param childName
 	 * @param cid
 	 * @return true if success, false if THIS node is full
@@ -94,10 +95,10 @@ public class PermTreeNode {
 	 */
 	public boolean addChild(String childName, int cid) throws WrongNodetypeException, PathAlreadyExistException {
 		// caller check
-		/*if (findChild(childName) != -1){
-			logger.error(childName + " already exists");
-			throw new PathAlreadyExistException(childName);
-		}*/
+		/*
+		 * if (findChild(childName) != -1){ logger.error(childName + " already exists");
+		 * throw new PathAlreadyExistException(childName); }
+		 */
 		if (header.getNodeType() != PermTreeHeader.NORMAL_NODE
 				&& header.getNodeType() != PermTreeHeader.SUBNODE_EXTENSION) {
 			logger.error("add child to a role extension");
@@ -151,7 +152,7 @@ public class PermTreeNode {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * collect the roles in the header, if this node is a role-extension also
 	 * collect the roles in the content
@@ -202,8 +203,7 @@ public class PermTreeNode {
 	}
 
 	/**
-	 * try to add a role by ID with in this node
-	 * caller should check exist
+	 * try to add a role by ID with in this node caller should check exist
 	 * 
 	 * @param roleID
 	 * @return true if the role is added, false when the node is full depending on
@@ -213,9 +213,10 @@ public class PermTreeNode {
 	public boolean addRole(int roleID) {
 		boolean added = false;
 		// caller check
-		/*if (findRole(roleID)) {
-			throw new RoleAlreadyExistException("the role has already been granted to the node");
-		}*/
+		/*
+		 * if (findRole(roleID)) { throw new
+		 * RoleAlreadyExistException("the role has already been granted to the node"); }
+		 */
 		// try to add in header
 		if (header.getEmptyRoleNum() > 0) {
 			for (int i = 0; i < header.getRoleNum(); i++) {
