@@ -6,14 +6,14 @@ Grafana下载地址：https://grafana.com/grafana/download
 选择相应的操作系统下载并安装，启动 Grafana
 
 # 数据源插件安装
-基于simple-json-datasource数据源插件连接TsFileDB数据库。
+基于simple-json-datasource数据源插件连接IoTDB数据库。
 
 插件下载地址：https://github.com/grafana/simple-json-datasource
 
 下载并解压，将文件放到Grafana的目录中：
 `data/plugin/`（Windows）或`/var/lib/grafana/plugins` (Linux)
 
-# TsFileDB安装
+# IoTDB安装
 参考：http://git.oschina.net/xingtanzjr/tsfiledb
 
 # 后端数据源连接器安装
@@ -34,7 +34,7 @@ spring.datasource.driver-class-name=cn.edu.thu.tsfiledb.jdbc.TsfileDriver
 server.port = 8888
 ```
 
-采用TsFileDB作为后端数据源，前四行定义了数据库的属性，默认端口为6667，用户名和密码都为root，指定数据源驱动的名称。
+采用IoTDB作为后端数据源，前四行定义了数据库的属性，默认端口为6667，用户名和密码都为root，指定数据源驱动的名称。
 
 编辑server.port的值修改连接器的端口。
 
@@ -61,5 +61,5 @@ Grafana的默认端口为 3000，在浏览器中访问 http://localhost:3000
 
 以折线图为例说明添加时序数据的过程：
 
-选择`Graph`类型，在空白处出现无数据点的图，点击标题选择`Edit`，在图下方出现属性值编辑和查询条件选择区域，在`Metrics`一栏中`Add Query`添加查询，点击`select metric`下拉框中出现TsFileDB中所有时序的名称，在右上角选择时间范围，绘制出对应的查询结果。可设置定时刷新，实时展现时序数据。
+选择`Graph`类型，在空白处出现无数据点的图，点击标题选择`Edit`，在图下方出现属性值编辑和查询条件选择区域，在`Metrics`一栏中`Add Query`添加查询，点击`select metric`下拉框中出现IoTDB中所有时序的名称，在右上角选择时间范围，绘制出对应的查询结果。可设置定时刷新，实时展现时序数据。
 
