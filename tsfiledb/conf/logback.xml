@@ -95,8 +95,10 @@
 	
 
 	<logger name="cn.edu.thu.tsfiledb.service" level="info" />
+
 	<logger name="cn.edu.thu.tsfiledb.conf" level="info" />
 	<!--<logger name="cn.edu.thu.tsfiledb.transferfile" level="info" />-->
+	<logger name="cn.edu.thu.tsfiledb.transferfile.transfer.server" level="info" />
 	<root level="ERROR">
 		<appender-ref ref="FILEDEBUG" />
 		<appender-ref ref="FILEINFO" />
