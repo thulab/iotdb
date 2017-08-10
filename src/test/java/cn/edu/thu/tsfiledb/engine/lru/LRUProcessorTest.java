@@ -46,7 +46,6 @@ public class LRUProcessorTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		dbconfig.metadataDir = "metadata";
 		EngineTestHelper.delete(dbconfig.metadataDir);
 		processor1 = new TestLRUProcessor("ns1");
 		processor2 = new TestLRUProcessor("ns2");

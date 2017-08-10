@@ -76,13 +76,12 @@ public class OverflowProcessorTest {
 			System.out.println("filenode manager flush action");
 		}
 	};
-	
-	private String overflowDataDir;
 
 	@Before
 	public void setUp() throws Exception {
 		EngineTestHelper.delete(nameSpacePath);
 		EngineTestHelper.delete(tsdbconfig.metadataDir);
+		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
 		EngineTestHelper.delete(tsdbconfig.walFolder);
 		parameters = new HashMap<String, Object>();
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowflushaction);
@@ -91,10 +90,8 @@ public class OverflowProcessorTest {
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, filenodemanagerflushaction);
 
 		// set overflow data dir is ""
-		overflowDataDir = tsdbconfig.overflowDataDir;
-		tsdbconfig.overflowDataDir = "";
-		overflowfilePath = tsdbconfig.overflowDataDir + nameSpacePath + File.separatorChar + nameSpacePath
-				+ ".overflow";
+		overflowfilePath = tsdbconfig.overflowDataDir + File.separatorChar + nameSpacePath + File.separatorChar
+				+ nameSpacePath + ".overflow";
 		overflowrestorefilePath = overflowfilePath + ".restore";
 		overflowmergefilePath = overflowfilePath + ".merge";
 		WriteLogManager.getInstance().close();
@@ -107,8 +104,7 @@ public class OverflowProcessorTest {
 		EngineTestHelper.delete(nameSpacePath);
 		EngineTestHelper.delete(tsdbconfig.metadataDir);
 		EngineTestHelper.delete(tsdbconfig.walFolder);
-		tsdbconfig.overflowDataDir = overflowDataDir;
-		
+		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
 	}
 
 	@Test
@@ -343,7 +339,7 @@ public class OverflowProcessorTest {
 
 		// check query
 
-		//fail("restore from merege");
+		// fail("restore from merege");
 	}
 
 	@Test
@@ -356,9 +352,7 @@ public class OverflowProcessorTest {
 		// optional: write data in new file
 
 		// query data and check data
-		
-		
 
-		//fail("merge and query");
+		// fail("merge and query");
 	}
 }

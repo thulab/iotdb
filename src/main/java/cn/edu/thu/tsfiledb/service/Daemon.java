@@ -27,6 +27,7 @@ import cn.edu.thu.tsfiledb.conf.TsFileDBConstant;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.StartupException;
+import cn.edu.thu.tsfiledb.metadata.MManager;
 
 public class Daemon {
 
@@ -175,6 +176,8 @@ public class Daemon {
             jmxServer.stop();
         }
         CloseMergeServer.getInstance().closeServer();
+        MManager.getInstance().flushObjectToFile();
+        WriteLogManager.getInstance().close();
     }
 
     public static void main(String[] args) {

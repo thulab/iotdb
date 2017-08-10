@@ -4,6 +4,8 @@ import cn.edu.thu.tsfile.common.conf.TSFileConfig;
 import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.thu.tsfiledb.conf.TsfileDBConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
+import cn.edu.thu.tsfiledb.engine.overflow.io.EngineTestHelper;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -18,7 +20,6 @@ import java.sql.*;
  */
 public class SmallPageSizeTest {
 
-    private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
@@ -92,57 +93,42 @@ public class SmallPageSizeTest {
 
     };
 
-    private String overflowDataDirPre;
     private String fileNodeDirPre;
-    private String bufferWriteDirPre;
-    private String metadataDirPre;
-    private String derbyHomePre;
-
+    private String derbyHome;
     private Daemon deamon;
 
-    //@Before
+    // @Before
     public void setUp() throws Exception {
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        overflowDataDirPre = config.overflowDataDir;
         fileNodeDirPre = config.fileNodeDir;
-        bufferWriteDirPre = config.bufferWriteDir;
-        metadataDirPre = config.metadataDir;
-        derbyHomePre = config.derbyHome;
+        derbyHome = config.derbyHome;
 
         TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
         tsFileConfig.maxNumberOfPointsInPage = 5;
         tsFileConfig.pageSizeInByte = 200;
 
-        config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-        config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-        config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-        config.metadataDir = FOLDER_HEADER + "/data/metadata";
-        config.derbyHome = FOLDER_HEADER + "/data/derby";
+        config.fileNodeDir = config.fileNodeDir+File.separatorChar;
         deamon = new Daemon();
         deamon.active();
+        Thread.sleep(10000);
     }
 
-    //@After
+    // @After
     public void tearDown() throws Exception {
         deamon.stop();
         Thread.sleep(5000);
 
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        FileUtils.deleteDirectory(new File(config.overflowDataDir));
-        FileUtils.deleteDirectory(new File(config.fileNodeDir));
-        FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-        FileUtils.deleteDirectory(new File(config.metadataDir));
-        FileUtils.deleteDirectory(new File(config.derbyHome));
-        FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-
-        config.overflowDataDir = overflowDataDirPre;
+        EngineTestHelper.delete(config.overflowDataDir);
+        EngineTestHelper.delete(config.fileNodeDir);
+        EngineTestHelper.delete(config.bufferWriteDir);
+        EngineTestHelper.delete(config.metadataDir);
+        EngineTestHelper.delete(config.walFolder);
         config.fileNodeDir = fileNodeDirPre;
-        config.bufferWriteDir = bufferWriteDirPre;
-        config.metadataDir = metadataDirPre;
-        config.derbyHome = derbyHomePre;
+        config.derbyHome = derbyHome;
     }
 
-    //@Test
+    // @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
         Thread.sleep(5000);
         insertSQL();
