@@ -97,8 +97,6 @@ public class PermissionManager {
 	 *            role id
 	 * @return true if the permission is successfully granted
 	 * @throws IOException
-	 * @throws AuthException
-	 *             when the role already exists
 	 * @throws PathErrorException
 	 * @throws RoleAlreadyExistException
 	 * @throws PathAlreadyExistException

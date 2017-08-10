@@ -22,6 +22,15 @@ import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.utils.PathUtils;
 
+/** This class divide disk space (a file) into blocks, each containing a
+ *  PermTreeNode, and manage them as if they were in memory, using block number
+ *  instead of pointer to refer to a block. Once a block is loaded from disk to memory,
+ *  it will stay in an LRU cache until it is replaced. 
+ *  This class also provides cross-node search.
+ *  Most methods in this class are synchronized for thread safety.
+ * @author jt
+ *
+ */
 public class NodeManager {
 	private static Logger logger = LoggerFactory.getLogger(NodeManager.class);
 	private static String PERMFILE_SUFFIX = ".perm";
@@ -31,9 +40,10 @@ public class NodeManager {
 	private static NodeManager instance;
 
 	private int MAX_CACHE_CAPACITY = 1000;
+	// key is <uid, blockID>
 	Map<Pair<Integer, Integer>, PermTreeNode> nodeCache = new HashMap<>();
 	LinkedList<Pair<Integer, Integer>> LRUList = new LinkedList<>();
-
+	// key is uid, for different users will not cause conflicts
 	HashMap<Integer, Integer> initMutexMap = new HashMap<>();
 	HashMap<Integer, Integer> accessMutexMap = new HashMap<>();
 
@@ -55,8 +65,8 @@ public class NodeManager {
 	}
 
 	/**
-	 * create permission file and permission meta file for a user with given uid and
-	 * put an empty root node in permission file
+	 * Create permission file and permission meta file for a user with given uid,
+	 * put an empty root node in permission file and set max block ID to 1.
 	 * 
 	 * @param uid
 	 * @throws IOException
@@ -80,7 +90,7 @@ public class NodeManager {
 	}
 
 	/**
-	 * delete permission file and permission meta file of a user
+	 * Delete permission file and permission meta file of a user
 	 * 
 	 * @param uid
 	 */
@@ -99,9 +109,9 @@ public class NodeManager {
 	}
 
 	/**
-	 * read a node from the permission file specified by uid (if node not in cache)
+	 * Read a node from the permission file specified by uid (if node not in cache)
 	 * the node will be put in the cache, and if necessary another node will be
-	 * replaced
+	 * replaced.
 	 * 
 	 * @param uid
 	 * @param nodeIndex
@@ -179,11 +189,23 @@ public class NodeManager {
 		putNode(uid, node.getIndex(), node);
 	}
 
+	/** Return the block ID that should be assigned to next block.
+	 * @param uid
+	 * @return
+	 * @throws IOException
+	 */
 	public int getMaxID(int uid) throws IOException {
-		RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
-		int maxUID = permMetaRaf.readInt();
-		permMetaRaf.close();
-		return maxUID;
+		Integer mutex = accessMutexMap.get(uid);
+		if (mutex == null) {
+			mutex = new Integer(uid);
+			accessMutexMap.put(uid, mutex);
+		}
+		synchronized (mutex) {
+			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
+			int maxUID = permMetaRaf.readInt();
+			permMetaRaf.close();
+			return maxUID;
+		}
 	}
 
 	/**
@@ -218,6 +240,16 @@ public class NodeManager {
 		}
 	}
 
+	/** Construct a node using given info and allocate disk space for the node.
+	 *  PermTreeNode should ONLY be constructed by this method.
+	 * @param uid
+	 * @param pid
+	 * @param nodeName
+	 * @param nodeType
+	 * @return
+	 * @throws UnknownNodeTypeException
+	 * @throws IOException
+	 */
 	public PermTreeNode allocateNode(int uid, int pid, String nodeName, int nodeType)
 			throws UnknownNodeTypeException, IOException {
 		PermTreeNode node = new PermTreeNode(nodeName, nodeType, allocateID(uid), pid);
@@ -225,6 +257,13 @@ public class NodeManager {
 		return node;
 	}
 
+	/** Check if a node "node" of user "uid" or its extensions contains role "role" rid.
+	 * @param uid
+	 * @param node
+	 * @param rid
+	 * @return
+	 * @throws IOException
+	 */
 	public boolean findRole(int uid, PermTreeNode node, int rid) throws IOException {
 		PermTreeNode next = node;
 		boolean found = false;
@@ -258,7 +297,7 @@ public class NodeManager {
 	}
 
 	/**
-	 * search a child in a node and its sub-nodes.
+	 * search a child in a node and its extension.
 	 * 
 	 * @param uid
 	 * @param node
@@ -330,7 +369,7 @@ public class NodeManager {
 	}
 
 	/**
-	 * Delete a child in a node and its extensions
+	 * Delete a child in a node or its extensions.
 	 * 
 	 * @param uid
 	 * @param node
@@ -428,7 +467,7 @@ public class NodeManager {
 	}
 
 	/**
-	 * delete a role <rid> of <node>
+	 * delete a role "rid" of "node"
 	 * 
 	 * @param uid
 	 * @param node

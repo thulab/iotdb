@@ -11,7 +11,7 @@ public class Permission {
 	public static final long CREATE = 1l << 2;
 	public static final long INSERT = 1l << 3;
 	public static final long DELETE = 1l << 4;
-	public static final long ADMIN = 1l << 5;
+	public static final long ADMIN = -1;
 
 	public static long combine(long perm1, long perm2) {
 		return perm1 | perm2;

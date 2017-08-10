@@ -20,6 +20,11 @@ import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.auth2.model.User;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
+/** This class provide interfaces to the Authority Database.
+ *  Users, roles and permissions should be accessed from this class.
+ * @author jt
+ *
+ */
 public class AuthDao {
 	private static Logger logger = LoggerFactory.getLogger(AuthDao.class);
 
@@ -98,6 +103,12 @@ public class AuthDao {
 		return addUser(user.getUsername(), user.getPassword());
 	}
 
+	/** find a user by "username"
+	 * @param username
+	 * @return
+	 * @throws AuthException
+	 * 			when the user cannot be found
+	 */
 	public User findUser(String username) throws AuthException {
 		User user = userManager.findUser(username);
 		if (user == null) {
