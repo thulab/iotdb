@@ -25,7 +25,6 @@ public class UserTest {
 	private String userName = "testuser";
 	private String passWord = "password";
 	private User user = new User(userName, passWord);
-	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 	
 	/**
 	 * @throws Exception
@@ -33,8 +32,6 @@ public class UserTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		config.derbyHome = "";
-		EngineTestHelper.delete(config.derbyHome);
 		dBdao = new DBDao();
 		dBdao.open();
 		statement = DBDao.getStatement();
@@ -45,7 +42,6 @@ public class UserTest {
 	@After
 	public void tearDown() throws Exception {
 		dBdao.close();
-		EngineTestHelper.delete(config.derbyHome);
 	}
 
 	@Test

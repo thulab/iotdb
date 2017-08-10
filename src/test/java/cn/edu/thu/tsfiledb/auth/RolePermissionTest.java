@@ -31,11 +31,9 @@ public class RolePermissionTest {
 	private String newNodeName = "newNodeName";
 	private int permissionId;
 	private RolePermission rolePermission = null;
-	private TsfileDBConfig dbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
-		dbconfig.derbyHome = "";
 		dbDao = new DBDao();
 		roleDao = new RoleDao();
 		rolePermissionDao = new RolePermissionDao();

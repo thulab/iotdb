@@ -22,11 +22,9 @@ public class RoleTest {
 	private RoleDao roleDao = null;
 	private Role role = null;
 	private String roleName = "role";
-	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
-		config.derbyHome = "";
 		dbdao = new DBDao();
 		dbdao.open();
 		statement = DBDao.getStatement();

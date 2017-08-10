@@ -31,12 +31,10 @@ public class UserRoleRelTest {
 	Role role1 = new Role("role1");
 	Role role2 = new Role("role2");
 
-	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 	
 	@Before
 	public void setUp() throws Exception {
 
-		config.derbyHome = "";
 		dbdao = new DBDao();
 		dbdao.open();
 		statement = DBDao.getStatement();

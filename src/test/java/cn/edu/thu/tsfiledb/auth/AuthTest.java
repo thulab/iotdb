@@ -32,11 +32,9 @@ public class AuthTest {
 	private User user2;
 	private Role role1;
 	private Role role2;
-	private TsfileDBConfig dbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
-		dbconfig.derbyHome =  "";
 		dbDao = new DBDao();
 		authDao = new AuthDao();
 		dbDao.open();

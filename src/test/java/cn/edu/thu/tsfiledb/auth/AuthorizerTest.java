@@ -18,11 +18,9 @@ import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 public class AuthorizerTest {
 
 	private DBDao dbdao = null;
-	private TsfileDBConfig dbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
-		dbconfig.derbyHome = "";
 		dbdao = new DBDao();
 		dbdao.open();
 	}
