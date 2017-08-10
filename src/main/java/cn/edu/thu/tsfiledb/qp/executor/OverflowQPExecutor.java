@@ -135,9 +135,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
 			return ret;
 		} catch (Exception e) {
-			logger.error("Error in query", e);
-			e.printStackTrace();
-			return null;
+			throw new ProcessorException(e.getMessage());
 		}
 	}
 
@@ -344,7 +342,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		return false;
 	}
 
-	private boolean operateMetadata(MetadataPlan metadataPlan)throws ProcessorException  {
+	private boolean operateMetadata(MetadataPlan metadataPlan) throws ProcessorException {
 		MetadataOperator.NamespaceType namespaceType = metadataPlan.getNamespaceType();
 		Path path = metadataPlan.getPath();
 		String dataType = metadataPlan.getDataType();
@@ -362,18 +360,20 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					String nsp = mManager.getFileNameByPath(path.getFullPath());
 					fileNodeManager.closeOneFileNode(nsp);
 				} catch (PathErrorException e) {
-					
+
 				} catch (FileNodeManagerException e) {
 					e.printStackTrace();
 					throw new ProcessorException(e.getMessage());
-				} 
+				}
 				break;
 			case DELETE_PATH:
-				if(deletePathList != null && !deletePathList.isEmpty()){
+				if (deletePathList != null && !deletePathList.isEmpty()) {
 					Set<String> pathSet = new HashSet<>();
-					for(Path p : deletePathList){
+					for (Path p : deletePathList) {
 						if (!mManager.pathExist(p.getFullPath())) {
-							throw new ProcessorException(String.format("Timeseries %s does not exist and cannot be delete its metadata and data", p.getFullPath()));
+							throw new ProcessorException(String.format(
+									"Timeseries %s does not exist and cannot be delete its metadata and data",
+									p.getFullPath()));
 						}
 						pathSet.addAll(mManager.getPaths(p.getFullPath()));
 					}
@@ -384,8 +384,19 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					} catch (ProcessorException e) {
 						// no operation
 					}
-					for(String p : fullPath){
-						mManager.deletePathFromMTree(p);
+					for (String p : fullPath) {
+						String nsp = mManager.deletePathFromMTree(p);
+						if(nsp!=null){
+							// clear filenode
+							try {
+								fileNodeManager.clearOneFileNode(nsp);
+								// close processor
+								fileNodeManager.closeOneFileNode(nsp);
+							} catch (FileNodeManagerException e) {
+								e.printStackTrace();
+								throw new ProcessorException(e.getMessage());
+							}
+						}
 					}
 				}
 				break;

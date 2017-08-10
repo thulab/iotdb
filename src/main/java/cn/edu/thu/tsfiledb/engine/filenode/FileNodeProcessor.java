@@ -134,10 +134,12 @@ public class FileNodeProcessor extends LRUProcessor {
 
 	private void addLastTimeToIntervalFile() {
 
+		/*
 		if (lastUpdateTimeMap.isEmpty()) {
 			LOGGER.error("The lastUpdateTimeMap is empty when close the bufferwrite file");
 			throw new ProcessorRuntimException("The lastUpdateTimeMap is empty when close the bufferwrite file");
 		}
+		*/
 		if (!newFileNodes.isEmpty()) {
 			// end time with one start time
 			Map<String, Long> endTimeMap = new HashMap<>();
@@ -146,9 +148,10 @@ public class FileNodeProcessor extends LRUProcessor {
 				endTimeMap.put(deltaObjectId, lastUpdateTimeMap.get(deltaObjectId));
 			}
 			currentIntervalFileNode.setEndTimeMap(endTimeMap);
-		} else {
-			throw new ProcessorRuntimException("The intervalFile list is empty when close bufferwrite file");
-		}
+		} 
+		// else {
+		// throw new ProcessorRuntimException("The intervalFile list is empty when close bufferwrite file");
+		// }
 	}
 
 	public void addIntervalFileNode(long startTime, String fileName) throws Exception {
@@ -184,6 +187,19 @@ public class FileNodeProcessor extends LRUProcessor {
 			}
 		}
 	};
+	
+	public void clearFileNode(){
+		lastUpdateTimeMap.clear();
+		emptyIntervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, null);
+		newFileNodes = new ArrayList<>();
+		isMerging = FileNodeProcessorStatus.NONE;
+		numOfMergeFile = 0;
+		fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
+		fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
+		fileNodeProcessorStore.setNewFileNodes(newFileNodes);
+		fileNodeProcessorStore.setNumOfMergeFile(numOfMergeFile);
+		fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
+	}
 
 	public FileNodeProcessor(String fileNodeDirPath, String nameSpacePath, Map<String, Object> parameters)
 			throws FileNodeProcessorException {
@@ -1228,11 +1244,11 @@ public class FileNodeProcessor extends LRUProcessor {
 		if (bufferWriteProcessor != null) {
 			try {
 				while (!bufferWriteProcessor.canBeClosed()) {
-					try {
-						TimeUnit.MICROSECONDS.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+//					try {
+//						TimeUnit.MICROSECONDS.sleep(1000);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
 				}
 				bufferWriteProcessor.close();
 				bufferWriteProcessor = null;
@@ -1272,11 +1288,11 @@ public class FileNodeProcessor extends LRUProcessor {
 		if (overflowProcessor != null) {
 			try {
 				while (!overflowProcessor.canBeClosed()) {
-					try {
-						TimeUnit.MICROSECONDS.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+//					try {
+//						TimeUnit.MICROSECONDS.sleep(1000);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
 				}
 				overflowProcessor.close();
 				overflowProcessor = null;
