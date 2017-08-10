@@ -45,6 +45,7 @@ TOK_DELETE;
 TOK_INDEX_KV;
 TOK_FUNC;
 TOK_SELECT_INDEX;
+TOK_ALL;
 
 /*
   BELOW IS THE METADATA TOKEN
@@ -441,6 +442,7 @@ authorStatement
     | revokeRoleFromUser
     | showPrivileges
     | showRoles
+    | showAllRoles
     ;
 
 loadStatement
@@ -498,6 +500,11 @@ showPrivileges
 showRoles
 	: KW_SHOW KW_ROLE KW_ON path
 	-> ^(TOK_SHOW TOK_ROLE path)
+	;
+	
+showAllRoles
+	: KW_SHOW KW_ALL KW_ROLE
+	-> ^(TOK_SHOW TOK_ALL TOK_ROLE)
 	;
 
 privileges

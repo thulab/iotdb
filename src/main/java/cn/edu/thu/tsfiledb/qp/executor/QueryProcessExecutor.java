@@ -7,6 +7,7 @@ import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfiledb.auth2.dao.AuthDao;
 import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
+import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.index.kvmatch.KvMatchQueryRequest;
 import cn.edu.thu.tsfiledb.metadata.MManager;
@@ -276,6 +277,10 @@ public abstract class QueryProcessExecutor {
 
 	public Object getRolesOfUser(String userName, String fullPath) throws AuthException {
 		return AuthDao.getInstance().getRolesOnPath(userName, fullPath);
+	}
+	
+	public Role[] getAllRoles() throws AuthException {
+		return AuthDao.getInstance().getAllRoles();
 	}
 	
 	public PhysicalPlan queryPhysicalOptimize(PhysicalPlan plan) {

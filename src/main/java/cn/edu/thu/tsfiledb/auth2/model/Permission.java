@@ -32,7 +32,7 @@ public class Permission {
 			permStr.append("READ,");
 		}
 		if(test(permission, MODIFY)) {
-			permStr.append("WRITE,");
+			permStr.append("MODIFY,");
 		}
 		if(test(permission, CREATE)) {
 			permStr.append("CREATE,");

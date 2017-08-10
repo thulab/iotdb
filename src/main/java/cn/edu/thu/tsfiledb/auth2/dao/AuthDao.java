@@ -359,15 +359,15 @@ public class AuthDao {
 			throw new AuthException(e.toString());
 		}
 		
-		List<String> roleNames = new ArrayList<>();
+		List<Role> roles = new ArrayList<>();
 		if(roleIDs != null) {
 			for(Integer roleID : roleIDs) {
 				Role role = roleManager.findRole(roleID);
 				if(role != null) {
-					roleNames.add(role.getRoleName());
+					roles.add(role);
 				}
 			}
 		}
-		return roleNames;
+		return roles;
 	}
 }

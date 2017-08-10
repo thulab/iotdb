@@ -719,6 +719,7 @@ public class LogicalGenerator {
 					nodeNameList[i] = pathNode.getChild(i).getText();
 				}
 				authorOperator.setNodeNameList(nodeNameList);
+			// show role of a path
 			} else if(astNode.getChild(0).getType() == TSParser.TOK_ROLE) {
 				authorOperator = new AuthorOperator(SQLConstant.TOK_SHOW_ROLES, AuthorType.SHOW_ROLES);
 				ASTNode pathNode = astNode.getChild(1);
@@ -727,6 +728,12 @@ public class LogicalGenerator {
 					nodeNameList[i] = pathNode.getChild(i).getText();
 				}
 				authorOperator.setNodeNameList(nodeNameList);
+			} else if(astNode.getChild(0).getType() == TSParser.TOK_ALL) {
+				if(astNode.getChild(1).getType() == TSParser.TOK_ROLE) {
+					authorOperator = new AuthorOperator(SQLConstant.TOK_SHOW_ALL_ROLES, AuthorType.SHOW_ALL_ROLES);
+				} else {
+					throw new IllegalASTFormatException("illegal ast tree in grant author command, please check you SQL statement");
+				}
 			} else {
 				throw new IllegalASTFormatException("illegal ast tree in grant author command, please check you SQL statement");
 			}

@@ -114,6 +114,7 @@ public class SQLConstant {
     
     public static final int TOK_SHOW_PRIVILEGES = 59;
 	public static final int TOK_SHOW_ROLES = 60;
+	public static final int TOK_SHOW_ALL_ROLES = 61;
 
 
     public static Map<Integer, String> tokenSymbol = new HashMap<>();

@@ -64,4 +64,11 @@ public class Role {
 	public void setPermission(long permission) {
 		this.permission = permission;
 	}
+	
+	public String toString() {
+		StringBuilder stringBuilder = new StringBuilder(roleName);
+		stringBuilder.append("\t");
+		stringBuilder.append(Permission.longToName(permission));
+		return stringBuilder.toString();
+	}
 }

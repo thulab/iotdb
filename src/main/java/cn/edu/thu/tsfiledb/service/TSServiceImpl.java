@@ -689,8 +689,8 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		if(plan instanceof AuthorPlan) {
 			AuthorPlan authorPlan = (AuthorPlan) plan;
 			switch (authorPlan.getAuthorType()) {
+			case SHOW_ALL_ROLES:
 			case SHOW_PRIVILEGES:
-				return plan.convertResult();
 			case SHOW_ROLES:
 				return plan.convertResult();
 			default:

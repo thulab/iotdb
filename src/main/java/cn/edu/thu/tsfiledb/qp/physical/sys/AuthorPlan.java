@@ -7,6 +7,7 @@ import java.util.Set;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
+import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
@@ -106,15 +107,24 @@ public class AuthorPlan extends PhysicalPlan {
 	
 	@Override
 	public String convertResult() {
+		StringBuilder stringBuilder;
 		switch (authorType) {
 		case SHOW_PRIVILEGES:
 			return "Privileges are " + Permission.longToName(permission);
 		case SHOW_ROLES:
-			List<String> roleNames = (List<String>) getResult();
-			StringBuilder stringBuilder = new StringBuilder("Roles are");
-			for(String roleName : roleNames) {
-				stringBuilder.append(" ");
-				stringBuilder.append(roleName);
+			List<Role> roles = (List<Role>) getResult();
+			stringBuilder = new StringBuilder("Roles are :\n");
+			for(Role role : roles) {
+				stringBuilder.append(role.toString());
+				stringBuilder.append("\n");
+			}
+			return stringBuilder.toString();
+		case SHOW_ALL_ROLES:
+			Role[] roleArray = (Role[]) getResult();
+			stringBuilder = new StringBuilder("Roles are :\n");
+			for(Role role : roleArray) {
+				stringBuilder.append(role.toString());
+				stringBuilder.append("\n");
 			}
 			return stringBuilder.toString();
 		default:

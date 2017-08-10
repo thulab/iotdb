@@ -333,6 +333,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			case SHOW_ROLES:
 				author.setResult(getRolesOfUser(userName, nodeName.getFullPath()));
 				return true;
+			case SHOW_ALL_ROLES:
+				author.setResult(getAllRoles());
+				return true;
 			default:
 				break;
 			}

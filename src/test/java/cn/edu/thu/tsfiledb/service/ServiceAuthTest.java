@@ -1,6 +1,7 @@
 package cn.edu.thu.tsfiledb.service;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
 
 import java.io.IOException;
 
@@ -53,7 +54,7 @@ public class ServiceAuthTest {
 		exeReq.setStatement("show privileges on root.a.b.c");
 		exeResp = tsServiceImpl.executeStatement(exeReq);
 		assertEquals(exeResp.getStatus().toString(),TS_StatusCode.SUCCESS_STATUS,exeResp.getStatus().getStatusCode());
-		assertEquals("Privileges are READ,WRITE",exeResp.getStatus().getErrorMessage());
+		assertEquals("Privileges are READ,MODIFY",exeResp.getStatus().getErrorMessage());
 	}
 
 	@Test
@@ -119,6 +120,39 @@ public class ServiceAuthTest {
 		exeReq.setStatement("show role on root.a.b.c");
 		exeResp = tsServiceImpl.executeStatement(exeReq);
 		assertEquals(exeResp.getStatus().toString(),TS_StatusCode.SUCCESS_STATUS,exeResp.getStatus().getStatusCode());
-		assertEquals("Roles are userrole",exeResp.getStatus().getErrorMessage());
+		assertEquals("Roles are :\n"
+				+ "userrole	READ\n",exeResp.getStatus().getErrorMessage());
+	}
+	
+	@Test
+	public void listRolesTest() throws TException {
+		String rootname = "root", rootPW = "root";
+		req.setUsername(rootname);
+		req.setPassword(rootPW);
+		tsServiceImpl.openSession(req);
+		
+		TSExecuteStatementReq exeReq = new TSExecuteStatementReq();
+		TSExecuteStatementResp exeResp;
+		exeReq.setStatement("create role roleA");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		exeReq.setStatement("create role roleB");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		exeReq.setStatement("create role roleC");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		exeReq.setStatement("create role roleD");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		exeReq.setStatement("grant role roleB privileges 'READ'");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		exeReq.setStatement("grant role roleC privileges 'MODIFY'");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		exeReq.setStatement("grant role roleD privileges 'READ','MODIFY'");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		
+		exeReq.setStatement("show all role");
+		exeResp = tsServiceImpl.executeStatement(exeReq);
+		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleA\tNONE"));
+		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleB\tREAD"));
+		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleC\tMODIFY"));
+		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleD\tREAD,MODIFY"));
 	}
 }
