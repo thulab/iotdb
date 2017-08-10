@@ -22,7 +22,8 @@ public class IndexFileUtils {
     }
 
     public static String getIndexFilePath(Path columnPath, String dataFilePath) {
-        return dataFilePath.replace(DATA_FILE_PATH, INDEX_FILE_PATH) + "-" + columnPath.getMeasurementToString();
+        String nameSpacePath = new File(dataFilePath).getParentFile().getName();
+        return dataFilePath.replace(DATA_FILE_PATH, INDEX_FILE_PATH) + "-" + columnPath.getFullPath().replace(nameSpacePath + ".", "");
     }
 
     public static String getIndexFilePathPrefix(String dataFilePath) {
