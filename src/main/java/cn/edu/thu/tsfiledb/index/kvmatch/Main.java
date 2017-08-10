@@ -16,14 +16,17 @@ public class Main {
 
         Path columnPath = new Path("root.turbine.Beijing.d3.Speed");
         OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
+        // columnPath.getDeltaObjectToString();
 
         // 1. get information of all files containing this column path.
         List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(columnPath, 0);
 
         // 2. build index for every data file.
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             new Thread(() -> {
                 System.out.println(columnPath);
+//                System.out.println(columnPath.getDeltaObjectToString());
+//                System.out.println(columnPath.getMeasurementToString());
                 for (DataFileInfo fileInfo : fileInfoList) {
                     QueryDataSet dataSet = null;
                     try {
