@@ -40,7 +40,7 @@ public class TransferThread extends TimerTask {
 			MakeDir(dir.getAbsolutePath());
 		File[] files = dir.listFiles();
 		if (Client.isTimerTaskRunning() && files.length > 0) {
-			LOGGER.info("Still transferring");
+			LOGGER.warn("Still transferring");
 			return;
 		}
 		Client.setTimerTaskRunning(true);
