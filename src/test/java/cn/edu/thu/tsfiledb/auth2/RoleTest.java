@@ -50,18 +50,23 @@ public class RoleTest {
 		Role role = roleManager.findRole(roleName);
 		long perm = Permission.combine(Permission.READ, Permission.MODIFY);
 		assertEquals(role.getPermission(), perm);
-		assertFalse(roleManager.grantPermission(roleName + "dummy", Permission.READ));
+		boolean caught = false;
+		try {
+			assertFalse(roleManager.grantPermission(roleName + "dummy", Permission.READ));
+		} catch (Exception e1) {
+			caught = true;
+		}
+		assertTrue(caught);
 		
 		// revoke
 		assertTrue(roleManager.revokePermission(roleName, Permission.READ));
 		role = roleManager.findRole(roleName);
 		assertEquals(role.getPermission(), Permission.MODIFY);
-		boolean caught = false;
+		caught = false;
 		try {
-			roleManager.revokePermission(roleName, Permission.READ);
+			roleManager.revokePermission(roleName + "dummy", Permission.READ);
 		} catch (Exception e) {
-			if(e instanceof NoSuchPermException)
-				caught = true;
+			caught = true;
 		}
 		assertTrue(caught);
 	}

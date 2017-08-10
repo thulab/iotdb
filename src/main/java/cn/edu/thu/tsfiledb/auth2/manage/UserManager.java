@@ -101,7 +101,7 @@ public class UserManager {
 	public boolean modifyPW(String username, String newPassword) throws IOException, NoSuchUserException {
 		User user = users.get(username);
 		if(user == null) {
-			throw new NoSuchUserException(username);
+			throw new NoSuchUserException(username + " does not exist");
 		}
 		user.setPassword(newPassword);
 		flushUser(user);

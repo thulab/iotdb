@@ -21,9 +21,11 @@ import org.slf4j.LoggerFactory;
 import cn.edu.thu.tsfile.common.exception.ProcessorException;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.thu.tsfiledb.auth.AuthException;
-import cn.edu.thu.tsfiledb.auth.AuthorityChecker;
-import cn.edu.thu.tsfiledb.auth.dao.Authorizer;
+import cn.edu.thu.tsfiledb.auth2.dao.AuthChecker;
+import cn.edu.thu.tsfiledb.auth2.dao.AuthDao;
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
+import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
@@ -35,7 +37,10 @@ import cn.edu.thu.tsfiledb.qp.exception.IllegalASTFormatException;
 import cn.edu.thu.tsfiledb.qp.exception.QueryProcessorException;
 import cn.edu.thu.tsfiledb.qp.executor.OverflowQPExecutor;
 import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
+import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator;
+import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
+import cn.edu.thu.tsfiledb.qp.physical.sys.AuthorPlan;
 import cn.edu.thu.tsfiledb.query.management.ReadLockManager;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCancelOperationReq;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCancelOperationResp;
@@ -96,7 +101,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 		boolean status;
 		try {
-			status = Authorizer.login(req.getUsername(), req.getPassword());
+			status = AuthDao.getInstance().login(req.getUsername(), req.getPassword());
 		} catch (AuthException e) {
 			status = false;
 		}
@@ -476,9 +481,15 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		try {
 			List<Path> paths = plan.getPaths();
 
-			if (!checkAuthorization(paths, plan.getOperatorType())) {
-				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
+			try {
+				if (!checkAuthorization(paths, plan)) {
+					return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
+				}
+			} catch (AuthException e1) {
+				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e1.getMessage());
 			}
+			completeInfoForPlan(plan);
+			
 			// TODO
 			// In current version, we only return OK/ERROR
 			// Do we need to add extra information of executive condition
@@ -493,7 +504,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				writeLogManager.write(plan);
 			}
 			TS_StatusCode statusCode = execRet ? TS_StatusCode.SUCCESS_STATUS : TS_StatusCode.ERROR_STATUS;
-			String msg = execRet ? "Execute successfully" : "Execute statement error.";
+			String msg = execRet ? getMessageFromPlan(plan) : "Execute statement error.";
 			TSExecuteStatementResp resp = getTSExecuteStatementResp(statusCode, msg);
 			TSHandleIdentifier operationId = new TSHandleIdentifier(ByteBuffer.wrap(username.get().getBytes()),
 					ByteBuffer.wrap(("PASS".getBytes())));
@@ -520,6 +531,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			e.printStackTrace();
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
+		completeInfoForPlan(physicalPlan);
 
 		if (physicalPlan.isQuery()) {
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Statement is a query statement.");
@@ -528,8 +540,12 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		// if operation belongs to add/delete/update
 		List<Path> paths = physicalPlan.getPaths();
 
-		if (!checkAuthorization(paths, physicalPlan.getOperatorType())) {
-			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
+		try {
+			if (!checkAuthorization(paths, physicalPlan)) {
+				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
+			}
+		} catch (AuthException e1) {
+			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e1.getMessage());
 		}
 
 		// TODO
@@ -549,7 +565,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			}
 		}
 		TS_StatusCode statusCode = execRet ? TS_StatusCode.SUCCESS_STATUS : TS_StatusCode.ERROR_STATUS;
-		String msg = execRet ? "Execute successfully" : "Execute statement error.";
+		String msg = execRet ? getMessageFromPlan(physicalPlan) : "Execute statement error.";
 		TSExecuteStatementResp resp = getTSExecuteStatementResp(statusCode, msg);
 		TSHandleIdentifier operationId = new TSHandleIdentifier(ByteBuffer.wrap(username.get().getBytes()),
 				ByteBuffer.wrap(("PASS".getBytes())));
@@ -586,8 +602,17 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		return username.get() != null;
 	}
 
-	private boolean checkAuthorization(List<Path> paths, OperatorType type) {
-		return AuthorityChecker.check(username.get(), paths, type);
+	private boolean checkAuthorization(List<Path> paths, PhysicalPlan plan) throws AuthException {
+		if(!(plan instanceof AuthorPlan))
+			return checkAuthorization(paths, plan.getOperatorType());
+		else {
+			AuthorPlan authorPlan = (AuthorPlan) plan;
+			return AuthChecker.check(username.get(), paths, authorPlan.getAuthorType());
+		}
+	}
+	
+	private boolean checkAuthorization(List<Path> paths, OperatorType type) throws AuthException {
+		return AuthChecker.check(username.get(), paths, type);
 	}
 
 	private TSExecuteStatementResp getTSExecuteStatementResp(TS_StatusCode code, String msg) {
@@ -654,4 +679,38 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		TSSetTimeZoneResp resp = new TSSetTimeZoneResp(ts_status);
 		return resp;
 	}
+
+	/** get detailed return message from an EXECUTED plan
+	 * @param plan
+	 * @return
+	 */
+	private String getMessageFromPlan(PhysicalPlan plan) {
+		StringBuilder stringBuilder = new StringBuilder("Execute successfully. ");
+		if(plan instanceof AuthorPlan) {
+			AuthorPlan authorPlan = (AuthorPlan) plan;
+			switch (authorPlan.getAuthorType()) {
+			case SHOW_PRIVILEGES:
+				return plan.convertResult();
+			case SHOW_ROLES:
+				return plan.convertResult();
+			default:
+				break;
+			}
+		}
+		return stringBuilder.toString();
+	}
+	
+	/** Some commands operate on current user but cannot get user info (e.g. username)
+	 *  from sql. This method is to fill these missing info to the plan.
+	 * @param plan
+	 */
+	private void completeInfoForPlan(PhysicalPlan plan) {
+		if(plan instanceof AuthorPlan) {
+			AuthorPlan authorPlan = (AuthorPlan) plan;
+			if(authorPlan.getAuthorType() == AuthorType.SHOW_PRIVILEGES ||
+			   authorPlan.getAuthorType() == AuthorType.SHOW_ROLES)
+				authorPlan.setUserName(username.get());
+		}
+	}
 }
+

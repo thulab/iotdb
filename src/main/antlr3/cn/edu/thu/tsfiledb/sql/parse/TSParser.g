@@ -12,6 +12,7 @@ k=3;
 tokens {
 
 //update
+TOK_SHOW;
 TOK_SHOW_METADATA;
 TOK_MERGE;
 TOK_QUIT;
@@ -438,6 +439,8 @@ authorStatement
     | revokeRole
     | grantRoleToUser
     | revokeRoleFromUser
+    | showPrivileges
+    | showRoles
     ;
 
 loadStatement
@@ -486,6 +489,16 @@ revokeRoleFromUser
     : KW_REVOKE KW_FROM KW_USER userName = Identifier KW_ROLE roleName = Identifier KW_ON path
     -> ^(TOK_REVOKE ^(TOK_ROLE $roleName) ^(TOK_USER $userName) path)
     ;
+    
+showPrivileges
+	: KW_SHOW KW_PRIVILEGES KW_ON path
+	-> ^(TOK_SHOW TOK_PRIVILEGES path)
+	;
+	
+showRoles
+	: KW_SHOW KW_ROLE KW_ON path
+	-> ^(TOK_SHOW TOK_ROLE path)
+	;
 
 privileges
     : KW_PRIVILEGES StringLiteral (COMMA StringLiteral)*

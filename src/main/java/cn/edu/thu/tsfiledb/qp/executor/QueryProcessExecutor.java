@@ -274,6 +274,10 @@ public abstract class QueryProcessExecutor {
 		return AuthDao.getInstance().getPermissionOnPath(username, nodeName);
 	}
 
+	public Object getRolesOfUser(String userName, String fullPath) throws AuthException {
+		return AuthDao.getInstance().getRolesOnPath(userName, fullPath);
+	}
+	
 	public PhysicalPlan queryPhysicalOptimize(PhysicalPlan plan) {
 		return plan;
 	}
@@ -281,7 +285,7 @@ public abstract class QueryProcessExecutor {
 	public PhysicalPlan nonQueryPhysicalOptimize(PhysicalPlan plan) {
 		return plan;
 	}
-
+	
 	public abstract List<String> getAllPaths(String originPath) throws PathErrorException;
 
 }

@@ -112,7 +112,7 @@ public class NodeManager {
 	public PermTreeNode getNode(int uid, int nodeIndex) throws IOException {
 		if (nodeIndex < 0) {
 			logger.error("invalid node index {}", nodeIndex);
-			throw new InvalidNodeIndexException(String.valueOf(nodeIndex));
+			throw new InvalidNodeIndexException("perm node " + nodeIndex + " is invalid");
 		}
 		Integer mutex = accessMutexMap.get(uid);
 		if (mutex == null) {
@@ -132,7 +132,7 @@ public class NodeManager {
 			if (offset > permFileRaf.length()) {
 				logger.error("node index {} out of bound {}", nodeIndex,
 						permFileRaf.length() / PermTreeNode.RECORD_SIZE);
-				throw new InvalidNodeIndexException(String.valueOf(nodeIndex));
+				throw new InvalidNodeIndexException("perm node " + nodeIndex + " is invalid");
 			}
 			permFileRaf.seek(offset);
 			node = PermTreeNode.readObject(permFileRaf);
@@ -295,7 +295,7 @@ public class NodeManager {
 			throws WrongNodetypeException, IOException, UnknownNodeTypeException, PathAlreadyExistException {
 		if (findChild(uid, node, childName) != -1) {
 			logger.error("{} already has child {}", node.getName(), childName);
-			throw new PathAlreadyExistException(childName + " in " + node.getName());
+			throw new PathAlreadyExistException(childName + " in " + node.getName() +  " already exists");
 		}
 		PermTreeNode curnode = node;
 		boolean added = curnode.addChild(childName, cid);
@@ -353,7 +353,7 @@ public class NodeManager {
 		return deleted;
 	}
 
-	/**	Get the lead node corresponding to <path> of user <uid>.
+	/**	Get the lead node corresponding to "path" of user "uid".
 	 * Internal nodes are created when not existing, so this method can be
 	 * used as a mkdir.
 	 * @param uid
@@ -384,7 +384,7 @@ public class NodeManager {
 	}
 	
 
-	/** add a role <rid> to <node> or its extensions
+	/** add a role "rid" to "node" or its extensions
 	 * @param uid
 	 * @param node
 	 * @param rid

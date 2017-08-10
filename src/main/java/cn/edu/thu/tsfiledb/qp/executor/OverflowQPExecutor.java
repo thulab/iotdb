@@ -9,6 +9,7 @@ import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.thu.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
+import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.engine.exception.FileNodeManagerException;
 import cn.edu.thu.tsfiledb.engine.filenode.FileNodeManager;
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
@@ -328,6 +329,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				return removePermissionFromRole(roleName, permission);
 			case REVOKE_ROLE_FROM_USER:
 				return revokeRoleFromUser(roleName, userName, nodeName.getFullPath());
+			case SHOW_PRIVILEGES:
+				author.setPermissions(getPermissionsOfUser(userName, nodeName.getFullPath()));
+				return true;
+			case SHOW_ROLES:
+				author.setResult(getRolesOfUser(userName, nodeName.getFullPath()));
+				return true;
 			default:
 				break;
 			}

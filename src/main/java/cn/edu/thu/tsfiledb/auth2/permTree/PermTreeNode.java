@@ -48,7 +48,7 @@ public class PermTreeNode {
 			break;
 		default:
 			logger.error("unrecognized node type {} when init node for {}", nodeType, nodeName);
-			throw new UnknownNodeTypeException();
+			throw new UnknownNodeTypeException("node type " + nodeType + " is unknown");
 		}
 	}
 
@@ -66,7 +66,7 @@ public class PermTreeNode {
 			break;
 		default:
 			logger.error("unrecognized node type {} when init node for {}", nodeType, node.header.getNodeName());
-			throw new UnknownNodeTypeException();
+			throw new UnknownNodeTypeException("node type " + nodeType + " is unknown");
 		}
 		
 		return node;
@@ -101,7 +101,7 @@ public class PermTreeNode {
 		if (header.getNodeType() != PermTreeHeader.NORMAL_NODE
 				&& header.getNodeType() != PermTreeHeader.SUBNODE_EXTENSION) {
 			logger.error("add child to a role extension");
-			throw new WrongNodetypeException(String.valueOf(header.getNodeType()));
+			throw new WrongNodetypeException("add child to role-extession of " + header.getNodeName());
 		}
 		SubnodeContent subnodeContent = (SubnodeContent) content;
 		return subnodeContent.addChild(childName, cid);
@@ -111,7 +111,7 @@ public class PermTreeNode {
 		if (header.getNodeType() != PermTreeHeader.NORMAL_NODE
 				&& header.getNodeType() != PermTreeHeader.SUBNODE_EXTENSION) {
 			logger.error("add child to a role extension");
-			throw new WrongNodetypeException(String.valueOf(header.getNodeType()));
+			throw new WrongNodetypeException("add child to role-extession of " + header.getNodeName());
 		}
 		SubnodeContent subnodeContent = (SubnodeContent) content;
 		return subnodeContent.deleteChild(childName);
@@ -127,7 +127,7 @@ public class PermTreeNode {
 	public int findChild(String childName) throws WrongNodetypeException {
 		if (!(content instanceof SubnodeContent)) {
 			logger.error("trying to find child {} of a node with no child", childName);
-			throw new WrongNodetypeException();
+			throw new WrongNodetypeException("find child in role-extession of " + header.getNodeName());
 		}
 		SubnodeContent nodeContent = (SubnodeContent) content;
 		for (int i = 0; i < nodeContent.getSize(); i++) {

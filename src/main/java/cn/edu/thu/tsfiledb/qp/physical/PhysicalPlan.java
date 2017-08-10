@@ -13,6 +13,7 @@ import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
 public abstract class PhysicalPlan {
     private boolean isQuery;
     private OperatorType operatorType;
+    private Object result;
 
     protected PhysicalPlan(boolean isQuery, OperatorType operatorType) {
         this.isQuery = isQuery;
@@ -33,4 +34,17 @@ public abstract class PhysicalPlan {
         return operatorType;
     }
 
+    public String convertResult() {
+    	if(getResult() == null)
+    		return "null";
+    	return getResult().toString();
+    }
+
+	public Object getResult() {
+		return result;
+	}
+
+	public void setResult(Object result) {
+		this.result = result;
+	}
 }

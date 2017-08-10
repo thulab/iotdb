@@ -16,6 +16,7 @@ import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
  * @author qiaojialin
  */
 public class AuthorPlan extends PhysicalPlan {
+
 	private final AuthorType authorType;
 	private String userName;
 	private String roleName;
@@ -44,6 +45,10 @@ public class AuthorPlan extends PhysicalPlan {
 	public String getUserName() {
 		return userName;
 	}
+	
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 
 	public String getRoleName() {
 		return roleName;
@@ -59,6 +64,10 @@ public class AuthorPlan extends PhysicalPlan {
 
 	public long getPermissions() {
 		return permission;
+	}
+	
+	public void setPermissions(long permission) {
+		this.permission = permission;
 	}
 
 	public Path getNodeName() {
@@ -93,5 +102,24 @@ public class AuthorPlan extends PhysicalPlan {
 		if (nodeName != null)
 			ret.add(nodeName);
 		return ret;
+	}
+	
+	@Override
+	public String convertResult() {
+		switch (authorType) {
+		case SHOW_PRIVILEGES:
+			return "Privileges are " + Permission.longToName(permission);
+		case SHOW_ROLES:
+			List<String> roleNames = (List<String>) getResult();
+			StringBuilder stringBuilder = new StringBuilder("Roles are");
+			for(String roleName : roleNames) {
+				stringBuilder.append(" ");
+				stringBuilder.append(roleName);
+			}
+			return stringBuilder.toString();
+		default:
+			break;
+		}
+		return super.convertResult();
 	}
 }

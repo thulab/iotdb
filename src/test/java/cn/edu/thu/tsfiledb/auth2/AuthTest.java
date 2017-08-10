@@ -2,13 +2,11 @@ package cn.edu.thu.tsfiledb.auth2;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cn.edu.thu.tsfiledb.auth2.dao.AuthDao;
-import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchRoleException;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
@@ -19,83 +17,130 @@ public class AuthTest {
 	static AuthDao dao;
 	
 	@BeforeClass
-	public static void setup() throws IOException {
+	public static void setup() throws AuthException {
 		dao = AuthDao.getInstance();
 	}
 	
 	@Test
-	public void loginTest() {
+	public void loginTest() throws AuthException {
 		assertTrue(dao.login("root", "root"));
-		assertFalse(dao.login("root", "toor"));
+		boolean caught;
+		caught = false;
+		try {
+			assertFalse(dao.login("root", "toor"));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
 	}
 
 	@Test
-	public void createDeleteUserTest() {
+	public void createDeleteUserTest() throws AuthException {
 		String username = "user", password = "pw";
-		dao.deleteUser(username);
-		assertFalse(dao.login(username, password));
+		try {
+			dao.deleteUser(username);
+		} catch (Exception e) {
+		}
+		
+		boolean caught = false;
+		caught = false;
+		try {
+			assertFalse(dao.login(username, password));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
 		assertTrue(dao.addUser(username, password));
 		assertTrue(dao.login(username, password));
-		assertFalse(dao.addUser(username, password));
+		caught = false;
+		try {
+			assertFalse(dao.addUser(username, password));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
 		
 		assertTrue(dao.deleteUser(username));
-		assertFalse(dao.login(username, password));
-		assertFalse(dao.deleteUser(username));
+		caught = false;
+		try {
+			assertFalse(dao.login(username, password));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
+		caught = false;
+		try {
+			assertFalse(dao.deleteUser(username));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
 		assertTrue(dao.addUser(username, password));
 	}
 	
 	@Test
-	public void createDeleteRoleTest() throws NoSuchRoleException {
+	public void createDeleteRoleTest() throws AuthException {
 		String roleName = "role-create";
-		dao.deleteRole(roleName);
+		try {
+			dao.deleteRole(roleName);
+		} catch (Exception e) {
+		}
 		assertTrue(dao.addRole(roleName));
 		assertEquals(dao.findRole(roleName).getRoleName(), roleName);
-		assertFalse(dao.addRole(roleName));
-		
+		boolean caught = false;
+		caught = false;
+		try {
+			assertFalse(dao.addRole(roleName));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
+		assertTrue(caught);
 		assertTrue(dao.deleteRole(roleName));
-		assertFalse(dao.deleteRole(roleName));
+		caught = false;
+		try {
+			assertFalse(dao.deleteRole(roleName));
+		} catch (Exception e) {
+			caught = true;
+		}
+		assertTrue(caught);
+		caught = false;
 		try {
 			dao.findRole(roleName);
 		} catch (Exception e) {
-			assertTrue(e instanceof NoSuchRoleException);
+			caught = true;
 		}
+		assertTrue(caught);
 		assertTrue(dao.addRole(roleName));
 	}
 	
 	@Test
-	public void permissionTest() throws NoSuchRoleException, PathErrorException, NoSuchUserException, NoSuchPermException {
+	public void permissionTest() throws AuthException {
 		String username = "user-permission", password = "pw";
 		String path = "root.laptop.d1";
-		dao.deleteUser(username);
+		try {
+			dao.deleteUser(username);
+		} catch (Exception e2) {
+		}
 		dao.addUser(username, password);
 		// check permission
 		boolean caught = false;
+		assertFalse(dao.checkPermissionOnPath(username, "wrongpath", Permission.NONE));
 		try {
-			dao.checkPermissionOnPath(username, "wrongpath", Permission.NONE);
+			assertFalse(dao.checkPermissionOnPath("GHOST", path, Permission.NONE));
 		} catch (Exception e) {
-			if(e instanceof PathErrorException)
 				caught = true;
 		}
 		assertTrue(caught);
-		caught = false;
-		try {
-			dao.checkPermissionOnPath("GHOST", path, Permission.NONE);
-		} catch (Exception e) {
-			if(e instanceof  NoSuchUserException)
-				caught = true;
-		}
-		assertTrue(caught);
-		caught = false;
-		try {
-			assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ));
-		} catch (NoSuchUserException | PathErrorException e) {
-			if(e instanceof PathErrorException)
-				caught = true;
-		}
-		assertTrue(caught);
+		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ));
+		
 		// grant revoke role permission
 		String readerRoleName = "reader";
-		dao.deleteRole(readerRoleName);
+		try {
+			dao.deleteRole(readerRoleName);
+		} catch (Exception e) {
+		}
+		
 		assertTrue(dao.addRole(readerRoleName));
 		try {
 			assertTrue(dao.grantRolePermission(readerRoleName, Permission.READ));
@@ -117,69 +162,78 @@ public class AuthTest {
 				caught = true;
 		}
 		assertTrue(caught);
-		assertFalse(dao.revokeRolePermission(readerRoleName, Permission.MODIFY));
+		caught = false;
+		try {
+			assertFalse(dao.revokeRolePermission(readerRoleName, Permission.MODIFY));
+		} catch (Exception e1) {
+			caught = true;
+		}
+		assertTrue(caught);
 		assertTrue(dao.revokeRolePermission(readerRoleName, Permission.READ));
 		assertTrue(dao.grantRolePermission(readerRoleName, Permission.READ));
 		// grant role on path
 		caught = false;
 		try {
 			dao.grantRoleOnPath("not a user", path, readerRoleName);
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
-			if(e instanceof NoSuchUserException)
-				caught = true;
+		} catch (AuthException e) {
+			caught = true;
 		}
 		assertTrue(caught);
 		caught = false;
 		try {
 			dao.grantRoleOnPath(username, path, "not a role");
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
-			if(e instanceof NoSuchRoleException)
-				caught = true;
+		} catch (AuthException e) {
+			caught = true;
 		}
 		assertTrue(caught);
 		try {
 			assertTrue(dao.grantRoleOnPath(username, path, readerRoleName));
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
+		} catch (AuthException e) {
 			fail(e.toString());
 		}
 		try {
 			assertTrue(dao.checkPermissionOnPath(username, path, Permission.READ));
-		} catch (NoSuchUserException | PathErrorException e) {
+		} catch (AuthException e) {
 			fail(e.toString());
 		}
+		caught = false;
 		try {
 			assertFalse(dao.grantRoleOnPath(username, path, readerRoleName));
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
-			fail(e.toString());
+		} catch (AuthException e) {
+			caught = true;
 		}
+		assertTrue(caught);
 		// revoke role on path
 		caught = false;
 		try {
 			dao.revokeRoleOnPath(username, "not a path", readerRoleName);
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
-			if(e instanceof PathErrorException)
-				caught = true;
+		} catch (AuthException e) {
+			caught = true;
 		}
 		assertTrue(caught);
 		caught = false;
 		try {
 			dao.revokeRoleOnPath("not a user", path, readerRoleName);
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
-			if(e instanceof NoSuchUserException)
-				caught = true;
+		} catch (AuthException e) {
+			caught = true;
 		}
 		assertTrue(caught);
 		caught = false;
 		try {
 			dao.revokeRoleOnPath(username, path, "not a role");
-		} catch (PathErrorException | NoSuchUserException | NoSuchRoleException e) {
-			if(e instanceof NoSuchRoleException)
-				caught = true;
+		} catch (AuthException e) {
+			caught = true;
 		}
 		assertTrue(caught);
 		
 		assertTrue(dao.revokeRoleOnPath(username, path, readerRoleName));
-		assertFalse(dao.revokeRoleOnPath(username, path, readerRoleName));
+		caught = false;
+		try {
+			assertFalse(dao.revokeRoleOnPath(username, path, readerRoleName));
+		} catch (AuthException e) {
+			caught = true;
+		}
+		assertTrue(caught);
 		assertTrue(dao.grantRoleOnPath(username, path, readerRoleName));
 
 		// grant / revoke permission to role should influence user permission
@@ -190,8 +244,11 @@ public class AuthTest {
 		
 		// grant / revoke role to path should influence user permission
 		String writerRoleName = "writer";
-		dao.addRole(writerRoleName);
-		dao.grantRolePermission(writerRoleName, Permission.MODIFY);
+		try {
+			dao.addRole(writerRoleName);
+			dao.grantRolePermission(writerRoleName, Permission.MODIFY);
+		} catch (Exception e) {
+		}	
 		assertFalse(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));
 		dao.grantRoleOnPath(username, path, writerRoleName);
 		assertTrue(dao.checkPermissionOnPath(username, path, Permission.READ | Permission.MODIFY));

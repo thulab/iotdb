@@ -42,7 +42,7 @@ public class PermissionManager {
 		
 	}
 	
-	/** Collect the roles granted to user <uid> in <path> 
+	/** Collect the roles granted to user “uid” in “path” 
 	 * @param uid
 	 * @param path
 	 * @return set of roleIDs
@@ -83,7 +83,7 @@ public class PermissionManager {
 		return roleSet;
 	}
 	
-	/** let user <uid> have role <rid> on <path>
+	/** let user “uid” have role “rid” on “path”
 	 * @param uid user id
 	 * @param path should start with "root"
 	 * @param rid role id
@@ -110,7 +110,7 @@ public class PermissionManager {
 		return success;
 	}
 	
-	/** delete user <uid>'s role <rid> on <path>
+	/** delete user “uid”'s role “rid” on “path”
 	 * @param uid user id
 	 * @param path should start with "root"
 	 * @param rid role id
@@ -136,7 +136,7 @@ public class PermissionManager {
 		return success;
 	}
 	
-	/** check if user <uid> has <permission> on <path> 
+	/** check if user “uid” has “permission” on “path” 
 	 * @param uid
 	 * @param path 
 	 * @param permission permission to be checked
@@ -145,10 +145,15 @@ public class PermissionManager {
 	 * @throws PathErrorException
 	 * @throws WrongNodetypeException
 	 */
-	public boolean checkPermissionOnPath(int uid, String path, long permission) throws IOException, PathErrorException, WrongNodetypeException {
+	public boolean checkPermissionOnPath(int uid, String path, long permission) throws IOException,  WrongNodetypeException {
 		RoleManager roleManager = RoleManager.getInstance();
 		
-		Set<Integer> roleIDs = findRolesOnPath(uid, path);
+		Set<Integer> roleIDs;
+		try {
+			roleIDs = findRolesOnPath(uid, path);
+		} catch (PathErrorException e) {
+			return false;
+		}
 		long userPerm = roleManager.rolesToPermission(roleIDs);
 		return Permission.test(userPerm, permission);
 	}

@@ -161,6 +161,9 @@ public class LogicalGenerator {
 		case TSParser.TOK_LOAD:
 			analyzeDataLoad(astNode);
 			return;
+		case TSParser.TOK_SHOW:
+			analyzeShow(astNode);
+			return;
 		case TSParser.TOK_QUERY:
 			// for TSParser.TOK_QUERY might appear in both query and insert
 			// command. Thus, do
@@ -702,6 +705,37 @@ public class LogicalGenerator {
 		}
 		initializedOperator = authorOperator;
 	}
+	
+	private void analyzeShow(ASTNode astNode) throws IllegalASTFormatException {
+		int childCount = astNode.getChildCount();
+		AuthorOperator authorOperator;
+		if(childCount == 2) {
+			// show privileges
+			if(astNode.getChild(0).getType() == TSParser.TOK_PRIVILEGES) {
+				authorOperator = new AuthorOperator(SQLConstant.TOK_SHOW_PRIVILEGES, AuthorType.SHOW_PRIVILEGES);
+				ASTNode pathNode = astNode.getChild(1);
+				String[] nodeNameList = new String[pathNode.getChildCount()];
+				for (int i = 0; i < nodeNameList.length; i++) {
+					nodeNameList[i] = pathNode.getChild(i).getText();
+				}
+				authorOperator.setNodeNameList(nodeNameList);
+			} else if(astNode.getChild(0).getType() == TSParser.TOK_ROLE) {
+				authorOperator = new AuthorOperator(SQLConstant.TOK_SHOW_ROLES, AuthorType.SHOW_ROLES);
+				ASTNode pathNode = astNode.getChild(1);
+				String[] nodeNameList = new String[pathNode.getChildCount()];
+				for (int i = 0; i < nodeNameList.length; i++) {
+					nodeNameList[i] = pathNode.getChild(i).getText();
+				}
+				authorOperator.setNodeNameList(nodeNameList);
+			} else {
+				throw new IllegalASTFormatException("illegal ast tree in grant author command, please check you SQL statement");
+			}
+		} else {
+			throw new IllegalASTFormatException("illegal ast tree in grant author command, please check you SQL statement");
+		}
+		initializedOperator = authorOperator;
+	}
+
 
 	private void checkMetadataArgs(String dataType, String encoding) throws MetadataArgsErrorException {
 		final String RLE = "RLE";

@@ -111,6 +111,9 @@ public class SQLConstant {
     public static final int TOK_PROPERTY_DELETE_LABEL = 56;
     public static final int TOK_PROPERTY_LINK = 57;
     public static final int TOK_PROPERTY_UNLINK = 58;
+    
+    public static final int TOK_SHOW_PRIVILEGES = 59;
+	public static final int TOK_SHOW_ROLES = 60;
 
 
     public static Map<Integer, String> tokenSymbol = new HashMap<>();
