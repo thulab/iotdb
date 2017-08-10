@@ -1228,11 +1228,11 @@ public class FileNodeProcessor extends LRUProcessor {
 		if (bufferWriteProcessor != null) {
 			try {
 				while (!bufferWriteProcessor.canBeClosed()) {
-					try {
-						TimeUnit.MICROSECONDS.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+//					try {
+//						TimeUnit.MICROSECONDS.sleep(1000);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
 				}
 				bufferWriteProcessor.close();
 				bufferWriteProcessor = null;
@@ -1272,11 +1272,11 @@ public class FileNodeProcessor extends LRUProcessor {
 		if (overflowProcessor != null) {
 			try {
 				while (!overflowProcessor.canBeClosed()) {
-					try {
-						TimeUnit.MICROSECONDS.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+//					try {
+//						TimeUnit.MICROSECONDS.sleep(1000);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
 				}
 				overflowProcessor.close();
 				overflowProcessor = null;
