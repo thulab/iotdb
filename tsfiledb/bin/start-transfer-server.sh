@@ -8,13 +8,6 @@ TSFILE_CONF=${TSFILE_HOME}/conf
 TSFILE_LOGS=${TSFILE_HOME}/logs
 
 
-if [ -f "$TSFILE_CONF/tsfile-env.sh" ]; then
-    . "$TSFILE_CONF/tsfile-env.sh"
-else
-    echo "can't find $TSFILE_CONF/tsfile-env.sh"
-fi
-
-
 if [ -n "$JAVA_HOME" ]; then
     for java in "$JAVA_HOME"/bin/amd64/java "$JAVA_HOME"/bin/java; do
         if [ -x "$java" ]; then
