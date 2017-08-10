@@ -35,6 +35,7 @@ public class Client {
 		/** waiting for input command */
 		try {
 			while (true) {
+				System.out.println("-------------------------------------------------------------");
 				System.out.println("Input a command or try help for more info:");
 				String cmd = in.nextLine();
 				if(cmd == null || cmd.trim().equals("")){

@@ -25,6 +25,7 @@ public class Server {
         try {
         		serverSocket = new ServerSocket(config.port);
             while(true){
+            	LOGGER.info("Server start successfully,ready to receive files");
                 Socket socket = serverSocket.accept();
                 fixedThreadPool.submit(new ReceiveFileThread(socket));
             }

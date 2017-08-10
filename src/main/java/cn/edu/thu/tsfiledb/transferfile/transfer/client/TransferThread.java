@@ -76,7 +76,7 @@ public class TransferThread extends TimerTask {
 					.append(entry.getValue())
 					.append("\n");
 				}
-				System.out.println(startTimeInfo.toString());
+				//System.out.println(startTimeInfo.toString());
 				
 				TSFileNodeNameResp tsFileNodeNameResp = client.getFileNode(namespace, startTimes, System.currentTimeMillis());
 				int token = tsFileNodeNameResp.getToken();
@@ -97,6 +97,9 @@ public class TransferThread extends TimerTask {
 	private void copyFileSnapShot(String tsFilePath, String snapShotPath) throws IOException {
 		LOGGER.info("Copy file from {} to {}...", tsFilePath, snapShotPath);
 		File inputFile = new File(tsFilePath);
+		//String snapShotDir = snapShotPath.concat(File.separatorChar);
+		//File snapShotDirFile=new File(snapShotDir);
+		//if(!snapShotDirFile.exists())MakeDir(snapShotDir);
 		File outputFile = new File(snapShotPath.concat(File.separatorChar + inputFile.getName()));
 		FileInputStream fis = null;
 		FileOutputStream fos = null;
