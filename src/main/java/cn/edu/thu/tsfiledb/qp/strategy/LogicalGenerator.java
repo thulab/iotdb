@@ -142,6 +142,7 @@ public class LogicalGenerator {
 		case TSParser.TOK_DROP:
 			switch (astNode.getChild(0).getType()) {
 			case TSParser.TOK_USER:
+			case TSParser.TOK_ROLE:
 				analyzeAuthorDrop(astNode);
 				break;
 			case TSParser.TOK_INDEX:
