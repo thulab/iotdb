@@ -1,6 +1,5 @@
 package cn.edu.thu.tsfiledb.auth2.model;
 
-import org.hamcrest.core.Is;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
