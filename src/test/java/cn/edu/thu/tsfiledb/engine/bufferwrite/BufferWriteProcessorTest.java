@@ -71,7 +71,6 @@ public class BufferWriteProcessorTest {
 		TsFileConf.duplicateIncompletedPage = true;
 		EngineTestHelper.delete(nsp);
 		EngineTestHelper.delete(dbConfig.walFolder);
-		dbConfig.metadataDir = "metadata";
 		EngineTestHelper.delete(dbConfig.metadataDir);
 		MetadataManagerHelper.initMetadata();
 		WriteLogManager.getInstance().close();

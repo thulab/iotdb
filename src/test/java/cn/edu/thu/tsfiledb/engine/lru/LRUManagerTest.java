@@ -69,12 +69,9 @@ public class LRUManagerTest {
 	private String dirPath = "managerdir";
 	
 	private TsfileDBConfig dbconfig = TsfileDBDescriptor.getInstance().getConfig();
-	private String metadataPath;
 
 	@Before
 	public void setUp() throws Exception {
-		metadataPath = dbconfig.metadataDir;
-		dbconfig.metadataDir = "metadata";
 		EngineTestHelper.delete(dbconfig.metadataDir);
 		EngineTestHelper.delete(dirPath);
 		MetadataManagerHelper.initMetadata();
@@ -85,7 +82,6 @@ public class LRUManagerTest {
 		MManager.getInstance().flushObjectToFile();
 		EngineTestHelper.delete(dbconfig.metadataDir);
 		EngineTestHelper.delete(dirPath);
-		dbconfig.metadataDir = metadataPath;
 	}
 
 	@Test

@@ -74,8 +74,7 @@ public class BigDataForOverflowTest {
 			System.out.println("filenode manager flush action");
 		}
 	};
-	
-	private String overflowDataDir = null;
+
 	private int rowGroupSize;
 
 	@Before
@@ -88,12 +87,10 @@ public class BigDataForOverflowTest {
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, filenodeflushaction);
 		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, filenodemanagerbackupaction);
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, filenodemanagerflushaction);
-		overflowDataDir = tsdbconfig.overflowDataDir;
 		rowGroupSize = tsconfig.groupSizeInByte;
-		tsdbconfig.overflowDataDir = "";
 		tsconfig.groupSizeInByte = 1024 * 1024 * 10;
-		overflowfilePath = tsdbconfig.overflowDataDir + nameSpacePath + File.separatorChar + nameSpacePath
-				+ ".overflow";
+		overflowfilePath = tsdbconfig.overflowDataDir + File.separatorChar + nameSpacePath + File.separatorChar
+				+ nameSpacePath + ".overflow";
 		overflowrestorefilePath = overflowfilePath + ".restore";
 		overflowmergefilePath = overflowfilePath + ".merge";
 		WriteLogManager.getInstance().close();
@@ -106,7 +103,8 @@ public class BigDataForOverflowTest {
 		MManager.getInstance().flushObjectToFile();
 		EngineTestHelper.delete(nameSpacePath);
 		EngineTestHelper.delete(tsdbconfig.walFolder);
-		tsdbconfig.overflowDataDir = overflowDataDir;
+		EngineTestHelper.delete(tsdbconfig.metadataDir);
+		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
 		tsconfig.groupSizeInByte = rowGroupSize;
 	}
 

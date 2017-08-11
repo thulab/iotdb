@@ -29,11 +29,9 @@ public class UserPemissionTest {
 	private int permission;
 	private User user = new User("user1", "user1");
 
-	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 	
 	@Before
 	public void setUp() throws Exception {
-		config.derbyHome = "";
 		permission = Permission.CREATE;
 		DBdao = new DBDao();
 		DBdao.open();
