@@ -36,7 +36,7 @@ public class TransferThread extends TimerTask {
 		File dir = new File(config.snapshotDirectory);
 		if (!dir.exists())
 			dir.mkdirs();
-		File[] files = dir.listFiles();
+		File[] files = getAllFileInDir(dir);
 		if (Sender.isTimerTaskRunning() && files.length > 0) {
 			LOGGER.warn("Still transferring");
 			return;
