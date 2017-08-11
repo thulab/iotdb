@@ -130,54 +130,72 @@ public class TransferThread extends TimerTask {
 	}
 
 	private void updateStartTimes(String namespace, Map<String, Long> newStartTime) {
-		ObjectOutputStream oos = null;
-		String dirPath = config.startTimePath.concat(File.separatorChar + namespace + File.separatorChar);
-
-		for (Map.Entry<String, Long> entry : newStartTime.entrySet()) {
+		Map<String,Long> startTimes = new HashMap<>();
+		File dirFile = new File(config.startTimePath);
+		if(!dirFile.exists()) dirFile.mkdirs();
+		File file = new File(config.startTimePath.concat(File.separatorChar + namespace));
+		if(!file.exists()) {
 			try {
-				String filePath = dirPath.concat(entry.getKey());
-				File dir = new File(dirPath);
-				if (!dir.exists())
-					dir.mkdirs();
-				oos = new ObjectOutputStream(new FileOutputStream(filePath));
-				oos.writeObject(new StartTime(entry.getKey(), entry.getValue() + 1));
+				file.createNewFile();
 			} catch (IOException e) {
-				LOGGER.error("Update startTime for {} fail, because: {}", entry.getKey(), e.getMessage());
-			} finally {
-				IOUtils.closeQuietly(oos);
+				LOGGER.warn("Fail to create start-time file {}",file.getName());
 			}
+		}
+		ObjectInputStream ois = null;
+		try {
+			ois = new ObjectInputStream(new FileInputStream(file));
+			startTimes.putAll(((StartTime)ois.readObject()).getStartTime());
+
+		} catch (ClassNotFoundException e) {
+			LOGGER.error("Can't find file {}", file.getName());
+		} catch (FileNotFoundException e) {
+			LOGGER.error("Can't find file {}", file.getName());
+		} catch (IOException e) {
+			LOGGER.error("Can't read start time from file {}",file.getName());
+		} finally {
+			IOUtils.closeQuietly(ois);
+		}
+		ObjectOutputStream oos = null;
+		for (Map.Entry<String, Long> entry : newStartTime.entrySet()) {
+			startTimes.put(entry.getKey(),entry.getValue());
+		}
+		try {
+			oos = new ObjectOutputStream(new FileOutputStream(file));
+			oos.writeObject(new StartTime(namespace,startTimes));
+		} catch (IOException e) {
+			LOGGER.error("Update startTime for {} fail, because: {}", namespace, e.getMessage());
 		}
 	}
 
 	private Map<String, Long> loadStartTimes(String namespace) {
 		Map<String, Long> startTimes = new HashMap<>();
-		String path = config.startTimePath.concat(File.separatorChar + namespace);
-		File dir = new File(path);
-		if(!dir.exists()){
-			dir.mkdirs();
+		File dirPath = new File(config.startTimePath);
+		if(!dirPath.exists())dirPath.mkdirs();
+		String filePath = config.startTimePath.concat(File.separatorChar + namespace);
+		File file = new File(filePath);
+		if(!file.exists()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				LOGGER.info("create file {} fail",file.getName());
+			}
 		}
 		ObjectInputStream ois = null;
-		if (dir.exists()) {
-			File[] files = dir.listFiles();
-			for (File file : files) {
+		try {
+			ois = new ObjectInputStream(new FileInputStream(file));
+			StartTime startTime = (StartTime) ois.readObject();
+			startTimes.putAll(startTime.getStartTime());
+		} catch (IOException e) {
+			LOGGER.warn("file {}: reset startTime to empty, because: {}", file.getName(), e.getMessage());
+		} catch (ClassNotFoundException e) {
+			LOGGER.error("Can't find file {}", file.getName());
+		} finally{
+			if (ois != null)
 				try {
-					ois = new ObjectInputStream(new FileInputStream(file));
-					StartTime startTime = (StartTime) ois.readObject();
-					startTimes.put(startTime.getDevice(), startTime.getStartTime());
-				} catch (FileNotFoundException e) {
-					LOGGER.error("Can't find file {}", file.getName());
-				} catch (IOException | ClassNotFoundException e) {
-					startTimes.put(file.getName(), 0L);
-					LOGGER.warn("file {}: reset startTime to 0, because: {}", file.getName(), e.getMessage());
-				} finally {
-					if (ois != null)
-						try {
-							ois.close();
-						} catch (IOException e) {
-							LOGGER.error("fail to close file {}, becasuse: {}", file.getName(), e.getMessage());
-						}
+					ois.close();
+				} catch (IOException e) {
+					LOGGER.error("fail to close file {}, becasuse: {}", file.getName(), e.getMessage());
 				}
-			}
 		}
 		return startTimes;
 	}

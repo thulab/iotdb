@@ -1,33 +1,35 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.sender;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by lylw on 2017/7/28.
  */
 public class StartTime implements Serializable {
 	private static final long serialVersionUID = 5485945375774889393L;
-	private String device;
-	private long startTime;
+	private String nameSpace;
+	private Map<String,Long> startTime = new HashMap<>();
 
-	public StartTime(String device, long startTime) {
-		this.device = device;
-		this.startTime = startTime;
+	public StartTime(String nameSpace, Map<String,Long> startTime) {
+		this.nameSpace = nameSpace;
+		this.startTime.putAll(startTime);
 	}
 
-	public String getDevice() {
-		return device;
+	public String getNameSpace() {
+		return nameSpace;
 	}
 
-	public void setDevice(String device) {
-		this.device = device;
+	public void setNameSpace(String nameSpace) {
+		this.nameSpace = nameSpace;
 	}
 
-	public long getStartTime() {
+	public Map<String, Long> getStartTime() {
 		return startTime;
 	}
 
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
+	public void setStartTime(Map<String,Long> startTime) {
+		this.startTime.putAll(startTime);
 	}
 }
