@@ -9,7 +9,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchRoleException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.model.Role;
