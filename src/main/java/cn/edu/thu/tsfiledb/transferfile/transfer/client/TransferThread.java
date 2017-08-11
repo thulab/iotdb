@@ -7,6 +7,7 @@ import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameResp;
 import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,13 @@ public class TransferThread extends TimerTask {
 	}
 
 	public void getFileFromDB() throws IOException {
-		DataCollectClient client = new DataCollectClient(config.readDBHost, config.readDBPort);
+		DataCollectClient client;
+		try {
+			client = new DataCollectClient(config.readDBHost, config.readDBPort);
+		} catch (TTransportException e) {
+			LOGGER.error("Failed to init data collect client, because: {}", e.getMessage());
+			return;
+		}
 		try {
 			TSFileNodeNameAllResp tsFileNodeNameAllResp = client.getFileAllNode();
 			List<String> fileNodeList = tsFileNodeNameAllResp.getFileNodesList();
