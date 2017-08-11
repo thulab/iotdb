@@ -6,6 +6,8 @@ import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.management.InstanceAlreadyExistsException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
