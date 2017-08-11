@@ -111,6 +111,8 @@ public class TsfileDBConfig {
 	public long periodTimeForMerge = 7200;
 
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
+	
+	public AuthConfig authConfig = new AuthConfig();
 
 	/**
 	 * Do NOT use this method to construct config instance, use {@link TsfileDBDescriptor#getConfig()} instead.

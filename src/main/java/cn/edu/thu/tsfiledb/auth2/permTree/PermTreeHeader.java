@@ -4,18 +4,22 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
-import cn.edu.thu.tsfiledb.auth2.manage.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.utils.SerializeUtils;
 
 public class PermTreeHeader {
 	public static final int NORMAL_NODE = 0;
 	public static final int SUBNODE_EXTENSION = 1;
 	public static final int ROLE_EXTENSION = 2;
+	
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
 
-	public static final int MAX_NODENAME_LENGTH = AuthConfig.MAX_NODENAME_LENGTH; // in byte
-	public static final int RECORD_SIZE = 960;
-	public static final int MAX_ROLE_NUM = (RECORD_SIZE - MAX_NODENAME_LENGTH - 7 * Integer.BYTES) / Integer.BYTES;
-
+	public static final int MAX_NODENAME_LENGTH = authConfig.MAX_NODENAME_LENGTH; // in byte
+	public static final int RECORD_SIZE = authConfig.PERM_TREE_HEADER_SIZE;
+	public static final int INT_FIELD_NUM = 7;
+	public static final int MAX_ROLE_NUM = (RECORD_SIZE - MAX_NODENAME_LENGTH
+										- INT_FIELD_NUM * Integer.BYTES) / Integer.BYTES;
 	private int parentIndex;
 	private int currentIndex;
 	private int nodeType;

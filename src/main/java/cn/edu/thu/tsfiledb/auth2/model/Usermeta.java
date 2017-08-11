@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import cn.edu.thu.tsfiledb.auth2.manage.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 
 public class Usermeta {
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
+	
 	private static Integer metaMutex = new Integer(0);
-	private static String metaPath = "userInfo.meta";
-	private static String userFolder = AuthConfig.userFolder;
+	private static String metaPath = authConfig.USER_META_FILE;
+	private static String userFolder = authConfig.USER_FOLDER;
 
 	private static Usermeta instance;
 

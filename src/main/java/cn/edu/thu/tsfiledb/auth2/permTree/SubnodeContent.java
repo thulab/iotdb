@@ -17,8 +17,9 @@ public class SubnodeContent extends PermTreeContent {
 	public static final int MAX_NODENAME_LENGTH = PermTreeHeader.MAX_NODENAME_LENGTH;
 	// entry is a <subnodeName, subnodeIndex> pair
 	public static final int ENTRY_SIZE = MAX_NODENAME_LENGTH + Integer.BYTES;
+	public static final int INT_FIELD_NUM = 2;
 	// except the first 4 bytes for size, the remaining bytes are for entries
-	public static final int MAX_CAPACITY = (RECORD_SIZE - 2 * Integer.BYTES) / ENTRY_SIZE;
+	public static final int MAX_CAPACITY = (RECORD_SIZE - INT_FIELD_NUM * Integer.BYTES) / ENTRY_SIZE;
 
 	private int size = 0;
 	private int emptyNum = 0;

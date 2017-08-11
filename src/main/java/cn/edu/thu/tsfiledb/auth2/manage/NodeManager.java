@@ -19,6 +19,8 @@ import cn.edu.thu.tsfiledb.auth2.exception.UnknownNodeTypeException;
 import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeHeader;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.utils.PathUtils;
 
@@ -32,19 +34,20 @@ import cn.edu.thu.tsfiledb.utils.PathUtils;
  *
  */
 public class NodeManager {
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
 	private static Logger logger = LoggerFactory.getLogger(NodeManager.class);
-	private static String PERMFILE_SUFFIX = ".perm";
-	private static String PERMMETA_SUFFIX = ".perm.meta";
-	private static String PERM_FOLDER = AuthConfig.permFolder;
+	private static String PERMFILE_SUFFIX = authConfig.PERMFILE_SUFFIX;
+	private static String PERMMETA_SUFFIX = authConfig.PERMMETA_SUFFIX;
+	private static String PERM_FOLDER = authConfig.PERM_FOLDER;
 
-	private int MAX_CACHE_CAPACITY = 1000;
+	private static final int MAX_CACHE_CAPACITY = authConfig.NODE_CACHE_CAPACITY;
 	private boolean initialized = false;
 	// key is <uid, blockID>
-	Map<Pair<Integer, Integer>, PermTreeNode> nodeCache = new HashMap<>();
-	LinkedList<Pair<Integer, Integer>> LRUList = new LinkedList<>();
+	private Map<Pair<Integer, Long>, PermTreeNode> nodeCache = new HashMap<>();
+	private LinkedList<Pair<Integer, Long>> LRUList = new LinkedList<>();
 	// key is uid, for different users will not cause conflicts
-	HashMap<Integer, Integer> initMutexMap = new HashMap<>();
-	HashMap<Integer, Integer> accessMutexMap = new HashMap<>();
+	private HashMap<Integer, Integer> initMutexMap = new HashMap<>();
+	private HashMap<Integer, Integer> accessMutexMap = new HashMap<>();
 	
 	private static class InstanceHolder {
 		private static final NodeManager instance = new NodeManager();
@@ -120,7 +123,7 @@ public class NodeManager {
 	 * @throws IOException
 	 * @throws UnknownNodeTypeException
 	 */
-	public PermTreeNode getNode(int uid, int nodeIndex) throws IOException {
+	public PermTreeNode getNode(int uid, long nodeIndex) throws IOException {
 		if (nodeIndex < 0) {
 			logger.error("invalid node index {}", nodeIndex);
 			throw new InvalidNodeIndexException("perm node " + nodeIndex + " is invalid");
@@ -131,7 +134,7 @@ public class NodeManager {
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			Pair<Integer, Integer> index = new Pair<Integer, Integer>(uid, nodeIndex);
+			Pair<Integer, Long> index = new Pair<Integer, Long>(uid, nodeIndex);
 			PermTreeNode node = nodeCache.get(index);
 			LRUList.remove(index);
 			LRUList.addFirst(index);
@@ -168,14 +171,14 @@ public class NodeManager {
 	 * @param node
 	 * @throws IOException
 	 */
-	public void putNode(int uid, int nodeIndex, PermTreeNode node) throws IOException {
+	public void putNode(int uid, long nodeIndex, PermTreeNode node) throws IOException {
 		Integer mutex = accessMutexMap.get(uid);
 		if (mutex == null) {
 			mutex = new Integer(uid);
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			Pair<Integer, Integer> index = new Pair<Integer, Integer>(uid, nodeIndex);
+			Pair<Integer, Long> index = new Pair<Integer, Long>(uid, nodeIndex);
 			nodeCache.put(index, node);
 			LRUList.remove(index);
 			LRUList.addFirst(index);

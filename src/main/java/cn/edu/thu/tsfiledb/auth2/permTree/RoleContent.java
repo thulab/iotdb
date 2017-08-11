@@ -20,7 +20,7 @@ public class RoleContent extends PermTreeContent {
 	public RoleContent() {
 
 	}
-
+	
 	public static PermTreeContent readObject(RandomAccessFile raf) throws IOException {
 		byte[] buffer = new byte[RECORD_SIZE];
 		raf.readFully(buffer);

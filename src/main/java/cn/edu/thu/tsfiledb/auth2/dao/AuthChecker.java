@@ -2,12 +2,15 @@ package cn.edu.thu.tsfiledb.auth2.dao;
 
 import java.util.List;
 
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Configurable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
 import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
 import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
 
@@ -17,7 +20,9 @@ import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
  *
  */
 public class AuthChecker {
-	private static final String SUPER_USER = "root";
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
+	
+	private static final String SUPER_USER = authConfig.SUPER_USER;
 	private static final Logger logger = LoggerFactory.getLogger(AuthChecker.class);
 
 	/** Check if a user "username" is a super user.
@@ -27,7 +32,7 @@ public class AuthChecker {
 	 * @return
 	 */
 	private static boolean isSUPER(String username) {
-		return username.equals(SUPER_USER);
+		return SUPER_USER.equals(username);
 	}
 
 	/** Check if a user "username" can perform operation "authorType" on "paths".

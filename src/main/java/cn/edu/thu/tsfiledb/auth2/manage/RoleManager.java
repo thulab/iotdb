@@ -6,8 +6,6 @@ import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.management.InstanceAlreadyExistsException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +14,15 @@ import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.auth2.model.Rolemeta;
 import cn.edu.thu.tsfiledb.auth2.model.User;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 
 public class RoleManager {
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
 	private static Logger logger = LoggerFactory.getLogger(RoleManager.class);
 
-	private static String roleFolder = AuthConfig.roleFolder;
-	private static String roleInfoFile = "roleInfo";
+	private static String roleFolder = authConfig.ROLE_FOLDER;
+	private static String roleInfoFile = authConfig.ROLE_INFO_FILE;
 
 	private HashMap<String, Role> roleNameMap = new HashMap<>();
 	private HashMap<Integer, Role> roleIDMap = new HashMap<>();

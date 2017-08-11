@@ -18,6 +18,35 @@ import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
 public class NodeTest {
+	
+	@Test
+	public void getTest() {
+		NodeManager nodeManager = NodeManager.getInstance();
+		try {
+			nodeManager.getNode(1, -100);
+		} catch (IOException e) {
+			assertEquals("perm node -100 is invalid", e.getMessage());
+		}
+		
+		try {
+			nodeManager.getNode(1, 1000000);
+		} catch (IOException e) {
+			assertEquals("perm node 1000000 is invalid", e.getMessage());
+		}
+	}
+	
+	@Test
+	public void IndexTest() throws IOException {
+		NodeManager nodeManager = NodeManager.getInstance();
+		int uid = 10;
+		nodeManager.cleanForUser(uid);
+		nodeManager.initForUser(uid);
+		int maxID = nodeManager.getMaxID(uid);
+		assertEquals(1, maxID);
+		nodeManager.allocateID(uid);
+		maxID = nodeManager.getMaxID(uid);
+		assertEquals(2, maxID);
+	}
 
 	@Test
 	public void createTest() throws IOException, UnknownNodeTypeException {
@@ -101,16 +130,21 @@ public class NodeTest {
 		nodeManager.cleanForUser(uid);
 		nodeManager.initForUser(uid);
 		PermTreeNode root = nodeManager.getNode(uid, 0);
-		PermTreeNode child = nodeManager.allocateNode(uid, root.getIndex(), "child", PermTreeHeader.NORMAL_NODE);
-		nodeManager.addChild(uid, root, child);
+		for(int i = 0; i < 1000; i++) {
+			PermTreeNode child = nodeManager.allocateNode(uid, root.getIndex(), "child" + i, PermTreeHeader.NORMAL_NODE);
+			nodeManager.addChild(uid, root, child);
+			
+			int childIndex = nodeManager.findChild(uid, root, child.getName());
+			assertNotEquals(childIndex, -1);
+		}
+		for(int i = 0; i < 1000; i++) {
+			nodeManager.deleteChild(uid, root, "child" + i);
+			int childIndex = nodeManager.findChild(uid, root, "child" + i);
+			assertEquals(childIndex, -1);
+			
+			assertFalse(nodeManager.deleteChild(uid, root, "child" + i));
+		}
 		
-		int childIndex = nodeManager.findChild(uid, root, child.getName());
-		assertNotEquals(childIndex, -1);
-		nodeManager.deleteChild(uid, root, child.getName());
-		childIndex = nodeManager.findChild(uid, root, child.getName());
-		assertEquals(childIndex, -1);
-		
-		assertFalse(nodeManager.deleteChild(uid, root, child.getName()));
 	}
 	
 	@Test 

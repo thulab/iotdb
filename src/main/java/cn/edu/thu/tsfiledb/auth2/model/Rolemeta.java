@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import cn.edu.thu.tsfiledb.auth2.manage.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 
 public class Rolemeta {
-	private static String roleFolder = AuthConfig.roleFolder;
-	private static String metaPath = "roleInfo.meta";
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
+	
+	private static String roleFolder = authConfig.ROLE_FOLDER;
+	private static String metaPath = authConfig.ROLE_META_FILE;;
 	private static Integer metaMutex = new Integer(0);
 
 	private static Rolemeta instance;

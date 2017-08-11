@@ -8,9 +8,7 @@ import org.junit.Test;
 import cn.edu.thu.tsfiledb.auth2.dao.AuthDao;
 import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchRoleException;
-import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
-import cn.edu.thu.tsfiledb.exception.PathErrorException;
 
 public class AuthTest {
 

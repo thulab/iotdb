@@ -22,7 +22,6 @@ public class PermissionTest {
 	@Test
 	public void test() throws IOException, PathErrorException, AuthException {
 		UserManager userManager = UserManager.getInstance();
-		NodeManager nodeManager = NodeManager.getInstance();
 		PermissionManager permissionManager = PermissionManager.getInstance();
 		RoleManager roleManager = RoleManager.getInstance();
 		
@@ -52,6 +51,14 @@ public class PermissionTest {
 		assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path1, permission));
 		assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path2, Permission.MODIFY));
 		assertFalse(permissionManager.checkPermissionOnPath(user.getID(), path2, permission));
+		
+		assertFalse(permissionManager.checkPermissionOnPath(user.getID(), "root.nonexist", permission));
+		
+		// test cache
+		for(int i = 0; i < 2000; i++) {
+			assertTrue(permissionManager.grantRoleOnPath(user.getID(), path1 + "." + i, readerRole.getID()));
+			assertTrue(permissionManager.checkPermissionOnPath(user.getID(), path1 + "." + i, Permission.READ));
+		}
 		
 		userManager.deleteUser(username);
 	}

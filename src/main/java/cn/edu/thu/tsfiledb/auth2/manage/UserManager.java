@@ -8,10 +8,14 @@ import java.util.HashMap;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.model.User;
 import cn.edu.thu.tsfiledb.auth2.model.Usermeta;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 
 public class UserManager {
-	private static String userFolder = AuthConfig.userFolder;
-	private static String userInfoFile = "userInfo";
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
+	
+	private static String userFolder = authConfig.USER_FOLDER;
+	private static String userInfoFile = authConfig.USER_INFO_FILE;
 
 	private HashMap<String, User> users = new HashMap<>();
 	

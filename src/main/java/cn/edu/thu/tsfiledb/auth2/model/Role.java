@@ -5,10 +5,14 @@ import java.io.RandomAccessFile;
 
 import cn.edu.thu.tsfiledb.auth2.exception.ReadObjectException;
 import cn.edu.thu.tsfiledb.auth2.exception.WriteObjectException;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.utils.SerializeUtils;
 
 public class Role {
-	public static final int MAX_NAME_LENGTH = 256;
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
+	
+	public static final int MAX_NAME_LENGTH = authConfig.MAX_NODENAME_LENGTH;
 	public static final int RECORD_SIZE = MAX_NAME_LENGTH + Integer.BYTES + Long.BYTES;
 
 	private int ID;

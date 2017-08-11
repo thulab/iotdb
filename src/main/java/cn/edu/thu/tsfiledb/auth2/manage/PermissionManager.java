@@ -15,15 +15,18 @@ import cn.edu.thu.tsfiledb.auth2.exception.RoleAlreadyExistException;
 import cn.edu.thu.tsfiledb.auth2.exception.WrongNodetypeException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.permTree.PermTreeNode;
+import cn.edu.thu.tsfiledb.conf.AuthConfig;
+import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.utils.PathUtils;
 
 public class PermissionManager {
+	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
 	private static Logger logger = LoggerFactory.getLogger(PermissionManager.class);
+	private static final int cacheCapacity = authConfig.PERM_CACHE_CAPACITY;
 	// <<uid, path>, Set<roleID>>
 	private HashMap<Pair<Integer, String>, Set<Integer>> rolesCache = new HashMap<>();
 	private LinkedList<Pair<Integer, String>> LRUList = new LinkedList<>();
-	private int cacheCapacity = 1000;
 	private boolean initialized =  false;
 	
 	private PermissionManager() {
