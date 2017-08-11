@@ -45,59 +45,21 @@ public abstract class QueryProcessExecutor {
 
 	public Iterator<QueryDataSet> processQuery(PhysicalPlan plan) throws QueryProcessorException {
 		switch (plan.getOperatorType()) {
-			case QUERY:
-				SeriesSelectPlan query = (SeriesSelectPlan) plan;
-				FilterExpression[] filterExpressions = query.getFilterExpressions();
-				return new QueryDataSetIterator(query.getPaths(), getFetchSize(), this,
-						filterExpressions[0], filterExpressions[1], filterExpressions[2]);
-			case MERGEQUERY:
-				MergeQuerySetPlan mergeQuery = (MergeQuerySetPlan) plan;
-				List<SeriesSelectPlan> selectPlans = mergeQuery.getSeriesSelectPlans();
-				if (selectPlans.size() == 1) {
-					return processQuery(selectPlans.get(0));
-				} else {
-					return new MergeQuerySetIterator(selectPlans, getFetchSize(), this);
-				}
-			case INDEXQUERY:
-				IndexQueryPlan indexQueryPlan = (IndexQueryPlan) plan;
-				MManager mManager = MManager.getInstance();
-				// check path and storage group
-				Path path = indexQueryPlan.getPaths().get(0);
-				if (!mManager.pathExist(path.getFullPath())) {
-					throw new QueryProcessorException(String.format("The timeseries %s does not exist.", path));
-				}
-				try {
-					mManager.getFileNameByPath(path.getFullPath());
-				} catch (PathErrorException e) {
-					e.printStackTrace();
-					throw new QueryProcessorException(e.getMessage());
-				}
-				Path patterPath = indexQueryPlan.getPatterPath();
-				if (!mManager.pathExist(patterPath.getFullPath())) {
-					throw new QueryProcessorException(String.format("The timeseries %s does not exist.", patterPath));
-				}
-				try {
-					mManager.getFileNameByPath(patterPath.getFullPath());
-				} catch (PathErrorException e) {
-					e.printStackTrace();
-					throw new QueryProcessorException(e.getMessage());
-				}
-				// check index for metadata
-				if (!mManager.checkPathIndex(path.getFullPath())) {
-					throw new QueryProcessorException(String.format("The timeseries %s hasn't been indexed.", path));
-				}
-				KvMatchQueryRequest queryRequest = KvMatchQueryRequest
-						.builder(indexQueryPlan.getPaths().get(0), indexQueryPlan.getPatterPath(),
-								indexQueryPlan.getPatterStarTime(), indexQueryPlan.getPatterEndTime(),
-								indexQueryPlan.getEpsilon())
-						.startTime(indexQueryPlan.getStartTime()).endTime(indexQueryPlan.getEndTime()).build();
-				if (indexQueryPlan.isHasParameter()) {
-					queryRequest.setAlpha(indexQueryPlan.getAlpha());
-					queryRequest.setBeta(indexQueryPlan.getBeta());
-				}
-				return new PatternQueryDataSetIterator(queryRequest, getFetchSize());
-			default:
-				throw new UnsupportedOperationException();
+		case QUERY:
+			SeriesSelectPlan query = (SeriesSelectPlan) plan;
+			FilterExpression[] filterExpressions = query.getFilterExpressions();
+			return new QueryDataSetIterator(query.getPaths(), getFetchSize(), this, filterExpressions[0],
+					filterExpressions[1], filterExpressions[2]);
+		case MERGEQUERY:
+			MergeQuerySetPlan mergeQuery = (MergeQuerySetPlan) plan;
+			List<SeriesSelectPlan> selectPlans = mergeQuery.getSeriesSelectPlans();
+			if (selectPlans.size() == 1) {
+				return processQuery(selectPlans.get(0));
+			} else {
+				return new MergeQuerySetIterator(selectPlans, getFetchSize(), this);
+			}
+		default:
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -131,15 +93,20 @@ public abstract class QueryProcessExecutor {
 		return fetchSize.get();
 	}
 
-	public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter, FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
+	public abstract QueryDataSet query(List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
+			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
 
 	/**
 	 * execute update command and return whether the operator is successful.
-	 *
-	 * @param path : update series path
-	 * @param startTime start time in update command
-	 * @param endTime end time in update command
-	 * @param value - in type of string
+	 * 
+	 * @param path
+	 *            : update series path
+	 * @param startTime
+	 *            start time in update command
+	 * @param endTime
+	 *            end time in update command
+	 * @param value
+	 *            - in type of string
 	 * @return - whether the operator is successful.
 	 */
 	public abstract boolean update(Path path, long startTime, long endTime, String value) throws ProcessorException;
@@ -147,8 +114,10 @@ public abstract class QueryProcessExecutor {
 	/**
 	 * execute delete command and return whether the operator is successful.
 	 *
-	 * @param paths : delete series paths
-	 * @param deleteTime end time in delete command
+	 * @param paths
+	 *            : delete series paths
+	 * @param deleteTime
+	 *            end time in delete command
 	 * @return - whether the operator is successful.
 	 */
 	public boolean delete(List<Path> paths, long deleteTime) throws ProcessorException {
@@ -157,10 +126,17 @@ public abstract class QueryProcessExecutor {
 			MManager mManager = MManager.getInstance();
 			Set<String> pathSet = new HashSet<>();
 			for (Path p : paths) {
-				if (!mManager.pathExist(p.getFullPath())) {
-					throw new ProcessorException(String.format("Timeseries %s does not exist and cannot be delete its data", p.getFullPath()));
-				}
 				pathSet.addAll(mManager.getPaths(p.getFullPath()));
+			}
+			if (pathSet.isEmpty()) {
+				throw new ProcessorException(
+						String.format("Timeseries does not exist and cannot be delete data"));
+			}
+			for (String onePath : pathSet) {
+				if (!mManager.pathExist(onePath)) {
+					throw new ProcessorException(String.format(
+							"Timeseries %s does not exist and cannot be delete its data", onePath));
+				}
 			}
 			List<String> fullPath = new ArrayList<>();
 			fullPath.addAll(pathSet);
@@ -175,31 +151,37 @@ public abstract class QueryProcessExecutor {
 
 	/**
 	 * execute delete command and return whether the operator is successful.
-	 *
-	 * @param path : delete series path
-	 * @param deleteTime end time in delete command
+	 * 
+	 * @param path
+	 *            : delete series path
+	 * @param deleteTime
+	 *            end time in delete command
 	 * @return - whether the operator is successful.
 	 */
 	public abstract boolean delete(Path path, long deleteTime) throws ProcessorException;
 
 	/**
 	 * execute insert command and return whether the operator is successful.
-	 *
-	 * @param path path to be inserted
-	 * @param insertTime - it's time point but not a range
-	 * @param value value to be inserted
+	 * 
+	 * @param path
+	 *            path to be inserted
+	 * @param insertTime
+	 *            - it's time point but not a range
+	 * @param value
+	 *            value to be inserted
 	 * @return - Operate Type.
 	 */
 	public abstract int insert(Path path, long insertTime, String value) throws ProcessorException;
 
-	public abstract int multiInsert(String deltaObject, long insertTime, List<String> measurementList, List<String> insertValues) throws ProcessorException;
+	public abstract int multiInsert(String deltaObject, long insertTime, List<String> measurementList,
+			List<String> insertValues) throws ProcessorException;
 
 	public MManager getMManager() {
 		return MManager.getInstance();
 	}
 
 	public void addParameter(String key, Object value) {
-		if(parameters.get() == null) {
+		if (parameters.get() == null) {
 			parameters.set(new HashMap<>());
 		}
 		parameters.get().put(key, value);
@@ -220,69 +202,62 @@ public abstract class QueryProcessExecutor {
 
 	/**
 	 *
-	 * @param username updated user's name
-	 * @param newPassword new password
+	 * @param username
+	 *            updated user's name
+	 * @param newPassword
+	 *            new password
 	 * @return boolean
-	 * @throws AuthException exception in update user
-	 * @throws IOException 
-	 * @throws NoSuchUserException 
+	 * @throws AuthException
+	 *             exception in update user
 	 */
-	public boolean updateUser(String username,String newPassword) throws AuthException, IOException{
-		return AuthDao.getInstance().modifyPassword(username, newPassword);
+	public boolean updateUser(String username, String newPassword) throws AuthException {
+		return Authorizer.updateUserPassword(username, newPassword);
 	}
 
-	public boolean createUser(String username, String password) throws AuthException, IOException {
-		return AuthDao.getInstance().addUser(username, password);
+	public boolean createUser(String username, String password) throws AuthException {
+		return Authorizer.createUser(username, password);
 	}
 
 	public boolean addPermissionToUser(String userName, String nodeName, int permissionId) throws AuthException {
-		return false;
+		return Authorizer.addPmsToUser(userName, nodeName, permissionId);
 	}
 
 	public boolean removePermissionFromUser(String userName, String nodeName, int permissionId) throws AuthException {
-		return false;
+		return Authorizer.removePmsFromUser(userName, nodeName, permissionId);
 	}
 
-	public boolean deleteUser(String userName) throws AuthException, IOException {
-		return AuthDao.getInstance().deleteUser(userName);
+	public boolean deleteUser(String userName) throws AuthException {
+		return Authorizer.deleteUser(userName);
 	}
 
-	public boolean createRole(String roleName) throws AuthException, IOException {
-		return AuthDao.getInstance().addRole(roleName);
+	public boolean createRole(String roleName) throws AuthException {
+		return Authorizer.createRole(roleName);
 	}
 
-	public boolean addPermissionToRole(String roleName, long permission) throws AuthException, IOException {
-		return AuthDao.getInstance().grantRolePermission(roleName, permission);
+	public boolean addPermissionToRole(String roleName, String nodeName, int permissionId) throws AuthException {
+		return Authorizer.addPmsToRole(roleName, nodeName, permissionId);
 	}
 
-	public boolean removePermissionFromRole(String roleName, long permission) throws AuthException, IOException {
-		return AuthDao.getInstance().revokeRolePermission(roleName, permission);
+	public boolean removePermissionFromRole(String roleName, String nodeName, int permissionId) throws AuthException {
+		return Authorizer.removePmsFromRole(roleName, nodeName, permissionId);
 	}
 
-	public boolean deleteRole(String roleName) throws AuthException, IOException {
-		return AuthDao.getInstance().deleteRole(roleName);
+	public boolean deleteRole(String roleName) throws AuthException {
+		return Authorizer.deleteRole(roleName);
 	}
 
-	public boolean grantRoleToUser(String roleName, String username, String path) throws AuthException, PathErrorException, IOException {
-		return AuthDao.getInstance().grantRoleOnPath(username, path, roleName);
+	public boolean grantRoleToUser(String roleName, String username) throws AuthException {
+		return Authorizer.grantRoleToUser(roleName, username);
 	}
 
-	public boolean revokeRoleFromUser(String roleName, String username, String path) throws AuthException, PathErrorException, IOException {
-		return AuthDao.getInstance().revokeRoleOnPath(username, path, roleName);
+	public boolean revokeRoleFromUser(String roleName, String username) throws AuthException {
+		return Authorizer.revokeRoleFromUser(roleName, username);
 	}
 
-	public long getPermissionsOfUser(String username, String nodeName) throws AuthException, PathErrorException, IOException {
-		return AuthDao.getInstance().getPermissionOnPath(username, nodeName);
+	public Set<Integer> getPermissionsOfUser(String username, String nodeName) throws AuthException {
+		return Authorizer.getPermission(username, nodeName);
 	}
 
-	public Object getRolesOfUser(String userName, String fullPath) throws AuthException {
-		return AuthDao.getInstance().getRolesOnPath(userName, fullPath);
-	}
-	
-	public Role[] getAllRoles() throws AuthException {
-		return AuthDao.getInstance().getAllRoles();
-	}
-	
 	public PhysicalPlan queryPhysicalOptimize(PhysicalPlan plan) {
 		return plan;
 	}
@@ -290,7 +265,7 @@ public abstract class QueryProcessExecutor {
 	public PhysicalPlan nonQueryPhysicalOptimize(PhysicalPlan plan) {
 		return plan;
 	}
-	
+
 	public abstract List<String> getAllPaths(String originPath) throws PathErrorException;
 
 }
