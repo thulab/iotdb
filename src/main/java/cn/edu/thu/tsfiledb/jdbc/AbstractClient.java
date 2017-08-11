@@ -391,7 +391,15 @@ public abstract class AbstractClient {
 				ResultSet resultSet = statement.getResultSet();
 				output(resultSet, printToConsole, cmd.trim(), timeZone);
 			}
-			System.out.println("execute successfully.");
+			if(statement instanceof TsfileStatement) {
+				TsfileStatement tStatement = (TsfileStatement) statement;
+				if(tStatement.getReturnMsg() != null && !tStatement.getReturnMsg().equals(""))
+					System.out.println(tStatement.getReturnMsg());
+				else
+					System.out.println("execute successfully.");
+			} else {
+				System.out.println("execute successfully.");
+			}
 		} catch (TsfileSQLException e) {
 			System.out.println("statement error: " + e.getMessage());
 		} catch (Exception e) {

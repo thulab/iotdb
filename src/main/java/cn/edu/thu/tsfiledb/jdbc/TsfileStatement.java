@@ -56,6 +56,12 @@ public class TsfileStatement implements Statement {
      * Add SQLWarnings to the warningChain if needed.
      */
     private SQLWarning warningChain = null;
+    
+    /**
+     * Some author sqls need to return message to user. Such message will
+     * be stored here.
+     */
+    private String returnMsg = null;
 
     public TsfileStatement(TsfileConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle,
 	    int fetchSize) {
@@ -171,6 +177,7 @@ public class TsfileStatement implements Statement {
 	isCancelled = false;
 	TSExecuteStatementReq execReq = new TSExecuteStatementReq(sessionHandle, sql);
 	TSExecuteStatementResp execResp = client.executeStatement(execReq);
+	setReturnMsg(execResp.getStatus().getErrorMessage());
 	operationHandle = execResp.getOperationHandle();
 	Utils.verifySuccess(execResp.getStatus());
 	if (execResp.getOperationHandle().hasResultSet) {
@@ -472,5 +479,13 @@ public class TsfileStatement implements Statement {
 	    this.client = connection.client;
 	    this.sessionHandle = connection.sessionHandle;
     }
+
+	public String getReturnMsg() {
+		return returnMsg;
+	}
+
+	public void setReturnMsg(String returnMsg) {
+		this.returnMsg = returnMsg;
+	}
 
 }
