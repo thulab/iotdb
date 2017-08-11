@@ -19,10 +19,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -37,7 +34,7 @@ public class TransferThread extends TimerTask {
 	public void run() {
 		File dir = new File(config.snapshotDirectory);
 		if (!dir.exists())
-			MakeDir(dir.getAbsolutePath());
+			dir.mkdirs();
 		File[] files = dir.listFiles();
 		if (Client.isTimerTaskRunning() && files.length > 0) {
 			LOGGER.warn("Still transferring");
@@ -97,10 +94,11 @@ public class TransferThread extends TimerTask {
 	private void copyFileSnapShot(String tsFilePath, String snapShotPath) throws IOException {
 		LOGGER.info("Copy file from {} to {}...", tsFilePath, snapShotPath);
 		File inputFile = new File(tsFilePath);
-		//String snapShotDir = snapShotPath.concat(File.separatorChar);
-		//File snapShotDirFile=new File(snapShotDir);
-		//if(!snapShotDirFile.exists())MakeDir(snapShotDir);
-		File outputFile = new File(snapShotPath.concat(File.separatorChar + inputFile.getName()));
+		String snapShotDir = snapShotPath.concat(File.separatorChar + inputFile.getParentFile().getName() + File.separatorChar);
+		LOGGER.info("getParentFile.getName "+inputFile.getParent());
+		File snapShotDirFile=new File(snapShotDir);
+		if(!snapShotDirFile.exists())snapShotDirFile.mkdirs();
+		File outputFile = new File(snapShotDir + inputFile.getName());
 		FileInputStream fis = null;
 		FileOutputStream fos = null;
 		try {
@@ -149,7 +147,7 @@ public class TransferThread extends TimerTask {
 		String path = config.startTimePath.concat(File.separatorChar + namespace);
 		File dir = new File(path);
 		if(!dir.exists()){
-			MakeDir(dir.getAbsolutePath());
+			dir.mkdirs();
 		}
 		ObjectInputStream ois = null;
 		if (dir.exists()) {
@@ -179,7 +177,7 @@ public class TransferThread extends TimerTask {
 
 	private void writeFilesToServer(String path) {
 		File file = new File(path);
-		File[] files = file.listFiles();
+		File[] files = getAllFileInDir(file);
 
 		while (file.exists() && files.length > 0) {
 			// thread interruption,file re_transfer
@@ -208,8 +206,28 @@ public class TransferThread extends TimerTask {
 			}
 			fixedThreadPool.shutdownNow();
 			file = new File(path);
-			files = file.listFiles();
+			files = getAllFileInDir(file);
 		}
+	}
+
+	private File[] getAllFileInDir(File file) {
+		Queue<File> dirQueue = new LinkedList<>();
+		File[] dirArray = file.listFiles();
+		List<File> fileList = new ArrayList<>();
+		for (File dir : dirArray){
+			dirQueue.add(dir);
+		}
+		while(!dirQueue.isEmpty()){
+			File f = dirQueue.remove();
+			if (f.isFile())fileList.add(f);
+			else {
+				File[] files = f.listFiles();
+				for (File qFile : files) dirQueue.add(qFile);
+			}
+		}
+		File[] returnList = new File[fileList.size()];
+		for (int index = 0;index <fileList.size();index++) returnList[index] = fileList.get(index);
+		return returnList;
 	}
 
 	private long getFileBytePosition(String filePath) {
@@ -218,7 +236,7 @@ public class TransferThread extends TimerTask {
 		File dir = new File(config.filePositionRecord+File.separatorChar);
 		LOGGER.info("fileRecord Dir "+dir.getAbsolutePath());
 		if(!dir.exists())
-			MakeDir(dir.getAbsolutePath());
+			dir.mkdirs();
 		String fileRecordPath = config.filePositionRecord.concat(File.separatorChar + "record_" + file.getName());
 
 		ObjectInputStream ois = null;

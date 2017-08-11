@@ -80,13 +80,16 @@ public class ReceiveFileThread extends Thread {
 		String[] values = path.split(TransferConstants.messageSplitSig);
 		String fileName = values[values.length - 1];
 
-		String receiveDir = config.storageDirectory;
+		String receiveDir = config.storageDirectory.concat(File.separatorChar + new File(fileName).getParentFile().getName());
+		//LOGGER.info("receiveDir "+receiveDir);
+
 		File dir = new File(receiveDir);
 		if (!dir.exists())
-			dir.mkdir();
+			dir.mkdirs();
 		
-		String temp = config.storageDirectory.concat(File.separatorChar + new File(fileName).getName());
+		String temp = receiveDir.concat(File.separatorChar + new File(fileName).getName());
 		receiveFilePath = temp;
+		//LOGGER.info("receiveFilePath "+receiveFilePath);
 		startPosition = Long.parseLong(args[2]);
 		rewriteReceiveFile();
 		PrintWriter pw = new PrintWriter(os);
@@ -104,7 +107,11 @@ public class ReceiveFileThread extends Thread {
 			receiveFile.createNewFile();
 		}
 		ServerConfig config = ServerConfig.getInstance();
-		File tempFile = new File(config.storageDirectory + File.separator + "temp_" + receiveFile.getName());
+		//LOGGER.info("tempFilePath "+config.storageDirectory + File.separatorChar + receiveFile.getParentFile().getName() + File.separator + "temp_" + receiveFile.getName());
+
+		File tempFile = new File(config.storageDirectory + File.separatorChar + receiveFile.getParentFile().getName() + File.separator + "temp_" + receiveFile.getName());
+		//LOGGER.info("tempFilePath "+config.storageDirectory + File.separatorChar + receiveFile.getParentFile().getName() + File.separator + "temp_" + receiveFile.getName());
+
 		FileInputStream fis = null;
 		FileOutputStream fos = null;
 		byte[] copyfile = new byte[copyFileSegment];
@@ -163,6 +170,15 @@ public class ReceiveFileThread extends Thread {
 			LOGGER.debug("delete file {} fail", tempFile.getAbsoluteFile());
 		} else {
 			LOGGER.debug("delete file {} success", tempFile.getAbsoluteFile());
+		}
+	}
+
+	private void MakeDir(String absolutePath) {
+		File dir=new File(absolutePath);
+		if(!dir.exists()){
+			MakeDir(dir.getParentFile().getName());
+			dir.mkdir();
+			LOGGER.info("makeDir "+dir.getAbsolutePath());
 		}
 	}
 
