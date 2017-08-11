@@ -373,18 +373,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				if (deletePathList != null && !deletePathList.isEmpty()) {
 					Set<String> pathSet = new HashSet<>();
 					for (Path p : deletePathList) {
-						pathSet.addAll(mManager.getPaths(p.getFullPath()));
-					}
-					if (pathSet.isEmpty()) {
-						throw new ProcessorException(
-								String.format("Timeseries does not exist and cannot be delete its metadata and data"));
-					}
-					for (String onePath : pathSet) {
-						if (!mManager.pathExist(onePath)) {
+						if (!mManager.pathExist(p.getFullPath())) {
 							throw new ProcessorException(String.format(
 									"Timeseries %s does not exist and cannot be delete its metadata and data",
-									onePath));
+									p.getFullPath()));
 						}
+						pathSet.addAll(mManager.getPaths(p.getFullPath()));
 					}
 					List<String> fullPath = new ArrayList<>();
 					fullPath.addAll(pathSet);
@@ -395,7 +389,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					}
 					for (String p : fullPath) {
 						String nsp = mManager.deletePathFromMTree(p);
-						if (nsp != null) {
+						if(nsp!=null){
 							// clear filenode
 							try {
 								fileNodeManager.clearOneFileNode(nsp);
