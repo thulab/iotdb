@@ -52,15 +52,19 @@ public class RoleManager {
 		if (!infoFile.exists())
 			infoFile.createNewFile();
 
-		RandomAccessFile raf = new RandomAccessFile(infoFile, "r");
-		while (raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
-			Role role = Role.readObject(raf);
-			if (!role.getRoleName().equals("")) {
-				roleNameMap.put(role.getRoleName(), role);
-				roleIDMap.put(role.getID(), role);
+		RandomAccessFile raf = new RandomAccessFile(infoFile, authConfig.RAF_READ);
+		try {
+			while (raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
+				Role role = Role.readObject(raf);
+				if (!role.getRoleName().equals("")) {
+					roleNameMap.put(role.getRoleName(), role);
+					roleIDMap.put(role.getID(), role);
+				}
 			}
+		} finally {
+			raf.close();
 		}
-		raf.close();
+		
 		initialized = true;
 	}
 
@@ -88,7 +92,7 @@ public class RoleManager {
 	}
 
 	private void flushRole(Role role) throws IOException {
-		RandomAccessFile raf = new RandomAccessFile(roleFolder + roleInfoFile, "rw");
+		RandomAccessFile raf = new RandomAccessFile(roleFolder + roleInfoFile, authConfig.RAF_READ_WRITE);
 		raf.seek(role.getID() * Role.RECORD_SIZE);
 		role.writeObject(raf);
 		raf.close();

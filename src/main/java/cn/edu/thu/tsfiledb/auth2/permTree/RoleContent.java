@@ -10,8 +10,9 @@ import java.nio.ByteBuffer;
  * @author jt
  */
 public class RoleContent extends PermTreeContent {
+	public static final int INT_FIELD_NUM = 2;
 	// except the first 4 bytes for size, the remaining bytes are for entries
-	public static final int MAX_CAPACITY = (RECORD_SIZE - 2 * Integer.BYTES) / Integer.BYTES;
+	public static final int MAX_CAPACITY = (RECORD_SIZE - INT_FIELD_NUM * Integer.BYTES) / Integer.BYTES;
 
 	private int roleNum = 0;
 	private int emptyRoleNum = 0;

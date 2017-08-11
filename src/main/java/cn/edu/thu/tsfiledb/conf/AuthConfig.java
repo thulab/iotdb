@@ -10,13 +10,14 @@ public class AuthConfig {
 	 *  access time.
 	 *  It is recommended this should be no less than 4096 (4KB), and 
 	 *  be a integral multiple of 4096, for that is usually a disk / memory page.
+	 *  PAGE_SIZE should > PERM_TREE_HEADER_SIZE
 	 */
 	public final int PAGE_SIZE = 40960; 
 	
 	public final int PERM_TREE_HEADER_SIZE = 960;
 	
 	/**
-	 * This constrains the max name length in a level of the path.
+	 * This constrains the max name length in a level of the path or a user.
 	 * Decrease this will enable a single node to store more info, 
 	 * resulting in less space consume.
 	 * TODO check name length when a node is created.
@@ -54,5 +55,10 @@ public class AuthConfig {
 	public final int PERM_CACHE_CAPACITY = 1000;
 	
 	public final int NODE_CACHE_CAPACITY = 1000;
+	
+	// random access file open mode
+	public final String RAF_READ = "r";
+	
+	public final String RAF_READ_WRITE = "rw";
 
 	}

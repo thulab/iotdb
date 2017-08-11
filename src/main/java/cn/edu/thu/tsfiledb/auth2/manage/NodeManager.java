@@ -82,14 +82,16 @@ public class NodeManager {
 			initMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
-			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
-
-			PermTreeNode root = PermTreeNode.initRootNode();
-			root.writeObject(permFileRaf);
-			permMetaRaf.writeInt(1);
-			permMetaRaf.close();
-			permFileRaf.close();
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, authConfig.RAF_READ_WRITE);
+			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, authConfig.RAF_READ_WRITE);
+			try {
+				PermTreeNode root = PermTreeNode.initRootNode();
+				root.writeObject(permFileRaf);
+				permMetaRaf.writeInt(1);
+			} finally {
+				permFileRaf.close();
+				permMetaRaf.close();
+			}
 		}
 	}
 
@@ -142,15 +144,18 @@ public class NodeManager {
 				return node;
 
 			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
-			long offset = nodeIndex * PermTreeNode.RECORD_SIZE;
-			if (offset > permFileRaf.length()) {
-				logger.error("node index {} out of bound {}", nodeIndex,
-						permFileRaf.length() / PermTreeNode.RECORD_SIZE);
-				throw new InvalidNodeIndexException("perm node " + nodeIndex + " is invalid");
+			try {
+				long offset = nodeIndex * PermTreeNode.RECORD_SIZE;
+				if (offset > permFileRaf.length()) {
+					logger.error("node index {} out of bound {}", nodeIndex,
+							permFileRaf.length() / PermTreeNode.RECORD_SIZE);
+					throw new InvalidNodeIndexException("perm node " + nodeIndex + " is invalid");
+				}
+				permFileRaf.seek(offset);
+				node = PermTreeNode.readObject(permFileRaf);
+			} finally {
+				permFileRaf.close();
 			}
-			permFileRaf.seek(offset);
-			node = PermTreeNode.readObject(permFileRaf);
-			permFileRaf.close();
 			nodeCache.put(index, node);
 			LRUList.addFirst(index);
 
@@ -182,10 +187,13 @@ public class NodeManager {
 			nodeCache.put(index, node);
 			LRUList.remove(index);
 			LRUList.addFirst(index);
-			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
-			permFileRaf.seek(nodeIndex * PermTreeNode.RECORD_SIZE);
-			node.writeObject(permFileRaf);
-			permFileRaf.close();
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, authConfig.RAF_READ_WRITE);
+			try {
+				permFileRaf.seek(nodeIndex * PermTreeNode.RECORD_SIZE);
+				node.writeObject(permFileRaf);
+			} finally {
+				permFileRaf.close();
+			}
 		}
 	}
 
@@ -205,10 +213,14 @@ public class NodeManager {
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
-			int maxUID = permMetaRaf.readInt();
-			permMetaRaf.close();
-			return maxUID;
+			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, authConfig.RAF_READ_WRITE);
+			int maxID = -1;
+			try {
+				maxID = permMetaRaf.readInt();
+			} finally {
+				permMetaRaf.close();
+			}
+			return maxID;
 		}
 	}
 
@@ -227,19 +239,21 @@ public class NodeManager {
 			accessMutexMap.put(uid, mutex);
 		}
 		synchronized (mutex) {
-			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, "rw");
-			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, "rw");
+			RandomAccessFile permFileRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMFILE_SUFFIX, authConfig.RAF_READ_WRITE);
+			RandomAccessFile permMetaRaf = new RandomAccessFile(PERM_FOLDER + uid + PERMMETA_SUFFIX, authConfig.RAF_READ_WRITE);
+			int maxUID = -1;
+			try {
+				byte[] emptyBuffer = new byte[PermTreeNode.RECORD_SIZE];
+				permFileRaf.seek(permFileRaf.length());
+				permFileRaf.write(emptyBuffer);
 
-			byte[] emptyBuffer = new byte[PermTreeNode.RECORD_SIZE];
-			permFileRaf.seek(permFileRaf.length());
-			permFileRaf.write(emptyBuffer);
-
-			int maxUID = permMetaRaf.readInt();
-			permMetaRaf.seek(0);
-			permMetaRaf.writeInt(maxUID + 1);
-
-			permFileRaf.close();
-			permMetaRaf.close();
+				maxUID = permMetaRaf.readInt();
+				permMetaRaf.seek(0);
+				permMetaRaf.writeInt(maxUID + 1);
+			} finally {
+				permFileRaf.close();
+				permMetaRaf.close();
+			}
 			return maxUID;
 		}
 	}

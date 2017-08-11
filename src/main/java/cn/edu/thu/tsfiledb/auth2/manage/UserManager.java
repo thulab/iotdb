@@ -43,16 +43,19 @@ public class UserManager {
 			userFolderFile.mkdirs();
 		if (!infoFile.exists())
 			infoFile.createNewFile();
-		RandomAccessFile raf = new RandomAccessFile(infoFile, "r");
-		while (raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
-			User user = User.readObject(raf);
-			if (!user.getUsername().equals(""))
-				users.put(user.getUsername(), user);
+		RandomAccessFile raf = new RandomAccessFile(infoFile, authConfig.RAF_READ);
+		try {
+			while (raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
+				User user = User.readObject(raf);
+				if (!user.getUsername().equals(""))
+					users.put(user.getUsername(), user);
+			}
+		} finally {
+			raf.close();
 		}
-		raf.close();
-
-		if (findUser("root") == null) {
-			createUser("root", "root");
+		
+		if (findUser(authConfig.SUPER_USER) == null) {
+			createUser(authConfig.SUPER_USER, authConfig.SUPER_USER);
 		}
 		initialized = true;
 	}
@@ -68,15 +71,16 @@ public class UserManager {
 		Usermeta usermeta = Usermeta.getInstance();
 		int newUserID = usermeta.getMaxUID();
 		User newUser = new User(username, password, newUserID);
-		RandomAccessFile raf = new RandomAccessFile(userFolder + userInfoFile, "rw");
-		raf.seek(raf.length());
-		newUser.writeObject(raf);
-		usermeta.increaseMaxRID();
-		users.put(username, newUser);
-
-		NodeManager.getInstance().initForUser(newUserID);
-
-		raf.close();
+		RandomAccessFile raf = new RandomAccessFile(userFolder + userInfoFile, authConfig.RAF_READ_WRITE);
+		try {
+			raf.seek(raf.length());
+			newUser.writeObject(raf);
+			usermeta.increaseMaxRID();
+			users.put(username, newUser);
+			NodeManager.getInstance().initForUser(newUserID);
+		} finally {
+			raf.close();
+		}
 		return true;
 	}
 
@@ -101,10 +105,13 @@ public class UserManager {
 	}
 
 	private void flushUser(User user) throws IOException {
-		RandomAccessFile raf = new RandomAccessFile(userFolder + userInfoFile, "rw");
-		raf.seek(user.getID() * User.RECORD_SIZE);
-		user.writeObject(raf);
-		raf.close();
+		RandomAccessFile raf = new RandomAccessFile(userFolder + userInfoFile, authConfig.RAF_READ_WRITE);
+		try {
+			raf.seek(user.getID() * User.RECORD_SIZE);
+			user.writeObject(raf);
+		} finally {
+			raf.close();
+		}
 	}
 
 	public boolean modifyPW(String username, String newPassword) throws IOException, NoSuchUserException {

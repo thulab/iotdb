@@ -33,7 +33,7 @@ public class Usermeta {
 		roleFolder.mkdirs();
 		File metaFile = new File(userFolder + metaPath);
 		if (!metaFile.exists() || metaFile.length() < Integer.BYTES) {
-			RandomAccessFile raf = new RandomAccessFile(metaFile, "rw");
+			RandomAccessFile raf = new RandomAccessFile(metaFile, authConfig.RAF_READ_WRITE);
 			raf.writeInt(0);
 			raf.close();
 		}
@@ -42,8 +42,14 @@ public class Usermeta {
 
 	public int getMaxUID() throws IOException {
 		synchronized (metaMutex) {
-			RandomAccessFile raf = new RandomAccessFile(userFolder + metaPath, "rw");
-			return raf.readInt();
+			RandomAccessFile raf = new RandomAccessFile(userFolder + metaPath, authConfig.RAF_READ_WRITE);
+			int maxUID = -1;
+			try {
+				maxUID = raf.readInt();
+			} finally {
+				raf.close();
+			}
+			return maxUID;
 		}
 	}
 
@@ -54,10 +60,15 @@ public class Usermeta {
 	 */
 	public void increaseMaxRID() throws IOException {
 		synchronized (metaMutex) {
-			RandomAccessFile raf = new RandomAccessFile(userFolder + metaPath, "rw");
-			int maxRID = raf.readInt();
-			raf.seek(0);
-			raf.writeInt(maxRID + 1);
+			RandomAccessFile raf = new RandomAccessFile(userFolder + metaPath, authConfig.RAF_READ_WRITE);
+			int maxUID = -1;
+			try {
+				maxUID = raf.readInt();
+				raf.seek(0);
+				raf.writeInt(maxUID + 1);
+			} finally {
+				raf.close();
+			}
 		}
 	}
 

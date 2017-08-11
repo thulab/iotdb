@@ -33,17 +33,26 @@ public class Rolemeta {
 		roleFolderFile.mkdirs();
 		File metaFile = new File(roleFolder + metaPath);
 		if (!metaFile.exists() || metaFile.length() < Integer.BYTES) {
-			RandomAccessFile raf = new RandomAccessFile(metaFile, "rw");
-			raf.writeInt(0);
-			raf.close();
+			RandomAccessFile raf = new RandomAccessFile(metaFile, authConfig.RAF_READ_WRITE);
+			try {
+				raf.writeInt(0);
+			} finally {
+				raf.close();
+			}
 		}
 
 	}
 
 	public int getMaxRID() throws IOException {
 		synchronized (metaMutex) {
-			RandomAccessFile raf = new RandomAccessFile(roleFolder + metaPath, "rw");
-			return raf.readInt();
+			int maxRID = -1;
+			RandomAccessFile raf = new RandomAccessFile(roleFolder + metaPath, authConfig.RAF_READ_WRITE);
+			try {
+				maxRID = raf.readInt();
+			} finally {
+				raf.close();
+			}
+			return maxRID;
 		}
 	}
 
@@ -54,10 +63,15 @@ public class Rolemeta {
 	 */
 	public void increaseMaxRID() throws IOException {
 		synchronized (metaMutex) {
-			RandomAccessFile raf = new RandomAccessFile(roleFolder + metaPath, "rw");
-			int maxRID = raf.readInt();
-			raf.seek(0);
-			raf.writeInt(maxRID + 1);
+			RandomAccessFile raf = new RandomAccessFile(roleFolder + metaPath, authConfig.RAF_READ_WRITE);
+			int maxRID = -1;
+			try {
+				maxRID = raf.readInt();
+				raf.seek(0);
+				raf.writeInt(maxRID + 1);	
+			} finally {
+				raf.close();
+			}
 		}
 	}
 

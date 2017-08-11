@@ -5,7 +5,6 @@ import java.io.RandomAccessFile;
 
 import cn.edu.thu.tsfiledb.conf.AuthConfig;
 import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
-import cn.edu.thu.tsfiledb.sql.parse.TSParser.nullCondition_return;
 
 public abstract class PermTreeContent {
 	
