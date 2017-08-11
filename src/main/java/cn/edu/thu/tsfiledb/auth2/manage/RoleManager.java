@@ -37,7 +37,7 @@ public class RoleManager {
 	}
 
 	public static RoleManager getInstance() throws IOException {
-		if (InstanceHolder.instance.initialized) {
+		if (!InstanceHolder.instance.initialized) {
 			InstanceHolder.instance.init();
 		}
 		return InstanceHolder.instance;
