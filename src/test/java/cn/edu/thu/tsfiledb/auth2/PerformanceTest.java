@@ -32,37 +32,37 @@ public class PerformanceTest {
 
 	@Test
 	public void testCreatOld() throws AuthException {
-		// create 1000 users and test logging in for them
-		for(int i = 0; i < 1000; i++) {
+		// create 10000 users and test logging in for them
+		for(int i = 0; i < 10000; i++) {
 			try {
 				Authorizer.deleteUser("user" + i);
 			} catch (Exception e) {
 			}
 			Authorizer.createUser("user" + i, "password" + i);
 		}
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 10000; i++) {
 			assertTrue(Authorizer.login("user" + i, "password" + i));
 		}
 	}
 	
 	@Test
 	public void testCreateNew() throws cn.edu.thu.tsfiledb.auth2.exception.AuthException {
-		// create 1000 users and test logging in for them
-		for(int i = 0; i < 1000; i++) {
+		// create 10000 users and test logging in for them
+		for(int i = 0; i < 10000; i++) {
 			try {
 				AuthDao.getInstance().deleteUser("user" + i);
 			} catch (Exception e) {
 			}	
 			AuthDao.getInstance().addUser("user" + i, "password" + i);
 		}
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 10000; i++) {
 			assertTrue(AuthDao.getInstance().login("user" + i, "password" + i));
 		}	
 	}
 	
 	@Test
 	public void testGrantOld() throws AuthException {
-		// grant permissions to 1000 nodes and test these permissions
+		// grant permissions to 10000 nodes and test these permissions
 		String username = "grantTester", password = "123456";
 		String nodeName = "root.a.b.c.d.e";
 		try {
@@ -70,7 +70,7 @@ public class PerformanceTest {
 		} catch (Exception e) {
 		}
 		
-		for(int i = 1; i < 1000; i++) {
+		for(int i = 1; i < 10000; i++) {
 			try {
 				Authorizer.removePmsFromUser(username, nodeName + "." + i, i);
 			} catch (Exception e) {
@@ -78,7 +78,7 @@ public class PerformanceTest {
 			assertTrue(Authorizer.addPmsToUser(username, nodeName + "." + i, i));
 		}
 		
-		for(int i = 1; i < 1000; i++) {
+		for(int i = 1; i < 10000; i++) {
 			assertTrue(String.valueOf(i), Authorizer.checkUserPermission(username, nodeName + "." + i, i));
 		}
 	}
@@ -86,7 +86,6 @@ public class PerformanceTest {
 	@Test
 	public void testGrantNew() throws cn.edu.thu.tsfiledb.auth2.exception.AuthException {
 		// grant permissions to 10000 nodes and test these permissions
-		// test 10000 nodes because there is a cache whose capacity is 1000 by default
 		String username = "grantTester", password = "123456";
 		String roleName = "grantRole", nodeName = "root.a.b.c.d.e";
 		try {

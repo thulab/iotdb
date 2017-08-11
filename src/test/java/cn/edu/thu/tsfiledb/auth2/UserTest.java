@@ -45,8 +45,8 @@ public class UserTest {
 		RandomAccessFile iStream = new RandomAccessFile(testFile, "r");
 		User nUser1 = User.readObject(iStream);
 		User nUser2 = User.readObject(iStream);
-		assertTrue(user1.getUsername().equals(nUser1.getUsername()));
-		assertTrue(user2.getUsername().equals(nUser2.getUsername()));
+		assertTrue(user1.getUserName().equals(nUser1.getUserName()));
+		assertTrue(user2.getUserName().equals(nUser2.getUserName()));
 		assertTrue(user1.getPassword().equals(nUser1.getPassword()));
 		assertTrue(user2.getPassword().equals(nUser2.getPassword()));
 		iStream.close();
@@ -55,7 +55,7 @@ public class UserTest {
 		iStream = new RandomAccessFile(testFile, "r");
 		iStream.seek(User.RECORD_SIZE);
 		User nUser3 = User.readObject(iStream);
-		assertTrue(user2.getUsername().equals(nUser3.getUsername()));
+		assertTrue(user2.getUserName().equals(nUser3.getUserName()));
 		assertTrue(user2.getPassword().equals(nUser3.getPassword()));
 		iStream.close();
 	}

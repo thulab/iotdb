@@ -64,82 +64,82 @@ public class AuthDao {
 	}
 
 	/**
-	 * login for user "username" using "password"
+	 * login for user "userName" using "password"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param password
-	 * @return true if both "username" and "password" are correct throw exception if
+	 * @return true if both "userName" and "password" are correct throw exception if
 	 *         at least one of them is incorrect
 	 * @throws AuthException
 	 */
-	public boolean login(String username, String password) throws AuthException {
+	public boolean login(String userName, String password) throws AuthException {
 		boolean success = false;
-		success = userManager.authorize(username, password);
+		success = userManager.authorize(userName, password);
 		if (!success) {
-			throw new AuthException("username or password is not correct");
+			throw new AuthException("userName or password is not correct");
 		}
 		return success;
 	}
 
 	/**
-	 * Add a user by "username" and "password"
+	 * Add a user by "userName" and "password"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param password
 	 * @return true if success, throw exception if the user already exists
 	 * @throws AuthException
 	 */
-	public boolean addUser(String username, String password) throws AuthException {
+	public boolean addUser(String userName, String password) throws AuthException {
 		boolean success = false;
 		try {
-			success = userManager.createUser(username, password);
+			success = userManager.createUser(userName, password);
 		} catch (IOException e) {
-			logger.error("Create user {} failed because {}", username, e.toString());
+			logger.error("Create user {} failed because {}", userName, e.toString());
 			throw new AuthException(e.toString());
 		}
 		if (!success) {
-			throw new AuthException("user " + username + " already exists");
+			throw new AuthException("user " + userName + " already exists");
 		}
 		return success;
 	}
 
 	public boolean addUser(User user) throws AuthException {
-		return addUser(user.getUsername(), user.getPassword());
+		return addUser(user.getUserName(), user.getPassword());
 	}
 
-	/** find a user by "username"
-	 * @param username
+	/** find a user by "userName"
+	 * @param userName
 	 * @return
 	 * @throws AuthException
 	 * 			when the user cannot be found
 	 */
-	public User findUser(String username) throws AuthException {
-		User user = userManager.findUser(username);
+	public User findUser(String userName) throws AuthException {
+		User user = userManager.findUser(userName);
 		if (user == null) {
-			logger.info("user {} not exist", username);
-			throw new AuthException(username + " does not exist");
+			logger.info("user {} not exist", userName);
+			throw new AuthException(userName + " does not exist");
 		}
 		return user;
 	}
 
 	/**
-	 * Delete a user by "username"
+	 * Delete a user by "userName"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @return true if the user is deleted, throw exception if the user does not
 	 *         exist
 	 * @throws AuthException
 	 */
-	public boolean deleteUser(String username) throws AuthException {
+	public boolean deleteUser(String userName) throws AuthException {
 		boolean success = false;
 		try {
-			success = userManager.deleteUser(username);
+			success = userManager.deleteUser(userName);
 		} catch (IOException e) {
-			logger.error("Delete user {} failed because {}", username, e.toString());
+			logger.error("Delete user {} failed because {}", userName, e.toString());
 			throw new AuthException(e.toString());
 		}
 		if (!success) {
-			throw new AuthException("user " + username + " does not exist");
+			throw new AuthException("user " + userName + " does not exist");
 		}
 		return success;
 	}
@@ -208,9 +208,9 @@ public class AuthDao {
 	}
 
 	/**
-	 * Give user "username" role "roleName" on "path"
+	 * Give user "userName" role "roleName" on "path"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param path
 	 * @param roleName
 	 * @return true if the role is correctly added, throw exception if the role
@@ -219,8 +219,8 @@ public class AuthDao {
 	 * @throws AuthException
 	 * @throws RoleAlreadyExistException
 	 */
-	public boolean grantRoleOnPath(String username, String path, String roleName) throws AuthException {
-		User user = findUser(username);
+	public boolean grantRoleOnPath(String userName, String path, String roleName) throws AuthException {
+		User user = findUser(userName);
 		Role role = findRole(roleName);
 
 		boolean success = false;
@@ -234,15 +234,15 @@ public class AuthDao {
 			throw new AuthException(e.toString());
 		}
 		if (!success) {
-			throw new AuthException("user " + username + " already has role " + roleName + " on " + path);
+			throw new AuthException("user " + userName + " already has role " + roleName + " on " + path);
 		}
 		return success;
 	}
 
 	/**
-	 * Revoke user "username" role "roleName" on "path"
+	 * Revoke user "userName" role "roleName" on "path"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param path
 	 * @param roleName
 	 * @return true if success, throw exception the user does not have <roleName> on
@@ -250,8 +250,8 @@ public class AuthDao {
 	 * @throws PathErrorException
 	 * @throws AuthException
 	 */
-	public boolean revokeRoleOnPath(String username, String path, String roleName) throws AuthException {
-		User user = findUser(username);
+	public boolean revokeRoleOnPath(String userName, String path, String roleName) throws AuthException {
+		User user = findUser(userName);
 		Role role = findRole(roleName);
 
 		boolean success = false;
@@ -265,7 +265,7 @@ public class AuthDao {
 			throw new AuthException(e.toString());
 		}
 		if (!success) {
-			throw new AuthException("user " + username + " does not have role " + roleName + " on " + path);
+			throw new AuthException("user " + userName + " does not have role " + roleName + " on " + path);
 		}
 		return success;
 	}
@@ -319,17 +319,17 @@ public class AuthDao {
 	}
 
 	/**
-	 * check whether user "username" has "permission" on "path"
+	 * check whether user "userName" has "permission" on "path"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param path
 	 * @param permission
 	 * @return true if the user has such permission, false if the user does not have
 	 *         such permission
 	 * @throws AuthException
 	 */
-	public boolean checkPermissionOnPath(String username, String path, long permission) throws AuthException {
-		User user = findUser(username);
+	public boolean checkPermissionOnPath(String userName, String path, long permission) throws AuthException {
+		User user = findUser(userName);
 		boolean checked = false;
 		try {
 			checked = permManager.checkPermissionOnPath(user.getID(), path, permission);
@@ -341,15 +341,15 @@ public class AuthDao {
 	}
 
 	/**
-	 * find all permissions of user "username" on "path"
+	 * find all permissions of user "userName" on "path"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param path
 	 * @return
 	 * @throws AuthException
 	 */
-	public long getPermissionOnPath(String username, String path) throws AuthException {
-		User user = findUser(username);
+	public long getPermissionOnPath(String userName, String path) throws AuthException {
+		User user = findUser(userName);
 		long permission = Permission.NONE;
 		try {
 			permission = permManager.getPermissionOnPath(user.getID(), path);
@@ -363,17 +363,17 @@ public class AuthDao {
 	}
 
 	/**
-	 * Replace user's "username" password with "newPassword"
+	 * Replace user's "userName" password with "newPassword"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param newPassword
 	 * @return true if modification succeeded, false if IOException is raised
 	 * @throws NoSuchUserException
 	 */
-	public boolean modifyPassword(String username, String newPassword) throws AuthException {
+	public boolean modifyPassword(String userName, String newPassword) throws AuthException {
 		boolean success = false;
 		try {
-			success = userManager.modifyPW(username, newPassword);
+			success = userManager.modifyPW(userName, newPassword);
 		} catch (IOException e) {
 			logger.error("Modify password failed because {}", e.toString());
 			throw new AuthException(e.toString());
@@ -390,15 +390,15 @@ public class AuthDao {
 	}
 
 	/**
-	 * find all roles of user "username" on "path"
+	 * find all roles of user "userName" on "path"
 	 * 
-	 * @param username
+	 * @param userName
 	 * @param path
 	 * @return list of role names
 	 * @throws AuthException
 	 */
-	public Object getRolesOnPath(String username, String fullPath) throws AuthException {
-		User user = findUser(username);
+	public Object getRolesOnPath(String userName, String fullPath) throws AuthException {
+		User user = findUser(userName);
 		Set<Integer> roleIDs = null;
 		try {
 			roleIDs = permManager.findRolesOnPath(user.getID(), fullPath);

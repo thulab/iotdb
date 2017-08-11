@@ -47,8 +47,8 @@ public class UserManager {
 		try {
 			while (raf.getFilePointer() + User.RECORD_SIZE < raf.length()) {
 				User user = User.readObject(raf);
-				if (!user.getUsername().equals(""))
-					users.put(user.getUsername(), user);
+				if (!user.getUserName().equals(""))
+					users.put(user.getUserName(), user);
 			}
 		} finally {
 			raf.close();

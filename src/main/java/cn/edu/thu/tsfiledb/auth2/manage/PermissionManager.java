@@ -76,7 +76,7 @@ public class PermissionManager {
 			int nextIndex = nodeManager.findChild(uid, next, pathLevels[i]);
 			if (nextIndex == -1) {
 				logger.error("{} in {} does not exist", pathLevels[i], path);
-				throw new PathErrorException(path + " not exist");
+				break;
 			}
 			next = nodeManager.getNode(uid, nextIndex);
 			roleSet.addAll(nodeManager.findRoles(uid, next));

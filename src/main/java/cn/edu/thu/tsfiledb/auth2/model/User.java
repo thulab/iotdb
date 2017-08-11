@@ -17,20 +17,20 @@ public class User {
 	public static final int RECORD_SIZE = MAX_NAME_LENGTH + MAX_PW_LENGTH + Integer.BYTES;
 
 	private int ID;
-	private String username;
+	private String userName;
 	private String password;
 
 	public User() {
 
 	}
 
-	public User(String username, String password) {
-		this.setUsername(username);
+	public User(String userName, String password) {
+		this.setUserName(userName);
 		this.setPassword(password);
 	}
 
-	public User(String username, String password, int newUserID) {
-		this.setUsername(username);
+	public User(String userName, String password, int newUserID) {
+		this.setUserName(userName);
 		this.setPassword(password);
 		this.setID(newUserID);
 	}
@@ -39,7 +39,7 @@ public class User {
 		User user = new User();
 		user.setID(raf.readInt());
 
-		user.setUsername(SerializeUtils.readString(raf, MAX_NAME_LENGTH));
+		user.setUserName(SerializeUtils.readString(raf, MAX_NAME_LENGTH));
 
 		user.setPassword(SerializeUtils.readString(raf, MAX_PW_LENGTH));
 		return user;
@@ -48,17 +48,17 @@ public class User {
 	public void writeObject(RandomAccessFile raf) throws IOException, WriteObjectException {
 		raf.writeInt(ID);
 
-		SerializeUtils.writeString(raf, username, MAX_NAME_LENGTH);
+		SerializeUtils.writeString(raf, userName, MAX_NAME_LENGTH);
 
 		SerializeUtils.writeString(raf, password, MAX_PW_LENGTH);
 	}
 
-	public String getUsername() {
-		return username;
+	public String getUserName() {
+		return userName;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 	public String getPassword() {
