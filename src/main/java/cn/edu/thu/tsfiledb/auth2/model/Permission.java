@@ -1,7 +1,10 @@
 package cn.edu.thu.tsfiledb.auth2.model;
 
+import org.hamcrest.core.Is;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
 
 public class Permission {
 	private static Logger logger = LoggerFactory.getLogger(Permission.class);
@@ -50,7 +53,7 @@ public class Permission {
 		return permStr.toString();
 	}
 
-	public static long nameToLong(String name) {
+	public static long nameToLong(String name) throws NoSuchPermException {
 		switch (name.toUpperCase()) {
 		case "NONE":
 			return NONE;
@@ -65,8 +68,7 @@ public class Permission {
 		case "CREATE":
 			return CREATE;
 		default:
-			logger.warn("unknown permission type {}", name);
-			return NONE;
+			throw new NoSuchPermException(name + " is not supported");
 		}
 	}
 }

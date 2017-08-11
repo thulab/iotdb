@@ -16,6 +16,7 @@ import cn.edu.thu.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.thu.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.thu.tsfile.timeseries.filter.verifier.LongFilterVerifier;
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
 import cn.edu.thu.tsfiledb.qp.constant.SQLConstant;
 import cn.edu.thu.tsfiledb.qp.exception.GeneratePhysicalPlanException;
 import cn.edu.thu.tsfiledb.qp.exception.LogicalOperatorException;
@@ -62,8 +63,14 @@ public class PhysicalGenerator {
 		switch (operator.getType()) {
 		case AUTHOR:
 			AuthorOperator author = (AuthorOperator) operator;
-			return new AuthorPlan(author.getAuthorType(), author.getUserName(), author.getRoleName(),
-					author.getPassWord(), author.getNewPassword(), author.getPrivilegeList(), author.getNodeName());
+			PhysicalPlan returnPlan = null;
+			try {
+				returnPlan = new AuthorPlan(author.getAuthorType(), author.getUserName(), author.getRoleName(),
+						author.getPassWord(), author.getNewPassword(), author.getPrivilegeList(), author.getNodeName());
+			} catch (NoSuchPermException e) {
+				throw new QueryProcessorException(e.getMessage());
+			}
+			return returnPlan;
 		case LOADDATA:
 			LoadDataOperator loadData = (LoadDataOperator) operator;
 			return new LoadDataPlan(loadData.getInputFilePath(), loadData.getMeasureType());

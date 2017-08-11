@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import cn.edu.thu.tsfile.timeseries.read.qp.Path;
+import cn.edu.thu.tsfiledb.auth2.exception.NoSuchPermException;
 import cn.edu.thu.tsfiledb.auth2.model.Permission;
 import cn.edu.thu.tsfiledb.auth2.model.Role;
 import cn.edu.thu.tsfiledb.qp.logical.Operator.OperatorType;
@@ -27,7 +28,7 @@ public class AuthorPlan extends PhysicalPlan {
 	private Path nodeName;
 
 	public AuthorPlan(AuthorType authorType, String userName, String roleName, String password, String newPassword,
-			String[] authorizationList, Path nodeName) {
+			String[] authorizationList, Path nodeName) throws NoSuchPermException {
 		super(false, OperatorType.AUTHOR);
 		this.authorType = authorType;
 		this.userName = userName;
@@ -75,7 +76,7 @@ public class AuthorPlan extends PhysicalPlan {
 		return nodeName;
 	}
 
-	private long strToPermissions(String[] authorizationList) {
+	private long strToPermissions(String[] authorizationList) throws NoSuchPermException {
 		long result = Permission.NONE;
 		if (authorizationList == null)
 			return result;
