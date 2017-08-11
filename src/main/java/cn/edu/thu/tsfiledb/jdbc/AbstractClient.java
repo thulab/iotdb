@@ -386,7 +386,9 @@ public abstract class AbstractClient {
 			DateTimeZone timeZone = DateTimeZone.forID(connection.getTimeZone());
 			statement = connection.createStatement();
 			statement.setFetchSize(fetchSize);
+			long tBefore = System.currentTimeMillis();
 			boolean hasResultSet = statement.execute(cmd.trim());
+			long tAfter = System.currentTimeMillis();
 			if (hasResultSet) {
 				ResultSet resultSet = statement.getResultSet();
 				output(resultSet, printToConsole, cmd.trim(), timeZone);
@@ -400,6 +402,7 @@ public abstract class AbstractClient {
 			} else {
 				System.out.println("execute successfully.");
 			}
+			System.out.println("Time elapsed : " + (float) (tAfter - tBefore) / 1000f + "s");
 		} catch (TsfileSQLException e) {
 			System.out.println("statement error: " + e.getMessage());
 		} catch (Exception e) {
