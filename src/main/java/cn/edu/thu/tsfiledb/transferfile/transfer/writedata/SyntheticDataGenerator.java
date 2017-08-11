@@ -89,7 +89,7 @@ public class SyntheticDataGenerator extends TimerTask{
         try {
             connection = DriverManager.getConnection(JDBC_SERVER_URL, "root", "root");
         } catch (SQLException e) {
-            logger.error("Failed to connect the server {} because ", JDBC_SERVER_URL, e);
+            logger.error("Failed to connect the receiver {} because ", JDBC_SERVER_URL, e);
             System.exit(1);
         }
     }
@@ -99,7 +99,7 @@ public class SyntheticDataGenerator extends TimerTask{
             try {
                 connection.close();
             } catch (SQLException e) {
-                logger.error("Failed to disconnect the server {} because ", JDBC_SERVER_URL, e);
+                logger.error("Failed to disconnect the receiver {} because ", JDBC_SERVER_URL, e);
             }
         }
     }

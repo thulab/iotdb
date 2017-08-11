@@ -1,7 +1,7 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer.server;
+package cn.edu.thu.tsfiledb.transferfile.transfer.receiver;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ServerConfig;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ReceiverConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ public class ReceiveFileThread extends Thread {
 	private long startPosition;
 	private final int copyFileSegment = 512;
 	private final int receiveFileSegment = 512;
-	private final ServerConfig config = ServerConfig.getInstance();
+	private final ReceiverConfig config = ReceiverConfig.getInstance();
 
 	public ReceiveFileThread(Socket socket) {
 		this.socket = socket;
@@ -28,7 +28,7 @@ public class ReceiveFileThread extends Thread {
 
 	/**
 	 * write data for communication with
-	 * main.java.cn.edu.thu.tsfiledb.transferfile.transfer.client
+	 * main.java.cn.edu.thu.tsfiledb.transferfile.transfer.sender
 	 */
 	public void run() {
 		InputStream is = null;
@@ -40,7 +40,7 @@ public class ReceiveFileThread extends Thread {
 			receiveFileFromClient(is, os);
 
 		} catch (IOException e) {
-			LOGGER.error("Error occurs while reading files from client, because: {}", e.getMessage());
+			LOGGER.error("Error occurs while reading files from sender, because: {}", e.getMessage());
 		} finally {
 			try {
 				// close InputStream and OutputStream
@@ -94,7 +94,7 @@ public class ReceiveFileThread extends Thread {
 		if (!receiveFile.exists()) {
 			receiveFile.createNewFile();
 		}
-		ServerConfig config = ServerConfig.getInstance();
+		ReceiverConfig config = ReceiverConfig.getInstance();
 		//LOGGER.info("tempFilePath "+config.storageDirectory + File.separatorChar + receiveFile.getParentFile().getName() + File.separator + "temp_" + receiveFile.getName());
 
 		File tempFile = new File(config.storageDirectory + File.separatorChar + receiveFile.getParentFile().getName() + File.separator + "temp_" + receiveFile.getName());
@@ -185,14 +185,14 @@ public class ReceiveFileThread extends Thread {
 					pw.write(receiveSize + "\n");
 					pw.flush();
 					os.flush();
-					LOGGER.info("Server receiveSize "+receiveSize);
+					LOGGER.info("Receiver receiveSize "+receiveSize);
 				}
 			}
 			if(receiveSize%config.fileSegmentSize != 0){
 				pw.write(receiveSize + "\n");
 				pw.flush();
 				os.flush();
-				LOGGER.info("Server receiveSize "+receiveSize);
+				LOGGER.info("Receiver receiveSize "+receiveSize);
 			}
 			LOGGER.info("Finish receiving a file, sending md5...");
 			String md5 = Md5CalculateUtil.getFileMD5(receiveFilePath);

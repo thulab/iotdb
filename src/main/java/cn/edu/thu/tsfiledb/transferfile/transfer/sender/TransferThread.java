@@ -1,10 +1,10 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer.client;
+package cn.edu.thu.tsfiledb.transferfile.transfer.sender;
 
 import cn.edu.thu.tsfiledb.service.DataCollectClient;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileInfo;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameAllResp;
 import cn.edu.thu.tsfiledb.service.rpc.thrift.TSFileNodeNameResp;
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.SenderConfig;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.thrift.transport.TTransportException;
@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
  */
 public class TransferThread extends TimerTask {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferThread.class);
-	private static ClientConfig config = ClientConfig.getInstance();
+	private static SenderConfig config = SenderConfig.getInstance();
 	private final int copyFileSegment=1024;
 
 	public void run() {
@@ -37,11 +37,11 @@ public class TransferThread extends TimerTask {
 		if (!dir.exists())
 			dir.mkdirs();
 		File[] files = dir.listFiles();
-		if (Client.isTimerTaskRunning() && files.length > 0) {
+		if (Sender.isTimerTaskRunning() && files.length > 0) {
 			LOGGER.warn("Still transferring");
 			return;
 		}
-		Client.setTimerTaskRunning(true);
+		Sender.setTimerTaskRunning(true);
 		try {
 			if (files.length == 0) {
 				getFileFromDB();
@@ -59,7 +59,7 @@ public class TransferThread extends TimerTask {
 		try {
 			client = new DataCollectClient(config.readDBHost, config.readDBPort);
 		} catch (TTransportException e) {
-			LOGGER.error("Failed to init data collect client, because: {}", e.getMessage());
+			LOGGER.error("Failed to init data collect sender, because: {}", e.getMessage());
 			return;
 		}
 		try {

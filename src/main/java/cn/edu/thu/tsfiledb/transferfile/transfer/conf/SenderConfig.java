@@ -10,20 +10,20 @@ import java.util.Properties;
 /**
  * Created by dell on 2017/7/25.
  */
-public class ClientConfig {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
-	private static final String CONFIG_NAME = "data-collect-client.properties";
+public class SenderConfig {
+	private static final Logger LOGGER = LoggerFactory.getLogger(SenderConfig.class);
+	private static final String CONFIG_NAME = "data-collect-sender.properties";
 	private static final String CONFIG_DEFAULT_PATH = "tsfiledb/conf/" + CONFIG_NAME;
 
 	private static class ClientConfigHolder {
-		private static final ClientConfig INSTANCE = new ClientConfig();
+		private static final SenderConfig INSTANCE = new SenderConfig();
 	}
 
-	private ClientConfig() {
+	private SenderConfig() {
 		loadProperties();
 	}
 
-	public static final ClientConfig getInstance() {
+	public static final SenderConfig getInstance() {
 		return ClientConfigHolder.INSTANCE;
 	}
 
@@ -88,7 +88,7 @@ public class ClientConfig {
 	}
 	
     public static void main(String[] args) {
-    		ClientConfig config = ClientConfig.getInstance();
+    		SenderConfig config = SenderConfig.getInstance();
         System.out.println(config.port);
     }
 }

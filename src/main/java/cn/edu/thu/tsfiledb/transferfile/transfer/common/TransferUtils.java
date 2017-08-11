@@ -1,6 +1,6 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.common;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferThread;
+import cn.edu.thu.tsfiledb.transferfile.transfer.sender.TransferThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

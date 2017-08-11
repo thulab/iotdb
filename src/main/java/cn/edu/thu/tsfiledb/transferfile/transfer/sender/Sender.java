@@ -1,4 +1,4 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer.client;
+package cn.edu.thu.tsfiledb.transferfile.transfer.sender;
 
 import java.util.Scanner;
 import java.util.Timer;
@@ -6,7 +6,7 @@ import java.util.Timer;
 /**
  * Created by lylw on 2017/7/17.
  */
-public class Client {
+public class Sender {
 	private long timeInterval = 60000L;
 	private long delayTime = 0L;
 	private long startTime;
@@ -18,14 +18,14 @@ public class Client {
 	}
 
 	public static void setTimerTaskRunning(boolean timerTaskRunning) {
-		Client.timerTaskRunning = timerTaskRunning;
+		Sender.timerTaskRunning = timerTaskRunning;
 	}
 
 	public long getStartTime() {
 		return startTime;
 	}
 
-	public void clientService() {
+	public void senderService() {
 		/** transfer files */
 		Scanner in = new Scanner(System.in);
 		timer = new Timer();
@@ -123,7 +123,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
-		Client transferClient = new Client();
-		transferClient.clientService();
+		Sender transferClient = new Sender();
+		transferClient.senderService();
 	}
 }

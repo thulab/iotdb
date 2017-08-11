@@ -1,7 +1,7 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferFileThread;
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
+import cn.edu.thu.tsfiledb.transferfile.transfer.sender.TransferFileThread;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.SenderConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class TestTransferThread extends TimerTask{
 
     public void run() {
         try {
-            System.out.println(new Date().toString() + "test client ------ transfer files");
+            System.out.println(new Date().toString() + "test sender ------ transfer files");
             writeFilesToServer("G:\\testfile1\\");
         } catch (IOException e) {
             e.printStackTrace();
@@ -32,7 +32,7 @@ public class TestTransferThread extends TimerTask{
         File file = new File(path);
         File[] files = file.listFiles();
         System.out.println(files.length);
-        ClientConfig config = ClientConfig.getInstance();
+        SenderConfig config = SenderConfig.getInstance();
         while (file.exists() && files.length>0) {
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(config.clientNTread);
             for (File file2 : files) {

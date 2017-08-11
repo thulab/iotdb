@@ -98,9 +98,9 @@
 
 	<logger name="cn.edu.thu.tsfiledb.conf" level="info" />
 	<!--<logger name="cn.edu.thu.tsfiledb.transferfile" level="info" />-->
-	<logger name="cn.edu.thu.tsfiledb.transferfile.transfer.server" level="info" />
+	<logger name="cn.edu.thu.tsfiledb.transferfile.transfer.receiver" level="info" />
 	<logger name="cn.edu.thu.tsfiledb.transferfile.transfer.writedata" level="info" />
-	<logger name="cn.edu.thu.tsfiledb.transferfile.transfer.client" level="warn" />
+	<logger name="cn.edu.thu.tsfiledb.transferfile.transfer.sender" level="warn" />
 	<root level="ERROR">
 		<appender-ref ref="FILEDEBUG" />
 		<appender-ref ref="FILEINFO" />

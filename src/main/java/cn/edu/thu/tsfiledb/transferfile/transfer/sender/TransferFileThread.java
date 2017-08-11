@@ -1,9 +1,9 @@
-package cn.edu.thu.tsfiledb.transferfile.transfer.client;
+package cn.edu.thu.tsfiledb.transferfile.transfer.sender;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.TransferConstants;
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.TransferUtils;
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.SenderConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class TransferFileThread extends Thread {
 	private int fileSegmentSize;
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferFileThread.class);
 	private final int messageSize=1024;
-	private static ClientConfig config = ClientConfig.getInstance();
+	private static SenderConfig config = SenderConfig.getInstance();
 	public TransferFileThread(Socket socket, String absolutePath, long bytePosition) {
 		fileSegmentSize = config.fileSegmentSize;
 		this.socket = socket;
@@ -46,9 +46,9 @@ public class TransferFileThread extends Thread {
 			sendFileNameAndLength(absolutePath);
 			byte[] input = new byte[messageSize];
 			ins.read(input);
-			LOGGER.info("Receive ok from server");
+			LOGGER.info("Receive ok from receiver");
 			boolean t = writeFileToServer(absolutePath, bytePosition);
-			LOGGER.info("Ready to read Md5 from server");
+			LOGGER.info("Ready to read Md5 from receiver");
 			ins.read(input);
 			LOGGER.info("Finish reading MD5");
 			String serverMD5 = new String(input).split(TransferConstants.messageSplitSig)[0];
@@ -95,7 +95,7 @@ public class TransferFileThread extends Thread {
 		OutputStream os = socket.getOutputStream();
 		File file = new File(absolutePath);
 		FileInputStream in = new FileInputStream(new File(absolutePath));
-		ClientConfig config = ClientConfig.getInstance();
+		SenderConfig config = SenderConfig.getInstance();
 		byte[] buffer = new byte[Math.toIntExact(config.fileSegmentSize)];
 		int size = 0;
 		long sendSize = 0;
@@ -103,7 +103,7 @@ public class TransferFileThread extends Thread {
 		try {
 			while ((size = in.read(buffer)) != -1) {
 				sendSize += size;
-				LOGGER.info("Client send size "+sendSize);
+				LOGGER.info("Sender send size "+sendSize);
 				if (sendSize <= bytePosition)
 					continue;
 				os.write(buffer, 0, size);
@@ -123,7 +123,7 @@ public class TransferFileThread extends Thread {
 				if (in != null)
 					in.close();
 			} catch (IOException e) {
-				LOGGER.error("Fail to close FileInputStream while writing file {} to server, because: ", absolutePath, e.getMessage());
+				LOGGER.error("Fail to close FileInputStream while writing file {} to receiver, because: ", absolutePath, e.getMessage());
 			}
 		}
 		t = (bytePosition == file.length());
@@ -133,7 +133,7 @@ public class TransferFileThread extends Thread {
 	private void updateBytePosition(String absolutePath, Long bytePosition) {
 		ObjectOutputStream oos = null;
 		File file = new File(absolutePath);
-		ClientConfig config = ClientConfig.getInstance();
+		SenderConfig config = SenderConfig.getInstance();
 		String filePath = config.filePositionRecord.concat(File.separatorChar+"record_" + file.getName());
 
 		try {

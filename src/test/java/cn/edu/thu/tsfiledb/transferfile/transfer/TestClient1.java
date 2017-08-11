@@ -1,10 +1,8 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer;
 
-import cn.edu.thu.tsfiledb.transferfile.transfer.client.TransferThread;
-import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ClientConfig;
+import cn.edu.thu.tsfiledb.transferfile.transfer.sender.TransferThread;
 
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.Timer;
 
 /**

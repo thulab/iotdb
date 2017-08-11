@@ -29,7 +29,7 @@ for f in ${TSFILE_HOME}/lib/*.jar; do
   CLASSPATH=${CLASSPATH}":"$f
 done
 
-MAIN_CLASS=cn.edu.thu.tsfiledb.transferfile.transfer.server.Server
+MAIN_CLASS=cn.edu.thu.tsfiledb.transferfile.transfer.receiver.Receiver
 
 "$JAVA" -DTSFILE_HOME=${TSFILE_HOME} -Dlogback.configurationFile=${TSFILE_CONF}/logback.xml $TSFILEDB_DERBY_OPTS $TSFILEDB_JMX_OPTS -Dname=tsfiledb\.IoTDB -cp "$CLASSPATH" "$MAIN_CLASS"
 
