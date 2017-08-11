@@ -12,20 +12,24 @@ import cn.edu.thu.tsfiledb.auth2.model.Usermeta;
 public class UserManager {
 	private static String userFolder = AuthConfig.userFolder;
 	private static String userInfoFile = "userInfo";
-	private static UserManager instance;
 
 	private HashMap<String, User> users = new HashMap<>();
+	
+	private static boolean initialized = false;
+	
+	private static class InstanceHolder {
+		private static final UserManager instance = new UserManager();
+	}
 
 	private UserManager() {
 
 	}
 
 	public static UserManager getInstance() throws IOException {
-		if (instance == null) {
-			instance = new UserManager();
-			instance.init();
+		if (!InstanceHolder.instance.initialized) {
+			InstanceHolder.instance.init();
 		}
-		return instance;
+		return InstanceHolder.instance;
 	}
 
 	private void init() throws IOException {
@@ -46,6 +50,7 @@ public class UserManager {
 		if (findUser("root") == null) {
 			createUser("root", "root");
 		}
+		initialized = true;
 	}
 
 	public User findUser(String username) {

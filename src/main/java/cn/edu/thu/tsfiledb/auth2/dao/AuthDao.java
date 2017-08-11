@@ -33,18 +33,21 @@ public class AuthDao {
 	RoleManager roleManager;
 	PermissionManager permManager;
 
-	private static AuthDao instance;
+	private boolean initialized = false;
+	
+	private static class InstanceHolder {
+		private static final AuthDao instance = new AuthDao();
+	}
 
 	private AuthDao() {
 
 	}
 
 	public static AuthDao getInstance() throws AuthException {
-		if (instance == null) {
-			instance = new AuthDao();
-			instance.init();
+		if (!InstanceHolder.instance.initialized) {
+			InstanceHolder.instance.init();
 		}
-		return instance;
+		return InstanceHolder.instance;
 	}
 
 	private void init() throws AuthException {
@@ -57,6 +60,7 @@ public class AuthDao {
 			logger.error("init AuthDao failed because {}", e.toString());
 			throw new AuthException(e.toString());
 		}
+		initialized = true;
 	}
 
 	/**
