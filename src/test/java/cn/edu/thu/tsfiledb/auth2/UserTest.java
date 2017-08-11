@@ -8,6 +8,7 @@ import java.io.RandomAccessFile;
 
 import org.junit.Test;
 
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.exception.WriteObjectException;
 import cn.edu.thu.tsfiledb.auth2.manage.UserManager;
@@ -73,7 +74,7 @@ public class UserTest {
 	}
 	
 	@Test
-	public void deleteTest() throws IOException {
+	public void deleteTest() throws IOException, AuthException {
 		UserManager manager = UserManager.getInstance();
 		String username = "admin2", password = "2nimda";
 		manager.createUser(username, password);
@@ -82,10 +83,16 @@ public class UserTest {
 		manager.deleteUser(username);
 		assertFalse(manager.authorize(username, password));
 		assertTrue(manager.createUser(username, password));
+		
+		try {
+			manager.deleteUser("root");
+		} catch (Exception e) {
+			assertTrue(e.getMessage().equals("Super user root cannot be deleted"));
+		}
 	}
 	
 	@Test
-	public void modifyPWTest() throws IOException, NoSuchUserException {
+	public void modifyPWTest() throws IOException, AuthException {
 		UserManager manager = UserManager.getInstance();
 		String username = "admin3", password = "3nimda";
 		manager.deleteUser(username);

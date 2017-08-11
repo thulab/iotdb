@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 
+import cn.edu.thu.tsfiledb.auth2.exception.AuthException;
 import cn.edu.thu.tsfiledb.auth2.exception.NoSuchUserException;
 import cn.edu.thu.tsfiledb.auth2.model.User;
 import cn.edu.thu.tsfiledb.auth2.model.Usermeta;
@@ -13,6 +14,7 @@ import cn.edu.thu.tsfiledb.conf.TsfileDBDescriptor;
 
 public class UserManager {
 	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
+	private static final String SUPER_USER = authConfig.SUPER_USER;
 	
 	private static String userFolder = authConfig.USER_FOLDER;
 	private static String userInfoFile = authConfig.USER_INFO_FILE;
@@ -92,7 +94,10 @@ public class UserManager {
 		return user.getPassword().equals(password);
 	}
 
-	public boolean deleteUser(String username) throws IOException {
+	public boolean deleteUser(String username) throws IOException, AuthException {
+		if(isSUPER(username)) {
+			throw new AuthException("Super user " + username + " cannot be deleted");
+		}
 		User user = users.get(username);
 		if (user == null) {
 			return false;
@@ -126,5 +131,9 @@ public class UserManager {
 
 	public User[] getAllUsers() {
 		return users.values().toArray(new User[0]);
+	}
+	
+	public boolean isSUPER(String username) {
+		return SUPER_USER.equals(username);
 	}
 }

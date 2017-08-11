@@ -1,7 +1,6 @@
 package cn.edu.thu.tsfiledb.service;
 
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.containsString;
 
 import java.io.IOException;
 
@@ -150,9 +149,9 @@ public class ServiceAuthTest {
 		
 		exeReq.setStatement("show all role");
 		exeResp = tsServiceImpl.executeStatement(exeReq);
-		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleA\tNONE"));
-		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleB\tREAD"));
-		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleC\tMODIFY"));
-		assertThat(exeResp.getStatus().getErrorMessage(), containsString("roleD\tREAD,MODIFY"));
+		assertTrue(exeResp.getStatus().getErrorMessage().contains("roleA\tNONE"));
+		assertTrue(exeResp.getStatus().getErrorMessage().contains("roleB\tREAD"));
+		assertTrue(exeResp.getStatus().getErrorMessage().contains("roleC\tMODIFY"));
+		assertTrue(exeResp.getStatus().getErrorMessage().contains("roleD\tREAD,MODIFY"));
 	}
 }

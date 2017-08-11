@@ -22,7 +22,6 @@ import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
 public class AuthChecker {
 	private static AuthConfig authConfig = TsfileDBDescriptor.getInstance().getConfig().authConfig;
 	
-	private static final String SUPER_USER = authConfig.SUPER_USER;
 	private static final Logger logger = LoggerFactory.getLogger(AuthChecker.class);
 
 	/** Check if a user "username" is a super user.
@@ -30,9 +29,10 @@ public class AuthChecker {
 	 *  TODO add support to multiple super users
 	 * @param username
 	 * @return
+	 * @throws AuthException 
 	 */
-	private static boolean isSUPER(String username) {
-		return SUPER_USER.equals(username);
+	private static boolean isSUPER(String username) throws AuthException {
+		return AuthDao.getInstance().isSUPER(username);
 	}
 
 	/** Check if a user "username" can perform operation "authorType" on "paths".

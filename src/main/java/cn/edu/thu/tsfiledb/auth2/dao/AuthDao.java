@@ -417,4 +417,8 @@ public class AuthDao {
 		}
 		return roles;
 	}
+	
+	public boolean isSUPER(String username) {
+		return userManager.isSUPER(username);
+	}
 }
