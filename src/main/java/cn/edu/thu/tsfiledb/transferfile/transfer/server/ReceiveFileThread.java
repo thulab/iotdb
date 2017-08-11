@@ -1,21 +1,11 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.server;
 
 import cn.edu.thu.tsfiledb.transferfile.transfer.common.Md5CalculateUtil;
-import cn.edu.thu.tsfiledb.transferfile.transfer.common.TransferConstants;
 import cn.edu.thu.tsfiledb.transferfile.transfer.conf.ServerConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -69,28 +59,26 @@ public class ReceiveFileThread extends Thread {
 		String[] args = new String[5];
 		int i = 0;
 		LOGGER.info("Ready to receive fileInfo");
-		while ((i < 3) && (!((info = br.readLine()) == ""))) {
+		while ((i < 4) && (!((info = br.readLine()) == ""))) {
 			args[i] = info;
-			//LOGGER.info(args[i]+" "+i);
+			LOGGER.info(args[i]+" "+i);
 			if(args[i]!=null)i++;
 		}
 
-		String path = args[0];
-		fileSize = Long.parseLong(args[1]);
-		String[] values = path.split(TransferConstants.messageSplitSig);
-		String fileName = values[values.length - 1];
-
-		String receiveDir = config.storageDirectory.concat(File.separatorChar + new File(fileName).getParentFile().getName());
-		//LOGGER.info("receiveDir "+receiveDir);
+		String fileName = args[0];
+		String nameSpace = args[1];
+		fileSize = Long.parseLong(args[2]);
+		String receiveDir = config.storageDirectory.concat(File.separatorChar + nameSpace);
+		LOGGER.info("receiveDir "+receiveDir);
 
 		File dir = new File(receiveDir);
 		if (!dir.exists())
 			dir.mkdirs();
 		
-		String temp = receiveDir.concat(File.separatorChar + new File(fileName).getName());
+		String temp = receiveDir.concat(File.separatorChar + fileName);
 		receiveFilePath = temp;
-		//LOGGER.info("receiveFilePath "+receiveFilePath);
-		startPosition = Long.parseLong(args[2]);
+		LOGGER.info("receiveFilePath "+receiveFilePath);
+		startPosition = Long.parseLong(args[3]);
 		rewriteReceiveFile();
 		PrintWriter pw = new PrintWriter(os);
 		LOGGER.info("Receive fileInfo Successfully");

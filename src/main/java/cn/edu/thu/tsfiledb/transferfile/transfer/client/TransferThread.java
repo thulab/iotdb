@@ -102,7 +102,7 @@ public class TransferThread extends TimerTask {
 		LOGGER.info("Copy file from {} to {}...", tsFilePath, snapShotPath);
 		File inputFile = new File(tsFilePath);
 		String snapShotDir = snapShotPath.concat(File.separatorChar + inputFile.getParentFile().getName() + File.separatorChar);
-		LOGGER.info("getParentFile.getName "+inputFile.getParent());
+		//LOGGER.info("getParentFile.getName "+inputFile.getParent());
 		File snapShotDirFile=new File(snapShotDir);
 		if(!snapShotDirFile.exists())snapShotDirFile.mkdirs();
 		File outputFile = new File(snapShotDir + inputFile.getName());

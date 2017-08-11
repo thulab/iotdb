@@ -80,7 +80,8 @@ public class TransferFileThread extends Thread {
 		File file = new File(absolutePath);
 		OutputStream os = socket.getOutputStream();
 		PrintWriter pw = new PrintWriter(os);
-		pw.write(absolutePath + TransferConstants.messageSplitSig +
+		pw.write(file.getName() + TransferConstants.messageSplitSig +
+				file.getParentFile().getName() + TransferConstants.messageSplitSig +
 				file.length() + TransferConstants.messageSplitSig +
 				bytePosition + TransferConstants.messageSplitSig);
 		pw.flush();
