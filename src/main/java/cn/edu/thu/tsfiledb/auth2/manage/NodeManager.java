@@ -37,31 +37,32 @@ public class NodeManager {
 	private static String PERMMETA_SUFFIX = ".perm.meta";
 	private static String PERM_FOLDER = AuthConfig.permFolder;
 
-	private static NodeManager instance;
-
 	private int MAX_CACHE_CAPACITY = 1000;
+	private boolean initialized = false;
 	// key is <uid, blockID>
 	Map<Pair<Integer, Integer>, PermTreeNode> nodeCache = new HashMap<>();
 	LinkedList<Pair<Integer, Integer>> LRUList = new LinkedList<>();
 	// key is uid, for different users will not cause conflicts
 	HashMap<Integer, Integer> initMutexMap = new HashMap<>();
 	HashMap<Integer, Integer> accessMutexMap = new HashMap<>();
-
-	private NodeManager() {
-
+	
+	private static class InstanceHolder {
+		private static final NodeManager instance = new NodeManager();
 	}
 
-	public static NodeManager getInstance() {
-		if (instance == null) {
-			instance = new NodeManager();
-			instance.init();
-		}
-		return instance;
+	private NodeManager() {
+	}
+
+	public static final NodeManager getInstance() {
+		if(!InstanceHolder.instance.initialized)
+			InstanceHolder.instance.init();
+		return InstanceHolder.instance;
 	}
 
 	private void init() {
 		File permFolder = new File(PERM_FOLDER);
 		permFolder.mkdirs();
+		initialized = true;
 	}
 
 	/**

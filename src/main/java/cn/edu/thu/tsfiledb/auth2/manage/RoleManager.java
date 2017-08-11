@@ -17,24 +17,28 @@ import cn.edu.thu.tsfiledb.auth2.model.User;
 
 public class RoleManager {
 	private static Logger logger = LoggerFactory.getLogger(RoleManager.class);
-	private static RoleManager instance;
 
 	private static String roleFolder = AuthConfig.roleFolder;
 	private static String roleInfoFile = "roleInfo";
 
 	private HashMap<String, Role> roleNameMap = new HashMap<>();
 	private HashMap<Integer, Role> roleIDMap = new HashMap<>();
+	
+	private boolean initialized = false;
+	
+	private static class InstanceHolder {
+		private static final RoleManager instance = new RoleManager();
+	}
 
 	private RoleManager() {
 
 	}
 
 	public static RoleManager getInstance() throws IOException {
-		if (instance == null) {
-			instance = new RoleManager();
-			instance.init();
+		if (InstanceHolder.instance.initialized) {
+			InstanceHolder.instance.init();
 		}
-		return instance;
+		return InstanceHolder.instance;
 	}
 
 	private void init() throws IOException {
@@ -54,6 +58,7 @@ public class RoleManager {
 			}
 		}
 		raf.close();
+		initialized = true;
 	}
 
 	public Role findRole(int roleID) {

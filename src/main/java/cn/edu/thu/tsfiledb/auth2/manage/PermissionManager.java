@@ -20,26 +20,29 @@ import cn.edu.thu.tsfiledb.utils.PathUtils;
 
 public class PermissionManager {
 	private static Logger logger = LoggerFactory.getLogger(PermissionManager.class);
-	private static PermissionManager instance;
 	// <<uid, path>, Set<roleID>>
 	private HashMap<Pair<Integer, String>, Set<Integer>> rolesCache = new HashMap<>();
 	private LinkedList<Pair<Integer, String>> LRUList = new LinkedList<>();
 	private int cacheCapacity = 1000;
-
+	private boolean initialized =  false;
+	
 	private PermissionManager() {
 
 	}
+	
+	private static class InstanceHolder {
+		private static final PermissionManager instance = new PermissionManager();
+	}
 
 	public static PermissionManager getInstance() {
-		if (instance == null) {
-			instance = new PermissionManager();
-			instance.init();
+		if (!InstanceHolder.instance.initialized) {
+			InstanceHolder.instance.init();
 		}
-		return instance;
+		return InstanceHolder.instance;
 	}
 
 	private void init() {
-
+		initialized = true;
 	}
 
 	/**

@@ -19,7 +19,7 @@ import cn.edu.thu.tsfiledb.qp.logical.sys.AuthorOperator.AuthorType;
  */
 public class AuthChecker {
 	private static final String SUPER_USER = "root";
-	private static final Logger logger = LoggerFactory.getLogger(AuthorityChecker.class);
+	private static final Logger logger = LoggerFactory.getLogger(AuthChecker.class);
 
 	/** Check if a user "username" is a super user.
 	 *  Current method is to simply compare with preset super user name.
