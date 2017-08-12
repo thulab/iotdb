@@ -36,6 +36,7 @@ public class SenderConfig {
 	public String readDBHost = "127.0.0.1";
 	public int readDBPort = 6668;
 	public String filePositionRecord = "tsfiledb_test/bytePosition";
+	public long transferTimeInterval = 60000L;
 
 	public void loadProperties() {
 		String tsfileHome = System.getProperty(SystemConstant.TSFILE_HOME, CONFIG_DEFAULT_PATH);
@@ -72,6 +73,7 @@ public class SenderConfig {
 			readDBHost = p.getProperty("READ_DB_HOST", readDBHost);
 			readDBPort = Integer.parseInt(p.getProperty("READ_DB_PORT", readDBPort+""));
 			filePositionRecord = p.getProperty("FILE_RECORD_DIRECTORY", filePositionRecord);
+			transferTimeInterval = Long.parseLong(p.getProperty("TRANSFER_TIME_INTERVAL"));
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file, use default configuration", e);
 		} catch (Exception e) {
@@ -88,7 +90,7 @@ public class SenderConfig {
 	}
 	
     public static void main(String[] args) {
-    		SenderConfig config = SenderConfig.getInstance();
+		SenderConfig config = SenderConfig.getInstance();
         System.out.println(config.port);
     }
 }

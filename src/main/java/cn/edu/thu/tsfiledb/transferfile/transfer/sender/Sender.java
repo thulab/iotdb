@@ -1,5 +1,7 @@
 package cn.edu.thu.tsfiledb.transferfile.transfer.sender;
 
+import cn.edu.thu.tsfiledb.transferfile.transfer.conf.SenderConfig;
+
 import java.util.Scanner;
 import java.util.Timer;
 
@@ -7,7 +9,8 @@ import java.util.Timer;
  * Created by lylw on 2017/7/17.
  */
 public class Sender {
-	private long timeInterval = 60000L;
+	private static SenderConfig config = SenderConfig.getInstance();
+	private long timeInterval;
 	private long delayTime = 0L;
 	private long startTime;
 	private Timer timer;
@@ -29,6 +32,7 @@ public class Sender {
 		/** transfer files */
 		Scanner in = new Scanner(System.in);
 		timer = new Timer();
+		timeInterval = config.transferTimeInterval;
 		startTime = System.currentTimeMillis() + delayTime;
 		timer.schedule(new TransferThread(), delayTime, timeInterval);
 
@@ -43,15 +47,6 @@ public class Sender {
 				}
 				
 				if (cmd.trim().equals("set")) {
-					System.out.print("Input delay time: ");
-					try {
-						delayTime = in.nextLong();
-					} catch (Exception e) {
-						System.out.println("Error input delay time, it must be a number");
-						continue;
-					}
-					
-					startTime = System.currentTimeMillis() + delayTime;
 					System.out.print("Input time interval: ");
 					
 					try {
@@ -64,6 +59,7 @@ public class Sender {
 					timer.cancel();
 					timer.purge();
 					timer = new Timer();
+					delayTime = startTime - System.currentTimeMillis();
 					while(delayTime<0)delayTime+=timeInterval;
 					timer.schedule(new TransferThread(), delayTime, timeInterval);
 				} else if (cmd.trim().equals("transfer now")) {

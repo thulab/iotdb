@@ -174,11 +174,7 @@ public class TransferThread extends TimerTask {
 		String filePath = config.startTimePath.concat(File.separatorChar + namespace);
 		File file = new File(filePath);
 		if(!file.exists()){
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				LOGGER.info("create file {} fail",file.getName());
-			}
+			return startTimes;
 		}
 		ObjectInputStream ois = null;
 		try {
@@ -186,6 +182,7 @@ public class TransferThread extends TimerTask {
 			StartTime startTime = (StartTime) ois.readObject();
 			startTimes.putAll(startTime.getStartTime());
 		} catch (IOException e) {
+			e.printStackTrace();
 			LOGGER.warn("file {}: reset startTime to empty, because: {}", file.getName(), e.getMessage());
 		} catch (ClassNotFoundException e) {
 			LOGGER.error("Can't find file {}", file.getName());
