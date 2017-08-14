@@ -14,6 +14,10 @@ set TSFILE_LOGS=%TSFILE_HOME%\logs
 if NOT DEFINED MAIN_CLASS set MAIN_CLASS=cn.edu.thu.tsfiledb.transferfile.transfer.sender.Sender
 if NOT DEFINED JAVA_HOME goto :err
 
+set JMX_PORT=10088
+set SENDER_JMX_OPTS="-Dcom.sun.management.jmxremote" "-Dcom.sun.management.jmxremote.authenticate=false"  "-Dcom.sun.management.jmxremote.ssl=false" "-Dcom.sun.management.jmxremote.port=%JMX_PORT%"
+
+
 @REM -----------------------------------------------------------------------------
 @REM JVM Opts we'll use in legacy run or installation
 set JAVA_OPTS=-ea^
@@ -35,7 +39,7 @@ goto :eof
 REM -----------------------------------------------------------------------------
 :okClasspath
 
-"%JAVA_HOME%\bin\java" -DTSFILE_HOME=%TSFILE_HOME% %JAVA_OPTS% -cp %CLASSPATH% %MAIN_CLASS% %*
+"%JAVA_HOME%\bin\java" -DTSFILE_HOME=%TSFILE_HOME% %JAVA_OPTS% %SENDER_JMX_OPTS% -cp %CLASSPATH% %MAIN_CLASS% %*
 
 goto finally
 

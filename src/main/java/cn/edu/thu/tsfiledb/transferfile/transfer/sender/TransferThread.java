@@ -33,6 +33,7 @@ public class TransferThread extends TimerTask {
 	private final int copyFileSegment=1024;
 
 	public void run() {
+		LOGGER.info("Ready to transfer file");
 		File dir = new File(config.snapshotDirectory);
 		if (!dir.exists())
 			dir.mkdirs();
