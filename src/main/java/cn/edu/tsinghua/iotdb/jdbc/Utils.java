@@ -11,12 +11,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cn.edu.thu.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.thu.tsfile.common.utils.Binary;
-import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.thu.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.thu.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSColumnSchema;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSDynamicOneColumnData;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;

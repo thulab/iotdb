@@ -1,95 +1,109 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>cn.edu.tsinghua</groupId>
+    <artifactId>iotdb-jdbc</artifactId>
+    <version>0.1.0</version>
+    <packaging>jar</packaging>
 
-	<groupId>cn.edu.tsinghua</groupId>
-	<artifactId>iotdb-jdbc</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <name>IoTDB Jdbc</name>
+    <description>A jdbc driver for a time series database, IoTDB, which uses TsFile as its storage format on disk.</description>
+    <url>http://maven.apache.org</url>
 
-	<name>iotdb-jdbc</name>
-	<url>http://maven.apache.org</url>
-	<licenses>
-		<license>
-			<name>The Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		</license>
-	</licenses>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
-	<developers>
-		<developer>
-			<name>Jianmin Wang</name>
-			<email>jimwang@tsinghua.edu.cn</email>
-			<organization>School of Software, Tsinghua University</organization>
-			<organizationUrl>http://thss.tsinghua.edu.cn/publish/soften/index.html</organizationUrl>
-		</developer>
-		<developer>
-			<name>Chen Wang</name>
-			<email>wang_chen@tsinghua.edu.cn</email>
-			<organization>School of Software, Tsinghua University</organization>
-			<organizationUrl>http://thss.tsinghua.edu.cn/publish/soften/index.html</organizationUrl>
-		</developer>
-		<developer>
-			<name>Xiangdong Huang</name>
-		</developer>
-		<developer>
-			<name>Rong Kang</name>
-		</developer>
-		<developer>
-			<name>Jinrui Zhang</name>
-		</developer>
-		<developer>
-			<name>Jialin Qiao</name>
-		</developer>
-		<developer>
-			<name>Yi Xu</name>
-		</developer>
-		<developer>
-			<name>Gaofei Cao</name>
-		</developer>
-		<developer>
-			<name>Kun Liu</name>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <name>Jianmin Wang</name>
+            <email>jimwang@tsinghua.edu.cn</email>
+            <organization>School of Software, Tsinghua University</organization>
+            <organizationUrl>http://thss.tsinghua.edu.cn/publish/soften/index.html</organizationUrl>
+        </developer>
+        <developer>
+            <name>Chen Wang</name>
+            <email>wang_chen@tsinghua.edu.cn</email>
+            <organization>School of Software, Tsinghua University</organization>
+            <organizationUrl>http://thss.tsinghua.edu.cn/publish/soften/index.html</organizationUrl>
+        </developer>
+        <developer>
+            <name>Xiangdong Huang</name>
+        </developer>
+        <developer>
+            <name>Rong Kang</name>
+        </developer>
+        <developer>
+            <name>Jinrui Zhang</name>
+        </developer>
+        <developer>
+            <name>Jialin Qiao</name>
+        </developer>
+        <developer>
+            <name>Yi Xu</name>
+        </developer>
+        <developer>
+            <name>Gaofei Cao</name>
+        </developer>
+        <developer>
+            <name>Kun Liu</name>
+        </developer>
+    </developers>
 
-	<properties>
-		<compile.version>1.8</compile.version>
-		<targetJavaVersion>1.8</targetJavaVersion>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>${targetJavaVersion}</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<junit.version>4.12</junit.version>
-		<slf4j.version>1.7.12</slf4j.version>
-		<logback.version>1.1.3</logback.version>
-		<joda.version>2.9.9</joda.version>
-		<skip.ut>false</skip.ut>
-		<skip.it>false</skip.it>
-	</properties>
+    <scm>
+        <connection>scm:git:git://github.com/thulab/iotdb-jdbc.git</connection>
+        <developerConnection>scm:git:ssh://github.com:thulab/iotdb-jdbc.git</developerConnection>
+        <url>http://github.com/thulab/iotdb-jdbc/tree/master</url>
+        <tag>iotdb-jdbc-0.1.0</tag>
+    </scm>
 
-	<dependencies>
-	
-	    <dependency>
-            <groupId>cn.edu.thu</groupId>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+        <compile.version>1.8</compile.version>
+        <targetJavaVersion>1.8</targetJavaVersion>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>${targetJavaVersion}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>4.12</junit.version>
+        <slf4j.version>1.7.12</slf4j.version>
+        <logback.version>1.1.3</logback.version>
+        <joda.version>2.9.9</joda.version>
+        <skip.ut>false</skip.ut>
+        <skip.it>false</skip.it>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>cn.edu.tsinghua</groupId>
             <artifactId>tsfile</artifactId>
             <version>0.1.0</version>
         </dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
-		
-        <!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>${joda.version}</version>
         </dependency>
-	</dependencies>
-	
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -274,6 +288,5 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>	
-	
+    </profiles>
 </project>
