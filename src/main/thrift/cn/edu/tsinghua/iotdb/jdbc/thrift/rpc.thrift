@@ -1,31 +1,5 @@
 namespace java cn.edu.tsinghua.iotdb.jdbc.thrift
 
-service TSIService {
-	TSOpenSessionResp openSession(1:TSOpenSessionReq req);
-
-	TSCloseSessionResp closeSession(1:TSCloseSessionReq req);
-
-	TSExecuteStatementResp executeStatement(1:TSExecuteStatementReq req);
-	
-	TSExecuteBatchStatementResp executeBatchStatement(1:TSExecuteBatchStatementReq req);
-
-	TSExecuteStatementResp executeQueryStatement(1:TSExecuteStatementReq req);
-
-	TSExecuteStatementResp executeUpdateStatement(1:TSExecuteStatementReq req);
-
-	TSFetchResultsResp fetchResults(1:TSFetchResultsReq req)
-
-	TSFetchMetadataResp fetchMetadata(1:TSFetchMetadataReq req)
-
-	TSCancelOperationResp cancelOperation(1:TSCancelOperationReq req);
-
-	TSCloseOperationResp closeOperation(1:TSCloseOperationReq req);
-	
-	TSGetTimeZoneResp getTimeZone();
-	
-	TSSetTimeZoneResp setTimeZone(1:TSSetTimeZoneReq req);
-}
-
 enum TSProtocolVersion {
   TSFILE_SERVICE_PROTOCOL_V1,
 }
@@ -337,4 +311,30 @@ struct TSSetTimeZoneReq {
 
 struct TSSetTimeZoneResp {
     1: required TS_Status status
+}
+
+service TSIService {
+    TSOpenSessionResp openSession(1:TSOpenSessionReq req);
+
+    TSCloseSessionResp closeSession(1:TSCloseSessionReq req);
+
+    TSExecuteStatementResp executeStatement(1:TSExecuteStatementReq req);
+    
+    TSExecuteBatchStatementResp executeBatchStatement(1:TSExecuteBatchStatementReq req);
+
+    TSExecuteStatementResp executeQueryStatement(1:TSExecuteStatementReq req);
+
+    TSExecuteStatementResp executeUpdateStatement(1:TSExecuteStatementReq req);
+
+    TSFetchResultsResp fetchResults(1:TSFetchResultsReq req)
+
+    TSFetchMetadataResp fetchMetadata(1:TSFetchMetadataReq req)
+
+    TSCancelOperationResp cancelOperation(1:TSCancelOperationReq req);
+
+    TSCloseOperationResp closeOperation(1:TSCloseOperationReq req);
+    
+    TSGetTimeZoneResp getTimeZone();
+    
+    TSSetTimeZoneResp setTimeZone(1:TSSetTimeZoneReq req);
 }
