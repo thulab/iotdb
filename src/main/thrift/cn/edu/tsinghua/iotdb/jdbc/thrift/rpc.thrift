@@ -15,19 +15,6 @@ struct TSOpenSessionReq {
   4: optional map<string, string> configuration
 }
 
-struct TSOpenSessionResp {
-  1: required TS_Status status
-
-  // The protocol version that the server is using.
-  2: required TSProtocolVersion serverProtocolVersion = TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1
-
-  // Session Handle
-  3: optional TS_SessionHandle sessionHandle
-
-  // The configuration settings for this session.
-  4: optional map<string, string> configuration
-}
-
 // The return status code contained in each response.
 enum TS_StatusCode {
   SUCCESS_STATUS,
@@ -51,20 +38,6 @@ struct TS_Status {
   5: optional string errorMessage
 }
 
-
-// CloseSession()
-//
-// Closes the specified session and frees any resources
-// currently allocated to that session. Any open
-// operations in that session will be canceled.
-struct TSCloseSessionReq {
-  1: required TS_SessionHandle sessionHandle
-}
-
-struct TSCloseSessionResp {
-  1: required TS_Status status
-}
-
 struct TSHandleIdentifier {
   // 16 byte globally unique identifier
   // This is the public ID of the handle and
@@ -83,6 +56,69 @@ struct TS_SessionHandle {
   1: required TSHandleIdentifier sessionId
 }
 
+
+struct TSOpenSessionResp {
+  1: required TS_Status status
+
+  // The protocol version that the server is using.
+  2: required TSProtocolVersion serverProtocolVersion = TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1
+
+  // Session Handle
+  3: optional TS_SessionHandle sessionHandle
+
+  // The configuration settings for this session.
+  4: optional map<string, string> configuration
+}
+
+// CloseSession()
+//
+// Closes the specified session and frees any resources
+// currently allocated to that session. Any open
+// operations in that session will be canceled.
+struct TSCloseSessionReq {
+  1: required TS_SessionHandle sessionHandle
+}
+
+struct TSCloseSessionResp {
+  1: required TS_Status status
+}
+
+// Client-side reference to a task running
+// asynchronously on the server.
+struct TSOperationHandle {
+  1: required TSHandleIdentifier operationId
+
+  // If hasResultSet = TRUE, then this operation
+  // generates a result set that can be fetched.
+  // Note that the result set may be empty.
+  //
+  // If hasResultSet = FALSE, then this operation
+  // does not generate a result set, and calling
+  // GetResultSetMetadata or FetchResults against
+  // this OperationHandle will generate an error.
+  2: required bool hasResultSet
+
+  //3: required TSOperationType operationType
+
+  // For operations that don't generate result sets,
+  // modifiedRowCount is either:
+  //
+  // 1) The number of rows that were modified by
+  //    the DML operation (e.g. number of rows inserted,
+  //    number of rows deleted, etc).
+  //
+  // 2) 0 for operations that don't modify or add rows.
+  //
+  // 3) < 0 if the operation is capable of modifiying rows,
+  //    but Hive is unable to determine how many rows were
+  //    modified. For example, Hive's LOAD DATA command
+  //    doesn't generate row count information because
+  //    Hive doesn't inspect the data as it is loaded.
+  //
+  // modifiedRowCount is unset if the operation generates
+  // a result set.
+  //4: optional double modifiedRowCount
+}
 
 struct TSGetOperationStatusReq {
   // Session to run this request against
@@ -144,43 +180,6 @@ struct TSCloseOperationResp {
   1: required TS_Status status
 }
 
-// Client-side reference to a task running
-// asynchronously on the server.
-struct TSOperationHandle {
-  1: required TSHandleIdentifier operationId
-
-  // If hasResultSet = TRUE, then this operation
-  // generates a result set that can be fetched.
-  // Note that the result set may be empty.
-  //
-  // If hasResultSet = FALSE, then this operation
-  // does not generate a result set, and calling
-  // GetResultSetMetadata or FetchResults against
-  // this OperationHandle will generate an error.
-  2: required bool hasResultSet
-
-  //3: required TSOperationType operationType
-
-  // For operations that don't generate result sets,
-  // modifiedRowCount is either:
-  //
-  // 1) The number of rows that were modified by
-  //    the DML operation (e.g. number of rows inserted,
-  //    number of rows deleted, etc).
-  //
-  // 2) 0 for operations that don't modify or add rows.
-  //
-  // 3) < 0 if the operation is capable of modifiying rows,
-  //    but Hive is unable to determine how many rows were
-  //    modified. For example, Hive's LOAD DATA command
-  //    doesn't generate row count information because
-  //    Hive doesn't inspect the data as it is loaded.
-  //
-  // modifiedRowCount is unset if the operation generates
-  // a result set.
-  //4: optional double modifiedRowCount
-}
-
 // ExecuteStatement()
 //
 // Execute a statement.
@@ -228,11 +227,6 @@ struct TSExecuteBatchStatementReq{
   2: required list<string> statements
 }
 
-struct TSQueryDataSet{
-	1: required list<string> keys
-  2: required list<TSDynamicOneColumnData> values
-}
-
 struct TSDynamicOneColumnData{
   1: required string deviceType
   2: required string dataType
@@ -246,6 +240,11 @@ struct TSDynamicOneColumnData{
 	8: optional list<double> floatList
 	9: optional list<double> doubleList
 	10: optional list<binary> binaryList
+}
+
+struct TSQueryDataSet{
+	1: required list<string> keys
+  2: required list<TSDynamicOneColumnData> values
 }
 
 struct TSFetchResultsReq{

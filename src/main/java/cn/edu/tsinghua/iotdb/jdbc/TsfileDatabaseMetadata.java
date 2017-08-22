@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 
-import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataReq;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataResp;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
