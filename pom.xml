@@ -54,10 +54,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/thulab/iotdb-jdbc.git</connection>
-        <developerConnection>scm:git:ssh://github.com:thulab/iotdb-jdbc.git</developerConnection>
-        <url>http://github.com/thulab/iotdb-jdbc/tree/master</url>
-        <tag>iotdb-jdbc-0.1.0</tag>
+        <connection>scm:git:https://github.com/thulab/iotdb-jdbc.git</connection>
+        <developerConnection>scm:git:https://github.com/thulab/iotdb-jdbc.git</developerConnection>
+        <url>https://github.com/thulab/iotdb-jdbc</url>
     </scm>
 
     <distributionManagement>
