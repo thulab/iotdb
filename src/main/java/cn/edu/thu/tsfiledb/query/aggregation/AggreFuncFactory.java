@@ -12,8 +12,7 @@ public class AggreFuncFactory {
     public static AggregateFunction getAggrFuncByName(String aggrFuncName, TSDataType dataType) throws ProcessorException {
         if (aggrFuncName == null) {
             throw new ProcessorException("AggregateFunction Name must not be null");
-        }
-        else if (aggrFuncName.toLowerCase().equals("min_time")) {
+        } else if (aggrFuncName.toLowerCase().equals("min_time")) {
             return new MinTimeAggrFunc();
         }
         else if (aggrFuncName.toLowerCase().equals("max_time")) {
