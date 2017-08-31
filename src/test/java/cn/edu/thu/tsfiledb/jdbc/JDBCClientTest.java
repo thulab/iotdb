@@ -15,7 +15,7 @@ public class JDBCClientTest {
 			connection =  DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 			DatabaseMetaData databaseMetaData = connection.getMetaData();
 			System.out.println("hi jenkins");
-			
+			System.out.println("hi jenkins");
 			ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
 			while(resultSet.next()){
 				//System.out.println(String.format("column %s, type %s", resultSet.getString("COLUMN_NAME"), resultSet.getString("COLUMN_TYPE")));
