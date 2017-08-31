@@ -41,7 +41,7 @@ public class AuthTest {
 		authDao = new AuthDao();
 		dbDao.open();
 		statement = DBDao.getStatement();
-
+		System.out.println("aa");
 		// init data
 		user1 = new User("user1", "user1");
 		user2 = new User("user2", "user2");
@@ -70,6 +70,7 @@ public class AuthTest {
 		assertEquals(null, userDao.getUser(statement, user1.getUserName()));
 
 		authDao.addUser(statement, user1);
+		
 		authDao.addUser(statement, user2);
 		// add the root user
 		assertEquals(3, authDao.getUsers(statement).size());
