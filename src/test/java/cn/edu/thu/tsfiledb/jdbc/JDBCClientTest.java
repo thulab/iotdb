@@ -18,7 +18,6 @@ public class JDBCClientTest {
 			
 			ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
 			while(resultSet.next()){
-				//System.out.println(String.format("column %s, type %s", resultSet.getString("COLUMN_NAME"), resultSet.getString("COLUMN_TYPE")));
 				System.out.println(String.format("column %s", resultSet.getString(0)));
 			}
 		} finally {
