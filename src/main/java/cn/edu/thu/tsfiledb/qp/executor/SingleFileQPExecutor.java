@@ -6,7 +6,9 @@ import java.util.List;
 
 import cn.edu.thu.tsfiledb.exception.PathErrorException;
 import cn.edu.thu.tsfiledb.qp.physical.PhysicalPlan;
+import cn.edu.thu.tsfiledb.query.engine.FilterStructure;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
@@ -35,6 +37,12 @@ public class SingleFileQPExecutor extends QueryProcessExecutor {
 	@Override
 	protected boolean judgeNonReservedPathExists(Path path) {
 		return queryEngine.pathExist(path);
+	}
+
+	@Override
+	public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+			throws ProcessorException, IOException, PathErrorException {
+		return null;
 	}
 
 	@Override

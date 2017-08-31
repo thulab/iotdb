@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.edu.thu.tsfiledb.query.engine.FilterStructure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,10 +101,15 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		return MManager.getInstance().pathExist(path.getFullPath());
 	}
 
+
+	public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+			throws ProcessorException, IOException, PathErrorException {
+		return queryEngine.aggregate(aggres, filterStructures);
+	}
+
 	@Override
 	public QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
 			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException {
-		QueryDataSet ret;
 		for (Path path : paths) {
 			if (!mManager.pathExist(path.getFullPath())) {
 				throw new ProcessorException(String.format("Timeseries %s does not exist", path.getFullPath()));
@@ -115,18 +121,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			}
 		}
 		try {
-			if (parameters.get() != null && parameters.get().containsKey(SQLConstant.IS_AGGREGATION)) {
-				if (lastData != null) {
-					lastData.clear();
-					return lastData;
-				}
-				String aggregateFuncName = (String) parameters.get().get(SQLConstant.IS_AGGREGATION);
-				ret = queryEngine.aggregate(paths.get(0), aggregateFuncName, timeFilter, freqFilter, valueFilter);
-			} else {
-				ret = queryEngine.query(formNumber, paths, timeFilter, freqFilter, valueFilter, lastData, fetchSize);
-			}
-
-			return ret;
+			return queryEngine.query(formNumber, paths, timeFilter, freqFilter, valueFilter, lastData, fetchSize);
 		} catch (Exception e) {
 			throw new ProcessorException(e.getMessage());
 		}

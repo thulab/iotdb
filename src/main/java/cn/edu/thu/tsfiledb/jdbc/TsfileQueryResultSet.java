@@ -56,7 +56,8 @@ public class TsfileQueryResultSet implements ResultSet {
 	private int maxRows;
 	private int fetchSize;
 	private boolean emptyResultSet = false;
-	private String operationType;
+	private List<String> operationType;
+	private List<String> columns;
 	private final String TIMESTAMP_STR = "Time";
 
 	public TsfileQueryResultSet() {
@@ -64,7 +65,8 @@ public class TsfileQueryResultSet implements ResultSet {
 	}
 
 	public TsfileQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
-			TS_SessionHandle sessionHandle, TSOperationHandle operationHandle, String sql, String operationType)
+			TS_SessionHandle sessionHandle, TSOperationHandle operationHandle, String sql,
+								List<String> aggregations, List<String> columns)
 			throws SQLException {
 		this.statement = statement;
 		this.sql = sql;
@@ -79,7 +81,8 @@ public class TsfileQueryResultSet implements ResultSet {
 		this.maxRows = statement.getMaxRows();
 		this.fetchSize = statement.getFetchSize();
 		this.operationHandle = operationHandle;
-		this.operationType = operationType;
+		this.operationType = aggregations;
+		this.columns = columns;
 	}
 
 	@Override

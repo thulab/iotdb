@@ -9,19 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.thu.tsfiledb.service.rpc.thrift.*;
 import org.apache.thrift.TException;
-
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCancelOperationReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCancelOperationResp;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCloseOperationReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSCloseOperationResp;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSExecuteBatchStatementReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSExecuteBatchStatementResp;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSExecuteStatementReq;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSExecuteStatementResp;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSIService;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TSOperationHandle;
-import cn.edu.thu.tsfiledb.service.rpc.thrift.TS_SessionHandle;
 
 public class TsfileStatement implements Statement {
 
@@ -175,7 +164,7 @@ public class TsfileStatement implements Statement {
 	Utils.verifySuccess(execResp.getStatus());
 	if (execResp.getOperationHandle().hasResultSet) {
 	    resultSet = new TsfileQueryResultSet(this, execResp.getColumns(), client, 
-		    sessionHandle, operationHandle, sql, execResp.getOperationType());
+		    sessionHandle, operationHandle, sql, execResp.getOperationType(), execResp.getColumns());
 	    return true;
 	}
 	return false;
@@ -264,7 +253,7 @@ public class TsfileStatement implements Statement {
 	operationHandle = execResp.getOperationHandle();
 	Utils.verifySuccess(execResp.getStatus());
 	resultSet = new TsfileQueryResultSet(this, execResp.getColumns(), client, 
-		sessionHandle, operationHandle, sql, execResp.getOperationType());
+		sessionHandle, operationHandle, sql, execResp.getOperationType(), execResp.getColumns());
 	return resultSet;
     }
 
