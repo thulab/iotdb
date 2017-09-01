@@ -87,7 +87,7 @@ public class Daemon {
         System.setProperty(TsFileDBConstant.SERVER_RMI_ID, "true");
         boolean localOnly = false;
         String jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_REMOTE_JMX_PORT_NAME);
-
+	System.out.println("ff");
         if (jmxPort == null) {
             localOnly = true;
             jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_LOCAL_JMX_PORT_NAME);
