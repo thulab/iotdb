@@ -101,8 +101,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	}
 
 	@Override
-	public QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-			FilterExpression valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException {
+	public QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter,
+			FilterExpression freqFilter, FilterExpression valueFilter, int fetchSize, QueryDataSet lastData)
+			throws ProcessorException {
 		QueryDataSet ret;
 		for (Path path : paths) {
 			if (!mManager.pathExist(path.getFullPath())) {
@@ -351,12 +352,26 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 						// no operation
 					}
 					for (String p : fullPath) {
-						String nsp = mManager.deletePathFromMTree(p);
-						if (nsp != null) {
+						String nsp = null;
+						try {
+							nsp = mManager.getFileNameByPath(p);
+
+						} catch (PathErrorException e) {
+
+						}
+						String storensp = mManager.deletePathFromMTree(p);
+						if (storensp != null) {
 							// clear filenode
 							try {
-								fileNodeManager.clearOneFileNode(nsp);
+								fileNodeManager.clearOneFileNode(storensp);
 								// close processor
+								fileNodeManager.deleteOneFileNode(storensp);
+							} catch (FileNodeManagerException e) {
+								e.printStackTrace();
+								throw new ProcessorException(e.getMessage());
+							}
+						} else if (nsp != null) {
+							try {
 								fileNodeManager.closeOneFileNode(nsp);
 							} catch (FileNodeManagerException e) {
 								e.printStackTrace();
