@@ -99,11 +99,11 @@ public class Client extends AbstractClient {
 			((CandidateListCompletionHandler) reader.getCompletionHandler()).setPrintSpaceAfterFullCompletion(false);
 			String s;
 			try {
-				String host = checkRequiredArg(HOST_ARGS, HOST_NAME, commandLine);
-				String port = checkRequiredArg(PORT_ARGS, PORT_NAME, commandLine);
-				String username = checkRequiredArg(USERNAME_ARGS, USERNAME_NAME, commandLine);
+				host = checkRequiredArg(HOST_ARGS, HOST_NAME, commandLine);
+				port = checkRequiredArg(PORT_ARGS, PORT_NAME, commandLine);
+				username = checkRequiredArg(USERNAME_ARGS, USERNAME_NAME, commandLine);
 
-				String password = commandLine.getOptionValue(PASSWORD_ARGS);
+				password = commandLine.getOptionValue(PASSWORD_ARGS);
 				if (password == null) {
 					password = reader.readLine("please input your password:", '\0');
 				}
