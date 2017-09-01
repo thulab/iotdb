@@ -49,9 +49,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 	private Set<String> overflowNameSpaceSet;
 	private Set<String> backUpOverflowNameSpaceSet;
 
-	// private static final Lock instanceLock = new ReentrantLock(false);
-	// private static FileNodeManager instance;
-
 	private static class FileNodeManagerHolder {
 		private static final FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.maxOpenFolder,
 				MManager.getInstance(), TsFileDBConf.fileNodeDir);
