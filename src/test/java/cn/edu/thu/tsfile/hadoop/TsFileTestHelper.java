@@ -108,6 +108,6 @@ public class TsFileTestHelper {
 		System.out.println(tsFile.getDeltaObjectRowGroupCount());
 		System.out.println(tsFile.getDeltaObjectTypes());
 		System.out.println(tsFile.getRowGroupPosList());
-		
+		tsFile.close();
 	}
 }
