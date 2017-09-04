@@ -27,7 +27,7 @@ public class Client extends AbstractClient {
 
 	private static final String[] KEY_WORD_LIST = new String[]{
 			"SHOW", "SELECT", "DROP", "UPDATE", "DELETE", "CREATE", "INSERT", "INDEX", "TIMESERIES", "TIME", "TIMESTAMP",
-			"VALUES", "FROM", "WHERE", "TO", "ON", "WITH", "USING", "AND", "OR", "USER", "ROLE", "EXIT", "QUIT",
+			"VALUES", "FROM", "WHERE", "TO", "ON", "WITH", "USING", "AND", "OR", "USER", "ROLE", "EXIT", "QUIT", "IMPORT"
 	};
 
 	private static final String[] CONF_NAME_LIST = new String[]{  // set <key>=<value>
@@ -46,11 +46,11 @@ public class Client extends AbstractClient {
 	};
 
 	private static final String[] ENCODING_LIST = new String[]{
-			"PLAIN", "PLAIN_DICTIONARY", "RLE", "DIFF", "TS_2DIFF", "BITMAP"
+			"PLAIN", "PLAIN_DICTIONARY", "RLE", "DIFF", "TS_2DIFF", "BITMAP", "GORILLA"
 	};
 
 	public static void main(String[] args) throws ClassNotFoundException {
-		Class.forName("cn.edu.thu.tsfiledb.jdbc.TsfileDriver");
+		Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 		TsfileConnection connection = null;
 		Options options = createOptions();
 		HelpFormatter hf = new HelpFormatter();

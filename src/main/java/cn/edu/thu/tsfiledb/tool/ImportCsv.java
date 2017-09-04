@@ -30,6 +30,7 @@ import org.apache.thrift.TException;
 
 import cn.edu.thu.tsfiledb.exception.ArgsErrorException;
 import cn.edu.thu.tsfiledb.jdbc.TsfileConnection;
+import cn.edu.thu.tsfiledb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
 import jline.console.ConsoleReader;
 
@@ -339,7 +340,7 @@ public class ImportCsv extends AbstractCsvTool{
             errorInsertInfo = System.getProperty(SystemConstant.TSFILE_HOME) + "/csvInsertError.error";
         }
     		try {
-    			Class.forName(JDBC_DRIVER);
+    			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     			connection = (TsfileConnection) DriverManager.getConnection("jdbc:tsfile://" + ip + ":" + port + "/", username, password);
     			timeZoneID = timeZone;
     			setTimeZone();
