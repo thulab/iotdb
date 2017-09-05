@@ -23,13 +23,12 @@ public class MManagerBasicTest {
 	@Before
 	public void setUp() throws Exception {
 		MManager.getInstance().clear();
-		// EngineTestHelper.delete(dbconfig.metadataDir);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		MManager.getInstance().flushObjectToFile();
-		EngineTestHelper.delete(dbconfig.metadataDir);
+		EngineTestHelper.delete(dbconfig.dataDir);
 	}
 
 	@Test
