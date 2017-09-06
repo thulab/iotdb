@@ -28,7 +28,7 @@ public class MManagerBasicTest {
 	@After
 	public void tearDown() throws Exception {
 		MManager.getInstance().flushObjectToFile();
-		EngineTestHelper.delete(dbconfig.dataDir);
+		EngineTestHelper.delete(dbconfig.metadataDir);
 	}
 
 	@Test
