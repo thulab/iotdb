@@ -37,7 +37,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.qp.Path;
  *
  */
 public class MManager {
-	private static MManager manager = new MManager();
+	//private static MManager manager = new MManager();
 	private static final String ROOT_NAME = MetadataConstant.ROOT;
 	// the lock for read/write
 	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -50,9 +50,13 @@ public class MManager {
 	private boolean writeToLog;
 	private String metadataDirPath;
 
+	private static class MManagerHolder{
+		private static final MManager INSTANCE = new MManager(); 
+	}
+	
 	public static MManager getInstance() {
 		
-		return manager;
+		return MManagerHolder.INSTANCE;
 	}
 
 	private MManager() {
