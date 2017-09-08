@@ -71,6 +71,8 @@ public class SQLConstant {
     public static final String DQUOTE = "\"";
     public static final String BOOLEN_TRUE = "true";
     public static final String BOOLEN_FALSE = "false";
+    public static final String BOOLEAN_TRUE_NUM = "1";
+    public static final String BOOLEAN_FALSE_NUM = "0";
 
     public static final int KW_AND = 1;
     public static final int KW_OR = 2;

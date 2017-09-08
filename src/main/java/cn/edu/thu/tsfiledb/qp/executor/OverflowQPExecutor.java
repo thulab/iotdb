@@ -150,8 +150,14 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			 */
 			if (dataType == TSDataType.BOOLEAN) {
 				value = value.toLowerCase();
-				if(!SQLConstant.BOOLEN_TRUE.equals(value)&&!SQLConstant.BOOLEN_FALSE.equals(value)){
-					throw new ProcessorException(String.format("The BOOLEAN data type should be true/TRUE or false/FALSE"));
+				if (SQLConstant.BOOLEN_FALSE.equals(value)) {
+					value = "false";
+				} else if (SQLConstant.BOOLEAN_TRUE_NUM.equals(value)) {
+					value = "true";
+				}
+				if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
+					throw new ProcessorException(
+							String.format("The BOOLEAN data type should be true/TRUE or false/FALSE"));
 				}
 			} else if (dataType == TSDataType.TEXT) {
 				if ((value.startsWith(SQLConstant.QUOTE) && value.endsWith(SQLConstant.QUOTE))
@@ -161,7 +167,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					throw new ProcessorException(String.format("The TEXT data type should be covered by \" or '"));
 				}
 			}
-			
+
 			fileNodeManager.update(deltaObjectId, measurementId, startTime, endTime, dataType, value);
 			return true;
 		} catch (PathErrorException e) {
@@ -233,8 +239,14 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				String value = insertValues.get(i);
 				if (dataType == TSDataType.BOOLEAN) {
 					value = value.toLowerCase();
-					if(!SQLConstant.BOOLEN_TRUE.equals(value)&&!SQLConstant.BOOLEN_FALSE.equals(value)){
-						throw new ProcessorException(String.format("The BOOLEAN data type should be true/TRUE or false/FALSE"));
+					if (SQLConstant.BOOLEN_FALSE.equals(value)) {
+						value = "false";
+					} else if (SQLConstant.BOOLEAN_TRUE_NUM.equals(value)) {
+						value = "true";
+					}
+					if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
+						throw new ProcessorException(
+								String.format("The BOOLEAN data type should be true/TRUE or false/FALSE"));
 					}
 				} else if (dataType == TSDataType.TEXT) {
 					if ((value.startsWith(SQLConstant.QUOTE) && value.endsWith(SQLConstant.QUOTE))
