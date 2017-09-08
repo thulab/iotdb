@@ -29,6 +29,6 @@ public class TsfileJDBCConfig {
 	public static int fetchSize = 10000;
 	public static int connectionTimeoutInMs = 0;
 
-	public static String JDBC_DRIVER_NAME = "IoTDB";
+	public static String JDBC_DRIVER_NAME = "cn.edu.tsinghua.iotdb.jdbc.TsfileDriver";
 	
 }
