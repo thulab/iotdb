@@ -150,7 +150,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			 */
 			if (dataType == TSDataType.BOOLEAN) {
 				value = value.toLowerCase();
-				if (SQLConstant.BOOLEN_FALSE.equals(value)) {
+				if (SQLConstant.BOOLEAN_FALSE_NUM.equals(value)) {
 					value = "false";
 				} else if (SQLConstant.BOOLEAN_TRUE_NUM.equals(value)) {
 					value = "true";
