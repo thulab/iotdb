@@ -1,9 +1,24 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-import cn.edu.tsinghua.iotdb.jdbc.thrift.*;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCancelOperationReq;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCancelOperationResp;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationReq;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationResp;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteBatchStatementReq;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteBatchStatementResp;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteStatementReq;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteStatementResp;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
 import org.apache.thrift.TException;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 

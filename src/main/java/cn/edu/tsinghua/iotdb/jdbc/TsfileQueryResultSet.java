@@ -1,6 +1,12 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-import cn.edu.tsinghua.iotdb.jdbc.thrift.*;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationReq;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationResp;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchResultsReq;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchResultsResp;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
@@ -11,9 +17,27 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.URL;
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Date;
-import java.util.*;
+import java.sql.NClob;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class TsfileQueryResultSet implements ResultSet {
 
@@ -40,8 +64,8 @@ public class TsfileQueryResultSet implements ResultSet {
 	}
 
 	public TsfileQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
-                                TS_SessionHandle sessionHandle, TSOperationHandle operationHandle, String sql,
-                                String aggregations)
+								TS_SessionHandle sessionHandle, TSOperationHandle operationHandle, String sql,
+								String aggregations)
 			throws SQLException {
 		this.statement = statement;
 		this.sql = sql;

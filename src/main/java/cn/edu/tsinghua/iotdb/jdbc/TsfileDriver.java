@@ -2,14 +2,19 @@ package cn.edu.tsinghua.iotdb.jdbc;
 
 import org.apache.thrift.transport.TTransportException;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 
 public class TsfileDriver implements Driver {
-    	private final String TSFILE_URL_PREFIX = TsfileJDBCConfig.TSFILE_URL_PREFIX+".*";
+	private final String TSFILE_URL_PREFIX = TsfileJDBCConfig.TSFILE_URL_PREFIX+".*";
     
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TsfileDriver.class);
 	

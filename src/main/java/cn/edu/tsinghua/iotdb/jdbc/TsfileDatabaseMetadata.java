@@ -16,7 +16,6 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataResp;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 public class TsfileDatabaseMetadata implements DatabaseMetaData {
-	//	private final String ROOT_PATH = "root";
 	private TsfileConnection connection;
 	private TSIService.Iface client;
 
