@@ -1,14 +1,10 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.sql.Time;
+import java.sql.*;
 import java.util.Iterator;
 import java.util.List;
+
 
 public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 

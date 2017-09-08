@@ -1,16 +1,11 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import org.apache.thrift.transport.TTransportException;
+
+import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import org.apache.thrift.transport.TTransportException;
 
 
 public class TsfileDriver implements Driver {

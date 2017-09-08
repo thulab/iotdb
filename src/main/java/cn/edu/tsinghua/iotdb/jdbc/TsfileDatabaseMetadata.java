@@ -8,15 +8,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.thrift.TException;
 
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataReq;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 public class TsfileDatabaseMetadata implements DatabaseMetaData {
+	//	private final String ROOT_PATH = "root";
 	private TsfileConnection connection;
 	private TSIService.Iface client;
 
@@ -54,9 +54,9 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 			}
 		}
 	}
-	
+
 	private ResultSet getColumnsOrDeltaObject(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern) throws TException, SQLException{
-	    if(deltaObjectPattern != null && !deltaObjectPattern.trim().equals("")){
+		if(deltaObjectPattern != null && !deltaObjectPattern.trim().equals("")){
 			TSFetchMetadataReq req = new TSFetchMetadataReq("DELTA_OBEJECT");
 			TSFetchMetadataResp resp;
 			try {
@@ -70,44 +70,44 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 			} catch (TException e) {
 				throw new TException("Conncetion error when fetching delta object metadata", e);
 			}
-			
+
 		}
 
 		if(columnPattern != null && !columnPattern.trim().equals("")){
-		    	TSFetchMetadataReq req;
-		    	if(!columnPattern.endsWith("*")){
-		    	    	req = new TSFetchMetadataReq("COLUMN"); 
-		    	    	req.setColumnPath(columnPattern);
+			TSFetchMetadataReq req;
+			if(!columnPattern.endsWith("*")){
+				req = new TSFetchMetadataReq("COLUMN");
+				req.setColumnPath(columnPattern);
 				try {
-				    	TSFetchMetadataResp resp = client.fetchMetadata(req);
+					TSFetchMetadataResp resp = client.fetchMetadata(req);
 					Utils.verifySuccess(resp.getStatus());
 					List<ColumnSchema> columnSchemaNew = new ArrayList<>();
 					if(resp.getDataType() != null){
-						columnSchemaNew.add(new ColumnSchema(columnPattern, 
-								TSDataType.valueOf(resp.getDataType()), 
+						columnSchemaNew.add(new ColumnSchema(columnPattern,
+								TSDataType.valueOf(resp.getDataType()),
 								null));
 					}
 					return new TsfileMetadataResultSet(columnSchemaNew, null);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column data type", e);
 				}
-		    	} else{
-		    	    	req = new TSFetchMetadataReq("ALL_COLUMNS");
-		    	    	req.setColumnPath(columnPattern);
+			} else{
+				req = new TSFetchMetadataReq("ALL_COLUMNS");
+				req.setColumnPath(columnPattern);
 				try {
-				    	TSFetchMetadataResp resp = client.fetchMetadata(req);
+					TSFetchMetadataResp resp = client.fetchMetadata(req);
 					Utils.verifySuccess(resp.getStatus());
 					List<ColumnSchema> columnSchemaNew = new ArrayList<>();
 					if(resp.getAllColumns() != null){
-					    for(String path : resp.getAllColumns()){
-						columnSchemaNew.add(new ColumnSchema(path, null, null));
-					    }
+						for(String path : resp.getAllColumns()){
+							columnSchemaNew.add(new ColumnSchema(path, null, null));
+						}
 					}
 					return new TsfileMetadataResultSet(columnSchemaNew, null);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column data type", e);
 				}
-		    	}
+			}
 		}
 		return null;
 	}
@@ -487,7 +487,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
-			String columnNamePattern) throws SQLException {
+									  String columnNamePattern) throws SQLException {
 		// TODO Auto-generated method stub
 		throw new SQLException("Method not supported");
 	}
@@ -1188,7 +1188,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 		} catch (TsfileSQLException e) {}
 		return null;
 	}
-	
+
 	private String getFullTimeseries() throws TException, TsfileSQLException{
 		TSFetchMetadataReq req = new TSFetchMetadataReq("METADATA_IN_JSON");
 		TSFetchMetadataResp resp;

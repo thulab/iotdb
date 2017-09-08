@@ -1,47 +1,23 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.net.SocketException;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.sql.Struct;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Executor;
-
+import cn.edu.tsinghua.iotdb.jdbc.thrift.*;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.joda.time.DateTimeZone;
 
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseSessionReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSGetTimeZoneResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOpenSessionReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOpenSessionResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSProtocolVersion;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSSetTimeZoneReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSSetTimeZoneResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.net.SocketException;
+import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executor;
 
 public class TsfileConnection implements Connection {
     private TsfileConnectionParams params;
@@ -64,7 +40,7 @@ public class TsfileConnection implements Connection {
 	supportedProtocols.add(TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1);
 	
 	openTransport();
-	client = new TSIService.Client(new TBinaryProtocol(transport));	
+	client = new TSIService.Client(new TBinaryProtocol(transport));
 	// open client session
 	openSession();
 	// Wrap the client with a thread-safe proxy to serialize the RPC calls

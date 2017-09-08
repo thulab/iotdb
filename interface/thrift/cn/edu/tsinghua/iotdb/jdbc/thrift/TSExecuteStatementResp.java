@@ -597,13 +597,13 @@ public class TSExecuteStatementResp implements org.apache.thrift.TBase<TSExecute
           case 3: // COLUMNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                struct.columns = new ArrayList<String>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
+                struct.columns = new ArrayList<String>(_list8.size);
+                for (int _i9 = 0; _i9 < _list8.size; ++_i9)
                 {
-                  String _elem30;
-                  _elem30 = iprot.readString();
-                  struct.columns.add(_elem30);
+                  String _elem10;
+                  _elem10 = iprot.readString();
+                  struct.columns.add(_elem10);
                 }
                 iprot.readListEnd();
               }
@@ -652,9 +652,9 @@ public class TSExecuteStatementResp implements org.apache.thrift.TBase<TSExecute
           oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.columns.size()));
-            for (String _iter31 : struct.columns)
+            for (String _iter11 : struct.columns)
             {
-              oprot.writeString(_iter31);
+              oprot.writeString(_iter11);
             }
             oprot.writeListEnd();
           }
@@ -703,9 +703,9 @@ public class TSExecuteStatementResp implements org.apache.thrift.TBase<TSExecute
       if (struct.isSetColumns()) {
         {
           oprot.writeI32(struct.columns.size());
-          for (String _iter32 : struct.columns)
+          for (String _iter12 : struct.columns)
           {
-            oprot.writeString(_iter32);
+            oprot.writeString(_iter12);
           }
         }
       }
@@ -728,13 +728,13 @@ public class TSExecuteStatementResp implements org.apache.thrift.TBase<TSExecute
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list33 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.columns = new ArrayList<String>(_list33.size);
-          for (int _i34 = 0; _i34 < _list33.size; ++_i34)
+          org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.columns = new ArrayList<String>(_list13.size);
+          for (int _i14 = 0; _i14 < _list13.size; ++_i14)
           {
-            String _elem35;
-            _elem35 = iprot.readString();
-            struct.columns.add(_elem35);
+            String _elem15;
+            _elem15 = iprot.readString();
+            struct.columns.add(_elem15);
           }
         }
         struct.setColumnsIsSet(true);
