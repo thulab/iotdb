@@ -624,15 +624,15 @@ public class TSOpenSessionResp implements org.apache.thrift.TBase<TSOpenSessionR
           case 4: // CONFIGURATION
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map18 = iprot.readMapBegin();
-                struct.configuration = new HashMap<String,String>(2*_map18.size);
-                for (int _i19 = 0; _i19 < _map18.size; ++_i19)
+                org.apache.thrift.protocol.TMap _map16 = iprot.readMapBegin();
+                struct.configuration = new HashMap<String,String>(2*_map16.size);
+                for (int _i17 = 0; _i17 < _map16.size; ++_i17)
                 {
-                  String _key20;
-                  String _val21;
-                  _key20 = iprot.readString();
-                  _val21 = iprot.readString();
-                  struct.configuration.put(_key20, _val21);
+                  String _key18;
+                  String _val19;
+                  _key18 = iprot.readString();
+                  _val19 = iprot.readString();
+                  struct.configuration.put(_key18, _val19);
                 }
                 iprot.readMapEnd();
               }
@@ -678,10 +678,10 @@ public class TSOpenSessionResp implements org.apache.thrift.TBase<TSOpenSessionR
           oprot.writeFieldBegin(CONFIGURATION_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.configuration.size()));
-            for (Map.Entry<String, String> _iter22 : struct.configuration.entrySet())
+            for (Map.Entry<String, String> _iter20 : struct.configuration.entrySet())
             {
-              oprot.writeString(_iter22.getKey());
-              oprot.writeString(_iter22.getValue());
+              oprot.writeString(_iter20.getKey());
+              oprot.writeString(_iter20.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -721,10 +721,10 @@ public class TSOpenSessionResp implements org.apache.thrift.TBase<TSOpenSessionR
       if (struct.isSetConfiguration()) {
         {
           oprot.writeI32(struct.configuration.size());
-          for (Map.Entry<String, String> _iter23 : struct.configuration.entrySet())
+          for (Map.Entry<String, String> _iter21 : struct.configuration.entrySet())
           {
-            oprot.writeString(_iter23.getKey());
-            oprot.writeString(_iter23.getValue());
+            oprot.writeString(_iter21.getKey());
+            oprot.writeString(_iter21.getValue());
           }
         }
       }
@@ -746,15 +746,15 @@ public class TSOpenSessionResp implements org.apache.thrift.TBase<TSOpenSessionR
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TMap _map24 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.configuration = new HashMap<String,String>(2*_map24.size);
-          for (int _i25 = 0; _i25 < _map24.size; ++_i25)
+          org.apache.thrift.protocol.TMap _map22 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.configuration = new HashMap<String,String>(2*_map22.size);
+          for (int _i23 = 0; _i23 < _map22.size; ++_i23)
           {
-            String _key26;
-            String _val27;
-            _key26 = iprot.readString();
-            _val27 = iprot.readString();
-            struct.configuration.put(_key26, _val27);
+            String _key24;
+            String _val25;
+            _key24 = iprot.readString();
+            _val25 = iprot.readString();
+            struct.configuration.put(_key24, _val25);
           }
         }
         struct.setConfigurationIsSet(true);

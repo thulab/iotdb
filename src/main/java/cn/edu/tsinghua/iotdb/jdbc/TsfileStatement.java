@@ -1,16 +1,5 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.thrift.TException;
-
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCancelOperationReq;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCancelOperationResp;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationReq;
@@ -22,6 +11,16 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteStatementResp;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
+import org.apache.thrift.TException;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TsfileStatement implements Statement {
 
@@ -58,7 +57,7 @@ public class TsfileStatement implements Statement {
     private SQLWarning warningChain = null;
 
     public TsfileStatement(TsfileConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle,
-	    int fetchSize) {
+                           int fetchSize) {
 	this.connection = connection;
 	this.client = client;
 	this.sessionHandle = sessionHandle;

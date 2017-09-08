@@ -28,4 +28,5 @@ public class TsfileJDBCConfig {
 	
 	public static int fetchSize = 10000;
 	public static int connectionTimeoutInMs = 0;
+	
 }

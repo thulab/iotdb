@@ -673,13 +673,13 @@ public class TS_Status implements org.apache.thrift.TBase<TS_Status, TS_Status._
           case 2: // INFO_MESSAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list10 = iprot.readListBegin();
-                struct.infoMessages = new ArrayList<String>(_list10.size);
-                for (int _i11 = 0; _i11 < _list10.size; ++_i11)
+                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+                struct.infoMessages = new ArrayList<String>(_list0.size);
+                for (int _i1 = 0; _i1 < _list0.size; ++_i1)
                 {
-                  String _elem12;
-                  _elem12 = iprot.readString();
-                  struct.infoMessages.add(_elem12);
+                  String _elem2;
+                  _elem2 = iprot.readString();
+                  struct.infoMessages.add(_elem2);
                 }
                 iprot.readListEnd();
               }
@@ -737,9 +737,9 @@ public class TS_Status implements org.apache.thrift.TBase<TS_Status, TS_Status._
           oprot.writeFieldBegin(INFO_MESSAGES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.infoMessages.size()));
-            for (String _iter13 : struct.infoMessages)
+            for (String _iter3 : struct.infoMessages)
             {
-              oprot.writeString(_iter13);
+              oprot.writeString(_iter3);
             }
             oprot.writeListEnd();
           }
@@ -800,9 +800,9 @@ public class TS_Status implements org.apache.thrift.TBase<TS_Status, TS_Status._
       if (struct.isSetInfoMessages()) {
         {
           oprot.writeI32(struct.infoMessages.size());
-          for (String _iter14 : struct.infoMessages)
+          for (String _iter4 : struct.infoMessages)
           {
-            oprot.writeString(_iter14);
+            oprot.writeString(_iter4);
           }
         }
       }
@@ -825,13 +825,13 @@ public class TS_Status implements org.apache.thrift.TBase<TS_Status, TS_Status._
       BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list15 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.infoMessages = new ArrayList<String>(_list15.size);
-          for (int _i16 = 0; _i16 < _list15.size; ++_i16)
+          org.apache.thrift.protocol.TList _list5 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.infoMessages = new ArrayList<String>(_list5.size);
+          for (int _i6 = 0; _i6 < _list5.size; ++_i6)
           {
-            String _elem17;
-            _elem17 = iprot.readString();
-            struct.infoMessages.add(_elem17);
+            String _elem7;
+            _elem7 = iprot.readString();
+            struct.infoMessages.add(_elem7);
           }
         }
         struct.setInfoMessagesIsSet(true);

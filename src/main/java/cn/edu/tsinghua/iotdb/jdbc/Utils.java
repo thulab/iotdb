@@ -1,5 +1,17 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSColumnSchema;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSDynamicOneColumnData;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_Status;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
+import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -10,18 +22,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSColumnSchema;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSDynamicOneColumnData;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_Status;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
 
 /**
  * Utils to convert between thrift format and TsFile format

@@ -1,19 +1,5 @@
 namespace java cn.edu.tsinghua.iotdb.jdbc.thrift
 
-enum TSProtocolVersion {
-  TSFILE_SERVICE_PROTOCOL_V1,
-}
-
-// OpenSession()
-//
-// Open a session (connection) on the server against
-// which operations may be executed.
-struct TSOpenSessionReq {
-  1: required TSProtocolVersion client_protocol = TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1
-  2: optional string username
-  3: optional string password
-  4: optional map<string, string> configuration
-}
 
 // The return status code contained in each response.
 enum TS_StatusCode {
@@ -48,39 +34,6 @@ struct TSHandleIdentifier {
   // and used to verify that the handle is not
   // being hijacked by another user.
   2: required binary secret,
-}
-
-// Client-side handle to persistent
-// session information on the server-side.
-struct TS_SessionHandle {
-  1: required TSHandleIdentifier sessionId
-}
-
-
-struct TSOpenSessionResp {
-  1: required TS_Status status
-
-  // The protocol version that the server is using.
-  2: required TSProtocolVersion serverProtocolVersion = TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1
-
-  // Session Handle
-  3: optional TS_SessionHandle sessionHandle
-
-  // The configuration settings for this session.
-  4: optional map<string, string> configuration
-}
-
-// CloseSession()
-//
-// Closes the specified session and frees any resources
-// currently allocated to that session. Any open
-// operations in that session will be canceled.
-struct TSCloseSessionReq {
-  1: required TS_SessionHandle sessionHandle
-}
-
-struct TSCloseSessionResp {
-  1: required TS_Status status
 }
 
 // Client-side reference to a task running
@@ -119,6 +72,103 @@ struct TSOperationHandle {
   // a result set.
   //4: optional double modifiedRowCount
 }
+
+struct TSExecuteStatementResp {
+	1: required TS_Status status
+	2: optional TSOperationHandle operationHandle
+	3: optional list<string> columns
+	4: optional string operationType
+}
+
+enum TSProtocolVersion {
+  TSFILE_SERVICE_PROTOCOL_V1,
+}
+
+// Client-side handle to persistent
+// session information on the server-side.
+struct TS_SessionHandle {
+  1: required TSHandleIdentifier sessionId
+}
+
+
+struct TSOpenSessionResp {
+  1: required TS_Status status
+
+  // The protocol version that the server is using.
+  2: required TSProtocolVersion serverProtocolVersion = TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1
+
+  // Session Handle
+  3: optional TS_SessionHandle sessionHandle
+
+  // The configuration settings for this session.
+  4: optional map<string, string> configuration
+}
+
+// OpenSession()
+//
+// Open a session (connection) on the server against
+// which operations may be executed.
+struct TSOpenSessionReq {
+  1: required TSProtocolVersion client_protocol = TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1
+  2: optional string username
+  3: optional string password
+  4: optional map<string, string> configuration
+}
+
+struct TSCloseSessionResp {
+  1: required TS_Status status
+}
+
+// CloseSession()
+//
+// Closes the specified session and frees any resources
+// currently allocated to that session. Any open
+// operations in that session will be canceled.
+struct TSCloseSessionReq {
+  1: required TS_SessionHandle sessionHandle
+}
+
+// ExecuteStatement()
+//
+// Execute a statement.
+// The returned OperationHandle can be used to check on the
+// status of the statement, and to fetch results once the
+// statement has finished executing.
+struct TSExecuteStatementReq {
+  // The session to execute the statement against
+  1: required TS_SessionHandle sessionHandle
+
+  // The statement to be executed (DML, DDL, SET, etc)
+  2: required string statement
+
+  // Configuration properties that are overlayed on top of the
+  // the existing session configuration before this statement
+  // is executed. These properties apply to this statement
+  // only and will not affect the subsequent state of the Session.
+  //3: optional map<string, string> confOverlay
+
+  // Execute asynchronously when runAsync is true
+  //4: optional bool runAsync = false
+
+  // The number of seconds after which the query will timeout on the server
+  //5: optional i64 queryTimeout = 0
+}
+
+
+struct TSExecuteBatchStatementResp{
+	1: required TS_Status status
+
+	2: optional list<i32> result
+}
+
+struct TSExecuteBatchStatementReq{
+  // The session to execute the statement against
+  1: required TS_SessionHandle sessionHandle
+
+  // The statements to be executed (DML, DDL, SET, etc)
+  2: required list<string> statements
+}
+
 
 struct TSGetOperationStatusReq {
   // Session to run this request against
@@ -178,53 +228,6 @@ struct TSCloseOperationReq {
 
 struct TSCloseOperationResp {
   1: required TS_Status status
-}
-
-// ExecuteStatement()
-//
-// Execute a statement.
-// The returned OperationHandle can be used to check on the
-// status of the statement, and to fetch results once the
-// statement has finished executing.
-struct TSExecuteStatementReq {
-  // The session to execute the statement against
-  1: required TS_SessionHandle sessionHandle
-
-  // The statement to be executed (DML, DDL, SET, etc)
-  2: required string statement
-
-  // Configuration properties that are overlayed on top of the
-  // the existing session configuration before this statement
-  // is executed. These properties apply to this statement
-  // only and will not affect the subsequent state of the Session.
-  //3: optional map<string, string> confOverlay
-
-  // Execute asynchronously when runAsync is true
-  //4: optional bool runAsync = false
-
-  // The number of seconds after which the query will timeout on the server
-  //5: optional i64 queryTimeout = 0
-}
-
-struct TSExecuteStatementResp {
-	1: required TS_Status status
-	2: optional TSOperationHandle operationHandle
-	3: optional list<string> columns
-	4: optional string operationType
-}
-
-struct TSExecuteBatchStatementResp{
-	1: required TS_Status status
-	
-	2: optional list<i32> result
-}
-
-struct TSExecuteBatchStatementReq{
-  // The session to execute the statement against
-  1: required TS_SessionHandle sessionHandle
-
-  // The statements to be executed (DML, DDL, SET, etc)
-  2: required list<string> statements
 }
 
 struct TSDynamicOneColumnData{
@@ -313,27 +316,28 @@ struct TSSetTimeZoneResp {
 }
 
 service TSIService {
-    TSOpenSessionResp openSession(1:TSOpenSessionReq req);
+	TSOpenSessionResp openSession(1:TSOpenSessionReq req);
 
-    TSCloseSessionResp closeSession(1:TSCloseSessionReq req);
+	TSCloseSessionResp closeSession(1:TSCloseSessionReq req);
 
-    TSExecuteStatementResp executeStatement(1:TSExecuteStatementReq req);
-    
-    TSExecuteBatchStatementResp executeBatchStatement(1:TSExecuteBatchStatementReq req);
 
-    TSExecuteStatementResp executeQueryStatement(1:TSExecuteStatementReq req);
+	TSExecuteStatementResp executeStatement(1:TSExecuteStatementReq req);
 
-    TSExecuteStatementResp executeUpdateStatement(1:TSExecuteStatementReq req);
+	TSExecuteBatchStatementResp executeBatchStatement(1:TSExecuteBatchStatementReq req);
 
-    TSFetchResultsResp fetchResults(1:TSFetchResultsReq req)
+	TSExecuteStatementResp executeQueryStatement(1:TSExecuteStatementReq req);
 
-    TSFetchMetadataResp fetchMetadata(1:TSFetchMetadataReq req)
+	TSExecuteStatementResp executeUpdateStatement(1:TSExecuteStatementReq req);
 
-    TSCancelOperationResp cancelOperation(1:TSCancelOperationReq req);
+	TSFetchResultsResp fetchResults(1:TSFetchResultsReq req)
 
-    TSCloseOperationResp closeOperation(1:TSCloseOperationReq req);
-    
-    TSGetTimeZoneResp getTimeZone();
-    
-    TSSetTimeZoneResp setTimeZone(1:TSSetTimeZoneReq req);
+	TSFetchMetadataResp fetchMetadata(1:TSFetchMetadataReq req)
+
+	TSCancelOperationResp cancelOperation(1:TSCancelOperationReq req);
+
+	TSCloseOperationResp closeOperation(1:TSCloseOperationReq req);
+
+	TSGetTimeZoneResp getTimeZone();
+
+	TSSetTimeZoneResp setTimeZone(1:TSSetTimeZoneReq req);
 }
