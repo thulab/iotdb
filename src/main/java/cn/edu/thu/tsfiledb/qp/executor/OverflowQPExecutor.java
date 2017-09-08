@@ -154,8 +154,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					value = "false";
 				} else if (SQLConstant.BOOLEAN_TRUE_NUM.equals(value)) {
 					value = "true";
-				}
-				if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
+				} else if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
 					throw new ProcessorException(
 							String.format("The BOOLEAN data type should be true/TRUE or false/FALSE"));
 				}
@@ -243,8 +242,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 						value = "false";
 					} else if (SQLConstant.BOOLEAN_TRUE_NUM.equals(value)) {
 						value = "true";
-					}
-					if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
+					} else if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
 						throw new ProcessorException(
 								String.format("The BOOLEAN data type should be true/TRUE or false/FALSE"));
 					}
