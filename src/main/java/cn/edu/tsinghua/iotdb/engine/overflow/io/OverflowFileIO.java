@@ -49,13 +49,14 @@ public class OverflowFileIO {
 
 	// The parameter of normalFileNamePath is not useful
 	public OverflowFileIO(OverflowReadWriter raf, String normalFileNamePath, long lastUpdateOffset) throws IOException {
+		
 		this.raf = raf;
 		this.normalFileNamePath = normalFileNamePath;
 		try {
 			restoreBrokenFile(lastUpdateOffset);
 		} catch (IOException e) {
 			LOGGER.error("Restore broken file error, reason {}", e.getMessage());
-			throw new IOException("Restore broken file error, reason: " + e.getMessage());
+			throw e;
 		}
 	}
 
