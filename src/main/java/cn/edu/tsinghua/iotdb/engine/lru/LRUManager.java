@@ -41,7 +41,7 @@ public abstract class LRUManager<T extends LRUProcessor> {
 	protected LRUManager(int maxLRUNumber, MManager mManager, String normalDataDir) {
 		this.mManager = mManager;
 		this.maxLRUNodeNumber = maxLRUNumber;
-		LOGGER.info("The max of LRUProcessor number of {} is {}", this.getClass().getSimpleName(), maxLRUNumber);
+		LOGGER.info("The max of LRUProcessor number is {}", maxLRUNumber);
 		processorLRUList = new LinkedList<>();
 		processorMap = new HashMap<>();
 
@@ -172,8 +172,7 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			} else {
 				if (processorLRUList.size() == maxLRUNodeNumber) {
 					LOGGER.warn("The LRU list is full, remove the oldest unused processor");
-					// try to remove the last unused processor, if fail, return
-					// null
+					// try to remove the last unused processor, if fail, return null
 					if (!removeLastUnusedProcessor()) {
 						return null;
 					}
@@ -231,7 +230,6 @@ public abstract class LRUManager<T extends LRUProcessor> {
 					Thread.sleep(removeCheckInterval);
 				} catch (InterruptedException e) {
 					LOGGER.error("Interrupted when wait to remove last unused processor");
-					e.printStackTrace();
 				}
 			}
 		}
@@ -303,8 +301,9 @@ public abstract class LRUManager<T extends LRUProcessor> {
 
 	/**
 	 * close one processor which is in the LRU list
+	 * 
 	 * @param namespacePath
-	 * @return 
+	 * @return
 	 * @throws LRUManagerException
 	 */
 	protected boolean closeOneProcessor(String namespacePath) throws LRUManagerException {
@@ -318,15 +317,13 @@ public abstract class LRUManager<T extends LRUProcessor> {
 						try {
 							TimeUnit.MILLISECONDS.sleep(100);
 						} catch (InterruptedException e) {
-							e.printStackTrace();
-							LOGGER.warn("Wait to close the processor, the reason is {}", e.getMessage());
+							LOGGER.warn("Wait to close the processor, the exception reason is: ", e);
 						}
 					}
 					processor.close();
 					processorLRUList.remove(processor);
 					processorMap.remove(namespacePath);
 				} catch (ProcessorException e) {
-					e.printStackTrace();
 					LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}",
 							namespacePath);
 					throw new LRUManagerException(e);
