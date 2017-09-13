@@ -172,7 +172,8 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			} else {
 				if (processorLRUList.size() == maxLRUNodeNumber) {
 					LOGGER.warn("The LRU list is full, remove the oldest unused processor");
-					// try to remove the last unused processor, if fail, return null
+					// try to remove the last unused processor, if fail, return
+					// null
 					if (!removeLastUnusedProcessor()) {
 						return null;
 					}
@@ -229,7 +230,7 @@ public abstract class LRUManager<T extends LRUProcessor> {
 				try {
 					Thread.sleep(removeCheckInterval);
 				} catch (InterruptedException e) {
-					LOGGER.error("Interrupted when wait to remove last unused processor");
+					LOGGER.warn("Interrupted when wait to remove last unused processor");
 				}
 			}
 		}
@@ -317,14 +318,14 @@ public abstract class LRUManager<T extends LRUProcessor> {
 						try {
 							TimeUnit.MILLISECONDS.sleep(100);
 						} catch (InterruptedException e) {
-							LOGGER.warn("Wait to close the processor, the exception reason is: ", e);
+							LOGGER.warn("Interrupted when waitting to close one processor.");
 						}
 					}
 					processor.close();
 					processorLRUList.remove(processor);
 					processorMap.remove(namespacePath);
 				} catch (ProcessorException e) {
-					LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}",
+					LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}.",
 							namespacePath);
 					throw new LRUManagerException(e);
 				} finally {

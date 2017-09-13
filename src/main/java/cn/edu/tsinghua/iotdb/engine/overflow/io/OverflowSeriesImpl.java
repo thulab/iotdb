@@ -167,7 +167,7 @@ public class OverflowSeriesImpl {
 			try {
 				newerData = workingOverflowIndex.queryFileBlock(timeFilter, valueFilter, freqFilter, in, newerData);
 			} catch (IOException e) {
-				LOGGER.error("Read overflow file block failed, reason {}", e.getMessage());
+				LOGGER.error("Read overflow file block failed, reason is {}", e.getMessage());
 				// should throw the reason of the exception and handled by high
 				// level function
 				return null;
