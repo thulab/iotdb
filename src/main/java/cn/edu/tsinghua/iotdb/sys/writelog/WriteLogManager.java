@@ -19,21 +19,25 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.qp.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class WriteLogManager {
 //    private static final Logger LOG = LoggerFactory.getLogger(WriteLogManager.class);
 //    private static WriteLogManager instance = new WriteLogManager();
-    
+
+    // to determine whether system is in recovering process
+    public static boolean isRecovering = false;
+    // 0 represents BUFFERWRITE insert operation, 1 represents OVERFLOW insert operation
+    public static final int BUFFERWRITER = 0, OVERFLOW = 1;
+
     private static class WriteLogManagerHolder {  
         private static final WriteLogManager INSTANCE = new WriteLogManager();  
-    } 
-    
+    }
     private static ConcurrentHashMap<String, WriteLogNode> logNodeMaps;
-    public static final int BUFFERWRITER = 0, OVERFLOW = 1;
     private static List<String> recoveryPathList = new ArrayList<>();
-    public static boolean isRecovering = false;
+
 
     private WriteLogManager() {
         if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
@@ -70,6 +74,14 @@ public class WriteLogManager {
         return logNodeMaps.get(fileNode);
     }
 
+    /**
+     * Write the content of PhysicalPlan into WAL system.
+     * Note that this method is only write UPDATE/DELETE operation.
+     *
+     * @param plan PhysicalPlan to serialize
+     * @throws IOException  write WAL file error
+     * @throws PathErrorException serialize <code>Path</code> error
+     */
     public void write(PhysicalPlan plan) throws IOException, PathErrorException {
 		List<Path> paths = plan.getPaths();
 		MManager mManager = MManager.getInstance();
@@ -83,6 +95,15 @@ public class WriteLogManager {
 		}
     }
 
+    /**
+     * Write the content of TSRecord into WAL system.
+     * Note that this method is only write INSERT operation.
+     *
+     * @param record <code>TSRecord</code>
+     * @param type determines the INSERT operation is Overflow or Bufferwrite
+     * @throws IOException write WAL file error
+     * @throws PathErrorException serialize <code>Path</code> error
+     */
     public void write(TSRecord record, int type) throws IOException, PathErrorException {
         getWriteLogNode(MManager.getInstance().getFileNameByPath(record.deltaObjectId)).write(record, type);
     }

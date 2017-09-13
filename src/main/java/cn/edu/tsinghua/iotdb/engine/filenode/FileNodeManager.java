@@ -23,7 +23,10 @@ import cn.edu.tsinghua.iotdb.engine.lru.LRUManager;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.tsfile.timeseries.read.qp.Path;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +173,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				e.printStackTrace();
 				throw new FileNodeManagerException(e);
 			}
-			// For WAL
+
+			// for WAL
 			try {
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					if (!WriteLogManager.isRecovering) {
@@ -289,6 +293,19 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		}
+
+		// for WAL
+		try {
+			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+				if (!WriteLogManager.isRecovering) {
+					WriteLogManager.getInstance().write(new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId+"."+measurementId)));
+				}
+			}
+		} catch (IOException | PathErrorException e) {
+			LOGGER.error("Error in write WAL: {}", e.getMessage());
+			throw new FileNodeManagerException(e);
+		}
+
 		long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 		LOGGER.debug("Get the FileNodeProcessor: {}, the last update time is: {}, the update time is from {} to {}",
 				fileNodeProcessor.getNameSpacePath(), lastUpdateTime, startTime, endTime);
@@ -345,6 +362,19 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		}
+
+		// for WAL
+		try {
+			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+				if (!WriteLogManager.isRecovering) {
+					WriteLogManager.getInstance().write(new DeletePlan(timestamp, new Path(deltaObjectId+"."+measurementId)));
+				}
+			}
+		} catch (IOException | PathErrorException e) {
+			LOGGER.error("Error in write WAL: {}", e.getMessage());
+			throw new FileNodeManagerException(e);
+		}
+
 		long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 		LOGGER.debug("Get the FileNodeProcessor: {}, the last update time is: {}, the delete time is from 0 to {}",
 				fileNodeProcessor.getNameSpacePath(), lastUpdateTime, timestamp);

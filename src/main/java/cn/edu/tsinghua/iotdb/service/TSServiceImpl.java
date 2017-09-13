@@ -452,7 +452,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 			}
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal
-					&& WriteLogManager.getInstance().isRecovering == false && execRet && needToBeWrittenToLog(plan)) {
+					&& !WriteLogManager.isRecovering && execRet && needToBeWrittenToLog(plan)) {
 				writeLogManager.write(plan);
 			}
 			TS_StatusCode statusCode = execRet ? TS_StatusCode.SUCCESS_STATUS : TS_StatusCode.ERROR_STATUS;

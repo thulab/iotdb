@@ -232,7 +232,7 @@ public class WriteLogNode {
     /**
      * may cause errors in multi processors
      *
-     * @return
+     * @return PhysicalPlan
      */
     synchronized public PhysicalPlan getPhysicalPlan() throws IOException {
         if (reader == null) {
