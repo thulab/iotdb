@@ -10,17 +10,23 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.engine.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.engine.exception.LRUManagerException;
-import cn.edu.tsinghua.iotdb.engine.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.engine.lru.LRUManager;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
+import cn.edu.tsinghua.iotdb.exception.LRUManagerException;
+import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
@@ -101,10 +107,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
 			return new FileNodeProcessor(normalDataDir, namespacePath, parameters);
 		} catch (FileNodeProcessorException e) {
-			LOGGER.error("Can't construct the FileNodeProcessor, the nameSpacePath is {}", namespacePath);
-			e.printStackTrace();
-			throw new FileNodeManagerException(
-					"Can't construct the FileNodeProcessor, the nameSpacePath is " + namespacePath);
+			LOGGER.error(String.format("Can't construct the FileNodeProcessor, the nameSpacePath is {}", namespacePath),
+					e);
+			throw new FileNodeManagerException(e);
 		}
 	}
 
@@ -129,11 +134,11 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				}
 			}
 		} catch (PathErrorException e1) {
-			LOGGER.error("Restore all FileNodeManager failed, the reason is {}", e1);
+			LOGGER.error("Restore all FileNodeManager failed.", e1);
 		} catch (LRUManagerException e2) {
-			LOGGER.error("Construt the filenode processor failed, the reason is {}", e2);
+			LOGGER.error("Construt the filenode processor failed.", e2);
 		} catch (FileNodeProcessorException e3) {
-			LOGGER.error("Recovery the filenode processor failed, the reason is {}", e3);
+			LOGGER.error("Recovery the filenode processor failed.", e3);
 		}
 	}
 
@@ -168,9 +173,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				overflowProcessor = fileNodeProcessor.getOverflowProcessor(nameSpacePath, parameters);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("Get the overflow processor failed, the nameSpacePath is {}, insert time is {}",
-						nameSpacePath, timestamp);
-				e.printStackTrace();
+				LOGGER.error(
+						String.format("Get the overflow processor failed, the nameSpacePath is {}, insert time is {}",
+								nameSpacePath, timestamp),
+						e);
 				throw new FileNodeManagerException(e);
 			}
 
@@ -182,7 +188,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					}
 				}
 			} catch (IOException | PathErrorException e) {
-				LOGGER.error("Error in write WAL: {}", e.getMessage());
+				LOGGER.error("Error in write WAL", e);
 				throw new FileNodeManagerException(e);
 			}
 
@@ -206,9 +212,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor(nameSpacePath, timestamp);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("Get the bufferwrite processor failed, the nameSpacePath is {}, insert time is {}",
-						nameSpacePath, timestamp);
-				e.printStackTrace();
+				LOGGER.error(String.format(
+						"Get the bufferwrite processor failed, the nameSpacePath is {}, insert time is {}",
+						nameSpacePath, timestamp), e);
 				throw new FileNodeManagerException(e);
 			}
 			// Add the new interval file to newfilelist
@@ -219,7 +225,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					fileNodeProcessor.addIntervalFileNode(timestamp, fileAbsolutePath);
 				} catch (Exception e) {
 					fileNodeProcessor.writeUnlock();
-					throw new FileNodeManagerException(e.getMessage());
+					throw new FileNodeManagerException(e);
 				}
 			}
 
@@ -231,7 +237,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					}
 				}
 			} catch (IOException | PathErrorException e) {
-				LOGGER.error("Error in write WAL: {}", e.getMessage());
+				LOGGER.error("Error in write WAL.", e);
 				throw new FileNodeManagerException(e);
 			}
 
@@ -290,7 +296,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			if (fileNodeProcessor != null) {
 				fileNodeProcessor.writeUnlock();
 			}
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		}
 
@@ -325,9 +330,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		try {
 			overflowProcessor = fileNodeProcessor.getOverflowProcessor(namespacePath, parameters);
 		} catch (FileNodeProcessorException e) {
-			LOGGER.error("Get the overflow processor failed, the nameSpacePath is {}, update time is {} to {}",
-					namespacePath, startTime, endTime);
-			e.printStackTrace();
+			LOGGER.error(
+					String.format("Get the overflow processor failed, the nameSpacePath is {}, update time is {} to {}",
+							namespacePath, startTime, endTime),
+					e);
 			throw new FileNodeManagerException(e);
 		}
 		// overflowProcessor.writeLock();
@@ -337,7 +343,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			if (fileNodeProcessor != null) {
 				fileNodeProcessor.writeUnlock();
 			}
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		}
 		fileNodeProcessor.changeTypeToChanged(deltaObjectId, startTime, endTime);
@@ -359,7 +364,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			if (fileNodeProcessor != null) {
 				fileNodeProcessor.writeUnlock();
 			}
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		}
 
@@ -395,9 +399,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				overflowProcessor = fileNodeProcessor.getOverflowProcessor(namespacePath, parameters);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("Get the overflow processor failed, the nameSpacePath is {}, delete time is {}",
-						namespacePath, timestamp);
-				e.printStackTrace();
+				LOGGER.error(
+						String.format("Get the overflow processor failed, the nameSpacePath is {}, delete time is {}",
+								namespacePath, timestamp),
+						e);
 				throw new FileNodeManagerException(e);
 			}
 			// overflowProcessor.writeLock();
@@ -407,7 +412,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				if (fileNodeProcessor != null) {
 					fileNodeProcessor.writeUnlock();
 				}
-				e.printStackTrace();
 				throw new FileNodeManagerException(e);
 			}
 			// overflowProcessor.writeUnlock();
@@ -429,7 +433,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			int token = fileNodeProcessor.addMultiPassLock();
 			return token;
 		} catch (LRUManagerException e) {
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} finally {
 			if (fileNodeProcessor != null) {
@@ -460,10 +463,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			// return query structure
 			return queryStructure;
 		} catch (LRUManagerException e) {
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} catch (FileNodeProcessorException e) {
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} finally {
 			if (fileNodeProcessor != null) {
@@ -482,7 +483,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			LOGGER.debug("Get the FileNodeProcessor: {}, end query.", fileNodeProcessor.getNameSpacePath());
 			fileNodeProcessor.removeMultiPassLock(token);
 		} catch (LRUManagerException e) {
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} finally {
 			if (fileNodeProcessor != null) {
@@ -518,7 +518,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			overflowNameSpaceSet.remove(namespacePath);
 			LOGGER.debug("Get the FileNodeProcessor: {}, begin query.", fileNodeProcessor.getNameSpacePath());
 		} catch (LRUManagerException e) {
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} finally {
 			if (fileNodeProcessor != null) {
@@ -539,7 +538,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 						fileNodeProcessor = getProcessorByLRU(namespacePath, true);
 					} while (fileNodeProcessor == null);
 				} catch (LRUManagerException e) {
-					e.printStackTrace();
 					throw new FileNodeManagerException(e);
 				}
 				try {
@@ -558,7 +556,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					FileUtils.deleteDirectory(new File(overflowPath));
 					return true;
 				} catch (LRUManagerException | IOException e) {
-					e.printStackTrace();
 					throw new FileNodeManagerException(e);
 				}
 			} finally {
@@ -595,14 +592,12 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 						return true;
 					}
 				} catch (LRUManagerException e) {
-					e.printStackTrace();
 					throw new FileNodeManagerException(e);
 				}
 				// close bufferwrite data
 				try {
 					return super.closeOneProcessor(namespacePath);
 				} catch (LRUManagerException e) {
-					e.printStackTrace();
 					throw new FileNodeManagerException(e);
 				}
 			} finally {
@@ -628,7 +623,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				return super.closeAll();
 			} catch (LRUManagerException e) {
-				e.printStackTrace();
 				throw new FileNodeManagerException(e);
 			} finally {
 				fileNodeManagerStatus = FileNodeManagerStatus.NONE;
@@ -654,7 +648,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					fileNodeManagerStoreFile);
 			File restoreFile = new File(fileNodeManagerStoreFile);
 			restoreFile.delete();
-			e.printStackTrace();
 			throw new FileNodeManagerException(
 					"Serialize the overflow nameSpacePath Set error, and delete the overflow restore file");
 		}
@@ -680,7 +673,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			if (restoreFile.exists()) {
 				restoreFile.delete();
 			}
-			e.printStackTrace();
 		}
 		return overflowSet;
 	}
@@ -753,8 +745,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				fileNodeProcessor.getOverflowProcessor().close();
 			} catch (LRUManagerException | FileNodeProcessorException | BufferWriteProcessorException
 					| OverflowProcessorException e) {
-				LOGGER.error("Merge the filenode processor error, the nameSpacePath is {}", e.getMessage());
-				e.printStackTrace();
+				LOGGER.error("Merge the filenode processor error", e);
 				if (fileNodeProcessor != null) {
 					fileNodeProcessor.writeUnlock();
 				}
@@ -763,7 +754,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				fileNodeProcessor.merge();
 			} catch (FileNodeProcessorException e) {
-				e.printStackTrace();
 				throw new ErrorDebugException(e);
 			}
 		}
