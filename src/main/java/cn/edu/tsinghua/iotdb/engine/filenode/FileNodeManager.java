@@ -178,7 +178,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					if (!WriteLogManager.isRecovering) {
-						WriteLogManager.getInstance().write(tsRecord, WriteLogManager.OVERFLOW);
+						WriteLogManager.getInstance().write(nameSpacePath, tsRecord, WriteLogManager.OVERFLOW);
 					}
 				}
 			} catch (IOException | PathErrorException e) {
@@ -227,7 +227,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					if (!WriteLogManager.isRecovering) {
-						WriteLogManager.getInstance().write(tsRecord, WriteLogManager.BUFFERWRITER);
+						WriteLogManager.getInstance().write(nameSpacePath, tsRecord, WriteLogManager.BUFFERWRITER);
 					}
 				}
 			} catch (IOException | PathErrorException e) {
@@ -297,7 +297,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		try {
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 				if (!WriteLogManager.isRecovering) {
-					WriteLogManager.getInstance().write(new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId+"."+measurementId)));
+					WriteLogManager.getInstance().write(fileNodeProcessor.getNameSpacePath(),
+							new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
 				}
 			}
 		} catch (IOException | PathErrorException e) {
@@ -365,7 +366,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		try {
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 				if (!WriteLogManager.isRecovering) {
-					WriteLogManager.getInstance().write(new DeletePlan(timestamp, new Path(deltaObjectId+"."+measurementId)));
+					WriteLogManager.getInstance().write(fileNodeProcessor.getNameSpacePath(),
+							new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
 				}
 			}
 		} catch (IOException | PathErrorException e) {
