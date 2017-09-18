@@ -1,8 +1,9 @@
-package cn.edu.thu.tsfilewebdemo.dao.impl;
+package cn.edu.tsinghua.tsfilewebdemo.dao.impl;
 
-import cn.edu.thu.tsfilewebdemo.bean.TimeValues;
-import cn.edu.thu.tsfilewebdemo.dao.BasicDao;
-import javafx.util.Pair;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfilewebdemo.bean.TimeValues;
+import cn.edu.tsinghua.tsfilewebdemo.dao.BasicDao;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +54,8 @@ public class BasicDaoImpl implements BasicDao {
 
     @Override
     public List<TimeValues> querySeries(String s, Pair<ZonedDateTime, ZonedDateTime> timeRange) {
-        Long from = zonedCovertToLong(timeRange.getKey());
-        Long to = zonedCovertToLong(timeRange.getValue());
+        Long from = zonedCovertToLong(timeRange.left);
+        Long to = zonedCovertToLong(timeRange.right);
         String sql = "SELECT * FROM root." +  s
                 + " WHERE time > " + from + " and time < " + to;
         logger.info(sql);

@@ -14,23 +14,23 @@ Grafana下载地址：https://grafana.com/grafana/download
 `data/plugin/`（Windows）或`/var/lib/grafana/plugins` (Linux)
 
 # IoTDB安装
-参考：http://git.oschina.net/xingtanzjr/tsfiledb
+参考：https://github.com/thulab/iotdb
 
 # 后端数据源连接器安装
 下载源代码
 ```
-git clone https://git.oschina.net/zdyfjh2017/tsfiledb-grafana.git
+git clone git@github.com:thulab/iotdb-jdbc.git
 ```
 进入目录，打成war包
 ```
-mvn package
+mvn clean package
 ```
 将`application.properties`文件从`src/main/resources/`目录复制到`target`目录下，并编辑属性值
 ```
 spring.datasource.url = jdbc:tsfile://127.0.0.1:6667/
 spring.datasource.username = root
 spring.datasource.password = root
-spring.datasource.driver-class-name=cn.edu.thu.tsfiledb.jdbc.TsfileDriver
+spring.datasource.driver-class-name=cn.edu.tsinghua.iotdb.jdbc.TsfileDriver
 server.port = 8888
 ```
 
@@ -40,12 +40,12 @@ server.port = 8888
 
 # 运行启动
 
-启动数据库，参考：http://git.oschina.net/xingtanzjr/tsfiledb
+启动数据库，参考：https://github.com/thulab/iotdb
 
 运行后端数据源连接器，在控制台输入
 ```$xslt
 cd target/
-java -jar tsfile-web-demo-0.0.1-SNAPSHOT.war
+java -jar iotdb-grafana-0.0.1-SNAPSHOT.war
 ```
 Grafana的默认端口为 3000，在浏览器中访问 http://localhost:3000
 

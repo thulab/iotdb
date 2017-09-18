@@ -15,7 +15,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.4.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
@@ -23,6 +23,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<json.version>20140107</json.version>
+		<compile.version>1.8</compile.version>
+        <targetJavaVersion>1.8</targetJavaVersion>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>${targetJavaVersion}</maven.compiler.target>
 	</properties>
 
 	<dependencies>
@@ -42,17 +46,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>${json.version}</version>
-		</dependency>
 
 		<dependency>
-			<groupId>cn.edu.thu</groupId>
-			<artifactId>tsfiledb</artifactId>
-			<version>0.0.1</version>
-			<scope>runtime</scope>
+			<groupId>cn.edu.tsinghua</groupId>
+			<artifactId>iotdb-jdbc</artifactId>
+			<version>0.1.2</version>
 		</dependency>
 
 	</dependencies>
@@ -62,11 +60,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
+                <version>3.3</version>
+                <configuration>
+                    <source>${compile.version}</source>
+                    <target>${compile.version}</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

@@ -1,9 +1,11 @@
-package cn.edu.thu.tsfilewebdemo.controller;
+package cn.edu.tsinghua.tsfilewebdemo.controller;
 
-import cn.edu.thu.tsfilewebdemo.bean.TimeValues;
-import cn.edu.thu.tsfilewebdemo.service.DBConnectService;
-import javafx.util.Pair;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfilewebdemo.bean.TimeValues;
+import cn.edu.tsinghua.tsfilewebdemo.service.DBConnectService;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,14 +91,14 @@ public class DBConnectController {
         return null;
     }
 
-    private Pair<ZonedDateTime, ZonedDateTime> getTimeFromAndTo(JSONObject jsonObject) {
+    private Pair<ZonedDateTime, ZonedDateTime> getTimeFromAndTo(JSONObject jsonObject) throws JSONException {
         JSONObject obj = (JSONObject)jsonObject.get("range");
         Instant from = Instant.parse((String)obj.get("from"));
         Instant to = Instant.parse((String)obj.get("to"));
         return new Pair<>(from.atZone(ZoneId.of("Asia/Shanghai")), to.atZone(ZoneId.of("Asia/Shanghai")));
     }
 
-    private void setJSONTable(JSONObject obj, String target, Pair<ZonedDateTime, ZonedDateTime> timeRange) {
+    private void setJSONTable(JSONObject obj, String target, Pair<ZonedDateTime, ZonedDateTime> timeRange) throws JSONException {
         List<TimeValues> timeValues = DBConnectService.querySeries(target, timeRange);
         JSONArray columns = new JSONArray();
         JSONObject column = new JSONObject();
@@ -118,7 +120,7 @@ public class DBConnectController {
         obj.put("values", values);
     }
 
-    private void setJSONTimeseries(JSONObject obj, String target, Pair<ZonedDateTime, ZonedDateTime> timeRange) {
+    private void setJSONTimeseries(JSONObject obj, String target, Pair<ZonedDateTime, ZonedDateTime> timeRange) throws JSONException {
         List<TimeValues> timeValues = DBConnectService.querySeries(target, timeRange);
         if (timeValues.size() > 1000) {
             logger.info("query size:" + timeValues.size() + "; last value is " + timeValues.get(timeValues.size() - 1),toString());
@@ -137,7 +139,7 @@ public class DBConnectController {
         obj.put("datapoints", dataPoints);
     }
 
-    public JSONObject getRequestBodyJSON(HttpServletRequest request) {
+    public JSONObject getRequestBodyJSON(HttpServletRequest request) throws JSONException {
         try {
             BufferedReader br = request.getReader();
             StringBuilder sb = new StringBuilder();
@@ -153,7 +155,7 @@ public class DBConnectController {
         return null;
     }
 
-    public String getJSONType(JSONObject jsonObject) {
+    public String getJSONType(JSONObject jsonObject) throws JSONException {
         JSONArray array = (JSONArray)jsonObject.get("targets"); //[]
         JSONObject object = (JSONObject)array.get(0); //{}
         return (String)object.get("type");

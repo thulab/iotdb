@@ -1,9 +1,10 @@
-package cn.edu.thu.tsfilewebdemo.service.impl;
+package cn.edu.tsinghua.tsfilewebdemo.service.impl;
 
-import cn.edu.thu.tsfilewebdemo.bean.TimeValues;
-import cn.edu.thu.tsfilewebdemo.dao.BasicDao;
-import cn.edu.thu.tsfilewebdemo.service.DBConnectService;
-import javafx.util.Pair;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfilewebdemo.bean.TimeValues;
+import cn.edu.tsinghua.tsfilewebdemo.dao.BasicDao;
+import cn.edu.tsinghua.tsfilewebdemo.service.DBConnectService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
