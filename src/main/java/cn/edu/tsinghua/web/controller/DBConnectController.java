@@ -1,8 +1,8 @@
-package cn.edu.tsinghua.tsfilewebdemo.controller;
+package cn.edu.tsinghua.web.controller;
 
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfilewebdemo.bean.TimeValues;
-import cn.edu.tsinghua.tsfilewebdemo.service.DBConnectService;
+import cn.edu.tsinghua.web.bean.TimeValues;
+import cn.edu.tsinghua.web.service.DBConnectService;
 
 import org.json.JSONArray;
 import org.json.JSONException;

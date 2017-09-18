@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfilewebdemo.bean;
+package cn.edu.tsinghua.web.bean;
 
 /**
  * Created by dell on 2017/7/18.

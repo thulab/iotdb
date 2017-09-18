@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfilewebdemo;
+package cn.edu.tsinghua.web;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

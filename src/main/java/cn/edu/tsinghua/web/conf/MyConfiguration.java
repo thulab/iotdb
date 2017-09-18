@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfilewebdemo.conf;
+package cn.edu.tsinghua.web.conf;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
