@@ -56,8 +56,7 @@ public class BasicDaoImpl implements BasicDao {
     public List<TimeValues> querySeries(String s, Pair<ZonedDateTime, ZonedDateTime> timeRange) {
         Long from = zonedCovertToLong(timeRange.left);
         Long to = zonedCovertToLong(timeRange.right);
-        String sql = "SELECT * FROM root." +  s
-                + " WHERE time > " + from + " and time < " + to;
+        String sql = "SELECT " + s.substring(s.lastIndexOf('.')+1) + " FROM root." + s.substring(0, s.lastIndexOf('.')) + " WHERE time > " + from + " and time < " + to;
         logger.info(sql);
         List<TimeValues> rows = jdbcTemplate.query(sql, new TimeValuesRowMapper("root."+s));
         //System.out.println(rows);
