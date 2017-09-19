@@ -34,22 +34,21 @@ public class OverflowQPExecutorTest {
 	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 	private MManager manager = MManager.getInstance();
 
-	//@Before
+	@Before
 	public void setUp() throws Exception {
-		manager.flushObjectToFile();
 		File file = new File(tsdbconfig.dataDir);
 		if (file.exists()) {
-			FileUtils.deleteDirectory(new File(tsdbconfig.dataDir));
+			FileUtils.deleteDirectory(new File(tsdbconfig.metadataDir));
 		}
 	}
 
-	//@After
+	@After
 	public void tearDown() throws Exception {
 		manager.flushObjectToFile();
-		FileUtils.deleteDirectory(new File(tsdbconfig.dataDir));
+		FileUtils.deleteDirectory(new File(tsdbconfig.metadataDir));
 	}
 
-	//@Test
+	@Test
 	public void MetadataDeleteTest() throws ProcessorException, PathErrorException {
 
 		// add path
