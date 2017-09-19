@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cn.edu.thu</groupId>
+    <groupId>cn.edu.tsinghua</groupId>
     <artifactId>tsfile-spark-connector</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -17,15 +17,20 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20170516</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>cn.edu.thu</groupId>
+            <groupId>cn.edu.tsinghua</groupId>
             <artifactId>tsfile</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -59,6 +64,25 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.5.5</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
