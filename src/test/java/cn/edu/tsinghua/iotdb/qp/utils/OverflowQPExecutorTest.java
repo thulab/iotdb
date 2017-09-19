@@ -65,7 +65,6 @@ public class OverflowQPExecutorTest {
 		for (int i = 0, len = paths.size(); i < len; i++) {
 			assertEquals(paths.get(i), this.paths[i]);
 		}
-
 		// delete one path
 		deletePath.clear();
 		deletePath.add(new Path(this.paths[0]));
@@ -73,7 +72,6 @@ public class OverflowQPExecutorTest {
 		executor.processNonQuery(plan);
 		paths = manager.getPaths("root.laptop.d1");
 		assertEquals(paths.size(), 2);
-
 		// delete timeseries which is not exist
 		deletePath.clear();
 		deletePath.add(new Path(this.paths[1]));
