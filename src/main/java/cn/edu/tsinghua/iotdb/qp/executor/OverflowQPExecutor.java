@@ -11,6 +11,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator;
@@ -41,6 +42,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	private OverflowQueryEngine queryEngine;
 	private FileNodeManager fileNodeManager;
 	private MManager mManager = MManager.getInstance();
+	private final String separator = "\\.";
 
 	public OverflowQPExecutor() {
 		queryEngine = new OverflowQueryEngine();
@@ -321,8 +323,22 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				if (mManager.pathExist(path.getFullPath())) {
 					throw new ProcessorException(String.format("Timeseries %s already exist", path.getFullPath()));
 				}
-				if (!mManager.checkFileNameByPath(path.getFullPath())){
+				if (!mManager.checkFileNameByPath(path.getFullPath())) {
 					throw new ProcessorException("Storage group should be created first");
+				}
+				String fileNodePath = mManager.getFileNameByPath(path.getFullPath());
+				ArrayList<ColumnSchema> columnSchemas = mManager.getSchemaForFileName(fileNodePath);
+				String[] nodes = path.getFullPath().split(separator);
+				String lastNode = nodes[nodes.length - 1];
+				for (ColumnSchema columnSchema : columnSchemas) {
+					if (columnSchema.getName().equals(lastNode)) {
+						if (!columnSchema.geTsDataType().toString().equals(dataType)
+								|| !columnSchema.getEncoding().toString().equals(encoding)) {
+							throw new ProcessorException(String.format(
+									"The dataType or encoding of the last node %s is conflicting in the storage group %s",
+									lastNode, fileNodePath));
+						}
+					}
 				}
 				mManager.addPathToMTree(path.getFullPath(), dataType, encoding, encodingArgs);
 				try {
@@ -341,8 +357,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 					for (Path p : deletePathList) {
 						ArrayList<String> subPaths = mManager.getPaths(p.getFullPath());
 						if (subPaths.isEmpty()) {
-							throw new ProcessorException(String
-									.format("There are no timeseries in the prefix of %s path", p.getFullPath()));
+							throw new ProcessorException(
+									String.format("There are no timeseries in the prefix of %s path", p.getFullPath()));
 						}
 						pathSet.addAll(subPaths);
 					}

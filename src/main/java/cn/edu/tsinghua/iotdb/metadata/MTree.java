@@ -480,6 +480,24 @@ public class MTree implements Serializable {
 		res.addAll(leafMap.values());
 		return res;
 	}
+	/**
+	 * <p>Get all ColumnSchemas for the filenode path</p>
+	 * @param path
+	 * @return ArrayList<ColumnSchema> The list of the schema
+	 */
+	public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path){
+		
+		String nodes[] = path.split(separator);
+		HashMap<String, ColumnSchema> leafMap = new HashMap<>();
+		MNode cur = getRoot();
+		for(int i = 1;i<nodes.length;i++){
+			cur = cur.getChild(nodes[i]);
+		}
+		putLeafToLeafMap(cur, leafMap);
+		ArrayList<ColumnSchema> res = new ArrayList<>();
+		res.addAll(leafMap.values());
+		return res;
+	}
 
 	private void putLeafToLeafMap(MNode node, HashMap<String, ColumnSchema> leafMap) {
 		if (node.isLeaf()) {

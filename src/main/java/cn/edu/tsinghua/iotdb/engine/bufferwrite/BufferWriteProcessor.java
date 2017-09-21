@@ -387,32 +387,18 @@ public class BufferWriteProcessor extends LRUProcessor {
 	private FileSchema constructFileSchema(String nameSpacePath) throws PathErrorException, WriteProcessException {
 		List<ColumnSchema> columnSchemaList;
 
-		String deltaObjectType = null;
-		try {
-			deltaObjectType = mManager.getDeltaObjectTypeByPath(nameSpacePath);
-		} catch (PathErrorException e) {
-			LOGGER.error("Get the deltaObjectType from MManager error using nameSpacePath is {}.", nameSpacePath);
-			throw e;
-		}
-		try {
-			columnSchemaList = mManager.getSchemaForOneType(deltaObjectType);
-		} catch (PathErrorException e) {
-			LOGGER.error("The list of ColumnSchema error from MManager error using deltaObjectType is {}.",
-					deltaObjectType);
-			throw e;
-		}
+		columnSchemaList = mManager.getSchemaForFileName(nameSpacePath);
 		FileSchema fileSchema = null;
 		try {
-			fileSchema = getFileSchemaFromColumnSchema(columnSchemaList, deltaObjectType);
+			fileSchema = getFileSchemaFromColumnSchema(columnSchemaList, nameSpacePath);
 		} catch (WriteProcessException e) {
 			LOGGER.error("Get the FileSchema error, the list of ColumnSchema is {}.", columnSchemaList);
 			throw e;
 		}
 		return fileSchema;
-
 	}
 
-	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String deltaObjectType)
+	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String fileNodePath)
 			throws WriteProcessException {
 		JSONArray rowGroup = new JSONArray();
 
@@ -432,7 +418,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		}
 		JSONObject jsonSchema = new JSONObject();
 		jsonSchema.put(JsonFormatConstant.JSON_SCHEMA, rowGroup);
-		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, deltaObjectType);
+		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, fileNodePath);
 		return new FileSchema(jsonSchema);
 	}
 

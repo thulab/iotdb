@@ -406,6 +406,21 @@ public class MManager {
 			lock.readLock().unlock();
 		}
 	}
+	
+	/**
+	 * <p>Get all ColumnSchemas for the filenode path</p>
+	 * @param path
+	 * @return ArrayList<ColumnSchema> The list of the schema
+	 */
+	public ArrayList<ColumnSchema> getSchemaForFileName(String path){
+
+		lock.readLock().lock();
+		try{
+			return mGraph.getSchemaFoOneFileNode(path);
+		}finally {
+			lock.readLock().unlock();
+		}
+	}
 
 	/**
 	 * Calculate the count of storage-level nodes included in given path
