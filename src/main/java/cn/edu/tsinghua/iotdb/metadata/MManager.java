@@ -179,10 +179,13 @@ public class MManager {
 	 * <code>getFileNameByPath</code> method first to check timeseries.
 	 * </p>
 	 * 
-	 * @param path the timeseries path
-	 * @param dataType the datetype {@code DataType} for the timeseries
-	 * @param encoding the encoding function {@code Encoding} for the timeseries
-	 * @param args 
+	 * @param path
+	 *            the timeseries path
+	 * @param dataType
+	 *            the datetype {@code DataType} for the timeseries
+	 * @param encoding
+	 *            the encoding function {@code Encoding} for the timeseries
+	 * @param args
 	 * @throws PathErrorException
 	 * @throws IOException
 	 * @throws MetadataArgsErrorException
@@ -437,6 +440,16 @@ public class MManager {
 			return mGraph.getFileNameByPath(path);
 		} catch (PathErrorException e) {
 			throw new PathErrorException(String.format(e.getMessage()));
+		} finally {
+			lock.readLock().unlock();
+		}
+	}
+
+	public boolean checkFileNameByPath(String path) {
+
+		lock.readLock().lock();
+		try {
+			return mGraph.checkFileNameByPath(path);
 		} finally {
 			lock.readLock().unlock();
 		}

@@ -213,6 +213,10 @@ public class MGraph implements Serializable {
 	public String getFileNameByPath(String path) throws PathErrorException {
 		return mTree.getFileNameByPath(path);
 	}
+	
+	public boolean checkFileNameByPath(String path){
+		return mTree.checkFileNameByPath(path);
+	}
 
 	/**
 	 * Check whether the path given exists
