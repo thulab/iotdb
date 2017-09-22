@@ -326,7 +326,7 @@ public class MTree implements Serializable {
 
 		String[] nodes = path.split(separator);
 		MNode cur = getRoot();
-		for (int i = 1; i <= nodes.length; i++) {
+		for (int i = 1; i < nodes.length; i++) {
 			if (cur == null) {
 				throw new PathErrorException(
 						String.format("The prefix of the path %s is not one storage group path", path));
@@ -335,6 +335,9 @@ public class MTree implements Serializable {
 			} else {
 				cur = cur.getChild(nodes[i]);
 			}
+		}
+		if(cur.isStorageLevel()){
+			return cur.getDataFileName();
 		}
 		throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
 	}

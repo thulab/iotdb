@@ -85,15 +85,17 @@ public class MManagerBasicTest {
 			fail(e.getMessage());
 		}
 		assertEquals(manager.pathExist("root.laptop.d1.s0"), false);
-		assertEquals(manager.pathExist("root.laptop.d1"), false);
-		assertEquals(manager.pathExist("root.laptop"), false);
+		assertEquals(manager.pathExist("root.laptop.d1"), true);
+		assertEquals(manager.pathExist("root.laptop"), true);
 		assertEquals(manager.pathExist("root"), true);
 		
-		try {
-			manager.setStorageLevelToMTree("root.laptop");
-		} catch (PathErrorException | IOException e) {
-			fail(e.getMessage());
-		}
+		// can't delete the storage group
+		
+		// try {
+		// manager.setStorageLevelToMTree("root.laptop");
+		// } catch (PathErrorException | IOException e) {
+		// fail(e.getMessage());
+		// }
 		try {
 			manager.addPathToMTree("root.laptop.d1.s1","INT32","RLE",new String[0]);
 		} catch (PathErrorException | MetadataArgsErrorException | IOException e1) {
@@ -107,19 +109,9 @@ public class MManagerBasicTest {
 			e1.printStackTrace();
 			fail(e1.getMessage());
 		}
-		
-		try {
-			manager.addPathToMTree("root.laptop.d2.s0","INT32","RLE",new String[0]);
-		} catch (PathErrorException | MetadataArgsErrorException | IOException e1) {
-			e1.printStackTrace();
-			fail(e1.getMessage());
-		}
-		try {
-			manager.addPathToMTree("root.laptop.d2.s1","INT32","RLE",new String[0]);
-		} catch (PathErrorException | MetadataArgsErrorException | IOException e1) {
-			e1.printStackTrace();
-			fail(e1.getMessage());
-		}
+
+		assertEquals(false, manager.pathExist("root.laptop.d2"));
+		assertEquals(false, manager.checkFileNameByPath("root.laptop.d2"));
 	
 		try {
 			manager.deletePathFromMTree("root.laptop.d1.s0");
@@ -137,12 +129,12 @@ public class MManagerBasicTest {
 		try {
 			manager.setStorageLevelToMTree("root.laptop.d2");
 		} catch (PathErrorException | IOException e) {
-			assertEquals(String.format("The prefix of %s has been set to the storage group.", "root.laptop.d2"),e.getMessage());
+			assertEquals(String.format("The path of %s already exist, it can't be set to the storage group", "root.laptop.d2"),e.getMessage());
 		}
 		/*
 		 * check file level
 		 */
-		assertEquals(manager.pathExist("root.laptop.d2.s1"),true);
+		assertEquals(manager.pathExist("root.laptop.d2.s1"),false);
 		List<Path> paths = new ArrayList<>();
 		paths.add(new Path("root.laptop.d2.s1"));
 		try {
@@ -151,6 +143,21 @@ public class MManagerBasicTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+		
+		try {
+			manager.addPathToMTree("root.laptop.d2.s1","INT32","RLE",new String[0]);
+		} catch (PathErrorException | MetadataArgsErrorException | IOException e1) {
+			e1.printStackTrace();
+			fail(e1.getMessage());
+		}
+		
+		try {
+			manager.addPathToMTree("root.laptop.d2.s0","INT32","RLE",new String[0]);
+		} catch (PathErrorException | MetadataArgsErrorException | IOException e1) {
+			e1.printStackTrace();
+			fail(e1.getMessage());
+		}
+		
 		try {
 			manager.deletePathFromMTree("root.laptop.d2.s0");
 		} catch (PathErrorException | IOException e) {
@@ -159,15 +166,6 @@ public class MManagerBasicTest {
 		}
 		try {
 			manager.deletePathFromMTree("root.laptop.d2.s1");
-		} catch (PathErrorException | IOException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		/*
-		 * root d1 s0
-		 */
-		try {
-			manager.setStorageLevelToMTree("root.laptop.d1");
 		} catch (PathErrorException | IOException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
