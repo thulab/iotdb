@@ -328,10 +328,11 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				}
 				String fileNodePath = mManager.getFileNameByPath(path.getFullPath());
 				ArrayList<ColumnSchema> columnSchemas = mManager.getSchemaForFileName(fileNodePath);
-				String[] nodes = path.getFullPath().split(separator);
-				String lastNode = nodes[nodes.length - 1];
+				String lastNode = path.getMeasurementToString();
+				boolean isNewMeasurement = true;
 				for (ColumnSchema columnSchema : columnSchemas) {
 					if (columnSchema.getName().equals(lastNode)) {
+						isNewMeasurement = false;
 						if (!columnSchema.geTsDataType().toString().equals(dataType)
 								|| !columnSchema.getEncoding().toString().equals(encoding)) {
 							throw new ProcessorException(String.format(
@@ -343,6 +344,10 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				mManager.addPathToMTree(path.getFullPath(), dataType, encoding, encodingArgs);
 				try {
 					String namespacePath = mManager.getFileNameByPath(path.getFullPath());
+					if(isNewMeasurement){
+						// add time series to schema
+						fileNodeManager.addTimeSeries(path,dataType,encoding,encodingArgs);
+					}
 					fileNodeManager.closeOneFileNode(namespacePath);
 				} catch (PathErrorException e) {
 					throw new ProcessorException(e);

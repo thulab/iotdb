@@ -42,6 +42,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TSFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TSFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.FileMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.write.TSRecordWriteSupport;
@@ -401,25 +402,28 @@ public class BufferWriteProcessor extends LRUProcessor {
 	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String fileNodePath)
 			throws WriteProcessException {
 		JSONArray rowGroup = new JSONArray();
-
 		for (ColumnSchema col : schemaList) {
-			JSONObject measurement = new JSONObject();
-			measurement.put(JsonFormatConstant.MEASUREMENT_UID, col.name);
-			measurement.put(JsonFormatConstant.DATA_TYPE, col.dataType.toString());
-			measurement.put(JsonFormatConstant.MEASUREMENT_ENCODING, col.encoding.toString());
-			for (Entry<String, String> entry : col.getArgsMap().entrySet()) {
-				if (JsonFormatConstant.ENUM_VALUES.equals(entry.getKey())) {
-					String[] valueArray = entry.getValue().split(",");
-					measurement.put(JsonFormatConstant.ENUM_VALUES, new JSONArray(valueArray));
-				} else
-					measurement.put(entry.getKey(), entry.getValue().toString());
-			}
-			rowGroup.put(measurement);
+			rowGroup.put(constrcutMeasurement(col));
 		}
 		JSONObject jsonSchema = new JSONObject();
 		jsonSchema.put(JsonFormatConstant.JSON_SCHEMA, rowGroup);
 		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, fileNodePath);
 		return new FileSchema(jsonSchema);
+	}
+
+	private JSONObject constrcutMeasurement(ColumnSchema col) {
+		JSONObject measurement = new JSONObject();
+		measurement.put(JsonFormatConstant.MEASUREMENT_UID, col.name);
+		measurement.put(JsonFormatConstant.DATA_TYPE, col.dataType.toString());
+		measurement.put(JsonFormatConstant.MEASUREMENT_ENCODING, col.encoding.toString());
+		for (Entry<String, String> entry : col.getArgsMap().entrySet()) {
+			if (JsonFormatConstant.ENUM_VALUES.equals(entry.getKey())) {
+				String[] valueArray = entry.getValue().split(",");
+				measurement.put(JsonFormatConstant.ENUM_VALUES, new JSONArray(valueArray));
+			} else
+				measurement.put(entry.getKey(), entry.getValue().toString());
+		}
+		return measurement;
 	}
 
 	public String getFileName() {
@@ -530,6 +534,14 @@ public class BufferWriteProcessor extends LRUProcessor {
 			isFlushingSync = false;
 		}
 
+	}
+
+	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs)
+			throws IOException {
+		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
+				TSEncoding.valueOf(encoding));
+		JSONObject measurement = constrcutMeasurement(col);
+		recordWriter.addMeasurementByJson(measurement);
 	}
 
 	private class BufferWriteRecordWriter extends TSRecordWriter {
@@ -711,4 +723,5 @@ public class BufferWriteProcessor extends LRUProcessor {
 	private void switchIndexFromFlushToWork() {
 		bufferIOWriter.addNewRowGroupMetaDataToBackUp();
 	}
+
 }

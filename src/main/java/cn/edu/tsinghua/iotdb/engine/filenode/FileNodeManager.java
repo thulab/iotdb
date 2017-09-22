@@ -574,6 +574,30 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		return res;
 	}
 
+	// TODO: should synchronized
+	public synchronized void addTimeSeries(Path path, String dataType, String encoding, String[] encodingArgs)
+			throws FileNodeManagerException {
+		// TODO: optimize and do't get the filenode processor instance
+		FileNodeProcessor fileNodeProcessor = null;
+		try {
+			do {
+				fileNodeProcessor = getProcessorByLRU(path.getFullPath(), true);
+			} while (fileNodeProcessor == null);
+			if (fileNodeProcessor.hasBufferwriteProcessor()) {
+				BufferWriteProcessor bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor();
+				bufferWriteProcessor.addTimeSeries(path.getMeasurementToString(), dataType, encoding, encodingArgs);
+			} else {
+				return;
+			}
+		} catch (LRUManagerException e) {
+			throw new FileNodeManagerException(e);
+		} catch (FileNodeProcessorException e) {
+			throw new FileNodeManagerException(e);
+		} catch (IOException e) {
+			throw new FileNodeManagerException(e);
+		}
+	}
+
 	public synchronized boolean closeOneFileNode(String namespacePath) throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
