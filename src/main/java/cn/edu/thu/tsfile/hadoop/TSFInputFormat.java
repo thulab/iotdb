@@ -48,7 +48,7 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 	/*
 	 * For read deviceid
 	 */
-	public static final String READ_DEVICEID = "tsfile.read.deviceid";
+	public static final String READ_DELTAOBJECT = "tsfile.read.deltaObjectId";
 	/*
 	 * For the type of filter
 	 */
@@ -104,16 +104,16 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 	 * @param job
 	 * @param value
 	 */
-	public static void setReadDeviceId(Job job, boolean value) {
-		job.getConfiguration().setBoolean(READ_DEVICEID, value);
+	public static void setReadDeltaObjectId(Job job, boolean value) {
+		job.getConfiguration().setBoolean(READ_DELTAOBJECT, value);
 	}
 
 	/**
 	 * @param configuration
 	 * @return
 	 */
-	public static boolean getReadDeviceId(Configuration configuration) {
-		return configuration.getBoolean(READ_DEVICEID, false);
+	public static boolean getReadDeltaObject(Configuration configuration) {
+		return configuration.getBoolean(READ_DELTAOBJECT, false);
 	}
 
 	/**
