@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -137,42 +138,48 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 		Writable[] writables = getEmptyWritables();
 		Text deviceid = new Text(deviceId);
 		LongWritable time = new LongWritable(rowRecord.getTime());
-		int offect = 0;
+		int index = 0;
 		if (isReadTime && isReadDeviceId) {
 			writables[0] = time;
 			writables[1] = deviceid;
-			offect = 2;
+			index = 2;
 		} else if (isReadTime && !isReadDeviceId) {
 			writables[0] = time;
-			offect = 1;
+			index = 1;
 		} else if (!isReadTime && isReadDeviceId) {
 			writables[0] = deviceid;
-			offect = 1;
+			index = 1;
 		}
 		List<Field> fields = rowRecord.getFields();
 		for (Field field : fields) {
 			if (field.isNull()) {
-				writables[offect] = NullWritable.get();
+				writables[index] = NullWritable.get();
 			} else {
 				switch (field.dataType) {
 				case INT32:
-					writables[offect] = new IntWritable(field.getIntV());
+					writables[index] = new IntWritable(field.getIntV());
 					break;
 				case INT64:
-					writables[offect] = new LongWritable(field.getLongV());
+					writables[index] = new LongWritable(field.getLongV());
 					break;
 				case FLOAT:
-					writables[offect] = new FloatWritable(field.getFloatV());
+					writables[index] = new FloatWritable(field.getFloatV());
 					break;
 				case DOUBLE:
-					writables[offect] = new DoubleWritable(field.getDoubleV());
+					writables[index] = new DoubleWritable(field.getDoubleV());
+					break;
+				case BOOLEAN:
+					writables[index] = new BooleanWritable(field.getBoolV());
+					break;
+				case TEXT:
+					writables[index] = new Text(field.getBinaryV().getStringValue());
 					break;
 				default:
 					LOGGER.error("The data type is not support {}", field.dataType);
 					throw new InterruptedException(String.format("The data type %s is not support ", field.dataType));
 				}
 			}
-			offect++;
+			index++;
 		}
 		return new ArrayWritable(Writable.class, writables);
 	}

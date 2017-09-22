@@ -37,7 +37,9 @@ public class TsFileHelper {
 		if (file.exists())
 			file.delete();
 
+		
 		JSONObject jsonSchema = getJsonSchema();
+		
 		
 		try {
 			TSRandomAccessFileWriter output = new RandomAccessOutputStream(new File(filePath));

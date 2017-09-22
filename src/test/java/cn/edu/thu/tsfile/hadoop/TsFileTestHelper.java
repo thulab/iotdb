@@ -48,7 +48,7 @@ public class TsFileTestHelper {
 			TsFile tsFile = new TsFile(output, jsonSchema);
 			String line = "";
 			for(int i = 1;i<100;i++){
-				line = "root.car.d1,"+i+",s1,1,s2,1,s3,0.1,s4,0.1";
+				line = "root.car.d1,"+i+",s1,1,s2,1,s3,0.1,s4,0.1,s5,true,s6,tsfile";
 				tsFile.writeLine(line);
 			}
 			tsFile.writeLine("root.car.d2,5, s1, 5, s2, 50, s3, 200.5, s4, 0.5");
@@ -86,12 +86,27 @@ public class TsFileTestHelper {
 		s4.put(JsonFormatConstant.MEASUREMENT_UID, "s4");
 		s4.put(JsonFormatConstant.DATA_TYPE, TSDataType.DOUBLE.toString());
 		s4.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
+		
+		JSONObject s5 = new JSONObject();
+		s5.put(JsonFormatConstant.MEASUREMENT_UID, "s5");
+		s5.put(JsonFormatConstant.DATA_TYPE, TSDataType.BOOLEAN.toString());
+		s5.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
+		
+		JSONObject s6 = new JSONObject();
+		s6.put(JsonFormatConstant.MEASUREMENT_UID, "s6");
+		s6.put(JsonFormatConstant.DATA_TYPE, TSDataType.TEXT.toString());
+		s6.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
+
+
+		
 
 		JSONArray measureGroup = new JSONArray();
 		measureGroup.put(s1);
 		measureGroup.put(s2);
 		measureGroup.put(s3);
 		measureGroup.put(s4);
+		measureGroup.put(s5);
+		measureGroup.put(s6);
 
 		JSONObject jsonSchema = new JSONObject();
 		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, "test_type");

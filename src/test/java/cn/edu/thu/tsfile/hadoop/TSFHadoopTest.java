@@ -7,6 +7,13 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
@@ -121,7 +128,7 @@ public class TSFHadoopTest {
 			Job job = Job.getInstance();
 			// set input path to the job
 			TSFInputFormat.setInputPaths(job, tsfilePath);
-			String[] columns = { "s1", "s2", "s3", "s4" };
+			String[] columns = { "s1", "s2", "s3", "s4", "s5", "s6" };
 			TSFInputFormat.setReadColumns(job, columns);
 			List<InputSplit> inputSplits = inputformat.getSplits(job);
 			TSRandomAccessFileReader reader = new LocalFileInput(tsfilePath);
@@ -138,7 +145,24 @@ public class TSFHadoopTest {
 					new TaskAttemptID());
 			recordReader.initialize(inputSplits.get(0), attemptContextImpl);
 			while (recordReader.nextKeyValue()) {
-				System.out.println(recordReader.getCurrentValue().toStrings());
+				assertEquals(recordReader.getCurrentValue().get().length, columns.length);
+				for (Writable writable : recordReader.getCurrentValue().get()) {
+					if (writable instanceof IntWritable) {
+						assertEquals(writable.toString(), "1");
+					} else if (writable instanceof LongWritable) {
+						assertEquals(writable.toString(), "1");
+					} else if (writable instanceof FloatWritable) {
+						assertEquals(writable.toString(), "0.1");
+					} else if (writable instanceof DoubleWritable) {
+						assertEquals(writable.toString(), "0.1");
+					} else if (writable instanceof BooleanWritable) {
+						assertEquals(writable.toString(), "true");
+					} else if (writable instanceof Text) {
+						assertEquals(writable.toString(), "tsfile");
+					} else {
+						fail(String.format("Not support type %s", writable.getClass().getName()));
+					}
+				}
 			}
 			recordReader.close();
 		} catch (IOException e) {
