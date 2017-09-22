@@ -20,14 +20,14 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream;
-import cn.edu.thu.tsfile.timeseries.read.FileReader;
-import cn.edu.thu.tsfile.timeseries.read.query.QueryConfig;
-import cn.edu.thu.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.thu.tsfile.timeseries.read.query.QueryEngine;
-import cn.edu.thu.tsfile.timeseries.read.readSupport.Field;
-import cn.edu.thu.tsfile.timeseries.read.readSupport.RowRecord;
+import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
+import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryConfig;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryEngine;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
 /**
  * @author liukun

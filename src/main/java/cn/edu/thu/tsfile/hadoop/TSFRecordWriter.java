@@ -11,19 +11,19 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfile.common.conf.TSFileConfig;
-import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.thu.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.thu.tsfile.hadoop.io.HDFSOutputStream;
-import cn.edu.thu.tsfile.timeseries.write.InternalRecordWriter;
-import cn.edu.thu.tsfile.timeseries.write.TSRecordWriteSupport;
-import cn.edu.thu.tsfile.timeseries.write.TSRecordWriter;
-import cn.edu.thu.tsfile.timeseries.write.WriteSupport;
-import cn.edu.thu.tsfile.timeseries.write.exception.InvalidJsonSchemaException;
-import cn.edu.thu.tsfile.timeseries.write.exception.WriteProcessException;
-import cn.edu.thu.tsfile.timeseries.write.io.TSFileIOWriter;
-import cn.edu.thu.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.thu.tsfile.timeseries.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
+import cn.edu.tsinghua.tsfile.timeseries.write.InternalRecordWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.TSRecordWriteSupport;
+import cn.edu.tsinghua.tsfile.timeseries.write.TSRecordWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.WriteSupport;
+import cn.edu.tsinghua.tsfile.timeseries.write.exception.InvalidJsonSchemaException;
+import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.TSFileIOWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class TSFRecordWriter extends RecordWriter<NullWritable, TSRow> {
 
@@ -51,9 +51,9 @@ public class TSFRecordWriter extends RecordWriter<NullWritable, TSRow> {
 		TSFileConfig conf = TSFileDescriptor.getInstance().getConfig();
 
 		if (schema.has(JsonFormatConstant.ROW_GROUP_SIZE))
-			conf.rowGroupSize = schema.getInt(JsonFormatConstant.ROW_GROUP_SIZE);
+			conf.groupSizeInByte = schema.getInt(JsonFormatConstant.ROW_GROUP_SIZE);
 		if (schema.has(JsonFormatConstant.PAGE_SIZE))
-			conf.pageSize = schema.getInt(JsonFormatConstant.PAGE_SIZE);
+			conf.pageSizeInByte = schema.getInt(JsonFormatConstant.PAGE_SIZE);
 
 		write = new TSRecordWriter(conf, tsfileWriter, writeSupport, fileSchema);
 	}

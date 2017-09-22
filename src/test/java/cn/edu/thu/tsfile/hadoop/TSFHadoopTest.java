@@ -15,9 +15,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
-import cn.edu.thu.tsfile.timeseries.FileFormat.TsFile;
-import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
+import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
+import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
+import cn.edu.tsinghua.tsfile.timeseries.read.LocalFileInput;
 
 public class TSFHadoopTest {
 

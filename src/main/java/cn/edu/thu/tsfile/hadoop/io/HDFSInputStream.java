@@ -8,7 +8,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileReader;
+import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
+
 
 /**
  * This class is used to wrap the {@link}FSDataInputStream and implement the

@@ -25,10 +25,10 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.thu.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.thu.tsfile.file.metadata.TSFileMetaData;
 import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream;
-import cn.edu.thu.tsfile.timeseries.read.FileReader;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TSFileMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
 
 /**
  * @author liukun

@@ -8,7 +8,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
 
 
 /**

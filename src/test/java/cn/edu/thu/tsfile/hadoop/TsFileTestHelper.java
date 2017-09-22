@@ -7,15 +7,15 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import cn.edu.thu.tsfile.common.conf.TSFileConfig;
-import cn.edu.thu.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.thu.tsfile.common.constant.JsonFormatConstant;
-import cn.edu.thu.tsfile.common.utils.RandomAccessOutputStream;
-import cn.edu.thu.tsfile.common.utils.TSRandomAccessFileWriter;
-import cn.edu.thu.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.thu.tsfile.timeseries.FileFormat.TsFile;
-import cn.edu.thu.tsfile.timeseries.read.LocalFileInput;
-import cn.edu.thu.tsfile.timeseries.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
+import cn.edu.tsinghua.tsfile.common.utils.RandomAccessOutputStream;
+import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
+import cn.edu.tsinghua.tsfile.timeseries.read.LocalFileInput;
+import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 
 public class TsFileTestHelper {
 	
@@ -23,14 +23,18 @@ public class TsFileTestHelper {
 		File file = new File(filePath);
 		file.delete();
 	}
+	
+	public static void restoreConf(){
+		
+	}
 
 	public static void writeTsFile(String filePath) {
 		
 		TSFileConfig conf = TSFileDescriptor.getInstance().getConfig();
-		conf.pageSize=100;
-		conf.rowGroupSize = 2000;
+		conf.pageSizeInByte=100;
+		conf.groupSizeInByte = 3000;
 		conf.pageCheckSizeThreshold = 1;
-		conf.defaultMaxStringLength = 2;
+		conf.maxStringLength = 2;
 
 		File file = new File(filePath);
 
@@ -66,22 +70,22 @@ public class TsFileTestHelper {
 		JSONObject s1 = new JSONObject();
 		s1.put(JsonFormatConstant.MEASUREMENT_UID, "s1");
 		s1.put(JsonFormatConstant.DATA_TYPE, TSDataType.INT32.toString());
-		s1.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.defaultSeriesEncoder);
+		s1.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
 
 		JSONObject s2 = new JSONObject();
 		s2.put(JsonFormatConstant.MEASUREMENT_UID, "s2");
 		s2.put(JsonFormatConstant.DATA_TYPE, TSDataType.INT64.toString());
-		s2.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.defaultSeriesEncoder);
+		s2.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
 
 		JSONObject s3 = new JSONObject();
 		s3.put(JsonFormatConstant.MEASUREMENT_UID, "s3");
 		s3.put(JsonFormatConstant.DATA_TYPE, TSDataType.FLOAT.toString());
-		s3.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.defaultSeriesEncoder);
+		s3.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
 
 		JSONObject s4 = new JSONObject();
 		s4.put(JsonFormatConstant.MEASUREMENT_UID, "s4");
 		s4.put(JsonFormatConstant.DATA_TYPE, TSDataType.DOUBLE.toString());
-		s4.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.defaultSeriesEncoder);
+		s4.put(JsonFormatConstant.MEASUREMENT_ENCODING, conf.valueEncoder);
 
 		JSONArray measureGroup = new JSONArray();
 		measureGroup.put(s1);
