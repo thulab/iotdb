@@ -219,8 +219,10 @@ public class MTree implements Serializable {
 		cur.getParent().deleteChild(cur.getName());
 		cur = cur.getParent();
 		while (cur != null && !cur.getName().equals("root") && cur.getChildren().size() == 0) {
-			if (cur.isStorageLevel())
+			if (cur.isStorageLevel()) {
 				dataFileName = cur.getDataFileName();
+				return dataFileName;
+			}
 			cur.getParent().deleteChild(cur.getName());
 			cur = cur.getParent();
 		}
