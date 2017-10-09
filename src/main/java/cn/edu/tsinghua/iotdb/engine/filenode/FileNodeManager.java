@@ -577,7 +577,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		FileNodeProcessor fileNodeProcessor = null;
 		try {
 			do {
-				fileNodeProcessor = getProcessorByLRU(path.getFullPath(), true);
+				fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(path.getFullPath(), true);
 			} while (fileNodeProcessor == null);
 			if (fileNodeProcessor.hasBufferwriteProcessor()) {
 				BufferWriteProcessor bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor();
@@ -585,12 +585,12 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			} else {
 				return;
 			}
-		} catch (LRUManagerException e) {
+		} catch (LRUManagerException | IOException | FileNodeProcessorException e) {
 			throw new FileNodeManagerException(e);
-		} catch (FileNodeProcessorException e) {
-			throw new FileNodeManagerException(e);
-		} catch (IOException e) {
-			throw new FileNodeManagerException(e);
+		} finally {
+			if (fileNodeProcessor != null) {
+				fileNodeProcessor.writeUnlock();
+			}
 		}
 	}
 
