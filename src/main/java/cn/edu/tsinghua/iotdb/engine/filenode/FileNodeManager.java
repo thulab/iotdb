@@ -127,12 +127,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					fileNodeProcessor.writeUnlock();
 				}
 			}
-		} catch (PathErrorException e1) {
-			LOGGER.error("Restore all FileNodeManager failed.", e1);
-		} catch (LRUManagerException e2) {
-			LOGGER.error("Construt the filenode processor failed.", e2);
-		} catch (FileNodeProcessorException e3) {
-			LOGGER.error("Recovery the filenode processor failed.", e3);
+		} catch (PathErrorException | LRUManagerException | FileNodeProcessorException e) {
+			LOGGER.error("Restore all FileNode failed, the reason is {}", e.getMessage());
 		}
 	}
 

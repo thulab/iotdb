@@ -140,7 +140,11 @@ public class BufferWriteProcessor extends LRUProcessor {
 			}
 
 			WriteSupport<TSRecord> writeSupport = new TSRecordWriteSupport();
-			recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, writeSupport, fileSchema);
+			try {
+				recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, writeSupport, fileSchema);
+			} catch (WriteProcessException e) {
+				throw new BufferWriteProcessorException(e);
+			}
 			isNewProcessor = true;
 			// write restore file
 			writeStoreToDisk();
@@ -202,7 +206,11 @@ public class BufferWriteProcessor extends LRUProcessor {
 			throw new BufferWriteProcessorException(e);
 		}
 		WriteSupport<TSRecord> writeSupport = new TSRecordWriteSupport();
-		recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, writeSupport, fileSchema);
+		try {
+			recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, writeSupport, fileSchema);
+		} catch (WriteProcessException e) {
+			throw new BufferWriteProcessorException(e);
+		}
 		isNewProcessor = false;
 	}
 
@@ -541,7 +549,11 @@ public class BufferWriteProcessor extends LRUProcessor {
 		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
 				TSEncoding.valueOf(encoding));
 		JSONObject measurement = constrcutMeasurement(col);
-		recordWriter.addMeasurementByJson(measurement);
+		try {
+			recordWriter.addMeasurementByJson(measurement);
+		} catch (WriteProcessException e) {
+			throw new IOException(e);
+		}
 	}
 
 	private class BufferWriteRecordWriter extends TSRecordWriter {
@@ -551,7 +563,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		private long flushingRecordCount;
 
 		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter,
-				WriteSupport<TSRecord> writeSupport, FileSchema schema) {
+				WriteSupport<TSRecord> writeSupport, FileSchema schema) throws WriteProcessException {
 			super(conf, ioFileWriter, writeSupport, schema);
 		}
 

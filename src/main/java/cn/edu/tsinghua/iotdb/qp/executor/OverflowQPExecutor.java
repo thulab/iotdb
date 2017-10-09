@@ -344,15 +344,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				mManager.addPathToMTree(path.getFullPath(), dataType, encoding, encodingArgs);
 				try {
 					String namespacePath = mManager.getFileNameByPath(path.getFullPath());
-					if(isNewMeasurement){
+					if (isNewMeasurement) {
 						// add time series to schema
-						fileNodeManager.addTimeSeries(path,dataType,encoding,encodingArgs);
+						fileNodeManager.addTimeSeries(path, dataType, encoding, encodingArgs);
 					}
-					fileNodeManager.closeOneFileNode(namespacePath);
-				} catch (PathErrorException e) {
-					throw new ProcessorException(e);
-				} catch (FileNodeManagerException e) {
-					e.printStackTrace();
+					// fileNodeManager.closeOneFileNode(namespacePath);
+				} catch (PathErrorException | FileNodeManagerException e) {
 					throw new ProcessorException(e);
 				}
 				break;
