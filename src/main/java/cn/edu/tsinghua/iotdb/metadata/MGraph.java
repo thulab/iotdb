@@ -202,7 +202,7 @@ public class MGraph implements Serializable {
 	 * @param path
 	 * @return ArrayList<ColumnSchema> The list of the schema
 	 */
-	public ArrayList<ColumnSchema> getSchemaFoOneFileNode(String path){
+	public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path){
 		return mTree.getSchemaForOneFileNode(path);
 	}
 
