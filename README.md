@@ -9,6 +9,10 @@
 
 > mvn clean package -Dmaven.test.skip=true
 
+## How to install in local maven repository
+
+> mvn clean install -Dmaven.test.skip=true
+
 ## Using IoTDB JDBC with Maven
 
 ```
@@ -16,7 +20,7 @@
     <dependency>
       <groupId>cn.edu.tsinghua</groupId>
       <artifactId>iotdb-jdbc</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.1.2</version>
     </dependency>
 </dependencies>
 ```
