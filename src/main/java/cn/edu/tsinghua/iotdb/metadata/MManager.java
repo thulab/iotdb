@@ -416,7 +416,7 @@ public class MManager {
 
 		lock.readLock().lock();
 		try{
-			return mGraph.getSchemaFoOneFileNode(path);
+			return mGraph.getSchemaForOneFileNode(path);
 		}finally {
 			lock.readLock().unlock();
 		}

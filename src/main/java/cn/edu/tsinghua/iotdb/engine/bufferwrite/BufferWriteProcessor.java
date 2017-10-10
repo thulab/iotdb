@@ -407,7 +407,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		return fileSchema;
 	}
 
-	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String fileNodePath)
+	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String nameSpacePath)
 			throws WriteProcessException {
 		JSONArray rowGroup = new JSONArray();
 		for (ColumnSchema col : schemaList) {
@@ -415,7 +415,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		}
 		JSONObject jsonSchema = new JSONObject();
 		jsonSchema.put(JsonFormatConstant.JSON_SCHEMA, rowGroup);
-		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, fileNodePath);
+		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, nameSpacePath);
 		return new FileSchema(jsonSchema);
 	}
 
