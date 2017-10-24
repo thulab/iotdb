@@ -19,7 +19,7 @@ Grafana下载地址：https://grafana.com/grafana/download
 # 后端数据源连接器安装
 下载源代码
 ```
-git clone git@github.com:thulab/iotdb-jdbc.git
+git clone git@github.com:thulab/iotdb-grafana.git
 ```
 进入目录，打成war包
 ```
