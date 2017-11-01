@@ -40,7 +40,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
   private static final org.apache.thrift.protocol.TField KEYS_FIELD_DESC = new org.apache.thrift.protocol.TField("keys", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField VALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("values", org.apache.thrift.protocol.TType.LIST, (short)2);
-  private static final org.apache.thrift.protocol.TField TIMESTAMP_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("timestampList", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -50,13 +49,11 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
   public List<String> keys; // required
   public List<TSDynamicOneColumnData> values; // required
-  public List<Long> timestampList; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     KEYS((short)1, "keys"),
-    VALUES((short)2, "values"),
-    TIMESTAMP_LIST((short)3, "timestampList");
+    VALUES((short)2, "values");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -75,8 +72,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
           return KEYS;
         case 2: // VALUES
           return VALUES;
-        case 3: // TIMESTAMP_LIST
-          return TIMESTAMP_LIST;
         default:
           return null;
       }
@@ -117,7 +112,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TIMESTAMP_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -127,9 +121,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     tmpMap.put(_Fields.VALUES, new org.apache.thrift.meta_data.FieldMetaData("values", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TSDynamicOneColumnData.class))));
-    tmpMap.put(_Fields.TIMESTAMP_LIST, new org.apache.thrift.meta_data.FieldMetaData("timestampList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TSQueryDataSet.class, metaDataMap);
   }
@@ -161,10 +152,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
       }
       this.values = __this__values;
     }
-    if (other.isSetTimestampList()) {
-      List<Long> __this__timestampList = new ArrayList<Long>(other.timestampList);
-      this.timestampList = __this__timestampList;
-    }
   }
 
   public TSQueryDataSet deepCopy() {
@@ -175,7 +162,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
   public void clear() {
     this.keys = null;
     this.values = null;
-    this.timestampList = null;
   }
 
   public int getKeysSize() {
@@ -256,45 +242,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     }
   }
 
-  public int getTimestampListSize() {
-    return (this.timestampList == null) ? 0 : this.timestampList.size();
-  }
-
-  public java.util.Iterator<Long> getTimestampListIterator() {
-    return (this.timestampList == null) ? null : this.timestampList.iterator();
-  }
-
-  public void addToTimestampList(long elem) {
-    if (this.timestampList == null) {
-      this.timestampList = new ArrayList<Long>();
-    }
-    this.timestampList.add(elem);
-  }
-
-  public List<Long> getTimestampList() {
-    return this.timestampList;
-  }
-
-  public TSQueryDataSet setTimestampList(List<Long> timestampList) {
-    this.timestampList = timestampList;
-    return this;
-  }
-
-  public void unsetTimestampList() {
-    this.timestampList = null;
-  }
-
-  /** Returns true if field timestampList is set (has been assigned a value) and false otherwise */
-  public boolean isSetTimestampList() {
-    return this.timestampList != null;
-  }
-
-  public void setTimestampListIsSet(boolean value) {
-    if (!value) {
-      this.timestampList = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case KEYS:
@@ -313,14 +260,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
       }
       break;
 
-    case TIMESTAMP_LIST:
-      if (value == null) {
-        unsetTimestampList();
-      } else {
-        setTimestampList((List<Long>)value);
-      }
-      break;
-
     }
   }
 
@@ -331,9 +270,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
     case VALUES:
       return getValues();
-
-    case TIMESTAMP_LIST:
-      return getTimestampList();
 
     }
     throw new IllegalStateException();
@@ -350,8 +286,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
       return isSetKeys();
     case VALUES:
       return isSetValues();
-    case TIMESTAMP_LIST:
-      return isSetTimestampList();
     }
     throw new IllegalStateException();
   }
@@ -387,15 +321,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
         return false;
     }
 
-    boolean this_present_timestampList = true && this.isSetTimestampList();
-    boolean that_present_timestampList = true && that.isSetTimestampList();
-    if (this_present_timestampList || that_present_timestampList) {
-      if (!(this_present_timestampList && that_present_timestampList))
-        return false;
-      if (!this.timestampList.equals(that.timestampList))
-        return false;
-    }
-
     return true;
   }
 
@@ -412,11 +337,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     list.add(present_values);
     if (present_values)
       list.add(values);
-
-    boolean present_timestampList = true && (isSetTimestampList());
-    list.add(present_timestampList);
-    if (present_timestampList)
-      list.add(timestampList);
 
     return list.hashCode();
   }
@@ -445,16 +365,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     }
     if (isSetValues()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.values, other.values);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetTimestampList()).compareTo(other.isSetTimestampList());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTimestampList()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestampList, other.timestampList);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -494,16 +404,6 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
       sb.append(this.values);
     }
     first = false;
-    if (isSetTimestampList()) {
-      if (!first) sb.append(", ");
-      sb.append("timestampList:");
-      if (this.timestampList == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.timestampList);
-      }
-      first = false;
-    }
     sb.append(")");
     return sb.toString();
   }
@@ -556,13 +456,13 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
           case 1: // KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list108 = iprot.readListBegin();
-                struct.keys = new ArrayList<String>(_list108.size);
-                String _elem109;
-                for (int _i110 = 0; _i110 < _list108.size; ++_i110)
+                org.apache.thrift.protocol.TList _list116 = iprot.readListBegin();
+                struct.keys = new ArrayList<String>(_list116.size);
+                String _elem117;
+                for (int _i118 = 0; _i118 < _list116.size; ++_i118)
                 {
-                  _elem109 = iprot.readString();
-                  struct.keys.add(_elem109);
+                  _elem117 = iprot.readString();
+                  struct.keys.add(_elem117);
                 }
                 iprot.readListEnd();
               }
@@ -574,36 +474,18 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
           case 2: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list111 = iprot.readListBegin();
-                struct.values = new ArrayList<TSDynamicOneColumnData>(_list111.size);
-                TSDynamicOneColumnData _elem112;
-                for (int _i113 = 0; _i113 < _list111.size; ++_i113)
+                org.apache.thrift.protocol.TList _list119 = iprot.readListBegin();
+                struct.values = new ArrayList<TSDynamicOneColumnData>(_list119.size);
+                TSDynamicOneColumnData _elem120;
+                for (int _i121 = 0; _i121 < _list119.size; ++_i121)
                 {
-                  _elem112 = new TSDynamicOneColumnData();
-                  _elem112.read(iprot);
-                  struct.values.add(_elem112);
+                  _elem120 = new TSDynamicOneColumnData();
+                  _elem120.read(iprot);
+                  struct.values.add(_elem120);
                 }
                 iprot.readListEnd();
               }
               struct.setValuesIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // TIMESTAMP_LIST
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list114 = iprot.readListBegin();
-                struct.timestampList = new ArrayList<Long>(_list114.size);
-                long _elem115;
-                for (int _i116 = 0; _i116 < _list114.size; ++_i116)
-                {
-                  _elem115 = iprot.readI64();
-                  struct.timestampList.add(_elem115);
-                }
-                iprot.readListEnd();
-              }
-              struct.setTimestampListIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -627,9 +509,9 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
         oprot.writeFieldBegin(KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.keys.size()));
-          for (String _iter117 : struct.keys)
+          for (String _iter122 : struct.keys)
           {
-            oprot.writeString(_iter117);
+            oprot.writeString(_iter122);
           }
           oprot.writeListEnd();
         }
@@ -639,27 +521,13 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.values.size()));
-          for (TSDynamicOneColumnData _iter118 : struct.values)
+          for (TSDynamicOneColumnData _iter123 : struct.values)
           {
-            _iter118.write(oprot);
+            _iter123.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
-      }
-      if (struct.timestampList != null) {
-        if (struct.isSetTimestampList()) {
-          oprot.writeFieldBegin(TIMESTAMP_LIST_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.timestampList.size()));
-            for (long _iter119 : struct.timestampList)
-            {
-              oprot.writeI64(_iter119);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -680,30 +548,16 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.keys.size());
-        for (String _iter120 : struct.keys)
+        for (String _iter124 : struct.keys)
         {
-          oprot.writeString(_iter120);
+          oprot.writeString(_iter124);
         }
       }
       {
         oprot.writeI32(struct.values.size());
-        for (TSDynamicOneColumnData _iter121 : struct.values)
+        for (TSDynamicOneColumnData _iter125 : struct.values)
         {
-          _iter121.write(oprot);
-        }
-      }
-      BitSet optionals = new BitSet();
-      if (struct.isSetTimestampList()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetTimestampList()) {
-        {
-          oprot.writeI32(struct.timestampList.size());
-          for (long _iter122 : struct.timestampList)
-          {
-            oprot.writeI64(_iter122);
-          }
+          _iter125.write(oprot);
         }
       }
     }
@@ -712,42 +566,28 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     public void read(org.apache.thrift.protocol.TProtocol prot, TSQueryDataSet struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list123 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.keys = new ArrayList<String>(_list123.size);
-        String _elem124;
-        for (int _i125 = 0; _i125 < _list123.size; ++_i125)
+        org.apache.thrift.protocol.TList _list126 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.keys = new ArrayList<String>(_list126.size);
+        String _elem127;
+        for (int _i128 = 0; _i128 < _list126.size; ++_i128)
         {
-          _elem124 = iprot.readString();
-          struct.keys.add(_elem124);
+          _elem127 = iprot.readString();
+          struct.keys.add(_elem127);
         }
       }
       struct.setKeysIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list126 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.values = new ArrayList<TSDynamicOneColumnData>(_list126.size);
-        TSDynamicOneColumnData _elem127;
-        for (int _i128 = 0; _i128 < _list126.size; ++_i128)
+        org.apache.thrift.protocol.TList _list129 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.values = new ArrayList<TSDynamicOneColumnData>(_list129.size);
+        TSDynamicOneColumnData _elem130;
+        for (int _i131 = 0; _i131 < _list129.size; ++_i131)
         {
-          _elem127 = new TSDynamicOneColumnData();
-          _elem127.read(iprot);
-          struct.values.add(_elem127);
+          _elem130 = new TSDynamicOneColumnData();
+          _elem130.read(iprot);
+          struct.values.add(_elem130);
         }
       }
       struct.setValuesIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        {
-          org.apache.thrift.protocol.TList _list129 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.timestampList = new ArrayList<Long>(_list129.size);
-          long _elem130;
-          for (int _i131 = 0; _i131 < _list129.size; ++_i131)
-          {
-            _elem130 = iprot.readI64();
-            struct.timestampList.add(_elem130);
-          }
-        }
-        struct.setTimestampListIsSet(true);
-      }
     }
   }
 
