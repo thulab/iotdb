@@ -248,6 +248,7 @@ struct TSDynamicOneColumnData{
 struct TSQueryDataSet{
 	1: required list<string> keys
   2: required list<TSDynamicOneColumnData> values
+  3: optional list<i64> timestampList
 }
 
 struct TSFetchResultsReq{
