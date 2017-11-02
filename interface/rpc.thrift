@@ -243,6 +243,8 @@ struct TSDynamicOneColumnData{
 	8: optional list<double> floatList
 	9: optional list<double> doubleList
 	10: optional list<binary> binaryList
+	
+	11: optional list<i64> emptyList;
 }
 
 struct TSQueryDataSet{
