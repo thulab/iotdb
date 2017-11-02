@@ -109,7 +109,6 @@ public class Utils {
     private static DynamicOneColumnData convertDynamicOneColumnData(TSDynamicOneColumnData tsDynamicOneColumnData) {
         TSDataType dataType = TSDataType.valueOf(tsDynamicOneColumnData.getDataType());
         DynamicOneColumnData dynamicOneColumnData = new DynamicOneColumnData(dataType, true);
-        dynamicOneColumnData.setDeltaObjectType(tsDynamicOneColumnData.getDeviceType());
 
         for (long time : tsDynamicOneColumnData.getTimeRet()) {
             dynamicOneColumnData.putTime(time);
