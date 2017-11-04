@@ -1,1 +1,6 @@
+# Function
+> to show
 
+## How to install in local maven repository
+
+> mvn clean install -Dmaven.test.skip=true
