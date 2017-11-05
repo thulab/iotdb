@@ -1,4 +1,7 @@
-# Usage
+# Function
+```
+  The example is to show how to send data from localhost to IoTDB through Kafka.
+```
 
 ## Dependencies
 
