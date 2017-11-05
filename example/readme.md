@@ -24,7 +24,7 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
 
 ```
   Before you run the program, make sure you have launched the servers of Kafka and IoTDB.
-  For details, please refer to http://kafka.apache.org/081/documentation.html#quickstart
+  For details, please refer to [](http://kafka.apache.org/081/documentation.html#quickstart)
 ```
 ## How to install in local maven repository
 
