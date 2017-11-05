@@ -22,8 +22,10 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
 
 ## Launch the servers
 
+```
   Before you run the program, make sure you have launched the servers of Kafka and IoTDB.
   For details, please refer to http://kafka.apache.org/081/documentation.html#quickstart
+```
 
 ## Run KafkaProducer.java
 
@@ -39,10 +41,12 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
 
 ## Run KafkaConsumer.java
 
+```
   The program is to consume data from Kafka.
   You can set the parameter of threadsNum to make sure the number of consumer threads:(for example: "5")
   > private final static int threadsNum = 5;
-  
+```
+
 ### Notice 
   If you want to use multiple consumers, please make sure that the number of topic'spartition you create is more than 1.
 
