@@ -33,7 +33,7 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
   The program is to send data from localhost to Kafka clusters.
   Firstly, you have to change the parameter of TOPIC to what you create：(for example : "test")
   > public final static String TOPIC = "test";
-  The default format of date is "device,timestamp,value ". (for example : "sensor1,2017/10/24 19:30:00,60")
+  The default format of data is "device,timestamp,value ". (for example : "sensor1,2017/10/24 19:30:00,60")
   Then you need to create a .CSV file in your localhost, which contains the data to be transmitted.Then set the parameter of Filename：(for example : "c:\\data.csv")
   > private final static String fileName = "c:\\data.csv";
   Finally, run KafkaProducer.java
