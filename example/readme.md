@@ -47,9 +47,7 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
   > private final static int threadsNum = 5;
 ```
 ### Notice 
-```
   If you want to use multiple consumers, please make sure that the number of topic'spartition you create is more than 1.
-```
 
 ## Run SendDataToIotdb.java
 
