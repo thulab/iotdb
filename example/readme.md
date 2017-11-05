@@ -11,11 +11,11 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
     	<groupId>org.apache.kafka</groupId>
     	<artifactId>kafka_2.10</artifactId>
     	<version>0.8.2.0</version>
-	</dependency>
-	<dependency>
-      <groupId>cn.edu.tsinghua</groupId>
-      <artifactId>iotdb-jdbc</artifactId>
-      <version>0.1.2</version>
+    </dependency>
+    <dependency>
+    	<groupId>cn.edu.tsinghua</groupId>
+     	<artifactId>iotdb-jdbc</artifactId>
+     	<version>0.1.2</version>
     </dependency>
 </dependencies>
 ```
