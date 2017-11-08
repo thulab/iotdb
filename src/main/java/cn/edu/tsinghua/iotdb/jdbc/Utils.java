@@ -114,6 +114,12 @@ public class Utils {
             dynamicOneColumnData.putTime(time);
         }
 
+        if (tsDynamicOneColumnData.getEmptyList() != null) {
+            for (long time : tsDynamicOneColumnData.getEmptyList()) {
+                dynamicOneColumnData.putEmptyTime(time);
+            }
+        }
+
         switch (dataType) {
             case BOOLEAN:
                 tsDynamicOneColumnData.getBoolList().forEach(dynamicOneColumnData::putBoolean);
