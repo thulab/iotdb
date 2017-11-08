@@ -108,7 +108,12 @@ public class Utils {
 
     private static DynamicOneColumnData convertDynamicOneColumnData(TSDynamicOneColumnData tsDynamicOneColumnData) {
         TSDataType dataType = TSDataType.valueOf(tsDynamicOneColumnData.getDataType());
-        DynamicOneColumnData dynamicOneColumnData = new DynamicOneColumnData(dataType, true);
+        DynamicOneColumnData dynamicOneColumnData = null;
+        if (tsDynamicOneColumnData.getEmptyList() != null && tsDynamicOneColumnData.getEmptyList().size() > 0) {
+            dynamicOneColumnData = new DynamicOneColumnData(dataType, true, true);
+        } else {
+            dynamicOneColumnData = new DynamicOneColumnData(dataType, true);
+        }
 
         for (long time : tsDynamicOneColumnData.getTimeRet()) {
             dynamicOneColumnData.putTime(time);
