@@ -2,6 +2,7 @@ package devSimulator;
 
 import java.util.Date;
 import java.util.Random;
+import measurement.Point;
 
 public class DevopsSimulatorConfig {
 	private Date start;
