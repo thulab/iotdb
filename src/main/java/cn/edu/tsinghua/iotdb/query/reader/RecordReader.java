@@ -31,12 +31,12 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
  * A RecordReader only represents a (deltaObject, measurement).
  * This class provides some APIs for reading.
  *
- * @author ZJR, CGF
  */
 
 public class RecordReader {
 
-    static final Logger LOG = LoggerFactory.getLogger(RecordReader.class);
+    static final Logger logger = LoggerFactory.getLogger(RecordReader.class);
+
     private ReaderManager readerManager;
     private int lockToken;  // for lock
     private String deltaObjectUID, measurementID;

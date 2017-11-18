@@ -8,6 +8,7 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.query.visitorImpl.PageAllSatisfiedVisitor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,6 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
-import cn.edu.tsinghua.tsfile.file.metadata.TSDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.Digest;
@@ -35,7 +35,7 @@ public class OverflowValueReader extends ValueReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(OverflowValueReader.class);
     
-    OverflowValueReader(long offset, long totalSize, TSDataType dataType, TSDigest digest,
+    OverflowValueReader(long offset, long totalSize, TSDataType dataType, TsDigest digest,
                                ITsRandomAccessFileReader raf, List<String> enumValues, CompressionTypeName compressionTypeName,
                                long rowNums) {
         super(offset, totalSize, dataType, digest, raf, enumValues, compressionTypeName, rowNums);
@@ -88,7 +88,7 @@ public class OverflowValueReader extends ValueReader {
             res.pageOffset = this.fileOffset;
         }
 
-        TSDigest digest = getDigest();
+        TsDigest digest = getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, getDataType());
         LOG.info("read one series normally, digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
@@ -795,7 +795,7 @@ public class OverflowValueReader extends ValueReader {
         res.pageOffset = this.fileOffset;
 
         // get column digest
-        TSDigest digest = getDigest();
+        TsDigest digest = getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, getDataType());
         LOG.debug("Aggretation : Column Digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
@@ -952,7 +952,7 @@ public class OverflowValueReader extends ValueReader {
 
 
         // get column digest
-        TSDigest digest = getDigest();
+        TsDigest digest = getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, getDataType());
         LOG.debug("aggregate using given timestamps, column Digest min and max is: "
                 + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
