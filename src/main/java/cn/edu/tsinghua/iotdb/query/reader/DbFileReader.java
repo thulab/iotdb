@@ -37,6 +37,21 @@ public class DbFileReader extends FileReader{
     private List<DbRowGroupReader> rowGroupReaderList;
     private Map<String, List<DbRowGroupReader>> rowGroupReaderMap;
 
+    public Map<String, List<DbRowGroupReader>> getDbRowGroupReaderMap() {
+        if (getFileMetaData() == null) {
+
+        }
+        return this.rowGroupReaderMap;
+    }
+
+    public List<DbRowGroupReader> getDbRowGroupReaderList() {
+        List<DbRowGroupReader> ret = new ArrayList<>();
+        for (Map.Entry<String, List<DbRowGroupReader>> entry : this.rowGroupReaderMap.entrySet()) {
+            ret.addAll(entry.getValue());
+        }
+        return ret;
+    }
+
 //    private static final int FOOTER_LENGTH = 4;
 //    private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
 //
