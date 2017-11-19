@@ -323,7 +323,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 				ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(current_tsRowGroupBlockMetaData.convertToThrift(),
 						baos);
 				offset = out.length();
-				TsDeltaObject tsDeltaObject = new TsDeltaObject(offset_index, (int)(0), 0, 0);
+				TsDeltaObject tsDeltaObject = new TsDeltaObject(offset_index, (int)(offset-offset_index), 0, 0);
 				tsDeltaObjectMap.put(current_deltaobject, tsDeltaObject);
 			}
 
@@ -380,9 +380,11 @@ public class BufferWriteProcessor extends LRUProcessor {
 		byte[] lastPostionBytes = new byte[TSFILEPOINTBYTESIZE];
 		List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
 		RandomAccessFile randomAccessFile = null;
+		TsRandomAccessLocalFileReader raf = null;
 		try {
 			randomAccessFile = new RandomAccessFile(bufferwriteRestoreFilePath, "rw");
-			TsRandomAccessLocalFileReader raf = new TsRandomAccessLocalFileReader(bufferwriteRestoreFilePath);
+			long fileLength = randomAccessFile.length();
+			raf = new TsRandomAccessLocalFileReader(bufferwriteRestoreFilePath);
 			// read tsfile position
 			long point = randomAccessFile.getFilePointer();
 			while (point + TSFILEPOINTBYTESIZE < fileLength) {
@@ -420,6 +422,9 @@ public class BufferWriteProcessor extends LRUProcessor {
 		} finally {
 			if (randomAccessFile != null) {
 				randomAccessFile.close();
+			}
+			if (raf != null) {
+				raf.close();
 			}
 		}
 		long lastPostion = BytesUtils.bytesToLong(lastPostionBytes);
