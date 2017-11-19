@@ -13,17 +13,19 @@ import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
 
 /**
- * This class is used to construct FileReader. <br>
- * It is an adapter between <code>RecordReader</code> and <code>FileReader</code>.
+ * This class is used to construct DbFileReader. <br>
+ * It is an adapter between <code>RecordReader</code> and <code>DbFileReader</code>.
  *
  */
 
 public class ReaderManager {
 
-    private List<ITsRandomAccessFileReader> rafList; // file has been serialized, sealed
+    /** file has been serialized, sealed **/
+    private List<ITsRandomAccessFileReader> rafList;
 
+    /** key: deltaObjectUID **/
     private Map<String, List<RowGroupReader>> rowGroupReaderMap;
-    private List<RowGroupReader> rowGroupReaderList;
+    private List<RowGroupReader> dbRowGroupReaderList;
 
     /**
      *
@@ -32,11 +34,11 @@ public class ReaderManager {
      */
     ReaderManager(List<ITsRandomAccessFileReader> rafList) throws IOException {
         this.rafList = rafList;
-        rowGroupReaderList = new ArrayList<>();
+        dbRowGroupReaderList = new ArrayList<>();
         rowGroupReaderMap = new HashMap<>();
 
         for (ITsRandomAccessFileReader taf : rafList) {
-            FileReader reader = new FileReader(taf);
+            DbFileReader reader = new DbFileReader(taf);
             addRowGroupReadersToMap(reader);
             addRowGroupReadersToList(reader);
         }
@@ -54,24 +56,24 @@ public class ReaderManager {
         this(rafList);
         this.rafList.add(unsealedFileReader);
 
-        FileReader reader = new FileReader(unsealedFileReader, rowGroupMetadataList);
+        DbFileReader reader = new DbFileReader(unsealedFileReader, rowGroupMetadataList);
         addRowGroupReadersToMap(reader);
         addRowGroupReadersToList(reader);
     }
 
-    private void addRowGroupReadersToMap(FileReader fileReader) {
-        Map<String, List<RowGroupReader>> rgrMap = fileReader.getRowGroupReaderMap();
-        for (String deltaObjectUID : rgrMap.keySet()) {
-            if (rowGroupReaderMap.containsKey(deltaObjectUID)) {
-                rowGroupReaderMap.get(deltaObjectUID).addAll(rgrMap.get(deltaObjectUID));
+    private void addRowGroupReadersToMap(DbFileReader fileReader) {
+        Map<String, List<RowGroupReader>> rowGroupReaderMap = fileReader.getRowGroupReaderMap();
+        for (String deltaObjectUID : rowGroupReaderMap.keySet()) {
+            if (this.rowGroupReaderMap.containsKey(deltaObjectUID)) {
+                this.rowGroupReaderMap.get(deltaObjectUID).addAll(rowGroupReaderMap.get(deltaObjectUID));
             } else {
-                rowGroupReaderMap.put(deltaObjectUID, rgrMap.get(deltaObjectUID));
+                this.rowGroupReaderMap.put(deltaObjectUID, rowGroupReaderMap.get(deltaObjectUID));
             }
         }
     }
 
-    private void addRowGroupReadersToList(FileReader fileReader) {
-        this.rowGroupReaderList.addAll(fileReader.getRowGroupReaderList());
+    private void addRowGroupReadersToList(DbFileReader fileReader) {
+        this.dbRowGroupReaderList.addAll(fileReader.getRowGroupReaderList());
     }
 
     List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) {

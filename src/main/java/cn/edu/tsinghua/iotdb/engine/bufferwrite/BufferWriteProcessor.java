@@ -38,9 +38,9 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TSFileMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
-import cn.edu.tsinghua.tsfile.file.metadata.converter.TSFileMetaDataConverter;
+import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
@@ -285,10 +285,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 		// List<TimeSeriesMetadata> timeSeriesList =
 		// fileSchema.getTimeSeriesMetadatas();
 		List<TimeSeriesMetadata> timeSeriesList = new ArrayList<>();
-		TSFileMetaData tsfileMetadata = new TSFileMetaData(appendMetadata, timeSeriesList,
+		TsFileMetaData tsfileMetadata = new TsFileMetaData(appendMetadata, timeSeriesList,
 				TSFileDescriptor.getInstance().getConfig().currentVersion);
 
-		TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
+		TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
 		RandomAccessFile out = null;
 		try {
 			out = new RandomAccessFile(bufferwriteRestoreFilePath, "rw");
@@ -364,8 +364,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 				randomAccessFile.read(thriftBytes);
 				ByteArrayInputStream inputStream = new ByteArrayInputStream(thriftBytes);
 				FileMetaData fileMetaData = ReadWriteThriftFormatUtils.readFileMetaData(inputStream);
-				TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
-				TSFileMetaData tsFileMetaData = metadataConverter.toTSFileMetadata(fileMetaData);
+				TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
+				TsFileMetaData tsFileMetaData = metadataConverter.toTsFileMetadata(fileMetaData);
 				groupMetaDatas.addAll(tsFileMetaData.getRowGroups());
 				lastRowgroupSize = groupMetaDatas.size();
 				point = randomAccessFile.getFilePointer();
