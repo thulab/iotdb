@@ -283,16 +283,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 			appendMetadata.add(rowGroupMetaDatas.get(i));
 		}
 		lastRowgroupSize = rowGroupMetaDatas.size();
-		// construct the tsfile metadate
-		// List<TimeSeriesMetadata> timeSeriesList =
-		// fileSchema.getTimeSeriesMetadatas();
-		List<TimeSeriesMetadata> timeSeriesList = new ArrayList<>();
 		TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
 		tsRowGroupBlockMetaData.setRowGroups(appendMetadata);
-//		TsFileMetaData tsfileMetadata = new TsFileMetaData(appendMetadata, timeSeriesList,
-//				TSFileDescriptor.getInstance().getConfig().currentVersion);
+		tsRowGroupBlockMetaData.setDeltaObjectID("temp");
 
-		TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
 		RandomAccessFile out = null;
 		try {
 			out = new RandomAccessFile(bufferwriteRestoreFilePath, "rw");
@@ -306,14 +300,12 @@ public class BufferWriteProcessor extends LRUProcessor {
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(tsRowGroupBlockMetaData.convertToThrift(), baos);
-//			ReadWriteThriftFormatUtils.writeFileMetaData(metadataConverter.toThriftFileMetadata(tsfileMetadata), baos);
 			// write metadata size using int
 			int metadataSize = baos.size();
 			out.write(BytesUtils.intToBytes(metadataSize));
 			// write metadata
 			out.write(baos.toByteArray());
-			// write tsfile position using byte[8] which is present one long
-			// number
+			// write tsfile position using byte[8] which is present one long number
 			byte[] lastPositionBytes = BytesUtils.longToBytes(lastPosition);
 			out.write(lastPositionBytes);
 			LOGGER.info("Write restore information to the restore file.");
@@ -369,17 +361,13 @@ public class BufferWriteProcessor extends LRUProcessor {
 				randomAccessFile.read(thriftBytes);
 				ByteArrayInputStream inputStream = new ByteArrayInputStream(thriftBytes);
 				RowGroupBlockMetaData rowGroupBlockMetaData = ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(inputStream);
-//				FileMetaData fileMetaData = ReadWriteThriftFormatUtils.readFileMetaData(inputStream);
-//				TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
-//				TsFileMetaData tsFileMetaData = metadataConverter.toTsFileMetadata(fileMetaData);
 				TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
 				blockMeta.convertToTSF(rowGroupBlockMetaData);
 				groupMetaDatas.addAll(blockMeta.getRowGroups());
 				lastRowgroupSize = groupMetaDatas.size();
 				point = randomAccessFile.getFilePointer();
 			}
-			// read the tsfile position information using byte[8] which is
-			// present one long number.
+			// read the tsfile position information using byte[8] which is present one long number.
 			randomAccessFile.read(lastPostionBytes);
 		} catch (FileNotFoundException e) {
 			LOGGER.error("The restore file is not exist, the restore file path is {}.", bufferwriteRestoreFilePath);
