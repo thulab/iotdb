@@ -159,9 +159,6 @@ public class OverflowBufferWriteProcessor{
 
             hasOverflowDataInThisPage = checkDataChanged(mint, maxt, updateTrueData, updateIdx[0], updateFalseData, updateIdx[1],
                     insertMemoryData, timeFilter);
-            if (!hasOverflowDataInThisPage) {
-                continue;
-            }
 
             long[] timeValues = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
 

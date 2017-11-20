@@ -55,7 +55,6 @@ public class ReaderManager {
     ReaderManager(List<ITsRandomAccessFileReader> rafList,
                   ITsRandomAccessFileReader unsealedFileReader, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
         this(rafList);
-        this.fileReaderList = new ArrayList<>();
         this.rafList.add(unsealedFileReader);
 
         FileReader reader = new FileReader(unsealedFileReader, rowGroupMetadataList);
@@ -80,7 +79,7 @@ public class ReaderManager {
         } else {
             List<RowGroupReader> rowGroupReaderList = new ArrayList<>();
             for (FileReader reader : fileReaderList) {
-                if (reader.getFileMetaData() == null) {
+                if (reader.getFileMetaData() != null) {
                     if (reader.getFileMetaData().containsDeltaObject(deltaObjectUID)) {
                         rowGroupReaderList.addAll(reader.getRowGroupReaderListByDeltaObject(deltaObjectUID));
                     }
