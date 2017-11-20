@@ -94,7 +94,7 @@ public class RecordReader {
                                                                 SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-        List<DbRowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
         int rowGroupIndex = 0;
         if (res != null) {
             rowGroupIndex = res.getRowGroupIndex();
@@ -105,8 +105,8 @@ public class RecordReader {
             RowGroupReader dbRowGroupReader = dbRowGroupReaderList.get(rowGroupIndex);
             if (dbRowGroupReader.getValueReaders().containsKey(measurementId) &&
                     dbRowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                OverflowValueReader reader = (OverflowValueReader) dbRowGroupReader.getValueReaders().get(measurementId);
-                res = reader.getValuesWithOverFlow(updateTrue, updateFalse, insertMemoryData, timeFilter, null, valueFilter, res, fetchSize);
+                res = OverflowBufferWriteProcessor.getValuesWithOverFlow(dbRowGroupReader.getValueReaders().get(measurementId),
+                        updateTrue, updateFalse, insertMemoryData, timeFilter, null, valueFilter, res, fetchSize);
                 if (res.valueLength >= fetchSize) {
                     return res;
                 }
@@ -157,13 +157,13 @@ public class RecordReader {
                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
     ) throws ProcessorException, IOException, PathErrorException {
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-        List<DbRowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
 
         for (RowGroupReader dbRowGroupReader : dbRowGroupReaderList) {
             if (dbRowGroupReader.getValueReaders().containsKey(measurementId) &&
                     dbRowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                OverflowValueReader reader = (OverflowValueReader) dbRowGroupReader.getValueReaders().get(measurementId);
-                reader.aggregate(func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
+                OverflowBufferWriteProcessor.aggregate(dbRowGroupReader.getValueReaders().get(measurementId),
+                        func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
             }
         }
 
@@ -204,14 +204,14 @@ public class RecordReader {
 
         boolean hasUnReadData = false;
 
-        List<DbRowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
 
         int commonTimestampsIndex = 0;
         // TODO if the DbRowGroupReader.ValueReaders.get(measurementId) has been read, how to avoid it?
         for (RowGroupReader dbRowGroupReader : dbRowGroupReaderList) {
             if (dbRowGroupReader.getValueReaders().containsKey(measurementId)) {
-                OverflowValueReader reader = (OverflowValueReader) dbRowGroupReader.getValueReaders().get(measurementId);
-                commonTimestampsIndex = reader.aggregateUsingTimestamps(func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, timestamps, aggreData);
+                commonTimestampsIndex = OverflowBufferWriteProcessor.aggregateUsingTimestamps(dbRowGroupReader.getValueReaders().get(measurementId),
+                        func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, timestamps, aggreData);
             }
         }
 
@@ -298,7 +298,7 @@ public class RecordReader {
     private DynamicOneColumnData getValuesUseTimestamps(String deltaObjectId, String measurementId, long[] timestamps)
             throws IOException {
         DynamicOneColumnData res = null;
-        List<DbRowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
         for (int i = 0; i < dbRowGroupReaderList.size(); i++) {
             RowGroupReader dbRowGroupReader = dbRowGroupReaderList.get(i);
             if (i == 0) {

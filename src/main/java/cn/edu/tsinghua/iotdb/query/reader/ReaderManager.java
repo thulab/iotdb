@@ -22,10 +22,11 @@ public class ReaderManager {
 
     /** file has been serialized, sealed **/
     private List<ITsRandomAccessFileReader> rafList;
+    private List<FileReader> fileReaderList;
 
     /** key: deltaObjectUID **/
-    private Map<String, List<DbRowGroupReader>> rowGroupReaderMap;
-    private LRUMap<String, List<DbRowGroupReader>> lruMap = new LRUMap<>(10000);
+    private Map<String, List<RowGroupReader>> rowGroupReaderMap;
+    private LRUMap<String, List<RowGroupReader>> lruMap = new LRUMap<>(100000);
 
     /**
      *
@@ -34,11 +35,13 @@ public class ReaderManager {
      */
     ReaderManager(List<ITsRandomAccessFileReader> rafList) throws IOException {
         this.rafList = rafList;
+        this.fileReaderList = new ArrayList<>();
         rowGroupReaderMap = new HashMap<>();
 
         for (ITsRandomAccessFileReader taf : rafList) {
-            DbFileReader reader = new DbFileReader(taf);
-            addRowGroupReadersToMap(reader);
+            FileReader reader = new FileReader(taf);
+            fileReaderList.add(reader);
+            // addRowGroupReadersToMap(reader);
         }
     }
 
@@ -52,29 +55,49 @@ public class ReaderManager {
     ReaderManager(List<ITsRandomAccessFileReader> rafList,
                   ITsRandomAccessFileReader unsealedFileReader, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
         this(rafList);
+        this.fileReaderList = new ArrayList<>();
         this.rafList.add(unsealedFileReader);
 
-        DbFileReader reader = new DbFileReader(unsealedFileReader, rowGroupMetadataList);
-        addRowGroupReadersToMap(reader);
+        FileReader reader = new FileReader(unsealedFileReader, rowGroupMetadataList);
+        fileReaderList.add(reader);
+        //addRowGroupReadersToMap(reader);
     }
 
-    private void addRowGroupReadersToMap(DbFileReader fileReader) {
-        Map<String, List<DbRowGroupReader>> rowGroupReaderMap = fileReader.getDbRowGroupReaderMap();
-        for (String deltaObjectUID : rowGroupReaderMap.keySet()) {
-            if (this.rowGroupReaderMap.containsKey(deltaObjectUID)) {
-                this.rowGroupReaderMap.get(deltaObjectUID).addAll(rowGroupReaderMap.get(deltaObjectUID));
-            } else {
-                this.rowGroupReaderMap.put(deltaObjectUID, rowGroupReaderMap.get(deltaObjectUID));
+//    private void addRowGroupReadersToMap(DbFileReader fileReader) {
+//        Map<String, List<DbRowGroupReader>> rowGroupReaderMap = fileReader.getDbRowGroupReaderMap();
+//        for (String deltaObjectUID : rowGroupReaderMap.keySet()) {
+//            if (this.rowGroupReaderMap.containsKey(deltaObjectUID)) {
+//                this.rowGroupReaderMap.get(deltaObjectUID).addAll(rowGroupReaderMap.get(deltaObjectUID));
+//            } else {
+//                this.rowGroupReaderMap.put(deltaObjectUID, rowGroupReaderMap.get(deltaObjectUID));
+//            }
+//        }
+//    }
+
+    List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) throws IOException {
+        if (lruMap.containsKey(deltaObjectUID)) {
+            return lruMap.get(deltaObjectUID);
+        } else {
+            List<RowGroupReader> rowGroupReaderList = new ArrayList<>();
+            for (FileReader reader : fileReaderList) {
+                if (reader.getFileMetaData() == null) {
+                    if (reader.getFileMetaData().containsDeltaObject(deltaObjectUID)) {
+                        rowGroupReaderList.addAll(reader.getRowGroupReaderListByDeltaObject(deltaObjectUID));
+                    }
+                } else {
+                    if (reader.getRowGroupReaderMap().containsKey(deltaObjectUID)) {
+                        rowGroupReaderList.addAll(reader.getRowGroupReaderMap().get(deltaObjectUID));
+                    }
+                }
             }
+            lruMap.put(deltaObjectUID, rowGroupReaderList);
+            return rowGroupReaderList;
         }
-    }
-
-    List<DbRowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) {
-        List<DbRowGroupReader> ret = rowGroupReaderMap.get(deltaObjectUID);
-        if (ret == null) {
-            return new ArrayList<>();
-        }
-        return ret;
+//        List<RowGroupReader> ret = rowGroupReaderMap.get(deltaObjectUID);
+//        if (ret == null) {
+//            return new ArrayList<>();
+//        }
+//        return ret;
     }
 
     public void close() throws IOException {
