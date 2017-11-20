@@ -6,14 +6,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 
-import cn.edu.tsinghua.tsfile.common.utils.*;
-import cn.edu.tsinghua.tsfile.file.metadata.*;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -31,6 +35,13 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
+import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
@@ -267,39 +278,19 @@ public class BufferWriteProcessor extends LRUProcessor {
 			throw new BufferWriteProcessorException(e);
 		}
 		List<RowGroupMetaData> rowGroupMetaDatas = bufferIOWriter.getRowGroups();
-//		List<RowGroupMetaData> appendMetadata = new ArrayList<>();
-//		for (int i = lastRowgroupSize; i < rowGroupMetaDatas.size(); i++) {
-//			appendMetadata.add(rowGroupMetaDatas.get(i));
-//		}
+		List<RowGroupMetaData> appendMetadata = new ArrayList<>();
+		for (int i = lastRowgroupSize; i < rowGroupMetaDatas.size(); i++) {
+			appendMetadata.add(rowGroupMetaDatas.get(i));
+		}
 		lastRowgroupSize = rowGroupMetaDatas.size();
 		// construct the tsfile metadate
 		// List<TimeSeriesMetadata> timeSeriesList =
 		// fileSchema.getTimeSeriesMetadatas();
 		List<TimeSeriesMetadata> timeSeriesList = new ArrayList<>();
-		Map<String, TsDeltaObject> tsDeltaObjectMap = new HashMap<>();
-		String current_deltaobject;
-		LinkedHashMap<String, TsRowGroupBlockMetaData> tsRowGroupBlockMetaDataMap = new LinkedHashMap<>();
-		for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDatas){
-			current_deltaobject = rowGroupMetaData.getDeltaObjectID();
-			if (!tsRowGroupBlockMetaDataMap.containsKey(current_deltaobject)) {
-				TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
-				tsRowGroupBlockMetaData.setDeltaObjectID(current_deltaobject);
-				tsRowGroupBlockMetaDataMap.put(current_deltaobject, tsRowGroupBlockMetaData);
-			}
-			tsRowGroupBlockMetaDataMap.get(current_deltaobject).addRowGroupMetaData(rowGroupMetaData);
-		}
-		TsRowGroupBlockMetaData current_tsRowGroupBlockMetaData;
-		Iterator<Map.Entry<String, TsRowGroupBlockMetaData>> iterator = tsRowGroupBlockMetaDataMap.entrySet().iterator();
-		long offset;
-		long offset_index;
-		/** size of RowGroupMetadataBlock in byte **/
-		int metadataBlockSize;
-
-		/** start time for a delta object **/
-		long startTime;
-
-		/** end time for a delta object **/
-		long endTime;
+		TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
+		tsRowGroupBlockMetaData.setRowGroups(appendMetadata);
+//		TsFileMetaData tsfileMetadata = new TsFileMetaData(appendMetadata, timeSeriesList,
+//				TSFileDescriptor.getInstance().getConfig().currentVersion);
 
 		TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
 		RandomAccessFile out = null;
@@ -314,23 +305,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 				out.seek(out.length() - TSFILEPOINTBYTESIZE);
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			while (iterator.hasNext()) {
-				Map.Entry<String, TsRowGroupBlockMetaData> entry = iterator.next();
-				current_deltaobject = entry.getKey();
-				current_tsRowGroupBlockMetaData = entry.getValue();
-				offset_index = baos.size();
-				//flush tsRowGroupBlockMetaDatas in order
-				ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(current_tsRowGroupBlockMetaData.convertToThrift(),
-						baos);
-				offset = out.length();
-				TsDeltaObject tsDeltaObject = new TsDeltaObject(offset_index, (int)(offset-offset_index), 0, 0);
-				tsDeltaObjectMap.put(current_deltaobject, tsDeltaObject);
-			}
-
-			TsFileMetaData tsfileMetadata = new TsFileMetaData(tsDeltaObjectMap, timeSeriesList,
-					TSFileDescriptor.getInstance().getConfig().currentVersion);
-
-			ReadWriteThriftFormatUtils.writeFileMetaData(metadataConverter.toThriftFileMetadata(tsfileMetadata), baos);
+			ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(tsRowGroupBlockMetaData.convertToThrift(), baos);
+//			ReadWriteThriftFormatUtils.writeFileMetaData(metadataConverter.toThriftFileMetadata(tsfileMetadata), baos);
 			// write metadata size using int
 			int metadataSize = baos.size();
 			out.write(BytesUtils.intToBytes(metadataSize));
@@ -380,11 +356,9 @@ public class BufferWriteProcessor extends LRUProcessor {
 		byte[] lastPostionBytes = new byte[TSFILEPOINTBYTESIZE];
 		List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
 		RandomAccessFile randomAccessFile = null;
-		TsRandomAccessLocalFileReader raf = null;
 		try {
 			randomAccessFile = new RandomAccessFile(bufferwriteRestoreFilePath, "rw");
 			long fileLength = randomAccessFile.length();
-			raf = new TsRandomAccessLocalFileReader(bufferwriteRestoreFilePath);
 			// read tsfile position
 			long point = randomAccessFile.getFilePointer();
 			while (point + TSFILEPOINTBYTESIZE < fileLength) {
@@ -394,19 +368,13 @@ public class BufferWriteProcessor extends LRUProcessor {
 				byte[] thriftBytes = new byte[metadataSize];
 				randomAccessFile.read(thriftBytes);
 				ByteArrayInputStream inputStream = new ByteArrayInputStream(thriftBytes);
+				RowGroupBlockMetaData rowGroupBlockMetaData = ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(inputStream);
 //				FileMetaData fileMetaData = ReadWriteThriftFormatUtils.readFileMetaData(inputStream);
-				TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
-
-				TsFileMetaData fileMetaData = new TsFileMetaDataConverter().toTsFileMetadata(ReadWriteThriftFormatUtils.readFileMetaData(inputStream));
-				Collection<String> deltaObjects = fileMetaData.getDeltaObjectMap().keySet();
-				for(String deltaObject : deltaObjects) {
-					TsDeltaObject deltaObj = fileMetaData.getDeltaObject(deltaObject);
-					TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-					blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(raf,
-							deltaObj.offset, deltaObj.metadataBlockSize));
-					groupMetaDatas.addAll(blockMeta.getRowGroups());
-				}
-//				groupMetaDatas.addAll(tsFileMetaData.getRowGroups());
+//				TsFileMetaDataConverter metadataConverter = new TsFileMetaDataConverter();
+//				TsFileMetaData tsFileMetaData = metadataConverter.toTsFileMetadata(fileMetaData);
+				TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
+				blockMeta.convertToTSF(rowGroupBlockMetaData);
+				groupMetaDatas.addAll(blockMeta.getRowGroups());
 				lastRowgroupSize = groupMetaDatas.size();
 				point = randomAccessFile.getFilePointer();
 			}
@@ -422,9 +390,6 @@ public class BufferWriteProcessor extends LRUProcessor {
 		} finally {
 			if (randomAccessFile != null) {
 				randomAccessFile.close();
-			}
-			if (raf != null) {
-				raf.close();
 			}
 		}
 		long lastPostion = BytesUtils.bytesToLong(lastPostionBytes);
@@ -525,7 +490,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 	}
 
 	public Pair<List<Object>, List<RowGroupMetaData>> getIndexAndRowGroupList(String deltaObjectId,
-			String measurementId) {
+																			  String measurementId) {
 		List<Object> memData = null;
 		List<RowGroupMetaData> list = null;
 		// wait until flush over
@@ -602,7 +567,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		private long flushingRecordCount;
 
 		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter,
-				 FileSchema schema) throws WriteProcessException {
+								FileSchema schema) throws WriteProcessException {
 			super(ioFileWriter, schema, conf);
 		}
 
