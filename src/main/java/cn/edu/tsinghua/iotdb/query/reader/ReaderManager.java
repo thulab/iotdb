@@ -25,8 +25,8 @@ public class ReaderManager {
     private List<FileReader> fileReaderList;
 
     /** key: deltaObjectUID **/
-    private Map<String, List<RowGroupReader>> rowGroupReaderMap;
-    private LRUMap<String, List<RowGroupReader>> lruMap = new LRUMap<>(100000);
+    private Map<String, List<RowGroupReader>> rowGroupReaderMap = new HashMap<>();
+    // private Map<String, List<RowGroupReader>> rowGroupReaderMap = new LRUMap<>(100000);
 
     /**
      *
@@ -62,20 +62,9 @@ public class ReaderManager {
         // addRowGroupReadersToMap(reader);
     }
 
-//    private void addRowGroupReadersToMap(DbFileReader fileReader) {
-//        Map<String, List<DbRowGroupReader>> rowGroupReaderMap = fileReader.getDbRowGroupReaderMap();
-//        for (String deltaObjectUID : rowGroupReaderMap.keySet()) {
-//            if (this.rowGroupReaderMap.containsKey(deltaObjectUID)) {
-//                this.rowGroupReaderMap.get(deltaObjectUID).addAll(rowGroupReaderMap.get(deltaObjectUID));
-//            } else {
-//                this.rowGroupReaderMap.put(deltaObjectUID, rowGroupReaderMap.get(deltaObjectUID));
-//            }
-//        }
-//    }
-
     List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) throws IOException {
-        if (lruMap.containsKey(deltaObjectUID)) {
-            return lruMap.get(deltaObjectUID);
+        if (rowGroupReaderMap.containsKey(deltaObjectUID)) {
+            return rowGroupReaderMap.get(deltaObjectUID);
         } else {
             List<RowGroupReader> rowGroupReaderList = new ArrayList<>();
             for (FileReader reader : fileReaderList) {
@@ -89,7 +78,7 @@ public class ReaderManager {
                     }
                 }
             }
-            lruMap.put(deltaObjectUID, rowGroupReaderList);
+            rowGroupReaderMap.put(deltaObjectUID, rowGroupReaderList);
             return rowGroupReaderList;
         }
 //        List<RowGroupReader> ret = rowGroupReaderMap.get(deltaObjectUID);

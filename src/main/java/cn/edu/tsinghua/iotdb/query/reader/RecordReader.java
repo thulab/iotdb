@@ -92,7 +92,9 @@ public class RecordReader {
                                                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
                                                                 SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
+
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
+
         List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
         int rowGroupIndex = 0;
         if (res != null) {
@@ -155,6 +157,7 @@ public class RecordReader {
                                        DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
     ) throws ProcessorException, IOException, PathErrorException {
+
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
         List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
 
