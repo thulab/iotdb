@@ -37,10 +37,10 @@ public class OverflowQueryEngine {
     private MManager mManager;
     private int formNumber = -1;
     /**
-     * this variable is represent that whether it is
-     * the second execution of aggregate method.
+     * this variable represents that whether it is
+     * the second execution of aggregation method.
      */
-    private static ThreadLocal<Boolean> threadLocal = new ThreadLocal<>();
+    private static ThreadLocal<Boolean> aggregateThreadLocal = new ThreadLocal<>();
 
     public OverflowQueryEngine() {
         mManager = MManager.getInstance();
@@ -105,16 +105,22 @@ public class OverflowQueryEngine {
             aggregations.add(new Pair<>(pair.left, func));
         }
 
-        if (threadLocal.get() != null && threadLocal.get()) {
-            threadLocal.remove();
+        if (aggregateThreadLocal.get() != null && aggregateThreadLocal.get()) {
+            aggregateThreadLocal.remove();
             return new QueryDataSet();
         }
-        threadLocal.set(true);
+        aggregateThreadLocal.set(true);
         return AggregateEngine.multiAggregate(aggregations, filterStructures);
     }
 
-    /** group by function have no batch result, to ensure that group by logic is only executed once**/
-    private boolean groupByFlag = false;
+    /** if this variable equals true, represent that the group by method is executed the first time**/
+    private boolean firstGroupByCalcFlag = true;
+
+    private List<Pair<Path, AggregateFunction>> aggregations;
+
+    private GroupByEngineNoFilter groupByEngineNoFilter;
+
+    private GroupByEngineWithFilter groupByEngineWithFilter;
 
     /**
      * Group by feature implementation.
@@ -133,38 +139,42 @@ public class OverflowQueryEngine {
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
             throws ProcessorException, PathErrorException, IOException {
-        if (groupByFlag) {
-            groupByFlag = false;
-            return new QueryDataSet();
-        }
-        groupByFlag = true;
+        if (firstGroupByCalcFlag) {
+            firstGroupByCalcFlag = false;
 
-        SingleSeriesFilterExpression intervalFilter = null;
-        for (Pair<Long, Long> pair : intervals) {
-            if (intervalFilter == null) {
-                SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
-                SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
-                intervalFilter = (And) FilterFactory.and(left, right);
-            } else {
-                SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
-                SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
-                intervalFilter = (Or) FilterFactory.or(intervalFilter, (And) FilterFactory.and(left, right));
+            SingleSeriesFilterExpression intervalFilter = null;
+            for (Pair<Long, Long> pair : intervals) {
+                if (intervalFilter == null) {
+                    SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
+                    SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
+                    intervalFilter = (And) FilterFactory.and(left, right);
+                } else {
+                    SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
+                    SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
+                    intervalFilter = (Or) FilterFactory.or(intervalFilter, (And) FilterFactory.and(left, right));
+                }
             }
-        }
 
-        List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
-        for (Pair<Path, String> pair : aggres) {
-            TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
-            AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
-            aggregations.add(new Pair<>(pair.left, func));
-        }
+            List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
+            for (Pair<Path, String> pair : aggres) {
+                TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
+                AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
+                aggregations.add(new Pair<>(pair.left, func));
+            }
 
-        if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
-            GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter();
-            return groupByEngineNoFilter.groupBy(aggregations, unit, origin, intervalFilter, fetchSize);
+            if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                return groupByEngineNoFilter.groupBy();
+            } else {
+                groupByEngineWithFilter = new GroupByEngineWithFilter();
+                return groupByEngineWithFilter.groupBy(aggregations, filterStructures, unit, origin,  intervalFilter, fetchSize);
+            }
         } else {
-            GroupByEngineWithFilter groupByEngineWithFilter = new GroupByEngineWithFilter();
-            return groupByEngineWithFilter.groupBy(aggregations, filterStructures, unit, origin,  intervalFilter, fetchSize);
+            if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                return groupByEngineNoFilter.groupBy();
+            }
+            //TODO
+            return new QueryDataSet();
         }
     }
 

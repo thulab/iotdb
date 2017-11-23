@@ -32,16 +32,72 @@ public class GroupByEngineWithFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(GroupByEngineWithFilter.class);
 
-    /** formNumber is set to -1 default **/
-    private int formNumber = -1;
-
-    /** queryFetchSize is set to read one column data, this variable is mainly used to debug to verify
-     * the rightness of iterative readOneColumnWithoutFilter **/
-    private int queryFetchSize = 10000;
-
     /** aggregateFetchSize is set to calculate the result of timestamps, when the size of common timestamps is
      * up to aggregateFetchSize, the aggregation calculation process will begin**/
     private int aggregateFetchSize = 2;
+
+    /** formNumber is set to -1 default **/
+    private int formNumber = -1;
+
+    /** queryFetchSize is sed to read one column data, this variable is mainly used to debug to verify
+     * the rightness of iterative readOneColumnWithoutFilter **/
+    private int queryFetchSize = 10000;
+
+    /** all the group by Path ans its AggregateFunction **/
+    private List<Pair<Path, AggregateFunction>> aggregations;
+
+    /** group by origin **/
+    private long origin;
+
+    /** group by unit **/
+    private long unit;
+
+    /** SingleSeriesFilterExpression intervals is transformed to longInterval, all the split time intervals **/
+    private LongInterval longInterval;
+
+    /** represent the usage count of longInterval **/
+    private int intervalIndex;
+
+    /** group by partition fetch size, when result size is reach to partitionSize, the current
+     *  calculation will be terminated
+     */
+    private int partitionFetchSize;
+
+    /** HashMap to record the query result of each aggregation Path **/
+    private Map<String, DynamicOneColumnData> queryPathResult = new HashMap<>();
+
+    /** represent duplicated path index **/
+    private Set<Integer> duplicatedPaths = new HashSet<>();
+
+    private QueryDataSet groupByResult = new QueryDataSet();
+
+    public GroupByEngineWithFilter() {
+
+    }
+
+    public GroupByEngineWithFilter(List<Pair<Path, AggregateFunction>> aggregations,
+                                 long unit, long origin, SingleSeriesFilterExpression intervals, int partitionFetchSize) {
+        this.aggregations = aggregations;
+        this.queryPathResult = new HashMap<>();
+        for (int i = 0; i < aggregations.size(); i++) {
+            String aggregateKey = aggregationKey(aggregations.get(i).left, aggregations.get(i).right);
+            if (!groupByResult.mapRet.containsKey(aggregateKey)) {
+                groupByResult.mapRet.put(aggregateKey,
+                        new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
+                queryPathResult.put(aggregateKey, null);
+            } else {
+                duplicatedPaths.add(i);
+            }
+        }
+
+        this.origin = origin;
+        this.unit = unit;
+        this.partitionFetchSize = partitionFetchSize;
+        this.partitionFetchSize = 2;
+
+        this.longInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(intervals);
+        this.intervalIndex = 0;
+    }
 
     /**
      *
@@ -58,33 +114,17 @@ public class GroupByEngineWithFilter {
     public QueryDataSet groupBy(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures,
                                 long unit, long origin, SingleSeriesFilterExpression intervals, int fetchSize) throws IOException, ProcessorException, PathErrorException {
 
-        QueryDataSet groupByResult = new QueryDataSet();
+        groupByResult.clear();
+        int partitionBatchCount = 0;
 
-        // all the split time intervals
-        LongInterval longInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(intervals);
-        if (longInterval.count == 0) {
+        if (intervalIndex >= longInterval.count) {
             return new QueryDataSet();
         }
 
         long partitionStart = origin; // partition start time
         long partitionEnd = origin + unit - 1; // partition end time
-        int intervalIndex = 0;
-        long intervalStart = longInterval.flag[0] ? longInterval.v[0] : longInterval.v[0] + 1; // interval start time
-        long intervalEnd = longInterval.flag[1] ? longInterval.v[1] : longInterval.v[1] - 1; // interval end time
-
-        // HashMap to record the query result of each aggregation Path
-        Map<String, DynamicOneColumnData> queryPathResult = new HashMap<>();
-        // HashSet to record the duplicated queries
-        Set<Integer> duplicatedPaths = new HashSet<>();
-        for (int i = 0; i < aggregations.size(); i++) {
-            String aggregateKey = aggregationKey(aggregations.get(i).left, aggregations.get(i).right);
-            if (!groupByResult.mapRet.containsKey(aggregateKey)) {
-                groupByResult.mapRet.put(aggregateKey, new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
-                queryPathResult.put(aggregateKey, null);
-            } else {
-                duplicatedPaths.add(i);
-            }
-        }
+        long intervalStart = longInterval.flag[intervalIndex] ? longInterval.v[intervalIndex] : longInterval.v[intervalIndex] + 1; // interval start time
+        long intervalEnd = longInterval.flag[intervalIndex+1] ? longInterval.v[intervalIndex+1] : longInterval.v[intervalIndex+1] - 1; // interval end time
 
         List<QueryDataSet> filterQueryDataSets = new ArrayList<>(); // stores the query QueryDataSet of each FilterStructure in filterStructures
         List<long[]> timeArray = new ArrayList<>(); // stores calculated common timestamps of each FilterStructure answer
@@ -274,11 +314,20 @@ public class GroupByEngineWithFilter {
                 if (aggregateTimestamps.size() > 0 && partitionEnd < aggregateTimestamps.get(aggregateTimestamps.size()-1)) {
                     partitionStart = partitionEnd + 1;
                     partitionEnd = partitionStart + unit - 1;
+                    partitionBatchCount += 1;
+                    if (partitionBatchCount > partitionFetchSize) {
+                        origin = partitionStart;
+                        break;
+                    }
                 } else if (aggregateTimestamps.size() == 0) {
                     // aggregate timestamps is empty
                     // calculate the next partition range directly
                     partitionStart = partitionEnd + 1;
                     partitionEnd = partitionStart + unit - 1;
+                    if (partitionBatchCount > partitionFetchSize) {
+                        origin = partitionStart;
+                        break;
+                    }
                 } else if (partitionEnd >= aggregateTimestamps.get(aggregateTimestamps.size()-1)){
                     // partitionEnd is greater or equals than the last value of aggregate timestamps
                     aggregateTimestamps.clear();
@@ -297,6 +346,10 @@ public class GroupByEngineWithFilter {
 
             if (intervalIndex >= longInterval.count)
                 break;
+
+            if (partitionBatchCount > partitionFetchSize) {
+                break;
+            }
         }
 
         int cnt = 0;
