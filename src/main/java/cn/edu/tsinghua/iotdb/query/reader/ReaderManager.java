@@ -59,7 +59,7 @@ public class ReaderManager {
 
         FileReader reader = new FileReader(unsealedFileReader, rowGroupMetadataList);
         fileReaderList.add(reader);
-        //addRowGroupReadersToMap(reader);
+        // addRowGroupReadersToMap(reader);
     }
 
 //    private void addRowGroupReadersToMap(DbFileReader fileReader) {

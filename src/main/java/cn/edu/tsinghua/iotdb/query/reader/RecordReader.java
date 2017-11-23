@@ -32,7 +32,6 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
  * This class provides some APIs for reading.
  *
  */
-
 public class RecordReader {
 
     static final Logger logger = LoggerFactory.getLogger(RecordReader.class);

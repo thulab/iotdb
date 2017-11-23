@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,12 @@ public class RecordReaderFactory {
 
 	private FileNodeManager fileNodeManager;
 	private ReadLockManager readLockManager;
-	private FileStreamManager fileStreamManager;
+//	private FileStreamManager fileStreamManager;
 
 	private RecordReaderFactory() {
 		fileNodeManager = FileNodeManager.getInstance();
 		readLockManager = ReadLockManager.getInstance();
-		fileStreamManager = FileStreamManager.getInstance();
+//		fileStreamManager = FileStreamManager.getInstance();
 	}
 
 	/**
@@ -88,12 +89,11 @@ public class RecordReaderFactory {
 		try {
 			for (int i = 0; i < fileNodes.size() - 1; i++) {
 				IntervalFileNode fileNode = fileNodes.get(i);
-				ITsRandomAccessFileReader raf = fileStreamManager.getLocalRandomAccessFileReader(fileNode.filePath);
+				ITsRandomAccessFileReader raf = new TsRandomAccessLocalFileReader(fileNode.filePath);
 				rafList.add(raf);
 			}
 			if (hasUnEnvelopedFile) {
-				ITsRandomAccessFileReader unsealedRaf = fileStreamManager
-						.getLocalRandomAccessFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
+				ITsRandomAccessFileReader unsealedRaf = new TsRandomAccessLocalFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
 
 				// if currentPage is null, both currentPage and pageList must both are null
 				if (queryStructure.getCurrentPage() == null) {
@@ -107,8 +107,7 @@ public class RecordReaderFactory {
 				}
 			} else {
 				if (fileNodes.size() > 0) {
-					rafList.add(fileStreamManager
-							.getLocalRandomAccessFileReader(fileNodes.get(fileNodes.size() - 1).filePath));
+					rafList.add(new TsRandomAccessLocalFileReader(fileNodes.get(fileNodes.size() - 1).filePath));
 				}
 				if (queryStructure.getCurrentPage() == null) {
 					recordReader = new RecordReader(rafList, deltaObjectUID, measurementID, token,
