@@ -12,7 +12,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
  */
 public class TsFileMetaDataCache {
 
-	private static TsFileMetaDataCache instance;
+	// TODO use more elegant Singleton pattern
+	private static TsFileMetaDataCache instance = new TsFileMetaDataCache();
 	private ConcurrentHashMap<String, TsFileMetaData> cache;
 
 	private TsFileMetaDataCache() {

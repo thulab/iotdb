@@ -6,60 +6,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
+import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
-import org.apache.commons.collections4.map.LRUMap;
 
 /**
- * This class is used to construct DbFileReader. <br>
- * It is an adapter between <code>RecordReader</code> and <code>DbFileReader</code>.
  *
  */
 public class ReaderManager {
 
     /** file has been serialized, sealed **/
-    private List<ITsRandomAccessFileReader> rafList;
-    private List<FileReader> fileReaderList;
+    private List<String> sealedFilePathList;
+
+    /** unsealed file, at most one **/
+    private String unSealedFilePath = null;
+
+    private List<RowGroupMetaData> unSealedRowGroupMetadataList = null;
 
     /** key: deltaObjectUID **/
     private Map<String, List<RowGroupReader>> rowGroupReaderMap = new HashMap<>();
-    // private Map<String, List<RowGroupReader>> rowGroupReaderMap = new LRUMap<>(100000);
 
     /**
      *
-     * @param rafList fileInputStreamList
-     * @throws IOException
+     * @param sealedFilePathList fileInputStreamList
+     * @throws IOException TsFile read error
      */
-    ReaderManager(List<ITsRandomAccessFileReader> rafList) throws IOException {
-        this.rafList = rafList;
-        this.fileReaderList = new ArrayList<>();
-        rowGroupReaderMap = new HashMap<>();
-
-        for (ITsRandomAccessFileReader taf : rafList) {
-            FileReader reader = new FileReader(taf);
-            fileReaderList.add(reader);
-            // addRowGroupReadersToMap(reader);
-        }
+    ReaderManager(List<String> sealedFilePathList) throws IOException {
+        this.sealedFilePathList = sealedFilePathList;
+        //this.rowGroupReaderMap = new HashMap<>();
     }
 
     /**
      *
-     * @param rafList               file node list
-     * @param unsealedFileReader fileReader for unsealedFile
+     * @param sealedFilePathList file node list
+     * @param unsealedFilePath fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
-     * @throws IOException
+     * @throws IOException TsFile read error
      */
-    ReaderManager(List<ITsRandomAccessFileReader> rafList,
-                  ITsRandomAccessFileReader unsealedFileReader, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
-        this(rafList);
-        this.rafList.add(unsealedFileReader);
-
-        FileReader reader = new FileReader(unsealedFileReader, rowGroupMetadataList);
-        fileReaderList.add(reader);
-        // addRowGroupReadersToMap(reader);
+    ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
+        this.sealedFilePathList = sealedFilePathList;
+        this.unSealedFilePath = unsealedFilePath;
+        this.unSealedRowGroupMetadataList = rowGroupMetadataList;
     }
 
     List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) throws IOException {
@@ -67,33 +58,38 @@ public class ReaderManager {
             return rowGroupReaderMap.get(deltaObjectUID);
         } else {
             List<RowGroupReader> rowGroupReaderList = new ArrayList<>();
-            for (FileReader reader : fileReaderList) {
-                if (reader.getFileMetaData() != null) {
-                    if (reader.getFileMetaData().containsDeltaObject(deltaObjectUID)) {
-                        rowGroupReaderList.addAll(reader.getRowGroupReaderListByDeltaObject(deltaObjectUID));
-                    }
-                } else {
-                    if (reader.getRowGroupReaderMap().containsKey(deltaObjectUID)) {
-                        rowGroupReaderList.addAll(reader.getRowGroupReaderMap().get(deltaObjectUID));
+
+            // to examine whether sealed file has data
+            for (String path : sealedFilePathList) {
+                TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
+                if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
+                    TsRowGroupBlockMetaData tsRowGroupBlockMetaData = RowGroupBlockMetaDataCache.getInstance().get(path, deltaObjectUID, tsFileMetaData);
+                    for (RowGroupMetaData meta : tsRowGroupBlockMetaData.getRowGroups()) {
+                        //TODO parallelism could be used to speed up
+                        RowGroupReader reader = new RowGroupReader(meta, new TsRandomAccessLocalFileReader(path));
+                        rowGroupReaderList.add(reader);
                     }
                 }
             }
+
+            if (unSealedFilePath != null) {
+                for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
+                    //TODO parallelism could be used to speed up
+                    RowGroupReader reader = new RowGroupReader(meta, new TsRandomAccessLocalFileReader(unSealedFilePath));
+                    rowGroupReaderList.add(reader);
+                }
+            }
+
             rowGroupReaderMap.put(deltaObjectUID, rowGroupReaderList);
             return rowGroupReaderList;
         }
-//        List<RowGroupReader> ret = rowGroupReaderMap.get(deltaObjectUID);
-//        if (ret == null) {
-//            return new ArrayList<>();
-//        }
-//        return ret;
     }
 
     public void close() throws IOException {
-        for (ITsRandomAccessFileReader raf : rafList) {
-            if (raf instanceof TsRandomAccessLocalFileReader) {
-                raf.close();
-            } else {
-                raf.close();
+        for (Map.Entry<String, List<RowGroupReader>> entry : rowGroupReaderMap.entrySet()) {
+            List<RowGroupReader> rowGroupReaderList = entry.getValue();
+            for (RowGroupReader reader : rowGroupReaderList) {
+                reader.close();
             }
         }
     }

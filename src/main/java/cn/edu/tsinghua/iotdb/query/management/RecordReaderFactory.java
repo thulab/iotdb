@@ -85,35 +85,34 @@ public class RecordReaderFactory {
 		} else {
 			hasUnEnvelopedFile = false;
 		}
-		List<ITsRandomAccessFileReader> rafList = new ArrayList<>();
+		List<String> filePathList = new ArrayList<>();
 		try {
 			for (int i = 0; i < fileNodes.size() - 1; i++) {
 				IntervalFileNode fileNode = fileNodes.get(i);
-				ITsRandomAccessFileReader raf = new TsRandomAccessLocalFileReader(fileNode.filePath);
-				rafList.add(raf);
+				filePathList.add(fileNode.filePath);
 			}
 			if (hasUnEnvelopedFile) {
-				ITsRandomAccessFileReader unsealedRaf = new TsRandomAccessLocalFileReader(fileNodes.get(fileNodes.size() - 1).filePath);
+				String unsealedFilePath = fileNodes.get(fileNodes.size() - 1).filePath;
 
 				// if currentPage is null, both currentPage and pageList must both are null
 				if (queryStructure.getCurrentPage() == null) {
-					recordReader = new RecordReader(rafList, unsealedRaf, queryStructure.getBufferwriteDataInDisk(),
+					recordReader = new RecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
 							deltaObjectUID, measurementID, token, null, null, null,
 							queryStructure.getAllOverflowData());
 				} else {
-					recordReader = new RecordReader(rafList, unsealedRaf, queryStructure.getBufferwriteDataInDisk(),
+					recordReader = new RecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
 							deltaObjectUID, measurementID, token, queryStructure.getCurrentPage(),
 							queryStructure.getPageList().left, queryStructure.getPageList().right, queryStructure.getAllOverflowData());
 				}
 			} else {
 				if (fileNodes.size() > 0) {
-					rafList.add(new TsRandomAccessLocalFileReader(fileNodes.get(fileNodes.size() - 1).filePath));
+					filePathList.add(fileNodes.get(fileNodes.size() - 1).filePath);
 				}
 				if (queryStructure.getCurrentPage() == null) {
-					recordReader = new RecordReader(rafList, deltaObjectUID, measurementID, token,
+					recordReader = new RecordReader(filePathList, deltaObjectUID, measurementID, token,
 							queryStructure.getCurrentPage(), null, null, queryStructure.getAllOverflowData());
 				} else {
-					recordReader = new RecordReader(rafList, deltaObjectUID, measurementID, token,
+					recordReader = new RecordReader(filePathList, deltaObjectUID, measurementID, token,
 							queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right,
 							queryStructure.getAllOverflowData());
 				}

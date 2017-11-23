@@ -46,13 +46,13 @@ public class RecordReader {
     public List<Object> overflowInfo;
 
     /**
-     * @param rafList bufferwrite file has been serialized completely
+     * @param filePathList bufferwrite file has been serialized completely
      * @throws IOException file error
      */
-    public RecordReader(List<ITsRandomAccessFileReader> rafList, String deltaObjectUID, String measurementID, int lockToken,
+    public RecordReader(List<String> filePathList, String deltaObjectUID, String measurementID, int lockToken,
                         DynamicOneColumnData insertPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
                         List<Object> overflowInfo) throws IOException {
-        this.readerManager = new ReaderManager(rafList);
+        this.readerManager = new ReaderManager(filePathList);
         this.deltaObjectUID = deltaObjectUID;
         this.measurementID = measurementID;
         this.lockToken = lockToken;
@@ -63,16 +63,16 @@ public class RecordReader {
     }
 
     /**
-     * @param rafList              bufferwrite file has been serialized completely
-     * @param unsealedFileReader   unsealed file reader
+     * @param filePathList              bufferwrite file has been serialized completely
+     * @param unsealedFilePath   unsealed file reader
      * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
      * @throws IOException file error
      */
-    public RecordReader(List<ITsRandomAccessFileReader> rafList, ITsRandomAccessFileReader unsealedFileReader,
+    public RecordReader(List<String> filePathList, String unsealedFilePath,
                         List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectUID, String measurementID, int lockToken,
                         DynamicOneColumnData insertPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
                         List<Object> overflowInfo) throws IOException {
-        this.readerManager = new ReaderManager(rafList, unsealedFileReader, rowGroupMetadataList);
+        this.readerManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
         this.deltaObjectUID = deltaObjectUID;
         this.measurementID = measurementID;
         this.lockToken = lockToken;
