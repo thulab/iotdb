@@ -139,7 +139,7 @@ public class RecordReaderFactory {
 		return instance;
 	}
 
-	// TODO this method is used only in test case
+	// TODO this method is used only in test case and KV-match index
 	public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException, ProcessorException {
 		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
 			// close the RecordReader read stream.
