@@ -11,17 +11,23 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
  *
  */
 public class TsFileMetaDataCache {
-
-	// TODO use more elegant Singleton pattern
-	private static TsFileMetaDataCache instance = new TsFileMetaDataCache();
+	
+	/** key: The file path of tsfile */
 	private ConcurrentHashMap<String, TsFileMetaData> cache;
 
 	private TsFileMetaDataCache() {
 		cache = new ConcurrentHashMap<>();
 	}
 
+	/*
+	 * Singleton pattern
+	 */
+	private static class TsFileMetaDataCacheHolder {
+		private static final TsFileMetaDataCache INSTANCE = new TsFileMetaDataCache();
+	}
+
 	public static TsFileMetaDataCache getInstance() {
-		return instance;
+		return TsFileMetaDataCacheHolder.INSTANCE;
 	}
 
 	public TsFileMetaData get(String path) {

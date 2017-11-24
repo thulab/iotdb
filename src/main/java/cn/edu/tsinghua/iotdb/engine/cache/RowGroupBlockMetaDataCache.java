@@ -14,12 +14,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
  *
  */
 public class RowGroupBlockMetaDataCache {
-
-	/*
-	 * the default LRU cache size is 100
-	 */
-	private static RowGroupBlockMetaDataCache instance = new RowGroupBlockMetaDataCache(100);;
-	private LinkedHashMap<String, TsRowGroupBlockMetaData> cache;
+	/** key: the file path + DeltaObjectId */
+	private LinkedHashMap<String, TsRowGroupBlockMetaData> LRUCache;
 
 	/**
 	 * This class is a map used to cache the <code>RowGroupBlockMetaData</code>.
@@ -44,41 +40,48 @@ public class RowGroupBlockMetaDataCache {
 		}
 	}
 
-	private RowGroupBlockMetaDataCache(int cacheSize) {
-		cache = new LRULinkedHashMap(cacheSize, true);
+	/*
+	 * the default LRU cache size is 100. The singleton pattern.
+	 */
+	private static class RowGroupBlockMetaDataCacheSingleton {
+		private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(100);
 	}
 
 	public static RowGroupBlockMetaDataCache getInstance() {
-		return instance;
+		return RowGroupBlockMetaDataCacheSingleton.INSTANCE;
+	}
+
+	private RowGroupBlockMetaDataCache(int cacheSize) {
+		LRUCache = new LRULinkedHashMap(cacheSize, true);
 	}
 
 	public TsRowGroupBlockMetaData get(String filePath, String deltaObjectId, TsFileMetaData fileMetaData) {
-
+		/** The key(the tsfile path and deltaObjectId) for the LRUCahe */
 		String jointPath = filePath + deltaObjectId;
 		jointPath = jointPath.intern();
-		synchronized (cache) {
-			if (cache.containsKey(jointPath)) {
-				return cache.get(jointPath);
+		synchronized (LRUCache) {
+			if (LRUCache.containsKey(jointPath)) {
+				return LRUCache.get(jointPath);
 			}
 		}
 		synchronized (jointPath) {
-			synchronized (cache) {
-				if (cache.containsKey(jointPath)) {
-					return cache.get(jointPath);
+			synchronized (LRUCache) {
+				if (LRUCache.containsKey(jointPath)) {
+					return LRUCache.get(jointPath);
 				}
 			}
 			TsRowGroupBlockMetaData blockMetaData = TsFileMetadataUtils.getTsRowGroupBlockMetaData(filePath,
 					deltaObjectId, fileMetaData);
-			synchronized (cache) {
-				cache.put(jointPath, blockMetaData);
-				return cache.get(jointPath);
+			synchronized (LRUCache) {
+				LRUCache.put(jointPath, blockMetaData);
+				return LRUCache.get(jointPath);
 			}
 		}
 	}
 
 	public void clear() {
-		synchronized (cache) {
-			cache.clear();
+		synchronized (LRUCache) {
+			LRUCache.clear();
 		}
 	}
 }
