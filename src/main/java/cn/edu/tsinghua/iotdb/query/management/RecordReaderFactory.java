@@ -53,7 +53,7 @@ public class RecordReaderFactory {
             Integer readLock, String prefix) throws ProcessorException {
 		int token = 0;
 		if (readLock == null) {
-			token = readLockManager.lock(deltaObjectUID, measurementID);
+			token = readLockManager.lock(deltaObjectUID);
 		} else {
 			token = readLock;
 		}
@@ -139,6 +139,7 @@ public class RecordReaderFactory {
 		return instance;
 	}
 
+	// TODO this method is used only in test case
 	public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException, ProcessorException {
 		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
 			// close the RecordReader read stream.
