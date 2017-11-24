@@ -166,15 +166,15 @@ public class OverflowQueryEngine {
                 groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
                 return groupByEngineNoFilter.groupBy();
             } else {
-                groupByEngineWithFilter = new GroupByEngineWithFilter();
-                return groupByEngineWithFilter.groupBy(aggregations, filterStructures, unit, origin,  intervalFilter, fetchSize);
+                groupByEngineWithFilter = new GroupByEngineWithFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                return groupByEngineWithFilter.groupBy();
             }
         } else {
             if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
                 return groupByEngineNoFilter.groupBy();
+            } else {
+                return groupByEngineWithFilter.groupBy();
             }
-            //TODO
-            return new QueryDataSet();
         }
     }
 
