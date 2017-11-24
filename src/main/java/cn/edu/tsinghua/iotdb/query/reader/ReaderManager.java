@@ -11,6 +11,8 @@ import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.OverflowTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
@@ -53,7 +55,7 @@ public class ReaderManager {
         this.unSealedRowGroupMetadataList = rowGroupMetadataList;
     }
 
-    List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID) throws IOException {
+    List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
         if (rowGroupReaderMap.containsKey(deltaObjectUID)) {
             return rowGroupReaderMap.get(deltaObjectUID);
         } else {
@@ -63,9 +65,17 @@ public class ReaderManager {
             for (String path : sealedFilePathList) {
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
                 if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
+
+                    // to filter some file whose (startTime, endTime) is not satisfied with the timeFilter
+                    OverflowTimeFilter metaFilter = new OverflowTimeFilter();
+                    if (timeFilter != null && !metaFilter.satisfy(timeFilter, tsFileMetaData.getDeltaObject(deltaObjectUID).startTime,
+                            tsFileMetaData.getDeltaObject(deltaObjectUID).endTime))
+                        continue;
+
                     TsRowGroupBlockMetaData tsRowGroupBlockMetaData = RowGroupBlockMetaDataCache.getInstance().get(path, deltaObjectUID, tsFileMetaData);
                     for (RowGroupMetaData meta : tsRowGroupBlockMetaData.getRowGroups()) {
                         //TODO parallelism could be used to speed up
+
                         RowGroupReader reader = new RowGroupReader(meta, new TsRandomAccessLocalFileReader(path));
                         rowGroupReaderList.add(reader);
                     }
@@ -75,6 +85,7 @@ public class ReaderManager {
             if (unSealedFilePath != null) {
                 for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
                     //TODO parallelism could be used to speed up
+
                     RowGroupReader reader = new RowGroupReader(meta, new TsRandomAccessLocalFileReader(unSealedFilePath));
                     rowGroupReaderList.add(reader);
                 }

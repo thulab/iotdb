@@ -95,7 +95,7 @@ public class RecordReader {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
         int rowGroupIndex = 0;
         if (res != null) {
             rowGroupIndex = res.getRowGroupIndex();
@@ -159,7 +159,7 @@ public class RecordReader {
     ) throws ProcessorException, IOException, PathErrorException {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
 
         for (RowGroupReader dbRowGroupReader : dbRowGroupReaderList) {
             if (dbRowGroupReader.getValueReaders().containsKey(measurementId) &&
@@ -206,7 +206,7 @@ public class RecordReader {
 
         boolean hasUnReadData = false;
 
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
 
         int commonTimestampsIndex = 0;
         // TODO if the DbRowGroupReader.ValueReaders.get(measurementId) has been read, how to avoid it?
@@ -300,7 +300,9 @@ public class RecordReader {
     private DynamicOneColumnData getValuesUseTimestamps(String deltaObjectId, String measurementId, long[] timestamps)
             throws IOException {
         DynamicOneColumnData res = null;
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId);
+
+        //TODO could the parameter timestamps be optimized?
+        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, null);
         for (int i = 0; i < dbRowGroupReaderList.size(); i++) {
             RowGroupReader dbRowGroupReader = dbRowGroupReaderList.get(i);
             if (i == 0) {
