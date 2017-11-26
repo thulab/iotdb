@@ -114,13 +114,15 @@ public class OverflowQueryEngine {
     }
 
     /** if this variable equals true, represent that the group by method is executed the first time**/
-    private boolean firstGroupByCalcFlag = true;
+    private ThreadLocal<Boolean> firstGroupByCalcFlag = new ThreadLocal<>();
 
-    private List<Pair<Path, AggregateFunction>> aggregations;
+    //private List<Pair<Path, AggregateFunction>> aggregations;
 
-    private GroupByEngineNoFilter groupByEngineNoFilter;
+    /** ThreadLocal, due to the usage of OverflowQPExecutor **/
+    private ThreadLocal<GroupByEngineNoFilter> groupByEngineNoFilterLocal;
 
-    private GroupByEngineWithFilter groupByEngineWithFilter;
+    /** ThreadLocal, due to the usage of OverflowQPExecutor **/
+    private ThreadLocal<GroupByEngineWithFilter> groupByEngineWithFilterLocal;
 
     /**
      * Group by feature implementation.
@@ -139,8 +141,11 @@ public class OverflowQueryEngine {
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
             throws ProcessorException, PathErrorException, IOException {
-        if (firstGroupByCalcFlag) {
-            firstGroupByCalcFlag = false;
+        if (firstGroupByCalcFlag.get() == null) {
+            firstGroupByCalcFlag.set(false);
+
+            groupByEngineNoFilterLocal = new ThreadLocal<>();
+            groupByEngineWithFilterLocal = new ThreadLocal<>();
 
             SingleSeriesFilterExpression intervalFilter = null;
             for (Pair<Long, Long> pair : intervals) {
@@ -163,17 +168,31 @@ public class OverflowQueryEngine {
             }
 
             if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
-                groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                groupByEngineNoFilterLocal.set(groupByEngineNoFilter);
                 return groupByEngineNoFilter.groupBy();
             } else {
-                groupByEngineWithFilter = new GroupByEngineWithFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                GroupByEngineWithFilter groupByEngineWithFilter = new GroupByEngineWithFilter(aggregations, filterStructures, origin, unit, intervalFilter, fetchSize);
+                groupByEngineWithFilterLocal.set(groupByEngineWithFilter);
                 return groupByEngineWithFilter.groupBy();
             }
         } else {
             if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
-                return groupByEngineNoFilter.groupBy();
+                QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
+                if (!ans.hasNextRecord()) {
+                    firstGroupByCalcFlag.remove();
+                    groupByEngineNoFilterLocal.remove();
+                    groupByEngineWithFilterLocal.remove();
+                }
+                return ans;
             } else {
-                return groupByEngineWithFilter.groupBy();
+                QueryDataSet ans = groupByEngineWithFilterLocal.get().groupBy();
+                if (!ans.hasNextRecord()) {
+                    firstGroupByCalcFlag.remove();
+                    groupByEngineNoFilterLocal.remove();
+                    groupByEngineWithFilterLocal.remove();
+                }
+                return ans;
             }
         }
     }

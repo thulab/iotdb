@@ -83,6 +83,7 @@ public class GroupByEngineNoFilter {
         this.origin = origin;
         this.unit = unit;
         this.partitionFetchSize = partitionFetchSize;
+        // TODO set small value to test
         this.partitionFetchSize = 2;
 
         this.longInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(intervals);

@@ -24,7 +24,9 @@ import org.slf4j.LoggerFactory;
 public class AggregateEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(AggregateEngine.class);
-    public static int batchSize = 50000;
+
+    /** aggregation batch calculation size **/
+    public static int aggregateFetchSize = 50000;
 
     /**
      * <p>Public invoking method of multiple aggregation.
@@ -33,7 +35,7 @@ public class AggregateEngine {
      * @param filterStructures list of <code>FilterStructure</code>
      * @return QueryDataSet result of multi aggregation
      * @throws ProcessorException read or write lock error etc
-     * @throws IOException        read tsfile error
+     * @throws IOException        read TsFile error
      * @throws PathErrorException path resolving error
      */
     public static QueryDataSet multiAggregate(List<Pair<Path, AggregateFunction>> aggres, List<FilterStructure> filterStructures)
@@ -47,10 +49,10 @@ public class AggregateEngine {
 
         QueryDataSet ansQueryDataSet = new QueryDataSet();
 
-        List<QueryDataSet> filterQueryDataSets = new ArrayList<>(); // stores the query QueryDataSet of each FilterStructure in filterStructures
-        List<long[]> timeArray = new ArrayList<>(); // stores calculated common timestamps of each FilterStructure answer
-        List<Integer> indexArray = new ArrayList<>(); // stores used index of each timeArray
-        List<Boolean> hasUnReadDataArray = new ArrayList<>(); // represents whether this FilterStructure answer still has unread data
+        List<QueryDataSet> fsDataSets = new ArrayList<>(); // stores the query QueryDataSet of each FilterStructure in filterStructures
+        List<long[]> fsTimeList = new ArrayList<>(); // stores calculated common timestamps of each FilterStructure answer
+        List<Integer> fsTimeIndexList = new ArrayList<>(); // stores used index of each timeArray
+        List<Boolean> fsHasUnReadDataList = new ArrayList<>(); // represents whether this FilterStructure answer still has unread data
         for (int idx = 0; idx < filterStructures.size(); idx++) {
             FilterStructure filterStructure = filterStructures.get(idx);
             QueryDataSet queryDataSet = new QueryDataSet();
@@ -68,59 +70,61 @@ public class AggregateEngine {
                     }
                 }
             };
-            filterQueryDataSets.add(queryDataSet);
+            fsDataSets.add(queryDataSet);
             long[] curCommonTimestamps = queryDataSet.crossQueryTimeGenerator.generateTimes();
-            timeArray.add(curCommonTimestamps);
-            indexArray.add(0);
+            fsTimeList.add(curCommonTimestamps);
+            fsTimeIndexList.add(0);
             if (curCommonTimestamps.length > 0) {
-                hasUnReadDataArray.add(true);
+                fsHasUnReadDataList.add(true);
             } else {
-                hasUnReadDataArray.add(false);
+                fsHasUnReadDataList.add(false);
             }
         }
 
-        // the aggregate timestamps calculated by all dnf
+        // the aggregate timestamps calculated by filterStructures
         List<Long> aggregateTimestamps = new ArrayList<>();
         PriorityQueue<Long> priorityQueue = new PriorityQueue<>();
 
-        for (int i = 0; i < timeArray.size(); i++) {
-            boolean flag = hasUnReadDataArray.get(i);
+        for (int i = 0; i < fsTimeList.size(); i++) {
+            boolean flag = fsHasUnReadDataList.get(i);
             if (flag) {
-                priorityQueue.add(timeArray.get(i)[indexArray.get(i)]);
+                priorityQueue.add(fsTimeList.get(i)[fsTimeIndexList.get(i)]);
             }
         }
 
         // represents that whether the 'key' ordinal aggregation still has unread data
         Map<Integer, Boolean> hasUnReadDataMap = new HashMap<>();
+
         // if there still has any uncompleted read data, hasAnyUnReadDataFlag is true
         boolean hasAnyUnReadDataFlag = true;
+
         while (true) {
-            while (aggregateTimestamps.size() < batchSize && !priorityQueue.isEmpty() && hasAnyUnReadDataFlag) {
+            while (aggregateTimestamps.size() < aggregateFetchSize && !priorityQueue.isEmpty() && hasAnyUnReadDataFlag) {
                 // add the minimum timestamp and remove others in timeArray
                 long minTime = priorityQueue.poll();
                 aggregateTimestamps.add(minTime);
                 while (!priorityQueue.isEmpty() && minTime == priorityQueue.peek())
                     priorityQueue.poll();
 
-                for (int i = 0; i < timeArray.size(); i++) {
-                    boolean flag = hasUnReadDataArray.get(i);
+                for (int i = 0; i < fsTimeList.size(); i++) {
+                    boolean flag = fsHasUnReadDataList.get(i);
                     if (flag) {
-                        int curTimeIdx = indexArray.get(i);
-                        long[] curTimestamps = timeArray.get(i);
+                        int curTimeIdx = fsTimeIndexList.get(i);
+                        long[] curTimestamps = fsTimeList.get(i);
                         // remove all timestamps equal to min time in all series
                         while (curTimeIdx < curTimestamps.length && curTimestamps[curTimeIdx] == minTime) {
                             curTimeIdx++;
                         }
                         if (curTimeIdx < curTimestamps.length) {
-                            indexArray.set(i, curTimeIdx);
+                            fsTimeIndexList.set(i, curTimeIdx);
                             priorityQueue.add(curTimestamps[curTimeIdx]);
                         } else {
-                            long[] newTimeStamps = filterQueryDataSets.get(i).crossQueryTimeGenerator.generateTimes();
+                            long[] newTimeStamps = fsDataSets.get(i).crossQueryTimeGenerator.generateTimes();
                             if (newTimeStamps.length > 0) {
-                                timeArray.set(i, newTimeStamps);
-                                indexArray.set(i, 0);
+                                fsTimeList.set(i, newTimeStamps);
+                                fsTimeIndexList.set(i, 0);
                             } else {
-                                hasUnReadDataArray.set(i, false);
+                                fsHasUnReadDataList.set(i, false);
                             }
                         }
                     }

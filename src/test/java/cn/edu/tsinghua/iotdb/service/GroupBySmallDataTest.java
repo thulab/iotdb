@@ -110,12 +110,12 @@ public class GroupBySmallDataTest {
 
     private Daemon deamon;
 
-    private boolean testFlag = !false;
+    private boolean testFlag = false;
 
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-            AggregateEngine.batchSize = 4000;
+            AggregateEngine.aggregateFetchSize = 4000;
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             overflowDataDirPre = config.overflowDataDir;
             fileNodeDirPre = config.fileNodeDir;

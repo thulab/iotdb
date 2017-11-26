@@ -34,7 +34,7 @@ public class GroupByEngineWithFilter {
 
     /** aggregateFetchSize is set to calculate the result of timestamps, when the size of common timestamps is
      * up to aggregateFetchSize, the aggregation calculation process will begin**/
-    private int aggregateFetchSize = 2;
+    private int aggregateFetchSize = 50000;
 
     /** formNumber is set to -1 default **/
     private int formNumber = -1;
@@ -58,6 +58,9 @@ public class GroupByEngineWithFilter {
     /** represent the usage count of longInterval **/
     private int intervalIndex;
 
+    /** filter in group by where clause **/
+    private List<FilterStructure> filterStructures;
+
     /** group by partition fetch size, when result size is reach to partitionSize, the current
      *  calculation will be terminated
      */
@@ -69,15 +72,44 @@ public class GroupByEngineWithFilter {
     /** represent duplicated path index **/
     private Set<Integer> duplicatedPaths = new HashSet<>();
 
+    /** group by result **/
     private QueryDataSet groupByResult = new QueryDataSet();
 
-    public GroupByEngineWithFilter() {
 
-    }
+    // variables below are used to calculate the common timestamps of FilterStructures
 
-    public GroupByEngineWithFilter(List<Pair<Path, AggregateFunction>> aggregations,
-                                 long unit, long origin, SingleSeriesFilterExpression intervals, int partitionFetchSize) {
+    /** stores the query QueryDataSet of each FilterStructure in filterStructures **/
+    private List<QueryDataSet> fsDataSets = new ArrayList<>();
+
+    /** stores calculated common timestamps of each FilterStructure**/
+    private List<long[]> fsTimeList = new ArrayList<>();
+
+    /** stores used index of each fsTimeList **/
+    private List<Integer> fsTimeIndexList = new ArrayList<>();
+
+    /** represents whether this FilterStructure answer still has unread data **/
+    private List<Boolean> fsHasUnReadDataList = new ArrayList<>();
+
+    /** the aggregate timestamps calculated by all FilterStructures **/
+    private List<Long> aggregateTimestamps = new ArrayList<>();
+
+    /** priority queue to store timestamps of each FilterStructure **/
+    private PriorityQueue<Long> commonTimeQueue = new PriorityQueue<>();
+
+    private boolean queryCalcFlag = true;
+
+    public GroupByEngineWithFilter(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures,
+                                 long origin, long unit, SingleSeriesFilterExpression intervals, int partitionFetchSize) throws IOException, ProcessorException {
         this.aggregations = aggregations;
+        this.filterStructures = filterStructures;
+        this.origin = origin;
+        this.unit = unit;
+        this.partitionFetchSize = partitionFetchSize;
+        // test partitionFetchSize
+        // this.partitionFetchSize = 2;
+        this.longInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(intervals);
+        this.intervalIndex = 0;
+
         this.queryPathResult = new HashMap<>();
         for (int i = 0; i < aggregations.size(); i++) {
             String aggregateKey = aggregationKey(aggregations.get(i).left, aggregations.get(i).right);
@@ -90,46 +122,6 @@ public class GroupByEngineWithFilter {
             }
         }
 
-        this.origin = origin;
-        this.unit = unit;
-        this.partitionFetchSize = partitionFetchSize;
-        this.partitionFetchSize = 2;
-
-        this.longInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(intervals);
-        this.intervalIndex = 0;
-    }
-
-    /**
-     *
-     * @param aggregations
-     * @param filterStructures
-     * @param unit
-     * @param origin
-     * @param intervals
-     * @param fetchSize
-     * @return
-     * @throws IOException
-     * @throws ProcessorException
-     */
-    public QueryDataSet groupBy(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures,
-                                long unit, long origin, SingleSeriesFilterExpression intervals, int fetchSize) throws IOException, ProcessorException, PathErrorException {
-
-        groupByResult.clear();
-        int partitionBatchCount = 0;
-
-        if (intervalIndex >= longInterval.count) {
-            return new QueryDataSet();
-        }
-
-        long partitionStart = origin; // partition start time
-        long partitionEnd = origin + unit - 1; // partition end time
-        long intervalStart = longInterval.flag[intervalIndex] ? longInterval.v[intervalIndex] : longInterval.v[intervalIndex] + 1; // interval start time
-        long intervalEnd = longInterval.flag[intervalIndex+1] ? longInterval.v[intervalIndex+1] : longInterval.v[intervalIndex+1] - 1; // interval end time
-
-        List<QueryDataSet> filterQueryDataSets = new ArrayList<>(); // stores the query QueryDataSet of each FilterStructure in filterStructures
-        List<long[]> timeArray = new ArrayList<>(); // stores calculated common timestamps of each FilterStructure answer
-        List<Integer> indexArray = new ArrayList<>(); // stores used index of each timeArray
-        List<Boolean> hasUnReadDataArray = new ArrayList<>(); // represents whether this FilterStructure answer still has unread data
         for (int idx = 0; idx < filterStructures.size(); idx++) {
             FilterStructure filterStructure = filterStructures.get(idx);
             QueryDataSet queryDataSet = new QueryDataSet();
@@ -147,114 +139,94 @@ public class GroupByEngineWithFilter {
                     }
                 }
             };
-            filterQueryDataSets.add(queryDataSet);
-            long[] curCommonTimestamps = queryDataSet.crossQueryTimeGenerator.generateTimes();
-            timeArray.add(curCommonTimestamps);
-            indexArray.add(0);
-            if (curCommonTimestamps.length > 0) {
-                hasUnReadDataArray.add(true);
+            fsDataSets.add(queryDataSet);
+            long[] commonTimestamps = queryDataSet.crossQueryTimeGenerator.generateTimes();
+            fsTimeList.add(commonTimestamps);
+            fsTimeIndexList.add(0);
+            if (commonTimestamps.length > 0) {
+                fsHasUnReadDataList.add(true);
             } else {
-                hasUnReadDataArray.add(false);
+                fsHasUnReadDataList.add(false);
             }
         }
 
-        // the aggregate timestamps calculated by all dnf
-        List<Long> aggregateTimestamps = new ArrayList<>();
-        PriorityQueue<Long> priorityQueue = new PriorityQueue<>();
+        logger.debug("construct GroupByEngineWithFilter successfully");
+    }
 
-        for (int i = 0; i < timeArray.size(); i++) {
-            boolean flag = hasUnReadDataArray.get(i);
-            if (flag) {
-                priorityQueue.add(timeArray.get(i)[indexArray.get(i)]);
-            }
+    /**
+     * @return
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public QueryDataSet groupBy() throws IOException, ProcessorException, PathErrorException {
+
+        groupByResult.clear();
+        int partitionBatchCount = 0;
+
+        if (intervalIndex >= longInterval.count) {
+            return new QueryDataSet();
         }
 
-        // represents that whether the 'key' ordinal aggregation still has unread data
-        Map<Integer, Boolean> hasUnReadDataMap = new HashMap<>();
-        // if there still has any uncompleted read data, hasAnyUnReadDataFlag is true
-        boolean hasAnyUnReadDataFlag = true;
+        long partitionStart = origin; // partition start time
+        long partitionEnd = origin + unit - 1; // partition end time
+        long intervalStart = longInterval.flag[intervalIndex] ? longInterval.v[intervalIndex] : longInterval.v[intervalIndex] + 1; // interval start time
+        long intervalEnd = longInterval.flag[intervalIndex+1] ? longInterval.v[intervalIndex+1] : longInterval.v[intervalIndex+1] - 1; // interval end time
+
+        if (commonTimeQueue.isEmpty()) {
+            for (int i = 0; i < fsTimeList.size(); i++) {
+                boolean flag = fsHasUnReadDataList.get(i);
+                if (flag) {
+                    commonTimeQueue.add(fsTimeList.get(i)[fsTimeIndexList.get(i)]);
+                }
+            }
+        }
 
         while (true) {
-            while (aggregateTimestamps.size() < aggregateFetchSize && !priorityQueue.isEmpty() && hasAnyUnReadDataFlag) {
-                // add the minimum timestamp and remove others in timeArray
-                long minTime = priorityQueue.poll();
+            while (aggregateTimestamps.size() < aggregateFetchSize && !commonTimeQueue.isEmpty()) {
+                // add the minimum timestamp in commonTimeQueue,
+                // remove other time which is equals to minimum timestamp in fsTimeList
+                long minTime = commonTimeQueue.poll();
                 aggregateTimestamps.add(minTime);
-                while (!priorityQueue.isEmpty() && minTime == priorityQueue.peek())
-                    priorityQueue.poll();
+                while (!commonTimeQueue.isEmpty() && minTime == commonTimeQueue.peek())
+                    commonTimeQueue.poll();
 
-                for (int i = 0; i < timeArray.size(); i++) {
-                    boolean flag = hasUnReadDataArray.get(i);
+                for (int i = 0; i < fsTimeList.size(); i++) {
+                    boolean flag = fsHasUnReadDataList.get(i);
                     if (flag) {
-                        int curTimeIdx = indexArray.get(i);
-                        long[] curTimestamps = timeArray.get(i);
+                        int curTimeIdx = fsTimeIndexList.get(i);
+                        long[] curTimestamps = fsTimeList.get(i);
                         // remove all timestamps equal to min time in all series
                         while (curTimeIdx < curTimestamps.length && curTimestamps[curTimeIdx] == minTime) {
                             curTimeIdx++;
                         }
                         if (curTimeIdx < curTimestamps.length) {
-                            indexArray.set(i, curTimeIdx);
-                            priorityQueue.add(curTimestamps[curTimeIdx]);
+                            fsTimeIndexList.set(i, curTimeIdx);
+                            commonTimeQueue.add(curTimestamps[curTimeIdx]);
                         } else {
-                            long[] newTimeStamps = filterQueryDataSets.get(i).crossQueryTimeGenerator.generateTimes();
+                            long[] newTimeStamps = fsDataSets.get(i).crossQueryTimeGenerator.generateTimes();
                             if (newTimeStamps.length > 0) {
-                                timeArray.set(i, newTimeStamps);
-                                indexArray.set(i, 0);
+                                fsTimeList.set(i, newTimeStamps);
+                                fsTimeIndexList.set(i, 0);
                             } else {
-                                hasUnReadDataArray.set(i, false);
+                                fsHasUnReadDataList.set(i, false);
                             }
                         }
                     }
                 }
             }
 
-            logger.debug("common timestamps in multiple aggregation process : " + aggregateTimestamps.toString());
+            logger.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
 
-            int duplicatedCnt = 0;
-            for (Pair<Path, AggregateFunction> pair : aggregations) {
-                Path path = pair.left;
-                AggregateFunction aggregateFunction = pair.right;
-                String aggregationKey = aggregationKey(path, aggregateFunction);
-                if (duplicatedPaths.contains(duplicatedCnt)) {
-                    continue;
-                }
-                duplicatedCnt++;
-                DynamicOneColumnData data = queryPathResult.get(aggregationKey);
-                // common aggregate timestamps is empty
-                // the query data of path should be set empty too
-                if (aggregateTimestamps.size() == 0) {
-                    data.clearData();
-                    continue;
-                }
+//            if (partitionStart >= 98) {
+//                System.out.println("..");
+//            }
 
-                String deltaObjectId = path.getDeltaObjectToString();
-                String measurementId = path.getMeasurementToString();
-                String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
-                RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
-                        null, null, null, null, recordReaderPrefix);
-
-                if (recordReader.insertAllData == null) {
-                    List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
-                            null, recordReader.insertPageInMemory, recordReader.overflowInfo);
-                    DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-                    DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-                    DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-                    SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
-
-                    recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                            insertTrue, updateTrue, updateFalse,
-                            newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
-                    data = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
-                            aggregateTimestamps.stream().mapToLong(i->i).toArray(), updateTrue, recordReader.insertAllData, newTimeFilter);
-                    data.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
-                    queryPathResult.put(aggregationKey, data);
-                } else {
-                    data = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
-                            aggregateTimestamps.stream().mapToLong(i->i).toArray(), data.updateTrue, recordReader.insertAllData, data.timeFilter);
-                    queryPathResult.put(aggregationKey, data);
-                }
+            if (queryCalcFlag) {
+                calcPathQueryData();
+                queryCalcFlag = false;
             }
 
-            // this process is on the basis of the traverse of partition variable
+            // this process is on the basis of the traverse of partition variable,
             // in each [partitionStart, partitionEnd], [intervalStart, intervalEnd] would be considered
             while (true) {
 
@@ -267,7 +239,7 @@ public class GroupByEngineWithFilter {
                     intervalEnd = longInterval.flag[intervalIndex + 1] ? longInterval.v[intervalIndex + 1] : longInterval.v[intervalIndex + 1] - 1;
                 }
 
-                // current partition is location in the left of intervals, using mod operator
+                // current partition is locate in the left of intervals, using mod operator
                 // to calculate the first satisfied partition which has intersection with intervals.
                 if (partitionEnd < intervalStart) {
                     partitionStart = intervalStart - ((intervalStart - origin) % unit);
@@ -304,10 +276,6 @@ public class GroupByEngineWithFilter {
                     }
                 }
 
-//                if (partitionStart > 9990) {
-//                    System.out.println("test");
-//                }
-
                 if (intervalIndex >= longInterval.count)
                     break;
 
@@ -315,6 +283,7 @@ public class GroupByEngineWithFilter {
                     partitionStart = partitionEnd + 1;
                     partitionEnd = partitionStart + unit - 1;
                     partitionBatchCount += 1;
+
                     if (partitionBatchCount > partitionFetchSize) {
                         origin = partitionStart;
                         break;
@@ -324,6 +293,8 @@ public class GroupByEngineWithFilter {
                     // calculate the next partition range directly
                     partitionStart = partitionEnd + 1;
                     partitionEnd = partitionStart + unit - 1;
+                    partitionBatchCount += 1;
+
                     if (partitionBatchCount > partitionFetchSize) {
                         origin = partitionStart;
                         break;
@@ -331,17 +302,11 @@ public class GroupByEngineWithFilter {
                 } else if (partitionEnd >= aggregateTimestamps.get(aggregateTimestamps.size()-1)){
                     // partitionEnd is greater or equals than the last value of aggregate timestamps
                     aggregateTimestamps.clear();
+                    queryCalcFlag = true;
                     break;
                 } else {
                     break;
                 }
-            }
-
-            // partitionStart is greater or equals than the last value of aggregateTimestamps
-            // the next batch aggregateTimestamps should be loaded
-            if (aggregateTimestamps.size() > 0 && partitionStart >= aggregateTimestamps.get(aggregateTimestamps.size()-1)) {
-                aggregateTimestamps.clear();
-                continue;
             }
 
             if (intervalIndex >= longInterval.count)
@@ -349,6 +314,13 @@ public class GroupByEngineWithFilter {
 
             if (partitionBatchCount > partitionFetchSize) {
                 break;
+            }
+
+            // partitionStart is greater or equals than the last value of aggregateTimestamps
+            // the next batch aggregateTimestamps should be loaded
+            if (aggregateTimestamps.size() > 0 && partitionStart >= aggregateTimestamps.get(aggregateTimestamps.size()-1)) {
+                aggregateTimestamps.clear();
+                queryCalcFlag = true;
             }
         }
 
@@ -362,6 +334,55 @@ public class GroupByEngineWithFilter {
             groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
         }
         return groupByResult;
+    }
+
+    private void calcPathQueryData() throws ProcessorException, PathErrorException, IOException {
+        int duplicatedCnt = 0;
+        for (Pair<Path, AggregateFunction> pair : aggregations) {
+            Path path = pair.left;
+            AggregateFunction aggregateFunction = pair.right;
+            String aggregationKey = aggregationKey(path, aggregateFunction);
+            if (duplicatedPaths.contains(duplicatedCnt)) {
+                continue;
+            }
+            duplicatedCnt++;
+
+            DynamicOneColumnData data = queryPathResult.get(aggregationKey);
+            // common aggregate timestamps is empty
+            // the query data of path should be clear too
+            if (aggregateTimestamps.size() == 0) {
+                data.clearData();
+                queryCalcFlag = true;
+                continue;
+            }
+
+            String deltaObjectId = path.getDeltaObjectToString();
+            String measurementId = path.getMeasurementToString();
+            String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
+            RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
+                    null, null, null, null, recordReaderPrefix);
+
+            if (recordReader.insertAllData == null) {
+                List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
+                        null, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+                DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+                DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+                SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+
+                recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+                        insertTrue, updateTrue, updateFalse,
+                        newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
+                data = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
+                        aggregateTimestamps.stream().mapToLong(i->i).toArray(), updateTrue, recordReader.insertAllData, newTimeFilter);
+                data.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+                queryPathResult.put(aggregationKey, data);
+            } else {
+                data = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
+                        aggregateTimestamps.stream().mapToLong(i->i).toArray(), data.updateTrue, recordReader.insertAllData, data.timeFilter);
+                queryPathResult.put(aggregationKey, data);
+            }
+        }
     }
 
     /**
