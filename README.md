@@ -20,7 +20,7 @@
     <dependency>
       <groupId>cn.edu.tsinghua</groupId>
       <artifactId>iotdb-jdbc</artifactId>
-      <version>0.1.2</version>
+      <version>0.2.0</version>
     </dependency>
 </dependencies>
 ```
