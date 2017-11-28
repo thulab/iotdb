@@ -401,7 +401,7 @@ public class GroupByEngineWithFilter {
 
         String deltaObjectUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getDeltaObjectUID();
         String measurementUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getMeasurementUID();
-        //TODO may has dnf conflict
+        //TODO may have dnf conflict
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(valueFilterNumber);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
