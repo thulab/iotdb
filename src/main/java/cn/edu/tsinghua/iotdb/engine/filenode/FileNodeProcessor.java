@@ -913,8 +913,6 @@ public class FileNodeProcessor extends LRUProcessor {
 		Map<String, Long> startTimeMap = new HashMap<>();
 		Map<String, Long> endTimeMap = new HashMap<>();
 
-		ITsRandomAccessFileWriter raf = null;
-		TsFileIOWriter tsfileIOWriter = null;
 		TsFileWriter recordWriter = null;
 		String outputPath = null;
 		for (String deltaObjectId : backupIntervalFile.getStartTimeMap().keySet()) {
@@ -951,7 +949,7 @@ public class FileNodeProcessor extends LRUProcessor {
 				queryCount++;
 				RowRecord firstRecord = queryer.getNextRecord();
 
-				if (raf == null) {
+				if (recordWriter == null) {
 					outputPath = constructOutputFilePath(nameSpacePath, firstRecord.timestamp
 							+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
 					FileSchema fileSchema = constructFileSchema(nameSpacePath);
