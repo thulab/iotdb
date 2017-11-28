@@ -2,6 +2,10 @@ package cn.edu.tsinghua.iotdb.engine.cache;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
@@ -14,8 +18,11 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
  *
  */
 public class RowGroupBlockMetaDataCache {
+	private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
 	/** key: the file path + DeltaObjectId */
 	private LinkedHashMap<String, TsRowGroupBlockMetaData> LRUCache;
+	private AtomicLong cacheHintNum = new AtomicLong();
+	private AtomicLong cacheRequestNum = new AtomicLong();
 
 	/**
 	 * This class is a map used to cache the <code>RowGroupBlockMetaData</code>.
@@ -60,7 +67,14 @@ public class RowGroupBlockMetaDataCache {
 		String jointPath = filePath + deltaObjectId;
 		jointPath = jointPath.intern();
 		synchronized (LRUCache) {
+			cacheRequestNum.incrementAndGet();
 			if (LRUCache.containsKey(jointPath)) {
+				cacheHintNum.incrementAndGet();
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug(
+							"Cache hint: the number of requests for cache is {}, the number of hints for cache is {}",
+							cacheRequestNum.get(), cacheHintNum.get());
+				}
 				return LRUCache.get(jointPath);
 			}
 		}
@@ -69,6 +83,9 @@ public class RowGroupBlockMetaDataCache {
 				if (LRUCache.containsKey(jointPath)) {
 					return LRUCache.get(jointPath);
 				}
+			}
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Cache didn't hint: the number of requests for cache is {}", cacheRequestNum.get());
 			}
 			TsRowGroupBlockMetaData blockMetaData = TsFileMetadataUtils.getTsRowGroupBlockMetaData(filePath,
 					deltaObjectId, fileMetaData);

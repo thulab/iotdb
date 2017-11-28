@@ -1,6 +1,10 @@
 package cn.edu.tsinghua.iotdb.engine.cache;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 
@@ -11,9 +15,12 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
  *
  */
 public class TsFileMetaDataCache {
-	
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(TsFileMetaDataCache.class);
 	/** key: The file path of tsfile */
 	private ConcurrentHashMap<String, TsFileMetaData> cache;
+	private AtomicLong cacheHintNum = new AtomicLong();
+	private AtomicLong cacheRequestNum = new AtomicLong();
 
 	private TsFileMetaDataCache() {
 		cache = new ConcurrentHashMap<>();
@@ -34,12 +41,25 @@ public class TsFileMetaDataCache {
 
 		path = path.intern();
 		synchronized (path) {
+			cacheRequestNum.incrementAndGet();
 			if (!cache.containsKey(path)) {
 				// read value from tsfile
 				TsFileMetaData fileMetaData = TsFileMetadataUtils.getTsFileMetaData(path);
 				cache.put(path, fileMetaData);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Cache didn't hint: the number of requests for cache is {}", cacheRequestNum.get());
+				}
+				return cache.get(path);
+			} else {
+				cacheHintNum.incrementAndGet();
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug(
+							"Cache hint: the number of requests for cache is {}, the number of hints for cache is {}",
+							cacheRequestNum.get(), cacheHintNum.get());
+				}
+				return cache.get(path);
 			}
-			return cache.get(path);
+
 		}
 	}
 
