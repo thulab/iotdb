@@ -77,7 +77,7 @@ public class OverflowBufferWriteProcessor{
 
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, dataType);
-        LOG.info("read one series normally, digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
+        LOG.debug("read one series normally, digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
         // If not satisfied, return res with size equal to 0
 
