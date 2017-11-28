@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.sys.writelog.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -247,5 +248,79 @@ public class LocalFileLogReader implements WriteLogReadable {
             lraf.close();
             lraf = null;
         }
+    }
+
+    public void outputAllContent() throws IOException {
+        tailPos = 0;
+        lraf = new RandomAccessFile(fileName, "rw");
+        int i = (int) lraf.length();
+        // -1 : no end, no start
+        // 1 : has end
+        // 2 : has start and end
+        // 3 : only has start
+        int overflowVis = -1;
+        int bufferVis = -1;
+
+        while (i > 0) {
+            lraf.seek(i - 4);
+            byte[] opeContentLengthBytes = new byte[4];
+            lraf.read(opeContentLengthBytes);
+            int opeContentLength = BytesUtils.bytesToInt(opeContentLengthBytes);
+
+            byte[] opeTypeBytes = new byte[1];
+            lraf.seek(i - 4 - opeContentLength);
+            lraf.read(opeTypeBytes);
+            int opeType = (int) opeTypeBytes[0];
+
+            if (opeType == SystemLogOperator.OVERFLOWFLUSHEND) {
+                overflowVis = 1;
+                i -= (4 + opeContentLength);
+                System.out.println("OVERFLOWFLUSHEND");
+                continue;
+            } else if (opeType == SystemLogOperator.OVERFLOWFLUSHSTART) {
+                if (overflowVis == 1)
+                    overflowVis = 2;
+                else
+                    overflowVis = 3;
+                i -= (4 + opeContentLength);
+                System.out.println("OVERFLOWFLUSHSTART");
+                continue;
+            } else if (opeType == SystemLogOperator.BUFFERFLUSHEND) {
+                bufferVis = 1;
+                i -= (4 + opeContentLength);
+                System.out.println("BUFFERFLUSHEND");
+                continue;
+            } else if (opeType == SystemLogOperator.BUFFERFLUSHSTART) {
+                if (bufferVis == 1)
+                    bufferVis = 2;
+                else
+                    bufferVis = 3;
+                i -= (4 + opeContentLength);
+                System.out.println("BUFFERFLUSHSTART");
+                continue;
+            }
+
+            if (opeType == SystemLogOperator.INSERT) {
+                byte[] insertTypeBytes = new byte[1];
+                lraf.read(insertTypeBytes);
+                int insertType = (int) insertTypeBytes[0];
+                if (insertType == 1) {  // bufferwrite insert
+                    bufferStartList.add(i - 4 - opeContentLength);
+                    bufferLengthList.add(opeContentLength);
+                    bufferTailCount++;
+                } else if (insertType == 2) {     // overflow insert
+                    overflowStartList.add(i - 4 - opeContentLength);
+                    overflowLengthList.add(opeContentLength);
+                    overflowTailCount++;
+                }
+            } else if (overflowVis != 2) { // overflow update/delete
+                overflowStartList.add(i - 4 - opeContentLength);
+                overflowLengthList.add(opeContentLength);
+                overflowTailCount++;
+            }
+            i -= (4 + opeContentLength);
+        }
+
+        System.out.println("==" + overflowTailCount + "===" + bufferTailCount);
     }
 }
