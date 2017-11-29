@@ -64,7 +64,7 @@ public class OverflowQueryEngine {
      * @throws IOException        TsFile read error
      */
     public QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-                              FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize)
+                              FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
         this.formNumber = formNumber;
         LOGGER.info("\r\nFormNumber: " + formNumber + ", TimeFilter: " + timeFilter + "; ValueFilter: " + valueFilter + "\r\nQuery Paths: "
@@ -73,13 +73,13 @@ public class OverflowQueryEngine {
             queryDataSet.clear();
         }
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
-            return readWithoutFilter(paths, queryDataSet, fetchSize, null);
+            return readWithoutFilter(paths, queryDataSet, fetchSize, readLock);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
             return crossColumnQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         } else {
             return readOneColumnUseFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
-                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, null);
+                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, readLock);
         }
     }
 
@@ -236,7 +236,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 2: read one series with filter.
      */
-    private QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
+    public QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
                                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
                                                 QueryDataSet queryDataSet, int fetchSize,
                                                 Integer readLock) throws ProcessorException, IOException {

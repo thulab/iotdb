@@ -1,5 +1,50 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
+import cn.edu.tsinghua.iotdb.engine.lru.LRUProcessor;
+import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
+import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.index.IndexManager;
+import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
+import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
+import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
+import cn.edu.tsinghua.iotdb.index.kvmatch.KvMatchIndex;
+import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.query.engine.QueryForMerge;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
+import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.crypto.Data;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -12,49 +57,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.lru.LRUProcessor;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.query.engine.QueryForMerge;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class FileNodeProcessor extends LRUProcessor {
 
@@ -580,6 +582,21 @@ public class FileNodeProcessor extends LRUProcessor {
 		return queryStructure;
 	}
 
+	public List<DataFileInfo> indexQuery(String deltaObjectId, long startTime, long endTime) {
+		List<DataFileInfo> dataFileInfos = new ArrayList<>();
+		for (IntervalFileNode intervalFileNode : newFileNodes) {
+			if (intervalFileNode.isClosed()) {
+				long s1 = intervalFileNode.getStartTime(deltaObjectId);
+				long e1 = intervalFileNode.getEndTime(deltaObjectId);
+				if (e1 >= startTime && (s1 <= endTime || endTime == -1)) {
+					DataFileInfo dataFileInfo = new DataFileInfo(s1, e1, intervalFileNode.filePath);
+					dataFileInfos.add(dataFileInfo);
+				}
+			}
+		}
+		return dataFileInfos;
+	}
+
 	public void merge() throws FileNodeProcessorException {
 
 		LOGGER.debug("Merge: the nameSpacePath {} is begining to merge. {}", nameSpacePath, LOCK_SIGNAL);
@@ -693,6 +710,15 @@ public class FileNodeProcessor extends LRUProcessor {
 		// change status from merge to wait
 		//
 		switchMergeToWaitingv2(backupIntervalFiles, needEmtpy);
+
+		//
+		// merge index begin
+		//
+		mergeIndex();
+		//
+		// merge index end
+		//
+
 		//
 		// change status from wait to work
 		//
@@ -745,6 +771,76 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 		return result;
 	}
+
+    private List<DataFileInfo> getDataFileInfoForIndex(Path path, List<IntervalFileNode> sourceFileNodes) {
+        String deltaObjectId = path.getDeltaObjectToString();
+        List<DataFileInfo> dataFileInfos = new ArrayList<>();
+        for (IntervalFileNode intervalFileNode : sourceFileNodes) {
+            if (intervalFileNode.isClosed()) {
+                if (intervalFileNode.getStartTime(deltaObjectId) != -1) {
+                    DataFileInfo dataFileInfo = new DataFileInfo(intervalFileNode.getStartTime
+                            (deltaObjectId),
+                            intervalFileNode.getEndTime(deltaObjectId), intervalFileNode.filePath);
+                    dataFileInfos.add(dataFileInfo);
+                }
+            }
+        }
+        return dataFileInfos;
+    }
+
+    private void mergeIndex() throws FileNodeProcessorException {
+        try {
+            Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+            if (!allIndexSeries.isEmpty()) {
+                LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
+                        nameSpacePath, allIndexSeries);
+                for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
+                    String series = entry.getKey();
+                    Path path = new Path(series);
+                    List<DataFileInfo> dataFileInfos = getDataFileInfoForIndex(path, newFileNodes);
+                    if (!dataFileInfos.isEmpty()) {
+                        try {
+                            for (IndexType indexType : entry.getValue())
+                                IndexManager.getIndexInstance(indexType).build(path, dataFileInfos, null);
+                        } catch (IndexManagerException e) {
+                            e.printStackTrace();
+                            throw new FileNodeProcessorException(e.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (PathErrorException e) {
+            LOGGER.error(e.getMessage());
+            throw new FileNodeProcessorException(e.getMessage());
+        }
+    }
+
+    private void switchMergeIndex() throws FileNodeProcessorException {
+        try {
+            Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+            if (!allIndexSeries.isEmpty()) {
+                LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
+                        nameSpacePath, allIndexSeries);
+                for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
+                    String series = entry.getKey();
+                    Path path = new Path(series);
+                    List<DataFileInfo> dataFileInfos = getDataFileInfoForIndex(path, newFileNodes);
+                    if (!dataFileInfos.isEmpty()) {
+                        try {
+                            for (IndexType indexType : entry.getValue())
+                                IndexManager.getIndexInstance(indexType).mergeSwitch(path, dataFileInfos);
+                        } catch (IndexManagerException e) {
+                            e.printStackTrace();
+                            throw new FileNodeProcessorException(e.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (PathErrorException e) {
+            LOGGER.error(e.getMessage());
+            throw new FileNodeProcessorException(e.getMessage());
+        }
+    }
 
 	private void switchMergeToWaitingv2(List<IntervalFileNode> backupIntervalFiles, boolean needEmpty)
 			throws FileNodeProcessorException {
@@ -835,76 +931,81 @@ public class FileNodeProcessor extends LRUProcessor {
 			throws FileNodeProcessorException {
 
 		LOGGER.debug("Merge: switch wait to work, newIntervalFileNodes is {}", newFileNodes);
+        if (oldMultiPassLock != null) {
+            LOGGER.info("The old Multiple Pass Token set is {}, the old Multiple Pass Lock is {}",
+                    oldMultiPassTokenSet, oldMultiPassLock);
+            oldMultiPassLock.writeLock().lock();
+        }
+        writeLock();
+        try {
+            // delete the all files which are in the newFileNodes
+            // notice: the last restore file of the interval file
 
-		writeLock();
-		try {
-			if (oldMultiPassLock != null) {
-				LOGGER.info("The old Multiple Pass Token set is {}, the old Multiple Pass Lock is {}",
-						oldMultiPassTokenSet, oldMultiPassLock);
-				oldMultiPassLock.writeLock().lock();
-			}
-			try {
-				// delete the all files which are in the newFileNodes
-				// notice: the last restore file of the interval file
+            String bufferwriteDirPath = TsFileDBConf.bufferWriteDir;
+            if (bufferwriteDirPath.length() > 0
+                    && bufferwriteDirPath.charAt(bufferwriteDirPath.length() - 1) != File.separatorChar) {
+                bufferwriteDirPath = bufferwriteDirPath + File.separatorChar;
+            }
+            bufferwriteDirPath = bufferwriteDirPath + nameSpacePath;
+            File bufferwriteDir = new File(bufferwriteDirPath);
+            if (!bufferwriteDir.exists()) {
+                bufferwriteDir.mkdirs();
+            }
 
-				String bufferwriteDirPath = TsFileDBConf.bufferWriteDir;
-				if (bufferwriteDirPath.length() > 0
-						&& bufferwriteDirPath.charAt(bufferwriteDirPath.length() - 1) != File.separatorChar) {
-					bufferwriteDirPath = bufferwriteDirPath + File.separatorChar;
-				}
-				bufferwriteDirPath = bufferwriteDirPath + nameSpacePath;
-				File bufferwriteDir = new File(bufferwriteDirPath);
-				if (!bufferwriteDir.exists()) {
-					bufferwriteDir.mkdirs();
-				}
+            Set<String> bufferFiles = new HashSet<>();
+            for (IntervalFileNode bufferFileNode : newFileNodes) {
+                String bufferFilePath = bufferFileNode.filePath;
+                if (bufferFilePath != null) {
+                    bufferFiles.add(bufferFilePath);
+                }
+            }
+            // add the restore file, if the last file is not closed
+            if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
+                String bufferFileRestorePath = newFileNodes.get(newFileNodes.size() - 1).filePath + ".restore";
+                File bufferRestoreFile = new File(bufferwriteDir, bufferFileRestorePath);
+                bufferFiles.add(bufferRestoreFile.getAbsolutePath());
+            }
 
-				Set<String> bufferFiles = new HashSet<>();
-				for (IntervalFileNode bufferFileNode : newFileNodes) {
-					String bufferFilePath = bufferFileNode.filePath;
-					if (bufferFilePath != null) {
-						bufferFiles.add(bufferFilePath);
-					}
-				}
-				// add the restore file, if the last file is not closed
-				if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
-					String bufferFileRestorePath = newFileNodes.get(newFileNodes.size() - 1).filePath + ".restore";
-					File bufferRestoreFile = new File(bufferwriteDir, bufferFileRestorePath);
-					bufferFiles.add(bufferRestoreFile.getAbsolutePath());
-				}
+            for (File file : bufferwriteDir.listFiles()) {
+                if (!bufferFiles.contains(file.getAbsolutePath())) {
+                    file.delete();
+                }
+            }
+            for (IntervalFileNode fileNode : newFileNodes) {
+                if (fileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
+                    fileNode.overflowChangeType = OverflowChangeType.CHANGED;
+                }
+            }
 
-				for (File file : bufferwriteDir.listFiles()) {
-					if (!bufferFiles.contains(file.getAbsolutePath())) {
-						file.delete();
-					}
-				}
-				for (IntervalFileNode fileNode : newFileNodes) {
-					if (fileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
-						fileNode.overflowChangeType = OverflowChangeType.CHANGED;
-					}
-				}
-				// overflow switch
-				overflowProcessor.switchMergeToWorking();
-				// write status to file
-				isMerging = FileNodeProcessorStatus.NONE;
-				synchronized (fileNodeProcessorStore) {
-					fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
-					fileNodeProcessorStore.setNewFileNodes(newFileNodes);
-					fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
-					writeStoreToDisk(fileNodeProcessorStore);
-				}
-			} catch (ProcessorException e) {
-				LOGGER.error("Merge: switch wait to work failed.");
-				throw new FileNodeProcessorException(e);
-			} finally {
-				oldMultiPassTokenSet = null;
-				if (oldMultiPassLock != null) {
-					oldMultiPassLock.writeLock().unlock();
-				}
-				oldMultiPassLock = null;
-			}
-		} finally {
-			writeUnlock();
-		}
+            //
+            // switch the index file begin
+            //
+            switchMergeIndex();
+            //
+            // switch the index file end
+            //
+
+            // overflow switch
+            overflowProcessor.switchMergeToWorking();
+            // write status to file
+            isMerging = FileNodeProcessorStatus.NONE;
+            synchronized (fileNodeProcessorStore) {
+                fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
+                fileNodeProcessorStore.setNewFileNodes(newFileNodes);
+                fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
+                writeStoreToDisk(fileNodeProcessorStore);
+            }
+        } catch (ProcessorException e) {
+            LOGGER.error("Merge: switch wait to work failed.");
+            throw new FileNodeProcessorException(e);
+        } finally {
+            oldMultiPassTokenSet = null;
+            if (oldMultiPassLock != null) {
+                oldMultiPassLock.writeLock().unlock();
+            }
+            oldMultiPassLock = null;
+            writeUnlock();
+        }
 	}
 
 	private void queryAndWriteDataForMerge(IntervalFileNode backupIntervalFile)
@@ -1101,7 +1202,28 @@ public class FileNodeProcessor extends LRUProcessor {
 				}
 				bufferWriteProcessor.close();
 				bufferWriteProcessor = null;
-			} catch (BufferWriteProcessorException e) {
+				/*
+				 * add index for close
+				 */
+                Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+
+                if (!allIndexSeries.isEmpty()) {
+                    LOGGER.info("Close buffer write file and append index file, the nameSpacePath is {}, the index " +
+                                    "type is {}, the index path is {}",
+                            nameSpacePath, "kvindex", allIndexSeries);
+					for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
+                        Path path = new Path(entry.getKey());
+                        String deltaObjectId = path.getDeltaObjectToString();
+						if (currentIntervalFileNode.getStartTime(deltaObjectId) != -1) {
+							DataFileInfo dataFileInfo = new DataFileInfo(currentIntervalFileNode.getStartTime(deltaObjectId),
+									currentIntervalFileNode.getEndTime(deltaObjectId), currentIntervalFileNode.filePath);
+							for (IndexType indexType : entry.getValue())
+								IndexManager.getIndexInstance(indexType).build(path, dataFileInfo, null);
+						}
+                    }
+				}
+
+			} catch (BufferWriteProcessorException | PathErrorException | IndexManagerException  e) {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
 			}
@@ -1155,4 +1277,9 @@ public class FileNodeProcessor extends LRUProcessor {
 			return fileNodeProcessorStore;
 		}
 	}
+
+    public void rebuildIndex() throws FileNodeProcessorException {
+        mergeIndex();
+        switchMergeIndex();
+    }
 }
