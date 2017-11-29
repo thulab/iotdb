@@ -296,30 +296,42 @@ public class LocalFileLogReader implements WriteLogReadable {
             int opeType = (int) opeTypeBytes[0];
 
             if (opeType == SystemLogOperator.OVERFLOWFLUSHEND) {
-                overflowVis = 1;
-                i -= (4 + opeContentLength);
                 System.out.println("OVERFLOWFLUSHEND");
+                // only when overflow has no end and no start,
+                // overflowVis would be set to 1
+                if (overflowVis == -1) {
+                    overflowVis = 1;
+                }
+                i -= (4 + opeContentLength);
                 continue;
             } else if (opeType == SystemLogOperator.OVERFLOWFLUSHSTART) {
-                if (overflowVis == 1)
-                    overflowVis = 2;
-                else
-                    overflowVis = 3;
-                i -= (4 + opeContentLength);
                 System.out.println("OVERFLOWFLUSHSTART");
+                if (overflowVis == 1) {
+                    overflowVis = 2;
+                } else if (overflowVis != 2) {
+                    // crash occurs when buffer write flush
+                    overflowVis = 3;
+                }
+                i -= (4 + opeContentLength);
                 continue;
             } else if (opeType == SystemLogOperator.BUFFERFLUSHEND) {
-                bufferVis = 1;
-                i -= (4 + opeContentLength);
                 System.out.println("BUFFERFLUSHEND");
+                // only when bufferWrite has no end and no start,
+                // bufferVis would be set to 1
+                if (bufferVis == -1) {
+                    bufferVis = 1;
+                }
+                i -= (4 + opeContentLength);
                 continue;
             } else if (opeType == SystemLogOperator.BUFFERFLUSHSTART) {
-                if (bufferVis == 1)
-                    bufferVis = 2;
-                else
-                    bufferVis = 3;
-                i -= (4 + opeContentLength);
                 System.out.println("BUFFERFLUSHSTART");
+                if (bufferVis == 1) {
+                    bufferVis = 2;
+                } else if (bufferVis != 2) {
+                    // crash occurs when buffer write flush
+                    bufferVis = 3;
+                }
+                i -= (4 + opeContentLength);
                 continue;
             }
 
@@ -348,6 +360,6 @@ public class LocalFileLogReader implements WriteLogReadable {
             i -= (4 + opeContentLength);
         }
 
-        System.out.println("==" + overflowTailCount + "===" + bufferTailCount);
+        System.out.println("==" + overflowTailCount + "===" + bufferTailCount + "====" + overflowTailCount);
     }
 }
