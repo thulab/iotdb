@@ -30,7 +30,7 @@ import java.util.*;
  */
 public class GroupByEngineWithFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(GroupByEngineWithFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GroupByEngineWithFilter.class);
 
     /** aggregateFetchSize is set to calculate the result of timestamps, when the size of common timestamps is
      * up to aggregateFetchSize, the aggregation calculation process will begin**/
@@ -150,7 +150,7 @@ public class GroupByEngineWithFilter {
             }
         }
 
-        logger.debug("construct GroupByEngineWithFilter successfully");
+        LOG.debug("construct GroupByEngineWithFilter successfully");
     }
 
     /**
@@ -164,16 +164,8 @@ public class GroupByEngineWithFilter {
         int partitionBatchCount = 0;
 
         if (intervalIndex >= longInterval.count) {
-            QueryDataSet ansQueryDataSet = new QueryDataSet();
-            int cnt = 0;
-            for (Pair<Path, AggregateFunction> pair : aggregations) {
-                if (duplicatedPaths.contains(cnt))
-                    cnt++;
-                Path path = pair.left;
-                AggregateFunction aggregateFunction = pair.right;
-                ansQueryDataSet.mapRet.put(aggregationKey(path, aggregateFunction), new DynamicOneColumnData(aggregateFunction.dataType, true));
-            }
-            return ansQueryDataSet;
+            groupByResult.clear();
+            return groupByResult;
         }
 
         long partitionStart = origin; // partition start time
@@ -224,7 +216,7 @@ public class GroupByEngineWithFilter {
                 }
             }
 
-            logger.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
+            LOG.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
 
 //            if (partitionStart >= 98) {
 //                System.out.println("..");
@@ -342,6 +334,7 @@ public class GroupByEngineWithFilter {
             AggregateFunction aggregateFunction = pair.right;
             groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
         }
+        LOG.info("calculate group by result successfully.");
         return groupByResult;
     }
 

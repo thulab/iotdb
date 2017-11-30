@@ -143,8 +143,7 @@ public class OverflowQueryEngine {
      * @throws IOException
      */
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
-                                long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
-            throws ProcessorException, PathErrorException, IOException {
+                                long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize) {
 
         ThreadLocal<Integer> groupByCalcTime = ReadLockManager.getInstance().getGroupByCalcCalcTime();
         ThreadLocal<GroupByEngineNoFilter> groupByEngineNoFilterLocal = ReadLockManager.getInstance().getGroupByEngineNoFilterLocal();
@@ -167,42 +166,50 @@ public class OverflowQueryEngine {
             }
 
             List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
-            for (Pair<Path, String> pair : aggres) {
-                TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
-                AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
-                aggregations.add(new Pair<>(pair.left, func));
-            }
+            try {
+                for (Pair<Path, String> pair : aggres) {
+                    TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
+                    AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
+                    aggregations.add(new Pair<>(pair.left, func));
+                }
 
-            if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
-                GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
-                groupByEngineNoFilterLocal.set(groupByEngineNoFilter);
-                return groupByEngineNoFilter.groupBy();
-            } else {
-                GroupByEngineWithFilter groupByEngineWithFilter = new GroupByEngineWithFilter(aggregations, filterStructures, origin, unit, intervalFilter, fetchSize);
-                groupByEngineWithFilterLocal.set(groupByEngineWithFilter);
-                return groupByEngineWithFilter.groupBy();
+                if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                    GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                    groupByEngineNoFilterLocal.set(groupByEngineNoFilter);
+                    return groupByEngineNoFilter.groupBy();
+                } else {
+                    GroupByEngineWithFilter groupByEngineWithFilter = new GroupByEngineWithFilter(aggregations, filterStructures, origin, unit, intervalFilter, fetchSize);
+                    groupByEngineWithFilterLocal.set(groupByEngineWithFilter);
+                    return groupByEngineWithFilter.groupBy();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
             LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
             groupByCalcTime.set(groupByCalcTime.get() + 1);
-            if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
-                QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
-                if (!ans.hasNextRecord()) {
-                    groupByCalcTime.remove();
-                    groupByEngineNoFilterLocal.remove();
-                    groupByEngineWithFilterLocal.remove();
-                    LOGGER.info("group by function without filter has no result");
+            try {
+                if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                    QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
+                    if (!ans.hasNextRecord()) {
+                        groupByCalcTime.remove();
+                        groupByEngineNoFilterLocal.remove();
+                        groupByEngineWithFilterLocal.remove();
+                        LOGGER.info("group by function without filter has no result");
+                    }
+                    return ans;
+                } else {
+                    QueryDataSet ans = groupByEngineWithFilterLocal.get().groupBy();
+                    if (!ans.hasNextRecord()) {
+                        groupByCalcTime.remove();
+                        groupByEngineNoFilterLocal.remove();
+                        groupByEngineWithFilterLocal.remove();
+                        LOGGER.info("group by function with filter has no result");
+                    }
+                    return ans;
                 }
-                return ans;
-            } else {
-                QueryDataSet ans = groupByEngineWithFilterLocal.get().groupBy();
-                if (!ans.hasNextRecord()) {
-                    groupByCalcTime.remove();
-                    groupByEngineNoFilterLocal.remove();
-                    groupByEngineWithFilterLocal.remove();
-                    LOGGER.info("group by function with filter has no result");
-                }
-                return ans;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
