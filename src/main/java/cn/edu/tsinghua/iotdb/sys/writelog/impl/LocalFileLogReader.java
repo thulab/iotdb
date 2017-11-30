@@ -360,7 +360,7 @@ public class LocalFileLogReader implements WriteLogReadable {
             }
             i -= (4 + opeContentLength);
         }
-        
+
         System.out.println("==" + overflowTailCount + "===" + bufferTailCount + "====" + overflowTailCount);
     }
 }
