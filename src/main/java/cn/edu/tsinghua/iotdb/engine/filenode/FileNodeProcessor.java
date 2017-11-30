@@ -58,7 +58,6 @@ public class FileNodeProcessor extends LRUProcessor {
 	 * deltaObjectId.
 	 */
 	private volatile Map<String, Long> lastUpdateTimeMap;
-
 	private volatile Map<String, List<IntervalFileNode>> InvertedindexOfFiles;
 	private volatile IntervalFileNode emptyIntervalFileNode;
 	private volatile IntervalFileNode currentIntervalFileNode;
