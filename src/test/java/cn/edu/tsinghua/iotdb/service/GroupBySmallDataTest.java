@@ -18,6 +18,7 @@ import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
 import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
 import static cn.edu.tsinghua.iotdb.service.TestUtils.max_time;
 import static cn.edu.tsinghua.iotdb.service.TestUtils.min_time;
+import static org.junit.Assert.fail;
 
 /**
  * This junit test is used for ```Group By``` function test.
@@ -107,9 +108,9 @@ public class GroupBySmallDataTest {
     private String metadataDirPre;
     private String derbyHomePre;
 
-    private Daemon deamon;
+    private IoTDB deamon;
 
-    private boolean testFlag = false;
+    private boolean testFlag = TestUtils.testFlag;
 
     @Before
     public void setUp() throws Exception {
@@ -127,7 +128,7 @@ public class GroupBySmallDataTest {
             config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
-            deamon = new Daemon();
+            deamon = new IoTDB();
             deamon.active();
         }
     }
@@ -215,6 +216,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -265,6 +267,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -313,6 +316,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -363,6 +367,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -411,6 +416,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -464,6 +470,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -512,6 +519,7 @@ public class GroupBySmallDataTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
