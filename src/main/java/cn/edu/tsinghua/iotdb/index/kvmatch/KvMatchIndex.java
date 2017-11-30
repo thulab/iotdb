@@ -525,7 +525,7 @@ public class KvMatchIndex  implements IoTIndex {
 
     private List<Pair<Pair<Long, Long>, Double>> validateCandidatesInParallel(List<Pair<Long, Long>> scanIntervals, Path columnPath, QueryConfig queryConfig, int token) throws ExecutionException, InterruptedException, PathErrorException, ProcessorException, IOException {
         List<Future<List<Pair<Pair<Long, Long>, Double>>>> futureResults = new ArrayList<>(PARALLELISM);
-        int intervalsPerTask = Math.min(Math.max(1, (int) Math.ceil(1.0 * scanIntervals.size() / PARALLELISM)), (new LongInterval()).v.length - 2), i = 0;  // TODO: change LongInterval.arrayMaxn to public static field
+        int intervalsPerTask = Math.min(Math.max(1, (int) Math.ceil(1.0 * scanIntervals.size() / PARALLELISM)), (new LongInterval()).v.length / 2 - 2), i = 0;  // TODO: change LongInterval.arrayMaxn to public static field
         while (i < scanIntervals.size()) {
             List<Pair<Long, Long>> partialScanIntervals = scanIntervals.subList(i, Math.min(scanIntervals.size(), i + intervalsPerTask));
             i += intervalsPerTask;

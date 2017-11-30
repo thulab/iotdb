@@ -96,7 +96,7 @@ public class KvIndexPerfTestInstance {
         };
         defaultWindowLength = 500;
         defaultPatternStartPos = 1;
-        lastTimestamp = new long[]{1000000, 10000000, 100000000, 1000000000};
+        lastTimestamp = new long[]{1000000, 10000000, 100000000, 1000000000, 2000000000, 3000000000l};
         defaultPatternLength = 1000;
 
         int pos = 1;
@@ -113,7 +113,7 @@ public class KvIndexPerfTestInstance {
             for (String sql : sqls) {
                 statement.execute(sql);
             }
-            for (int i = 0;i < 28;i++) {
+            for (int i = 0;i < 4 * 7;i++) {
                 int j = i % 7;
                 int k = i / 7;
                 String sql;
@@ -163,7 +163,7 @@ public class KvIndexPerfTestInstance {
         String[][] sensors = new String[][]{
                 {"s5"}, {"s5","s0"},{"s5","s0","s1"}, {"s5","s0","s1","s2"}
         };
-        for (int i = 0;i < 28;i++) {
+        for (int i = 0;i < 4 * 7;i++) {
             int j = i % 7;
             int k = i / 7;
             if (k != 0 && j != 0) continue;
