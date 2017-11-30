@@ -157,7 +157,7 @@ public class OverflowQueryEngine {
             throws ProcessorException, PathErrorException, IOException {
         if (firstGroupByCalcFlag.get() == null) {
             LOGGER.info("calculate aggregations first time");
-            firstGroupByCalcFlag.set(2);
+            firstGroupByCalcFlag.set(1);
 
             groupByEngineNoFilterLocal = new ThreadLocal<>();
             groupByEngineWithFilterLocal = new ThreadLocal<>();
@@ -193,6 +193,7 @@ public class OverflowQueryEngine {
             }
         } else {
             LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(firstGroupByCalcFlag.get())));
+            firstGroupByCalcFlag.set(firstGroupByCalcFlag.get() + 1);
             if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
                 QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
                 if (!ans.hasNextRecord()) {

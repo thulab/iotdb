@@ -66,7 +66,7 @@ public class Utils {
 	
 	private static TSDynamicOneColumnData convertDynamicOneColumnData(DynamicOneColumnData dynamicOneColumnData){
 
-		LOG.info("DynamicOneColumnData convert size : " +  dynamicOneColumnData.timeLength + "," + dynamicOneColumnData.emptyTimeLength);
+		//LOG.info("DynamicOneColumnData convert size : " +  dynamicOneColumnData.timeLength + "," + dynamicOneColumnData.emptyTimeLength);
 
 		List<Long> timeRetList = new ArrayList<Long>();
 		for(int i = 0 ; i < dynamicOneColumnData.timeLength; i ++){
