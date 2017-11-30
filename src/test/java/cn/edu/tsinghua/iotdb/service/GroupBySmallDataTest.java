@@ -110,7 +110,7 @@ public class GroupBySmallDataTest {
 
     private Daemon deamon;
 
-    private boolean testFlag = TestUtils.testFlag;
+    private boolean testFlag = !TestUtils.testFlag;
 
     @Before
     public void setUp() throws Exception {
@@ -173,8 +173,9 @@ public class GroupBySmallDataTest {
 //            groupByWithFilterCountManyIntervalTest();
 //            groupByMultiAggregationFunctionTest();
 //            groupNoValidIntervalTest();
-            groupMultiResultNoFilterTest();
+//            groupMultiResultNoFilterTest();
 //            groupMultiResultWithFilterTest();
+            groupSelectMultiDeltaObjectTest();
             connection.close();
         }
     }
@@ -662,6 +663,35 @@ public class GroupBySmallDataTest {
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select count(s0),min_value(s1),max_value(s2),min_time(s3) " +
                     "from root.vehicle.d0 where s0 != 0 group by(1ms, 0, [0,10000000])");
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 1;
+                while (resultSet.next()) {
+                    cnt++;
+                }
+                Assert.assertEquals(10000002, cnt);
+            }
+
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void groupSelectMultiDeltaObjectTest() throws ClassNotFoundException, SQLException {
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select count(s0),min_value(s1),max_value(s2),min_time(s3) " +
+                    "from root.vehicle.d0,root.vehicle.d1 where s0 != 0 group by(10ms, 0, [0,1500])");
             if (hasResultSet) {
                 ResultSet resultSet = statement.getResultSet();
                 int cnt = 1;
