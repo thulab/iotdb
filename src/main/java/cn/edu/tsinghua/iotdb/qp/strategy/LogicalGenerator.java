@@ -80,7 +80,6 @@ public class LogicalGenerator {
 	 */
 	private void analyze(ASTNode astNode) throws QueryProcessorException, ArgsErrorException {
 		Token token = astNode.getToken();
-		System.out.println(astNode.dump());
 		if (token == null)
 			throw new QueryProcessorException("given token is null");
 		int tokenIntType = token.getType();
@@ -485,6 +484,9 @@ public class LogicalGenerator {
 	}
 
 	private void analyzeGroupBy(ASTNode astNode) throws LogicalOperatorException {
+		SelectOperator selectOp = ((QueryOperator) initializedOperator).getSelectOperator();
+		if(selectOp.getSuffixPaths().size() != selectOp.getAggregations().size())
+			throw new LogicalOperatorException("Group by must bind each path with an aggregation function");
 		((QueryOperator) initializedOperator).setGroupBy(true);
 		int childCount = astNode.getChildCount();
 
