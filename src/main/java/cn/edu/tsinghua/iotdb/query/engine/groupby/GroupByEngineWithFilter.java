@@ -353,8 +353,11 @@ public class GroupByEngineWithFilter {
             // common aggregate timestamps is empty
             // the query data of path should be clear too
             if (aggregateTimestamps.size() == 0) {
-                if (data != null)
+                if (data != null) {
                     data.clearData();
+                } else {
+                    data = new DynamicOneColumnData(aggregateFunction.dataType, true);
+                }
                 queryCalcFlag = true;
                 continue;
             }
