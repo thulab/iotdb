@@ -48,6 +48,7 @@ public class AggregateEngine {
         }
 
         QueryDataSet ansQueryDataSet = new QueryDataSet();
+        List<AggregateFunction> aggregateFunctionAns = new ArrayList<>();
 
         List<QueryDataSet> fsDataSets = new ArrayList<>(); // stores the query QueryDataSet of each FilterStructure in filterStructures
         List<long[]> fsTimeList = new ArrayList<>(); // stores calculated common timestamps of each FilterStructure answer
@@ -157,6 +158,7 @@ public class AggregateEngine {
                     continue;
                 }
 
+                aggregateFunctionAns.add(aggregateFunction);
                 RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                         null, null, null, null, ReadCachePrefix.addQueryPrefix(aggregationOrdinal));
 
@@ -173,31 +175,34 @@ public class AggregateEngine {
                             insertTrue, updateTrue, updateFalse,
                             newTimeFilter, null, null, dataType);
 
-                    Pair<AggregationResult, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
                             recordReader.insertAllData.updateTrue, recordReader.insertAllData.updateFalse, recordReader.insertAllData,
                             newTimeFilter, null, null, aggregateTimestamps, null);
-                    AggregationResult result = aggrPair.left;
+                    AggregateFunction function = aggrPair.left;
                     boolean hasUnReadDataFlag = aggrPair.right;
                     hasUnReadDataMap.put(aggregationOrdinal, hasUnReadDataFlag);
                     if (hasUnReadDataFlag) {
                         hasAnyUnReadDataFlag = true;
                     }
-                    ansQueryDataSet.mapRet.put(aggregationKey, result.data);
+//                    if (function.result.data.timeLength == 0) {
+//                        function.putDefaultValue();
+//                    }
+                    ansQueryDataSet.mapRet.put(aggregationKey, function.result.data);
                 } else {
                     /*
                      * ansQueryDataSet.mapRet.get(aggregationKey) stores the aggregation result,
                      * not the lastAggreData.
                      */
-                    Pair<AggregationResult, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
                             recordReader.insertAllData.updateTrue, recordReader.insertAllData.updateFalse, recordReader.insertAllData,
                             recordReader.insertAllData.timeFilter, null, null, aggregateTimestamps, null);
-                    AggregationResult result = aggrPair.left;
+                    AggregateFunction function = aggrPair.left;
                     boolean hasUnReadDataFlag = aggrPair.right;
                     hasUnReadDataMap.put(aggregationOrdinal, hasUnReadDataFlag);
                     if (hasUnReadDataFlag) {
                         hasAnyUnReadDataFlag = true;
                     }
-                    ansQueryDataSet.mapRet.put(aggregationKey, result.data);
+                    ansQueryDataSet.mapRet.put(aggregationKey, function.result.data);
                 }
             }
 
@@ -205,6 +210,14 @@ public class AggregateEngine {
             aggregateTimestamps.clear();
         }
 
+        int cnt = 0;
+        for (Map.Entry<String, DynamicOneColumnData> map :ansQueryDataSet.mapRet.entrySet()) {
+            if (map.getValue().timeLength == 0) {
+                aggregateFunctionAns.get(cnt).putDefaultValue();
+                map.setValue(aggregateFunctionAns.get(cnt).result.data);
+            }
+            cnt++;
+        }
         return ansQueryDataSet;
     }
 
