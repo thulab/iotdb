@@ -357,6 +357,7 @@ public class GroupByEngineWithFilter {
                     data.clearData();
                 } else {
                     data = new DynamicOneColumnData(aggregateFunction.dataType, true);
+                    queryPathResult.put(aggregationKey, data);
                 }
                 queryCalcFlag = true;
                 continue;
