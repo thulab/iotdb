@@ -65,6 +65,8 @@ public class GroupByEngineNoFilter {
 
     private QueryDataSet groupByResult = new QueryDataSet();
 
+    private SingleSeriesFilterExpression timeFilter;
+
     public GroupByEngineNoFilter() {
     }
 

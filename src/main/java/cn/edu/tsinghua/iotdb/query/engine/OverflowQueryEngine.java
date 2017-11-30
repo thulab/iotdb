@@ -177,7 +177,7 @@ public class OverflowQueryEngine {
                     GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
                     groupByEngineNoFilterLocal.set(groupByEngineNoFilter);
                     return groupByEngineNoFilter.groupBy();
-                } else {
+                }  else {
                     GroupByEngineWithFilter groupByEngineWithFilter = new GroupByEngineWithFilter(aggregations, filterStructures, origin, unit, intervalFilter, fetchSize);
                     groupByEngineWithFilterLocal.set(groupByEngineWithFilter);
                     return groupByEngineWithFilter.groupBy();
