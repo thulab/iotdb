@@ -26,7 +26,7 @@
 ```
 
 ## Example
-
+(for more detailes, please see example/src/main/java/cn/edu/tsinghua/jdbcDemo/SendDataToIotdb.java)
 ```Java
 import java.sql.Connection;
 import java.sql.DriverManager;
