@@ -2,6 +2,13 @@ package cn.edu.tsinghua.iotdb.engine.cache;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+<<<<<<< HEAD
+=======
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+>>>>>>> master
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
@@ -14,8 +21,18 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
  *
  */
 public class RowGroupBlockMetaDataCache {
+<<<<<<< HEAD
 	/** key: the file path + DeltaObjectId */
 	private LinkedHashMap<String, TsRowGroupBlockMetaData> LRUCache;
+=======
+
+	private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
+	private static final int cacheSize = 100;
+	/** key: the file path + DeltaObjectId */
+	private LinkedHashMap<String, TsRowGroupBlockMetaData> LRUCache;
+	private AtomicLong cacheHintNum = new AtomicLong();
+	private AtomicLong cacheRequestNum = new AtomicLong();
+>>>>>>> master
 
 	/**
 	 * This class is a map used to cache the <code>RowGroupBlockMetaData</code>.
@@ -27,10 +44,18 @@ public class RowGroupBlockMetaDataCache {
 	private class LRULinkedHashMap extends LinkedHashMap<String, TsRowGroupBlockMetaData> {
 
 		private static final long serialVersionUID = 1290160928914532649L;
+<<<<<<< HEAD
 		private int maxCapacity;
 
 		public LRULinkedHashMap(int maxCapacity, boolean isLRU) {
 			super(maxCapacity, 0.75f, isLRU);
+=======
+		private static final float loadFactor = 0.75f;
+		private int maxCapacity;
+
+		public LRULinkedHashMap(int maxCapacity, boolean isLRU) {
+			super(maxCapacity, loadFactor, isLRU);
+>>>>>>> master
 			this.maxCapacity = maxCapacity;
 		}
 
@@ -44,7 +69,11 @@ public class RowGroupBlockMetaDataCache {
 	 * the default LRU cache size is 100. The singleton pattern.
 	 */
 	private static class RowGroupBlockMetaDataCacheSingleton {
+<<<<<<< HEAD
 		private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(100);
+=======
+		private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(cacheSize);
+>>>>>>> master
 	}
 
 	public static RowGroupBlockMetaDataCache getInstance() {
@@ -60,7 +89,18 @@ public class RowGroupBlockMetaDataCache {
 		String jointPath = filePath + deltaObjectId;
 		jointPath = jointPath.intern();
 		synchronized (LRUCache) {
+<<<<<<< HEAD
 			if (LRUCache.containsKey(jointPath)) {
+=======
+			cacheRequestNum.incrementAndGet();
+			if (LRUCache.containsKey(jointPath)) {
+				cacheHintNum.incrementAndGet();
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug(
+							"Cache hint: the number of requests for cache is {}, the number of hints for cache is {}",
+							cacheRequestNum.get(), cacheHintNum.get());
+				}
+>>>>>>> master
 				return LRUCache.get(jointPath);
 			}
 		}
@@ -70,6 +110,12 @@ public class RowGroupBlockMetaDataCache {
 					return LRUCache.get(jointPath);
 				}
 			}
+<<<<<<< HEAD
+=======
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Cache didn't hint: the number of requests for cache is {}", cacheRequestNum.get());
+			}
+>>>>>>> master
 			TsRowGroupBlockMetaData blockMetaData = TsFileMetadataUtils.getTsRowGroupBlockMetaData(filePath,
 					deltaObjectId, fileMetaData);
 			synchronized (LRUCache) {

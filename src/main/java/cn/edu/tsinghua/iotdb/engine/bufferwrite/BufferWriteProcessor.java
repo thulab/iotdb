@@ -36,17 +36,21 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+<<<<<<< HEAD
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
+=======
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
+>>>>>>> master
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.format.FileMetaData;
+import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -285,7 +289,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 		lastRowgroupSize = rowGroupMetaDatas.size();
 		TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
 		tsRowGroupBlockMetaData.setRowGroups(appendMetadata);
+<<<<<<< HEAD
 		tsRowGroupBlockMetaData.setDeltaObjectID("temp");
+=======
+>>>>>>> master
 
 		RandomAccessFile out = null;
 		try {

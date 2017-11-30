@@ -64,7 +64,13 @@ public class GroupByEngineWithFilter {
     /** group by partition fetch size, when result size is reach to partitionSize, the current
      *  calculation will be terminated
      */
+<<<<<<< HEAD
     private int partitionFetchSize;
+=======
+    public QueryDataSet groupBy(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures,
+                                long unit, long origin, SingleSeriesFilterExpression intervals, int fetchSize)
+            throws IOException, ProcessorException, PathErrorException {
+>>>>>>> master
 
     /** HashMap to record the query result of each aggregation Path **/
     private Map<String, DynamicOneColumnData> queryPathResult = new HashMap<>();

@@ -64,7 +64,7 @@ public class RecordReaderFactory {
 			QueryStructure queryStructure;
 			try {
 				queryStructure = fileNodeManager.query(deltaObjectUID, measurementID, timeFilter, freqFilter, valueFilter);
-				LOGGER.info(queryStructure.toString());
+				// LOGGER.debug(queryStructure.toString());
 			} catch (FileNodeManagerException e) {
 				throw new ProcessorException(e.getMessage());
 			}
