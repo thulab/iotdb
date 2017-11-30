@@ -281,7 +281,6 @@ public class BufferWriteProcessor extends LRUProcessor {
 		lastRowgroupSize = rowGroupMetaDatas.size();
 		TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
 		tsRowGroupBlockMetaData.setRowGroups(appendMetadata);
-		tsRowGroupBlockMetaData.setDeltaObjectID("temp");
 
 		RandomAccessFile out = null;
 		try {

@@ -18,7 +18,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
  *
  */
 public class RowGroupBlockMetaDataCache {
+
 	private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
+	private static final int cacheSize = 100;
 	/** key: the file path + DeltaObjectId */
 	private LinkedHashMap<String, TsRowGroupBlockMetaData> LRUCache;
 	private AtomicLong cacheHintNum = new AtomicLong();
@@ -34,10 +36,11 @@ public class RowGroupBlockMetaDataCache {
 	private class LRULinkedHashMap extends LinkedHashMap<String, TsRowGroupBlockMetaData> {
 
 		private static final long serialVersionUID = 1290160928914532649L;
+		private static final float loadFactor = 0.75f;
 		private int maxCapacity;
 
 		public LRULinkedHashMap(int maxCapacity, boolean isLRU) {
-			super(maxCapacity, 0.75f, isLRU);
+			super(maxCapacity, loadFactor, isLRU);
 			this.maxCapacity = maxCapacity;
 		}
 
@@ -51,7 +54,7 @@ public class RowGroupBlockMetaDataCache {
 	 * the default LRU cache size is 100. The singleton pattern.
 	 */
 	private static class RowGroupBlockMetaDataCacheSingleton {
-		private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(100);
+		private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(cacheSize);
 	}
 
 	public static RowGroupBlockMetaDataCache getInstance() {
