@@ -9,7 +9,8 @@ import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
 import static org.junit.Assert.fail;
 
 /**
- * Created by beyyes on 17/11/30.
+ * test class
+ * connection to remote server
  */
 public class ConnectionMain {
 
