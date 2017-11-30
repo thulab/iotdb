@@ -242,9 +242,9 @@ public class KvIndexPerfTestInstance {
         //suppose the time range of the path is 0~x, we test the time costs of creating index over 10%, 20%, ...
         //90% of the whole time range.
 //        for (float i = 0.2f; i < 2f; i += 0.2) {
+        path = "root.vehicle.d14.s5";
         for (int i = 1; i <= 5;i++){
             int patternLength = (int) (defaultPatternLength * Math.pow(10, i));
-            path = "root.vehicle.d14.s5";
 
             double averageTime = query(String.format("select index kvindex(%s, %s, %s, %s, %s, 1.0, 0.0) from %s",
                     path, path, defaultPatternStartPos, (defaultPatternStartPos + patternLength - 1), defaultThreshold,
@@ -253,7 +253,7 @@ public class KvIndexPerfTestInstance {
             System.out.println("the ratio of pattern length: " + patternLength + "\ttime:" + averageTime);
 
             resultWriter = new FileWriter(resultFile, true);
-            resultWriter.write("pattern_test:\tsingle file\tlength: " + lastTimestamp[1] + "\tpattern length: " + patternLength + "\ttime: " + averageTime + "s\n");
+            resultWriter.write("pattern_test:\tsingle file\tlength: " + lastTimestamp[2] + "\tpattern length: " + patternLength + "\ttime: " + averageTime + "s\n");
             resultWriter.close();
         }
     }
@@ -314,7 +314,7 @@ public class KvIndexPerfTestInstance {
             System.out.println("the ratio of window length: " + i + "\ttime:" + averageTime);
 
             resultWriter = new FileWriter(resultFile, true);
-            resultWriter.write("window_length_test:\tsingle file\tlength: " + lastTimestamp[1] + "\twindow_length: " + (int)(defaultWindowLength * i) + "\tcreate time: " + aT + "s\tquery time:" + averageTime + "s\n");
+            resultWriter.write("window_length_test:\tsingle file\tlength: " + lastTimestamp[2] + "\twindow_length: " + (int)(defaultWindowLength * i) + "\tcreate time: " + aT + "s\tquery time:" + averageTime + "s\n");
             resultWriter.close();
         }
     }
