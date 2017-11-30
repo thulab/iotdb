@@ -110,7 +110,7 @@ public class GroupBySmallDataTest {
 
     private Daemon deamon;
 
-    private boolean testFlag = TestUtils.testFlag;
+    private boolean testFlag = !TestUtils.testFlag;
 
     @Before
     public void setUp() throws Exception {
@@ -175,8 +175,9 @@ public class GroupBySmallDataTest {
 //            groupNoValidIntervalTest();
 //            groupMultiResultNoFilterTest();
 //            groupMultiResultWithFilterTest();
-//            groupSelectMultiDeltaObjectTest();
+            groupSelectMultiDeltaObjectTest();
 //            selectMultiTimeTest();
+//            threadLocalTest();
             connection.close();
         }
     }
@@ -741,6 +742,51 @@ public class GroupBySmallDataTest {
                 Assert.assertEquals(17, cnt);
             }
 
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void threadLocalTest() throws ClassNotFoundException, SQLException {
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select count(s0),min_value(s1)" +
+                    "from root.vehicle.d0 group by(100ms, 0, [0,1500])");
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 1;
+                while (resultSet.next()) {
+                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                            + "," + resultSet.getString(min_value(d0s1));
+                    System.out.println(ans);
+                    cnt++;
+                }
+            }
+            statement.close();
+
+            statement = connection.createStatement();
+            hasResultSet = statement.execute("select count(s0),min_value(s1)" +
+                    "from root.vehicle.d0 group by(10ms, 0, [1600,1700])");
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 1;
+                while (resultSet.next()) {
+                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                            + "," + resultSet.getString(min_value(d0s1));
+                    System.out.println(ans);
+                    cnt++;
+                }
+            }
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

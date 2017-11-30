@@ -17,6 +17,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,6 +27,8 @@ import java.util.*;
  * Group by aggregation implementation without <code>FilterStructure</code>.
  */
 public class GroupByEngineNoFilter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GroupByEngineNoFilter.class);
 
     /** formNumber is set to -1 default **/
     private int formNumber = -1;
@@ -98,16 +102,8 @@ public class GroupByEngineNoFilter {
 
         // all the interval has been calculated
         if (intervalIndex >= longInterval.count) {
-            QueryDataSet ansQueryDataSet = new QueryDataSet();
-            int cnt = 0;
-            for (Pair<Path, AggregateFunction> pair : aggregations) {
-                if (duplicatedPaths.contains(cnt))
-                    cnt++;
-                Path path = pair.left;
-                AggregateFunction aggregateFunction = pair.right;
-                ansQueryDataSet.mapRet.put(aggregationKey(path, aggregateFunction), new DynamicOneColumnData(aggregateFunction.dataType, true));
-            }
-            return ansQueryDataSet;
+            groupByResult.clear();
+            return groupByResult;
         }
 
         long partitionStart = origin; // partition start time
@@ -198,6 +194,8 @@ public class GroupByEngineNoFilter {
             AggregateFunction aggregateFunction = pair.right;
             groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
         }
+
+        LOG.info("current group by function with no filter is over.");
         return groupByResult;
     }
 

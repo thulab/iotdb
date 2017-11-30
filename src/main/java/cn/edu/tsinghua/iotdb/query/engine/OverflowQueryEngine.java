@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
+import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -127,17 +128,6 @@ public class OverflowQueryEngine {
         return AggregateEngine.multiAggregate(aggregations, filterStructures);
     }
 
-    /** if this variable equals true, represent that the group by method is executed the first time**/
-    private ThreadLocal<Integer> firstGroupByCalcFlag = new ThreadLocal<>();
-
-    //private List<Pair<Path, AggregateFunction>> aggregations;
-
-    /** ThreadLocal, due to the usage of OverflowQPExecutor **/
-    private ThreadLocal<GroupByEngineNoFilter> groupByEngineNoFilterLocal;
-
-    /** ThreadLocal, due to the usage of OverflowQPExecutor **/
-    private ThreadLocal<GroupByEngineWithFilter> groupByEngineWithFilterLocal;
-
     /**
      * Group by feature implementation.
      *
@@ -155,13 +145,14 @@ public class OverflowQueryEngine {
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
             throws ProcessorException, PathErrorException, IOException {
-        if (firstGroupByCalcFlag.get() == null) {
-            LOGGER.info("calculate aggregations first time");
-            firstGroupByCalcFlag.set(1);
 
-            groupByEngineNoFilterLocal = new ThreadLocal<>();
-            groupByEngineWithFilterLocal = new ThreadLocal<>();
+        ThreadLocal<Integer> groupByCalcTime = ReadLockManager.getInstance().getGroupByCalcCalcTime();
+        ThreadLocal<GroupByEngineNoFilter> groupByEngineNoFilterLocal = ReadLockManager.getInstance().getGroupByEngineNoFilterLocal();
+        ThreadLocal<GroupByEngineWithFilter> groupByEngineWithFilterLocal = ReadLockManager.getInstance().getGroupByEngineWithFilterLocal();
 
+        if (groupByCalcTime.get() == null) {
+            LOGGER.info("calculate aggregations the 1 time");
+            groupByCalcTime.set(2);
             SingleSeriesFilterExpression intervalFilter = null;
             for (Pair<Long, Long> pair : intervals) {
                 if (intervalFilter == null) {
@@ -192,24 +183,24 @@ public class OverflowQueryEngine {
                 return groupByEngineWithFilter.groupBy();
             }
         } else {
-            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(firstGroupByCalcFlag.get())));
-            firstGroupByCalcFlag.set(firstGroupByCalcFlag.get() + 1);
+            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+            groupByCalcTime.set(groupByCalcTime.get() + 1);
             if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
                 QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
                 if (!ans.hasNextRecord()) {
-                    firstGroupByCalcFlag.remove();
+                    groupByCalcTime.remove();
                     groupByEngineNoFilterLocal.remove();
                     groupByEngineWithFilterLocal.remove();
-                    LOGGER.info("no group by function result");
+                    LOGGER.info("group by function without filter has no result");
                 }
                 return ans;
             } else {
                 QueryDataSet ans = groupByEngineWithFilterLocal.get().groupBy();
                 if (!ans.hasNextRecord()) {
-                    firstGroupByCalcFlag.remove();
+                    groupByCalcTime.remove();
                     groupByEngineNoFilterLocal.remove();
                     groupByEngineWithFilterLocal.remove();
-                    LOGGER.info("no group by function result");
+                    LOGGER.info("group by function with filter has no result");
                 }
                 return ans;
             }
