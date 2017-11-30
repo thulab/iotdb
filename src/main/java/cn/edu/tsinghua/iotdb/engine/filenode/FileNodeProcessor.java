@@ -3,13 +3,8 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -586,12 +581,16 @@ public class FileNodeProcessor extends LRUProcessor {
 		//
 		// check the empty file
 		//
+		Map<String, Long> startTimeMap = emptyIntervalFileNode.getStartTimeMap();
 		if (emptyIntervalFileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
-			for (Entry<String, Long> entry : emptyIntervalFileNode.getEndTimeMap().entrySet()) {
+			Iterator<Entry<String, Long>> iterator = emptyIntervalFileNode.getEndTimeMap().entrySet().iterator();
+			while (iterator.hasNext()) {
+				Entry<String, Long> entry = iterator.next();
 				String deltaObjectId = entry.getKey();
 				if (indexOfFiles.containsKey(deltaObjectId)) {
 					indexOfFiles.get(deltaObjectId).get(0).overflowChangeType = OverflowChangeType.CHANGED;
-					emptyIntervalFileNode.removeTime(deltaObjectId);
+					startTimeMap.remove(deltaObjectId);
+					iterator.remove();
 				}
 			}
 			if (emptyIntervalFileNode.checkEmpty()) {
