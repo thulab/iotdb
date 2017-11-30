@@ -73,13 +73,13 @@ public class ReadLockManager {
         locksMap.remove();
         recordReaderCache.clear();
 
-        if (groupByCalcCalcTime.get() != null) {
+        if (groupByCalcCalcTime != null && groupByCalcCalcTime.get() != null) {
             groupByCalcCalcTime.remove();
         }
-        if (groupByEngineNoFilterLocal.get() != null) {
+        if (groupByEngineNoFilterLocal != null && groupByEngineNoFilterLocal.get() != null) {
             groupByEngineNoFilterLocal.remove();
         }
-        if (groupByEngineWithFilterLocal.get() != null) {
+        if (groupByEngineWithFilterLocal != null && groupByEngineWithFilterLocal.get() != null) {
             groupByEngineWithFilterLocal.remove();
         }
     }
