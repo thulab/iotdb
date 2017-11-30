@@ -346,7 +346,7 @@ public class WriteLogNodeTest {
             // output(plan);
         }
         Assert.assertEquals(0, cnt);
-
+        node.readerReset();
 
         measurements.clear();
         measurements.add("s1");
