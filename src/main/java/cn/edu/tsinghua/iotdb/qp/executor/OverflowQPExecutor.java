@@ -119,7 +119,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 								long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
 			throws ProcessorException, IOException, PathErrorException {
 
-		LOG.info("calculate group by aggregation: " + origin +"," + unit);
+		//LOG.info("calculate group by aggregation: " + origin +"," + unit);
 
 		return queryEngine.groupBy(aggres, filterStructures, unit, origin, intervals, fetchSize);
 	}

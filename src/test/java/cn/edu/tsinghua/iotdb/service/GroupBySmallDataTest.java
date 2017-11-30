@@ -173,7 +173,8 @@ public class GroupBySmallDataTest {
 //            groupByWithFilterCountManyIntervalTest();
 //            groupByMultiAggregationFunctionTest();
 //            groupNoValidIntervalTest();
-//            groupMultiResultNoFilterTest();
+            groupMultiResultNoFilterTest();
+//            groupMultiResultWithFilterTest();
             connection.close();
         }
     }
@@ -626,27 +627,48 @@ public class GroupBySmallDataTest {
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select count(s0),min_value(s1),max_value(s2),min_time(s3) " +
-                    "from root.vehicle.d0 group by(100ms, 0, [0,1000000000])");
+//            boolean hasResultSet = statement.execute("select count(s0),min_value(s1),max_value(s2),min_time(s3) " +
+//                    "from root.vehicle.d0 group by(1ms, 0, [0,10000000])");
+
+            String sql = "select count(s0),min_value(s0),max_value(s0),min_time(s0) from root.vehicle.d0 group by(10ms, 0, [2010-01-01T00:00:00.000,2010-01-08T16:43:15.000])";
+            boolean hasResultSet = statement.execute(sql);
             if (hasResultSet) {
                 ResultSet resultSet = statement.getResultSet();
                 int cnt = 1;
                 while (resultSet.next()) {
-//                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
-//                            + "," + resultSet.getString(min_value(d0s1)) + "," + resultSet.getString(max_value(d0s2))
-//                            + "," + resultSet.getString(min_time(d0s3));
-                    // System.out.println(ans);
-//                    switch (cnt) {
-//                        case 2:
-//                            Assert.assertEquals("1000,1,55555,1000.11,null", ans);
-//                            break;
-//                        default:
-//                            Assert.assertEquals(resultSet.getString(TIMESTAMP_STR) + ",null,null,null,null", ans);
-//                    }
                     cnt++;
                 }
-                //Assert.assertEquals(3, cnt);
-                System.out.println(cnt);
+                System.out.println("--------" + cnt);
+                //Assert.assertEquals(10000002, cnt);
+            }
+
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void groupMultiResultWithFilterTest() throws ClassNotFoundException, SQLException {
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select count(s0),min_value(s1),max_value(s2),min_time(s3) " +
+                    "from root.vehicle.d0 where s0 != 0 group by(1ms, 0, [0,10000000])");
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 1;
+                while (resultSet.next()) {
+                    cnt++;
+                }
+                Assert.assertEquals(10000002, cnt);
             }
 
             statement.close();
