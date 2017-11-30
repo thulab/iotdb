@@ -4,6 +4,7 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggreFuncFactory;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
@@ -107,8 +108,21 @@ public class OverflowQueryEngine {
 
         if (aggregateThreadLocal.get() != null && aggregateThreadLocal.get()) {
             aggregateThreadLocal.remove();
-            return new QueryDataSet();
+            QueryDataSet ansQueryDataSet = new QueryDataSet();
+            for (Pair<Path, AggregateFunction> pair : aggregations) {
+                Path path = pair.left;
+                AggregateFunction aggregateFunction = pair.right;
+                TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
+                String aggregationKey = aggregateFunction.name + "(" + path.getFullPath() + ")";
+                if (ansQueryDataSet.mapRet.size() > 0 && ansQueryDataSet.mapRet.containsKey(aggregationKey)) {
+                    continue;
+                }
+
+                ansQueryDataSet.mapRet.put(aggregationKey, new DynamicOneColumnData(dataType, true));
+            }
+            return ansQueryDataSet;
         }
+
         aggregateThreadLocal.set(true);
         return AggregateEngine.multiAggregate(aggregations, filterStructures);
     }

@@ -98,7 +98,16 @@ public class GroupByEngineNoFilter {
 
         // all the interval has been calculated
         if (intervalIndex >= longInterval.count) {
-            return new QueryDataSet();
+            QueryDataSet ansQueryDataSet = new QueryDataSet();
+            int cnt = 0;
+            for (Pair<Path, AggregateFunction> pair : aggregations) {
+                if (duplicatedPaths.contains(cnt))
+                    cnt++;
+                Path path = pair.left;
+                AggregateFunction aggregateFunction = pair.right;
+                ansQueryDataSet.mapRet.put(aggregationKey(path, aggregateFunction), new DynamicOneColumnData(aggregateFunction.dataType, true));
+            }
+            return ansQueryDataSet;
         }
 
         long partitionStart = origin; // partition start time
