@@ -20,13 +20,13 @@
     <dependency>
       <groupId>cn.edu.tsinghua</groupId>
       <artifactId>iotdb-jdbc</artifactId>
-      <version>0.2.0</version>
+      <version>0.3.0</version>
     </dependency>
 </dependencies>
 ```
 
 ## Example
-
+(for more detailes, please see example/src/main/java/cn/edu/tsinghua/jdbcDemo/SendDataToIotdb.java)
 ```Java
 import java.sql.Connection;
 import java.sql.DriverManager;
