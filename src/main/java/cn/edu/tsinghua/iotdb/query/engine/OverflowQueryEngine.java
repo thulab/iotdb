@@ -99,33 +99,39 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-        LOGGER.info("Aggregation content: {}", aggres.toString());
-        List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
-        for (Pair<Path, String> pair : aggres) {
-            TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
-            AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
-            aggregations.add(new Pair<>(pair.left, func));
-        }
 
-        if (aggregateThreadLocal.get() != null && aggregateThreadLocal.get()) {
-            aggregateThreadLocal.remove();
-            QueryDataSet ansQueryDataSet = new QueryDataSet();
-            for (Pair<Path, AggregateFunction> pair : aggregations) {
-                Path path = pair.left;
-                AggregateFunction aggregateFunction = pair.right;
-                TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
-                String aggregationKey = aggregateFunction.name + "(" + path.getFullPath() + ")";
-                if (ansQueryDataSet.mapRet.size() > 0 && ansQueryDataSet.mapRet.containsKey(aggregationKey)) {
-                    continue;
-                }
-
-                ansQueryDataSet.mapRet.put(aggregationKey, new DynamicOneColumnData(dataType, true));
+        try {
+            LOGGER.info("Aggregation content: {}", aggres.toString());
+            List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
+            for (Pair<Path, String> pair : aggres) {
+                TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
+                AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
+                aggregations.add(new Pair<>(pair.left, func));
             }
-            return ansQueryDataSet;
-        }
 
-        aggregateThreadLocal.set(true);
-        return AggregateEngine.multiAggregate(aggregations, filterStructures);
+            if (aggregateThreadLocal.get() != null && aggregateThreadLocal.get()) {
+                aggregateThreadLocal.remove();
+                QueryDataSet ansQueryDataSet = new QueryDataSet();
+                for (Pair<Path, AggregateFunction> pair : aggregations) {
+                    Path path = pair.left;
+                    AggregateFunction aggregateFunction = pair.right;
+                    TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
+                    String aggregationKey = aggregateFunction.name + "(" + path.getFullPath() + ")";
+                    if (ansQueryDataSet.mapRet.size() > 0 && ansQueryDataSet.mapRet.containsKey(aggregationKey)) {
+                        continue;
+                    }
+
+                    ansQueryDataSet.mapRet.put(aggregationKey, new DynamicOneColumnData(dataType, true));
+                }
+                return ansQueryDataSet;
+            }
+
+            aggregateThreadLocal.set(true);
+            return AggregateEngine.multiAggregate(aggregations, filterStructures);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
