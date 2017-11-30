@@ -128,7 +128,7 @@ public class OverflowQueryEngine {
     }
 
     /** if this variable equals true, represent that the group by method is executed the first time**/
-    private ThreadLocal<Boolean> firstGroupByCalcFlag = new ThreadLocal<>();
+    private ThreadLocal<Integer> firstGroupByCalcFlag = new ThreadLocal<>();
 
     //private List<Pair<Path, AggregateFunction>> aggregations;
 
@@ -156,7 +156,8 @@ public class OverflowQueryEngine {
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
             throws ProcessorException, PathErrorException, IOException {
         if (firstGroupByCalcFlag.get() == null) {
-            firstGroupByCalcFlag.set(false);
+            LOGGER.info("calculate aggregations first time");
+            firstGroupByCalcFlag.set(2);
 
             groupByEngineNoFilterLocal = new ThreadLocal<>();
             groupByEngineWithFilterLocal = new ThreadLocal<>();
@@ -191,12 +192,14 @@ public class OverflowQueryEngine {
                 return groupByEngineWithFilter.groupBy();
             }
         } else {
+            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(firstGroupByCalcFlag.get())));
             if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
                 QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
                 if (!ans.hasNextRecord()) {
                     firstGroupByCalcFlag.remove();
                     groupByEngineNoFilterLocal.remove();
                     groupByEngineWithFilterLocal.remove();
+                    LOGGER.info("no group by function result");
                 }
                 return ans;
             } else {
@@ -205,6 +208,7 @@ public class OverflowQueryEngine {
                     firstGroupByCalcFlag.remove();
                     groupByEngineNoFilterLocal.remove();
                     groupByEngineWithFilterLocal.remove();
+                    LOGGER.info("no group by function result");
                 }
                 return ans;
             }
