@@ -69,8 +69,6 @@ public class OverflowQueryEngine {
                               FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
         this.formNumber = formNumber;
-        LOGGER.info("\r\nFormNumber: " + formNumber + ", TimeFilter: " + timeFilter + "; ValueFilter: " + valueFilter + "\r\nQuery Paths: "
-                + paths.toString());
         if (queryDataSet != null) {
             queryDataSet.clear();
         }
@@ -99,7 +97,7 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-
+        
         try {
             LOGGER.info("Aggregation content: {}", aggres.toString());
             List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
