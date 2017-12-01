@@ -25,13 +25,15 @@ public class ConnectionMain {
     static String sql3 = "SELECT max_value(s_13) FROM root.performf.group_7.d_75 WHERE root.performf.group_7.d_75.s_13 > 0.0  GROUP BY(250000ms, 1262275200000,[1262518199500,1262519199500])";
 
     static String error = "SELECT s_71 FROM root.performf.group_6.d_65 where s_71 > 0.0";
+
     String streamError =
             "SELECT max_value(s_71) FROM root.performf.group_6.d_65 WHERE root.performf.group_6.d_65.s_71 > 0.0  GROUP BY(250000ms, 1262275200000,[1262518199500,1262519199500])";
+
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.9:6667/", "root", "root");
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             //connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement;
             boolean hasResultSet;

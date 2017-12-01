@@ -159,12 +159,13 @@ public class RecordReader {
     ) throws ProcessorException, IOException, PathErrorException {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
 
-        for (RowGroupReader dbRowGroupReader : dbRowGroupReaderList) {
-            if (dbRowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    dbRowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                OverflowBufferWriteProcessor.aggregate(dbRowGroupReader.getValueReaders().get(measurementId),
+        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
+
+        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                OverflowBufferWriteProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
                         func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
             }
         }
@@ -185,7 +186,6 @@ public class RecordReader {
      * Calculate the aggregate result using the given timestamps.
      * Return a pair of AggregationResult and Boolean, AggregationResult represents the aggregation result,
      * Boolean represents that whether there still has unread data.
-     * </p>
      *
      * @param deltaObjectId deltaObjectId deltaObjectId of <code>Path</code>
      * @param measurementId measurementId of <code>Path</code>
@@ -197,7 +197,6 @@ public class RecordReader {
      * @param freqFilter frequency filter
      * @param valueFilter value filter
      * @param timestamps timestamps calculated by the cross filter
-     * @param aggreData aggregation result calculated last time //TODO this parameter is unnecessary?
      * @return aggregation result and whether still has unread data
      * @throws ProcessorException aggregation invoking exception
      * @throws IOException TsFile read exception
@@ -205,38 +204,41 @@ public class RecordReader {
     public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(String deltaObjectId, String measurementId, AggregateFunction func,
                                                                      DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
                                                                      SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                                                                     List<Long> timestamps, DynamicOneColumnData aggreData
-    ) throws ProcessorException, IOException {
+                                                                     List<Long> timestamps)
+            throws ProcessorException, IOException, PathErrorException {
 
-        boolean hasUnReadData = false;
+        boolean stillHasUnReadData;
 
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
+        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
+
+        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
 
         int commonTimestampsIndex = 0;
-        // TODO if the DbRowGroupReader.ValueReaders.get(measurementId) has been read, how to avoid it?
-        for (RowGroupReader dbRowGroupReader : dbRowGroupReaderList) {
-            if (dbRowGroupReader.getValueReaders().containsKey(measurementId)) {
-                commonTimestampsIndex = OverflowBufferWriteProcessor.aggregateUsingTimestamps(dbRowGroupReader.getValueReaders().get(measurementId),
-                        func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, timestamps, aggreData);
+
+        int rowGroupIndex = func.result.data.rowGroupIndex;
+
+        // TODO if the RowGroupReader.ValueReaders.get(measurementId) has been read, how to avoid it?
+        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                commonTimestampsIndex = OverflowBufferWriteProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
+                        func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, timestamps);
             }
         }
 
-        // calc aggregation using memory data
+        // calculate aggregation using unsealed file data and memory data
         if (insertMemoryData != null && insertMemoryData.hasInsertData()) {
-            hasUnReadData = func.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
+            stillHasUnReadData = func.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
         } else {
             if (commonTimestampsIndex < timestamps.size()) {
-                hasUnReadData = false;
+                stillHasUnReadData = false;
             } else {
-                hasUnReadData = true;
+                stillHasUnReadData = true;
             }
         }
 
-        if (func.result.data.timeLength == 0) {
-            func.putDefaultValue();
-        }
-
-        return new Pair<>(func, hasUnReadData);
+        return new Pair<>(func, stillHasUnReadData);
     }
 
     /**
@@ -246,9 +248,7 @@ public class RecordReader {
      * @throws ProcessorException
      * @throws IOException
      */
-    public DynamicOneColumnData getValuesUseTimestampsWithOverflow(String deltaObjectId, String measurementId, long[] timestamps,
-                                                                   DynamicOneColumnData updateTrue, InsertDynamicData insertMemoryData,
-                                                                   SingleSeriesFilterExpression deleteFilter)
+    public DynamicOneColumnData readUseCommonTimestamps(String deltaObjectId, String measurementId, long[] timestamps, InsertDynamicData insertMemoryData)
             throws ProcessorException, IOException {
 
         TSDataType dataType;

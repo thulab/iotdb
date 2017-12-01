@@ -380,13 +380,11 @@ public class GroupByEngineWithFilter {
                 recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                         insertTrue, updateTrue, updateFalse,
                         newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
-                data = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
-                        aggregateTimestamps.stream().mapToLong(i->i).toArray(), updateTrue, recordReader.insertAllData, newTimeFilter);
+                data = recordReader.readUseCommonTimestamps(deltaObjectId, measurementId, aggregateTimestamps.stream().mapToLong(i->i).toArray(), recordReader.insertAllData);
                 data.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
                 queryPathResult.put(aggregationKey, data);
             } else {
-                data = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
-                        aggregateTimestamps.stream().mapToLong(i->i).toArray(), data.updateTrue, recordReader.insertAllData, data.timeFilter);
+                data = recordReader.readUseCommonTimestamps(deltaObjectId, measurementId, aggregateTimestamps.stream().mapToLong(i->i).toArray(), recordReader.insertAllData);
                 queryPathResult.put(aggregationKey, data);
             }
         }

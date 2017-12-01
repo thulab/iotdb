@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggreFuncFactory;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
@@ -410,17 +409,14 @@ public class OverflowQueryEngine {
                 recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                         insertTrue, updateTrue, updateFalse,
                         newTimeFilter, null, freqFilter, getDataTypeByPath(path));
-                DynamicOneColumnData queryResult = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
-                        timestamps, updateTrue, recordReader.insertAllData, newTimeFilter);
+                DynamicOneColumnData queryResult = recordReader.readUseCommonTimestamps(deltaObjectId, measurementId, timestamps, recordReader.insertAllData);
                 queryResult.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
                 // reset the insertMemory read status
                 // recordReader.insertAllData.readStatusReset();
                 // recordReader.insertAllData.setCurrentPageBuffer(insertTrue);
-                DynamicOneColumnData oneColDataList = ret.mapRet.get(queryKey);
-                oneColDataList = recordReader.getValuesUseTimestampsWithOverflow(deltaObjectId, measurementId,
-                        timestamps, oneColDataList.updateTrue, recordReader.insertAllData, oneColDataList.timeFilter);
+                DynamicOneColumnData oneColDataList = recordReader.readUseCommonTimestamps(deltaObjectId, measurementId, timestamps, recordReader.insertAllData);
                 ret.mapRet.put(queryKey, oneColDataList);
             }
 

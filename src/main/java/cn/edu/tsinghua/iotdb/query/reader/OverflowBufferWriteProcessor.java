@@ -787,7 +787,7 @@ public class OverflowBufferWriteProcessor{
         // get column digest
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, dataType);
-        LOG.debug("Aggretation : Column Digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
+        LOG.debug("Calculate aggregation : Column Digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
 
         // to ensure that updateTrue and updateFalse is not null
@@ -897,16 +897,15 @@ public class OverflowBufferWriteProcessor{
      * @param updateFalse overflow update operation which doesn't satisfy the filter
      * @param timeFilter time filter
      * @param freqFilter frequency filter
-     * @param timestamps the timestamps which aggregation must satisfy
-     * @param lastAggreData last aggregation result, this variable is used for batch read
+     * @param aggregationTimestamps the timestamps which aggregation must satisfy
+     * @param lastAggregationResult last aggregation result, this variable is used for batch read
      * @return an int value, represents the read time index of timestamps
      * @throws IOException TsFile read error
      * @throws ProcessorException get read info error
      */
     static int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction func, InsertDynamicData insertMemoryData,
                                  DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression timeFilter,
-                                 SingleSeriesFilterExpression freqFilter, List<Long> timestamps,
-                                 DynamicOneColumnData lastAggreData) throws IOException, ProcessorException {
+                                 SingleSeriesFilterExpression freqFilter, List<Long> aggregationTimestamps) throws IOException, ProcessorException {
         TSDataType dataType = valueReader.dataType;
 
         // to ensure that updateTrue and updateFalse is not null
@@ -917,7 +916,10 @@ public class OverflowBufferWriteProcessor{
         update[0] = updateTrue;
         update[1] = updateFalse;
         int[] updateIdx = new int[]{updateTrue.curIdx, updateFalse.curIdx};
-        int timeIndex = 0;
+
+        // the used count of aggregationTimestamps,
+        // if all the time of aggregationTimestamps has been read, timestampsUsedIndex >= aggregationTimestamps.size()
+        int timestampsUsedIndex = 0;
 
         // for batch read
         while (func.maps.containsKey("pageTimeValues")) {
@@ -926,38 +928,38 @@ public class OverflowBufferWriteProcessor{
             InputStream page = (InputStream) func.maps.get("page");
             Pair<DynamicOneColumnData, Integer> ans = ReaderUtils.readOnePage(
                     dataType, pageTimeValues, pageTimeIndex, valueReader.decoder, page,
-                    timeFilter, freqFilter, timestamps, 0, insertMemoryData, update, updateIdx, func);
+                    timeFilter, freqFilter, aggregationTimestamps, 0, insertMemoryData, update, updateIdx, func);
+
             if (ans.left != null && ans.left.valueLength > 0)
                 func.calculateValueFromDataPage(ans.left);
-            timeIndex = ans.right;
-            if (timeIndex >= timestamps.size()) {
-                return timeIndex;
+            timestampsUsedIndex = ans.right;
+            if (timestampsUsedIndex >= aggregationTimestamps.size()) {
+                return timestampsUsedIndex;
             }
         }
 
-        // value filter is always null
-        if (lastAggreData == null) {
-            lastAggreData = new DynamicOneColumnData(dataType, true);
+        // lastAggregationResult records some information such as file page offset
+        DynamicOneColumnData lastAggregationResult = func.result.data;
+        if (lastAggregationResult.pageOffset == -1) {
+            lastAggregationResult.pageOffset = valueReader.fileOffset;
         }
-        lastAggreData.pageOffset = valueReader.fileOffset;
-
 
         // get column digest
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, valueReader.getDataType());
-        LOG.debug("aggregate using given timestamps, column Digest min and max is: "
+        LOG.debug("calculate aggregation using given common timestamps, series Digest min and max is: "
                 + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
 
-        ByteArrayInputStream bis = valueReader.initBAISForOnePage(lastAggreData.pageOffset);
+        ByteArrayInputStream bis = valueReader.initBAISForOnePage(lastAggregationResult.pageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
         int pageCount = 0;
 
-        // (lastAggreData.pageOffset - fileOffset) < totalSize : still has unread data
-        while ((lastAggreData.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
+        // still has unread data
+        while ((lastAggregationResult.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
             pageCount++;
-            LOG.debug("aggregate using given timestamps, read page {}, offset : {}", pageCount, lastAggreData.pageOffset);
+            LOG.debug("calculate aggregation using given common timestamps, read page {}, offset : {}", pageCount, lastAggregationResult.pageOffset);
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
             Digest pageDigest = pageHeader.data_page_header.getDigest();
@@ -966,46 +968,48 @@ public class OverflowBufferWriteProcessor{
             DigestForFilter timeDigestFF = new DigestForFilter(mint, maxt);
 
             // the min value of common timestamps is greater than max time in this series
-            if (timestamps.get(timeIndex) > maxt) {
+            if (aggregationTimestamps.get(timestampsUsedIndex) > maxt) {
                 pageReader.skipCurrentPage();
-                lastAggreData.pageOffset += lastAvailable - bis.available();
+                lastAggregationResult.pageOffset += lastAvailable - bis.available();
                 continue;
             }
 
             // if the current page doesn't satisfy the time filter
             if (timeFilter != null && !digestVisitor.satisfy(timeDigestFF, timeFilter))  {
                 pageReader.skipCurrentPage();
-                lastAggreData.pageOffset += lastAvailable - bis.available();
+                lastAggregationResult.pageOffset += lastAvailable - bis.available();
                 // TODO adjust index of timestamps to fit pageReader.skipCurrentPage()
                 continue;
             }
 
             // get the InputStream for this page
             InputStream page = pageReader.getNextPage();
-            // update lastAggreData's pageOffset to the start of next page.
-            lastAggreData.pageOffset += lastAvailable - bis.available();
+            // update lastAggregationResult's pageOffset to the start of next page.
+            lastAggregationResult.pageOffset += lastAvailable - bis.available();
 
             // get all time values in this page
             long[] pageTimeValues = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
             // set Decoder for current page
             valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), valueReader.getDataType()));
 
-            Pair<DynamicOneColumnData, Integer> ans = ReaderUtils.readOnePage(
+            Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePage(
                     dataType, pageTimeValues, 0, valueReader.decoder, page,
-                    timeFilter, freqFilter, timestamps, timeIndex, insertMemoryData, update, updateIdx, func);
-            if (ans.left != null && ans.left.valueLength > 0)
-                func.calculateValueFromDataPage(ans.left);
-            lastAggreData.clearData();
-            timeIndex = ans.right;
-            if (timeIndex >= timestamps.size())
+                    timeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx, func);
+            if (pageData.left != null && pageData.left.valueLength > 0)
+                func.calculateValueFromDataPage(pageData.left);
+
+            timestampsUsedIndex = pageData.right;
+            if (timestampsUsedIndex >= aggregationTimestamps.size())
                 break;
         }
 
-        // record the current updateTrue,updateFalse index for overflow info
+        lastAggregationResult.plusRowGroupIndexAndInitPageOffset();
+
+        // record the current updateTrue, updateFalse index for overflow info
         updateTrue.curIdx = updateIdx[0];
         updateFalse.curIdx = updateIdx[1];
 
-        return timeIndex;
+        return timestampsUsedIndex;
     }
 
     // TODO bug: not consider delete operation, maybe no need to consider.

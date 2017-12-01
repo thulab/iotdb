@@ -643,6 +643,7 @@ public class ReaderUtils {
     /**
      * <p>
      * An aggregation method implementation for the DataPage aspect.
+     * This method is only used for aggregation function.
      *
      * @param dataType DataPage data type
      * @param pageTimeValues the timestamps of current DataPage
@@ -669,8 +670,9 @@ public class ReaderUtils {
                                                                   List<Long> commonTimestamps, int commonTimestampsIndex,
                                                                   InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx,
                                                                   AggregateFunction func) throws IOException {
-        // This method is only used for aggregation function.
-        DynamicOneColumnData aggreDataAns = new DynamicOneColumnData(dataType, true);
+
+        DynamicOneColumnData aggregationResult = new DynamicOneColumnData(dataType, true);
+
         // calculate current mode
         int mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
 
@@ -689,9 +691,9 @@ public class ReaderUtils {
                                 && insertMemoryData.getCurrentMinTime() <= pageTimeValues[pageTimeIndex]) {
 
                             if (insertMemoryData.getCurrentMinTime() == timestamp) {
-                                aggreDataAns.putTime(insertMemoryData.getCurrentMinTime());
-                                aggreDataAns.putInt(insertMemoryData.getCurrentIntValue());
-                                aggreDataAns.insertTrueIndex++;
+                                aggregationResult.putTime(insertMemoryData.getCurrentMinTime());
+                                aggregationResult.putInt(insertMemoryData.getCurrentIntValue());
+                                aggregationResult.insertTrueIndex++;
                                 commonTimestampsIndex += 1;
                                 if (commonTimestampsIndex < commonTimestamps.size()) {
                                     timestamp = commonTimestamps.get(commonTimestampsIndex);
@@ -734,9 +736,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             if (pageTimeValues[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 if ((timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex]))) {
-                                    aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                    aggreDataAns.putInt(v);
-                                    aggreDataAns.insertTrueIndex++;
+                                    aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                    aggregationResult.putInt(v);
+                                    aggregationResult.insertTrueIndex++;
                                 } else {
                                     commonTimestampsIndex += 1;
                                     pageTimeIndex += 1;
@@ -751,13 +753,13 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex])) {
                                     if (update[0].getTime(updateIdx[0]) <= pageTimeValues[pageTimeIndex]
                                             && pageTimeValues[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putInt(update[0].getInt(updateIdx[0] / 2));
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putInt(update[0].getInt(updateIdx[0] / 2));
+                                        aggregationResult.insertTrueIndex++;
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putInt(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putInt(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -775,9 +777,9 @@ public class ReaderUtils {
                                             && pageTimeValues[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
                                         // never reach there
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putInt(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putInt(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -790,7 +792,7 @@ public class ReaderUtils {
                             }
                         }
 
-                        // Set the interval to next position that current time
+                        // set the interval to next position that current time
                         // in page maybe be included.
                         while (mode != -1 && pageTimeIndex < pageTimeValues.length
                                 && pageTimeValues[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
@@ -809,13 +811,13 @@ public class ReaderUtils {
                         func.maps.put("pageTimeValues", pageTimeValues);
                         func.maps.put("pageTimeIndex", pageTimeIndex);
                         func.maps.put("page", page);
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     // still has common timestamps, no page data
                     if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
                         func.maps.clear();
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     break;
@@ -827,9 +829,9 @@ public class ReaderUtils {
                                 && insertMemoryData.getCurrentMinTime() <= pageTimeValues[pageTimeIndex]) {
 
                             if (insertMemoryData.getCurrentMinTime() == timestamp) {
-                                aggreDataAns.putTime(insertMemoryData.getCurrentMinTime());
-                                aggreDataAns.putBoolean(insertMemoryData.getCurrentBooleanValue());
-                                aggreDataAns.insertTrueIndex++;
+                                aggregationResult.putTime(insertMemoryData.getCurrentMinTime());
+                                aggregationResult.putBoolean(insertMemoryData.getCurrentBooleanValue());
+                                aggregationResult.insertTrueIndex++;
                                 commonTimestampsIndex += 1;
                                 if (commonTimestampsIndex < commonTimestamps.size()) {
                                     timestamp = commonTimestamps.get(commonTimestampsIndex);
@@ -872,9 +874,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             if (pageTimeValues[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 if ((timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex]))) {
-                                    aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                    aggreDataAns.putBoolean(v);
-                                    aggreDataAns.insertTrueIndex++;
+                                    aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                    aggregationResult.putBoolean(v);
+                                    aggregationResult.insertTrueIndex++;
                                 } else {
                                     commonTimestampsIndex += 1;
                                     pageTimeIndex += 1;
@@ -889,13 +891,13 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex])) {
                                     if (update[0].getTime(updateIdx[0]) <= pageTimeValues[pageTimeIndex]
                                             && pageTimeValues[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putBoolean(update[0].getBoolean(updateIdx[0] / 2));
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putBoolean(update[0].getBoolean(updateIdx[0] / 2));
+                                        aggregationResult.insertTrueIndex++;
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putBoolean(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putBoolean(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -913,9 +915,9 @@ public class ReaderUtils {
                                             && pageTimeValues[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
                                         // never reach there
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putBoolean(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putBoolean(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -947,13 +949,13 @@ public class ReaderUtils {
                         func.maps.put("pageTimeValues", pageTimeValues);
                         func.maps.put("pageTimeIndex", pageTimeIndex);
                         func.maps.put("page", page);
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     // still has common timestamps, no page data
                     if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
                         func.maps.clear();
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     break;
@@ -965,9 +967,9 @@ public class ReaderUtils {
                                 && insertMemoryData.getCurrentMinTime() <= pageTimeValues[pageTimeIndex]) {
 
                             if (insertMemoryData.getCurrentMinTime() == timestamp) {
-                                aggreDataAns.putTime(insertMemoryData.getCurrentMinTime());
-                                aggreDataAns.putLong(insertMemoryData.getCurrentLongValue());
-                                aggreDataAns.insertTrueIndex++;
+                                aggregationResult.putTime(insertMemoryData.getCurrentMinTime());
+                                aggregationResult.putLong(insertMemoryData.getCurrentLongValue());
+                                aggregationResult.insertTrueIndex++;
                                 commonTimestampsIndex += 1;
                                 if (commonTimestampsIndex < commonTimestamps.size()) {
                                     timestamp = commonTimestamps.get(commonTimestampsIndex);
@@ -1010,9 +1012,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             if (pageTimeValues[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 if ((timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex]))) {
-                                    aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                    aggreDataAns.putLong(v);
-                                    aggreDataAns.insertTrueIndex++;
+                                    aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                    aggregationResult.putLong(v);
+                                    aggregationResult.insertTrueIndex++;
                                 } else {
                                     commonTimestampsIndex += 1;
                                     pageTimeIndex += 1;
@@ -1027,13 +1029,13 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex])) {
                                     if (update[0].getTime(updateIdx[0]) <= pageTimeValues[pageTimeIndex]
                                             && pageTimeValues[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putLong(update[0].getLong(updateIdx[0] / 2));
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putLong(update[0].getLong(updateIdx[0] / 2));
+                                        aggregationResult.insertTrueIndex++;
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putLong(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putLong(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1051,9 +1053,9 @@ public class ReaderUtils {
                                             && pageTimeValues[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
                                         // never reach there
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putLong(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putLong(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1085,13 +1087,13 @@ public class ReaderUtils {
                         func.maps.put("pageTimeValues", pageTimeValues);
                         func.maps.put("pageTimeIndex", pageTimeIndex);
                         func.maps.put("page", page);
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     // still has common timestamps, no page data
                     if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
                         func.maps.clear();
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     break;
@@ -1103,9 +1105,9 @@ public class ReaderUtils {
                                 && insertMemoryData.getCurrentMinTime() <= pageTimeValues[pageTimeIndex]) {
 
                             if (insertMemoryData.getCurrentMinTime() == timestamp) {
-                                aggreDataAns.putTime(insertMemoryData.getCurrentMinTime());
-                                aggreDataAns.putFloat(insertMemoryData.getCurrentFloatValue());
-                                aggreDataAns.insertTrueIndex++;
+                                aggregationResult.putTime(insertMemoryData.getCurrentMinTime());
+                                aggregationResult.putFloat(insertMemoryData.getCurrentFloatValue());
+                                aggregationResult.insertTrueIndex++;
                                 commonTimestampsIndex += 1;
                                 if (commonTimestampsIndex < commonTimestamps.size()) {
                                     timestamp = commonTimestamps.get(commonTimestampsIndex);
@@ -1148,9 +1150,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             if (pageTimeValues[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 if ((timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex]))) {
-                                    aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                    aggreDataAns.putFloat(v);
-                                    aggreDataAns.insertTrueIndex++;
+                                    aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                    aggregationResult.putFloat(v);
+                                    aggregationResult.insertTrueIndex++;
                                 } else {
                                     commonTimestampsIndex += 1;
                                     pageTimeIndex += 1;
@@ -1165,13 +1167,13 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex])) {
                                     if (update[0].getTime(updateIdx[0]) <= pageTimeValues[pageTimeIndex]
                                             && pageTimeValues[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putFloat(update[0].getFloat(updateIdx[0] / 2));
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putFloat(update[0].getFloat(updateIdx[0] / 2));
+                                        aggregationResult.insertTrueIndex++;
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putFloat(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putFloat(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1189,9 +1191,9 @@ public class ReaderUtils {
                                             && pageTimeValues[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
                                         // never reach there
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putFloat(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putFloat(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1223,13 +1225,13 @@ public class ReaderUtils {
                         func.maps.put("pageTimeValues", pageTimeValues);
                         func.maps.put("pageTimeIndex", pageTimeIndex);
                         func.maps.put("page", page);
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     // still has common timestamps, no page data
                     if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
                         func.maps.clear();
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     break;
@@ -1241,9 +1243,9 @@ public class ReaderUtils {
                                 && insertMemoryData.getCurrentMinTime() <= pageTimeValues[pageTimeIndex]) {
 
                             if (insertMemoryData.getCurrentMinTime() == timestamp) {
-                                aggreDataAns.putTime(insertMemoryData.getCurrentMinTime());
-                                aggreDataAns.putDouble(insertMemoryData.getCurrentDoubleValue());
-                                aggreDataAns.insertTrueIndex++;
+                                aggregationResult.putTime(insertMemoryData.getCurrentMinTime());
+                                aggregationResult.putDouble(insertMemoryData.getCurrentDoubleValue());
+                                aggregationResult.insertTrueIndex++;
                                 commonTimestampsIndex += 1;
                                 if (commonTimestampsIndex < commonTimestamps.size()) {
                                     timestamp = commonTimestamps.get(commonTimestampsIndex);
@@ -1286,9 +1288,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             if (pageTimeValues[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 if ((timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex]))) {
-                                    aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                    aggreDataAns.putDouble(v);
-                                    aggreDataAns.insertTrueIndex++;
+                                    aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                    aggregationResult.putDouble(v);
+                                    aggregationResult.insertTrueIndex++;
                                 } else {
                                     commonTimestampsIndex += 1;
                                     pageTimeIndex += 1;
@@ -1303,13 +1305,13 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex])) {
                                     if (update[0].getTime(updateIdx[0]) <= pageTimeValues[pageTimeIndex]
                                             && pageTimeValues[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putDouble(update[0].getDouble(updateIdx[0] / 2));
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putDouble(update[0].getDouble(updateIdx[0] / 2));
+                                        aggregationResult.insertTrueIndex++;
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putDouble(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putDouble(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1327,9 +1329,9 @@ public class ReaderUtils {
                                             && pageTimeValues[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
                                         // never reach there
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putDouble(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putDouble(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1361,13 +1363,13 @@ public class ReaderUtils {
                         func.maps.put("pageTimeValues", pageTimeValues);
                         func.maps.put("pageTimeIndex", pageTimeIndex);
                         func.maps.put("page", page);
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     // still has common timestamps, no page data
                     if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
                         func.maps.clear();
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     break;
@@ -1379,9 +1381,9 @@ public class ReaderUtils {
                                 && insertMemoryData.getCurrentMinTime() <= pageTimeValues[pageTimeIndex]) {
 
                             if (insertMemoryData.getCurrentMinTime() == timestamp) {
-                                aggreDataAns.putTime(insertMemoryData.getCurrentMinTime());
-                                aggreDataAns.putBinary(insertMemoryData.getCurrentBinaryValue());
-                                aggreDataAns.insertTrueIndex++;
+                                aggregationResult.putTime(insertMemoryData.getCurrentMinTime());
+                                aggregationResult.putBinary(insertMemoryData.getCurrentBinaryValue());
+                                aggregationResult.insertTrueIndex++;
                                 commonTimestampsIndex += 1;
                                 if (commonTimestampsIndex < commonTimestamps.size()) {
                                     timestamp = commonTimestamps.get(commonTimestampsIndex);
@@ -1424,9 +1426,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             if (pageTimeValues[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 if ((timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex]))) {
-                                    aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                    aggreDataAns.putBinary(v);
-                                    aggreDataAns.insertTrueIndex++;
+                                    aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                    aggregationResult.putBinary(v);
+                                    aggregationResult.insertTrueIndex++;
                                 } else {
                                     commonTimestampsIndex += 1;
                                     pageTimeIndex += 1;
@@ -1441,13 +1443,13 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeValues[pageTimeIndex])) {
                                     if (update[0].getTime(updateIdx[0]) <= pageTimeValues[pageTimeIndex]
                                             && pageTimeValues[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putBinary(update[0].getBinary(updateIdx[0] / 2));
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putBinary(update[0].getBinary(updateIdx[0] / 2));
+                                        aggregationResult.insertTrueIndex++;
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putBinary(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putBinary(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1465,9 +1467,9 @@ public class ReaderUtils {
                                             && pageTimeValues[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
                                         // never reach there
                                     } else {
-                                        aggreDataAns.putTime(pageTimeValues[pageTimeIndex]);
-                                        aggreDataAns.putBinary(v);
-                                        aggreDataAns.insertTrueIndex++;
+                                        aggregationResult.putTime(pageTimeValues[pageTimeIndex]);
+                                        aggregationResult.putBinary(v);
+                                        aggregationResult.insertTrueIndex++;
                                     }
                                 } else {
                                     commonTimestampsIndex += 1;
@@ -1499,13 +1501,13 @@ public class ReaderUtils {
                         func.maps.put("pageTimeValues", pageTimeValues);
                         func.maps.put("pageTimeIndex", pageTimeIndex);
                         func.maps.put("page", page);
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     // still has common timestamps, no page data
                     if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
                         func.maps.clear();
-                        return new Pair<>(aggreDataAns, commonTimestampsIndex);
+                        return new Pair<>(aggregationResult, commonTimestampsIndex);
                     }
 
                     break;
@@ -1515,9 +1517,10 @@ public class ReaderUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Don't forget to update the curIdx in updateTrue and updateFalse
+
+        // update the curIdx in updateTrue and updateFalse
         update[0].curIdx = updateIdx[0];
         update[1].curIdx = updateIdx[1];
-        return new Pair<>(aggreDataAns, 0);
+        return new Pair<>(aggregationResult, 0);
     }
 }
