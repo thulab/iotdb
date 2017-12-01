@@ -898,7 +898,6 @@ public class OverflowBufferWriteProcessor{
      * @param timeFilter time filter
      * @param freqFilter frequency filter
      * @param aggregationTimestamps the timestamps which aggregation must satisfy
-     * @param lastAggregationResult last aggregation result, this variable is used for batch read
      * @return an int value, represents the read time index of timestamps
      * @throws IOException TsFile read error
      * @throws ProcessorException get read info error
