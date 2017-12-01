@@ -28,6 +28,9 @@ public class AggregateEngine {
     /** aggregation batch calculation size **/
     public static int aggregateFetchSize = 50000;
 
+    /** aggregation batch calculation size **/
+    public static int crossQueryFetchSize = 50000;
+
     /**
      * <p>Public invoking method of multiple aggregation.
      *
@@ -54,7 +57,7 @@ public class AggregateEngine {
             FilterStructure filterStructure = filterStructures.get(idx);
             QueryDataSet queryDataSet = new QueryDataSet();
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(filterStructure.getTimeFilter(),
-                    filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), 10000) {
+                    filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {
                 @Override
                 public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
                                                                SingleSeriesFilterExpression valueFilter, int valueFilterNumber)
@@ -129,7 +132,8 @@ public class AggregateEngine {
                 }
             }
 
-            logger.debug("common timestamps in multiple aggregation process : " + aggregateTimestamps.toString());
+            logger.debug(String.format("common timestamps in multiple aggregation process, timestamps size : %s, timestamps: %s",
+                    String.valueOf(aggregateTimestamps.size()), aggregateTimestamps.toString()));
             if (aggregateTimestamps.size() == 0)
                 break;
 
@@ -157,8 +161,10 @@ public class AggregateEngine {
                     continue;
                 }
 
+                // the query prefix here must not be confilct with method getDataUseSingleValueFilter()
                 RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                        null, null, null, null, ReadCachePrefix.addQueryPrefix(aggregationOrdinal));
+                        null, null, null, null,
+                        ReadCachePrefix.addQueryPrefix("AggQuery", aggregationOrdinal));
 
                 if (recordReader.insertAllData == null) {
 
@@ -281,8 +287,9 @@ public class AggregateEngine {
 
         String deltaObjectUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getDeltaObjectUID();
         String measurementUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getMeasurementUID();
-        //TODO may has dnf conflict
-        String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(valueFilterNumber);
+
+        // query prefix here must not be conflict with query in multiAggregate method
+        String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, freqFilter, valueFilter, null, valueFilterPrefix);

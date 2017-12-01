@@ -10,7 +10,6 @@ import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import org.slf4j.Logger;
@@ -106,7 +105,7 @@ public class RecordReader {
             RowGroupReader dbRowGroupReader = dbRowGroupReaderList.get(rowGroupIndex);
             if (dbRowGroupReader.getValueReaders().containsKey(measurementId) &&
                     dbRowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                res = OverflowBufferWriteProcessor.getValuesWithOverFlow(dbRowGroupReader.getValueReaders().get(measurementId),
+                res = ValueReaderProcessor.getValuesWithOverFlow(dbRowGroupReader.getValueReaders().get(measurementId),
                         updateTrue, updateFalse, insertMemoryData, timeFilter, null, valueFilter, res, fetchSize);
                 if (res.valueLength >= fetchSize) {
                     return res;
@@ -165,7 +164,7 @@ public class RecordReader {
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                OverflowBufferWriteProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
+                ValueReaderProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
                         func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
             }
         }
@@ -193,7 +192,7 @@ public class RecordReader {
      * @param updateTrue update operation which satisfies the filter
      * @param updateFalse update operation which doesn't satisfy the filter
      * @param insertMemoryData memory bufferwrite insert data
-     * @param timeFilter time filter
+     * @param overflowTimeFilter time filter
      * @param freqFilter frequency filter
      * @param valueFilter value filter
      * @param timestamps timestamps calculated by the cross filter
@@ -201,29 +200,38 @@ public class RecordReader {
      * @throws ProcessorException aggregation invoking exception
      * @throws IOException TsFile read exception
      */
-    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(String deltaObjectId, String measurementId, AggregateFunction func,
-                                                                     DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-                                                                     SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                                                                     List<Long> timestamps)
+    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(
+            String deltaObjectId, String measurementId, AggregateFunction func,
+            DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
+            SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+            List<Long> timestamps)
             throws ProcessorException, IOException, PathErrorException {
 
         boolean stillHasUnReadData;
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
+        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
 
         int commonTimestampsIndex = 0;
 
         int rowGroupIndex = func.result.data.rowGroupIndex;
 
-        // TODO if the RowGroupReader.ValueReaders.get(measurementId) has been read, how to avoid it?
         for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
             RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                commonTimestampsIndex = OverflowBufferWriteProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, timestamps);
+
+                // TODO commonTimestampsIndex could be saved as a parameter
+
+                commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
+                        func, insertMemoryData, updateTrue, updateFalse, overflowTimeFilter, freqFilter, timestamps);
+
+                // all value of commonTimestampsIndex has been used,
+                // the next batch of commonTimestamps should be loaded
+                if (commonTimestampsIndex >= timestamps.size()) {
+                    return new Pair<>(func, true);
+                }
             }
         }
 

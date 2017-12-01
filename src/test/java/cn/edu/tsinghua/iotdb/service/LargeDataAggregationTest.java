@@ -13,6 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.sql.*;
 
 import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
@@ -49,7 +52,7 @@ public class LargeDataAggregationTest {
 
     private IoTDB deamon;
 
-    private boolean testFlag = true;
+    private boolean testFlag = !true;
 
     @Before
     public void setUp() throws Exception {
@@ -64,9 +67,9 @@ public class LargeDataAggregationTest {
 
             // use small page setting
             TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-            tsFileConfig.maxNumberOfPointsInPage = 10;
-            tsFileConfig.pageSizeInByte = 1024 * 2;
-            tsFileConfig.groupSizeInByte = 1024 * 100;
+            tsFileConfig.maxNumberOfPointsInPage = 100;
+            tsFileConfig.pageSizeInByte = 1024 * 1024 * 2;
+            tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
 
             config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
             config.fileNodeDir = FOLDER_HEADER + "/data/digest";
@@ -101,7 +104,7 @@ public class LargeDataAggregationTest {
     }
 
     @Test
-    public void test() throws ClassNotFoundException, SQLException, InterruptedException {
+    public void test() throws ClassNotFoundException, SQLException, InterruptedException, FileNotFoundException {
         if (testFlag) {
             Thread.sleep(5000);
             insertSQL();
@@ -115,10 +118,13 @@ public class LargeDataAggregationTest {
 
     private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
 
-    private void selectAllSQLTest() throws ClassNotFoundException, SQLException {
+    private void selectAllSQLTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
+
+        //PrintStream ps = new PrintStream(new FileOutputStream("src/test/resources/ha.txt"));
+        //System.setOut(ps);
 
         String countSql = "select count(s0) from root.vehicle.d0 where s0 >= 20";
-        String selectSql = "select s0 from root.vehicle.d0";
+        String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
@@ -126,17 +132,31 @@ public class LargeDataAggregationTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute(countSql);
-            if (hasResultSet) {
-                ResultSet resultSet = statement.getResultSet();
-                int cnt = 0;
-                while (resultSet.next()) {
-                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
-                    System.out.println("!!!!!============ " + ans);
-                    cnt++;
-                }
-                System.out.println(cnt);
-                //Assert.assertEquals(1, cnt);
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0));
+                // System.out.println("!!!!!============ " + ans);
+                Assert.assertEquals("12918", resultSet.getString(count(d0s0)));
+                cnt++;
             }
+            // System.out.println(cnt);
+            Assert.assertEquals(1, cnt);
+
+            statement.close();
+
+            statement = connection.createStatement();
+            hasResultSet = statement.execute(selectSql);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                cnt++;
+            }
+            // System.out.println(" ...." + cnt);
+            Assert.assertEquals(12918, cnt);
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,7 +180,7 @@ public class LargeDataAggregationTest {
             }
 
             // insert large amount of data
-            for (int time = 3000; time < 13600; time ++) {
+            for (int time = 3000; time < 13600; time++) {
                 if (time % 5 == 0) {
                     continue;
                 }
@@ -171,14 +191,14 @@ public class LargeDataAggregationTest {
                 statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 22);
                 statement.execute(sql);
-                sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[time%5]);
+                sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[time % 5]);
                 statement.execute(sql);
             }
 
             statement.execute("flush");
 
             // insert large amount of data
-            for (int time  = 13700; time < 24000; time ++) {
+            for (int time = 13700; time < 24000; time++) {
                 if (time % 6 == 0) {
                     continue;
                 }

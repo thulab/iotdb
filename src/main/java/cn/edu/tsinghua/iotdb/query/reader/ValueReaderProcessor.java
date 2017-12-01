@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.query.visitorImpl.PageAllSatisfiedVisitor;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import org.slf4j.Logger;
@@ -30,12 +29,12 @@ import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
-public class OverflowBufferWriteProcessor{
+public class ValueReaderProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OverflowBufferWriteProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ValueReaderProcessor.class);
 
     // private
-//    OverflowBufferWriteProcessor(long offset, long totalSize, TSDataType dataType, TsDigest digest,
+//    ValueReaderProcessor(long offset, long totalSize, TSDataType dataType, TsDigest digest,
 //                                 ITsRandomAccessFileReader raf, List<String> enumValues, CompressionTypeName compressionTypeName,
 //                                 long rowNums) {
 //        super(offset, totalSize, dataType, digest, raf, enumValues, compressionTypeName, rowNums);
@@ -68,10 +67,8 @@ public class OverflowBufferWriteProcessor{
             res.pageOffset = valueReader.getFileOffset();
             res.leftSize = valueReader.getTotalSize();
             res.insertTrueIndex = 0;
-            LOG.debug("first time : " + res.pageOffset);
         }
 
-        LOG.debug("not first time : " + res.pageOffset);
         // IMPORTANT!!
         if (res.pageOffset == -1) {
             res.pageOffset = valueReader.getFileOffset();
@@ -79,9 +76,8 @@ public class OverflowBufferWriteProcessor{
 
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, dataType);
-        LOG.debug("read one series normally, digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
+        LOG.debug("read one series digest normally, digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
-        // If not satisfied, return res with size equal to 0
 
         // TODO: optimize
         updateTrueData = (updateTrueData == null ? new DynamicOneColumnData(dataType, true) : updateTrueData);
@@ -116,7 +112,7 @@ public class OverflowBufferWriteProcessor{
             // To help to record byte size in this process of read.
             int lastAvailable = bis.available();
             pageCount++;
-            LOG.debug("read page {}, offset : {}", pageCount, res.pageOffset);
+            //LOG.debug("read page {}, offset : {}", pageCount, res.pageOffset);
             PageHeader pageHeader = pageReader.getNextPageHeader();
 
             // construct valueFilter
@@ -812,7 +808,7 @@ public class OverflowBufferWriteProcessor{
         while ((res.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
             pageCount++;
-            LOG.debug("read page {}, offset : {}", pageCount, res.pageOffset);
+            //LOG.debug("read page {}, offset : {}", pageCount, res.pageOffset);
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
             // construct value and time digest for this page
@@ -895,7 +891,7 @@ public class OverflowBufferWriteProcessor{
      * @param insertMemoryData bufferwrite memory insert data with overflow operation
      * @param updateTrue overflow update operation which satisfy the filter
      * @param updateFalse overflow update operation which doesn't satisfy the filter
-     * @param timeFilter time filter
+     * @param overflowTimeFilter time filter
      * @param freqFilter frequency filter
      * @param aggregationTimestamps the timestamps which aggregation must satisfy
      * @return an int value, represents the read time index of timestamps
@@ -903,7 +899,7 @@ public class OverflowBufferWriteProcessor{
      * @throws ProcessorException get read info error
      */
     static int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction func, InsertDynamicData insertMemoryData,
-                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression timeFilter,
+                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression overflowTimeFilter,
                                  SingleSeriesFilterExpression freqFilter, List<Long> aggregationTimestamps) throws IOException, ProcessorException {
         TSDataType dataType = valueReader.dataType;
 
@@ -920,23 +916,6 @@ public class OverflowBufferWriteProcessor{
         // if all the time of aggregationTimestamps has been read, timestampsUsedIndex >= aggregationTimestamps.size()
         int timestampsUsedIndex = 0;
 
-        // for batch read
-        while (func.maps.containsKey("pageTimeValues")) {
-            long[] pageTimeValues = (long[]) func.maps.get("pageTimeValues");
-            int pageTimeIndex = (int) func.maps.get("pageTimeIndex");
-            InputStream page = (InputStream) func.maps.get("page");
-            Pair<DynamicOneColumnData, Integer> ans = ReaderUtils.readOnePage(
-                    dataType, pageTimeValues, pageTimeIndex, valueReader.decoder, page,
-                    timeFilter, freqFilter, aggregationTimestamps, 0, insertMemoryData, update, updateIdx, func);
-
-            if (ans.left != null && ans.left.valueLength > 0)
-                func.calculateValueFromDataPage(ans.left);
-            timestampsUsedIndex = ans.right;
-            if (timestampsUsedIndex >= aggregationTimestamps.size()) {
-                return timestampsUsedIndex;
-            }
-        }
-
         // lastAggregationResult records some information such as file page offset
         DynamicOneColumnData lastAggregationResult = func.result.data;
         if (lastAggregationResult.pageOffset == -1) {
@@ -946,10 +925,9 @@ public class OverflowBufferWriteProcessor{
         // get column digest
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, valueReader.getDataType());
-        LOG.debug("calculate aggregation using given common timestamps, series Digest min and max is: "
-                + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
-        DigestVisitor digestVisitor = new DigestVisitor();
+        LOG.debug("calculate aggregation using given common timestamps, series Digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
 
+        DigestVisitor digestVisitor = new DigestVisitor();
         ByteArrayInputStream bis = valueReader.initBAISForOnePage(lastAggregationResult.pageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
         int pageCount = 0;
@@ -974,35 +952,38 @@ public class OverflowBufferWriteProcessor{
             }
 
             // if the current page doesn't satisfy the time filter
-            if (timeFilter != null && !digestVisitor.satisfy(timeDigestFF, timeFilter))  {
+            if (overflowTimeFilter != null && !digestVisitor.satisfy(timeDigestFF, overflowTimeFilter))  {
                 pageReader.skipCurrentPage();
                 lastAggregationResult.pageOffset += lastAvailable - bis.available();
-                // TODO adjust index of timestamps to fit pageReader.skipCurrentPage()
                 continue;
             }
 
             // get the InputStream for this page
             InputStream page = pageReader.getNextPage();
-            // update lastAggregationResult's pageOffset to the start of next page.
-            lastAggregationResult.pageOffset += lastAvailable - bis.available();
 
             // get all time values in this page
             long[] pageTimeValues = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
+
             // set Decoder for current page
             valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), valueReader.getDataType()));
 
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePage(
-                    dataType, pageTimeValues, 0, valueReader.decoder, page,
-                    timeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx, func);
+                    dataType, pageTimeValues, valueReader.decoder, page,
+                    overflowTimeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx, func);
             if (pageData.left != null && pageData.left.valueLength > 0)
                 func.calculateValueFromDataPage(pageData.left);
 
             timestampsUsedIndex = pageData.right;
             if (timestampsUsedIndex >= aggregationTimestamps.size())
                 break;
+
+            // update lastAggregationResult's pageOffset to the start of next page.
+            lastAggregationResult.pageOffset += lastAvailable - bis.available();
         }
 
-        lastAggregationResult.plusRowGroupIndexAndInitPageOffset();
+        // TODO
+        if (timestampsUsedIndex < aggregationTimestamps.size())
+            lastAggregationResult.plusRowGroupIndexAndInitPageOffset();
 
         // record the current updateTrue, updateFalse index for overflow info
         updateTrue.curIdx = updateIdx[0];
@@ -1015,7 +996,8 @@ public class OverflowBufferWriteProcessor{
     private static boolean checkDataChanged(long mint, long maxt, DynamicOneColumnData updateTrueData, int updateTrueIdx,
                                      DynamicOneColumnData updateFalseData, int updateFalseIdx, InsertDynamicData insertMemoryData,
                                      SingleSeriesFilterExpression timeFilter) throws IOException {
-        // Judge whether updateTrue has value for this page.
+
+        // judge whether updateTrue has value for this page.
         while (updateTrueIdx <= updateTrueData.timeLength - 2) {
             if (!((updateTrueData.getTime(updateTrueIdx + 1) < mint) || (updateTrueData.getTime(updateTrueIdx) > maxt))) {
                 return true;
