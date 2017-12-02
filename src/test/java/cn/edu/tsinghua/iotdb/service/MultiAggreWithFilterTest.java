@@ -152,12 +152,15 @@ public class MultiAggreWithFilterTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            // selectAllSQLTest();
+//            selectAllSQLTest();
             countAggreWithSingleFilterTest();
-//            minTimeAggreWithSingleFilterTest();
-//            maxTimeAggreWithSingleFilterTest();
-//            minValueAggreWithSingleFilterTest();
-//            maxValueAggreWithSingleFilterTest();
+            minTimeAggreWithSingleFilterTest();
+            maxTimeAggreWithSingleFilterTest();
+            minValueAggreWithSingleFilterTest();
+            maxValueAggreWithSingleFilterTest();
+
+            countOnlyTimeFilterTest();
+
             connection.close();
         }
     }
@@ -438,6 +441,41 @@ public class MultiAggreWithFilterTest {
                 }
                 Assert.assertEquals(1, cnt);
             }
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void countOnlyTimeFilterTest() throws ClassNotFoundException, SQLException {
+        String[] retArray = new String[]{
+                "0,3,7,4,5,1"
+        };
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select count(s0),count(s1),count(s2),count(s3),count(s4) " +
+                    "from root.vehicle.d0 where time >= 3 and time <= 106");
+
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
+                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
+                Assert.assertEquals(retArray[cnt], ans);
+                cnt++;
+            }
+            Assert.assertEquals(1, cnt);
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

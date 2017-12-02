@@ -69,7 +69,7 @@ public class ValueReaderProcessor {
             res.insertTrueIndex = 0;
         }
 
-        // IMPORTANT!!
+        // new series read
         if (res.pageOffset == -1) {
             res.pageOffset = valueReader.getFileOffset();
         }

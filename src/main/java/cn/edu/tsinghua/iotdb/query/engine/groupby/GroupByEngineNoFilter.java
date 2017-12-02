@@ -70,10 +70,10 @@ public class GroupByEngineNoFilter {
     public GroupByEngineNoFilter() {
     }
 
-    public GroupByEngineNoFilter(List<Pair<Path, AggregateFunction>> aggregations,
+    public GroupByEngineNoFilter(List<Pair<Path, AggregateFunction>> aggregations, SingleSeriesFilterExpression timeFilter,
                                   long origin, long unit, SingleSeriesFilterExpression intervals, int partitionFetchSize) {
-
         this.aggregations = aggregations;
+        this.timeFilter = timeFilter;
         this.queryPathResult = new HashMap<>();
         for (int i = 0; i < aggregations.size(); i++) {
             String aggregateKey = aggregationKey(aggregations.get(i).left, aggregations.get(i).right);
@@ -197,7 +197,7 @@ public class GroupByEngineNoFilter {
             groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
         }
 
-        LOG.info("current group by function with no filter is over.");
+        LOG.debug("current group by function with no filter is over.");
         return groupByResult;
     }
 
@@ -212,11 +212,11 @@ public class GroupByEngineNoFilter {
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
-                null, null, null, readLock, recordReaderPrefix);
+                timeFilter, null, null, readLock, recordReaderPrefix);
 
         if (res == null) {
             // get overflow params merged with bufferwrite insert data
-            List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
+            List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, null, null,
                     res, recordReader.insertPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);

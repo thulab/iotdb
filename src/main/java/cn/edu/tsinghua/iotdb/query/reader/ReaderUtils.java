@@ -767,7 +767,6 @@ public class ReaderUtils {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putInt(update[0].getInt(updateIdx[0] / 2));
                                         aggregatePathQueryResult.insertTrueIndex++;
-                                        decoder.readInt(page);
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putInt(v);
@@ -918,7 +917,6 @@ public class ReaderUtils {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBoolean(update[0].getBoolean(updateIdx[0] / 2));
                                         aggregatePathQueryResult.insertTrueIndex++;
-                                        decoder.readBoolean(page);
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBoolean(v);
@@ -1069,7 +1067,6 @@ public class ReaderUtils {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putLong(update[0].getLong(updateIdx[0] / 2));
                                         aggregatePathQueryResult.insertTrueIndex++;
-                                        decoder.readLong(page);
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putLong(v);
@@ -1220,7 +1217,6 @@ public class ReaderUtils {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putFloat(update[0].getFloat(updateIdx[0] / 2));
                                         aggregatePathQueryResult.insertTrueIndex++;
-                                        decoder.readFloat(page);
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putFloat(v);
@@ -1371,7 +1367,6 @@ public class ReaderUtils {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putDouble(update[0].getDouble(updateIdx[0] / 2));
                                         aggregatePathQueryResult.insertTrueIndex++;
-                                        decoder.readDouble(page);
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putDouble(v);
@@ -1522,7 +1517,6 @@ public class ReaderUtils {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBinary(update[0].getBinary(updateIdx[0] / 2));
                                         aggregatePathQueryResult.insertTrueIndex++;
-                                        decoder.readBinary(page);
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBinary(v);

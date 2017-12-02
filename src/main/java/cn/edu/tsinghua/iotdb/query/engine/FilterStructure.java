@@ -37,6 +37,10 @@ public class FilterStructure {
     }
 
     public boolean noFilter() {
-        return timeFilter == null && frequencyFilter == null && valueFilter == null;
+        return frequencyFilter == null && valueFilter == null;
+    }
+
+    public boolean onlyHasTimeFilter() {
+        return this.timeFilter != null && this.valueFilter == null;
     }
 }

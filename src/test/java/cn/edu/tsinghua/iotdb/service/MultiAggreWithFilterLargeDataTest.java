@@ -38,7 +38,6 @@ public class MultiAggreWithFilterLargeDataTest {
             "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
 
-
             "insert into root.vehicle.d0(timestamp,s0) values(1,101)",
             "insert into root.vehicle.d0(timestamp,s0) values(2,198)",
             "insert into root.vehicle.d0(timestamp,s0) values(100,99)",
@@ -112,12 +111,6 @@ public class MultiAggreWithFilterLargeDataTest {
             metadataDirPre = config.metadataDir;
             derbyHomePre = config.derbyHome;
 
-            // use small page setting
-//            TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-//            tsFileConfig.maxNumberOfPointsInPage = 10;
-//            tsFileConfig.pageSizeInByte = 1024 * 2;
-//            tsFileConfig.groupSizeInByte = 1024 * 100;
-
             config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
             config.fileNodeDir = FOLDER_HEADER + "/data/digest";
             config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
@@ -157,7 +150,7 @@ public class MultiAggreWithFilterLargeDataTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            //selectAllSQLTest();
+//            selectAllSQLTest();
             countAggreWithSingleFilterTest();
             minTimeAggreWithSingleFilterTest();
             maxTimeAggreWithSingleFilterTest();
@@ -193,7 +186,7 @@ public class MultiAggreWithFilterLargeDataTest {
                             + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
                     //String ans = resultSet.getString(count(d0s3));
                     //System.out.println("!!!!!============ " + ans);
-                    Assert.assertEquals(ans, retArray[cnt]);
+                    Assert.assertEquals(retArray[cnt], ans);
                     cnt++;
                 }
                 Assert.assertEquals(1, cnt);
@@ -358,7 +351,7 @@ public class MultiAggreWithFilterLargeDataTest {
 
     private void countAggreWithMultiFilterTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
-                "0,731,740,736,482,1"
+                "0,733,740,736,482,1"
         };
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -368,21 +361,21 @@ public class MultiAggreWithFilterLargeDataTest {
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select count(s0),count(s1),count(s2),count(s3),count(s4) from root.vehicle.d0 " +
                     "where s1 >= 0 or s2 < 10");
-            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
-            if (hasResultSet) {
-                ResultSet resultSet = statement.getResultSet();
-                int cnt = 0;
-                while (resultSet.next()) {
-                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
-                            + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
-                            + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
-                    //String ans = resultSet.getString(count(d0s3));
-                    //System.out.println("!!!!!============ " + ans);
-                    Assert.assertEquals(retArray[cnt], ans);
-                    cnt++;
-                }
-                Assert.assertEquals(1, cnt);
+
+            Assert.assertTrue(hasResultSet);
+
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
+                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
+                //String ans = resultSet.getString(count(d0s3));
+                //System.out.println("!!!!!============ " + ans);
+                Assert.assertEquals(retArray[cnt], ans);
+                cnt++;
             }
+            Assert.assertEquals(1, cnt);
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -622,20 +615,21 @@ public class MultiAggreWithFilterLargeDataTest {
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select * from root");
-            // System.out.println(hasResultSet + "...");
-            if (hasResultSet) {
-                ResultSet resultSet = statement.getResultSet();
-                int cnt = 0;
-                while (resultSet.next()) {
-                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
-                            +","+resultSet.getString(d0s2)+","+resultSet.getString(d0s3)+","+resultSet.getString(d1s0);
-                    System.out.println(ans);
-                    //Assert.assertEquals(ans, retArray[cnt]);
-                    //cnt++;
-                }
-                //Assert.assertEquals(17, cnt);
+            boolean hasResultSet = statement.execute("select s0 from root.vehicle.d0 where s1 >= 0 or s2 < 10");
+            Assert.assertTrue(hasResultSet);
+
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                //String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
+                 //       + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d1s0);
+                //String ans =resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                //System.out.println(ans + ",," + cnt);
+                //Assert.assertEquals(ans, retArray[cnt]);
+                cnt++;
             }
+            System.out.println("----" + cnt);
+            // Assert.assertEquals(17, cnt);
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

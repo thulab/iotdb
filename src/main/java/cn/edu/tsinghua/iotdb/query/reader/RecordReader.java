@@ -11,6 +11,8 @@ import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
+import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.LongFilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,8 +90,8 @@ public class RecordReader {
      * @throws IOException
      */
     public DynamicOneColumnData getValueInOneColumnWithOverflow(String deltaObjectId, String measurementId,
-                                                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-                                                                SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
+                          DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
+                          SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
@@ -194,7 +196,6 @@ public class RecordReader {
      * @param insertMemoryData memory bufferwrite insert data
      * @param overflowTimeFilter time filter
      * @param freqFilter frequency filter
-     * @param valueFilter value filter
      * @param timestamps timestamps calculated by the cross filter
      * @return aggregation result and whether still has unread data
      * @throws ProcessorException aggregation invoking exception
@@ -203,8 +204,7 @@ public class RecordReader {
     public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(
             String deltaObjectId, String measurementId, AggregateFunction func,
             DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-            SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-            List<Long> timestamps)
+            SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression freqFilter, List<Long> timestamps)
             throws ProcessorException, IOException, PathErrorException {
 
         boolean stillHasUnReadData;
@@ -252,59 +252,66 @@ public class RecordReader {
     /**
      *  This function is used for cross column query.
      *
+     * @param deltaObjectId
+     * @param measurementId
+     * @param overflowTimeFilter overflow time filter for this query path
+     * @param commonTimestamps
+     * @param insertMemoryData
      * @return
      * @throws ProcessorException
      * @throws IOException
      */
-    public DynamicOneColumnData readUseCommonTimestamps(String deltaObjectId, String measurementId, long[] timestamps, InsertDynamicData insertMemoryData)
-            throws ProcessorException, IOException {
+    public DynamicOneColumnData readUseCommonTimestamps(String deltaObjectId, String measurementId,
+                                                        SingleSeriesFilterExpression overflowTimeFilter, long[] commonTimestamps,
+                                                        InsertDynamicData insertMemoryData)
+            throws ProcessorException, IOException, PathErrorException {
 
-        TSDataType dataType;
-        try {
-            dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-        } catch (PathErrorException e) {
-            throw new ProcessorException(e.getMessage());
+        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
+        SingleValueVisitor filterVerifier = new SingleValueVisitor(overflowTimeFilter);
+
+        DynamicOneColumnData originalQueryData = getValuesUseTimestamps(deltaObjectId, measurementId, overflowTimeFilter, commonTimestamps);
+        if (originalQueryData == null) {
+            originalQueryData = new DynamicOneColumnData(dataType, true);
         }
+        DynamicOneColumnData newQueryData = new DynamicOneColumnData(dataType, true);
 
-        DynamicOneColumnData oldRes = getValuesUseTimestamps(deltaObjectId, measurementId, timestamps);
-        if (oldRes == null) {
-            oldRes = new DynamicOneColumnData(dataType, true);
-        }
-        DynamicOneColumnData res = new DynamicOneColumnData(dataType, true);
+        int oldDataIdx = 0;
+        for (long commonTime : commonTimestamps) {
 
-        // the timestamps of timeData is eventual, its has conclude the value of insertMemory.
-        int oldResIdx = 0;
+            // the time in originalQueryData must in commonTimestamps
+            if (oldDataIdx < originalQueryData.timeLength && originalQueryData.getTime(oldDataIdx) == commonTime) {
 
-        for (int i = 0; i < timestamps.length; i++) {
-            // no need to consider update data, because insertMemoryData has dealed with update data.
-            if (oldResIdx < oldRes.timeLength && timestamps[i] == oldRes.getTime(oldResIdx)) {
-                if (insertMemoryData != null && insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= timestamps[i]) {
-                    if (insertMemoryData.getCurrentMinTime() == timestamps[i]) {
-                        res.putTime(insertMemoryData.getCurrentMinTime());
-                        putValueUseDataType(res, insertMemoryData);
+                if (insertMemoryData != null && insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= commonTime) {
+                    if (insertMemoryData.getCurrentMinTime() == commonTime) {
+                        newQueryData.putTime(insertMemoryData.getCurrentMinTime());
+                        putValueFromMemoryData(newQueryData, insertMemoryData);
                         insertMemoryData.removeCurrentValue();
-                        oldResIdx++;
+                        oldDataIdx++;
                         continue;
                     } else {
                         insertMemoryData.removeCurrentValue();
                     }
                 }
-                res.putTime(timestamps[i]);
-                res.putAValueFromDynamicOneColumnData(oldRes, oldResIdx);
-                oldResIdx++;
+
+                if (filterVerifier.verify(commonTime)) {
+                    newQueryData.putTime(commonTime);
+                    newQueryData.putAValueFromDynamicOneColumnData(originalQueryData, oldDataIdx);
+                }
+
+                oldDataIdx++;
             }
 
-            // deal with insert data
-            while (insertMemoryData != null && insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= timestamps[i]) {
-                if (timestamps[i] == insertMemoryData.getCurrentMinTime()) {
-                    res.putTime(insertMemoryData.getCurrentMinTime());
-                    putValueUseDataType(res, insertMemoryData);
+            // consider memory data
+            while (insertMemoryData != null && insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= commonTime) {
+                if (commonTime == insertMemoryData.getCurrentMinTime()) {
+                    newQueryData.putTime(insertMemoryData.getCurrentMinTime());
+                    putValueFromMemoryData(newQueryData, insertMemoryData);
                 }
                 insertMemoryData.removeCurrentValue();
             }
         }
 
-        return res;
+        return newQueryData;
     }
 
     /**
@@ -313,14 +320,16 @@ public class RecordReader {
      * @return
      * @throws IOException
      */
-    private DynamicOneColumnData getValuesUseTimestamps(String deltaObjectId, String measurementId, long[] timestamps)
+    private DynamicOneColumnData getValuesUseTimestamps(String deltaObjectId, String measurementId,
+                                                        SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps)
             throws IOException {
         DynamicOneColumnData res = null;
 
-        //TODO could the parameter timestamps be optimized?
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, null);
-        for (int i = 0; i < dbRowGroupReaderList.size(); i++) {
-            RowGroupReader dbRowGroupReader = dbRowGroupReaderList.get(i);
+        //TODO the rowGroupReader index could be optimized for batch query
+
+        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
+        for (int i = 0; i < rowGroupReaderList.size(); i++) {
+            RowGroupReader dbRowGroupReader = rowGroupReaderList.get(i);
             if (i == 0) {
                 res = dbRowGroupReader.readValueUseTimestamps(measurementId, timestamps);
             } else {
@@ -361,7 +370,7 @@ public class RecordReader {
             long curTime = insertMemoryData.getCurrentMinTime(); // current insert time
             if (maxTime < curTime) {
                 res.putTime(curTime);
-                putValueUseDataType(res, insertMemoryData);
+                putValueFromMemoryData(res, insertMemoryData);
                 insertMemoryData.removeCurrentValue();
             }
             // when the length reach to fetchSize, stop put values and return false
@@ -372,7 +381,7 @@ public class RecordReader {
         return true;
     }
 
-    private void putValueUseDataType(DynamicOneColumnData res, InsertDynamicData insertMemoryData) {
+    private void putValueFromMemoryData(DynamicOneColumnData res, InsertDynamicData insertMemoryData) {
         switch (insertMemoryData.getDataType()) {
             case BOOLEAN:
                 res.putBoolean(insertMemoryData.getCurrentBooleanValue());

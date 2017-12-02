@@ -163,7 +163,6 @@ public class GroupBySmallDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            // selectAllSQLTest();
             groupByNoFilterOneIntervalTest();
             groupByWithFilterCountOneIntervalTest();
             groupByWithFilterMaxMinValueOneIntervalTest();
@@ -175,13 +174,10 @@ public class GroupBySmallDataTest {
             threadLocalTest();
             groupByMultiAggregationFunctionTest();
             groupBySelectMultiDeltaObjectTest();
+            groupByOnlyHasTimeFilterTest();
+            groupByMultiResultNoFilterTest();
 
-
-            // no need to test for output too much
-
-            // groupByMultiResultNoFilterTest();
-            // bugSelectClauseTest();
-
+            //bugSelectClauseTest();
             connection.close();
         }
     }
@@ -778,6 +774,59 @@ public class GroupBySmallDataTest {
                 Assert.assertEquals(17, cnt);
             }
 
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void groupByOnlyHasTimeFilterTest() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select count(s0),count(s1),count(s2),count(s3) " +
+                    "from root.vehicle.d0 where time < 1000 group by(10ms, 0, [3,10000])");
+
+            if (hasResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                int cnt = 1;
+                while (resultSet.next()) {
+                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                            + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
+                            + "," + resultSet.getString(count(d0s3));
+                    //System.out.println(ans);
+                    switch (cnt) {
+                        case 1:
+                            Assert.assertEquals("3,null,null,2,null", ans);
+                            break;
+                        case 6:
+                            Assert.assertEquals("50,null,1,null,null", ans);
+                            break;
+                        case 7:
+                        case 8:
+                        case 9:
+                            Assert.assertEquals(resultSet.getString(TIMESTAMP_STR) + ",null,null,null,1", ans);
+                            break;
+                        case 11:
+                            Assert.assertEquals("100,3,6,2,2", ans);
+                            break;
+//                        case 101:
+//                            Assert.assertEquals("1000,1,1,1,null", ans);
+//                            break;
+                        default:
+                            Assert.assertEquals(resultSet.getString(TIMESTAMP_STR) + ",null,null,null,null", ans);
+                    }
+                    cnt++;
+                }
+                Assert.assertEquals(1002, cnt);
+            }
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

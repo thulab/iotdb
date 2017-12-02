@@ -606,6 +606,8 @@ public class InsertDynamicData extends DynamicOneColumnData {
                 return singleValueVisitor.satisfyObject(insertTrue.getDouble(insertTrue.insertTrueIndex), valueFilter);
             case TEXT:
                 return singleValueVisitor.satisfyObject(insertTrue.getBinary(insertTrue.insertTrueIndex), valueFilter);
+            case BOOLEAN:
+                return singleValueVisitor.satisfyObject(insertTrue.getBoolean(insertTrue.insertTrueIndex), valueFilter);
             default:
                 throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
         }
@@ -668,6 +670,10 @@ public class InsertDynamicData extends DynamicOneColumnData {
                 curSatisfiedBinaryValue = updateTrue.getBinary(updateTrue.curIdx);
                 insertTrue.setBinary(insertTrue.insertTrueIndex, curSatisfiedBinaryValue);
                 break;
+            case BOOLEAN:
+                curSatisfiedBooleanValue = updateTrue.getBoolean(updateTrue.curIdx);
+                insertTrue.setBoolean(insertTrue.insertTrueIndex, curSatisfiedBooleanValue);
+                break;
             default:
                 throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
         }
@@ -723,6 +729,7 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private float minFloatValue = Float.MAX_VALUE, maxFloatValue = Float.MIN_VALUE;
     private double minDoubleValue = Double.MIN_VALUE, maxDoubleValue = Double.MIN_VALUE;
     private Binary minBinaryValue = null, maxBinaryValue = null;
+    private boolean minBooleanValue = false, maxBooleanValue = true;
 
     private void calcIntAggregation() {
         minTime = Math.min(minTime, getCurrentMinTime());
@@ -769,6 +776,15 @@ public class InsertDynamicData extends DynamicOneColumnData {
         }
     }
 
+    private void calcBooleanAggregation() {
+        minTime = Math.min(minTime, getCurrentMinTime());
+        maxTime = Math.max(maxTime, getCurrentMinTime());
+        if (!getCurrentBooleanValue())
+            minBooleanValue = getCurrentBooleanValue();
+        if (getCurrentBooleanValue())
+            maxBooleanValue = getCurrentBooleanValue();
+    }
+
     public Object calcAggregation(String aggType) throws IOException, ProcessorException {
         readStatusReset();
         rowNum = 0;
@@ -812,6 +828,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
                     calcTextAggregation();
                     removeCurrentValue();
                     break;
+                case BOOLEAN:
+                    rowNum++;
+                    calcBooleanAggregation();
+                    removeCurrentValue();
+                    break;
                 default:
                     LOG.error("Aggregation Error!");
                     throw new UnSupportedDataTypeException("UnSupported" + dataType);
@@ -837,6 +858,8 @@ public class InsertDynamicData extends DynamicOneColumnData {
                         return rowNum == 0 ? null : minDoubleValue;
                     case TEXT:
                         return rowNum == 0 ? null : minBinaryValue;
+                    case BOOLEAN:
+                        return rowNum == 0 ? null : minBooleanValue;
                     default:
                         LOG.error("Aggregation Error!");
                         throw new UnSupportedDataTypeException("UnSupported datatype: " + dataType);
@@ -854,6 +877,8 @@ public class InsertDynamicData extends DynamicOneColumnData {
                         return rowNum == 0 ? null : maxDoubleValue;
                     case TEXT:
                         return rowNum == 0 ? null : maxBinaryValue;
+                    case BOOLEAN:
+                        return rowNum == 0 ? null : maxBooleanValue;
                     default:
                         LOG.error("Aggregation Error!");
                         throw new UnSupportedDataTypeException("UnSupported datatype: " + dataType);

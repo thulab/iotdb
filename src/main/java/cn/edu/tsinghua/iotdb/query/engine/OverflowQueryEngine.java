@@ -176,8 +176,13 @@ public class OverflowQueryEngine {
                     aggregations.add(new Pair<>(pair.left, func));
                 }
 
-                if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
-                    GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, origin, unit, intervalFilter, fetchSize);
+                if (filterStructures == null || filterStructures.size() == 0
+                        || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                    SingleSeriesFilterExpression timeFilter = null;
+                    if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
+                        timeFilter = filterStructures.get(0).getTimeFilter();
+                    }
+                    GroupByEngineNoFilter groupByEngineNoFilter = new GroupByEngineNoFilter(aggregations, timeFilter, origin, unit, intervalFilter, fetchSize);
                     groupByEngineNoFilterLocal.set(groupByEngineNoFilter);
                     return groupByEngineNoFilter.groupBy();
                 }  else {
@@ -189,10 +194,11 @@ public class OverflowQueryEngine {
                 e.printStackTrace();
             }
         } else {
-            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+            LOGGER.debug(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
             groupByCalcTime.set(groupByCalcTime.get() + 1);
             try {
-                if (filterStructures == null || filterStructures.size() == 0 || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                if (filterStructures == null || filterStructures.size() == 0
+                        || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
                     QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
                     if (!ans.hasNextRecord()) {
                         groupByCalcTime.remove();
@@ -398,6 +404,7 @@ public class OverflowQueryEngine {
 
             // valueFilter is null, determine the common timeRet used valueFilter firstly.
             if (recordReader.insertAllData == null) {
+
                 // get overflow params merged with bufferwrite insert data
                 List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
                         null, recordReader.insertPageInMemory, recordReader.overflowInfo);
@@ -409,14 +416,17 @@ public class OverflowQueryEngine {
                 recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                         insertTrue, updateTrue, updateFalse,
                         newTimeFilter, null, freqFilter, getDataTypeByPath(path));
-                DynamicOneColumnData queryResult = recordReader.readUseCommonTimestamps(deltaObjectId, measurementId, timestamps, recordReader.insertAllData);
+
+                DynamicOneColumnData queryResult = recordReader.readUseCommonTimestamps(
+                        deltaObjectId, measurementId, newTimeFilter, timestamps, recordReader.insertAllData);
                 queryResult.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
                 // reset the insertMemory read status
                 // recordReader.insertAllData.readStatusReset();
                 // recordReader.insertAllData.setCurrentPageBuffer(insertTrue);
-                DynamicOneColumnData oneColDataList = recordReader.readUseCommonTimestamps(deltaObjectId, measurementId, timestamps, recordReader.insertAllData);
+                DynamicOneColumnData oneColDataList = recordReader.readUseCommonTimestamps(
+                        deltaObjectId, measurementId, recordReader.insertAllData.timeFilter, timestamps, recordReader.insertAllData);
                 ret.mapRet.put(queryKey, oneColDataList);
             }
 
