@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 /**
  * Multiple aggregation with filter test.
  */
-public class MultiAggreWithFilterTest {
+public class AggregationSmallDataTest {
     private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
@@ -152,7 +152,6 @@ public class MultiAggreWithFilterTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-//            selectAllSQLTest();
             countAggreWithSingleFilterTest();
             minTimeAggreWithSingleFilterTest();
             maxTimeAggreWithSingleFilterTest();

@@ -267,7 +267,10 @@ public class RecordReader {
             throws ProcessorException, IOException, PathErrorException {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-        SingleValueVisitor filterVerifier = new SingleValueVisitor(overflowTimeFilter);
+        SingleValueVisitor filterVerifier = null;
+        if (overflowTimeFilter != null) {
+            filterVerifier = new SingleValueVisitor(overflowTimeFilter);
+        }
 
         DynamicOneColumnData originalQueryData = getValuesUseTimestamps(deltaObjectId, measurementId, overflowTimeFilter, commonTimestamps);
         if (originalQueryData == null) {
@@ -293,7 +296,7 @@ public class RecordReader {
                     }
                 }
 
-                if (filterVerifier.verify(commonTime)) {
+                if (overflowTimeFilter == null || filterVerifier.verify(commonTime)) {
                     newQueryData.putTime(commonTime);
                     newQueryData.putAValueFromDynamicOneColumnData(originalQueryData, oldDataIdx);
                 }

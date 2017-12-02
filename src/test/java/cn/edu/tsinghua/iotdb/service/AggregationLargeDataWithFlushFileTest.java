@@ -14,15 +14,13 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.sql.*;
 
 import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
 import static org.junit.Assert.fail;
 
 
-public class LargeDataAggregationTest {
+public class AggregationLargeDataWithFlushFileTest {
 
     private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
@@ -34,7 +32,7 @@ public class LargeDataAggregationTest {
     private final String d1s0 = "root.vehicle.d1.s0";
     private final String d1s1 = "root.vehicle.d1.s1";
 
-    private static String[] sqls = new String[]{
+    private static String[] sqls_1 = new String[]{
             "SET STORAGE GROUP TO root.vehicle",
             "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
@@ -141,7 +139,6 @@ public class LargeDataAggregationTest {
                 Assert.assertEquals("12918", resultSet.getString(count(d0s0)));
                 cnt++;
             }
-            // System.out.println(cnt);
             Assert.assertEquals(1, cnt);
 
             statement.close();
@@ -155,7 +152,6 @@ public class LargeDataAggregationTest {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
                 cnt++;
             }
-            // System.out.println(" ...." + cnt);
             Assert.assertEquals(12918, cnt);
             statement.close();
         } catch (Exception e) {
@@ -175,7 +171,7 @@ public class LargeDataAggregationTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
 
-            for (String sql : sqls) {
+            for (String sql : sqls_1) {
                 statement.execute(sql);
             }
 

@@ -216,7 +216,7 @@ public class GroupByEngineWithFilter {
                 }
             }
 
-            LOG.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
+            //LOG.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
 
 //            if (partitionStart >= 98) {
 //                System.out.println("..");
@@ -334,7 +334,7 @@ public class GroupByEngineWithFilter {
             AggregateFunction aggregateFunction = pair.right;
             groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
         }
-        LOG.info("calculate group by result successfully.");
+        //LOG.info("calculate group by result successfully.");
         return groupByResult;
     }
 

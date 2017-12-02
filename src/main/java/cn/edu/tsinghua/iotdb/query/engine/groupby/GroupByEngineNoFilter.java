@@ -197,7 +197,7 @@ public class GroupByEngineNoFilter {
             groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
         }
 
-        LOG.debug("current group by function with no filter is over.");
+        //LOG.debug("current group by function with no filter is over.");
         return groupByResult;
     }
 
