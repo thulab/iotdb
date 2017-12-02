@@ -74,8 +74,8 @@ public class TsfileQueryResultSet implements ResultSet {
 		this.client = client;
 		this.operationHandle = operationHandle;
 		this.columnInfoList.add(TIMESTAMP_STR);
-		this.columnInfoMap.put(TIMESTAMP_STR, 0);
-		int index = 1;
+		this.columnInfoMap.put(TIMESTAMP_STR, 1);
+		int index = 2;
 		for (String name : columnName) {
 			columnInfoList.add(name);
 			if(!columnInfoMap.containsKey(name)){
@@ -190,7 +190,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public BigDecimal getBigDecimal(String columnName) throws SQLException {
-		return new BigDecimal(getValueByNane(columnName));
+		return new BigDecimal(getValueByName(columnName));
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public boolean getBoolean(String columnName) throws SQLException {
-		String b = getValueByNane(columnName);
+		String b = getValueByName(columnName);
 		if (b.trim().equalsIgnoreCase("0"))
 			return false;
 		if (b.trim().equalsIgnoreCase("1"))
@@ -320,7 +320,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public double getDouble(String columnName) throws SQLException {
-		return Double.parseDouble(getValueByNane(columnName));
+		return Double.parseDouble(getValueByName(columnName));
 	}
 
 	@Override
@@ -340,7 +340,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public float getFloat(String columnName) throws SQLException {
-		return Float.parseFloat(getValueByNane(columnName));
+		return Float.parseFloat(getValueByName(columnName));
 	}
 
 	@Override
@@ -355,7 +355,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public int getInt(String columnName) throws SQLException {
-		return Integer.parseInt(getValueByNane(columnName));
+		return Integer.parseInt(getValueByName(columnName));
 	}
 
 	@Override
@@ -365,7 +365,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public long getLong(String columnName) throws SQLException {
-		return Long.parseLong(getValueByNane(columnName));
+		return Long.parseLong(getValueByName(columnName));
 	}
 
 	@Override
@@ -410,7 +410,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public Object getObject(String columnName) throws SQLException {
-		return getValueByNane(columnName);
+		return getValueByName(columnName);
 	}
 
 	@Override
@@ -475,7 +475,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public short getShort(String columnName) throws SQLException {
-		return Short.parseShort(getValueByNane(columnName));
+		return Short.parseShort(getValueByName(columnName));
 	}
 
 	@Override
@@ -490,7 +490,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public String getString(String columnName) throws SQLException {
-		return getValueByNane(columnName);
+		return getValueByName(columnName);
 	}
 
 	@Override
@@ -1119,19 +1119,22 @@ public class TsfileQueryResultSet implements ResultSet {
 	}
 	
 	private String findColumnNameByIndex(int columnIndex) throws SQLException{
-		if(columnIndex >= columnInfoList.size()){
+		if(columnIndex <= 0) {
+			throw new SQLException(String.format("column index should start from 1"));
+		}
+		if(columnIndex > columnInfoList.size()){
 			throw new SQLException(String.format("column index %d out of range %d", columnIndex, columnInfoList.size()));
 		}
-		return columnInfoList.get(columnIndex);
+		return columnInfoList.get(columnIndex-1);
 	}
 
-	private String getValueByNane(String columnName) throws SQLException {
+	private String getValueByName(String columnName) throws SQLException {
 		checkRecord();
 		if (columnName.equals(TIMESTAMP_STR)) {
 			return String.valueOf(record.getTime());
 		}
 		int tmp = columnInfoMap.get(columnName);
-		Field field = record.fields.get(tmp - 1);
+		Field field = record.fields.get(tmp - 2);
 		if(field == null || field.getStringValue() == null) return null;
 		return field.getStringValue();
 	}

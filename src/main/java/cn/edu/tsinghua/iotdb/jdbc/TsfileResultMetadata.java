@@ -59,10 +59,13 @@ public class TsfileResultMetadata implements ResultSetMetaData {
 		if (columnInfoList == null || columnInfoList.size() == 0) {
 			throw new SQLException("No column exists");
 		}
-		if(column >= columnInfoList.size()){
+		if(column > columnInfoList.size()){
 			throw new SQLException(String.format("column %d does not exist", column));
 		}
-		return columnInfoList.get(column);		
+		if(column <= 0) {
+			throw new SQLException(String.format("column index should start from 1", column));
+		}
+		return columnInfoList.get(column-1);
 	}
 
 	@Override
