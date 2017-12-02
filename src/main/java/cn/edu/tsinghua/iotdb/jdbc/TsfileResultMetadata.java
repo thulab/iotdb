@@ -2,18 +2,18 @@ package cn.edu.tsinghua.iotdb.jdbc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
-import java.util.Map;
 
 public class TsfileResultMetadata implements ResultSetMetaData {
 	private List<String> columnInfoList;
-	private Map<String, Integer> columnInfoMap;
 	private String operationType;
+	private List<String> columnTypeList;
 	
-	public TsfileResultMetadata(List<String> columnInfoList,Map<String, Integer> columnInfoMap, String operationType) {
+	public TsfileResultMetadata(List<String> columnInfoList, String operationType, List<String> columnTypeList) {
 		this.columnInfoList = columnInfoList;
-		this.columnInfoMap = columnInfoMap;
 		this.operationType = operationType;
+		this.columnTypeList = columnTypeList;
 	}
 
 	@Override
@@ -74,9 +74,40 @@ public class TsfileResultMetadata implements ResultSetMetaData {
 	}
 
 	@Override
-	public int getColumnType(int arg0) throws SQLException {
+	public int getColumnType(int column) throws SQLException {
 		// TODO Auto-generated method stub
-		return 0;
+		if (columnInfoList == null || columnInfoList.size() == 0) {
+			throw new SQLException("No column exists");
+		}
+		if (column > columnInfoList.size()) {
+			throw new SQLException(String.format("column %d does not exist", column));
+		}
+		if (column <= 0) {
+			throw new SQLException(String.format("column index should start from 1", column));
+		}
+
+		if (column == 1) {
+			return Types.BIGINT;
+		}
+		// BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT,
+		String columnType = columnTypeList.get(column - 2);
+		switch (columnType.toUpperCase()) {
+			case "BOOLEAN":
+				return Types.BOOLEAN;
+			case "INT32":
+				return Types.INTEGER;
+			case "INT64":
+				return Types.BIGINT;
+			case "FLOAT":
+				return Types.FLOAT;
+			case "DOUBLE":
+				return Types.DOUBLE;
+			case "TEXT":
+				return Types.VARCHAR;
+			default:
+				break;
+			}
+			return 0;
 	}
 
 	@Override

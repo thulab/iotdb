@@ -49,6 +49,7 @@ public class TsfileQueryResultSet implements ResultSet {
 	private TSIService.Iface client = null;
 	private TSOperationHandle operationHandle = null;
 	private List<String> columnInfoList;
+	private List<String> columnTypeList;
 	private Map<String, Integer> columnInfoMap;
 	private RowRecord record;
 	private Iterator<RowRecord> recordItr;
@@ -65,7 +66,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	public TsfileQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
 								TS_SessionHandle sessionHandle, TSOperationHandle operationHandle, String sql,
-								String aggregations)
+								String aggregations, List<String> columnTypeList)
 			throws SQLException {
 		this.statement = statement;
 		this.sql = sql;
@@ -86,6 +87,7 @@ public class TsfileQueryResultSet implements ResultSet {
 		this.fetchSize = statement.getFetchSize();
 		this.operationHandle = operationHandle;
 		this.operationType = aggregations;
+		this.columnTypeList = columnTypeList;
 	}
 
 	@Override
@@ -370,7 +372,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
-		return new TsfileResultMetadata(columnInfoList, columnInfoMap, operationType);
+		return new TsfileResultMetadata(columnInfoList, operationType, columnTypeList);
 	}
 
 	@Override
