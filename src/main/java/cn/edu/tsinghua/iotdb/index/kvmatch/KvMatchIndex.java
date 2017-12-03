@@ -47,7 +47,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * kv-match实现的单例索引
+ * kv-match index
  */
 public class KvMatchIndex  implements IoTIndex {
 
@@ -85,7 +85,7 @@ public class KvMatchIndex  implements IoTIndex {
     public static KvMatchIndex getInstance() { return KvMatchIndexHolder.INSTANCE; }
 
     /**
-     * 初始化索引，digest要初始化一些内存中的节点，KVIndex不做任何事
+     *
      */
     @Override
     public void init() {
@@ -93,12 +93,13 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 为指定文件构建索引。注意，参数中给出了现有的文件列表，索引自己可以决定是
-     * "完全更新"，还是增量式更新并删除不再存在的文件（KVIndex的做法）。
-     * 这一过程可以是异步的，对于异步的构建索引，立即返回然后开始建立索引，如果此时来了查询，简单的做法是直接当做没有索引来处理
      *
-     * @param path       待修改的索引的path
-     * @param parameters 其他参数，可选
+     * Given the file list contain path, create index files.
+     * Call this method when the index create operation happens or the merge file has created.
+     *
+     * @param path       the time series to be indexed
+     * @param fileList   the file list contain path
+     * @param parameters other parameters
      * @return whether the operation is successful
      * @throws IndexManagerException
      */
@@ -127,6 +128,7 @@ public class KvMatchIndex  implements IoTIndex {
                 fileList = FileNodeManager.getInstance().indexBuildQuery(path, indexConfig.getSinceTime(), -1);
             }
 
+            // no file to be builded.
             if (fileList.isEmpty()) {
                 if (overall && parameters != null) {
                     indexConfigStore.put(path.getFullPath(), indexConfig);
@@ -204,13 +206,13 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 与上面唯一的不同在于，只新加了一个文件。两个函数区别开是因为，上面的函数多用于完全新建或者merge的时候，
-     * 而这个发生在关掉一个fileNode形成新文件的时候。
-     * 这一过程可以是异步的，对于异步的构建索引，立即返回然后开始建立索引，如果此时来了查询，简单的做法是直接当做没有索引来处理
      *
-     * @param path       待修改的索引的path
-     * @param newFile    新加的一个文件；
-     * @param parameters 其他参数，可选
+     * Given one new file contain path, create the index file
+     * Call this method when the close operation has completed.
+     *
+     * @param path       the time series to be indexed
+     * @param newFile    the new file contain path
+     * @param parameters other parameters
      * @return
      * @throws IndexManagerException
      */
@@ -293,7 +295,7 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 末位添加，只用于实时索引
+     * todo
      * @param path
      * @param timestamp
      * @param value
@@ -303,7 +305,7 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 单点更新，只用于实时索引
+     * todo
      * @param path
      * @param timestamp
      * @param value
@@ -313,7 +315,7 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 区间段更新，只用于实时索引
+     * todo
      * @param path
      * @param starttime
      * @param endtime
@@ -324,7 +326,7 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 某个时间点前的删除，只用于实时索引
+     * todo
      * @param path
      * @param timestamp
      */
@@ -333,9 +335,9 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 将整个索引关闭，如果在内存中有一些信息，则要序列化到磁盘上。注意，这一步需要是同步的。
+     * todo
      *
-     * @return 是否正确完成
+     * @return todo
      * @throws IndexManagerException
      */
     @Override
@@ -344,7 +346,7 @@ public class KvMatchIndex  implements IoTIndex {
     }
 
     /**
-     * 彻底删除一个path的索引
+     * drop index on path
      *
      * @param path the column path
      * @return whether the operation is successful
@@ -395,13 +397,12 @@ public class KvMatchIndex  implements IoTIndex {
         }
     }
 
+
     /**
-     * 输入查询请求和未被更改过的区间，以及单次返回的数量，查询。
-     * 这个查询针对于功能式索引，返回的结果就是要显示给用户的结果
-     * 插件式索引由于自带新功能，所以无论是否见好索引，都应该返回预期的结果（可以是没有建好索引的部分就暴力搜索，也可以返回"无可奉告"）
+     * query on path with parameters, return result by limitSize
      *
-     * @param path       the path to be queried
-     * @param parameters       the query request with all parameters
+     * @param path               the path to be queried
+     * @param parameters         the query request with all parameters
      * @param nonUpdateIntervals the query request with all parameters
      * @param limitSize          the limitation of number of answers
      * @return the query response
