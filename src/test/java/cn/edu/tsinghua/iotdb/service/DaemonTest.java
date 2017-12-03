@@ -524,6 +524,7 @@ public class DaemonTest {
 
             statement.close();
         } catch (Exception e) {
+        	System.out.println(e.getMessage());
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
