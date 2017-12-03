@@ -582,7 +582,8 @@ public class InsertDynamicData extends DynamicOneColumnData {
                 insertTrue.insertTrueIndex ++;
             } else {
                 if (valueFilter == null || valueSatisfied()) {
-                    if (currentSatisfiedTime == -1)
+                    // no page time, or overflow insert time is smaller than page time
+                    if (currentSatisfiedTime == -1 || insertTrue.getTime(insertTrue.insertTrueIndex) < currentSatisfiedTime)
                         currentSatisfiedTime = insertTrue.getTime(insertTrue.insertTrueIndex);
                     return true;
                 } else {

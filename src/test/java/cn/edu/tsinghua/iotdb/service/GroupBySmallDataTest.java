@@ -570,8 +570,8 @@ public class GroupBySmallDataTest {
                 while (resultSet.next()) {
                     cnt++;
                 }
-                System.out.println("--------" + cnt);
-                //Assert.assertEquals(10000002, cnt);
+                //System.out.println("--------" + cnt);
+                Assert.assertEquals(66499502, cnt);
             }
 
             statement.close();

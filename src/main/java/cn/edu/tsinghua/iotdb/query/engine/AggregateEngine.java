@@ -28,7 +28,7 @@ public class AggregateEngine {
     /** aggregation batch calculation size **/
     public static int aggregateFetchSize = 50000;
 
-    /** aggregation batch calculation size **/
+    /** cross read query fetch size **/
     public static int crossQueryFetchSize = 50000;
 
     /**
@@ -313,11 +313,11 @@ public class AggregateEngine {
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                     insertTrue, updateTrue, updateFalse,
                     newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
-            res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
+            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
                     updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
             res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
-            res = recordReader.getValueInOneColumnWithOverflow(deltaObjectUID, measurementUID,
+            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
                     res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, valueFilter, res, fetchSize);
         }
 

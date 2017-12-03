@@ -331,7 +331,7 @@ public class AggregationSmallDataTest {
                     String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(max_value(d0s0))
                             + "," + resultSet.getString(max_value(d0s1)) + "," + resultSet.getString(max_value(d0s2))
                             + "," + resultSet.getString(max_value(d0s3)) + "," + resultSet.getString(max_value(d0s4));
-                    System.out.println("============ " + ans);
+                    //System.out.println("============ " + ans);
                     //Assert.assertEquals(ans, retArray[cnt]);
                     cnt++;
                 }

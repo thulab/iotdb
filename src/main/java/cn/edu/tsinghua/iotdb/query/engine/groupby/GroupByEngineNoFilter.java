@@ -53,7 +53,8 @@ public class GroupByEngineNoFilter {
     private int intervalIndex;
 
     /** group by partition fetch size, when result size is reach to partitionSize, the current
-     *  calculation will be terminated
+     *  calculation will be terminated.
+     *  this variable could be set small to test
      */
     private int partitionFetchSize;
 
@@ -66,9 +67,6 @@ public class GroupByEngineNoFilter {
     private QueryDataSet groupByResult = new QueryDataSet();
 
     private SingleSeriesFilterExpression timeFilter;
-
-    public GroupByEngineNoFilter() {
-    }
 
     public GroupByEngineNoFilter(List<Pair<Path, AggregateFunction>> aggregations, SingleSeriesFilterExpression timeFilter,
                                   long origin, long unit, SingleSeriesFilterExpression intervals, int partitionFetchSize) {
@@ -89,8 +87,6 @@ public class GroupByEngineNoFilter {
         this.origin = origin;
         this.unit = unit;
         this.partitionFetchSize = partitionFetchSize;
-        // TODO set small value to test
-        // this.partitionFetchSize = 2;
 
         this.longInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(intervals);
         this.intervalIndex = 0;
@@ -227,12 +223,12 @@ public class GroupByEngineNoFilter {
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                     insertTrue, updateTrue, updateFalse,
                     newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
-            res = recordReader.getValueInOneColumnWithOverflow(deltaObjectID, measurementID,
+            res = recordReader.queryOneSeries(deltaObjectID, measurementID,
                     updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, null, res, queryFetchSize);
             res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res.clearData();
-            res = recordReader.getValueInOneColumnWithOverflow(deltaObjectID, measurementID,
+            res = recordReader.queryOneSeries(deltaObjectID, measurementID,
                     res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, null, res, queryFetchSize);
         }
 

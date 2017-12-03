@@ -11,8 +11,6 @@ import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.LongFilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +35,27 @@ public class RecordReader {
 
     static final Logger logger = LoggerFactory.getLogger(RecordReader.class);
 
-    private ReaderManager readerManager;
-    private int lockToken;  // for lock
     private String deltaObjectUID, measurementID;
-    public DynamicOneColumnData insertPageInMemory;  // bufferwrite insert memory page unsealed
-    public List<ByteArrayInputStream> bufferWritePageList;  // bufferwrite insert memory page
+
+    /** compression type in this series **/
     public CompressionTypeName compressionTypeName;
-    public InsertDynamicData insertAllData;  // insertPageInMemory + bufferWritePageList;
+
+    /** ReaderManager for current (deltaObjectUID, measurementID) **/
+    private ReaderManager readerManager;
+
+    /** for lock **/
+    private int lockToken;
+
+    /** bufferwrite data, the data page in memory **/
+    public DynamicOneColumnData insertPageInMemory;
+
+    /** bufferwrite data, the unsealed page **/
+    public List<ByteArrayInputStream> bufferWritePageList;
+
+    /** insertPageInMemory + bufferWritePageList; **/
+    public InsertDynamicData insertAllData;
+
+    /** overflow data **/
     public List<Object> overflowInfo;
 
     /**
@@ -64,7 +76,7 @@ public class RecordReader {
     }
 
     /**
-     * @param filePathList              bufferwrite file has been serialized completely
+     * @param filePathList       bufferwrite file has been serialized completely
      * @param unsealedFilePath   unsealed file reader
      * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
      * @throws IOException file error
@@ -84,14 +96,14 @@ public class RecordReader {
     }
 
     /**
-     * read one column function with overflow, no filter.
+     * Read one series with overflow and bufferwrite, no filter.
      *
      * @throws ProcessorException
      * @throws IOException
      */
-    public DynamicOneColumnData getValueInOneColumnWithOverflow(String deltaObjectId, String measurementId,
-                          DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-                          SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
+    public DynamicOneColumnData queryOneSeries(String deltaObjectId, String measurementId,
+                                               DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
+                                               SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
@@ -116,7 +128,7 @@ public class RecordReader {
         }
 
         if (res == null) {
-            res = createAOneColRetByFullPath(deltaObjectId + "." + measurementId);
+            res = new DynamicOneColumnData(dataType, true);
         }
 
         // add left insert values
@@ -126,16 +138,6 @@ public class RecordReader {
             res.hasReadAll = true;
         }
         return res;
-    }
-
-    private DynamicOneColumnData createAOneColRetByFullPath(String fullPath) throws ProcessorException {
-        try {
-            TSDataType type = MManager.getInstance().getSeriesType(fullPath);
-            DynamicOneColumnData res = new DynamicOneColumnData(type, true);
-            return res;
-        } catch (PathErrorException e) {
-            throw new ProcessorException(e.getMessage());
-        }
     }
 
     /**
@@ -261,9 +263,9 @@ public class RecordReader {
      * @throws ProcessorException
      * @throws IOException
      */
-    public DynamicOneColumnData readUseCommonTimestamps(String deltaObjectId, String measurementId,
-                                                        SingleSeriesFilterExpression overflowTimeFilter, long[] commonTimestamps,
-                                                        InsertDynamicData insertMemoryData)
+    public DynamicOneColumnData queryUsingTimestamps(String deltaObjectId, String measurementId,
+                                                     SingleSeriesFilterExpression overflowTimeFilter, long[] commonTimestamps,
+                                                     InsertDynamicData insertMemoryData)
             throws ProcessorException, IOException, PathErrorException {
 
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
@@ -272,7 +274,7 @@ public class RecordReader {
             filterVerifier = new SingleValueVisitor(overflowTimeFilter);
         }
 
-        DynamicOneColumnData originalQueryData = getValuesUseTimestamps(deltaObjectId, measurementId, overflowTimeFilter, commonTimestamps);
+        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(deltaObjectId, measurementId, overflowTimeFilter, commonTimestamps);
         if (originalQueryData == null) {
             originalQueryData = new DynamicOneColumnData(dataType, true);
         }
@@ -317,18 +319,11 @@ public class RecordReader {
         return newQueryData;
     }
 
-    /**
-     * for cross getIndex, to get values in one column according to common timestamps.
-     *
-     * @return
-     * @throws IOException
-     */
-    private DynamicOneColumnData getValuesUseTimestamps(String deltaObjectId, String measurementId,
-                                                        SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps)
+    private DynamicOneColumnData queryOriginalDataUsingTimestamps(String deltaObjectId, String measurementId,
+                                                                  SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps)
             throws IOException {
-        DynamicOneColumnData res = null;
 
-        //TODO the rowGroupReader index could be optimized for batch query
+        DynamicOneColumnData res = null;
 
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
         for (int i = 0; i < rowGroupReaderList.size(); i++) {
@@ -354,7 +349,7 @@ public class RecordReader {
      * @param updateFalse <code>DynamicOneColumnData</code> represents which value of update to new value is
      *                    not satisfied with the filter
      * @return true represents that all the values has been read
-     * @throws IOException
+     * @throws IOException TsFile read error
      */
     private boolean addLeftInsertValue(DynamicOneColumnData res, InsertDynamicData insertMemoryData, int fetchSize,
                                        SingleSeriesFilterExpression timeFilter, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse) throws IOException {
@@ -407,15 +402,6 @@ public class RecordReader {
             default:
                 throw new UnSupportedDataTypeException("UnuSupported DataType : " + insertMemoryData.getDataType());
         }
-    }
-
-    /**
-     * Use {@code RecordReaderFactory} to manage all RecordReader.
-     *
-     * @throws ProcessorException
-     */
-    public void closeFromFactory() throws ProcessorException {
-        RecordReaderFactory.getInstance().closeOneRecordReader(this);
     }
 
     /**

@@ -33,27 +33,6 @@ public class ValueReaderProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValueReaderProcessor.class);
 
-    // private
-//    ValueReaderProcessor(long offset, long totalSize, TSDataType dataType, TsDigest digest,
-//                                 ITsRandomAccessFileReader raf, List<String> enumValues, CompressionTypeName compressionTypeName,
-//                                 long rowNums) {
-//        super(offset, totalSize, dataType, digest, raf, enumValues, compressionTypeName, rowNums);
-//    }
-
-    private ByteArrayInputStream initBAISForOnePage(ValueReader valueReader, long pageOffset) throws IOException {
-        int length = (int) (valueReader.totalSize - (pageOffset - valueReader.fileOffset));
-        // int length = (int) (this.totalSize + fileOffset - valueOffset);
-        byte[] buf = new byte[length]; // warning
-        int readSize = 0;
-        valueReader.raf.seek(pageOffset);
-        readSize = valueReader.raf.read(buf, 0, length);
-        if (readSize != length) {
-            throw new IOException("Expect byte size : " + length + ". Read size : " + readSize);
-        }
-
-        return new ByteArrayInputStream(buf);
-    }
-
     static DynamicOneColumnData getValuesWithOverFlow(ValueReader valueReader, DynamicOneColumnData updateTrueData, DynamicOneColumnData updateFalseData,
                                                InsertDynamicData insertMemoryData, SingleSeriesFilterExpression timeFilter,
                                                SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
@@ -208,13 +187,9 @@ public class ValueReaderProcessor {
                             int v = valueReader.decoder.readInt(page);
                             if (mode == -1) {
                                 if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putInt(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -226,20 +201,15 @@ public class ValueReaderProcessor {
                                 if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
                                         && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
-                                    if (timeFilter == null
-                                            || timeVisitor.verify(timeValues[timeIdx])) {
+                                    if (timeFilter == null || timeVisitor.verify(timeValues[timeIdx])) {
                                         res.putInt(updateData[0].getInt(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putInt(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -252,13 +222,9 @@ public class ValueReaderProcessor {
                                         && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putInt(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -302,13 +268,9 @@ public class ValueReaderProcessor {
                             boolean v = valueReader.decoder.readBoolean(page);
                             if (mode == -1) {
                                 if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.satisfyObject(v, valueFilter))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.satisfyObject(v, valueFilter)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putBoolean(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -320,20 +282,15 @@ public class ValueReaderProcessor {
                                 if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
                                         && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
-                                    if (timeFilter == null
-                                            || timeVisitor.verify(timeValues[timeIdx])) {
+                                    if (timeFilter == null || timeVisitor.verify(timeValues[timeIdx])) {
                                         res.putInt(updateData[0].getInt(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.satisfyObject(v, valueFilter))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.satisfyObject(v, valueFilter)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putBoolean(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -346,13 +303,9 @@ public class ValueReaderProcessor {
                                         && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.satisfyObject(v, valueFilter))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.satisfyObject(v, valueFilter)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putBoolean(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -397,13 +350,9 @@ public class ValueReaderProcessor {
                             long v = valueReader.decoder.readLong(page);
                             if (mode == -1) {
                                 if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putLong(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -415,20 +364,15 @@ public class ValueReaderProcessor {
                                 if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
                                         && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     //TODO update the value, need discuss the logic with gaofei
-                                    if (timeFilter == null
-                                            || timeVisitor.verify(timeValues[timeIdx])) {
+                                    if (timeFilter == null || timeVisitor.verify(timeValues[timeIdx])) {
                                         res.putLong(updateData[0].getLong(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putLong(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -441,13 +385,9 @@ public class ValueReaderProcessor {
                                         && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putLong(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -490,13 +430,9 @@ public class ValueReaderProcessor {
                             float v = valueReader.decoder.readFloat(page);
                             if (mode == -1) {
                                 if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putFloat(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -508,20 +444,15 @@ public class ValueReaderProcessor {
                                 if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
                                         && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
-                                    if (timeFilter == null
-                                            || timeVisitor.verify(timeValues[timeIdx])) {
+                                    if (timeFilter == null || timeVisitor.verify(timeValues[timeIdx])) {
                                         res.putFloat(updateData[0].getFloat(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putFloat(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -534,12 +465,9 @@ public class ValueReaderProcessor {
                                         && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
                                         && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putFloat(v);
                                     res.putTime(timeValues[timeIdx]);
@@ -583,13 +511,9 @@ public class ValueReaderProcessor {
                             double v = valueReader.decoder.readDouble(page);
                             if (mode == -1) {
                                 if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putDouble(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -601,19 +525,15 @@ public class ValueReaderProcessor {
                                 if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
                                         && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
-                                    if (timeFilter == null
-                                            || timeVisitor.verify(timeValues[timeIdx])) {
+                                    if (timeFilter == null || timeVisitor.verify(timeValues[timeIdx])) {
                                         res.putDouble(updateData[0].getDouble(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
                                         && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putDouble(v);
                                     res.putTime(timeValues[timeIdx]);
@@ -627,13 +547,9 @@ public class ValueReaderProcessor {
                                         && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.verify(v))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.verify(v)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putDouble(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -676,13 +592,9 @@ public class ValueReaderProcessor {
                             Binary v = valueReader.decoder.readBinary(page);
                             if (mode == -1) {
                                 if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.satisfyObject(v, valueFilter))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.satisfyObject(v, valueFilter)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putBinary(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -694,20 +606,15 @@ public class ValueReaderProcessor {
                                 if (updateData[0].getTime(updateIdx[0]) <= timeValues[timeIdx]
                                         && timeValues[timeIdx] <= updateData[0].getTime(updateIdx[0] + 1)) {
                                     // update the value
-                                    if (timeFilter == null
-                                            || timeVisitor.verify(timeValues[timeIdx])) {
+                                    if (timeFilter == null || timeVisitor.verify(timeValues[timeIdx])) {
                                         res.putBinary(updateData[0].getBinary(updateIdx[0] / 2));
                                         res.putTime(timeValues[timeIdx]);
                                         resCount++;
                                     }
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.satisfyObject(v, valueFilter))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.satisfyObject(v, valueFilter)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putBinary(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -720,13 +627,9 @@ public class ValueReaderProcessor {
                                         && timeValues[timeIdx] <= updateData[1].getTime(updateIdx[1] + 1)) {
                                     // do nothing
                                 } else if ((valueFilter == null && timeFilter == null)
-                                        || (valueFilter != null && timeFilter == null
-                                        && valueVisitor.satisfyObject(v, valueFilter))
-                                        || (valueFilter == null && timeFilter != null
-                                        && timeVisitor.verify(timeValues[timeIdx]))
-                                        || (valueFilter != null && timeFilter != null
-                                        && valueVisitor.satisfyObject(v, valueFilter)
-                                        && timeVisitor.verify(timeValues[timeIdx]))) {
+                                        || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                        || (valueFilter == null && timeFilter != null && timeVisitor.verify(timeValues[timeIdx]))
+                                        || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(timeValues[timeIdx]))) {
                                     res.putBinary(v);
                                     res.putTime(timeValues[timeIdx]);
                                     resCount++;
@@ -970,9 +873,9 @@ public class ValueReaderProcessor {
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePage(
                     dataType, pageTimeValues, valueReader.decoder, page,
                     overflowTimeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx, func);
+
             if (pageData.left != null && pageData.left.valueLength > 0)
                 func.calculateValueFromDataPage(pageData.left);
-
             timestampsUsedIndex = pageData.right;
             if (timestampsUsedIndex >= aggregationTimestamps.size())
                 break;
