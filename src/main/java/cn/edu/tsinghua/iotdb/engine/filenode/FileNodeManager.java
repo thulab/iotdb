@@ -472,8 +472,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 	/**
 	 *
 	 *
-	 * @param deltaObjectId
-	 * @param token
+	 * @param path : the column path
+	 * @param startTime : the startTime of index
+	 * @param endTime : the endTime of index
+	 *
 	 * @throws FileNodeManagerException
 	 */
 	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {

@@ -281,7 +281,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 2: read one series with filter.
      */
-    public QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
+    private QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
                                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
                                                 QueryDataSet queryDataSet, int fetchSize,
                                                 Integer readLock) throws ProcessorException, IOException {

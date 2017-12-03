@@ -123,7 +123,7 @@ public class KvMatchIndex  implements IoTIndex {
             long startTime = indexConfig.getSinceTime();
 
             // 1. build index for every data file
-            if (fileList == null || fileList.isEmpty()) {
+            if (fileList.isEmpty()) {
                 token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
                 fileList = FileNodeManager.getInstance().indexBuildQuery(path, indexConfig.getSinceTime(), -1);
             }
