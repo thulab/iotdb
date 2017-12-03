@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileSQLException;
-import cn.edu.tsinghua.iotdb.service.Daemon;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.apache.commons.io.FileUtils;
 
@@ -20,7 +20,7 @@ import java.sql.Statement;
 import java.util.Random;
 
 public class KvIndexPerfTestInstance {
-    private static Daemon deamon;
+    private static IoTDB deamon;
     //We insert all data into one path and create index.
     private static String path;
     //Another path to cut off testing path
@@ -71,7 +71,7 @@ public class KvIndexPerfTestInstance {
 
         resultFile = "result.out";
 
-        deamon = new Daemon();
+        deamon = new IoTDB();
         deamon.active();
 
         File ff = new File(config.bufferWriteDir);
@@ -94,10 +94,10 @@ public class KvIndexPerfTestInstance {
                 "SET STORAGE GROUP TO root.vehicle.d40",
                 "CREATE TIMESERIES root.vehicle.d40.s5 WITH DATATYPE=INT32, ENCODING=RLE",
         };
-        defaultWindowLength = 500;
+        defaultWindowLength = 50;
         defaultPatternStartPos = 1;
         lastTimestamp = new long[]{1000000, 10000000, 100000000, 1000000000, 2000000000, 3000000000l};
-        defaultPatternLength = 1000;
+        defaultPatternLength = 50;
 
         int pos = 1;
         double[][] mul = new double[][]{
@@ -199,8 +199,8 @@ public class KvIndexPerfTestInstance {
         createPerfTest();
 //        queryPerfByVaryTimeRangeTest();
 //        queryPerfByVaryThresholdTest();
-        queryPerfByVaryPatternLengthTest();
-        queryPerfByVaryWindowSizeTest();
+//        queryPerfByVaryPatternLengthTest();
+//        queryPerfByVaryWindowSizeTest();
 //        executeSQL("drop index kvindex on " + path, 0);
     }
 

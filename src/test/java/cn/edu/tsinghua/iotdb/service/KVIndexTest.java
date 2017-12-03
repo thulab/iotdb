@@ -117,7 +117,7 @@ public class KVIndexTest {
     private String walFolderPre;
     private String indexFileDirPre;
 
-    private Daemon deamon;
+    private IoTDB deamon;
 
     private boolean testFlag = true;
 
@@ -143,7 +143,7 @@ public class KVIndexTest {
             config.walFolder = FOLDER_HEADER + "/data/wals";
             config.indexFileDir = FOLDER_HEADER + "/data/index";
             config.maxOpenFolder = 1;
-            deamon = new Daemon();
+            deamon = new IoTDB();
             deamon.active();
         }
     }

@@ -25,6 +25,7 @@ public class PatternQueryDataSetIterator implements Iterator<QueryDataSet> {
     private KvMatchQueryRequest queryRequest;
     private final int fetchSize;
     private QueryDataSet data = null;
+    private QueryDataSet useddata = null;
 
     public PatternQueryDataSetIterator(KvMatchQueryRequest queryRequest, int fetchSize) {
         this.queryRequest = queryRequest;
@@ -33,29 +34,43 @@ public class PatternQueryDataSetIterator implements Iterator<QueryDataSet> {
 
     @Override
     public boolean hasNext() {
+        if (useddata != null) {
+            useddata.clear();
+        }
         if (noNext) {
             return false;
         }
-        try {
-            List<Object> parameters = new ArrayList<>();
-            parameters.add(queryRequest.getStartTime());
-            parameters.add(queryRequest.getEndTime());
-            parameters.add(queryRequest.getQueryPath());
-            parameters.add(queryRequest.getQueryStartTime());
-            parameters.add(queryRequest.getQueryEndTime());
-            parameters.add(queryRequest.getEpsilon());
-            parameters.add(queryRequest.getAlpha());
-            parameters.add(queryRequest.getBeta());
-            data = (QueryDataSet) kvMatchIndexManager.query(queryRequest.getColumnPath(), parameters, null, fetchSize);
-        } catch (IndexManagerException e) {
-            throw new RuntimeException(e.getMessage());
+        if (data == null || !data.hasNextRecord()) {
+            try {
+                List<Object> parameters = new ArrayList<>();
+                parameters.add(queryRequest.getStartTime());
+                parameters.add(queryRequest.getEndTime());
+                parameters.add(queryRequest.getQueryPath());
+                parameters.add(queryRequest.getQueryStartTime());
+                parameters.add(queryRequest.getQueryEndTime());
+                parameters.add(queryRequest.getEpsilon());
+                parameters.add(queryRequest.getAlpha());
+                parameters.add(queryRequest.getBeta());
+                data = (QueryDataSet) kvMatchIndexManager.query(queryRequest.getColumnPath(), parameters, null, fetchSize);
+            } catch (IndexManagerException e) {
+                throw new RuntimeException(e.getMessage());
+            }
         }
-        noNext = true;
-        return data.hasNextRecord();
+        if (data == null) {
+            throw new RuntimeException("data is null!");
+        }
+        if (data.hasNextRecord()) {
+            return true;
+        } else {
+            noNext = true;
+            return false;
+        }
     }
 
     @Override
     public QueryDataSet next() {
-        return data;
+        useddata = data;
+        data = null;
+        return useddata;
     }
 }
