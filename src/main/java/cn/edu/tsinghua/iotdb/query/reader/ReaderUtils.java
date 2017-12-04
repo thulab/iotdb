@@ -655,7 +655,6 @@ public class ReaderUtils {
      *               while update[1] represents updateFalse
      * @param updateIdx an array of the index of overflow update info, update[0] represents the index of
      *                  updateTrue, while update[1] represents updateFalse
-     * @param func aggregation function
      * @return left represents the data of DataPage which satisfies the restrict condition,
      *         right represents the read time index of commonTimestamps
      * @throws IOException TsFile read error
@@ -664,8 +663,7 @@ public class ReaderUtils {
                 Decoder decoder, InputStream page,
                 SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
                 List<Long> commonTimestamps, int commonTimestampsIndex,
-                InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx,
-                AggregateFunction func) throws IOException {
+                InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check
 

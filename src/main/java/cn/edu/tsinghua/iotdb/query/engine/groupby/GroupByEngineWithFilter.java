@@ -218,10 +218,6 @@ public class GroupByEngineWithFilter {
 
             //LOG.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
 
-//            if (partitionStart >= 98) {
-//                System.out.println("..");
-//            }
-
             if (queryCalcFlag) {
                 calcPathQueryData();
                 queryCalcFlag = false;
@@ -332,7 +328,7 @@ public class GroupByEngineWithFilter {
             cnt++;
             Path path = pair.left;
             AggregateFunction aggregateFunction = pair.right;
-            groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
+            groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.resultData);
         }
         //LOG.debug("calculate group by result successfully.");
         return groupByResult;

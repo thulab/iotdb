@@ -284,15 +284,16 @@ public class LargeDataTest {
             Statement statement = connection.createStatement();
             String sql;
             boolean hasResultSet;
+            ResultSet resultSet;
+            int cnt;
+            String[] retArray = new String[]{};
 
             // (1). aggregation test : there is no value in series d1.s0 and no filter
-            String[] retArray = new String[]{
-            };
             sql = "select count(s0),max_value(s0),min_value(s0),max_time(s0),min_time(s0) from root.vehicle.d1";
             hasResultSet = statement.execute(sql);
             Assert.assertTrue(hasResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
+            resultSet = statement.getResultSet();
+            cnt = 0;
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s0))
                         + "," + resultSet.getString(max_value(d1s0)) + "," + resultSet.getString(min_value(d1s0))
@@ -312,11 +313,13 @@ public class LargeDataTest {
             resultSet = statement.getResultSet();
             cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s0));
-                System.out.println("!!!!!! " + ans);
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s0))
+                        + "," + resultSet.getString(max_value(d1s0)) + "," + resultSet.getString(min_value(d1s0))
+                        + "," + resultSet.getString(max_time(d1s0)) + "," + resultSet.getString(min_time(d1s0));
+                System.out.println("0,0,null,null,null,null" + ans);
                 cnt++;
             }
-            //Assert.assertEquals(23, cnt);
+            Assert.assertEquals(1, cnt);
             statement.close();
 
             // (2). group by test : the result is all null value

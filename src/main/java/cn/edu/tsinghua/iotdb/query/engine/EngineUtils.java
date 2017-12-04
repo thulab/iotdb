@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -305,5 +306,9 @@ public class EngineUtils {
         }
 
         return res;
+    }
+
+    public static String aggregationKey(AggregateFunction aggregateFunction, Path path) {
+        return aggregateFunction.name + "(" + path.getFullPath() + ")";
     }
 }

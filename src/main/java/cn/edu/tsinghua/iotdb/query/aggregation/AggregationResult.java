@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.aggregation;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
+// TODO this class is useless
 public class AggregationResult {
 
 	/**

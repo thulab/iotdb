@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -673,7 +672,7 @@ public class ValueReaderProcessor {
         return res;
     }
 
-    static AggregationResult aggregate(ValueReader valueReader, AggregateFunction func, InsertDynamicData insertMemoryData,
+    static void aggregate(ValueReader valueReader, AggregateFunction func, InsertDynamicData insertMemoryData,
                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression timeFilter,
                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
             throws IOException, ProcessorException {
@@ -696,7 +695,8 @@ public class ValueReaderProcessor {
         // if this column is not satisfied to the filter, then return.
         if (updateTrue.valueLength == 0 && insertMemoryData == null && valueFilter != null
                 && !digestVisitor.satisfy(digestFF, valueFilter)) {
-            return func.result;
+            //return func.result;
+            return;
         }
 
         DynamicOneColumnData[] update = new DynamicOneColumnData[2];
@@ -781,8 +781,6 @@ public class ValueReaderProcessor {
         // record the current index for overflow info
         updateTrue.curIdx = updateIdx[0];
         updateFalse.curIdx = updateIdx[1];
-
-        return func.result;
     }
 
     /**
@@ -790,7 +788,7 @@ public class ValueReaderProcessor {
      * An aggregation method implementation for the ValueReader aspect.
      * The aggregation will be calculated using the calculated common timestamps.
      *
-     * @param func aggregation function
+     * @param aggregateFunction aggregation function
      * @param insertMemoryData bufferwrite memory insert data with overflow operation
      * @param updateTrue overflow update operation which satisfy the filter
      * @param updateFalse overflow update operation which doesn't satisfy the filter
@@ -801,7 +799,7 @@ public class ValueReaderProcessor {
      * @throws IOException TsFile read error
      * @throws ProcessorException get read info error
      */
-    static int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction func, InsertDynamicData insertMemoryData,
+    static int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction aggregateFunction, InsertDynamicData insertMemoryData,
                                  DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression overflowTimeFilter,
                                  SingleSeriesFilterExpression freqFilter, List<Long> aggregationTimestamps) throws IOException, ProcessorException {
         TSDataType dataType = valueReader.dataType;
@@ -820,7 +818,7 @@ public class ValueReaderProcessor {
         int timestampsUsedIndex = 0;
 
         // lastAggregationResult records some information such as file page offset
-        DynamicOneColumnData lastAggregationResult = func.result.data;
+        DynamicOneColumnData lastAggregationResult = aggregateFunction.resultData;
         if (lastAggregationResult.pageOffset == -1) {
             lastAggregationResult.pageOffset = valueReader.fileOffset;
         }
@@ -872,10 +870,11 @@ public class ValueReaderProcessor {
 
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePage(
                     dataType, pageTimeValues, valueReader.decoder, page,
-                    overflowTimeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx, func);
+                    overflowTimeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx);
 
             if (pageData.left != null && pageData.left.valueLength > 0)
-                func.calculateValueFromDataPage(pageData.left);
+                aggregateFunction.calculateValueFromDataPage(pageData.left);
+
             timestampsUsedIndex = pageData.right;
             if (timestampsUsedIndex >= aggregationTimestamps.size())
                 break;

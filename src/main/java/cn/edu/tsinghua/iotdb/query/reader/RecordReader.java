@@ -7,7 +7,6 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationResult;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -145,7 +144,7 @@ public class RecordReader {
      *
      * @param deltaObjectId deltaObjectId of <code>Path</code>
      * @param measurementId measurementId of <code>Path</code>
-     * @param func aggregation function
+     * @param aggregateFunction aggregation function
      * @param updateTrue update operation which satisfies the filter
      * @param updateFalse update operation which doesn't satisfy the filter
      * @param insertMemoryData memory bufferwrite insert data
@@ -156,7 +155,7 @@ public class RecordReader {
      * @throws ProcessorException aggregation invoking exception
      * @throws IOException TsFile read exception
      */
-    public AggregationResult aggregate(String deltaObjectId, String measurementId, AggregateFunction func,
+    public AggregateFunction aggregate(String deltaObjectId, String measurementId, AggregateFunction aggregateFunction,
                                        DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
     ) throws ProcessorException, IOException, PathErrorException {
@@ -169,19 +168,16 @@ public class RecordReader {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 ValueReaderProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
-                        func, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
+                        aggregateFunction, insertMemoryData, updateTrue, updateFalse, timeFilter, freqFilter, valueFilter);
             }
         }
 
         // add left insert values
         if (insertMemoryData != null && insertMemoryData.hasInsertData()) {
-            func.calculateValueFromLeftMemoryData(insertMemoryData);
+            aggregateFunction.calculateValueFromLeftMemoryData(insertMemoryData);
         }
 
-        if (func.result.data.timeLength == 0) {
-            func.putDefaultValue();
-        }
-        return func.result;
+        return aggregateFunction;
     }
 
     /**
@@ -192,7 +188,7 @@ public class RecordReader {
      *
      * @param deltaObjectId deltaObjectId deltaObjectId of <code>Path</code>
      * @param measurementId measurementId of <code>Path</code>
-     * @param func aggregation function
+     * @param aggregateFunction aggregation function
      * @param updateTrue update operation which satisfies the filter
      * @param updateFalse update operation which doesn't satisfy the filter
      * @param insertMemoryData memory bufferwrite insert data
@@ -204,7 +200,7 @@ public class RecordReader {
      * @throws IOException TsFile read exception
      */
     public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(
-            String deltaObjectId, String measurementId, AggregateFunction func,
+            String deltaObjectId, String measurementId, AggregateFunction aggregateFunction,
             DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
             SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression freqFilter, List<Long> timestamps)
             throws ProcessorException, IOException, PathErrorException {
@@ -217,7 +213,7 @@ public class RecordReader {
 
         int commonTimestampsIndex = 0;
 
-        int rowGroupIndex = func.result.data.rowGroupIndex;
+        int rowGroupIndex = aggregateFunction.resultData.rowGroupIndex;
 
         for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
             RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
@@ -227,19 +223,19 @@ public class RecordReader {
                 // TODO commonTimestampsIndex could be saved as a parameter
 
                 commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        func, insertMemoryData, updateTrue, updateFalse, overflowTimeFilter, freqFilter, timestamps);
+                        aggregateFunction, insertMemoryData, updateTrue, updateFalse, overflowTimeFilter, freqFilter, timestamps);
 
                 // all value of commonTimestampsIndex has been used,
                 // the next batch of commonTimestamps should be loaded
                 if (commonTimestampsIndex >= timestamps.size()) {
-                    return new Pair<>(func, true);
+                    return new Pair<>(aggregateFunction, true);
                 }
             }
         }
 
         // calculate aggregation using unsealed file data and memory data
         if (insertMemoryData != null && insertMemoryData.hasInsertData()) {
-            stillHasUnReadData = func.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
+            stillHasUnReadData = aggregateFunction.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
         } else {
             if (commonTimestampsIndex < timestamps.size()) {
                 stillHasUnReadData = false;
@@ -248,7 +244,7 @@ public class RecordReader {
             }
         }
 
-        return new Pair<>(func, stillHasUnReadData);
+        return new Pair<>(aggregateFunction, stillHasUnReadData);
     }
 
     /**

@@ -190,7 +190,7 @@ public class GroupByEngineNoFilter {
                 cnt++;
             Path path = pair.left;
             AggregateFunction aggregateFunction = pair.right;
-            groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
+            groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.resultData);
         }
 
         //LOG.debug("current group by function with no filter is over.");
