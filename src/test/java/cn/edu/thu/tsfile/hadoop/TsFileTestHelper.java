@@ -10,11 +10,11 @@ import org.json.JSONObject;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
-import cn.edu.tsinghua.tsfile.common.utils.RandomAccessOutputStream;
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
-import cn.edu.tsinghua.tsfile.timeseries.read.LocalFileInput;
+import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 
 public class TsFileTestHelper {
@@ -44,7 +44,7 @@ public class TsFileTestHelper {
 		JSONObject jsonSchema = getJsonSchema();
 		
 		try {
-			TSRandomAccessFileWriter output = new RandomAccessOutputStream(new File(filePath));
+			ITsRandomAccessFileWriter output = new TsRandomAccessFileWriter(new File(filePath));
 			TsFile tsFile = new TsFile(output, jsonSchema);
 			String line = "";
 			for(int i = 1;i<100;i++){
@@ -120,7 +120,7 @@ public class TsFileTestHelper {
 		System.out.println(file.exists());
 		file.delete();
 		writeTsFile(filePath);
-		TsFile tsFile = new TsFile(new LocalFileInput(filePath));
+		TsFile tsFile = new TsFile(new TsRandomAccessLocalFileReader(filePath));
 		System.out.println(tsFile.getAllColumns());
 		System.out.println(tsFile.getAllDeltaObject());
 		System.out.println(tsFile.getAllSeries());

@@ -22,9 +22,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
-import cn.edu.tsinghua.tsfile.timeseries.read.LocalFileInput;
+import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
 public class TSFHadoopTest {
 
@@ -107,7 +107,7 @@ public class TSFHadoopTest {
 			// set input path to the job
 			TSFInputFormat.setInputPaths(job, tsfilePath);
 			List<InputSplit> inputSplits = inputformat.getSplits(job);
-			TSRandomAccessFileReader reader = new LocalFileInput(tsfilePath);
+			ITsRandomAccessFileReader reader = new TsRandomAccessLocalFileReader(tsfilePath);
 			TsFile tsFile = new TsFile(reader);
 			System.out.println(tsFile.getDeltaObjectRowGroupCount());
 			assertEquals(tsFile.getRowGroupPosList().size(), inputSplits.size());
@@ -131,7 +131,7 @@ public class TSFHadoopTest {
 			String[] columns = { "s1", "s2", "s3", "s4", "s5", "s6" };
 			TSFInputFormat.setReadColumns(job, columns);
 			List<InputSplit> inputSplits = inputformat.getSplits(job);
-			TSRandomAccessFileReader reader = new LocalFileInput(tsfilePath);
+			ITsRandomAccessFileReader reader = new TsRandomAccessLocalFileReader(tsfilePath);
 			TsFile tsFile = new TsFile(reader);
 			System.out.println(tsFile.getDeltaObjectRowGroupCount());
 			assertEquals(tsFile.getRowGroupPosList().size(), inputSplits.size());

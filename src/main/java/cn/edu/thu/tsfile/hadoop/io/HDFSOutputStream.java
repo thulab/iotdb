@@ -8,8 +8,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
-
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 
 /**
  * This class is used to wrap the {@link}FSDataOutputStream and implement the
@@ -17,24 +16,22 @@ import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
  *
  * @author liukun
  */
-public class HDFSOutputStream implements TSRandomAccessFileWriter {
-
+public class HDFSOutputStream implements ITsRandomAccessFileWriter {
 
 	private FSDataOutputStream fsDataOutputStream;
 
 	public HDFSOutputStream(String filePath, boolean overwriter) throws IOException {
-		
+
 		this(filePath, new Configuration(), overwriter);
 	}
 
-	
 	public HDFSOutputStream(String filePath, Configuration configuration, boolean overwriter) throws IOException {
-		
-		this(new Path(filePath),configuration,overwriter);
+
+		this(new Path(filePath), configuration, overwriter);
 	}
-	
-	public HDFSOutputStream(Path path,Configuration configuration,boolean overwriter) throws IOException{
-		
+
+	public HDFSOutputStream(Path path, Configuration configuration, boolean overwriter) throws IOException {
+
 		FileSystem fsFileSystem = FileSystem.get(configuration);
 		fsDataOutputStream = fsFileSystem.create(path, overwriter);
 	}
@@ -58,19 +55,19 @@ public class HDFSOutputStream implements TSRandomAccessFileWriter {
 
 	@Override
 	public void write(int b) throws IOException {
-		
+
 		fsDataOutputStream.write(b);
 	}
 
 	@Override
 	public void write(byte[] b) throws IOException {
-		
+
 		fsDataOutputStream.write(b);
 	}
 
 	@Override
 	public void close() throws IOException {
-		
+
 		fsDataOutputStream.close();
 	}
 
