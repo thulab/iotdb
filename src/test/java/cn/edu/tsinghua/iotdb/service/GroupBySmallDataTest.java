@@ -37,18 +37,21 @@ public class GroupBySmallDataTest {
     private final String d0s2 = "root.vehicle.d0.s2";
     private final String d0s3 = "root.vehicle.d0.s3";
     private final String d0s4 = "root.vehicle.d0.s4";
+
     private final String d1s0 = "root.vehicle.d1.s0";
     private final String d1s1 = "root.vehicle.d1.s1";
 
     private String[] sqls = new String[]{
             "SET STORAGE GROUP TO root.vehicle",
-            "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-            "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
-            "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
+
             "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
+            "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
+            "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
             "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
 
+            "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
+            "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
 
             "insert into root.vehicle.d0(timestamp,s0) values(1,101)",
             "insert into root.vehicle.d0(timestamp,s0) values(2,198)",
@@ -163,19 +166,21 @@ public class GroupBySmallDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            groupByNoFilterOneIntervalTest();
-            groupByWithFilterCountOneIntervalTest();
-            groupByWithFilterMaxMinValueOneIntervalTest();
-            groupByWithFilterMaxTimeOneIntervalTest();
-            groupByWithFilterMinTimeOneIntervalTest();
-            groupByNoValidIntervalTest();
-            groupByMultiResultWithFilterTest();
-            groupByWithFilterCountManyIntervalTest();
-            threadLocalTest();
-            groupByMultiAggregationFunctionTest();
-            groupBySelectMultiDeltaObjectTest();
-            groupByOnlyHasTimeFilterTest();
-            groupByMultiResultNoFilterTest();
+            allNullSeriesTest();
+
+            //groupByNoFilterOneIntervalTest();
+//            groupByWithFilterCountOneIntervalTest();
+//            groupByWithFilterMaxMinValueOneIntervalTest();
+//            groupByWithFilterMaxTimeOneIntervalTest();
+//            groupByWithFilterMinTimeOneIntervalTest();
+//            groupByNoValidIntervalTest();
+//            groupByMultiResultWithFilterTest();
+//            groupByWithFilterCountManyIntervalTest();
+//            threadLocalTest();
+//            groupByMultiAggregationFunctionTest();
+//            groupBySelectMultiDeltaObjectTest();
+//            groupByOnlyHasTimeFilterTest();
+//            groupByMultiResultNoFilterTest();
 
             //bugSelectClauseTest();
             connection.close();
@@ -820,6 +825,37 @@ public class GroupBySmallDataTest {
                 }
                 Assert.assertEquals(1002, cnt);
             }
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void allNullSeriesTest() throws ClassNotFoundException, SQLException {
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select count(s1) from root.vehicle.d1");
+                    //" group by(10ms, 0, [3,100])");
+
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 1;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s1));
+                        //+ "," + resultSet.getString(max_value(d1s1));
+                System.out.println(ans);
+                cnt++;
+            }
+            //Assert.assertEquals(1002, cnt);
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

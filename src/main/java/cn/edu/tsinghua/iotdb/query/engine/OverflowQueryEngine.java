@@ -182,6 +182,7 @@ public class OverflowQueryEngine {
                     aggregations.add(new Pair<>(pair.left, func));
                 }
 
+                // TODO these judgement could be extracted to one function
                 if (filterStructures == null || filterStructures.size() == 0
                         || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
                     SingleSeriesFilterExpression timeFilter = null;
@@ -201,6 +202,7 @@ public class OverflowQueryEngine {
             }
         } else {
             LOGGER.debug(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+
             groupByCalcTime.set(groupByCalcTime.get() + 1);
             try {
                 if (filterStructures == null || filterStructures.size() == 0
@@ -210,7 +212,7 @@ public class OverflowQueryEngine {
                         groupByCalcTime.remove();
                         groupByEngineNoFilterLocal.remove();
                         groupByEngineWithFilterLocal.remove();
-                        LOGGER.info("group by function without filter has no result");
+                        LOGGER.debug("group by function without filter has no result");
                     }
                     return ans;
                 } else {
@@ -219,7 +221,7 @@ public class OverflowQueryEngine {
                         groupByCalcTime.remove();
                         groupByEngineNoFilterLocal.remove();
                         groupByEngineWithFilterLocal.remove();
-                        LOGGER.info("group by function with filter has no result");
+                        LOGGER.debug("group by function with filter has no result");
                     }
                     return ans;
                 }

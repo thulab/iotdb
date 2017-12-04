@@ -116,10 +116,12 @@ public class LargeDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            //selectAllTest();
-            //aggregationTest();
-            //groupByTest();
-            allNullSeriesTest();
+//            selectAllTest();
+//            aggregationTest();
+//            groupByTest();
+//            allNullSeriesAggregationTest();
+//
+            allNullSeriesGroupByTest();
             connection.close();
         }
     }
@@ -275,7 +277,7 @@ public class LargeDataTest {
         }
     }
 
-    private void allNullSeriesTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
+    private void allNullSeriesAggregationTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
@@ -322,10 +324,33 @@ public class LargeDataTest {
             Assert.assertEquals(1, cnt);
             statement.close();
 
-            // (2). group by test : the result is all null value
-//            countSql = "select count(s0),max_value(s1) from root.vehicle.d0 where s2 > 1000000 " +
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void allNullSeriesGroupByTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            String sql;
+            boolean hasResultSet;
+            ResultSet resultSet;
+            int cnt;
+            String[] retArray = new String[]{};
+
+//            // (1). group by test : the result is all null value
+//            sql = "select count(s0),max_value(s1) from root.vehicle.d0 where s2 > 1000000 " +
 //                    "group by (1000ms, 2000, [3500, 25000])";
-//            hasResultSet = statement.execute(countSql);
+//            hasResultSet = statement.execute(sql);
 //            Assert.assertTrue(hasResultSet);
 //            resultSet = statement.getResultSet();
 //            cnt = 0;
@@ -338,41 +363,42 @@ public class LargeDataTest {
 //            Assert.assertEquals(23, cnt);
 //            statement.close();
 
-            // (3). group by test : there is no value in series d1.s0
-//            retArray = new String[]{
-//                    "2000,null",
-//                    "2100,null",
-//                    "2200,null",
-//                    "2300,49",
-//                    "2400,100",
-//                    "2500,null",
-//                    "3000,28",
-//                    "3100,26",
-//                    "3200,30",
-//                    "3300,24",
-//                    "3400,null",
-//                    "3500,null",
-//                    "3600,null",
-//                    "3700,null",
-//                    "3800,null",
-//                    "3900,null",
-//                    "4000,null",
-//            };
-//            statement = connection.createStatement();
-//            countSql = "select count(s0) from root.vehicle.d1 where s2 > 15 " +
-//                    "group by (100ms, 2000, [2000,2500], [3000, 4000])";
-//            hasResultSet = statement.execute(countSql);
-//            Assert.assertTrue(hasResultSet);
-//            resultSet = statement.getResultSet();
-//            cnt = 0;
-//            while (resultSet.next()) {
-//                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0));
-//                Assert.assertEquals(retArray[cnt], ans);
-//                //System.out.println("============ " + ans);
-//                cnt++;
-//            }
-//            Assert.assertEquals(17, cnt);
-//            statement.close();
+            // (2). group by test : there is no value in series d1.s0
+            retArray = new String[]{
+                    "2000,null",
+                    "2100,null",
+                    "2200,null",
+                    "2300,49",
+                    "2400,100",
+                    "2500,null",
+                    "3000,28",
+                    "3100,26",
+                    "3200,30",
+                    "3300,24",
+                    "3400,null",
+                    "3500,null",
+                    "3600,null",
+                    "3700,null",
+                    "3800,null",
+                    "3900,null",
+                    "4000,null",
+            };
+            statement = connection.createStatement();
+            sql = "select max_value(s0) from root.vehicle.d1 where s1 > 15 " + "group by (100ms, 2000, [3000, 4000])";
+            sql = "select count(s1) from root.vehicle.d1";
+            sql = "select max_value(s1) from root.vehicle.d1";
+            hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(max_value(d1s1));
+                Assert.assertEquals(retArray[cnt], ans);
+                //System.out.println("============ " + ans);
+                cnt++;
+            }
+            Assert.assertEquals(17, cnt);
+            statement.close();
 
         } catch (Exception e) {
             e.printStackTrace();
