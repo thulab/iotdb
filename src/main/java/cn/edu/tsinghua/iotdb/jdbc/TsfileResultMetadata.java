@@ -87,7 +87,7 @@ public class TsfileResultMetadata implements ResultSetMetaData {
 		}
 
 		if (column == 1) {
-			return Types.BIGINT;
+			return Types.DATE;
 		}
 		// BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT,
 		String columnType = columnTypeList.get(column - 2);
