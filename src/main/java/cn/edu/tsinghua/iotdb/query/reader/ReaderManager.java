@@ -14,7 +14,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
 /**
- *
+ * This class is an adapter between <code>RecordReader</code> and <code>RowGroupReader</code> .
  */
 public class ReaderManager {
 

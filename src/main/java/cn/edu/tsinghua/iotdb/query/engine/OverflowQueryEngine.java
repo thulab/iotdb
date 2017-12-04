@@ -36,12 +36,15 @@ public class OverflowQueryEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowQueryEngine.class);
     private MManager mManager;
+
+    /** the formNumber represents the ordinal of disjunctive normal form of each query part **/
     private int formNumber = -1;
+
     /**
      * this variable represents that whether it is
      * the second execution of aggregation method.
      */
-    private static ThreadLocal<Boolean> aggregateThreadLocal = new ThreadLocal<>();
+    private static ThreadLocal<QueryDataSet> aggregateThreadLocal = new ThreadLocal<>();
 
     public OverflowQueryEngine() {
         mManager = MManager.getInstance();
@@ -72,12 +75,12 @@ public class OverflowQueryEngine {
             queryDataSet.clear();
         }
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
-            return readWithoutFilter(paths, queryDataSet, fetchSize, null);
+            return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, null);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
-            return crossColumnQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
+            return crossSeriesQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         } else {
-            return readOneColumnUseFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
+            return querySeriesUsingFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, null);
         }
     }
@@ -106,25 +109,16 @@ public class OverflowQueryEngine {
                 aggregations.add(new Pair<>(pair.left, func));
             }
 
-            if (aggregateThreadLocal.get() != null && aggregateThreadLocal.get()) {
+            if (aggregateThreadLocal.get() != null) {
+                QueryDataSet ans = aggregateThreadLocal.get();
+                ans.clear();
                 aggregateThreadLocal.remove();
-                QueryDataSet ansQueryDataSet = new QueryDataSet();
-                for (Pair<Path, AggregateFunction> pair : aggregations) {
-                    Path path = pair.left;
-                    AggregateFunction aggregateFunction = pair.right;
-                    TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
-                    String aggregationKey = aggregateFunction.name + "(" + path.getFullPath() + ")";
-                    if (ansQueryDataSet.mapRet.size() > 0 && ansQueryDataSet.mapRet.containsKey(aggregationKey)) {
-                        continue;
-                    }
-
-                    ansQueryDataSet.mapRet.put(aggregationKey, new DynamicOneColumnData(dataType, true));
-                }
-                return ansQueryDataSet;
+                return ans;
             }
 
-            aggregateThreadLocal.set(true);
-            return AggregateEngine.multiAggregate(aggregations, filterStructures);
+            QueryDataSet ans = AggregateEngine.multiAggregate(aggregations, filterStructures);
+            aggregateThreadLocal.set(ans);
+            return ans;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -227,7 +221,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 1: read without filter.
      */
-    private QueryDataSet readWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
+    private QueryDataSet querySeriesWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
             throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
@@ -292,7 +286,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 2: read one series with filter.
      */
-    private QueryDataSet readOneColumnUseFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
+    private QueryDataSet querySeriesUsingFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
                                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
                                                 QueryDataSet queryDataSet, int fetchSize,
                                                 Integer readLock) throws ProcessorException, IOException {
@@ -302,7 +296,7 @@ public class OverflowQueryEngine {
                 @Override
                 public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
                     try {
-                        return queryOneSeriesUseFilter(p, timeFilter, freqFilter, valueFilter, res, fetchSize, readLock);
+                        return queryOneSeriesUsingFilter(p, timeFilter, freqFilter, valueFilter, res, fetchSize, readLock);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -319,9 +313,9 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private DynamicOneColumnData queryOneSeriesUseFilter(Path path, SingleSeriesFilterExpression timeFilter,
-                                                         SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                                                         DynamicOneColumnData res, int fetchSize, Integer readLock)
+    private DynamicOneColumnData queryOneSeriesUsingFilter(Path path, SingleSeriesFilterExpression timeFilter,
+                                                           SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+                                                           DynamicOneColumnData res, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectId = path.getDeltaObjectToString();
@@ -358,7 +352,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 3: cross series read.
      */
-    private QueryDataSet crossColumnQuery(List<Path> paths,
+    private QueryDataSet crossSeriesQuery(List<Path> paths,
                                           SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
                                           CrossSeriesFilterExpression valueFilter,
                                           QueryDataSet queryDataSet, int fetchSize)
@@ -378,7 +372,7 @@ public class OverflowQueryEngine {
                         throws ProcessorException, IOException {
 
                     try {
-                        return getDataUseSingleValueFilter(valueFilter, freqFilter, res, fetchSize, valueFilterNumber);
+                        return querySeriesForCross(valueFilter, freqFilter, res, fetchSize, valueFilterNumber);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -446,8 +440,8 @@ public class OverflowQueryEngine {
      * <code>RecordReaderCache</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCache</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    public DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
-                                                            DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
+    public DynamicOneColumnData querySeriesForCross(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
+                                                    DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
         // form.V.valueFilterNumber.deltaObjectId.measurementId

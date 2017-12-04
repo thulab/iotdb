@@ -9,6 +9,9 @@ public class VerifyMain {
 
     public static void main(String[] args) {
 
+        // SELECT max_value(s_76) FROM root.performf.group_4.d_41 WHERE root.performf.group_4.d_41.s_76 > 0.0
+        // GROUP BY(250000ms, 1262275200000,[2010-01-02 02:59:59,2010-01-02 03:16:39])
+
         int cnt = 0;
 
         // insert large amount of data    time range : 3000 ~ 13600

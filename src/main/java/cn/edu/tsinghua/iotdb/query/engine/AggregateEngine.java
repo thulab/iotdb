@@ -166,7 +166,7 @@ public class AggregateEngine {
                     continue;
                 }
 
-                // the query prefix here must not be confilct with method getDataUseSingleValueFilter()
+                // the query prefix here must not be confilct with method querySeriesForCross()
                 RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                         null, null, null, null,
                         ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal));
@@ -241,7 +241,7 @@ public class AggregateEngine {
             String deltaObjectUID = path.getDeltaObjectToString();
             String measurementUID = path.getMeasurementToString();
             TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
-            String aggregationKey = aggregateFunction.name + "(" + path.getFullPath() + ")";
+            String aggregationKey = aggregationKey(aggregateFunction, path);
             if (ansQueryDataSet.mapRet.size() > 0 && ansQueryDataSet.mapRet.containsKey(aggregationKey)) {
                 continue;
             }
@@ -264,6 +264,7 @@ public class AggregateEngine {
 
                 AggregationResult aggrRet = recordReader.aggregate(deltaObjectUID, measurementUID, aggregateFunction,
                         updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, null, null);
+
                 ansQueryDataSet.mapRet.put(aggregationKey, aggrRet.data);
             } else {
                 DynamicOneColumnData aggData = ansQueryDataSet.mapRet.get(aggregationKey);
@@ -324,7 +325,7 @@ public class AggregateEngine {
         return res;
     }
 
-    private String aggregationKey(AggregateFunction aggregateFunction, Path path) {
+    private static String aggregationKey(AggregateFunction aggregateFunction, Path path) {
         return aggregateFunction.name + "(" + path.getFullPath() + ")";
     }
 }

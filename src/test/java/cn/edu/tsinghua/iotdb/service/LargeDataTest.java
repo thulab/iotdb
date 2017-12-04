@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.*;
 
-import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.fail;
 
 
@@ -35,12 +35,15 @@ public class LargeDataTest {
 
     private static String[] create_sql = new String[]{
             "SET STORAGE GROUP TO root.vehicle",
+
             "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
             "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
+
             "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
+            "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
     };
 
     private String overflowDataDirPre;
@@ -115,8 +118,8 @@ public class LargeDataTest {
 
             //selectAllTest();
             //aggregationTest();
-            groupByTest();
-
+            //groupByTest();
+            allNullSeriesTest();
             connection.close();
         }
     }
@@ -261,6 +264,112 @@ public class LargeDataTest {
             }
             Assert.assertEquals(17, cnt);
             statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void allNullSeriesTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            String sql;
+            boolean hasResultSet;
+
+            // (1). aggregation test : there is no value in series d1.s0 and no filter
+            String[] retArray = new String[]{
+            };
+            sql = "select count(s0),max_value(s0),min_value(s0),max_time(s0),min_time(s0) from root.vehicle.d1";
+            hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s0))
+                        + "," + resultSet.getString(max_value(d1s0)) + "," + resultSet.getString(min_value(d1s0))
+                        + "," + resultSet.getString(max_time(d1s0)) + "," + resultSet.getString(min_time(d1s0));
+                Assert.assertEquals("0,0,null,null,null,null", ans);
+                //System.out.println("============ " + ans);
+                cnt++;
+            }
+            Assert.assertEquals(1, cnt);
+            statement.close();
+
+            // (2). aggregation test : there is no value in series d1.s0 and have filter
+            sql = "select count(s0),max_value(s0),min_value(s0),max_time(s0),min_time(s0) from root.vehicle.d1 where s0 > 1000000";
+            statement = connection.createStatement();
+            hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s0));
+                System.out.println("!!!!!! " + ans);
+                cnt++;
+            }
+            //Assert.assertEquals(23, cnt);
+            statement.close();
+
+            // (2). group by test : the result is all null value
+//            countSql = "select count(s0),max_value(s1) from root.vehicle.d0 where s2 > 1000000 " +
+//                    "group by (1000ms, 2000, [3500, 25000])";
+//            hasResultSet = statement.execute(countSql);
+//            Assert.assertTrue(hasResultSet);
+//            resultSet = statement.getResultSet();
+//            cnt = 0;
+//            while (resultSet.next()) {
+//                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0)) + "," + resultSet.getString(max_value(d0s1));
+//                Assert.assertEquals(resultSet.getString(TIMESTAMP_STR) + ",null,null", ans);
+//                // System.out.println("============ " + ans);
+//                cnt++;
+//            }
+//            Assert.assertEquals(23, cnt);
+//            statement.close();
+
+            // (3). group by test : there is no value in series d1.s0
+//            retArray = new String[]{
+//                    "2000,null",
+//                    "2100,null",
+//                    "2200,null",
+//                    "2300,49",
+//                    "2400,100",
+//                    "2500,null",
+//                    "3000,28",
+//                    "3100,26",
+//                    "3200,30",
+//                    "3300,24",
+//                    "3400,null",
+//                    "3500,null",
+//                    "3600,null",
+//                    "3700,null",
+//                    "3800,null",
+//                    "3900,null",
+//                    "4000,null",
+//            };
+//            statement = connection.createStatement();
+//            countSql = "select count(s0) from root.vehicle.d1 where s2 > 15 " +
+//                    "group by (100ms, 2000, [2000,2500], [3000, 4000])";
+//            hasResultSet = statement.execute(countSql);
+//            Assert.assertTrue(hasResultSet);
+//            resultSet = statement.getResultSet();
+//            cnt = 0;
+//            while (resultSet.next()) {
+//                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0));
+//                Assert.assertEquals(retArray[cnt], ans);
+//                //System.out.println("============ " + ans);
+//                cnt++;
+//            }
+//            Assert.assertEquals(17, cnt);
+//            statement.close();
 
         } catch (Exception e) {
             e.printStackTrace();

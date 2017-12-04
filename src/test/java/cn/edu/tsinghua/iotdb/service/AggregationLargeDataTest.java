@@ -165,8 +165,7 @@ public class AggregationLargeDataTest {
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 //            selectAllSQLTest();
             countAggreWithSingleFilterTest();
-            minTimeAggreWithSingleFilterTest();
-            maxTimeAggreWithSingleFilterTest();
+            minMaxTimeAggreWithSingleFilterTest();
             minValueAggreWithSingleFilterTest();
             maxValueAggreWithSingleFilterTest();
             countAggreWithMultiFilterTest();
@@ -213,7 +212,7 @@ public class AggregationLargeDataTest {
         }
     }
 
-    private void minTimeAggreWithSingleFilterTest() throws ClassNotFoundException, SQLException {
+    private void minMaxTimeAggreWithSingleFilterTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
                 "0,104,1,2,101,100"
         };
@@ -232,49 +231,31 @@ public class AggregationLargeDataTest {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(TestUtils.min_time(d0s0)) + ","
                         + resultSet.getString(TestUtils.min_time(d0s1)) + "," + resultSet.getString(TestUtils.min_time(d0s2))
                         + "," + resultSet.getString(TestUtils.min_time(d0s3)) + "," + resultSet.getString(TestUtils.min_time(d0s4));
-                // System.out.println("============ " + ans);
                 Assert.assertEquals(ans, retArray[cnt]);
                 cnt++;
             }
             Assert.assertEquals(1, cnt);
             statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
 
-    private void maxTimeAggreWithSingleFilterTest() throws ClassNotFoundException, SQLException {
-        String[] retArray = new String[]{
-                "0,3999,3999,3999,3599,100"
-        };
-
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select max_time(s0),max_time(s1),max_time(s2),max_time(s3),max_time(s4) from root.vehicle.d0 " +
+            retArray = new String[]{
+                    "0,3999,3999,3999,3599,100"
+            };
+            statement = connection.createStatement();
+            hasResultSet = statement.execute("select max_time(s0),max_time(s1),max_time(s2),max_time(s3),max_time(s4) from root.vehicle.d0 " +
                     "where s1 < 50000 and s1 != 100");
-
-            if (hasResultSet) {
-                ResultSet resultSet = statement.getResultSet();
-                int cnt = 0;
-                while (resultSet.next()) {
-                    String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(max_time(d0s0))
-                            + "," + resultSet.getString(max_time(d0s1)) + "," + resultSet.getString(max_time(d0s2))
-                            + "," + resultSet.getString(max_time(d0s3)) + "," + resultSet.getString(max_time(d0s4));
-                    //System.out.println("============ " + ans);
-                    Assert.assertEquals(ans, retArray[cnt]);
-                    cnt++;
-                }
-                Assert.assertEquals(1, cnt);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(max_time(d0s0))
+                        + "," + resultSet.getString(max_time(d0s1)) + "," + resultSet.getString(max_time(d0s2))
+                        + "," + resultSet.getString(max_time(d0s3)) + "," + resultSet.getString(max_time(d0s4));
+                Assert.assertEquals(ans, retArray[cnt]);
+                cnt++;
             }
+            Assert.assertEquals(1, cnt);
             statement.close();
+
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

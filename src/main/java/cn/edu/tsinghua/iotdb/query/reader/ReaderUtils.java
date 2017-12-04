@@ -18,10 +18,9 @@ import java.util.List;
 
 
 /**
- * Move some methods which has long code in <code>ValueReaderProcessor</code>
- * to this as utils method.
+ * This class is a complement of <code>ValueReaderProcessor</code>.
+ * The main method in this class is <code>readOnePage</code>, it supplies a page level read logic.
  *
- * @author CGF
  */
 public class ReaderUtils {
 
@@ -69,7 +68,6 @@ public class ReaderUtils {
      * <p>
      * Read one page data,
      * this page data may be changed by overflow operation, so the overflow parameter is required.
-     * </p>
      *
      * @param dataType the <code>DataType</code> of the read page
      * @param pageTimeValues the decompressed timestamps of this page
