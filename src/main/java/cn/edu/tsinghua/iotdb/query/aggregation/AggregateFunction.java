@@ -83,7 +83,17 @@ public abstract class AggregateFunction {
     public abstract boolean calcAggregationUsingTimestamps(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex)
             throws IOException, ProcessorException;
 
-
+    /**
+     * <p>
+     * This method is calculate the group by function.
+     * </p>
+     *
+     * @param partitionStart
+     * @param partitionEnd
+     * @param intervalStart
+     * @param intervalEnd
+     * @param data
+     */
     public abstract void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
                                                 DynamicOneColumnData data);
 }

@@ -78,6 +78,9 @@ public class CountAggrFunc extends AggregateFunction {
 
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasInsertData()) {
+                if (insertMemoryData.getCurrentMinTime() >= 2495) {
+                    //System.out.println("...");
+                }
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
                     long preValue = resultData.getLong(0);
                     preValue += 1;

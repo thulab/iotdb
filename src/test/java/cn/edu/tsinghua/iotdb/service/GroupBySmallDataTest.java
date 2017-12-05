@@ -785,7 +785,7 @@ public class GroupBySmallDataTest {
             ResultSet resultSet = statement.getResultSet();
             int cnt = 1;
             while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s1));
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d1s1)) + "," + resultSet.getString(max_value(d1s1));
                         //+ "," + resultSet.getString(max_value(d1s1));
                 System.out.println(ans);
                 cnt++;
