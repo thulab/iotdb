@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggreFuncFactory;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregation.impl.CountAggrFunc;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
