@@ -122,10 +122,6 @@ public class PhysicalGenerator {
 							indexQueryOperator.getStartTime(), indexQueryOperator.getEndTime());
 					indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
 					indexQueryPlan.setBeta(indexQueryOperator.getBeta());
-//					if (indexQueryOperator.isHasParameter()) {
-//						indexQueryPlan.setHasParameter(true);
-//
-//					}
 					parseIndexTimeFilter(indexQueryOperator, indexQueryPlan);
 					return indexQueryPlan;
 				default:

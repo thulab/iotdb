@@ -15,7 +15,6 @@ import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
-import cn.edu.tsinghua.iotdb.index.kvmatch.KvMatchIndex;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.QueryForMerge;
@@ -42,7 +41,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.crypto.Data;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -785,59 +783,59 @@ public class FileNodeProcessor extends LRUProcessor {
         return dataFileInfos;
     }
 
-    private void mergeIndex() throws FileNodeProcessorException {
-        try {
-            Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
-            if (!allIndexSeries.isEmpty()) {
-                LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
-                        nameSpacePath, allIndexSeries);
-                for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
-                    String series = entry.getKey();
-                    Path path = new Path(series);
-                    List<DataFileInfo> dataFileInfos = getDataFileInfoForIndex(path, newFileNodes);
-                    if (!dataFileInfos.isEmpty()) {
-                        try {
-                            for (IndexType indexType : entry.getValue())
-                                IndexManager.getIndexInstance(indexType).build(path, dataFileInfos, null);
-                        } catch (IndexManagerException e) {
-                            e.printStackTrace();
-                            throw new FileNodeProcessorException(e.getMessage());
-                        }
-                    }
-                }
-            }
-        } catch (PathErrorException e) {
-            LOGGER.error(e.getMessage());
-            throw new FileNodeProcessorException(e.getMessage());
-        }
-    }
+	private void mergeIndex() throws FileNodeProcessorException {
+		try {
+			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+			if (!allIndexSeries.isEmpty()) {
+				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
+						nameSpacePath, allIndexSeries);
+				for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
+					String series = entry.getKey();
+					Path path = new Path(series);
+					List<DataFileInfo> dataFileInfos = getDataFileInfoForIndex(path, newFileNodes);
+					if (!dataFileInfos.isEmpty()) {
+						try {
+							for (IndexType indexType : entry.getValue())
+								IndexManager.getIndexInstance(indexType).build(path, dataFileInfos, null);
+						} catch (IndexManagerException e) {
+							e.printStackTrace();
+							throw new FileNodeProcessorException(e.getMessage());
+						}
+					}
+				}
+			}
+		} catch (PathErrorException e) {
+			LOGGER.error("failed to find all fileList to be merged." + e.getMessage());
+			throw new FileNodeProcessorException(e.getMessage());
+		}
+	}
 
-    private void switchMergeIndex() throws FileNodeProcessorException {
-        try {
-            Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
-            if (!allIndexSeries.isEmpty()) {
-                LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
-                        nameSpacePath, allIndexSeries);
-                for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
-                    String series = entry.getKey();
-                    Path path = new Path(series);
-                    List<DataFileInfo> dataFileInfos = getDataFileInfoForIndex(path, newFileNodes);
-                    if (!dataFileInfos.isEmpty()) {
-                        try {
-                            for (IndexType indexType : entry.getValue())
-                                IndexManager.getIndexInstance(indexType).mergeSwitch(path, dataFileInfos);
-                        } catch (IndexManagerException e) {
-                            e.printStackTrace();
-                            throw new FileNodeProcessorException(e.getMessage());
-                        }
-                    }
-                }
-            }
-        } catch (PathErrorException e) {
-            LOGGER.error(e.getMessage());
-            throw new FileNodeProcessorException(e.getMessage());
-        }
-    }
+	private void switchMergeIndex() throws FileNodeProcessorException {
+		try {
+			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+			if (!allIndexSeries.isEmpty()) {
+				LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
+						nameSpacePath, allIndexSeries);
+				for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
+					String series = entry.getKey();
+					Path path = new Path(series);
+					List<DataFileInfo> dataFileInfos = getDataFileInfoForIndex(path, newFileNodes);
+					if (!dataFileInfos.isEmpty()) {
+						try {
+							for (IndexType indexType : entry.getValue())
+								IndexManager.getIndexInstance(indexType).mergeSwitch(path, dataFileInfos);
+						} catch (IndexManagerException e) {
+							e.printStackTrace();
+							throw new FileNodeProcessorException(e.getMessage());
+						}
+					}
+				}
+			}
+		} catch (PathErrorException e) {
+			LOGGER.error("failed to find all fileList to be mergeSwitch" + e.getMessage());
+			throw new FileNodeProcessorException(e.getMessage());
+		}
+	}
 
 	private void switchMergeToWaitingv2(List<IntervalFileNode> backupIntervalFiles, boolean needEmpty)
 			throws FileNodeProcessorException {
@@ -970,6 +968,10 @@ public class FileNodeProcessor extends LRUProcessor {
 						file.delete();
 					}
 				}
+
+				// merge switch
+				switchMergeIndex();
+
 				for (IntervalFileNode fileNode : newFileNodes) {
 					if (fileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
 						fileNode.overflowChangeType = OverflowChangeType.CHANGED;
@@ -1268,8 +1270,8 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 	}
 
-    public void rebuildIndex() throws FileNodeProcessorException {
-        mergeIndex();
-        switchMergeIndex();
-    }
+	public void rebuildIndex() throws FileNodeProcessorException {
+		mergeIndex();
+		switchMergeIndex();
+	}
 }

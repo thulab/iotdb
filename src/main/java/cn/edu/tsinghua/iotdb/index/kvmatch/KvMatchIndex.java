@@ -55,8 +55,7 @@ public class KvMatchIndex  implements IoTIndex {
     private static final SerializeUtil<ConcurrentHashMap<String, IndexConfig>> serializeUtil = new SerializeUtil<>();
     private static final String CONFIG_FILE_PATH = TsfileDBDescriptor.getInstance().getConfig().indexFileDir + File.separator + ".metadata";
     private static final int PARALLELISM = Runtime.getRuntime().availableProcessors() - 1;
-
-    private static final String dataDirPath = TsfileDBDescriptor.getInstance().getConfig().fileNodeDir;
+    private static final String buildingStatus = ".building";
 
     private static OverflowQueryEngine overflowQueryEngine;
     private static ExecutorService executor;
@@ -124,6 +123,7 @@ public class KvMatchIndex  implements IoTIndex {
 
             // 1. build index for every data file
             if (fileList.isEmpty()) {
+                // beginQuery fileList contains path, get FileNodeManager.MulPassLock.readLock
                 token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
                 fileList = FileNodeManager.getInstance().indexBuildQuery(path, indexConfig.getSinceTime(), -1);
             }
@@ -158,9 +158,9 @@ public class KvMatchIndex  implements IoTIndex {
                     continue;
                 }
 
-                File buildFile = new File(indexFile + ".building");
+                File buildFile = new File(indexFile + buildingStatus);
                 if (buildFile.delete()) {
-                    logger.warn("{} delete failed".format(buildFile.getAbsolutePath()));
+                    logger.warn("{} delete failed", buildFile.getAbsolutePath());
                 }
 
                 QueryDataSet dataSet = getDataInTsFile(path, fileInfo.getFilePath());
@@ -180,18 +180,19 @@ public class KvMatchIndex  implements IoTIndex {
 
             return overall;
         } catch (FileNodeManagerException | IOException e) {
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to build index fileList" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to build index fileList" +e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } finally {
             if (token != -1) {
                 try {
+                    // endQuery. remove FileNodeManager.MultiPassLock.readLock
                     FileNodeManager.getInstance().endQuery(path.getDeltaObjectToString(), token);
                 } catch (FileNodeManagerException e) {
-                    logger.error(e.getMessage(), e.getCause());
+                    logger.error("failed to unlock ReadLock while building index file" + e.getMessage(), e.getCause());
                 }
             }
             if (!overall) {
@@ -242,7 +243,7 @@ public class KvMatchIndex  implements IoTIndex {
                 return true;
             }
 
-            File buildFl = new File(indexFile + ".building");
+            File buildFl = new File(indexFile + buildingStatus);
             if (buildFl.delete()) {
                 logger.warn("{} delete failed".format(buildFl.getAbsolutePath()));
             }
@@ -255,11 +256,11 @@ public class KvMatchIndex  implements IoTIndex {
 //            Boolean rr = rs.call();
             return true;
         } catch (IOException e) {
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to build index file while closing" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to build index file while closing" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         }
     }
@@ -356,8 +357,10 @@ public class KvMatchIndex  implements IoTIndex {
     public boolean drop(Path path) throws IndexManagerException {
         int token = -1;
         try {
+            // beginQuery fileList contains path, get FileNodeManager.MulPassLock.readLock
             token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
 
+            // startTime=0, endTime=-1 means allTimeInterval
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(path, 0, -1);
 
             for (DataFileInfo fileInfo : fileInfoList) {
@@ -380,18 +383,19 @@ public class KvMatchIndex  implements IoTIndex {
             }
             return true;
         } catch (FileNodeManagerException | IOException e) {
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to drop index file" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to drop index file" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } finally {
             if (token != -1) {
                 try {
+                    // endQuery. remove FileNodeManager.MultiPassLock.readLock
                     FileNodeManager.getInstance().endQuery(path.getDeltaObjectToString(), token);
                 } catch (FileNodeManagerException e) {
-                    logger.error(e.getMessage(), e.getCause());
+                    logger.error("failed to unlock ReadLock while droping index" + e.getMessage(), e.getCause());
                 }
             }
         }
@@ -412,6 +416,7 @@ public class KvMatchIndex  implements IoTIndex {
             throws IndexManagerException {
         int token = -1;
         try {
+            // beginQuery fileList contains path, get FileNodeManager.MulPassLock.readLock
             token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
 
             // 0. get configuration from store
@@ -491,18 +496,19 @@ public class KvMatchIndex  implements IoTIndex {
 
             return constructQueryDataSet(answers, limitSize);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException | IllegalArgumentException e) {
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to query index" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error(e.getMessage(), e.getCause());
+            logger.error("failed to query index" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
         } finally {
             if (token != -1) {
                 try {
+                    // endQuery. remove FileNodeManager.MultiPassLock.readLock
                     FileNodeManager.getInstance().endQuery(path.getDeltaObjectToString(), token);
                 } catch (FileNodeManagerException e) {
-                    logger.error(e.getMessage(), e.getCause());
+                    logger.error("failed to unlock ReadLock while querying index" + e.getMessage(), e.getCause());
                 }
             }
         }

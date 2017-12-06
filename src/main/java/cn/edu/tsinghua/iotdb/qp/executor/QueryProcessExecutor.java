@@ -44,7 +44,7 @@ public abstract class QueryProcessExecutor {
 		}
 		MultiQueryPlan mergeQuery = (MultiQueryPlan) plan;
 		List<SingleQueryPlan> selectPlans = mergeQuery.getSingleQueryPlans();
-		switch (((MultiQueryPlan) plan).getType()) {
+		switch (mergeQuery.getType()) {
 			case QUERY:
 				if (selectPlans.size() == 1) {
 					SingleQueryPlan query = selectPlans.get(0);
