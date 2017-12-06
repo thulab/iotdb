@@ -32,38 +32,38 @@ public class KVIndexTest {
     }
 
     private String[][] sqls = new String[][]{
-            {"SET STORAGE GROUP TO root.indextest.d0"},
-            {"SET STORAGE GROUP TO root.indextest.d1"},
-            {"CREATE TIMESERIES root.indextest.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE"},
-            {"CREATE TIMESERIES root.indextest.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE"},
+            {"SET STORAGE GROUP TO root.vehicle.d0"},
+            {"SET STORAGE GROUP TO root.vehicle.d1"},
+            {"CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE"},
+            {"CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE"},
 //          s0第一个文件
-            {"insert into root.indextest.d0(timestamp,s0) values(1,101)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(2,102)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(3,103)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(4,104)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(5,105)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(1,101)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(2,102)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(3,103)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(4,104)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(5,105)"},
 //          创建索引
-            {"create index on root.indextest.d0.s0 using kvindex with window_length=2, since_time=0"},
+            {"create index on root.vehicle.d0.s0 using kvindex with window_length=2, since_time=0"},
 //          强行切断d0.s0，生成d1.s0文件
-            {"insert into root.indextest.d1(timestamp,s0) values(5,102)"},
+            {"insert into root.vehicle.d1(timestamp,s0) values(5,102)"},
 //          s0第二个文件
-            {"insert into root.indextest.d0(timestamp,s0) values(6,106)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(7,107)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(8,108)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(9,109)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(10,110)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(6,106)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(7,107)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(8,108)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(9,109)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(10,110)"},
 
 //          强行切断d0.s0，生成第二个d1.s0文件
-            {"insert into root.indextest.d1(timestamp,s0) values(6,102)"},
+            {"insert into root.vehicle.d1(timestamp,s0) values(6,102)"},
 //          s0第三个文件，处于未关闭状态
-            {"insert into root.indextest.d0(timestamp,s0) values(11,111)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(12,112)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(13,113)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(14,114)"},
-            {"insert into root.indextest.d0(timestamp,s0) values(15,115)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(11,111)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(12,112)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(13,113)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(14,114)"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(15,115)"},
 //          修改d2.s0，强行切断d0.s0，生成第三个d0.s0文件
-            {"update root.indextest SET d0.s0 = 33333 WHERE time >= 6 and time <= 7"},
-            {"insert into root.indextest.d0(timestamp,s0) values(7,102)"},
+            {"update root.vehicle SET d0.s0 = 33333 WHERE time >= 6 and time <= 7"},
+            {"insert into root.vehicle.d0(timestamp,s0) values(7,102)"},
 //          单文件索引查询
 //            {
 //                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 4, 7, 0.0, 1.0, 0.0) from root" +
@@ -75,7 +75,7 @@ public class KVIndexTest {
 //                    "0,2,5,0.0",
 //            },
             {
-                    "select index kvindex(root.indextest.d0.s0, root.indextest.d0.s0, 1, 4, 0.0, 1.0, 0.0) from root" +
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 1, 4, 0.0, 1.0, 0.0) from root" +
                             ".indextest.d0.s0",
                     "0,1,4,0.0",
             },
@@ -85,24 +85,24 @@ public class KVIndexTest {
             {"merge"},
 //          单文件索引查询
             {
-                    "select index kvindex(root.indextest.d0.s0, root.indextest.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.indextest.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,2,5,0.0",
             },
             {
-                    "select index kvindex(root.indextest.d0.s0, root.indextest.d0.s0, 3, 5, 0.0, 1.0, 0.0) from root.indextest.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 3, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,3,5,0.0",
             },
 
 //          跨文件索引，涉及到Overflow的查询
             {
-                    "select index kvindex(root.indextest.d0.s0, root.indextest.d0.s0, 5, 8, 0.0, 1.0, 0.0) from root.indextest.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 5, 8, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,5,8,0.0",
             },
 //          删除索引
-            {"drop index kvindex on root.indextest.d0.s0"},
+            {"drop index kvindex on root.vehicle.d0.s0"},
 ////          再次查询
             {
-                    "select index kvindex(root.indextest.d0.s0, root.indextest.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.indextest.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,1,4,0.0",
             },
 
@@ -250,8 +250,8 @@ public class KVIndexTest {
                         Assert.assertEquals(retArray.length, cnt);
                 }
             } catch (TsfileSQLException e) {
-                Assert.assertEquals(e.getMessage(),"The timeseries root.indextest.d0.s0 hasn't been indexed.");
-                Assert.assertEquals(querySQL, "select index kvindex(root.indextest.d0.s0, root.indextest.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.indextest.d0.s0");
+                Assert.assertEquals(e.getMessage(),"The timeseries root.vehicle.d0.s0 hasn't been indexed.");
+                Assert.assertEquals(querySQL, "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0");
             }
         } catch (Exception e) {
             e.printStackTrace();
