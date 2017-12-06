@@ -346,8 +346,7 @@ public class LogicalGenerator {
             ASTNode child = astNode.getChild(i);
             if (child.getType() != TSParser.TOK_PATH) {
                 throw new LogicalOperatorException(
-                        "children FROM clause except last one must all be path like root.a.b, actual:" + child
-                                .getText());
+                        "children FROM clause except last one must all be path like root.a.b, actual:" + child.getText());
             }
             Path tablePath = parsePath(child);
             selectOp.addSelectPath(tablePath);
