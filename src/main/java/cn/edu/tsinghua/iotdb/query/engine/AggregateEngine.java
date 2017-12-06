@@ -19,6 +19,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.*;
 
 public class AggregateEngine {
 
@@ -35,26 +36,25 @@ public class AggregateEngine {
      *
      * @param aggregations           aggregation pairs
      * @param filterStructures list of <code>FilterStructure</code>
-     * @return QueryDataSet result of multi aggregation
      * @throws ProcessorException read or write lock error etc
      * @throws IOException        read TsFile error
      * @throws PathErrorException path resolving error
      */
     public static void multiAggregate(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
             throws IOException, PathErrorException, ProcessorException {
-
-        if (filterStructures == null || filterStructures.size() == 0
-                || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+        if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
             if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
                 multiAggregateWithoutFilter(aggregations, filterStructures.get(0).getTimeFilter());
-                return;
             } else {
                 multiAggregateWithoutFilter(aggregations, null);
-                return;
             }
+        } else {
+            multiAggregateWithFilter(aggregations, filterStructures);
         }
+    }
 
-        QueryDataSet ansQueryDataSet = new QueryDataSet();
+    private static void multiAggregateWithFilter(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
+            throws IOException, PathErrorException, ProcessorException {
 
         // stores the query QueryDataSet of each FilterStructure in filterStructures
         List<QueryDataSet> fsDataSets = new ArrayList<>();
@@ -230,8 +230,6 @@ public class AggregateEngine {
                                                             SingleSeriesFilterExpression timeFilter)
             throws PathErrorException, ProcessorException, IOException {
 
-        QueryDataSet ansQueryDataSet = new QueryDataSet();
-
         int aggreNumber = 0;
         for (Pair<Path, AggregateFunction> pair : aggres) {
             aggreNumber++;
@@ -267,8 +265,6 @@ public class AggregateEngine {
                 }
             }
         }
-
-        //return ansQueryDataSet;
     }
 
     /**

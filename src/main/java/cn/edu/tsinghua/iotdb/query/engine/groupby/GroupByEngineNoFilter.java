@@ -76,8 +76,7 @@ public class GroupByEngineNoFilter {
         for (int i = 0; i < aggregations.size(); i++) {
             String aggregateKey = aggregationKey(aggregations.get(i).left, aggregations.get(i).right);
             if (!groupByResult.mapRet.containsKey(aggregateKey)) {
-                groupByResult.mapRet.put(aggregateKey,
-                        new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
+                groupByResult.mapRet.put(aggregateKey, new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
                 queryPathResult.put(aggregateKey, null);
             } else {
                 duplicatedPaths.add(i);
@@ -211,6 +210,7 @@ public class GroupByEngineNoFilter {
                 timeFilter, null, null, readLock, recordReaderPrefix);
 
         if (res == null) {
+
             // get overflow params merged with bufferwrite insert data
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, null, null,
                     res, recordReader.insertPageInMemory, recordReader.overflowInfo);

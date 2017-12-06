@@ -8,7 +8,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
-import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import org.slf4j.Logger;

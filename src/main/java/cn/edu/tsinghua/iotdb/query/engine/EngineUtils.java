@@ -311,4 +311,13 @@ public class EngineUtils {
     public static String aggregationKey(AggregateFunction aggregateFunction, Path path) {
         return aggregateFunction.name + "(" + path.getFullPath() + ")";
     }
+
+    public static boolean noFilterOrOnlyHasTimeFilter(List<FilterStructure> filterStructures) {
+        if (filterStructures == null || filterStructures.size() == 0
+                || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())
+                || (filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter())) {
+            return true;
+        }
+        return false;
+    }
 }

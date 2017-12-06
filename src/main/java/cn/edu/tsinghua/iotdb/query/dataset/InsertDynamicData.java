@@ -59,9 +59,6 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private SingleValueVisitor singleValueVisitor;
     private SingleValueVisitor singleTimeVisitor;
 
-    private boolean pageValueFlag = false;
-    private boolean memoryValueFlag = false;
-
     public InsertDynamicData(List<ByteArrayInputStream> pageList, CompressionTypeName compressionName,
                              DynamicOneColumnData insertTrue, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
                              SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression frequencyFilter,
