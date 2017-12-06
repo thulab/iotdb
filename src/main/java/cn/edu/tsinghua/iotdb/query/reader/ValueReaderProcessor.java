@@ -883,7 +883,6 @@ public class ValueReaderProcessor {
             lastAggregationResult.pageOffset += lastAvailable - bis.available();
         }
 
-        // TODO
         if (timestampsUsedIndex < aggregationTimestamps.size())
             lastAggregationResult.plusRowGroupIndexAndInitPageOffset();
 

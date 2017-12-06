@@ -13,7 +13,9 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
-
+/**
+ * Never Used
+ */
 public abstract class IteratorQueryDataSet extends QueryDataSet {
     //special for save time values when processing cross getIndex
     public CrossQueryTimeGenerator timeQueryDataSet;
