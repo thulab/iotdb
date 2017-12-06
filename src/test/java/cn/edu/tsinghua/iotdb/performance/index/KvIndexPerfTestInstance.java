@@ -115,7 +115,7 @@ public class KvIndexPerfTestInstance {
             for (String sql : sqls) {
                 statement.execute(sql);
             }
-            for (int i = timeLen-1;i < timeLen;i++) {
+            for (int i = 0;i < 2;i++) {
                 String sql;
                 sql = String.format("SET STORAGE GROUP TO root.vehicle.d%d", i);
                 statement.execute(sql);
@@ -162,7 +162,7 @@ public class KvIndexPerfTestInstance {
         String[][] sensors = new String[][]{
                 {"s5"}, {"s1"}, {"s5","s0"},{"s5","s0","s1"}, {"s5","s0","s1","s2"}
         };
-        for (int i = timeLen-1;i < timeLen;i++) {
+        for (int i = 0;i < 2;i++) {
             File dir = new File(config.bufferWriteDir + "/root.vehicle.d" + i);
             File[] files = dir.listFiles();
             if (files.length == 0)
@@ -196,11 +196,11 @@ public class KvIndexPerfTestInstance {
     }
 
     public static void Test() throws IOException, SQLException, ClassNotFoundException {
-//        createPerfTest();
+        createPerfTest();
 //        queryPerfByVaryTimeRangeTest();
 //        queryPerfByVaryThresholdTest();
 //        queryPerfByVaryPatternLengthTest();
-        queryPerfByVaryWindowSizeTest();
+//        queryPerfByVaryWindowSizeTest();
 //        executeSQL("drop index kvindex on " + path, 0);
     }
 
@@ -209,7 +209,7 @@ public class KvIndexPerfTestInstance {
         System.out.println("create time cost");
         //suppose the time range of the path is 0~x, we test the time costs of creating index over 10%, 20%, ...
         //90% of the whole time range.
-        for (int i = timeLen-5; i < timeLen-3;i++) {
+        for (int i = 0; i < 2;i++) {
 
 //            if (i >= timeLen-6 && i < timeLen-4) continue;
 

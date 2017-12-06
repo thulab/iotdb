@@ -42,10 +42,10 @@ public class IndexTest {
 		QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
 		IndexPlan indexPlan = (IndexPlan) processor.parseSQLToPhysicalPlan(createIndex);
 		assertEquals("root.laptop.d1.s1", indexPlan.getPaths().get(0).getFullPath());
-		assertEquals(2, indexPlan.getParameters().keySet().size());
+		assertEquals(3, indexPlan.getParameters().keySet().size());
 		Map<String, Object> map = indexPlan.getParameters();
-		assertEquals((long)20, (long)map.get("b"));
-		assertEquals((long)50, (long)map.get("a"));
+		assertEquals(20, map.get("b"));
+		assertEquals(50, map.get("a"));
 //		assertEquals(100, indexPlan.getStartTime());
 		createIndex = "create index on root.laptop.d1.s1 using kvindex with b=20,a=50 where time>100";
 		processor = new QueryProcessor(new MemIntQpExecutor());

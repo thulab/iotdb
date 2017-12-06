@@ -155,7 +155,14 @@ public class LogicalGenerator {
                 }
                 return;
             case TSParser.TOK_DROP:
-                analyzeAuthorDrop(astNode);
+                switch (astNode.getChild(0).getType()) {
+                    case TSParser.TOK_USER:
+                    case TSParser.TOK_ROLE:
+                        analyzeAuthorDrop(astNode);
+                        break;
+                    case TSParser.TOK_INDEX:
+                        analyzeIndexDrop(astNode);
+                }
                 return;
             case TSParser.TOK_GRANT:
                 analyzeAuthorGrant(astNode);
@@ -170,8 +177,15 @@ public class LogicalGenerator {
                 // for TSParser.TOK_QUERY might appear in both query and insert
                 // command. Thus, do
                 // nothing and call analyze() with children nodes recursively.
+                if (astNode.getChild(0).getType() == TSParser.TOK_SELECT_INDEX) {
+                    initializedOperator = new KvMatchIndexQueryOperator(SQLConstant.TOK_QUERY_INDEX);
+                    break;
+                }
                 initializedOperator = new QueryOperator(SQLConstant.TOK_QUERY);
                 break;
+            case TSParser.TOK_SELECT_INDEX:
+                analyzeIndexSelect(astNode);
+                return;
             default:
                 throw new QueryProcessorException("Not supported TSParser type" + tokenIntType);
         }
