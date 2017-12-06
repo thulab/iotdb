@@ -94,7 +94,7 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-        
+
         try {
             LOGGER.debug("Aggregation content: {}", aggres.toString());
 
