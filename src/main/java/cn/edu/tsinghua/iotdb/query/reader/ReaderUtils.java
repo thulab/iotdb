@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.reader;
 
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -11,6 +10,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,8 @@ import java.util.List;
  *
  */
 public class ReaderUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReaderUtils.class);
 
     /**
      * -1: no updateTrue data, no updateFalse data.
@@ -604,6 +607,7 @@ public class ReaderUtils {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
+                                logger.error("never reach here");
                             } else if ((valueFilter == null && timeFilter == null)
                                     || (valueFilter != null && timeFilter == null
                                     && valueVisitor.satisfyObject(v, valueFilter))
@@ -788,7 +792,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putInt(v);
@@ -938,7 +942,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBoolean(v);
@@ -1088,7 +1092,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putLong(v);
@@ -1238,7 +1242,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putFloat(v);
@@ -1388,7 +1392,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putDouble(v);
@@ -1538,7 +1542,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBinary(v);
