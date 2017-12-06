@@ -771,7 +771,7 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private float minFloatValue = Float.MAX_VALUE, maxFloatValue = Float.MIN_VALUE;
     private double minDoubleValue = Double.MIN_VALUE, maxDoubleValue = Double.MIN_VALUE;
     private Binary minBinaryValue = null, maxBinaryValue = null;
-    private boolean minBooleanValue = false, maxBooleanValue = true;
+    private boolean minBooleanValue = true, maxBooleanValue = false;
 
     private void calcIntAggregation() {
         minTime = Math.min(minTime, getCurrentMinTime());
@@ -821,10 +821,12 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private void calcBooleanAggregation() {
         minTime = Math.min(minTime, getCurrentMinTime());
         maxTime = Math.max(maxTime, getCurrentMinTime());
-        if (!getCurrentBooleanValue())
+        if (minBooleanValue) {
             minBooleanValue = getCurrentBooleanValue();
-        if (getCurrentBooleanValue())
+        }
+        if (!maxBooleanValue) {
             maxBooleanValue = getCurrentBooleanValue();
+        }
     }
 
     public Object calcAggregation(String aggType) throws IOException, ProcessorException {
