@@ -389,7 +389,11 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 					columns.add(aggregations.get(i) + "(" + paths.get(i).getFullPath() + ")");
 				}
 			}
-			resp.setOperationType(((MultiQueryPlan)plan).getType().toString());
+			if (plan.getOperatorType() == INDEXQUERY) {
+				resp.setOperationType(INDEXQUERY.toString());
+			} else {
+				resp.setOperationType(((MultiQueryPlan) plan).getType().toString());
+			}
 			TSHandleIdentifier operationId = new TSHandleIdentifier(ByteBuffer.wrap(username.get().getBytes()),
 					ByteBuffer.wrap(("PASS".getBytes())));
 			TSOperationHandle operationHandle;
