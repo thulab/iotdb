@@ -29,7 +29,7 @@ public class KvIndexPerfTestInstance {
     private static long defaultPatternLength;
     private static float defaultThreshold = 0.2f;
 
-    private static final String FOLDER_HEADER = "src/test/resources";
+    private static final String FOLDER_HEADER = "src/test/tmp";
     private static int maxOpenFolderPre;
     private static String overflowDataDirPre;
     private static String fileNodeDirPre;
@@ -41,6 +41,7 @@ public class KvIndexPerfTestInstance {
 
     //TODO to be specified, the last timestamp of this series
     private static long[] lastTimestamp;
+    private static int timeLen;
 
     private static long defaultLimitTime = 3000L;
 
@@ -94,11 +95,12 @@ public class KvIndexPerfTestInstance {
                 "SET STORAGE GROUP TO root.vehicle.d40",
                 "CREATE TIMESERIES root.vehicle.d40.s5 WITH DATATYPE=INT32, ENCODING=RLE",
         };
-        defaultWindowLength = 50;
+        defaultWindowLength = 500;
         defaultPatternStartPos = 1;
-        lastTimestamp = new long[]{1000000, 10000000, 100000000, 1000000000, 2000000000, 3000000000l};
-        defaultPatternLength = 50;
+        lastTimestamp = new long[]{100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 10000000, 100000000, 1000000000, 2000000000, 3000000000l, 4000000000l};
+        defaultPatternLength = 1000;
 
+        timeLen = lastTimestamp.length;
         int pos = 1;
         double[][] mul = new double[][]{
                 {0, 0.33, 1.0}, {0, 0.167, 0.5, 1.0}, {0, 0.1, 0.3, 0.6, 1.0}
@@ -113,43 +115,40 @@ public class KvIndexPerfTestInstance {
             for (String sql : sqls) {
                 statement.execute(sql);
             }
-            for (int i = 0;i < 4 * 7;i++) {
-                int j = i % 7;
-                int k = i / 7;
+            for (int i = timeLen-1;i < timeLen;i++) {
                 String sql;
                 sql = String.format("SET STORAGE GROUP TO root.vehicle.d%d", i);
                 statement.execute(sql);
-                sql = String.format("CREATE TIMESERIES root.vehicle.d%d.s5 WITH DATATYPE=INT32, ENCODING=RLE", i);
+                sql = String.format("CREATE TIMESERIES root.vehicle.d%d.s1 WITH DATATYPE=INT64, ENCODING=RLE", i);
                 statement.execute(sql);
-                if (j == 0) {
-                    sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(1,1)", i);
-                    statement.execute(sql);
-                    sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d, %d)", i, lastTimestamp[k], lastTimestamp[k]);
-                    statement.execute(sql);
-                    sql = String.format("insert into root.vehicle.d40(timestamp,s5) values(%d,%d)", pos, pos);
-                    statement.execute(sql);
-                    pos++;
-                } else if (j < 4) {
-                    for (int n = 0;n < (j+1);n++) {
-                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, n * lastTimestamp[k] / (j+1) + 1, n * lastTimestamp[k] / (j+1) + 1);
-                        statement.execute(sql);
-                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, (n + 1) * lastTimestamp[k] / (j+1), (n + 1) * lastTimestamp[k] / (j+1));
-                        statement.execute(sql);
-                        sql = String.format("insert into root.vehicle.d40(timestamp,s5) values(%d,%d)", pos, pos);
-                        statement.execute(sql);
-                        pos++;
-                    }
-                } else {
-                    for (int n = 0;n < (j-2);n++) {
-                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, (long)(lastTimestamp[k] * mul[j-4][n]) + 1, (long)(lastTimestamp[k] * mul[j-4][n]) + 1);
-                        statement.execute(sql);
-                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, (long)(lastTimestamp[k] * mul[j-4][n+1]), (long)(lastTimestamp[k] * mul[j-4][n+1]));
-                        statement.execute(sql);
-                        sql = String.format("insert into root.vehicle.d40(timestamp,s5) values(%d,%d)", pos, pos);
-                        statement.execute(sql);
-                        pos++;
-                    }
-                }
+                sql = String.format("insert into root.vehicle.d%d(timestamp,s1) values(1,1)", i);
+                statement.execute(sql);
+                sql = String.format("insert into root.vehicle.d%d(timestamp,s1) values(%d, 2)", i, lastTimestamp[i]);
+                statement.execute(sql);
+                sql = String.format("insert into root.vehicle.d40(timestamp,s5) values(%d,%d)", pos, pos);
+                statement.execute(sql);
+                pos++;
+//                } else if (j < 4) {
+//                    for (int n = 0;n < (j+1);n++) {
+//                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, n * lastTimestamp[k] / (j+1) + 1, n * lastTimestamp[k] / (j+1) + 1);
+//                        statement.execute(sql);
+//                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, (n + 1) * lastTimestamp[k] / (j+1), (n + 1) * lastTimestamp[k] / (j+1));
+//                        statement.execute(sql);
+//                        sql = String.format("insert into root.vehicle.d40(timestamp,s5) values(%d,%d)", pos, pos);
+//                        statement.execute(sql);
+//                        pos++;
+//                    }
+//                } else {
+//                    for (int n = 0;n < (j-2);n++) {
+//                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, (long)(lastTimestamp[k] * mul[j-4][n]) + 1, (long)(lastTimestamp[k] * mul[j-4][n]) + 1);
+//                        statement.execute(sql);
+//                        sql = String.format("insert into root.vehicle.d%d(timestamp,s5) values(%d,%d)", i, (long)(lastTimestamp[k] * mul[j-4][n+1]), (long)(lastTimestamp[k] * mul[j-4][n+1]));
+//                        statement.execute(sql);
+//                        sql = String.format("insert into root.vehicle.d40(timestamp,s5) values(%d,%d)", pos, pos);
+//                        statement.execute(sql);
+//                        pos++;
+//                    }
+//                }
             }
             statement.close();
         } catch (Exception e) {
@@ -161,21 +160,22 @@ public class KvIndexPerfTestInstance {
         }
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         String[][] sensors = new String[][]{
-                {"s5"}, {"s5","s0"},{"s5","s0","s1"}, {"s5","s0","s1","s2"}
+                {"s5"}, {"s1"}, {"s5","s0"},{"s5","s0","s1"}, {"s5","s0","s1","s2"}
         };
-        for (int i = 0;i < 4 * 7;i++) {
-            int j = i % 7;
-            int k = i / 7;
-            if (k != 0 && j != 0) continue;
+        for (int i = timeLen-1;i < timeLen;i++) {
             File dir = new File(config.bufferWriteDir + "/root.vehicle.d" + i);
             File[] files = dir.listFiles();
             if (files.length == 0)
                 continue;
-            if (j == 0) {
-                String filename = files[0].getAbsolutePath();
-                files[0].delete();
-                GenBigTsFile.generate(lastTimestamp[k], filename, sensors[0], i, 1);
-            }
+            String filename = files[0].getAbsolutePath();
+            files[0].delete();
+            long startTime = System.currentTimeMillis(), endTime;
+            GenBigTsFile.generate(lastTimestamp[i], filename, sensors[1], i, 1);
+            endTime = System.currentTimeMillis();
+            double averageTime = (endTime - startTime) / 1000.0;
+            resultWriter = new FileWriter(resultFile, true);
+            resultWriter.write("create_file:\ttype: line\tlength: " + lastTimestamp[i] + "\ttime: " + averageTime + "s\n");
+            resultWriter.close();
         }
     }
 
@@ -196,11 +196,11 @@ public class KvIndexPerfTestInstance {
     }
 
     public static void Test() throws IOException, SQLException, ClassNotFoundException {
-        createPerfTest();
+//        createPerfTest();
 //        queryPerfByVaryTimeRangeTest();
 //        queryPerfByVaryThresholdTest();
 //        queryPerfByVaryPatternLengthTest();
-//        queryPerfByVaryWindowSizeTest();
+        queryPerfByVaryWindowSizeTest();
 //        executeSQL("drop index kvindex on " + path, 0);
     }
 
@@ -209,9 +209,11 @@ public class KvIndexPerfTestInstance {
         System.out.println("create time cost");
         //suppose the time range of the path is 0~x, we test the time costs of creating index over 10%, 20%, ...
         //90% of the whole time range.
-        for (int i = 0; i < 4;i++) {
+        for (int i = timeLen-5; i < timeLen-3;i++) {
 
-            path = "root.vehicle.d" + (i * 7) + " .s5";
+//            if (i >= timeLen-6 && i < timeLen-4) continue;
+
+            path = "root.vehicle.d" + i + " .s1";
 
             try {
                 executeSQL("drop index kvindex on " + path, 0);
@@ -242,9 +244,19 @@ public class KvIndexPerfTestInstance {
         //suppose the time range of the path is 0~x, we test the time costs of creating index over 10%, 20%, ...
         //90% of the whole time range.
 //        for (float i = 0.2f; i < 2f; i += 0.2) {
-        path = "root.vehicle.d14.s5";
-        for (int i = 1; i <= 5;i++){
-            int patternLength = (int) (defaultPatternLength * Math.pow(10, i));
+        path = "root.vehicle.d10.s1";
+        for (int i = 0; i < 11;i++){
+            int patternLength;
+
+            if (i < 5) {
+                patternLength = (int) (defaultPatternLength * Math.pow(10, (i+1) / 2));
+                if (i % 2 == 1)
+                    patternLength /= 2;
+            } else {
+                patternLength = (int) (defaultPatternLength * Math.pow(10, 3));
+                if (i > 5)
+                    patternLength *= 2 * (i-5);
+            }
 
             double averageTime = query(String.format("select index kvindex(%s, %s, %s, %s, %s, 1.0, 0.0) from %s",
                     path, path, defaultPatternStartPos, (defaultPatternStartPos + patternLength - 1), defaultThreshold,
@@ -253,7 +265,7 @@ public class KvIndexPerfTestInstance {
             System.out.println("the ratio of pattern length: " + patternLength + "\ttime:" + averageTime);
 
             resultWriter = new FileWriter(resultFile, true);
-            resultWriter.write("pattern_test:\tsingle file\tlength: " + lastTimestamp[2] + "\tpattern length: " + patternLength + "\ttime: " + averageTime + "s\n");
+            resultWriter.write("pattern_test:\tsingle file\tlength: " + lastTimestamp[10] + "\tpattern length: " + patternLength + "\ttime: " + averageTime + "s\n");
             resultWriter.close();
         }
     }
@@ -295,15 +307,20 @@ public class KvIndexPerfTestInstance {
 //    @Test
     public static void queryPerfByVaryWindowSizeTest() throws IOException, SQLException, ClassNotFoundException {
         System.out.println("query by varying window length, baseline: " + defaultWindowLength);
-        path = "root.vehicle.d14.s5";
-        for (float i = 0.2f; i < 1.0; i += 0.2f) {
+        path = "root.vehicle.d10.s1";
+        for (int i = 0;i < 19;i++) {
             try {
                 executeSQL("drop index kvindex on " + path, 0);
             } catch (Exception e) {
             }
 
+            int ld;
+
+            if (i < 10) ld = (int) (defaultWindowLength / 100 * (i+1));
+            else ld = (int) (defaultWindowLength / 10 * (i-8));
+
             double aT = executeSQL("create index on " + path + " using kvindex with window_length=" +
-                    (int) (defaultWindowLength * i) + ", " + "since_time=0", 0);
+                    ld + ", " + "since_time=0", 0);
 
             System.out.println("the ratio of window length: " + i + "\tindex time:" + aT);
 
@@ -314,7 +331,7 @@ public class KvIndexPerfTestInstance {
             System.out.println("the ratio of window length: " + i + "\ttime:" + averageTime);
 
             resultWriter = new FileWriter(resultFile, true);
-            resultWriter.write("window_length_test:\tsingle file\tlength: " + lastTimestamp[2] + "\twindow_length: " + (int)(defaultWindowLength * i) + "\tcreate time: " + aT + "s\tquery time:" + averageTime + "s\n");
+            resultWriter.write("window_length_test:\tsingle file\tlength: " + lastTimestamp[10] + "\twindow_length: " + ld + "\tcreate time: " + aT + "s\tquery time:" + averageTime + "s\n");
             resultWriter.close();
         }
     }

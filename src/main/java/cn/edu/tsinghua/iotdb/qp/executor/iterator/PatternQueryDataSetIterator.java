@@ -59,6 +59,8 @@ public class PatternQueryDataSetIterator implements Iterator<QueryDataSet> {
         if (data == null) {
             throw new RuntimeException("data is null!");
         }
+        // no support batch results
+        noNext = true;
         if (data.hasNextRecord()) {
             return true;
         } else {
