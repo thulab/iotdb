@@ -165,8 +165,9 @@ public class AggregationLargeDataTest {
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 //            selectAllSQLTest();
             meanAggreWithSingleFilterTest();
-            countAggreWithSingleFilterTest();
+            sumAggreWithSingleFilterTest();
             firstAggreWithSingleFilterTest();
+            countAggreWithSingleFilterTest();
             minMaxTimeAggreWithSingleFilterTest();
             minValueAggreWithSingleFilterTest();
             maxValueAggreWithSingleFilterTest();
@@ -182,6 +183,39 @@ public class AggregationLargeDataTest {
         }
     }
 
+    private void sumAggreWithSingleFilterTest() throws ClassNotFoundException, SQLException {
+        String[] retArray = new String[]{
+                "0,121538.0,156752.0,20254.43998503685"
+        };
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select sum(s0),sum(s1),sum(s2)" +
+                    " from root.vehicle.d0 where s1 >= 0");
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(TestUtils.sum(d0s0)) + ","
+                        + resultSet.getString(TestUtils.sum(d0s1)) + "," + resultSet.getString(TestUtils.sum(d0s2));
+                Assert.assertEquals(ans, retArray[cnt]);
+                cnt++;
+            }
+            Assert.assertEquals(1, cnt);
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+    
     private void firstAggreWithSingleFilterTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
                 "0,33333,1101,2.22,tomorrow is another day,true"
@@ -273,7 +307,7 @@ public class AggregationLargeDataTest {
             }
             Assert.assertEquals(1, cnt);
             statement.close();
-        } catch (Exception e) {
+        }catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
