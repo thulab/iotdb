@@ -202,14 +202,14 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 	public String getString(int columnIndex) throws SQLException {
 		switch (type) {
 		case DELTA_OBJECT:
-			if(columnIndex == 0){
+			if(columnIndex == 1){
 				return getString("DELTA_OBJECT");
 			}
 			break;
 		case COLUMN:
-			if(columnIndex == 0){
+			if(columnIndex == 1){
 				return getString("COLUMN_NAME");
-			} else if (columnIndex == 1) {
+			} else if (columnIndex == 2) {
 				return getString("COLUMN_TYPE");
 			}
 		default:
@@ -225,7 +225,9 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 		case "COLUMN_NAME":
 			return currentColumn.name;
 		case "COLUMN_TYPE":
-			return currentColumn.dataType.toString();
+			if(currentColumn.dataType != null) {
+				return currentColumn.dataType.toString();
+			}
 		case "DELTA_OBJECT":
 			return currentDeltaObject;
 		default:
