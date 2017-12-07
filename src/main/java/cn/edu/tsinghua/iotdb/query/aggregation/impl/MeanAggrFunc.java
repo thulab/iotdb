@@ -17,8 +17,10 @@ public class MeanAggrFunc extends AggregateFunction{
 
     private static Logger logger = LoggerFactory.getLogger(MeanAggrFunc.class);
 
-    double sum = 0.0;
-    int cnt = 0;
+    private double sum = 0.0;
+    private int cnt = 0;
+
+    private boolean isResultSet = false;
 
     public MeanAggrFunc() {
         super(AggregationConstant.MEAN, TSDataType.DOUBLE);
@@ -34,7 +36,6 @@ public class MeanAggrFunc extends AggregateFunction{
         // TODO ：make use of this?
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
     }
 
@@ -43,7 +44,6 @@ public class MeanAggrFunc extends AggregateFunction{
         // TODO : update mean or update sum?
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
         updateMean(dataInThisPage);
     }
@@ -57,7 +57,6 @@ public class MeanAggrFunc extends AggregateFunction{
     public void calculateValueFromLeftMemoryData(InsertDynamicData insertMemoryData) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
         updateMean(insertMemoryData);
     }
@@ -66,7 +65,6 @@ public class MeanAggrFunc extends AggregateFunction{
     public boolean calcAggregationUsingTimestamps(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
         // use switch here to reduce switch usage to once
         switch (insertMemoryData.getDataType()) {
@@ -412,19 +410,25 @@ public class MeanAggrFunc extends AggregateFunction{
     }
     
     private void updateMean() {
-        if(cnt > 0)
-            resultData.setDouble(0, sum / cnt);
-        else 
-            resultData.setDouble(0, 0.0);
+        if(cnt > 0) {
+            if(isResultSet)
+                resultData.setDouble(0, sum / cnt);
+            else {
+                isResultSet = true;
+                resultData.putDouble(sum / cnt);
+            }
+        }
     }
 
     private void groupUpdateMean(long partitionStart) {
-        if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
-            resultData.removeLastEmptyTime();
-            resultData.putTime(partitionStart);
-            resultData.putDouble(cnt <= 0 ? 0.0 : sum / cnt);
-        } else {
-            resultData.setDouble(resultData.valueLength - 1, cnt <= 0 ? 0.0 : sum / cnt);
+        if(cnt > 0) {
+            if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
+                resultData.removeLastEmptyTime();
+                resultData.putTime(partitionStart);
+                resultData.putDouble(sum / cnt);
+            } else {
+                resultData.setDouble(resultData.valueLength - 1, sum / cnt);
+            }
         }
     }
 

@@ -13,7 +13,8 @@ import java.util.List;
 
 public class SumAggrFunc extends AggregateFunction {
 
-    double sum;
+    private double sum;
+    private boolean hasValue = false;
 
     public SumAggrFunc() {
         super(AggregationConstant.SUM, TSDataType.DOUBLE);
@@ -29,7 +30,6 @@ public class SumAggrFunc extends AggregateFunction {
         // TODO ：make use of this?
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
     }
 
@@ -38,7 +38,6 @@ public class SumAggrFunc extends AggregateFunction {
         // TODO : update mean or update sum?
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
         updateSum(dataInThisPage);
     }
@@ -52,7 +51,6 @@ public class SumAggrFunc extends AggregateFunction {
     public void calculateValueFromLeftMemoryData(InsertDynamicData insertMemoryData) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
         updateSum(insertMemoryData);
     }
@@ -61,7 +59,6 @@ public class SumAggrFunc extends AggregateFunction {
     public boolean calcAggregationUsingTimestamps(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
-            resultData.putDouble(0.0);
         }
         // use switch here to reduce switch usage to once
         switch (insertMemoryData.getDataType()) {
@@ -144,20 +141,24 @@ public class SumAggrFunc extends AggregateFunction {
             case INT32:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getInt(data.curIdx);
+                    hasValue = true;
                 }
             case INT64:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getLong(data.curIdx);
+                    hasValue = true;
                 }
                 break;
             case FLOAT:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getFloat(data.curIdx);
+                    hasValue = true;
                 }
                 break;
             case DOUBLE:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getDouble(data.curIdx);
+                    hasValue = true;
                 }
                 break;
             case INT96:
@@ -179,6 +180,7 @@ public class SumAggrFunc extends AggregateFunction {
                     while (data.hasInsertData()) {
                         sum += data.getCurrentIntValue();
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -189,6 +191,7 @@ public class SumAggrFunc extends AggregateFunction {
                     while (data.hasInsertData()) {
                         sum += data.getCurrentLongValue();
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -199,6 +202,7 @@ public class SumAggrFunc extends AggregateFunction {
                     while (data.hasInsertData()) {
                         sum += data.getCurrentFloatValue();
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -209,6 +213,7 @@ public class SumAggrFunc extends AggregateFunction {
                     while (data.hasInsertData()) {
                         sum += data.getCurrentDoubleValue();
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -243,6 +248,7 @@ public class SumAggrFunc extends AggregateFunction {
                     sum += val;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -263,6 +269,7 @@ public class SumAggrFunc extends AggregateFunction {
                     sum += val;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -283,6 +290,7 @@ public class SumAggrFunc extends AggregateFunction {
                     sum += val;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -303,6 +311,7 @@ public class SumAggrFunc extends AggregateFunction {
                     sum += val;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -335,6 +344,7 @@ public class SumAggrFunc extends AggregateFunction {
                 int val = data.getInt(data.curIdx);
                 sum += val;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
@@ -351,6 +361,7 @@ public class SumAggrFunc extends AggregateFunction {
                 long val = data.getLong(data.curIdx);
                 sum += val;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
@@ -367,6 +378,7 @@ public class SumAggrFunc extends AggregateFunction {
                 float val = data.getFloat(data.curIdx);
                 sum += val;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
@@ -383,26 +395,35 @@ public class SumAggrFunc extends AggregateFunction {
                 double val = data.getDouble(data.curIdx);
                 sum += val;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
     }
 
     private void updateSum() {
-        resultData.setDouble(0, sum);
+        if(hasValue) {
+            if(resultData.valueLength == 0)
+                resultData.putDouble(sum);
+            else
+                resultData.setDouble(0, sum);
+        }
     }
 
     private void groupUpdateMean(long partitionStart) {
-        if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
-            resultData.removeLastEmptyTime();
-            resultData.putTime(partitionStart);
-            resultData.putDouble(sum);
-        } else {
-            resultData.setDouble(resultData.valueLength - 1, sum);
+        if(hasValue) {
+            if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
+                resultData.removeLastEmptyTime();
+                resultData.putTime(partitionStart);
+                resultData.putDouble(sum);
+            } else {
+                resultData.setDouble(resultData.valueLength - 1, sum);
+            }
         }
     }
 
     private void reset() {
         sum = 0.0;
+        hasValue = false;
     }
 }
