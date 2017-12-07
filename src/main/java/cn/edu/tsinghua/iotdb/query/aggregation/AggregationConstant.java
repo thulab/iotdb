@@ -14,5 +14,6 @@ public class AggregationConstant {
     public static final String FIRST = "first";
 
     public static final String MEAN = "mean";
+    public static final String SUM = "sum";
 
 }

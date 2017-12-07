@@ -3,7 +3,19 @@ package cn.edu.tsinghua.iotdb.service;
 
 public class TestUtils {
 
-    static boolean testFlag = !true;
+    static boolean testFlag = true;
+
+    static String first(String path) {
+        return String.format("first(%s)", path);
+    }
+
+    static String sum(String path) {
+        return String.format("sum(%s)", path);
+    }
+
+    static String mean(String path) {
+        return String.format("mean(%s)", path);
+    }
 
     static String count(String path) {
         return String.format("count(%s)", path);

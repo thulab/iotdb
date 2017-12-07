@@ -95,5 +95,5 @@ public abstract class AggregateFunction {
      * @param data
      */
     public abstract void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
-                                                DynamicOneColumnData data);
+                                                DynamicOneColumnData data) throws ProcessorException;
 }

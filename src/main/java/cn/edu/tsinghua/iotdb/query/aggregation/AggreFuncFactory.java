@@ -28,6 +28,10 @@ public class AggreFuncFactory {
                 return new CountAggrFunc();
             case AggregationConstant.MEAN:
                 return new MeanAggrFunc();
+            case AggregationConstant.FIRST:
+                return new FirstAggrFunc(dataType);
+            case AggregationConstant.SUM:
+                return new SumAggrFunc();
             default:
                 throw new ProcessorException("aggregate does not support " + aggrFuncName + " function.");
         }
