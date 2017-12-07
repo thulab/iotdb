@@ -18,7 +18,7 @@ public class OverflowBufferWriteInfo {
 
     private DynamicOneColumnData update;
 
-    // deleteUntil means the data before deleteUntil has been deleted
+    // deleteUntil means data deleted when timestamp <= deleteUntil
     private long deleteUntil;
 
     private long bufferWriteBeginTime;
