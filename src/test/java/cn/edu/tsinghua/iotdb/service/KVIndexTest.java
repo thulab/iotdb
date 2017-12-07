@@ -118,7 +118,7 @@ public class KVIndexTest {
 
     private IoTDB deamon;
 
-    private boolean testFlag = true;
+    private boolean testFlag = TestUtils.testFlag;
 
     @Before
     public void setUp() throws Exception {
