@@ -27,8 +27,8 @@ public class FirstAggrFunc extends AggregateFunction{
     }
 
     @Override
-    public void calculateValueFromPageHeader(PageHeader pageHeader) {
-        // TODO ：make use of this?
+    public void calculateValueFromPageHeader(PageHeader pageHeader) throws ProcessorException {
+        throw new ProcessorException("PageHeader currently unsupported!");
     }
 
     @Override

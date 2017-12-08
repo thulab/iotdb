@@ -32,7 +32,7 @@ public abstract class AggregateFunction {
      *
      * @param pageHeader <code>PageHeader</code>
      */
-    public abstract void calculateValueFromPageHeader(PageHeader pageHeader);
+    public abstract void calculateValueFromPageHeader(PageHeader pageHeader) throws ProcessorException;
 
     /**
      * <p>
