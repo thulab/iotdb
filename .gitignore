@@ -1,3 +1,4 @@
+lib/
 tsfiledb/data/*
 tsfiledb/derby.log
 tsfiledb/*.pid

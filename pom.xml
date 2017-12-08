@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cn.edu.tsinghua</groupId>
 	<artifactId>iotdb-jdbc</artifactId>
-	<version>0.3.0</version>
+	<version>0.3.1</version>
 	<packaging>jar</packaging>
 
 	<name>IoTDB Jdbc</name>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>cn.edu.tsinghua</groupId>
 			<artifactId>tsfile</artifactId>
-			<version>0.3.0</version>
+			<version>0.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
