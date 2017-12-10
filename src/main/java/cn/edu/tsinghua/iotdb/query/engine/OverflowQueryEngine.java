@@ -7,6 +7,7 @@ import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
+import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
@@ -221,8 +222,18 @@ public class OverflowQueryEngine {
         return null;
     }
 
-    public QueryDataSet fill(List<Path> fillPath, List<Pair<String, String>> dataType) {
-        return null;
+    public QueryDataSet fill(List<Path> fillPaths, Map<TSDataType, IFill> fillType) throws PathErrorException {
+        QueryDataSet result = new QueryDataSet();
+
+        for (Path path : fillPaths) {
+            String deltaObjectId = path.getDeltaObjectToString();
+            String measurementId = path.getMeasurementToString();
+            TSDataType dataType = getDataTypeByPath(path);
+
+            result.mapRet.put(path.getFullPath(), new DynamicOneColumnData(dataType, true, true));
+        }
+
+        return result;
     }
 
     /**
@@ -310,7 +321,7 @@ public class OverflowQueryEngine {
             queryDataSet.setBatchReadGenerator(batchReaderRetGenerator);
         }
 
-        //TODO BatchReadRecordGenerator could be removed?
+        //BatchReadRecordGenerator is used to return exactly right ```fetchSize``` size of result
         queryDataSet.clear();
         queryDataSet.getBatchReadGenerator().calculateRecord();
         EngineUtils.putRecordFromBatchReadGenerator(queryDataSet);
