@@ -221,6 +221,10 @@ public class OverflowQueryEngine {
         return null;
     }
 
+    public QueryDataSet fill(List<Path> fillPath, List<Pair<String, String>> dataType) {
+        return null;
+    }
+
     /**
      * Query type 1: query without filter.
      */
@@ -306,6 +310,7 @@ public class OverflowQueryEngine {
             queryDataSet.setBatchReadGenerator(batchReaderRetGenerator);
         }
 
+        //TODO BatchReadRecordGenerator could be removed?
         queryDataSet.clear();
         queryDataSet.getBatchReadGenerator().calculateRecord();
         EngineUtils.putRecordFromBatchReadGenerator(queryDataSet);
@@ -331,6 +336,7 @@ public class OverflowQueryEngine {
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter,
                     res, recordReader.insertPageInMemory, recordReader.overflowInfo);
 
+            // TODO updateTrue and updateFalse could be replaced by recordReader.overflowInfo?
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
             DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -393,6 +399,7 @@ public class OverflowQueryEngine {
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
             String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 
+            //TODO an optimization : timeFilter could be [minTime, maxTime of timestamps]
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null, null, null, null, recordReaderPrefix);
 
@@ -435,7 +442,7 @@ public class OverflowQueryEngine {
      * <code>RecordReaderCache</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCache</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    public DynamicOneColumnData querySeriesForCross(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
+    private DynamicOneColumnData querySeriesForCross(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
                                                     DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
