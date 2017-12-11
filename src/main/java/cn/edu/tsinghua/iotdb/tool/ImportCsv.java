@@ -329,10 +329,10 @@ public class ImportCsv extends AbstractCsvTool{
 	}
 
     public static void importCsvFromFile(String ip,String port, String username, String password, String filename, String timeZone) throws SQLException{
-        if (System.getProperty(SystemConstant.TSFILE_HOME) == null) {
+        if (System.getProperty(SystemConstant.IOTDB_HOME) == null) {
             errorInsertInfo = "src/test/resources/csvInsertError.error";
         } else {
-            errorInsertInfo = System.getProperty(SystemConstant.TSFILE_HOME) + "/csvInsertError.error";
+            errorInsertInfo = System.getProperty(SystemConstant.IOTDB_HOME) + "/csvInsertError.error";
         }
     		try {
     			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
