@@ -13,7 +13,6 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataResp;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 import org.apache.thrift.TException;
 
@@ -121,7 +120,7 @@ public class TsfileStatement implements Statement {
 		warningChain = null;
 	}
 
-	public void closeClientOperation() throws SQLException {
+	private void closeClientOperation() throws SQLException {
 		try {
 			if (operationHandle != null) {
 				TSCloseOperationReq closeReq = new TSCloseOperationReq(operationHandle);
@@ -139,7 +138,7 @@ public class TsfileStatement implements Statement {
 			return;
 
 		closeClientOperation();
-		client = null;
+//		client = null;
 		isClosed = true;
 	}
 
@@ -151,6 +150,7 @@ public class TsfileStatement implements Statement {
 	@Override
 	public boolean execute(String sql) throws SQLException {
 		checkConnection("execute");
+		isClosed = false;
 		try {
 			return executeSQL(sql);
 		} catch (TException e) {
@@ -202,6 +202,7 @@ public class TsfileStatement implements Statement {
 	@Override
 	public int[] executeBatch() throws SQLException {
 		checkConnection("executeBatch");
+		isClosed = false;
 		try {
 			return executeBatchSQL();
 		} catch (TException e) {
@@ -240,7 +241,8 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public ResultSet executeQuery(String sql) throws SQLException {
-		checkConnection("execute");
+		checkConnection("execute query");
+		isClosed = false;
 		try {
 			return executeQuerySQL(sql);
 		} catch (TException e) {
@@ -273,6 +275,8 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public int executeUpdate(String sql) throws SQLException {
+		checkConnection("execute update");
+		isClosed = false;
 		try {
 			return executeUpdateSQL(sql);
 		} catch (TException e) {
@@ -466,8 +470,8 @@ public class TsfileStatement implements Statement {
 	}
 
 	private void checkConnection(String action) throws SQLException {
-		if (isClosed) {
-			throw new SQLException(String.format("Cannot %s after statement has been closed!", action));
+		if (connection == null || connection.isClosed()) {
+			throw new SQLException(String.format("Cannot %s after connection has been closed!", action));
 		}
 	}
 
