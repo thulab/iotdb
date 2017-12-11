@@ -1,9 +1,11 @@
 package cn.edu.tsinghua.iotdb.service;
 
 
+import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -88,14 +90,17 @@ public class DeleteCreateSameSeriesTest {
             config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
+            Authorizer.reset();
+            MManager.getInstance().clear();
         }
     }
 
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
-            deamon.stop();
             Thread.sleep(5000);
+            deamon.stop();
+            Thread.sleep(1000);
 
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             FileUtils.deleteDirectory(new File(config.overflowDataDir));

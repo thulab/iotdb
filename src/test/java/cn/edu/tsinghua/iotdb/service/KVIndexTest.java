@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.service;
 
+import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -20,6 +21,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static cn.edu.tsinghua.iotdb.service.TestUtils.clearDir;
 
 /**
  * Just used for integration test.
@@ -131,8 +134,6 @@ public class KVIndexTest {
     public void setUp() throws Exception {
         if (testFlag) {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            Thread.sleep(1000);
-
             overflowDataDirPre = config.overflowDataDir;
             fileNodeDirPre = config.fileNodeDir;
             bufferWriteDirPre = config.bufferWriteDir;
@@ -150,33 +151,22 @@ public class KVIndexTest {
             config.walFolder = FOLDER_HEADER + "/data/wals";
             config.indexFileDir = FOLDER_HEADER + "/data/index";
             config.maxOpenFolder = 1;
-            clearDir(config);
-            Thread.sleep(1000);
-            MManager.getInstance().clear();
+            TestUtils.clearDir(config,FOLDER_HEADER);
             deamon = new IoTDB();
             deamon.active();
+            Authorizer.reset();
+            MManager.getInstance().clear();
         }
-    }
-
-    private void clearDir(TsfileDBConfig config) throws IOException {
-        FileUtils.deleteDirectory(new File(config.overflowDataDir));
-        FileUtils.deleteDirectory(new File(config.fileNodeDir));
-        FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-        FileUtils.deleteDirectory(new File(config.metadataDir));
-//        FileUtils.deleteDirectory(new File(config.derbyHome));
-        FileUtils.deleteDirectory(new File(config.walFolder));
-        FileUtils.deleteDirectory(new File(config.indexFileDir));
-//        FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
     }
 
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
-            deamon.stop();
             Thread.sleep(5000);
-
+            deamon.stop();
+            Thread.sleep(1000);
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            clearDir(config);
+            TestUtils.clearDir(config,FOLDER_HEADER);
             config.overflowDataDir = overflowDataDirPre;
             config.fileNodeDir = fileNodeDirPre;
             config.bufferWriteDir = bufferWriteDirPre;

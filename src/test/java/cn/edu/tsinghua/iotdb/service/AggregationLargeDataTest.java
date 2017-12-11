@@ -1,10 +1,12 @@
 package cn.edu.tsinghua.iotdb.service;
 
 
+import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -130,30 +132,22 @@ public class AggregationLargeDataTest {
             config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
+            TestUtils.clearDir(config,FOLDER_HEADER);
             deamon = new IoTDB();
             deamon.active();
-            Thread.sleep(1000);
+            Authorizer.reset();
+            MManager.getInstance().clear();
         }
     }
 
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
             deamon.stop();
             Thread.sleep(1000);
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-            FileUtils.deleteDirectory(new File(config.metadataDir));
-//            FileUtils.deleteDirectory(new File(config.derbyHome));
-//            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-            File derby = new File("derby-tsfile-db");
-            if(derby.exists()){
-                FileUtils.deleteDirectory(derby);
-            }
-
+            TestUtils.clearDir(config,FOLDER_HEADER);
             config.overflowDataDir = overflowDataDirPre;
             config.fileNodeDir = fileNodeDirPre;
             config.bufferWriteDir = bufferWriteDirPre;
@@ -165,7 +159,7 @@ public class AggregationLargeDataTest {
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
         if (testFlag) {
-            Thread.sleep(5000);
+//            Thread.sleep(5000);
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");

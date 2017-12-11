@@ -1,8 +1,10 @@
 package cn.edu.tsinghua.iotdb.service;
 
+import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -80,14 +82,17 @@ public class LargeDataTest {
             config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
+            Authorizer.reset();
+            MManager.getInstance().clear();
         }
     }
 
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
-            deamon.stop();
             Thread.sleep(5000);
+            deamon.stop();
+            Thread.sleep(1000);
 
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             FileUtils.deleteDirectory(new File(config.overflowDataDir));
@@ -115,15 +120,21 @@ public class LargeDataTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-
+            System.out.println("insert");
             selectAllTest();
+            System.out.println("selectAllTest");
             aggregationTest();
+            System.out.println("aggregationTest");
             groupByTest();
+            System.out.println("groupByTest");
             allNullSeriesAggregationTest();
+            System.out.println("allNullSeriesAggregationTest");
 
             allNullSeriesGroupByTest();
+            System.out.println("allNullSeriesGroupByTest");
 
             negativeValueTest();
+            System.out.println("negativeValueTest");
 
             connection.close();
         }
