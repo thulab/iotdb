@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -12,6 +13,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import java.io.File;
 import java.sql.*;
@@ -105,7 +107,7 @@ public class AggregationLargeDataTest {
 
     private IoTDB deamon;
 
-    private boolean testFlag = TestUtils.testFlag;
+    private boolean testFlag = true;
 
     @Before
     public void setUp() throws Exception {
@@ -131,22 +133,27 @@ public class AggregationLargeDataTest {
             config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
+            Thread.sleep(1000);
         }
     }
 
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
+            Thread.sleep(3000);
             deamon.stop();
-            Thread.sleep(5000);
-
+            Thread.sleep(1000);
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             FileUtils.deleteDirectory(new File(config.overflowDataDir));
             FileUtils.deleteDirectory(new File(config.fileNodeDir));
             FileUtils.deleteDirectory(new File(config.bufferWriteDir));
             FileUtils.deleteDirectory(new File(config.metadataDir));
-            FileUtils.deleteDirectory(new File(config.derbyHome));
-            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+//            FileUtils.deleteDirectory(new File(config.derbyHome));
+//            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+            File derby = new File("derby-tsfile-db");
+            if(derby.exists()){
+                FileUtils.deleteDirectory(derby);
+            }
 
             config.overflowDataDir = overflowDataDirPre;
             config.fileNodeDir = fileNodeDirPre;

@@ -32,10 +32,12 @@ public class CloseMergeServer {
 
 	private boolean isStart = false;
 
-	private static final CloseMergeServer SERVER = new CloseMergeServer();
+	private static CloseMergeServer SERVER = new CloseMergeServer();
 
 	public static CloseMergeServer getInstance() {
-		return SERVER;
+		if(SERVER == null)
+            SERVER = new CloseMergeServer();
+        return SERVER;
 	}
 
 	private CloseMergeServer() {
@@ -43,7 +45,6 @@ public class CloseMergeServer {
 	}
 
 	public void startServer() {
-
 		if (!isStart) {
 			LOGGER.info("start the close and merge server");
 			closeAndMergeDaemon.start();
@@ -57,14 +58,15 @@ public class CloseMergeServer {
 		
 		if (isStart) {
 			LOGGER.info("shutdown the close and merge server");
-			isStart = false;
 			synchronized (service) {
+                isStart = false;
 				service.shutdown();
 				service.notify();
 			}
 		} else {
 			LOGGER.warn("the close and merge daemon is not running now");
 		}
+		SERVER = null;
 	}
 
 	private class CloseAndMergeDaemon extends Thread {
@@ -86,6 +88,7 @@ public class CloseMergeServer {
 					}
 				}
 			}
+            LOGGER.info("CloseAndMergeDaemon has been stopped");
 		}
 	}
 

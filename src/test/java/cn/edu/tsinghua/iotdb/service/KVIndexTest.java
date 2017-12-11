@@ -2,14 +2,17 @@ package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileSQLException;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.physical.index.KvMatchIndexQueryPlan;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +25,7 @@ import java.sql.Statement;
 /**
  * Just used for integration test.
  */
+@PrepareForTest
 public class KVIndexTest {
     private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
@@ -71,7 +75,8 @@ public class KVIndexTest {
 //                    "0,4,7,0.0",
 //            },
 //            {
-//                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+//                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root
+// .vehicle.d0.s0",
 //                    "0,2,5,0.0",
 //            },
             {
@@ -85,24 +90,28 @@ public class KVIndexTest {
             {"merge"},
 //          单文件索引查询
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root" +
+                            ".vehicle.d0.s0",
                     "0,2,5,0.0",
             },
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 3, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 3, 5, 0.0, 1.0, 0.0) from root" +
+                            ".vehicle.d0.s0",
                     "0,3,5,0.0",
             },
 
 //          跨文件索引，涉及到Overflow的查询
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 5, 8, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 5, 8, 0.0, 1.0, 0.0) from root" +
+                            ".vehicle.d0.s0",
                     "0,5,8,0.0",
             },
 //          删除索引
             {"drop index kvindex on root.vehicle.d0.s0"},
 ////          再次查询
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root" +
+                            ".vehicle.d0.s0",
                     "0,1,4,0.0",
             },
 
@@ -124,7 +133,8 @@ public class KVIndexTest {
     public void setUp() throws Exception {
         if (testFlag) {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            clearDir(config);
+            Thread.sleep(1000);
+
             overflowDataDirPre = config.overflowDataDir;
             fileNodeDirPre = config.fileNodeDir;
             bufferWriteDirPre = config.bufferWriteDir;
@@ -142,8 +152,8 @@ public class KVIndexTest {
             config.walFolder = FOLDER_HEADER + "/data/wals";
             config.indexFileDir = FOLDER_HEADER + "/data/index";
             config.maxOpenFolder = 1;
-            deamon = new IoTDB();
-            deamon.active();
+            clearDir(config);
+
         }
     }
 
@@ -161,9 +171,6 @@ public class KVIndexTest {
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
-            deamon.stop();
-            Thread.sleep(5000);
-
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             clearDir(config);
             config.overflowDataDir = overflowDataDirPre;
@@ -178,11 +185,28 @@ public class KVIndexTest {
     }
 
     @Test
-    public void test() throws ClassNotFoundException, SQLException, InterruptedException {
-        if (testFlag) {
-            Thread.sleep(5000);
-            executeSQL();
-        }
+    public void test() throws ClassNotFoundException, SQLException, InterruptedException, FileNodeManagerException,
+            IOException {
+        clearDir(TsfileDBDescriptor.getInstance().getConfig());
+        deamon = new IoTDB();
+        deamon.active();
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Statement statement = connection.createStatement();
+        statement.close();
+        connection.close();
+        deamon.stop();
+        clearDir(TsfileDBDescriptor.getInstance().getConfig());
+        System.out.println("first pass finished");
+        deamon = new IoTDB();
+        deamon.active();
+        Thread.sleep(2000);
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        statement = connection.createStatement();
+        statement.close();
+        connection.close();
+        deamon.stop();
     }
 
     private void executeSQL() throws ClassNotFoundException, SQLException {
@@ -250,8 +274,9 @@ public class KVIndexTest {
                         Assert.assertEquals(retArray.length, cnt);
                 }
             } catch (TsfileSQLException e) {
-                Assert.assertEquals(e.getMessage(),"The timeseries root.vehicle.d0.s0 hasn't been indexed.");
-                Assert.assertEquals(querySQL, "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0");
+                Assert.assertEquals(e.getMessage(), "The timeseries root.vehicle.d0.s0 hasn't been indexed.");
+                Assert.assertEquals(querySQL, "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, " +
+                        "0.0, 1.0, 0.0) from root.vehicle.d0.s0");
             }
         } catch (Exception e) {
             e.printStackTrace();

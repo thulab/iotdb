@@ -13,6 +13,9 @@ public class Authorizer {
 
     private static AuthDaoWrap authDaoWrap = new AuthDaoWrap();
 
+    public static void reset(){
+        authDaoWrap = new AuthDaoWrap();
+    }
     /**
      * Check the information for login
      *
