@@ -97,7 +97,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public TSOpenSessionResp openSession(TSOpenSessionReq req) throws TException {
 		LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
-		boolean status;
+		boolean status=true;
 		try {
 			status = Authorizer.login(req.getUsername(), req.getPassword());
 		} catch (AuthException e) {

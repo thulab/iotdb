@@ -12,7 +12,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.sql.Statement;
 /**
  * Just used for integration test.
  */
-@PrepareForTest
 public class KVIndexTest {
     private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
@@ -153,7 +151,10 @@ public class KVIndexTest {
             config.indexFileDir = FOLDER_HEADER + "/data/index";
             config.maxOpenFolder = 1;
             clearDir(config);
-
+            Thread.sleep(1000);
+            MManager.getInstance().clear();
+            deamon = new IoTDB();
+            deamon.active();
         }
     }
 
@@ -162,15 +163,18 @@ public class KVIndexTest {
         FileUtils.deleteDirectory(new File(config.fileNodeDir));
         FileUtils.deleteDirectory(new File(config.bufferWriteDir));
         FileUtils.deleteDirectory(new File(config.metadataDir));
-        FileUtils.deleteDirectory(new File(config.derbyHome));
+//        FileUtils.deleteDirectory(new File(config.derbyHome));
         FileUtils.deleteDirectory(new File(config.walFolder));
         FileUtils.deleteDirectory(new File(config.indexFileDir));
-        FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+//        FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
     }
 
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
+            deamon.stop();
+            Thread.sleep(5000);
+
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             clearDir(config);
             config.overflowDataDir = overflowDataDirPre;
@@ -187,26 +191,30 @@ public class KVIndexTest {
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException, FileNodeManagerException,
             IOException {
-        clearDir(TsfileDBDescriptor.getInstance().getConfig());
-        deamon = new IoTDB();
-        deamon.active();
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-        Statement statement = connection.createStatement();
-        statement.close();
-        connection.close();
-        deamon.stop();
-        clearDir(TsfileDBDescriptor.getInstance().getConfig());
-        System.out.println("first pass finished");
-        deamon = new IoTDB();
-        deamon.active();
-        Thread.sleep(2000);
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-        statement = connection.createStatement();
-        statement.close();
-        connection.close();
-        deamon.stop();
+        if (testFlag) {
+            Thread.sleep(5000);
+            executeSQL();
+        }
+//        clearDir(TsfileDBDescriptor.getInstance().getConfig());
+//        deamon = new IoTDB();
+//        deamon.active();
+//        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+//        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+//        Statement statement = connection.createStatement();
+//        statement.close();
+//        connection.close();
+//        deamon.stop();
+//        clearDir(TsfileDBDescriptor.getInstance().getConfig());
+//        System.out.println("first pass finished");
+//        deamon = new IoTDB();
+//        deamon.active();
+//        Thread.sleep(2000);
+//        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+//        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+//        statement = connection.createStatement();
+//        statement.close();
+//        connection.close();
+//        deamon.stop();
     }
 
     private void executeSQL() throws ClassNotFoundException, SQLException {
