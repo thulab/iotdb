@@ -11,9 +11,6 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-
-
 public class TsfileDBDescriptor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
 
@@ -43,7 +40,7 @@ public class TsfileDBDescriptor {
 		InputStream inputStream = null;
 		String url = System.getProperty(TsFileDBConstant.IOTDB_CONF, null);
 		if (url == null) {
-			url = System.getProperty(SystemConstant.IOTDB_HOME, null);
+			url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
 			if (url != null) {
 				url = url + File.separatorChar + "conf" + File.separatorChar + TsfileDBConfig.CONFIG_NAME;
 			} else {

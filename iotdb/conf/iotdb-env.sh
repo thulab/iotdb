@@ -17,4 +17,3 @@ IOTDB_DERBY_OPTS="-Dderby.stream.error.field=cn.edu.tsinghua.iotdb.auth.dao.Derb
 IOTDB_JMX_OPTS="$IOTDB_JMX_OPTS -Xloggc:${IOTDB_HOME}/logs/gc.log"
 IOTDB_JMX_OPTS="$IOTDB_JMX_OPTS -Xms1G"
 IOTDB_JMX_OPTS="$IOTDB_JMX_OPTS -Xmx2G"
-echo ${IOTDB_JMX_OPTS}

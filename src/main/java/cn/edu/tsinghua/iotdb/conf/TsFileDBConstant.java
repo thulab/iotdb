@@ -11,4 +11,5 @@ public class TsFileDBConstant {
     public static final String SERVER_RMI_ID = "java.rmi.server.randomIDs";
     public static final String RMI_SERVER_HOST_NAME = "java.rmi.server.hostname";
     public static final String JMX_REMOTE_RMI_PORT = "com.sun.management.jmxremote.rmi.port";
+    public static final String IOTDB_HOME = "IOTDB_HOME";
 }
