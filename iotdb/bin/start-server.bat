@@ -6,7 +6,7 @@ echo ````````````````````````
 if "%OS%" == "Windows_NT" setlocal
 
 pushd %~dp0..
-if NOT DEFINED TSFILE_HOME set IOTDB_HOME=%CD%
+if NOT DEFINED IOTDB_HOME set IOTDB_HOME=%CD%
 popd
 
 set IOTDB_CONF=%IOTDB_HOME%\conf
