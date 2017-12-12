@@ -111,7 +111,7 @@ public class AggregationSmallDataTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-            System.out.println("size size:"+FileNodeManager.getInstance().getMap().size());
+            System.out.println("++++++++++++++++size size:"+FileNodeManager.getInstance().getMap().size());
             AggregateEngine.aggregateFetchSize = 2;
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             overflowDataDirPre = config.overflowDataDir;
@@ -119,17 +119,33 @@ public class AggregationSmallDataTest {
             bufferWriteDirPre = config.bufferWriteDir;
             metadataDirPre = config.metadataDir;
             derbyHomePre = config.derbyHome;
-
+            MManager.getInstance().clear();
+            System.out.println(MManager.getInstance().getAllFileNames());
             config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
             config.fileNodeDir = FOLDER_HEADER + "/data/digest";
             config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
             TestUtils.clearDir(config,FOLDER_HEADER);
+            
+            File file = new File(config.walFolder);
+            System.out.println(file.exists());
+            file = new File(config.metadataDir);
+            System.out.println(file.exists());
+            file = new File(config.fileNodeDir);
+            System.out.println(file.exists());
+            file = new File(config.overflowDataDir);
+            System.out.println(file.exists());
+            
+            System.out.println(MManager.getInstance().getAllFileNames());
+            System.out.println("++++++++++++++++size size:"+FileNodeManager.getInstance().getMap().size());
             deamon = new IoTDB();
             deamon.active();
+            System.out.println("++++++++++++++++size size:"+FileNodeManager.getInstance().getMap().size());
             Authorizer.reset();
             MManager.getInstance().clear();
+            System.out.println("++++++++++++++++size size:"+FileNodeManager.getInstance().getMap().size());
+            Thread.sleep(1000000);
         }
     }
 
@@ -152,7 +168,8 @@ public class AggregationSmallDataTest {
 
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
-        if (testFlag) {
+    	System.out.println("++++++++++++++++size size:"+FileNodeManager.getInstance().getMap().size());
+    	if (testFlag) {
             Thread.sleep(1000);
             insertSQL();
 
