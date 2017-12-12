@@ -39,7 +39,6 @@ public class TsfileDBDescriptor {
 	private void loadProps() {
 		InputStream inputStream = null;
 		String url = System.getProperty(TsFileDBConstant.IOTDB_CONF, null);
-		System.out.println(url);
 		if (url == null) {
 			url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
 			if (url != null) {
