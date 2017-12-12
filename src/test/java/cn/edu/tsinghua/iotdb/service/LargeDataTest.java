@@ -81,6 +81,7 @@ public class LargeDataTest {
             config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
+            TestUtils.clearDir(config,FOLDER_HEADER);
             deamon = new IoTDB();
             deamon.active();
             Authorizer.reset();
@@ -96,12 +97,7 @@ public class LargeDataTest {
             Thread.sleep(1000);
 
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-            FileUtils.deleteDirectory(new File(config.metadataDir));
-            FileUtils.deleteDirectory(new File(config.derbyHome));
-            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+            TestUtils.clearDir(config,FOLDER_HEADER);
 
             config.overflowDataDir = overflowDataDirPre;
             config.fileNodeDir = fileNodeDirPre;

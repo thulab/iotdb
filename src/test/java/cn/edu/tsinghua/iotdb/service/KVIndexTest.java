@@ -258,9 +258,9 @@ public class KVIndexTest {
                     ResultSet resultSet = statement.getResultSet();
                     int cnt = 1;
                     while (resultSet.next()) {
-                        String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(1)
-                                + "," + resultSet.getString(2)
-                                + "," + resultSet.getString(3);
+                        String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(2)
+                                + "," + resultSet.getString(3)
+                                + "," + resultSet.getString(4);
                         System.out.println("testtest-actual\t" + ans);
                         if (!retArray[cnt].equals(ans))
                             Assert.assertEquals(retArray[cnt], ans);
