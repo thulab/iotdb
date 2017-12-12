@@ -2,6 +2,8 @@ package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogNode;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
@@ -52,7 +54,13 @@ public class StatMonitor {
     }
 
     public StatMonitor(){
+        try {
+            MManager.getInstance().setStorageLevelToMTree("root.statistics");
+        } catch (PathErrorException | IOException e) {
+            LOGGER.error("MManager.getInstance().setStorageLevelToMTree False");
+        }
         lock = new ReentrantReadWriteLock();
+        registProcessor = new HashMap<>();
         service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(), 0, 10, TimeUnit.SECONDS);
     }
@@ -73,6 +81,7 @@ public class StatMonitor {
             try {
                 FileNodeManager.getInstance().insert(entry.getValue());
             } catch (FileNodeManagerException e) {
+                LOGGER.debug(entry.getValue().dataPointList.toString());
                 LOGGER.debug("Insert Stat Points error!");
             }
         }

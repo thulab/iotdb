@@ -65,11 +65,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements St
     public HashMap<String, TSRecord> getStatistics() {
         Long curTime = System.currentTimeMillis();
         HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-        String fakeDeltaName = FileNodeManager.getInstance().getClass().getName();
+        String fakeDeltaName = FileNodeManager.class.getSimpleName();
+        fakeDeltaName = "root.statistics." + fakeDeltaName;
         TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
-
-        TSRecord tsRecord3 = new TSRecord(8, "device_1");
-        tsRecord3.dataPointList = new ArrayList<DataPoint>() {{
+        tsRecord.dataPointList = new ArrayList<DataPoint>() {{
 
             add(new LongDataPoint("insertReq", insertReq.get()));
             add(new LongDataPoint("insertRecordReq", insertRecordReq.get()));
