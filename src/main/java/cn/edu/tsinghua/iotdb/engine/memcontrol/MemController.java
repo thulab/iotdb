@@ -43,6 +43,11 @@ public class MemController {
         return totMemUsed.get();
     }
 
+    public void clear() {
+        memMap.clear();
+        totMemUsed.set(0);
+    }
+
     public UsageLevel reportUse(Object user, long usage) {
         Long oldUsage = memMap.get(user);
         if(oldUsage == null)

@@ -18,6 +18,7 @@ public class MemControllerTest {
     @Test
     public void test() throws BufferWriteProcessorException {
         MemController memController = MemController.getInstance();
+        memController.clear();
 
         Object[] dummyUser = new Object[20];
         for(int i = 0; i < dummyUser.length; i++)
