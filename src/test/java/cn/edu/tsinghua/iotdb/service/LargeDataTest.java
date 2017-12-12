@@ -128,6 +128,8 @@ public class LargeDataTest {
 
             fixBigGroupByClassFormNumberTest();
 
+            //aggregationTimeRangeFilterError_Issue176Test();
+
             connection.close();
         }
     }
@@ -452,6 +454,55 @@ public class LargeDataTest {
                 cnt++;
             }
             assertEquals(11, cnt);
+            statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    public void aggregationTimeRangeFilterError_Issue176Test() throws ClassNotFoundException, SQLException {
+        String[] retArray = new String[]{
+                "3000,100,99,0,3099,3000",
+                "3100,100,99,0,3199,3100",
+                "3200,100,99,0,3299,3200",
+                "3300,100,99,0,3399,3300",
+                "3400,100,99,0,3499,3400",
+                "3500,100,99,0,3599,3500",
+                "3600,100,99,0,3699,3600",
+                "3700,100,99,0,3799,3700",
+                "3800,100,99,0,3899,3800",
+                "3900,100,99,0,3999,3900",
+                "4000,1,0,0,4000,4000"
+        };
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        ;
+        boolean hasResultSet;
+        Statement statement;
+
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            statement = connection.createStatement();
+            hasResultSet = statement.execute("select count(s0),max_value(s0),count(s1),max_value(s1)"
+                    + "from root.vehicle.d0 where time > 3500 and time < 23000");
+            assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(max_value(d0s0)) + "," + resultSet.getString(count(d0s1))
+                        + "," + resultSet.getString(count(d0s0));
+                System.out.println(ans);
+                //assertEquals(retArray[cnt], ans);
+                cnt++;
+            }
+            //assertEquals(11, cnt);
             statement.close();
 
         } catch (Exception e) {
