@@ -296,10 +296,6 @@ public abstract class LRUManager<T extends LRUProcessor> {
 					throw e;
 				}
 			}
-			if(!(processorMap.isEmpty() && processorLRUList.isEmpty())){
-				LOGGER.error("closeAll does not clear!");
-				throw new RuntimeException("closeAll does not clear!");
-			}
 			return processorMap.isEmpty() && processorLRUList.isEmpty();
 		}
 	}
