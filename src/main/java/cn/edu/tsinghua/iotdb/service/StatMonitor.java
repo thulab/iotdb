@@ -9,6 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.print.DocFlavor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,15 +46,26 @@ public class StatMonitor {
         }
     }
 
-    public synchronized void registerStatistics(String path, StatProcessor statprocessor){
+    public synchronized void registStatistics(String path, StatProcessor statprocessor){
         registProcessor.put(path, statprocessor);
     }
 
-    public synchronized void deregisterStatistics(String path){
+    public synchronized void registStatDataPath(HashMap<String, String> hashMap) {
+        try {
+            for (Map.Entry<String, String> entry : hashMap.entrySet()) {
+                MManager.getInstance().addPathToMTree(
+                        entry.getKey(), entry.getValue(), "RLE", new String[0]);
+            }
+        } catch (Exception e) {
+            LOGGER.debug("initialize the metadata error, stat processor may be wrong");
+        }
+    }
+
+    public synchronized void deregistStatistics(String path){
         registProcessor.remove(path);
     }
 
-    public StatMonitor(){
+    private StatMonitor(){
         try {
             MManager.getInstance().setStorageLevelToMTree("root.statistics");
         } catch (PathErrorException | IOException e) {
@@ -63,6 +75,13 @@ public class StatMonitor {
         registProcessor = new HashMap<>();
         service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(), 0, 10, TimeUnit.SECONDS);
+    }
+
+    public static StatMonitor getInstance(){
+        return StatMonitorHolder.INSTANCE;
+    }
+    private static class StatMonitorHolder{
+        private static final StatMonitor INSTANCE = new StatMonitor();
     }
 
     private HashMap<String, TSRecord> gatherStatistics(){

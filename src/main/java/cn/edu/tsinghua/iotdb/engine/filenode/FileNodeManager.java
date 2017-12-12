@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.service.Monitor;
+import cn.edu.tsinghua.iotdb.service.StatMonitor;
 import cn.edu.tsinghua.iotdb.service.StatProcessor;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.FloatDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.IntDataPoint;
@@ -60,21 +62,18 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements St
     private AtomicLong insertReq = new AtomicLong(0);
     private AtomicLong insertRecordReq = new AtomicLong(0);
     private AtomicLong insertError = new AtomicLong(0);
+    private final String fakeDeltaName = "root.statistics." + FileNodeManager.class.getSimpleName();
 
     @Override
     public HashMap<String, TSRecord> getStatistics() {
         Long curTime = System.currentTimeMillis();
         HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-        String fakeDeltaName = FileNodeManager.class.getSimpleName();
-        fakeDeltaName = "root.statistics." + fakeDeltaName;
         TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
         tsRecord.dataPointList = new ArrayList<DataPoint>() {{
-
             add(new LongDataPoint("insertReq", insertReq.get()));
             add(new LongDataPoint("insertRecordReq", insertRecordReq.get()));
             add(new LongDataPoint("insertError", insertError.get()));
         }};
-
         tsRecordHashMap.put("insertReq", tsRecord);
         return tsRecordHashMap;
     }
@@ -106,6 +105,20 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements St
             LOGGER.error("Read the overflow nameSpacePath set from filenode manager restore file error.");
             overflowNameSpaceSet = new HashSet<>();
         }
+        registStatMetadata();
+    }
+
+    /**
+     * Init Stat MetaDta
+     * TODO: Modify the throws operation
+     */
+    @Override
+    public void registStatMetadata() {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put(fakeDeltaName + ".insertReq", "INT64");
+        hashMap.put(fakeDeltaName + ".insertRecordReq", "INT64");
+        hashMap.put(fakeDeltaName + ".insertError", "INT64");
+        StatMonitor.getInstance().registStatDataPath(hashMap);
     }
 
     public static FileNodeManager getInstance() {

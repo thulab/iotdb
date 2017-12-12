@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
@@ -139,8 +138,13 @@ public class IoTDB implements StatProcessor {
     }
 
     private void registStatMonitor() {
-        statMonitor = new StatMonitor();
-        statMonitor.registerStatistics(FileNodeManager.getInstance().getClass().getName(), FileNodeManager.getInstance());
+        statMonitor = StatMonitor.getInstance();
+        statMonitor.registStatistics(FileNodeManager.getInstance().getClass().getName(), FileNodeManager.getInstance());
+    }
+
+    @Override
+    public void registStatMetadata() {
+
     }
 
     /**
