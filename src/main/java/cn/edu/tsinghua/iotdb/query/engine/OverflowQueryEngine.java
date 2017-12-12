@@ -38,6 +38,11 @@ public class OverflowQueryEngine {
     private MManager mManager;
 
     /** the formNumber represents the ordinal of disjunctive normal form of each query part **/
+    /**
+     * select s0,s1 from ... where (s_1 > 10 or s_2 < 10) and s_3 > 5
+     * 保存流的偏移位置
+     * formnumber 1 , 2, 3
+     */
     private int formNumber = -1;
 
     /**
