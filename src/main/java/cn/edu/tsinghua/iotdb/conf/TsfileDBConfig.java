@@ -106,6 +106,16 @@ public class TsfileDBConfig {
 
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
 
+	/**
+	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
+	 */
+	public long memThresholdWarning = 8 * 1024 * 1024 * 1024L;  // 8GB
+
+	/**
+	 * No more insert is allowed if this threshold is reached.
+	 */
+	public long memThresholdDangerous = 16 * 1024 * 1024 * 1024L; // 16GB
+
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {

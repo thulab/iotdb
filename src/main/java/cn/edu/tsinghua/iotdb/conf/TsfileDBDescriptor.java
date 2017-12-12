@@ -84,7 +84,15 @@ public class TsfileDBDescriptor {
 			
 			conf.periodTimeForFlush = Long.parseLong(properties.getProperty("period_time_for_flush_in_second", conf.periodTimeForFlush+"").trim());
 			conf.periodTimeForMerge = Long.parseLong(properties.getProperty("period_time_for_merge_in_second", conf.periodTimeForMerge+"").trim());
-			
+
+			conf.memThresholdWarning = Long.parseLong(properties.getProperty("mem_threshold_warning", conf.periodTimeForFlush+"").trim());
+			conf.memThresholdDangerous = Long.parseLong(properties.getProperty("mem_threshold_dangerous", conf.periodTimeForFlush+"").trim());
+
+			if(conf.memThresholdWarning <= 0)
+				conf.memThresholdWarning = TsFileDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;
+			if(conf.memThresholdDangerous < conf.memThresholdWarning)
+				conf.memThresholdDangerous = Math.max(conf.memThresholdWarning, TsFileDBConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
+
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {
 				conf.timeZone = DateTimeZone.forID(tmpTimeZone.trim());
