@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,7 @@ public class OverflowProcessor extends LRUProcessor {
 	private static final int MAXIMUM_RECORD_COUNT_FOR_CHECK = 10000;
 	private long recordCount = 0;
 	private long recordCountForNextMemCheck = MINIMUM_RECORD_COUNT_FOR_CHECK;
+	private long memUsed = 0;
 
 	private OverflowSupport ofSupport;
 	private final int memoryBlockSize = TSFileDescriptor.getInstance().getConfig().groupSizeInByte;
@@ -269,6 +272,14 @@ public class OverflowProcessor extends LRUProcessor {
 	public void insert(String deltaObjectId, String measurementId, long timestamp, TSDataType type, String v)
 			throws OverflowProcessorException {
 		insert(deltaObjectId, measurementId, timestamp, type, convertStringToBytes(type, v));
+	}
+
+	// to unify with Methods in BufferWriteProcessor
+	public void insert(String deltaObjectId, TSRecord record) throws OverflowProcessorException {
+		for (DataPoint dataPoint : record.dataPointList) {
+				insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
+						dataPoint.getType(), dataPoint.getValue().toString());
+		}
 	}
 
 	private void insert(String deltaObjectId, String measurementId, long timestamp, TSDataType type, byte[] v)

@@ -7,6 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// Notice : methods in this class may not be accurate.
 public class MemUtils {
     private static Logger logger  = LoggerFactory.getLogger(MemUtils.class);
 

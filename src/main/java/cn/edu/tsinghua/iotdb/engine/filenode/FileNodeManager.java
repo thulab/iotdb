@@ -155,6 +155,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		LOGGER.debug("Insert record is {}", tsRecord);
 		int insertType = 0;
 		String nameSpacePath = fileNodeProcessor.getNameSpacePath();
+		// TODO : advice : why not the two processors provide the same interfaces?
 		if (timestamp <= lastUpdateTime) {
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
@@ -181,18 +182,15 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				LOGGER.error("Error in write WAL", e);
 				throw new FileNodeManagerException(e);
 			}
-
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				try {
-					overflowProcessor.insert(deltaObjectId, dataPoint.getMeasurementId(), timestamp,
-							dataPoint.getType(), dataPoint.getValue().toString());
-				} catch (ProcessorException e) {
-					if (fileNodeProcessor != null) {
-						fileNodeProcessor.writeUnlock();
-					}
-					throw new FileNodeManagerException(e);
+			try {
+				overflowProcessor.insert(deltaObjectId, tsRecord);
+			} catch (ProcessorException e) {
+				if (fileNodeProcessor != null) {
+					fileNodeProcessor.writeUnlock();
 				}
+				throw new FileNodeManagerException(e);
 			}
+
 			fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
 			addNameSpaceToOverflowList(nameSpacePath);
 			// overflowProcessor.writeUnlock();

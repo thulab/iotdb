@@ -550,6 +550,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		private Map<String, IRowGroupWriter> flushingRowGroupWriters;
 		private Set<String> flushingRowGroupSet;
 		private long flushingRecordCount;
+		private long memUsed;
 
 		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter,
 								FileSchema schema) throws WriteProcessException {
