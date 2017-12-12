@@ -20,7 +20,7 @@ public class MemController {
     private long waringThreshold;
     private long dangerouseThreshold;
 
-    enum UsageLevel {
+    public enum UsageLevel {
         SAFE, WARNING, DANGEROUS
     }
 
@@ -39,26 +39,30 @@ public class MemController {
         return InstanceHolder.INSTANCE;
     }
 
+    public long getTotUsage() {
+        return totMemUsed.get();
+    }
+
     public UsageLevel reportUse(Object user, long usage) {
         Long oldUsage = memMap.get(user);
         if(oldUsage == null)
             oldUsage = 0L;
-        long newTotUsage = totMemUsed.getAndAdd(- oldUsage + usage) ;
+        long newTotUsage = totMemUsed.get() + usage ;
         // check if the new usage will reach dangerous threshold
         if(newTotUsage < dangerouseThreshold) {
-            newTotUsage = totMemUsed.addAndGet(- oldUsage + usage);
+            newTotUsage = totMemUsed.addAndGet(usage);
             // double check if updating will reach dangerous threshold
             if(newTotUsage < waringThreshold) {
                 // still safe, action taken
-                memMap.put(user, usage);
+                memMap.put(user, oldUsage + usage);
                 return UsageLevel.SAFE;
             } else if(newTotUsage < dangerouseThreshold) {
                 // become warning because competition with other threads, still take the action
-                memMap.put(user, usage);
+                memMap.put(user, oldUsage + usage);
                 return UsageLevel.WARNING;
             } else {
                 // become dangerous because competition with other threads, discard this action
-                totMemUsed.addAndGet(- (-oldUsage + usage));
+                totMemUsed.addAndGet(-usage);
                 return UsageLevel.DANGEROUS;
             }
         } else {
@@ -66,11 +70,17 @@ public class MemController {
         }
     }
 
-    public void reportFree(Object user) {
+    public void reportFree(Object user, long freeSize) {
         Long usage = memMap.get(user);
         if (usage == null)
             logger.error("Unregistered memory usage from {}", user.getClass());
-        else
+        else if(freeSize > usage){
+            logger.error("Request to free {} bytes while it only registered {} bytes", freeSize, usage);
             totMemUsed.addAndGet(-usage);
+            memMap.put(user, 0L);
+        } else {
+            totMemUsed.addAndGet(-freeSize);
+            memMap.put(user, usage - freeSize);
+        }
     }
 }

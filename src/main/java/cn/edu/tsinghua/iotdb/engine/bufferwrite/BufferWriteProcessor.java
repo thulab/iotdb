@@ -15,6 +15,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import cn.edu.tsinghua.iotdb.engine.memcontrol.MemController;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
@@ -40,11 +43,9 @@ import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -82,6 +83,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 	private Action bufferwriteFlushAction = null;
 	private Action bufferwriteCloseAction = null;
 	private Action filenodeFlushAction = null;
+
+	private long memUsed = 0;
 
 	public BufferWriteProcessor(String nameSpacePath, String fileName, Map<String, Object> parameters)
 			throws BufferWriteProcessorException {
@@ -467,7 +470,24 @@ public class BufferWriteProcessor extends LRUProcessor {
 	public void write(TSRecord tsRecord) throws BufferWriteProcessorException {
 
 		try {
-			recordWriter.write(tsRecord);
+			long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
+			MemController.UsageLevel level = MemController.getInstance().reportUse(this, newMemUsage);
+			switch (level) {
+				case SAFE:
+					recordWriter.write(tsRecord);
+					memUsed += newMemUsage;
+					break;
+				case WARNING:
+					LOGGER.warn("Memory usage exceeded warning threshold.");
+					recordWriter.flushRowGroup(false);
+					recordWriter.write(tsRecord);
+					memUsed += newMemUsage;
+					break;
+				case DANGEROUS:
+				default:
+					LOGGER.error("Memory usage exceeded dangerous threshold.");
+					throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
+			}
 		} catch (IOException | WriteProcessException e) {
 			LOGGER.error("Write TSRecord error, the TSRecord is {}, the nameSpacePath is {}.", tsRecord, nameSpacePath);
 			throw new BufferWriteProcessorException(e);
@@ -550,7 +570,6 @@ public class BufferWriteProcessor extends LRUProcessor {
 		private Map<String, IRowGroupWriter> flushingRowGroupWriters;
 		private Set<String> flushingRowGroupSet;
 		private long flushingRecordCount;
-		private long memUsed;
 
 		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter,
 								FileSchema schema) throws WriteProcessException {
@@ -589,6 +608,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 						}
 					}
 				}
+				long oldMemUsage = memUsed;
+				memUsed = 0;
 				// update the lastUpdatetime
 				try {
 					bufferwriteFlushAction.act();
@@ -673,6 +694,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 					Thread flush = new Thread(flushThread);
 					flush.start();
 				}
+				MemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 			}
 		}
 

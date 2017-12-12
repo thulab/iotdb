@@ -11,8 +11,13 @@ import org.slf4j.LoggerFactory;
 public class MemUtils {
     private static Logger logger  = LoggerFactory.getLogger(MemUtils.class);
 
-    // TODO : move this down to TsFile
-    public static long getTsRecordMem(TSRecord record) {
+    // TODO : move this down to TsFile ?
+    /**
+     * Calculate how much memory will be used if the given record is written to Bufferwrite.
+     * @param record
+     * @return
+     */
+    public static long getTsRecordMemBufferwrite(TSRecord record) {
         long memUsed = 8;   // time
         memUsed += 8;       // deltaObjectId reference
         memUsed += getStringMem(record.deltaObjectId);
@@ -21,6 +26,15 @@ public class MemUtils {
             memUsed += getDataPointMem(dataPoint);
         }
         return memUsed;
+    }
+
+    /**
+     * Calculate how much memory will be used if the given record is written to Bufferwrite.
+     * @param record
+     * @return
+     */
+    public static long getTsRecordMemOverflow(TSRecord record) {
+        return getTsRecordMemBufferwrite(record);
     }
 
     public static long getStringMem(String str) {

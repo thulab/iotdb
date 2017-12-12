@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.engine.memcontrol.MemController;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
@@ -276,9 +278,29 @@ public class OverflowProcessor extends LRUProcessor {
 
 	// to unify with Methods in BufferWriteProcessor
 	public void insert(String deltaObjectId, TSRecord record) throws OverflowProcessorException {
-		for (DataPoint dataPoint : record.dataPointList) {
-				insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
-						dataPoint.getType(), dataPoint.getValue().toString());
+		long newUsage = memUsed;
+		MemController.UsageLevel level = MemController.getInstance().reportUse(this, newUsage);
+		switch (level) {
+			case SAFE:
+				for (DataPoint dataPoint : record.dataPointList) {
+					insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
+							dataPoint.getType(), dataPoint.getValue().toString());
+				}
+				memUsed += newUsage;
+				break;
+			case WARNING:
+				LOGGER.warn("Memory usage exceeded warning threshold.");
+				flushRowGroupToStore(false);
+				for (DataPoint dataPoint : record.dataPointList) {
+					insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
+							dataPoint.getType(), dataPoint.getValue().toString());
+				}
+				memUsed += newUsage;
+				break;
+			case DANGEROUS:
+				LOGGER.error("Memory usage exceeded dangerous threshold.");
+				throw new OverflowProcessorException("Memory usage exceeded dangerous threshold.");
+			default:
 		}
 	}
 
@@ -383,7 +405,8 @@ public class OverflowProcessor extends LRUProcessor {
 					}
 				}
 			}
-
+			long oldMemUsage = memUsed;
+			memUsed = 0;
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 				try {
 					WriteLogManager.getInstance().startOverflowFlush(nameSpacePath);
@@ -474,6 +497,7 @@ public class OverflowProcessor extends LRUProcessor {
 				};
 				AsynflushThread.start();
 			}
+			MemController.getInstance().reportFree(this, oldMemUsage);
 		}
 	}
 
