@@ -5,14 +5,12 @@ import static org.junit.Assert.assertEquals;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
-import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
 
 public class RoleTest {
@@ -22,11 +20,9 @@ public class RoleTest {
 	private RoleDao roleDao = null;
 	private Role role = null;
 	private String roleName = "role";
-	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
-		config.derbyHome = "";
 		dbdao = new DBDao();
 		dbdao.open();
 		statement = DBDao.getStatement();

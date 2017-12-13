@@ -47,7 +47,7 @@ public class DBDao {
 	}
 
 	public DBDao() {
-		this("derby-tsfile-db");
+		this("");
 	}
 
 	private void initDriver() throws ClassNotFoundException {

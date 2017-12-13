@@ -5,16 +5,13 @@ import static org.junit.Assert.assertEquals;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import cn.edu.tsinghua.iotdb.auth.model.User;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserDao;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.auth.model.User;
 
 public class UserTest {
 
@@ -25,7 +22,6 @@ public class UserTest {
 	private String userName = "testuser";
 	private String passWord = "password";
 	private User user = new User(userName, passWord);
-	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 	
 	/**
 	 * @throws Exception
@@ -33,8 +29,6 @@ public class UserTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		config.derbyHome = "";
-		EngineTestHelper.delete(config.derbyHome);
 		dBdao = new DBDao();
 		dBdao.open();
 		statement = DBDao.getStatement();
@@ -45,7 +39,6 @@ public class UserTest {
 	@After
 	public void tearDown() throws Exception {
 		dBdao.close();
-		EngineTestHelper.delete(config.derbyHome);
 	}
 
 	@Test

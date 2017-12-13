@@ -6,21 +6,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
-import cn.edu.tsinghua.iotdb.auth.model.RolePermission;
-import cn.edu.tsinghua.iotdb.auth.model.User;
-import cn.edu.tsinghua.iotdb.auth.model.UserPermission;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.auth.dao.AuthDao;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserDao;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.auth.model.RolePermission;
+import cn.edu.tsinghua.iotdb.auth.model.User;
+import cn.edu.tsinghua.iotdb.auth.model.UserPermission;
 
 public class AuthTest {
 
@@ -32,11 +30,9 @@ public class AuthTest {
 	private User user2;
 	private Role role1;
 	private Role role2;
-	private TsfileDBConfig dbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
-		dbconfig.derbyHome =  "";
 		dbDao = new DBDao();
 		authDao = new AuthDao();
 		dbDao.open();
