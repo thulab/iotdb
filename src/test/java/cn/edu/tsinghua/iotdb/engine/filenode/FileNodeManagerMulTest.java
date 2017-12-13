@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -12,14 +11,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -33,8 +28,6 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
  */
 public class FileNodeManagerMulTest {
 
-	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
-
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
 
 	private String deltaObjectId0 = "root.vehicle.d0";
@@ -47,54 +40,31 @@ public class FileNodeManagerMulTest {
 
 	private TSDataType dataType = TSDataType.INT32;
 
-	private String FileNodeDir;
-	private String BufferWriteDir;
-	private String overflowDataDir;
 	private int rowGroupSize;
-	private int pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
-	private int defaultMaxStringLength = tsconfig.maxStringLength;
-	private boolean cachePageData = tsconfig.duplicateIncompletedPage;
-	private int pageSize = tsconfig.pageSizeInByte;
+	private int pageCheckSizeThreshold;
+	private int defaultMaxStringLength;
+	private boolean cachePageData;
+	private int pageSize;
 
 	@Before
 	public void setUp() throws Exception {
-		FileNodeDir = tsdbconfig.fileNodeDir;
-		BufferWriteDir = tsdbconfig.bufferWriteDir;
-		overflowDataDir = tsdbconfig.overflowDataDir;
-
-		tsdbconfig.fileNodeDir = "filenode" + File.separatorChar;
-		tsdbconfig.bufferWriteDir = "bufferwrite";
-		tsdbconfig.overflowDataDir = "overflow";
-		tsdbconfig.metadataDir = "metadata";
+		pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
+		defaultMaxStringLength = tsconfig.maxStringLength;
+		cachePageData = tsconfig.duplicateIncompletedPage;
+		pageSize = tsconfig.pageSizeInByte;
+		rowGroupSize = tsconfig.groupSizeInByte;
 		// set rowgroupsize
 		tsconfig.groupSizeInByte = 10000;
 		tsconfig.pageCheckSizeThreshold = 3;
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsconfig.duplicateIncompletedPage = true;
-		EngineTestHelper.delete(tsdbconfig.fileNodeDir);
-		EngineTestHelper.delete(tsdbconfig.bufferWriteDir);
-		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
-		EngineTestHelper.delete(tsdbconfig.walFolder);
-		EngineTestHelper.delete(tsdbconfig.metadataDir);
 		MetadataManagerHelper.initMetadata2();
-		WriteLogManager.getInstance().close();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		WriteLogManager.getInstance().close();
-		MManager.getInstance().flushObjectToFile();
-		EngineTestHelper.delete(tsdbconfig.fileNodeDir);
-		EngineTestHelper.delete(tsdbconfig.bufferWriteDir);
-		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
-		EngineTestHelper.delete(tsdbconfig.walFolder);
-		EngineTestHelper.delete(tsdbconfig.metadataDir);
-
-		tsdbconfig.fileNodeDir = FileNodeDir;
-		tsdbconfig.overflowDataDir = overflowDataDir;
-		tsdbconfig.bufferWriteDir = BufferWriteDir;
-
+		EnvironmentUtils.cleanEnv();
 		tsconfig.groupSizeInByte = rowGroupSize;
 		tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;
 		tsconfig.pageSizeInByte = pageSize;

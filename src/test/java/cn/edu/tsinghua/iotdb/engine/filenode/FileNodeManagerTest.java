@@ -14,15 +14,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.PathUtils;
 import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -40,7 +38,6 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 public class FileNodeManagerTest {
 
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
-	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	private FileNodeManager fManager = null;
 
@@ -50,55 +47,33 @@ public class FileNodeManagerTest {
 	private String measurementId6 = "s6";
 	private TSDataType dataType = TSDataType.INT32;
 
-	private String FileNodeDir;
-	private String BufferWriteDir;
-	private String overflowDataDir;
 	private int rowGroupSize;
-	private int pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
-	private int defaultMaxStringLength = tsconfig.maxStringLength;
-	private boolean cachePageData = tsconfig.duplicateIncompletedPage;
-	private int pageSize = tsconfig.pageSizeInByte;
+	private int pageCheckSizeThreshold;
+	private int defaultMaxStringLength;
+	private boolean cachePageData;
+	private int pageSize;
 
 	@Before
 	public void setUp() throws Exception {
-		FileNodeDir = tsdbconfig.fileNodeDir;
-		BufferWriteDir = tsdbconfig.bufferWriteDir;
-		overflowDataDir = tsdbconfig.overflowDataDir;
-
-		tsdbconfig.fileNodeDir = "filenode" + File.separatorChar;
-		tsdbconfig.bufferWriteDir = "bufferwrite";
-		tsdbconfig.overflowDataDir = "overflow";
-		tsdbconfig.metadataDir = "metadata";
+		// origin value
+		rowGroupSize = tsconfig.groupSizeInByte;
+		pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
+		cachePageData = tsconfig.duplicateIncompletedPage;
+		defaultMaxStringLength = tsconfig.maxStringLength;
+		pageSize = tsconfig.pageSizeInByte;
+		// new value
 		tsconfig.duplicateIncompletedPage = true;
-
-		// set rowgroupsize
 		tsconfig.groupSizeInByte = 2000;
 		tsconfig.pageCheckSizeThreshold = 3;
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
-		EngineTestHelper.delete(tsdbconfig.fileNodeDir);
-		EngineTestHelper.delete(tsdbconfig.bufferWriteDir);
-		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
-		EngineTestHelper.delete(tsdbconfig.walFolder);
-		EngineTestHelper.delete(tsdbconfig.metadataDir);
 		MetadataManagerHelper.initMetadata();
-		WriteLogManager.getInstance().close();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		WriteLogManager.getInstance().close();
-		MManager.getInstance().flushObjectToFile();
-		EngineTestHelper.delete(tsdbconfig.fileNodeDir);
-		EngineTestHelper.delete(tsdbconfig.bufferWriteDir);
-		EngineTestHelper.delete(tsdbconfig.overflowDataDir);
-		EngineTestHelper.delete(tsdbconfig.walFolder);
-		EngineTestHelper.delete(tsdbconfig.metadataDir);
-
-		tsdbconfig.fileNodeDir = FileNodeDir;
-		tsdbconfig.overflowDataDir = overflowDataDir;
-		tsdbconfig.bufferWriteDir = BufferWriteDir;
-
+		EnvironmentUtils.cleanEnv();
+		// recovery value
 		tsconfig.groupSizeInByte = rowGroupSize;
 		tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;
 		tsconfig.pageSizeInByte = pageSize;
@@ -351,8 +326,7 @@ public class FileNodeManagerTest {
 
 	@Test
 	public void testRecoveryWait() {
-		String dirPath = tsdbconfig.bufferWriteDir;
-		File dir = new File(dirPath);
+		File dir = PathUtils.getBufferWriteDir("");
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
@@ -398,7 +372,7 @@ public class FileNodeManagerTest {
 		newFileNodes.add(fileNode);
 		FileNodeProcessorStore fileNodeProcessorStore = new FileNodeProcessorStore(lastUpdateTimeMap,
 				emptyIntervalFileNode, newFileNodes, FileNodeProcessorStatus.NONE, 0);
-		File fileNodeDir = new File(tsdbconfig.fileNodeDir + File.separatorChar + deltaObjectId);
+		File fileNodeDir = PathUtils.getFileNodeDir(deltaObjectId);
 		if (!fileNodeDir.exists()) {
 			fileNodeDir.mkdirs();
 		}
@@ -530,7 +504,7 @@ public class FileNodeManagerTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		File fileNodeDir = new File(tsdbconfig.fileNodeDir + File.separatorChar + deltaObjectId);
+		File fileNodeDir = PathUtils.getFileNodeDir(deltaObjectId);
 		if (!fileNodeDir.exists()) {
 			fileNodeDir.mkdirs();
 		}

@@ -183,6 +183,10 @@ public class FileNodeProcessor extends LRUProcessor {
 			throws FileNodeProcessorException {
 		super(nameSpacePath);
 		this.parameters = parameters;
+		if (fileNodeDirPath.length() > 0
+				&& fileNodeDirPath.charAt(fileNodeDirPath.length() - 1) != File.separatorChar) {
+			fileNodeDirPath = fileNodeDirPath + File.separatorChar;
+		}
 		String dataDirPath = fileNodeDirPath + nameSpacePath;
 		File dataDir = new File(dataDirPath);
 		if (!dataDir.exists()) {
