@@ -126,9 +126,11 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
             LOGGER.error("Read the overflow nameSpacePath set from filenode manager restore file error.");
             overflowNameSpaceSet = new HashSet<>();
         }
-        StatMonitor statMonitor = StatMonitor.getInstance();
-        statMonitor.registStatistics(getClass().getName(), this);
-        registStatMetadata();
+        if (TsFileDBConf.enableStatMonitor) {
+            StatMonitor statMonitor = StatMonitor.getInstance();
+            statMonitor.registStatistics(getClass().getName(), this);
+            registStatMetadata();
+        }
     }
 
     /**

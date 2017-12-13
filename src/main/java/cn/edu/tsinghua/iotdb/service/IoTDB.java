@@ -13,6 +13,8 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -139,6 +141,8 @@ public class IoTDB implements IStatistic {
 
     private void registStatMonitor() {
         statMonitor = StatMonitor.getInstance();
+        if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor)
+            statMonitor.activate();
     }
 
     @Override

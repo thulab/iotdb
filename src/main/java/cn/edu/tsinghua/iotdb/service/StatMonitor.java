@@ -61,6 +61,12 @@ public class StatMonitor implements IStatistic {
         }
     }
 
+    public void activate(){
+        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
+                0, backLoopPeriod, TimeUnit.SECONDS
+        );
+    }
+
     public synchronized void registStatistics(String path, IStatistic statprocessor){
         registProcessor.put(path, statprocessor);
     }
@@ -91,7 +97,6 @@ public class StatMonitor implements IStatistic {
         registProcessor = new HashMap<>();
         service = Executors.newScheduledThreadPool(1);
         backLoopPeriod = config.backLoopPeriod;
-        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(), 0, backLoopPeriod, TimeUnit.SECONDS);
     }
 
     public static StatMonitor getInstance(){

@@ -90,8 +90,12 @@ public class TsfileDBConfig {
     /**
      * The statMonitor's BackLoop period
      */
-    public int backLoopPeriod = 10;
+    public int backLoopPeriod = 5;
 
+    /**
+     * Set whether to enable statistics service
+     */
+    public boolean enableStatMonitor = true;
     /**
      * the maximum number of writing instances existing in same time.
      */
