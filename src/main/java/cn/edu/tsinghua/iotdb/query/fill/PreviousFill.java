@@ -64,24 +64,20 @@ public class PreviousFill extends IFill {
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);
 
-        // get overflow params merged with bufferwrite insert data
         List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(fillTimeFilter, null, null,
                 result, recordReader.insertPageInMemory, recordReader.overflowInfo);
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
         DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-        SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+        SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
         recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                 insertTrue, updateTrue, updateFalse,
-                newTimeFilter, null, null, dataType);
+                overflowTimeFilter, null, null, dataType);
 
-        result = recordReader.queryOneSeries(deltaObjectId, measurementId,
-                updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, null, result, 100000);
-
-        result.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
-
+        recordReader.getFillResult(result, deltaObjectId, measurementId,
+                updateTrue, updateFalse, recordReader.insertAllData, overflowTimeFilter, queryTime - beforeRange, queryTime);
 
         return null;
     }

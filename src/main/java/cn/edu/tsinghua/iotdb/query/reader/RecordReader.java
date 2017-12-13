@@ -7,6 +7,7 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
@@ -22,6 +23,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+
+import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
 
 /**
  * This class implements several read methods which can read data in different ways.<br>
@@ -131,6 +134,7 @@ public class RecordReader {
 
         // add left insert values
         if (insertMemoryData.hasInsertData()) {
+            // TODO the timeFilter, updateTrue, updateFalse in addLeftInsertValue method is unnecessary?
             res.hasReadAll = addLeftInsertValue(res, insertMemoryData, fetchSize, timeFilter, updateTrue, updateFalse);
         } else {
             res.hasReadAll = true;
@@ -397,6 +401,55 @@ public class RecordReader {
                 break;
             default:
                 throw new UnSupportedDataTypeException("UnuSupported DataType : " + insertMemoryData.getDataType());
+        }
+    }
+
+    /**
+     * Get the time which is smaller than queryTime and is biggest and its value.
+     *
+     * @param deltaObjectId
+     * @param measurementId
+     * @param updateTrue
+     * @param updateFalse
+     * @param insertMemoryData
+     * @param beforeTime
+     * @param queryTime
+     * @param result
+     * @throws PathErrorException
+     * @throws IOException
+     */
+    public void getFillResult(DynamicOneColumnData result, String deltaObjectId, String measurementId,
+                              DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData, SingleSeriesFilterExpression overflowTimeFilter,
+                              long beforeTime, long queryTime) throws PathErrorException, IOException {
+
+        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
+        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
+        SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
+
+        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
+        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
+        boolean fillFlag = false;
+
+        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                if (FillProcessor.getFillResult(result, rowGroupReader.getValueReaders().get(measurementId), updateTrue, updateFalse, insertMemoryData,
+                        beforeTime, queryTime)) {
+                    fillFlag = true;
+                    break;
+                }
+            }
+        }
+
+        if (fillFlag) {
+            return;
+        }
+
+        // add left insert values
+        if (insertMemoryData.hasInsertData()) {
+           // addLeftInsertValue(res, insertMemoryData, fetchSize, timeFilter, updateTrue, updateFalse);
+        } else {
+           //
         }
     }
 

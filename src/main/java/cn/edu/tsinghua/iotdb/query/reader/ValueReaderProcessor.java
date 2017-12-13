@@ -54,6 +54,7 @@ public class ValueReaderProcessor {
 
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new DigestForFilter(digest.min, digest.max, dataType);
+
         LOG.debug("read one series digest normally, digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
 
