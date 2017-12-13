@@ -54,7 +54,7 @@ public class EnvironmentUtils {
 		cleanDir(config.walFolder);
 	}
 
-	private static void cleanDir(String dir) throws IOException {
+	public static void cleanDir(String dir) throws IOException {
 		File file = new File(dir);
 		if (file.exists()) {
 			if (file.isDirectory()) {
