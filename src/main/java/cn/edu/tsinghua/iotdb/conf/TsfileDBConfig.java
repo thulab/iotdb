@@ -6,118 +6,124 @@ import org.joda.time.DateTimeZone;
 
 public class TsfileDBConfig {
 
-	public static final String CONFIG_NAME = "iotdb-engine.properties";
-	
-	/**
-	 * Port which JDBC server listens to
-	 */
-	public int rpcPort = 6667;
+    public static final String CONFIG_NAME = "iotdb-engine.properties";
 
-	/**
-	 * Is write ahead log enable
-	 */
-	public boolean enableWal = true;
+    /**
+     * Port which JDBC server listens to
+     */
+    public int rpcPort = 6667;
 
-	/**
-	 * When the total number of write ahead log in the file and memory reaches
-	 * the specified size, all the logs are compressed and the unused logs are
-	 * removed Increase this value, it will lead to short write pause. Decrease
-	 * this value, it will increase IO and CPU consumption
-	 */
-	public int walCleanupThreshold = 500000;
+    /**
+     * Is write ahead log enable
+     */
+    public boolean enableWal = true;
 
-	/**
-	 * When a certain amount of write ahead log is reached, it will be flushed to
-	 * disk. It is possible to lose at most flush_wal_threshold operations
-	 */
-	public int flushWalThreshold = 10000;
+    /**
+     * When the total number of write ahead log in the file and memory reaches
+     * the specified size, all the logs are compressed and the unused logs are
+     * removed Increase this value, it will lead to short write pause. Decrease
+     * this value, it will increase IO and CPU consumption
+     */
+    public int walCleanupThreshold = 500000;
 
-	/**
-	 * The cycle when write ahead log is periodically refreshed to disk(in
-	 * milliseconds) It is possible to lose at most flush_wal_period_in_ms ms
-	 * operations
-	 */
-	public long flushWalPeriodInMs = 10;
-	/**
-	 * Data directory
-	 */
-	public String dataDir = "data";
-	/**
-	 * Data directory of Overflow data
-	 */
-	public String overflowDataDir = "overflow";
+    /**
+     * When a certain amount of write ahead log is reached, it will be flushed to
+     * disk. It is possible to lose at most flush_wal_threshold operations
+     */
+    public int flushWalThreshold = 10000;
 
-	/**
-	 * Data directory of fileNode data
-	 */
-	public String fileNodeDir = "digest";
+    /**
+     * The cycle when write ahead log is periodically refreshed to disk(in
+     * milliseconds) It is possible to lose at most flush_wal_period_in_ms ms
+     * operations
+     */
+    public long flushWalPeriodInMs = 10;
+    /**
+     * Data directory
+     */
+    public String dataDir = "data";
+    /**
+     * Data directory of Overflow data
+     */
+    public String overflowDataDir = "overflow";
 
-	/**
-	 * Data directory of bufferWrite data
-	 */
-	public String bufferWriteDir = "delta";
+    /**
+     * Data directory of fileNode data
+     */
+    public String fileNodeDir = "digest";
 
-	/**
-	 * Data directory of metadata data
-	 */
-	public String metadataDir = "metadata";
+    /**
+     * Data directory of bufferWrite data
+     */
+    public String bufferWriteDir = "delta";
 
-	/**
-	 * Data directory of derby data
-	 */
-	public String derbyHome = "derby";
+    /**
+     * Data directory of metadata data
+     */
+    public String metadataDir = "metadata";
 
-	/**
-	 * Data directory of Write ahead log folder.
-	 */
-	public String walFolder = "wals";
+    /**
+     * Data directory of derby data
+     */
+    public String derbyHome = "derby";
 
-	/**
-	 * The maximum concurrent thread number for merging overflow
-	 */
-	public int mergeConcurrentThreads = 10;
+    /**
+     * Data directory of Write ahead log folder.
+     */
+    public String walFolder = "wals";
 
-	/**
-	 * Maximum number of folders open at the same time
-	 */
-	public int maxOpenFolder = 100;
+    /**
+     * The maximum concurrent thread number for merging overflow
+     */
+    public int mergeConcurrentThreads = 10;
 
-	/**
-	 * The amount of data that is read every time when IoTDB merge data.
-	 */
-	public int fetchSize = 10000;
+    /**
+     * Maximum number of folders open at the same time
+     */
+    public int maxOpenFolder = 100;
 
-	/**
-	 * the maximum number of writing instances existing in same time.
-	 */
-	@Deprecated
-	public int writeInstanceThreshold = 5;
+    /**
+     * The amount of data that is read every time when IoTDB merge data.
+     */
+    public int fetchSize = 10000;
 
-	/**
-	 * The period time of flushing data from memory to file. . The unit is second.
-	 */
-	public long periodTimeForFlush = 3600;
+    /**
+     * The statMonitor's BackLoop period
+     */
+    public int backLoopPeriod = 10;
 
-	/**
-	 * The period time for merge overflow data with tsfile data. The unit is
-	 * second.
-	 */
-	public long periodTimeForMerge = 7200;
+    /**
+     * the maximum number of writing instances existing in same time.
+     */
+    @Deprecated
+    public int writeInstanceThreshold = 5;
 
-	public DateTimeZone timeZone = DateTimeZone.getDefault();
+    /**
+     * The period time of flushing data from memory to file. . The unit is second.
+     */
+    public long periodTimeForFlush = 3600;
 
-	public TsfileDBConfig() {}
+    /**
+     * The period time for merge overflow data with tsfile data. The unit is
+     * second.
+     */
+    public long periodTimeForMerge = 7200;
 
-	public void updateDataPath() {
-		// filenode dir
-		if (dataDir.length() > 0 && !dataDir.endsWith(File.separator)) {
-			dataDir = dataDir + File.separatorChar;
-		}
-		fileNodeDir = dataDir + fileNodeDir;
-		bufferWriteDir = dataDir + bufferWriteDir;
-		overflowDataDir = dataDir + overflowDataDir;
-		metadataDir = dataDir + metadataDir;
-		derbyHome = dataDir + derbyHome;
-		walFolder = dataDir + walFolder;
-	}
+    public DateTimeZone timeZone = DateTimeZone.getDefault();
+
+    public TsfileDBConfig() {
+    }
+
+    public void updateDataPath() {
+        // filenode dir
+        if (dataDir.length() > 0 && !dataDir.endsWith(File.separator)) {
+            dataDir = dataDir + File.separatorChar;
+        }
+        fileNodeDir = dataDir + fileNodeDir;
+        bufferWriteDir = dataDir + bufferWriteDir;
+        overflowDataDir = dataDir + overflowDataDir;
+        metadataDir = dataDir + metadataDir;
+        derbyHome = dataDir + derbyHome;
+        walFolder = dataDir + walFolder;
+    }
 }

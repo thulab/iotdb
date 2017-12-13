@@ -1,15 +1,15 @@
 package cn.edu.tsinghua.iotdb.service;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogNode;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.print.DocFlavor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,34 +23,49 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * @author liliang
  */
-public class StatMonitor {
+public class StatMonitor implements IStatistic {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
-    private HashMap<String, StatProcessor> registProcessor;
+    private HashMap<String, IStatistic> registProcessor;
 
     // Design for mutual access service
     private final ReadWriteLock lock;
     private ScheduledExecutorService service;
+    private final int backLoopPeriod;
+
+    public Long getNumBackLoop() {
+        return numBackLoop.get();
+    }
+
+    public Long getNumBackLoopError() {
+        return numBackLoopError.get();
+    }
 
     /**
      * stats params
      */
+    private AtomicLong numBackLoop = new AtomicLong(0);
+    private AtomicLong numBackLoopError = new AtomicLong(0);
+    private AtomicLong numPointInsert = new AtomicLong(0);
+
 
     class statBackLoop implements Runnable {
         public void run() {
             try {
                 HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
                 insert(tsRecordHashMap);
+                numBackLoop.incrementAndGet();
             } catch (Exception e) {
                 e.printStackTrace();
+                numBackLoopError.incrementAndGet();
             }
         }
     }
 
-    public synchronized void registStatistics(String path, StatProcessor statprocessor){
+    public synchronized void registStatistics(String path, IStatistic statprocessor){
         registProcessor.put(path, statprocessor);
     }
 
-    public synchronized void registStatDataPath(HashMap<String, String> hashMap) {
+    public synchronized void registStatMetadata(HashMap<String, String> hashMap) {
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
                 MManager.getInstance().addPathToMTree(
@@ -71,10 +86,12 @@ public class StatMonitor {
         } catch (PathErrorException | IOException e) {
             LOGGER.error("MManager.getInstance().setStorageLevelToMTree False");
         }
+        TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         lock = new ReentrantReadWriteLock();
         registProcessor = new HashMap<>();
         service = Executors.newScheduledThreadPool(1);
-        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(), 0, 10, TimeUnit.SECONDS);
+        backLoopPeriod = config.backLoopPeriod;
+        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(), 0, backLoopPeriod, TimeUnit.SECONDS);
     }
 
     public static StatMonitor getInstance(){
@@ -84,21 +101,32 @@ public class StatMonitor {
         private static final StatMonitor INSTANCE = new StatMonitor();
     }
 
+    @Override
+    public HashMap<String, TSRecord> getAllStatisticsValue() {
+        // TODO: need other stats
+        return gatherStatistics();
+    }
+
+    @Override
+    public void registStatMetadata() {
+
+    }
+
     private HashMap<String, TSRecord> gatherStatistics(){
         lock.readLock().lock();
         HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-        for (Map.Entry<String, StatProcessor> entry : registProcessor.entrySet()) {
-            tsRecordHashMap.putAll(entry.getValue().getStatistics());
+        for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
+            tsRecordHashMap.putAll(entry.getValue().getAllStatisticsValue());
         }
         lock.readLock().unlock();
         return tsRecordHashMap;
     }
 
-
     private void insert(HashMap<String, TSRecord> tsRecordHashMap) {
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
                 FileNodeManager.getInstance().insert(entry.getValue());
+                numPointInsert.addAndGet(entry.getValue().dataPointList.size());
             } catch (FileNodeManagerException e) {
                 LOGGER.debug(entry.getValue().dataPointList.toString());
                 LOGGER.debug("Insert Stat Points error!");
