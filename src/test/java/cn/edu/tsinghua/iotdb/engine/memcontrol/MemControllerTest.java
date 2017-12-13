@@ -2,7 +2,6 @@ package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import org.junit.Test;
 
@@ -10,13 +9,16 @@ import static org.junit.Assert.assertEquals;
 
 public class MemControllerTest {
 
-    TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
-    public static long GB = 1024 * 1024 * 1024L;
-    public static long MB = 1024 * 1024L;
+    private static long GB = 1024 * 1024 * 1024L;
+    private static long MB = 1024 * 1024L;
 
     @Test
     public void test() throws BufferWriteProcessorException {
+        config.memThresholdWarning = 8 * GB;
+        config.memThresholdDangerous = 16 * GB;
+
         MemController memController = MemController.getInstance();
         memController.clear();
 
@@ -37,15 +39,15 @@ public class MemControllerTest {
             MemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
             assertEquals(MemController.UsageLevel.DANGEROUS, level);
         }
-        assertEquals(15 * GB, memController.getTotUsage());
+        assertEquals(15 * GB, memController.getTotalUsage());
         // every one free its mem
         for(int i = 0; i < 7; i++) {
             memController.reportFree(dummyUser[i], 1 * GB);
-            assertEquals((14 - i) * GB, memController.getTotUsage());
+            assertEquals((14 - i) * GB, memController.getTotalUsage());
         }
         for(int i = 7; i < 15; i++) {
             memController.reportFree(dummyUser[i], 2 * GB);
-            assertEquals((14 - i) * GB, memController.getTotUsage());
+            assertEquals((14 - i) * GB, memController.getTotalUsage());
         }
         // ask for a too big mem
         MemController.UsageLevel level = memController.reportUse(dummyUser[0], 100 * GB);
@@ -61,7 +63,7 @@ public class MemControllerTest {
         }
         for(int i = 16 * 1024 - 1; i < 17 * 1024; i++) {
             level = memController.reportUse(dummyUser[0], 1 * MB);
-            System.out.println(memController.getTotUsage() / GB + " " + memController.getTotUsage() / MB % 1024);
+            System.out.println(memController.getTotalUsage() / GB + " " + memController.getTotalUsage() / MB % 1024);
             assertEquals(MemController.UsageLevel.DANGEROUS, level);
         }
     }

@@ -58,6 +58,8 @@ public class MemUtils {
             memUsed += 1;
         } else if(dataPoint instanceof DoubleDataPoint) {
             memUsed += 8;
+        } else if(dataPoint instanceof LongDataPoint) {
+            memUsed += 8;
         } else if(dataPoint instanceof EnumDataPoint) {
             memUsed += 4;
         } else if(dataPoint instanceof StringDataPoint) {
