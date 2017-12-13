@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import cn.edu.tsinghua.iotdb.engine.memcontrol.MemController;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -772,5 +773,22 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 
 	private enum FileNodeManagerStatus {
 		NONE, MERGE, CLOSE;
+	}
+
+	public void forceFlush(MemController.UsageLevel level) {
+		// TODO : for each FileNodeProcessor, call its forceFlush()
+		// you may add some delicate process like below
+		// or you could provide multiple methods for different urgency
+		switch (level) {
+			case WARNING:
+				// only select the most urgent (most active or biggest in size) processors to flush
+				break;
+			case DANGEROUS:
+				// force all processors to flush
+				break;
+			case SAFE:
+				// do nothing, this case is impossible
+				break;
+		}
 	}
 }

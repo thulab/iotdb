@@ -116,6 +116,12 @@ public class TsfileDBConfig {
 	 */
 	public long memThresholdDangerous = 16 * 1024 * 1024 * 1024L; // 16GB
 
+	/**
+	 * MemMonitorThread will check every such interval. If memThresholdWarning is reached, MemMonitorThread
+	 * will inform FileNodeManager to flush.
+	 */
+	public long memMonitorInterval = 1000;  // in ms
+
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {

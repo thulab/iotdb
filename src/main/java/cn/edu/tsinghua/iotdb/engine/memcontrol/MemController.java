@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * This class hold global memory usage of MemUsers.
+ */
 public class MemController {
 
     private static Logger logger = LoggerFactory.getLogger(MemController.class);
@@ -20,6 +23,8 @@ public class MemController {
 
     private long waringThreshold;
     private long dangerouseThreshold;
+
+    private MemMonitorThread monitorThread;
 
     public enum UsageLevel {
         SAFE, WARNING, DANGEROUS
@@ -34,6 +39,9 @@ public class MemController {
         totalMemUsed = new AtomicLong(0);
         waringThreshold = config.memThresholdWarning;
         dangerouseThreshold = config.memThresholdDangerous;
+
+        monitorThread = new MemMonitorThread(config.memMonitorInterval);
+        monitorThread.start();
     }
 
     public static MemController getInstance() {
@@ -49,7 +57,11 @@ public class MemController {
         totalMemUsed.set(0);
     }
 
-    public UsageLevel getCurrLever() {
+    public void close() {
+        monitorThread.interrupt();
+    }
+
+    public UsageLevel getCurrLevel() {
         long memUsage = totalMemUsed.get();
         if(memUsage < waringThreshold){
             return UsageLevel.SAFE;
