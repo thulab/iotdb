@@ -19,6 +19,7 @@ import cn.edu.tsinghua.iotdb.auth.model.Role;
 import cn.edu.tsinghua.iotdb.auth.model.RolePermission;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 import cn.edu.tsinghua.iotdb.auth.model.UserPermission;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class AuthTest {
 
@@ -49,6 +50,7 @@ public class AuthTest {
 	@After
 	public void tearDown() throws Exception {
 		dbDao.close();
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test

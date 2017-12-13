@@ -12,6 +12,7 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class RoleTest {
 
@@ -32,6 +33,7 @@ public class RoleTest {
 	@After
 	public void tearDown() throws Exception {
 		dbdao.close();
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test

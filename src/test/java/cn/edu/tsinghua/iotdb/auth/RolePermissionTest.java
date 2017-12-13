@@ -16,6 +16,7 @@ import cn.edu.tsinghua.iotdb.auth.dao.RolePermissionDao;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
 import cn.edu.tsinghua.iotdb.auth.model.RolePermission;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class RolePermissionTest {
 
@@ -52,6 +53,7 @@ public class RolePermissionTest {
 	public void tearDown() throws Exception {
 		roleDao.deleteRole(statement, role.getRoleName());
 		dbDao.close();
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test

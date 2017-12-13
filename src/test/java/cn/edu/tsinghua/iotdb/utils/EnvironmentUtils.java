@@ -52,6 +52,12 @@ public class EnvironmentUtils {
 		cleanDir(config.metadataDir);
 		// delete wal
 		cleanDir(config.walFolder);
+		// delete derby
+		cleanDir(config.derbyHome);
+		// delte data
+		cleanDir("data");
+		// delte derby log
+		//cleanDir("derby.log");
 	}
 
 	public static void cleanDir(String dir) throws IOException {

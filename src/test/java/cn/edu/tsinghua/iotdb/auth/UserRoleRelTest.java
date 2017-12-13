@@ -16,6 +16,7 @@ import cn.edu.tsinghua.iotdb.auth.dao.UserRoleRelDao;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 import cn.edu.tsinghua.iotdb.auth.model.UserRoleRel;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class UserRoleRelTest {
 
@@ -65,7 +66,7 @@ public class UserRoleRelTest {
 		roleDao.deleteRole(statement, role1.getRoleName());
 		roleDao.deleteRole(statement, role2.getRoleName());
 		dbdao.close();
-
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test

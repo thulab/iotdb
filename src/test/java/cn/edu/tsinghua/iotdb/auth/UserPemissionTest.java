@@ -14,6 +14,7 @@ import cn.edu.tsinghua.iotdb.auth.dao.UserPermissionDao;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 import cn.edu.tsinghua.iotdb.auth.model.UserPermission;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class UserPemissionTest {
 
@@ -47,6 +48,7 @@ public class UserPemissionTest {
 	public void tearDown() throws Exception {
 		userDao.deleteUser(statement, user.getUserName());
 		DBdao.close();
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test

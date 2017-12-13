@@ -12,6 +12,7 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.model.User;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class AuthorizerTest {
 
@@ -26,6 +27,7 @@ public class AuthorizerTest {
 	@After
 	public void tearDown() throws Exception {
 		dbdao.close();
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test
