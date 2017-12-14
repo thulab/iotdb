@@ -36,6 +36,7 @@ public class UserRoleRelTest {
 
 		dbdao = new DBDao();
 		dbdao.open();
+		EnvironmentUtils.envSetUp();
 		statement = DBDao.getStatement();
 		userDao = new UserDao();
 		roleDao = new RoleDao();

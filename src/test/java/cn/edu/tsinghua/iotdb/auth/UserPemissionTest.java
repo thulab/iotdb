@@ -34,6 +34,7 @@ public class UserPemissionTest {
 		permission = Permission.CREATE;
 		DBdao = new DBDao();
 		DBdao.open();
+		EnvironmentUtils.envSetUp();
 		statement = DBDao.getStatement();
 		userDao = new UserDao();
 		UserPermissionDao = new UserPermissionDao();

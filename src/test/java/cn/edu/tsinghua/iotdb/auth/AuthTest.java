@@ -37,6 +37,7 @@ public class AuthTest {
 		dbDao = new DBDao();
 		authDao = new AuthDao();
 		dbDao.open();
+		EnvironmentUtils.envSetUp();
 		statement = DBDao.getStatement();
 
 		// init data

@@ -32,6 +32,7 @@ public class UserTest {
 	public void setUp() throws Exception {
 		dBdao = new DBDao();
 		dBdao.open();
+		EnvironmentUtils.envSetUp();
 		statement = DBDao.getStatement();
 		userDao = new UserDao();
 

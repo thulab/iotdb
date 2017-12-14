@@ -22,6 +22,7 @@ public class AuthorizerTest {
 	public void setUp() throws Exception {
 		dbdao = new DBDao();
 		dbdao.open();
+		EnvironmentUtils.envSetUp();
 	}
 
 	@After

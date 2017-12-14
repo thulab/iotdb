@@ -26,6 +26,7 @@ public class RoleTest {
 	public void setUp() throws Exception {
 		dbdao = new DBDao();
 		dbdao.open();
+		EnvironmentUtils.envSetUp();
 		statement = DBDao.getStatement();
 		roleDao = new RoleDao();
 	}
