@@ -22,7 +22,6 @@ import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
@@ -552,10 +551,10 @@ public class FileNodeProcessorTest {
 			// check file
 			for (IntervalFileNode node : store.getNewFileNodes()) {
 				checkFile(node.filePath);
-				EngineTestHelper.delete(node.filePath);
+				EnvironmentUtils.cleanDir(node.filePath);
 			}
 			checkUnFile(unusedFilename);
-			EngineTestHelper.delete(unusedFilename);
+			EnvironmentUtils.cleanDir(unusedFilename);
 		} catch (FileNodeProcessorException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
