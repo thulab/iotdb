@@ -62,9 +62,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
         TotalPointsSuccess, TotalPointsFail,
 
     }
-//    private AtomicLong TotalReqSuccess = new AtomicLong(0);
-//    private AtomicLong insertRecordReq = new AtomicLong(0);
-//    private AtomicLong TotalPointsFail = new AtomicLong(0);
 
     /**
      * fakeDeltaName represent the xxx.xxx.xxx store path

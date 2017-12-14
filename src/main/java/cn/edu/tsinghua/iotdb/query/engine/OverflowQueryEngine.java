@@ -24,44 +24,28 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class OverflowQueryEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowQueryEngine.class);
-    private MManager mManager;
 
     /** the formNumber represents the ordinal of disjunctive normal form of each query part **/
-    /**
-     * select s0,s1 from ... where (s_1 > 10 or s_2 < 10) and s_3 > 5
-     * 保存流的偏移位置
-     * formnumber 1 , 2, 3
-     */
     private int formNumber = -1;
 
-    /**
-     * this variable represents that whether it is
-     * the second execution of aggregation method.
-     */
-    private static ThreadLocal<QueryDataSet> aggregateThreadLocal = new ThreadLocal<>();
-
     public OverflowQueryEngine() {
-        mManager = MManager.getInstance();
-    }
-
-    private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
-        return mManager.getSeriesType(path.getFullPath());
     }
 
     /**
      * <p>
      * Basic query method.
+     * This method may be invoked many times due to the restriction of fetchSize.
      *
      * @param formNumber   a complex query will be taken out to some disjunctive normal forms in query process,
      *                     the formNumber represent the number of normal form.
@@ -104,42 +88,54 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-        
-        try {
-            LOGGER.info("Aggregation content: {}", aggres.toString());
-            List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
-            for (Pair<Path, String> pair : aggres) {
-                TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
-                AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
-                aggregations.add(new Pair<>(pair.left, func));
-            }
 
-            if (aggregateThreadLocal.get() != null) {
-                QueryDataSet ans = aggregateThreadLocal.get();
-                ans.clear();
-                aggregateThreadLocal.remove();
-                return ans;
-            }
+        ThreadLocal<QueryDataSet> aggregateThreadLocal = ReadLockManager.getInstance().getAggregateThreadLocal();
 
-            QueryDataSet ans = AggregateEngine.multiAggregate(aggregations, filterStructures);
-            aggregateThreadLocal.set(ans);
+        // the aggregation method will only be executed once
+        if (aggregateThreadLocal.get() != null) {
+            QueryDataSet ans = aggregateThreadLocal.get();
+            ans.clear();
+            aggregateThreadLocal.remove();
             return ans;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
+
+        List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
+
+        // to remove duplicate queries, such as select count(s0),count(s0).
+        Set<String> duplicatedAggregations = new HashSet<>();
+        for (Pair<Path, String> pair : aggres) {
+            TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
+            AggregateFunction aggregateFunction = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
+            if (duplicatedAggregations.contains(EngineUtils.aggregationKey(aggregateFunction, pair.left))) {
+                continue;
+            }
+            duplicatedAggregations.add(EngineUtils.aggregationKey(aggregateFunction, pair.left));
+            aggregations.add(new Pair<>(pair.left, aggregateFunction));
+        }
+
+        AggregateEngine.multiAggregate(aggregations, filterStructures);
+        QueryDataSet ansQueryDataSet = new QueryDataSet();
+        for (Pair<Path, AggregateFunction> pair : aggregations) {
+            AggregateFunction aggregateFunction = pair.right;
+            if (aggregateFunction.resultData.timeLength == 0) {
+                aggregateFunction.putDefaultValue();
+            }
+            ansQueryDataSet.mapRet.put(EngineUtils.aggregationKey(aggregateFunction, pair.left), aggregateFunction.resultData);
+        }
+        aggregateThreadLocal.set(ansQueryDataSet);
+        return ansQueryDataSet;
     }
 
     /**
-     * Group by feature implementation.
+     * Group by function implementation.
      *
-     * @param aggres
-     * @param filterStructures
+     * @param aggres aggregation path and corresponding function
+     * @param filterStructures all filters in where clause
      * @param unit
      * @param origin
      * @param intervals
      * @param fetchSize
-     * @return
+     * @return QueryDataSet
      * @throws ProcessorException
      * @throws PathErrorException
      * @throws IOException
@@ -147,13 +143,15 @@ public class OverflowQueryEngine {
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize) {
 
-        ThreadLocal<Integer> groupByCalcTime = ReadLockManager.getInstance().getGroupByCalcCalcTime();
-        ThreadLocal<GroupByEngineNoFilter> groupByEngineNoFilterLocal = ReadLockManager.getInstance().getGroupByEngineNoFilterLocal();
+        ThreadLocal<Integer> groupByCalcTime = ReadLockManager.getInstance().getGroupByCalcTime();
+        ThreadLocal<GroupByEngineNoFilter>  groupByEngineNoFilterLocal = ReadLockManager.getInstance().getGroupByEngineNoFilterLocal();
         ThreadLocal<GroupByEngineWithFilter> groupByEngineWithFilterLocal = ReadLockManager.getInstance().getGroupByEngineWithFilterLocal();
 
         if (groupByCalcTime.get() == null) {
+
             LOGGER.info("calculate aggregations the 1 time");
             groupByCalcTime.set(2);
+
             SingleSeriesFilterExpression intervalFilter = null;
             for (Pair<Long, Long> pair : intervals) {
                 if (intervalFilter == null) {
@@ -163,7 +161,7 @@ public class OverflowQueryEngine {
                 } else {
                     SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
                     SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
-                    intervalFilter = (Or) FilterFactory.or(intervalFilter, (And) FilterFactory.and(left, right));
+                    intervalFilter = (Or) FilterFactory.or(intervalFilter, FilterFactory.and(left, right));
                 }
             }
 
@@ -175,8 +173,7 @@ public class OverflowQueryEngine {
                     aggregations.add(new Pair<>(pair.left, func));
                 }
 
-                if (filterStructures == null || filterStructures.size() == 0
-                        || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
                     SingleSeriesFilterExpression timeFilter = null;
                     if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
                         timeFilter = filterStructures.get(0).getTimeFilter();
@@ -193,17 +190,18 @@ public class OverflowQueryEngine {
                 e.printStackTrace();
             }
         } else {
-            LOGGER.debug(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+
+            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+
             groupByCalcTime.set(groupByCalcTime.get() + 1);
             try {
-                if (filterStructures == null || filterStructures.size() == 0
-                        || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())) {
+                if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
                     QueryDataSet ans = groupByEngineNoFilterLocal.get().groupBy();
                     if (!ans.hasNextRecord()) {
                         groupByCalcTime.remove();
                         groupByEngineNoFilterLocal.remove();
                         groupByEngineWithFilterLocal.remove();
-                        LOGGER.info("group by function without filter has no result");
+                        LOGGER.debug("group by function without filter has no result");
                     }
                     return ans;
                 } else {
@@ -212,7 +210,7 @@ public class OverflowQueryEngine {
                         groupByCalcTime.remove();
                         groupByEngineNoFilterLocal.remove();
                         groupByEngineWithFilterLocal.remove();
-                        LOGGER.info("group by function with filter has no result");
+                        LOGGER.debug("group by function with filter has no result");
                     }
                     return ans;
                 }
@@ -224,7 +222,7 @@ public class OverflowQueryEngine {
     }
 
     /**
-     * Query type 1: read without filter.
+     * Query type 1: query without filter.
      */
     private QueryDataSet querySeriesWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
             throws ProcessorException, IOException {
@@ -247,8 +245,6 @@ public class OverflowQueryEngine {
         queryDataSet.clear();
         queryDataSet.getBatchReadGenerator().calculateRecord();
         EngineUtils.putRecordFromBatchReadGenerator(queryDataSet);
-        // remove RecordReader cache of paths here is not collect, because of batch read,
-        // must store the position offset status in RecordReader.
         return queryDataSet;
     }
 
@@ -263,6 +259,7 @@ public class OverflowQueryEngine {
                 null, null, null, readLock, recordReaderPrefix);
 
         if (res == null) {
+
             // get overflow params merged with bufferwrite insert data
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
                     res, recordReader.insertPageInMemory, recordReader.overflowInfo);
@@ -283,13 +280,11 @@ public class OverflowQueryEngine {
                     res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, null, res, fetchSize);
         }
 
-        // close current recordReader
-        // recordReader.closeFromFactory();
         return res;
     }
 
     /**
-     * Query type 2: read one series with filter.
+     * Query type 2: query with filter.
      */
     private QueryDataSet querySeriesUsingFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
                                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
@@ -331,6 +326,7 @@ public class OverflowQueryEngine {
                 timeFilter, freqFilter, valueFilter, readLock, recordReaderPrefix);
 
         if (res == null) {
+
             // get overflow params merged with bufferwrite insert data
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter,
                     res, recordReader.insertPageInMemory, recordReader.overflowInfo);
@@ -366,9 +362,8 @@ public class OverflowQueryEngine {
         if (queryDataSet != null) {
             queryDataSet.clear();
         }
+
         if (queryDataSet == null) {
-            // reset status of RecordReader used ValueFilter
-            // resetRecordStatusUsingValueFilter(valueFilter, new HashSet<>());
             queryDataSet = new QueryDataSet();
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(timeFilter, freqFilter, valueFilter, fetchSize) {
                 @Override
@@ -421,15 +416,10 @@ public class OverflowQueryEngine {
                 queryResult.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
-                // reset the insertMemory read status
-                // recordReader.insertAllData.readStatusReset();
-                // recordReader.insertAllData.setCurrentPageBuffer(insertTrue);
-                DynamicOneColumnData oneColDataList = recordReader.queryUsingTimestamps(
+                DynamicOneColumnData queryAnswer = recordReader.queryUsingTimestamps(
                         deltaObjectId, measurementId, recordReader.insertAllData.timeFilter, timestamps, recordReader.insertAllData);
-                ret.mapRet.put(queryKey, oneColDataList);
+                ret.mapRet.put(queryKey, queryAnswer);
             }
-
-            // recordReader.closeFromFactory();
         }
 
         return ret;
@@ -458,6 +448,7 @@ public class OverflowQueryEngine {
                 null, freqFilter, valueFilter, null, valueFilterPrefix);
 
         if (res == null) {
+
             // get four overflow params
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, freqFilter, valueFilter,
                     res, recordReader.insertPageInMemory, recordReader.overflowInfo);
@@ -469,7 +460,7 @@ public class OverflowQueryEngine {
 
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                     insertTrue, updateTrue, updateFalse,
-                    newTimeFilter, valueFilter, null, mManager.getSeriesType(deltaObjectUID + "." + measurementUID));
+                    newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
                     updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
             res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
@@ -480,4 +471,9 @@ public class OverflowQueryEngine {
 
         return res;
     }
+
+    private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
+        return MManager.getInstance().getSeriesType(path.getFullPath());
+    }
+
 }

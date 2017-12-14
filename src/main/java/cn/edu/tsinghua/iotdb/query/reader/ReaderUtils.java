@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.reader;
 
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -11,6 +10,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,8 @@ import java.util.List;
  *
  */
 public class ReaderUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReaderUtils.class);
 
     /**
      * -1: no updateTrue data, no updateFalse data.
@@ -132,13 +135,9 @@ public class ReaderUtils {
                         int v = decoder.readInt(page);
                         if (mode == -1) {
                             if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putInt(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -155,13 +154,9 @@ public class ReaderUtils {
                                     res.putTime(pageTimeValues[timeIdx]);
                                 }
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putInt(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -173,13 +168,9 @@ public class ReaderUtils {
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putInt(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -218,13 +209,9 @@ public class ReaderUtils {
                         if (mode == -1) {
                             boolean v = decoder.readBoolean(page);
                             if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.satisfyObject(v, valueFilter))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.satisfyObject(v, valueFilter)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putBoolean(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -242,13 +229,9 @@ public class ReaderUtils {
                                     res.putTime(pageTimeValues[timeIdx]);
                                 }
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.satisfyObject(v, valueFilter))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.satisfyObject(v, valueFilter)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putBoolean(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -261,13 +244,9 @@ public class ReaderUtils {
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.satisfyObject(v, valueFilter))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.satisfyObject(v, valueFilter)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putBoolean(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -306,13 +285,9 @@ public class ReaderUtils {
                         long v = decoder.readLong(page);
                         if (mode == -1) {
                             if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putLong(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -322,20 +297,16 @@ public class ReaderUtils {
                         if (mode == 0) {
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // update the value,需要和高飞再商量一下这个逻辑
+                                // TODO update the value, need to discuss the logic with gf?
                                 if (timeFilter == null
                                         || timeVisitor.verify(pageTimeValues[timeIdx])) {
                                     res.putLong(update[0].getLong(idx[0] / 2));
                                     res.putTime(pageTimeValues[timeIdx]);
                                 }
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putLong(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -347,13 +318,9 @@ public class ReaderUtils {
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putLong(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -392,12 +359,9 @@ public class ReaderUtils {
                         float v = decoder.readFloat(page);
                         if (mode == -1) {
                             if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
                                     && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putFloat(v);
                                 res.putTime(pageTimeValues[timeIdx]);
@@ -415,13 +379,9 @@ public class ReaderUtils {
                                     res.putTime(pageTimeValues[timeIdx]);
                                 }
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putFloat(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -433,13 +393,9 @@ public class ReaderUtils {
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putFloat(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -478,13 +434,9 @@ public class ReaderUtils {
                         double v = decoder.readDouble(page);
                         if (mode == -1) {
                             if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putDouble(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -501,13 +453,9 @@ public class ReaderUtils {
                                     res.putTime(pageTimeValues[timeIdx]);
                                 }
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putDouble(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -519,13 +467,9 @@ public class ReaderUtils {
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.verify(v))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.verify(v)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putDouble(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -564,13 +508,9 @@ public class ReaderUtils {
                         Binary v = decoder.readBinary(page);
                         if (mode == -1) {
                             if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.satisfyObject(v, valueFilter))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.satisfyObject(v, valueFilter)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putBinary(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -587,13 +527,9 @@ public class ReaderUtils {
                                     res.putTime(pageTimeValues[timeIdx]);
                                 }
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.satisfyObject(v, valueFilter))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.satisfyObject(v, valueFilter)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putBinary(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -604,14 +540,11 @@ public class ReaderUtils {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
+                                logger.error("never reach here");
                             } else if ((valueFilter == null && timeFilter == null)
-                                    || (valueFilter != null && timeFilter == null
-                                    && valueVisitor.satisfyObject(v, valueFilter))
-                                    || (valueFilter == null && timeFilter != null
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))
-                                    || (valueFilter != null && timeFilter != null
-                                    && valueVisitor.satisfyObject(v, valueFilter)
-                                    && timeVisitor.verify(pageTimeValues[timeIdx]))) {
+                                    || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
+                                    || (valueFilter == null && timeFilter != null && timeVisitor.verify(pageTimeValues[timeIdx]))
+                                    || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter) && timeVisitor.verify(pageTimeValues[timeIdx]))) {
                                 res.putBinary(v);
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
@@ -655,7 +588,6 @@ public class ReaderUtils {
      *               while update[1] represents updateFalse
      * @param updateIdx an array of the index of overflow update info, update[0] represents the index of
      *                  updateTrue, while update[1] represents updateFalse
-     * @param func aggregation function
      * @return left represents the data of DataPage which satisfies the restrict condition,
      *         right represents the read time index of commonTimestamps
      * @throws IOException TsFile read error
@@ -664,8 +596,7 @@ public class ReaderUtils {
                 Decoder decoder, InputStream page,
                 SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
                 List<Long> commonTimestamps, int commonTimestampsIndex,
-                InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx,
-                AggregateFunction func) throws IOException {
+                InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check
 
@@ -790,7 +721,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putInt(v);
@@ -940,7 +871,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBoolean(v);
@@ -1090,7 +1021,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putLong(v);
@@ -1240,7 +1171,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putFloat(v);
@@ -1390,7 +1321,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putDouble(v);
@@ -1540,7 +1471,7 @@ public class ReaderUtils {
                                 if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
                                     if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
                                             && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        // never reach there
+                                        logger.error("never reach here");
                                     } else {
                                         aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
                                         aggregatePathQueryResult.putBinary(v);

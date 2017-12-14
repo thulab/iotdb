@@ -13,6 +13,8 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import org.junit.Before;
 import org.junit.Test;
 
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
 import static org.junit.Assert.fail;
 
 /**
@@ -164,6 +166,7 @@ public class DaemonTest {
                 selectOneColumnWithFilterTest();
                 multiAggregationTest();
                 crossReadTest();
+
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
                 fail(e.getMessage());
@@ -301,7 +304,7 @@ public class DaemonTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
                         + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d1s0);
-                Assert.assertEquals(ans, retArray[cnt]);
+                Assert.assertEquals(retArray[cnt], ans);
                 cnt++;
             }
             Assert.assertEquals(17, cnt);
@@ -485,7 +488,7 @@ public class DaemonTest {
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(1);
+                String ans = resultSet.getString(max_value(d0s3));
                 Assert.assertEquals(retArray[0], ans);
                 cnt++;
             }
@@ -499,9 +502,9 @@ public class DaemonTest {
             resultSet = statement.getResultSet();
             cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(1);
+                String ans = resultSet.getString(min_value(d0s3));
                 // System.out.println("=====" + ans);
-                Assert.assertEquals(ans, "aaaaa");
+                Assert.assertEquals("aaaaa", ans);
                 cnt++;
             }
             Assert.assertEquals(cnt, 1);
@@ -514,10 +517,10 @@ public class DaemonTest {
             resultSet = statement.getResultSet();
             cnt = 0;
             while (resultSet.next()) {
-                int ans1 = resultSet.getInt(1);
-                int ans2 = resultSet.getInt(2);
-                Assert.assertEquals(ans1, 99);
-                Assert.assertEquals(ans2, 888);
+                int ans1 = resultSet.getInt(2);
+                int ans2 = resultSet.getInt(3);
+                Assert.assertEquals(99, ans1);
+                Assert.assertEquals(888, ans2);
                 cnt++;
             }
             Assert.assertEquals(cnt, 1);

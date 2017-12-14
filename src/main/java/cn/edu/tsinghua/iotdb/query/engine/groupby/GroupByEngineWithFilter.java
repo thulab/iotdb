@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.aggregationKey;
+
 /**
  * Group by aggregation implementation with <code>FilterStructure</code>.
  */
@@ -34,14 +36,11 @@ public class GroupByEngineWithFilter {
 
     /** aggregateFetchSize is set to calculate the result of timestamps, when the size of common timestamps is
      * up to aggregateFetchSize, the aggregation calculation process will begin**/
-    private int aggregateFetchSize = 50000;
+    private int aggregateFetchSize = 100000;
 
-    /** formNumber is set to -1 default **/
-    private int formNumber = -1;
-
-    /** queryFetchSize is sed to read one column data, this variable is mainly used to debug to verify
+    /** crossQueryFetchSize is sed to read one column data, this variable is mainly used to debug to verify
      * the rightness of iterative readOneColumnWithoutFilter **/
-    private int queryFetchSize = 10000;
+    private int crossQueryFetchSize = 100000;
 
     /** all the group by Path ans its AggregateFunction **/
     private List<Pair<Path, AggregateFunction>> aggregations;
@@ -112,7 +111,7 @@ public class GroupByEngineWithFilter {
 
         this.queryPathResult = new HashMap<>();
         for (int i = 0; i < aggregations.size(); i++) {
-            String aggregateKey = aggregationKey(aggregations.get(i).left, aggregations.get(i).right);
+            String aggregateKey = aggregationKey(aggregations.get(i).right, aggregations.get(i).left);
             if (!groupByResult.mapRet.containsKey(aggregateKey)) {
                 groupByResult.mapRet.put(aggregateKey,
                         new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
@@ -126,7 +125,7 @@ public class GroupByEngineWithFilter {
             FilterStructure filterStructure = filterStructures.get(idx);
             QueryDataSet queryDataSet = new QueryDataSet();
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(filterStructure.getTimeFilter(),
-                    filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), 10000) {
+                    filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {
                 @Override
                 public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
                                                                SingleSeriesFilterExpression valueFilter, int valueFilterNumber)
@@ -218,10 +217,6 @@ public class GroupByEngineWithFilter {
 
             //LOG.debug("common timestamps calculated in GroupBy process : " + aggregateTimestamps.toString());
 
-//            if (partitionStart >= 98) {
-//                System.out.println("..");
-//            }
-
             if (queryCalcFlag) {
                 calcPathQueryData();
                 queryCalcFlag = false;
@@ -258,7 +253,7 @@ public class GroupByEngineWithFilter {
                         cnt++;
                         Path path = pair.left;
                         AggregateFunction aggregateFunction = pair.right;
-                        String aggregationKey = aggregationKey(path, aggregateFunction);
+                        String aggregationKey = aggregationKey(aggregateFunction, path);
                         DynamicOneColumnData data = queryPathResult.get(aggregationKey);
 
                         aggregateFunction.calcGroupByAggregation(partitionStart, partitionEnd, intervalStart, intervalEnd, data);
@@ -332,22 +327,22 @@ public class GroupByEngineWithFilter {
             cnt++;
             Path path = pair.left;
             AggregateFunction aggregateFunction = pair.right;
-            groupByResult.mapRet.put(aggregationKey(path, aggregateFunction), aggregateFunction.result.data);
+            groupByResult.mapRet.put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
         }
         //LOG.debug("calculate group by result successfully.");
         return groupByResult;
     }
 
     private void calcPathQueryData() throws ProcessorException, PathErrorException, IOException {
-        int duplicatedCnt = 0;
+        int aggregationOrdinal = 0;
         for (Pair<Path, AggregateFunction> pair : aggregations) {
             Path path = pair.left;
             AggregateFunction aggregateFunction = pair.right;
-            String aggregationKey = aggregationKey(path, aggregateFunction);
-            if (duplicatedPaths.contains(duplicatedCnt)) {
+            String aggregationKey = aggregationKey(aggregateFunction, path);
+            if (duplicatedPaths.contains(aggregationOrdinal)) {
                 continue;
             }
-            duplicatedCnt++;
+            aggregationOrdinal++;
 
             DynamicOneColumnData data = queryPathResult.get(aggregationKey);
             // common aggregate timestamps is empty
@@ -365,7 +360,7 @@ public class GroupByEngineWithFilter {
 
             String deltaObjectId = path.getDeltaObjectToString();
             String measurementId = path.getMeasurementToString();
-            String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
+            String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null, null, null, null, recordReaderPrefix);
 
@@ -436,9 +431,5 @@ public class GroupByEngineWithFilter {
         }
 
         return res;
-    }
-
-    private String aggregationKey(Path path, AggregateFunction aggregateFunction) {
-        return aggregateFunction.name + "(" + path.getFullPath() + ")";
     }
 }

@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -15,6 +16,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.and;
 
 /**
  * Take out some common methods used for QueryEngine.
@@ -42,20 +45,24 @@ public class EngineUtils {
     /**
      *  Merge the overflow insert data with the bufferwrite insert data.
      */
-    public static List<Object> getOverflowInfoAndFilterDataInMem(SingleSeriesFilterExpression timeFilter,
+    public static List<Object> getOverflowInfoAndFilterDataInMem(SingleSeriesFilterExpression queryTimeFilter,
                   SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
                   DynamicOneColumnData res, DynamicOneColumnData insertDataInMemory, List<Object> overflowParams) {
 
         List<Object> paramList = new ArrayList<>();
 
         if (res == null) {
-            // time filter of overflow is not null, time filter should be as same as time filter of overflow.
+            // time filter of overflow is not null,
+            // new time filter should be an intersection of query time filter and overflow time filter
             if (overflowParams.get(3) != null) {
-                timeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
+                if (queryTimeFilter != null)
+                    queryTimeFilter = (SingleSeriesFilterExpression) and(queryTimeFilter, (SingleSeriesFilterExpression) overflowParams.get(3));
+                else
+                    queryTimeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
             }
 
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) overflowParams.get(1);
-            insertDataInMemory = getSatisfiedData(updateTrue, timeFilter, freqFilter, valueFilter, insertDataInMemory);
+            insertDataInMemory = getSatisfiedData(updateTrue, queryTimeFilter, freqFilter, valueFilter, insertDataInMemory);
 
             DynamicOneColumnData overflowInsertTrue = (DynamicOneColumnData) overflowParams.get(0);
             // add insert records from memory in BufferWriter stage
@@ -67,7 +74,7 @@ public class EngineUtils {
             paramList.add(overflowInsertTrue);
             paramList.add(overflowParams.get(1));
             paramList.add(overflowParams.get(2));
-            paramList.add(timeFilter);
+            paramList.add(queryTimeFilter);
         } else {
             paramList.add(res.insertTrue);
             paramList.add(res.updateTrue);
@@ -272,8 +279,7 @@ public class EngineUtils {
      * @param memoryData data in buffer write insert
      * @return merge result of the overflow and memory insert
      */
-    private static DynamicOneColumnData mergeOverflowAndMemory(
-            DynamicOneColumnData overflowData, DynamicOneColumnData memoryData) {
+    private static DynamicOneColumnData mergeOverflowAndMemory(DynamicOneColumnData overflowData, DynamicOneColumnData memoryData) {
         if (overflowData == null && memoryData == null) {
             return null;
         } else if (overflowData != null && memoryData == null) {
@@ -305,5 +311,18 @@ public class EngineUtils {
         }
 
         return res;
+    }
+
+    public static String aggregationKey(AggregateFunction aggregateFunction, Path path) {
+        return aggregateFunction.name + "(" + path.getFullPath() + ")";
+    }
+
+    public static boolean noFilterOrOnlyHasTimeFilter(List<FilterStructure> filterStructures) {
+        if (filterStructures == null || filterStructures.size() == 0
+                || (filterStructures.size() == 1 && filterStructures.get(0).noFilter())
+                || (filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter())) {
+            return true;
+        }
+        return false;
     }
 }

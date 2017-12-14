@@ -105,6 +105,7 @@ public class MonitorTest {
     public void testFileNodeManagerMonitorAndAddMetadata() {
         fManager = FileNodeManager.getInstance();
         StatMonitor statMonitor = StatMonitor.getInstance();
+        statMonitor.activate();
 //        statMonitor.registStatistics(fManager.getClass().getName(), fManager);
 
         // add metadata
