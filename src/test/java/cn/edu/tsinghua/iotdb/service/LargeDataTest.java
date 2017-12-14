@@ -1,30 +1,34 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import org.apache.commons.io.FileUtils;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_time;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_time;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.FileNotFoundException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.sql.*;
-
-import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
-import static org.junit.Assert.*;
+import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 
 
 public class LargeDataTest {
 
-    private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
@@ -47,12 +51,6 @@ public class LargeDataTest {
             "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
     };
-
-    private String overflowDataDirPre;
-    private String fileNodeDirPre;
-    private String bufferWriteDirPre;
-    private String metadataDirPre;
-    private String derbyHomePre;
 
     private IoTDB deamon;
 
@@ -82,6 +80,7 @@ public class LargeDataTest {
 //            config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
+            EnvironmentUtils.envSetUp();
         }
     }
 

@@ -3,12 +3,15 @@ package cn.edu.tsinghua.iotdb.utils;
 import java.io.File;
 import java.io.IOException;
 
+import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 
 /**
  * <p>
@@ -22,8 +25,10 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 public class EnvironmentUtils {
 
 	private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+	private static TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
 
 	public static void cleanEnv() throws IOException {
+		tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager
 		try {
 			if (!FileNodeManager.getInstance().closeAll()) {
@@ -72,5 +77,10 @@ public class EnvironmentUtils {
 				throw new IOException(String.format("The file %s can't be deleted", dir));
 			}
 		}
+	}
+	
+	public static void envSetUp(){
+		Authorizer.reset();
+		tsFileConfig.duplicateIncompletedPage = true;
 	}
 }

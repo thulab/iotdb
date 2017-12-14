@@ -1,27 +1,31 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import org.apache.commons.io.FileUtils;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_time;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_time;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
+import static org.junit.Assert.fail;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.sql.*;
-
-import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
-import static org.junit.Assert.fail;
+import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 /**
  * Multiple aggregation with filter test.
  */
 public class AggregationSmallDataTest {
-    private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
@@ -96,11 +100,6 @@ public class AggregationSmallDataTest {
             "insert into root.vehicle.d0(timestamp,s4) values(100, true)",
     };
 
-    private String overflowDataDirPre;
-    private String fileNodeDirPre;
-    private String bufferWriteDirPre;
-    private String metadataDirPre;
-    private String derbyHomePre;
 
     private IoTDB deamon;
 
@@ -124,6 +123,7 @@ public class AggregationSmallDataTest {
 //            config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
+            EnvironmentUtils.envSetUp();
         }
     }
 
