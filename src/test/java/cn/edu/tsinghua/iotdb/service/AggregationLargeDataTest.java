@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.apache.commons.io.FileUtils;
@@ -111,24 +112,24 @@ public class AggregationLargeDataTest {
     public void setUp() throws Exception {
         if (testFlag) {
             AggregateEngine.aggregateFetchSize = 4000;
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            overflowDataDirPre = config.overflowDataDir;
-            fileNodeDirPre = config.fileNodeDir;
-            bufferWriteDirPre = config.bufferWriteDir;
-            metadataDirPre = config.metadataDir;
-            derbyHomePre = config.derbyHome;
-
-            // use small page setting
-            TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-            tsFileConfig.maxNumberOfPointsInPage = 100;
-            tsFileConfig.pageSizeInByte = 1024 * 1024 * 2;
-            tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
-
-            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-            config.derbyHome = FOLDER_HEADER + "/data/derby";
+//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+//            overflowDataDirPre = config.overflowDataDir;
+//            fileNodeDirPre = config.fileNodeDir;
+//            bufferWriteDirPre = config.bufferWriteDir;
+//            metadataDirPre = config.metadataDir;
+//            derbyHomePre = config.derbyHome;
+//
+//            // use small page setting
+//            TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+//            tsFileConfig.maxNumberOfPointsInPage = 100;
+//            tsFileConfig.pageSizeInByte = 1024 * 1024 * 2;
+//            tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
+//
+//            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
+//            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
+//            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
+//            config.metadataDir = FOLDER_HEADER + "/data/metadata";
+//            config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
         }
@@ -139,20 +140,20 @@ public class AggregationLargeDataTest {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
-
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-            FileUtils.deleteDirectory(new File(config.metadataDir));
-            FileUtils.deleteDirectory(new File(config.derbyHome));
-            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-
-            config.overflowDataDir = overflowDataDirPre;
-            config.fileNodeDir = fileNodeDirPre;
-            config.bufferWriteDir = bufferWriteDirPre;
-            config.metadataDir = metadataDirPre;
-            config.derbyHome = derbyHomePre;
+            EnvironmentUtils.cleanEnv();
+//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+//            FileUtils.deleteDirectory(new File(config.overflowDataDir));
+//            FileUtils.deleteDirectory(new File(config.fileNodeDir));
+//            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
+//            FileUtils.deleteDirectory(new File(config.metadataDir));
+//            FileUtils.deleteDirectory(new File(config.derbyHome));
+//            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+//
+//            config.overflowDataDir = overflowDataDirPre;
+//            config.fileNodeDir = fileNodeDirPre;
+//            config.bufferWriteDir = bufferWriteDirPre;
+//            config.metadataDir = metadataDirPre;
+//            config.derbyHome = derbyHomePre;
         }
     }
 

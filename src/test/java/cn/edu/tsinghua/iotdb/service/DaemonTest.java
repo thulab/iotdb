@@ -5,6 +5,7 @@ import java.sql.*;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -109,18 +110,18 @@ public class DaemonTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            overflowDataDirPre = config.overflowDataDir;
-            fileNodeDirPre = config.fileNodeDir;
-            bufferWriteDirPre = config.bufferWriteDir;
-            metadataDirPre = config.metadataDir;
-            derbyHomePre = config.derbyHome;
-
-            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-            config.derbyHome = FOLDER_HEADER + "/data/derby";
+//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+//            overflowDataDirPre = config.overflowDataDir;
+//            fileNodeDirPre = config.fileNodeDir;
+//            bufferWriteDirPre = config.bufferWriteDir;
+//            metadataDirPre = config.metadataDir;
+//            derbyHomePre = config.derbyHome;
+//
+//            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
+//            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
+//            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
+//            config.metadataDir = FOLDER_HEADER + "/data/metadata";
+//            config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
         }
@@ -132,19 +133,21 @@ public class DaemonTest {
             deamon.stop();
             Thread.sleep(5000);
 
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-            FileUtils.deleteDirectory(new File(config.metadataDir));
-            FileUtils.deleteDirectory(new File(config.derbyHome));
-            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+//            FileUtils.deleteDirectory(new File(config.overflowDataDir));
+//            FileUtils.deleteDirectory(new File(config.fileNodeDir));
+//            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
+//            FileUtils.deleteDirectory(new File(config.metadataDir));
+//            FileUtils.deleteDirectory(new File(config.derbyHome));
+//            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
+//
+//            config.overflowDataDir = overflowDataDirPre;
+//            config.fileNodeDir = fileNodeDirPre;
+//            config.bufferWriteDir = bufferWriteDirPre;
+//            config.metadataDir = metadataDirPre;
+//            config.derbyHome = derbyHomePre;
 
-            config.overflowDataDir = overflowDataDirPre;
-            config.fileNodeDir = fileNodeDirPre;
-            config.bufferWriteDir = bufferWriteDirPre;
-            config.metadataDir = metadataDirPre;
-            config.derbyHome = derbyHomePre;
+            EnvironmentUtils.cleanEnv();
         }
     }
 
@@ -517,10 +520,10 @@ public class DaemonTest {
             resultSet = statement.getResultSet();
             cnt = 0;
             while (resultSet.next()) {
-                int ans1 = resultSet.getInt(2);
-                int ans2 = resultSet.getInt(3);
-                Assert.assertEquals(99, ans1);
-                Assert.assertEquals(888, ans2);
+                String ans1 = resultSet.getString(min_value(d0s0));
+                String ans2 = resultSet.getString(min_value(d1s0));
+                Assert.assertEquals("99", ans1);
+                Assert.assertEquals("888", ans2);
                 cnt++;
             }
             Assert.assertEquals(cnt, 1);
