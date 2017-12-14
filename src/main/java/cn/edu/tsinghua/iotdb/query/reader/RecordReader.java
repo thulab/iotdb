@@ -428,12 +428,14 @@ public class RecordReader {
 
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
+
+        // fillFlag is true, means that we has got the collect fill value in time range[beforeTime, queryTime]
         boolean fillFlag = false;
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                if (FillProcessor.getFillResult(result, rowGroupReader.getValueReaders().get(measurementId), updateTrue, updateFalse, insertMemoryData,
+                if (FillProcessor.getPreviousFillResult(result, rowGroupReader.getValueReaders().get(measurementId),
                         beforeTime, queryTime)) {
                     fillFlag = true;
                     break;
