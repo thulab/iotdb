@@ -479,7 +479,6 @@ public class BufferWriteProcessor extends LRUProcessor {
 					break;
 				case WARNING:
 					LOGGER.warn("Memory usage exceeded warning threshold.");
-					recordWriter.flushRowGroup(false);
 					recordWriter.write(tsRecord);
 					memUsed += newMemUsage;
 					break;

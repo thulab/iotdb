@@ -290,7 +290,6 @@ public class OverflowProcessor extends LRUProcessor {
 				break;
 			case WARNING:
 				LOGGER.warn("Memory usage exceeded warning threshold.");
-				flushRowGroupToStore(false);
 				for (DataPoint dataPoint : record.dataPointList) {
 					insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
 							dataPoint.getType(), dataPoint.getValue().toString());

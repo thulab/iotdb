@@ -24,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.fail;
 
 public class MemControlTest {
@@ -64,6 +65,7 @@ public class MemControlTest {
     private IoTDB deamon;
 
     private boolean testFlag = true;
+    private boolean exceptionCaught = false;
 
     @Before
     public void setUp() throws Exception {
@@ -81,6 +83,7 @@ public class MemControlTest {
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
 
+            config.memMonitorInterval = 5 * 1000;  // 5s
             config.memThresholdWarning = 1 * TsFileDBConstant.MB;
             config.memThresholdDangerous = 2 * TsFileDBConstant.MB;
 
@@ -114,6 +117,7 @@ public class MemControlTest {
 
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
+        // test a huge amount of write causes block
         if(!testFlag)
             return;
         Thread t1 = new Thread(() -> insert(d0));
@@ -122,6 +126,12 @@ public class MemControlTest {
         t2.start();
         t1.join();
         t2.join();
+        assertEquals(exceptionCaught, true);
+        assertEquals(MemController.UsageLevel.WARNING, MemController.getInstance().getCurrLevel());
+
+        // test MemControlTread auto flush
+       /* Thread.sleep(5000);
+        assertEquals(MemController.UsageLevel.SAFE, MemController.getInstance().getCurrLevel());*/
     }
 
     public void insert(String deviceId) {
@@ -148,8 +158,9 @@ public class MemControlTest {
             }
             statement.close();
         } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+            System.out.println(e.getMessage());
+            if(e.getMessage().contains("exceeded dangerous threshold"))
+                exceptionCaught = true;
         } finally {
             if (connection != null) {
                 try {
