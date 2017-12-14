@@ -6,6 +6,7 @@ import java.util.List;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +34,10 @@ public class WriteLogNodeTest {
     private List<String> values = new ArrayList<>();
 
     @After
-    public void tearDown(){
-    	TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig();
-    	EngineTestHelper.delete(dbConfig.walFolder);
+    public void tearDown() throws IOException {
+//    	TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig();
+//    	EngineTestHelper.delete(dbConfig.walFolder);
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
