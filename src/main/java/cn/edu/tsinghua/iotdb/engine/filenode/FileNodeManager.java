@@ -2,14 +2,14 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.service.StatMonitor;
+import cn.edu.tsinghua.iotdb.service.IStatistic;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
-public class FileNodeManager extends LRUManager<FileNodeProcessor> {
+public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IStatistic {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -58,6 +58,63 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 	}
 
 	private volatile FileNodeManagerStatus fileNodeManagerStatus = FileNodeManagerStatus.NONE;
+
+	/**
+	 * Stat information
+	 */
+
+	public enum FileNodeManagerStatConstants {
+		TotalPoints, TotalReqSuccess, TotalReqFail,
+		TotalPointsSuccess, TotalPointsFail,
+
+	}
+
+	/**
+	 * fakeDeltaName represent the xxx.xxx.xxx store path
+	 * statParamsHashMap's key represent the in-Class module name
+	 */
+	private final String fakeDeltaName = "root.statistics." + FileNodeManager.class.getSimpleName();
+
+	public HashMap<String, AtomicLong> getStatParamsHashMap() {
+		return statParamsHashMap;
+	}
+
+	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
+		{
+			for (FileNodeManagerStatConstants a: FileNodeManagerStatConstants.values()){
+				put(a.name(), new AtomicLong(0));
+			}
+		}
+	};
+
+	@Override
+	public HashMap<String, TSRecord> getAllStatisticsValue() {
+		Long curTime = System.currentTimeMillis();
+		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
+		TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
+		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
+		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
+			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
+				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
+			}
+		}};
+		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
+		return tsRecordHashMap;
+	}
+
+	/**
+	 * Init Stat MetaDta
+	 * TODO: Modify the throws operation
+	 */
+	@Override
+	public void registStatMetadata() {
+		HashMap<String, String> hashMap = new HashMap<String, String> (){{
+			for (FileNodeManagerStatConstants c : FileNodeManagerStatConstants.values()) {
+				put(fakeDeltaName + "." + c.name(), "INT64");
+			}
+		}};
+		StatMonitor.getInstance().registStatMetadata(hashMap);
+	}
 
 	private Action overflowBackUpAction = new Action() {
 		@Override
@@ -90,6 +147,11 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		if (overflowNameSpaceSet == null) {
 			LOGGER.error("Read the overflow nameSpacePath set from filenode manager restore file error.");
 			overflowNameSpaceSet = new HashSet<>();
+		}
+		if (TsFileDBConf.enableStatMonitor) {
+			StatMonitor statMonitor = StatMonitor.getInstance();
+			statMonitor.registStatistics(getClass().getName(), this);
+			registStatMetadata();
 		}
 	}
 
@@ -136,39 +198,50 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
 
-		FileNodeProcessor fileNodeProcessor = null;
-		try {
-			// try to get this filenodeProcessor until it not null
-			do {
-				fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(deltaObjectId, true);
-			} while (fileNodeProcessor == null);
-		} catch (LRUManagerException e) {
-			if (fileNodeProcessor != null) {
-				// if get processor successfully, the processor must be not null
-				fileNodeProcessor.writeUnlock();
-			}
-			throw new FileNodeManagerException(e);
-		}
-		long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
-		LOGGER.debug("Get the FileNodeProcessor: {}, the last update time is: {}, the record time is: {}",
-				fileNodeProcessor.getNameSpacePath(), lastUpdateTime, timestamp);
-		LOGGER.debug("Insert record is {}", tsRecord);
-		int insertType = 0;
-		String nameSpacePath = fileNodeProcessor.getNameSpacePath();
-		if (timestamp <= lastUpdateTime) {
-			Map<String, Object> parameters = new HashMap<>();
-			parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
-			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
-			OverflowProcessor overflowProcessor;
-			try {
-				overflowProcessor = fileNodeProcessor.getOverflowProcessor(nameSpacePath, parameters);
-			} catch (FileNodeProcessorException e) {
-				LOGGER.error(
-						String.format("Get the overflow processor failed, the nameSpacePath is {}, insert time is {}",
-								nameSpacePath, timestamp),
-						e);
-				throw new FileNodeManagerException(e);
-			}
+        statParamsHashMap.get(FileNodeManagerStatConstants.TotalPoints.name()).
+                addAndGet(tsRecord.dataPointList.size());
+
+        FileNodeProcessor fileNodeProcessor = null;
+        try {
+            // try to get this filenodeProcessor until it not null
+            do {
+                fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(deltaObjectId, true);
+            } while (fileNodeProcessor == null);
+        } catch (LRUManagerException e) {
+            if (fileNodeProcessor != null) {
+                // if get processor successfully, the processor must be not null
+                fileNodeProcessor.writeUnlock();
+            }
+            statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+                    incrementAndGet();
+            statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+                    addAndGet(tsRecord.dataPointList.size());
+            throw new FileNodeManagerException(e);
+        }
+        long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
+        LOGGER.debug("Get the FileNodeProcessor: {}, the last update time is: {}, the record time is: {}",
+                fileNodeProcessor.getNameSpacePath(), lastUpdateTime, timestamp);
+        LOGGER.debug("Insert record is {}", tsRecord);
+        int insertType = 0;
+        String nameSpacePath = fileNodeProcessor.getNameSpacePath();
+        if (timestamp <= lastUpdateTime) {
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
+            parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
+            OverflowProcessor overflowProcessor;
+            try {
+                overflowProcessor = fileNodeProcessor.getOverflowProcessor(nameSpacePath, parameters);
+            } catch (FileNodeProcessorException e) {
+                LOGGER.error(
+                        String.format("Get the overflow processor failed, the nameSpacePath is {}, insert time is {}",
+                                nameSpacePath, timestamp),
+                        e);
+                statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+                        incrementAndGet();
+                statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+                        addAndGet(tsRecord.dataPointList.size());
+                throw new FileNodeManagerException(e);
+            }
 
 			// for WAL
 			try {
@@ -179,6 +252,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				}
 			} catch (IOException | PathErrorException e) {
 				LOGGER.error("Error in write WAL", e);
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+						incrementAndGet();
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
 
@@ -190,6 +267,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					if (fileNodeProcessor != null) {
 						fileNodeProcessor.writeUnlock();
 					}
+					statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+							incrementAndGet();
+					statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+							addAndGet(tsRecord.dataPointList.size());
 					throw new FileNodeManagerException(e);
 				}
 			}
@@ -205,6 +286,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				LOGGER.error(String.format(
 						"Get the bufferwrite processor failed, the nameSpacePath is {}, insert time is {}",
 						nameSpacePath, timestamp), e);
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+						incrementAndGet();
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
 			// Add the new interval file to newfilelist
@@ -215,6 +300,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 					fileNodeProcessor.addIntervalFileNode(timestamp, fileAbsolutePath);
 				} catch (Exception e) {
 					fileNodeProcessor.writeUnlock();
+					statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+							incrementAndGet();
+					statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+							addAndGet(tsRecord.dataPointList.size());
 					throw new FileNodeManagerException(e);
 				}
 			}
@@ -228,6 +317,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				}
 			} catch (IOException | PathErrorException e) {
 				LOGGER.error("Error in write WAL.", e);
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+						incrementAndGet();
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
 
@@ -238,6 +331,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				if (fileNodeProcessor != null) {
 					fileNodeProcessor.writeUnlock();
 				}
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+						incrementAndGet();
+				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
 			fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
@@ -245,6 +342,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			// bufferWriteProcessor.writeUnlock();
 			insertType = 2;
 		}
+		statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqSuccess.name()).
+				incrementAndGet();
+		statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsSuccess.name()).
+				addAndGet(tsRecord.dataPointList.size());
 		fileNodeProcessor.writeUnlock();
 		LOGGER.debug("Unlock the FileNodeProcessor: {}", fileNodeProcessor.getNameSpacePath());
 		return insertType;

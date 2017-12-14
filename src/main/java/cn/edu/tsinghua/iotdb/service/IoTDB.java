@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.service;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -12,6 +13,9 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +34,7 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
-public class IoTDB {
+public class IoTDB implements IStatistic {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
     static final IoTDB instance = new IoTDB();
@@ -39,6 +43,7 @@ public class IoTDB {
     private DBDao dBdao;
     private JDBCServerMBean jdbcMBean;
     private MonitorMBean monitorMBean;
+    private StatMonitor statMonitor;
 
     public IoTDB() {
         mbs = ManagementFactory.getPlatformMBeanServer();
@@ -80,13 +85,14 @@ public class IoTDB {
         maybeInitJmx();
         registJDBCServer();
         registMonitor();
+        registStatMonitor();
         startCloseAndMergeServer();
     }
 
     private void maybeInitJmx() {
         if (System.getProperty(TsFileDBConstant.REMOTE_JMX_PORT_NAME) != null) {
             LOGGER.warn("JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have been bypassed as the JMX connector server is "
-                    + "already initialized. Please refer to {}.sh/bat for JMX configuration info", TsFileDBConstant.ENV_FILE_NAME, 
+                    + "already initialized. Please refer to {}.sh/bat for JMX configuration info", TsFileDBConstant.ENV_FILE_NAME,
                     TsFileDBConstant.ENV_FILE_NAME, TsFileDBConstant.ENV_FILE_NAME);
             return;
         }
@@ -117,12 +123,12 @@ public class IoTDB {
         ObjectName mBeanName = new ObjectName("cn.edu.thu.tsfiledb.service", "type", "JDBCServer");
         mbs.registerMBean(jdbcMBean, mBeanName);
     }
-    
-	private void registMonitor() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-		monitorMBean = new Monitor();
-		ObjectName mBeanName = new ObjectName("cn.edu.thu.tsfiledb.service", "type", "Monitor");
-		mbs.registerMBean(monitorMBean, mBeanName);
-	}
+
+    private void registMonitor() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
+        monitorMBean = new Monitor();
+        ObjectName mBeanName = new ObjectName("cn.edu.thu.tsfiledb.service", "type", "Monitor");
+        mbs.registerMBean(monitorMBean, mBeanName);
+    }
 
     private void initDBDao() throws ClassNotFoundException, SQLException, DBDaoInitException {
         dBdao = new DBDao();
@@ -131,6 +137,17 @@ public class IoTDB {
 
     private void initFileNodeManager() {
         FileNodeManager.getInstance().managerRecovery();
+    }
+
+    private void registStatMonitor() {
+        statMonitor = StatMonitor.getInstance();
+        if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor)
+            statMonitor.activate();
+    }
+
+    @Override
+    public void registStatMetadata() {
+        //TODO: add new stat result
     }
 
     /**
@@ -191,6 +208,11 @@ public class IoTDB {
             jmxServer.stop();
         }
         CloseMergeServer.getInstance().closeServer();
+    }
+
+    @Override
+    public HashMap<String, TSRecord> getAllStatisticsValue() {
+        return null;
     }
 
     public static void main(String[] args) {
