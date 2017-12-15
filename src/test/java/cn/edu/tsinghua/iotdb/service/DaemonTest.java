@@ -146,7 +146,7 @@ public class DaemonTest {
         }
     }
 
-    @Test
+    //@Test
     public void test() {
         if (testFlag) {
             try {
