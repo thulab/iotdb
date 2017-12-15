@@ -63,18 +63,13 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	 * Stat information
 	 */
 
-//	public enum FileNodeManagerStatConstants {
-//		TotalPoints, TotalReqSuccess, TotalReqFail,
-//		TotalPointsSuccess, TotalPointsFail,
-//
-//	}
-
 	/**
 	 * fakeDeltaName represent the xxx.xxx.xxx store path
 	 * statParamsHashMap's key represent the in-Class module name
 	 */
 	// TODO: regularize the stat path
 	private final String fakeDeltaName = MonitorConstants.getStatPrefix()
+			+ "write.global/"
 			+ FileNodeManager.class.getSimpleName();
 
 	/**

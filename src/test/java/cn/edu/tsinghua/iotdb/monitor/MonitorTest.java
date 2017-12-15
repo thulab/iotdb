@@ -109,7 +109,7 @@ public class MonitorTest {
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
         for (String statParam : statParamsHashMap.keySet()) {
             assertEquals(true, mManager.pathExist(
-                    MonitorConstants.getStatPrefix() + "FileNodeManager." + statParam)
+                    MonitorConstants.getStatPrefix() + "write.global/FileNodeManager." + statParam)
             );
         }
 

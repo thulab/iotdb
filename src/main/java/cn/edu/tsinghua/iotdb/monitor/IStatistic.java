@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface IStatistic {
     /**
-     * @return An HashMap that contains the statistics measurement and its value as TSRecord format.
+     * @return An HashMap that contains the Module path like: root.\_stats.FileNodeManager,
+     * and its value as TSRecord format contains all the statistics measurement
      */
     HashMap<String, TSRecord> getAllStatisticsValue();
 

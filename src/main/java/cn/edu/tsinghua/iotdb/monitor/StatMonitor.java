@@ -76,10 +76,9 @@ public class StatMonitor {
     }
 
     /**
-     *
-     * @param hashMap key is statParams name, values is AtomicLong type
+     * @param hashMap       key is statParams name, values is AtomicLong type
      * @param fakeDeltaName is the deltaObject path of this module
-     * @param curTime TODO need to be fixed may contains overflow
+     * @param curTime       TODO need to be fixed may contains overflow
      * @return TSRecord contains the DataPoints of a fakeDeltaName
      */
     public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap, String fakeDeltaName, Long curTime) {
@@ -130,12 +129,19 @@ public class StatMonitor {
 
     /**
      * TODO: need to complete
+     *
      * @param key
      * @return
      */
-    public HashMap<String, TSRecord> getOneStatisticsValue(String key){
-        return null;
-    }
+//    public TSRecord getOneStatisticsValue(String key) {
+//        String queryPath = MonitorConstants.getStatPrefix() +
+//        if (registProcessor.containsKey(key)) {
+//            return registProcessor.get(key).getAllStatisticsValue().get(key);
+//        }
+//        else{
+//
+//        }
+//    }
 
     public HashMap<String, TSRecord> gatherStatistics() {
         lock.readLock().lock();
