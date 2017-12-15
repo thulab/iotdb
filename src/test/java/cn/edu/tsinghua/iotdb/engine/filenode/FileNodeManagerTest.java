@@ -293,7 +293,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testRecoveryWait() {
 		File dir = PathUtils.getBufferWriteDir("");
 		if (!dir.exists()) {
