@@ -73,13 +73,14 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	 * fakeDeltaName represent the xxx.xxx.xxx store path
 	 * statParamsHashMap's key represent the in-Class module name
 	 */
+	// TODO: regularize the stat path
 	private final String fakeDeltaName = "root.statistics." + FileNodeManager.class.getSimpleName();
 
 	public HashMap<String, AtomicLong> getStatParamsHashMap() {
 		return statParamsHashMap;
 	}
-
-	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
+	// There is no need to add concurrently
+	private static final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
 		{
 			for (FileNodeManagerStatConstants a: FileNodeManagerStatConstants.values()){
 				put(a.name(), new AtomicLong(0));
@@ -88,18 +89,36 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	};
 
 	@Override
+
+
+	public List<String> getAllPathForStatistic() {
+		List<String> list = new ArrayList<>();
+		for (FileNodeManagerStatConstants c : FileNodeManagerStatConstants.values()) {
+			list.add(fakeDeltaName + "." + c.name());
+		}
+		return list;
+	}
+
+	@Override
 	public HashMap<String, TSRecord> getAllStatisticsValue() {
 		Long curTime = System.currentTimeMillis();
-		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-		TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
-		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
-		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
-			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
-				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
-			}
-		}};
-		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
-		return tsRecordHashMap;
+		TSRecord tsRecord = StatMonitor.getInstance().convertToTSRecord(
+				getStatParamsHashMap(), fakeDeltaName, curTime
+		);
+		return new HashMap<String, TSRecord>(){{
+			put(fakeDeltaName, tsRecord);
+		}
+		};
+//		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
+//		TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
+//		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
+//		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
+//			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
+//				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
+//			}
+//		}};
+//		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
+//		return tsRecordHashMap;
 	}
 
 	/**

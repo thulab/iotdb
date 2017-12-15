@@ -116,16 +116,19 @@ public class MonitorTest {
         try {
             Thread.sleep(5000);
             statMonitor.close();
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         // Get stat data and test right
 
-        HashMap<String, TSRecord> statHashMap = statMonitor.getAllStatisticsValue();
+        HashMap<String, TSRecord> statHashMap = statMonitor.gatherStatistics();
         Long numInsert = statMonitor.getNumBackLoop();
 
-        TSRecord fTSRecord = statHashMap.get(FileNodeManager.class.getSimpleName());
+        String path = fManager.getAllPathForStatistic().get(0);
+        int pos = path.lastIndexOf('.');
+        TSRecord fTSRecord = statHashMap.get(path.substring(0, pos));
         assertNotEquals(null, fTSRecord);
         for (DataPoint dataPoint : fTSRecord.dataPointList) {
             String m = dataPoint.getMeasurementId();

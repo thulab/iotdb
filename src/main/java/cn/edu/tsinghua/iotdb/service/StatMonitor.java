@@ -6,13 +6,19 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
+import com.sun.org.apache.xerces.internal.xs.datatypes.ObjectList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SplittableRandom;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * @author liliang
  */
-public class StatMonitor implements IStatistic {
+public class StatMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
     private HashMap<String, IStatistic> registProcessor;
 
@@ -74,6 +80,7 @@ public class StatMonitor implements IStatistic {
     public synchronized void registStatMetadata(HashMap<String, String> hashMap) {
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
+
                 MManager.getInstance().addPathToMTree(
                         entry.getKey(), entry.getValue(), "RLE", new String[0]);
             }
@@ -106,18 +113,7 @@ public class StatMonitor implements IStatistic {
         private static final StatMonitor INSTANCE = new StatMonitor();
     }
 
-    @Override
-    public HashMap<String, TSRecord> getAllStatisticsValue() {
-        // TODO: need other stats
-        return gatherStatistics();
-    }
-
-    @Override
-    public void registStatMetadata() {
-
-    }
-
-    private HashMap<String, TSRecord> gatherStatistics(){
+    public HashMap<String, TSRecord> gatherStatistics(){
         lock.readLock().lock();
         HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
         for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
@@ -139,6 +135,21 @@ public class StatMonitor implements IStatistic {
         }
     }
 
+    public TSRecord convertToTSRecord(HashMap<String, ?> hashMap, String fakeDeltaName, Long curTime) {
+        TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
+        tsRecord.dataPointList = new ArrayList<DataPoint>() {{
+            for (Map.Entry<String, ?> entry : hashMap.entrySet()) {
+                if (AtomicLong.class.isInstance(entry.getValue())){
+                    AtomicLong value = (AtomicLong)entry.getValue();
+                    add(new LongDataPoint(entry.getKey(), value.get()));
+                }else{
+                    LOGGER.debug("[!] The type of stat parameter is unknown");
+
+                }
+            }
+        }};
+        return tsRecord;
+    }
     public void close() {
         service.shutdown();
     }

@@ -5,9 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.service.IStatistic;
+import cn.edu.tsinghua.iotdb.service.StatMonitor;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -46,7 +50,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
-public class FileNodeProcessor extends LRUProcessor {
+public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -81,6 +85,65 @@ public class FileNodeProcessor extends LRUProcessor {
 	private boolean shouldRecovery = false;
 
 	private Map<String, Object> parameters = null;
+
+	/**
+	 * Stat information
+	 */
+	public enum FileNodeProcessorStatConstants {
+		TotalReqSuccess, TotalReqFail,
+		TotalPointsSuccess, TotalPointsFail,
+	}
+
+	private final String fakeDeltaName = "root.statistics." + FileNodeProcessor.class.getSimpleName();
+
+	private static final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
+		{
+			for (FileNodeProcessorStatConstants a: FileNodeProcessorStatConstants.values()){
+				put(a.name(), new AtomicLong(0));
+			}
+		}
+	};
+
+	public HashMap<String, AtomicLong> getStatParamsHashMap() {
+		return statParamsHashMap;
+	}
+
+
+	@Override
+	public void registStatMetadata() {
+		HashMap<String, String> hashMap = new HashMap<String, String> (){{
+			for (FileNodeManager.FileNodeManagerStatConstants c :
+					FileNodeManager.FileNodeManagerStatConstants.values()) {
+				put(fakeDeltaName + "." + c.name(), "INT64");
+			}
+		}};
+		StatMonitor.getInstance().registStatMetadata(hashMap);
+	}
+
+	@Override
+	public List<String> getAllPathForStatistic() {
+		List<String> list = new ArrayList<>();
+		for (FileNodeProcessor.FileNodeProcessorStatConstants c :
+				FileNodeProcessor.FileNodeProcessorStatConstants.values()) {
+			list.add(fakeDeltaName + "." + c.name());
+		}
+		return list;
+	}
+
+	@Override
+	public HashMap<String, TSRecord> getAllStatisticsValue() {
+		Long curTime = System.currentTimeMillis();
+		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
+		TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
+		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
+		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
+			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
+				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
+			}
+		}};
+		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
+		return tsRecordHashMap;
+	}
 
 	private Action flushFileNodeProcessorAction = new Action() {
 

@@ -34,7 +34,7 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
-public class IoTDB implements IStatistic {
+public class IoTDB {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
     static final IoTDB instance = new IoTDB();
@@ -145,11 +145,6 @@ public class IoTDB implements IStatistic {
             statMonitor.activate();
     }
 
-    @Override
-    public void registStatMetadata() {
-        //TODO: add new stat result
-    }
-
     /**
      * Recover data using system log.
      *
@@ -208,11 +203,6 @@ public class IoTDB implements IStatistic {
             jmxServer.stop();
         }
         CloseMergeServer.getInstance().closeServer();
-    }
-
-    @Override
-    public HashMap<String, TSRecord> getAllStatisticsValue() {
-        return null;
     }
 
     public static void main(String[] args) {
