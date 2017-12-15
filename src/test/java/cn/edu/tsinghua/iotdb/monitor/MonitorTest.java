@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.monitor;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.*;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -19,7 +20,6 @@ import org.junit.Test;
 import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -37,7 +37,6 @@ public class MonitorTest {
 
     private String deltaObjectId = "root.vehicle.d0";
     private String deltaObjectId2 = "root.vehicle.d1";
-    private String statObjectId = "root.statistics";
     private String measurementId = "s0";
     private String measurementId6 = "s6";
     private TSDataType dataType = TSDataType.INT32;
@@ -109,7 +108,9 @@ public class MonitorTest {
         fManager.registStatMetadata();
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
         for (String statParam : statParamsHashMap.keySet()) {
-            assertEquals(true, mManager.pathExist(statObjectId + ".FileNodeManager." + statParam));
+            assertEquals(true, mManager.pathExist(
+                    MonitorConstants.getStatPrefix() + "FileNodeManager." + statParam)
+            );
         }
 
         // wait for time second

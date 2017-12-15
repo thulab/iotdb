@@ -3,7 +3,6 @@ package cn.edu.tsinghua.iotdb.service;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
-import java.util.HashMap;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -13,9 +12,8 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

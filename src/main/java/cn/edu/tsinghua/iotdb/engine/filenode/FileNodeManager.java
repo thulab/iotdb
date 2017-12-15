@@ -7,9 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import cn.edu.tsinghua.iotdb.service.StatMonitor;
-import cn.edu.tsinghua.iotdb.service.IStatistic;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,26 +63,32 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	 * Stat information
 	 */
 
-	public enum FileNodeManagerStatConstants {
-		TotalPoints, TotalReqSuccess, TotalReqFail,
-		TotalPointsSuccess, TotalPointsFail,
-
-	}
+//	public enum FileNodeManagerStatConstants {
+//		TotalPoints, TotalReqSuccess, TotalReqFail,
+//		TotalPointsSuccess, TotalPointsFail,
+//
+//	}
 
 	/**
 	 * fakeDeltaName represent the xxx.xxx.xxx store path
 	 * statParamsHashMap's key represent the in-Class module name
 	 */
 	// TODO: regularize the stat path
-	private final String fakeDeltaName = "root.statistics." + FileNodeManager.class.getSimpleName();
+	private final String fakeDeltaName = MonitorConstants.getStatPrefix()
+			+ FileNodeManager.class.getSimpleName();
 
+	/**
+	 *
+	 * @return the key represent the params' name, values is AtomicLong type
+	 */
 	public HashMap<String, AtomicLong> getStatParamsHashMap() {
 		return statParamsHashMap;
 	}
+
 	// There is no need to add concurrently
 	private static final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
 		{
-			for (FileNodeManagerStatConstants a: FileNodeManagerStatConstants.values()){
+			for (MonitorConstants.FileNodeManagerStatConstants a: MonitorConstants.FileNodeManagerStatConstants.values()){
 				put(a.name(), new AtomicLong(0));
 			}
 		}
@@ -92,8 +98,10 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 
 
 	public List<String> getAllPathForStatistic() {
+		// TODO: need to return filenodeprocessers' statistics
 		List<String> list = new ArrayList<>();
-		for (FileNodeManagerStatConstants c : FileNodeManagerStatConstants.values()) {
+		for (MonitorConstants.FileNodeManagerStatConstants c :
+				MonitorConstants.FileNodeManagerStatConstants.values()) {
 			list.add(fakeDeltaName + "." + c.name());
 		}
 		return list;
@@ -102,23 +110,13 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	@Override
 	public HashMap<String, TSRecord> getAllStatisticsValue() {
 		Long curTime = System.currentTimeMillis();
-		TSRecord tsRecord = StatMonitor.getInstance().convertToTSRecord(
+		TSRecord tsRecord = StatMonitor.convertToTSRecord(
 				getStatParamsHashMap(), fakeDeltaName, curTime
 		);
 		return new HashMap<String, TSRecord>(){{
 			put(fakeDeltaName, tsRecord);
 		}
 		};
-//		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-//		TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
-//		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
-//		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
-//			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
-//				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
-//			}
-//		}};
-//		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
-//		return tsRecordHashMap;
 	}
 
 	/**
@@ -128,7 +126,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	@Override
 	public void registStatMetadata() {
 		HashMap<String, String> hashMap = new HashMap<String, String> (){{
-			for (FileNodeManagerStatConstants c : FileNodeManagerStatConstants.values()) {
+			for (MonitorConstants.FileNodeManagerStatConstants c :
+					MonitorConstants.FileNodeManagerStatConstants.values()) {
 				put(fakeDeltaName + "." + c.name(), "INT64");
 			}
 		}};
@@ -217,7 +216,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
 
-        statParamsHashMap.get(FileNodeManagerStatConstants.TotalPoints.name()).
+        statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPoints.name()).
                 addAndGet(tsRecord.dataPointList.size());
 
         FileNodeProcessor fileNodeProcessor = null;
@@ -231,9 +230,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
                 // if get processor successfully, the processor must be not null
                 fileNodeProcessor.writeUnlock();
             }
-            statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+            statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
                     incrementAndGet();
-            statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+            statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
                     addAndGet(tsRecord.dataPointList.size());
             throw new FileNodeManagerException(e);
         }
@@ -255,9 +254,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
                         String.format("Get the overflow processor failed, the nameSpacePath is {}, insert time is {}",
                                 nameSpacePath, timestamp),
                         e);
-                statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+                statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
                         incrementAndGet();
-                statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+                statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
                         addAndGet(tsRecord.dataPointList.size());
                 throw new FileNodeManagerException(e);
             }
@@ -271,9 +270,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 				}
 			} catch (IOException | PathErrorException e) {
 				LOGGER.error("Error in write WAL", e);
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
 						incrementAndGet();
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
 						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
@@ -286,9 +285,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 					if (fileNodeProcessor != null) {
 						fileNodeProcessor.writeUnlock();
 					}
-					statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
 							incrementAndGet();
-					statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
 							addAndGet(tsRecord.dataPointList.size());
 					throw new FileNodeManagerException(e);
 				}
@@ -305,9 +304,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 				LOGGER.error(String.format(
 						"Get the bufferwrite processor failed, the nameSpacePath is {}, insert time is {}",
 						nameSpacePath, timestamp), e);
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
 						incrementAndGet();
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
 						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
@@ -319,9 +318,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 					fileNodeProcessor.addIntervalFileNode(timestamp, fileAbsolutePath);
 				} catch (Exception e) {
 					fileNodeProcessor.writeUnlock();
-					statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
 							incrementAndGet();
-					statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
 							addAndGet(tsRecord.dataPointList.size());
 					throw new FileNodeManagerException(e);
 				}
@@ -336,9 +335,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 				}
 			} catch (IOException | PathErrorException e) {
 				LOGGER.error("Error in write WAL.", e);
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
 						incrementAndGet();
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
 						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
@@ -350,9 +349,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 				if (fileNodeProcessor != null) {
 					fileNodeProcessor.writeUnlock();
 				}
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqFail.name()).
 						incrementAndGet();
-				statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsFail.name()).
+				statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsFail.name()).
 						addAndGet(tsRecord.dataPointList.size());
 				throw new FileNodeManagerException(e);
 			}
@@ -361,9 +360,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 			// bufferWriteProcessor.writeUnlock();
 			insertType = 2;
 		}
-		statParamsHashMap.get(FileNodeManagerStatConstants.TotalReqSuccess.name()).
+		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqSuccess.name()).
 				incrementAndGet();
-		statParamsHashMap.get(FileNodeManagerStatConstants.TotalPointsSuccess.name()).
+		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalPointsSuccess.name()).
 				addAndGet(tsRecord.dataPointList.size());
 		fileNodeProcessor.writeUnlock();
 		LOGGER.debug("Unlock the FileNodeProcessor: {}", fileNodeProcessor.getNameSpacePath());

@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.monitor;
 
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 

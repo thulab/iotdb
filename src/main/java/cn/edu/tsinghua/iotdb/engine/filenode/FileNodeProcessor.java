@@ -9,8 +9,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import cn.edu.tsinghua.iotdb.service.IStatistic;
-import cn.edu.tsinghua.iotdb.service.StatMonitor;
+import cn.edu.tsinghua.iotdb.monitor.IStatistic;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -112,8 +113,9 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	@Override
 	public void registStatMetadata() {
 		HashMap<String, String> hashMap = new HashMap<String, String> (){{
-			for (FileNodeManager.FileNodeManagerStatConstants c :
-					FileNodeManager.FileNodeManagerStatConstants.values()) {
+
+			for (MonitorConstants.FileNodeManagerStatConstants c :
+					MonitorConstants.FileNodeManagerStatConstants.values()) {
 				put(fakeDeltaName + "." + c.name(), "INT64");
 			}
 		}};
@@ -1139,6 +1141,8 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 
 	@Override
 	public void close() throws FileNodeProcessorException {
+		//the processor's path is
+		StatMonitor.getInstance().deregistStatistics(nameSpacePath);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
