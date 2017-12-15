@@ -418,7 +418,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testRecoveryMerge() {
 
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -539,7 +539,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testMergeAll() {
 
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -647,7 +647,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testOverflowEmptyAndMerge() {
 
 		// write tsfile data
