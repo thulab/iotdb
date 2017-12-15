@@ -192,6 +192,8 @@ public class IoTDB {
 
         FileNodeManager.getInstance().closeAll();
 
+        WriteLogManager.getInstance().close();
+
         if (jdbcMBean != null) {
             jdbcMBean.stopServer();
         }
@@ -221,10 +223,9 @@ public class IoTDB {
         CloseMergeServer.getInstance().closeServer();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, FileNodeManagerException, IOException {
         IoTDB daemon = new IoTDB();
         daemon.active();
-	    
     }
 
 }
