@@ -461,6 +461,7 @@ public class OverflowProcessor extends LRUProcessor {
 						flushState.notify();
 					}
 				}
+				MemController.getInstance().reportFree(this, oldMemUsage);
 			} else {
 				// flush overflow row group asynchronously
 				flushState.setFlushing();
@@ -494,11 +495,11 @@ public class OverflowProcessor extends LRUProcessor {
 								flushState.notify();
 							}
 						}
+						MemController.getInstance().reportFree(this, oldMemUsage);
 					}
 				};
 				AsynflushThread.start();
 			}
-			MemController.getInstance().reportFree(this, oldMemUsage);
 		}
 	}
 
