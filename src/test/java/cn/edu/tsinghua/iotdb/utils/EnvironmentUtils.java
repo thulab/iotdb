@@ -37,6 +37,7 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e.getMessage());
 		}
+		FileNodeManager.getInstance().reset();
 		// clean wal
 		WriteLogManager.getInstance().close();
 		// close metadata

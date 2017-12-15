@@ -53,7 +53,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 	private volatile Set<String> backUpOverflowNameSpaceSet;
 
 	private static class FileNodeManagerHolder {
-		private static final FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.maxOpenFolder,
+		private static FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.maxOpenFolder,
 				MManager.getInstance(), TsFileDBConf.fileNodeDir);
 	}
 
@@ -80,6 +80,11 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 
 	public static FileNodeManager getInstance() {
 		return FileNodeManagerHolder.INSTANCE;
+	}
+
+	public synchronized void reset() {
+		FileNodeManagerHolder.INSTANCE = new FileNodeManager(TsFileDBConf.maxOpenFolder, MManager.getInstance(),
+				TsFileDBConf.fileNodeDir);
 	}
 
 	private FileNodeManager(int maxLRUNumber, MManager mManager, String normalDataDir) {
