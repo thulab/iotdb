@@ -58,9 +58,9 @@ public class EnvironmentUtils {
 		// delete wal
 		cleanDir(config.walFolder);
 		// delete derby
-		cleanDir(config.derbyHome);
+		//cleanDir(config.derbyHome);
 		// delte data
-		cleanDir("data");
+		//cleanDir("data");
 		// delte derby log
 		//cleanDir("derby.log");
 	}

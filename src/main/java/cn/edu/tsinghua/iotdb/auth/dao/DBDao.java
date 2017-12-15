@@ -191,11 +191,11 @@ public class DBDao {
 		} catch (SQLException | AuthException e) {
 			throw new AuthRuntimeException(e);
 		}
-		String url = protocal + DBLocalPath + shutdown;
-		try {
-			DriverManager.getConnection(url);
-		} catch (SQLException e) {
-		}
+//		String url = protocal + DBLocalPath + shutdown;
+//		try {
+//			DriverManager.getConnection(url);
+//		} catch (SQLException e) {
+//		}
 	}
 
 	public static Statement getStatement() {
