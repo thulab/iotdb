@@ -478,13 +478,15 @@ public class BufferWriteProcessor extends LRUProcessor {
 					memUsed += newMemUsage;
 					break;
 				case WARNING:
-					LOGGER.warn("Memory usage exceeded warning threshold.");
+					LOGGER.warn("Memory usage will exceed warning threshold, current : {}." ,
+							MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
 					recordWriter.write(tsRecord);
 					memUsed += newMemUsage;
 					break;
 				case DANGEROUS:
 				default:
-					LOGGER.error("Memory usage exceeded dangerous threshold.");
+					LOGGER.error("Memory usage will exceed dangerous threshold, current : {}.",
+							MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
 					throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
 			}
 		} catch (IOException | WriteProcessException e) {

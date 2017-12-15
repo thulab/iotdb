@@ -16,11 +16,10 @@ public class MemControllerTest {
 
     @Test
     public void test() throws BufferWriteProcessorException {
-        config.memThresholdWarning = 8 * GB;
-        config.memThresholdDangerous = 16 * GB;
-
         MemController memController = MemController.getInstance();
         memController.clear();
+        memController.setWarningThreshold(8 * GB);
+        memController.setDangerouseThreshold(16 * GB);
 
         Object[] dummyUser = new Object[20];
         for(int i = 0; i < dummyUser.length; i++)

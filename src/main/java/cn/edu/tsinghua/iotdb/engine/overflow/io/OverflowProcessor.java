@@ -289,7 +289,8 @@ public class OverflowProcessor extends LRUProcessor {
 				memUsed += newUsage;
 				break;
 			case WARNING:
-				LOGGER.warn("Memory usage exceeded warning threshold.");
+				LOGGER.warn("Memory usage will exceed warning threshold, current : {}." ,
+						MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
 				for (DataPoint dataPoint : record.dataPointList) {
 					insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
 							dataPoint.getType(), dataPoint.getValue().toString());
@@ -297,7 +298,8 @@ public class OverflowProcessor extends LRUProcessor {
 				memUsed += newUsage;
 				break;
 			case DANGEROUS:
-				LOGGER.error("Memory usage exceeded dangerous threshold.");
+				LOGGER.error("Memory usage will exceed dangerous threshold, current : {}." ,
+						MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
 				throw new OverflowProcessorException("Memory usage exceeded dangerous threshold.");
 			default:
 		}

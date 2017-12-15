@@ -83,9 +83,9 @@ public class MemControlTest {
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
 
-            config.memMonitorInterval = 5 * 1000;  // 5s
-            config.memThresholdWarning = 1 * TsFileDBConstant.MB;
-            config.memThresholdDangerous = 2 * TsFileDBConstant.MB;
+            MemController.getInstance().setCheckInterval(5 * 1000);  // 5s
+            MemController.getInstance().setDangerouseThreshold(2 * TsFileDBConstant.MB);  // force initialize
+            MemController.getInstance().setWarningThreshold(1 * TsFileDBConstant.MB);
 
             deamon = new IoTDB();
             deamon.active();

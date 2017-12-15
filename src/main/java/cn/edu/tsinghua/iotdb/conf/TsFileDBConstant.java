@@ -14,6 +14,7 @@ public class TsFileDBConstant {
 
     public static final long GB = 1024 * 1024 * 1024L;
     public static final long MB = 1024 * 1024L;
+    public static final long KB = 1024L;
 
     public static final long MEM_THRESHOLD_WARNING_DEFAULT = 8 * GB;
     public static final long MEM_THRESHOLD_DANGEROUS_DEFAULT = 16 * GB;

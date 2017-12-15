@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public class MemController {
     private Map<Object, Long> memMap;
     private AtomicLong totalMemUsed;
 
-    private long waringThreshold;
+    private long warningThreshold;
     private long dangerouseThreshold;
 
     private MemMonitorThread monitorThread;
@@ -30,6 +30,19 @@ public class MemController {
         SAFE, WARNING, DANGEROUS
     }
 
+    public void setDangerouseThreshold(long dangerouseThreshold) {
+        this.dangerouseThreshold = dangerouseThreshold;
+    }
+
+    public void setWarningThreshold(long warningThreshold) {
+        this.warningThreshold = warningThreshold;
+    }
+
+    public void setCheckInterval(long checkInterval) {
+        this.monitorThread.setCheckInterval(checkInterval);
+    }
+
+
     private static class InstanceHolder {
         private static final MemController INSTANCE = new MemController(TsfileDBDescriptor.getInstance().getConfig());
     }
@@ -37,7 +50,7 @@ public class MemController {
     private MemController(TsfileDBConfig config) {
         memMap = new HashMap<>();
         totalMemUsed = new AtomicLong(0);
-        waringThreshold = config.memThresholdWarning;
+        warningThreshold = config.memThresholdWarning;
         dangerouseThreshold = config.memThresholdDangerous;
 
         monitorThread = new MemMonitorThread(config.memMonitorInterval);
@@ -63,44 +76,44 @@ public class MemController {
 
     public UsageLevel getCurrLevel() {
         long memUsage = totalMemUsed.get();
-        if(memUsage < waringThreshold){
+        if (memUsage < warningThreshold) {
             return UsageLevel.SAFE;
-        } else if(memUsage < dangerouseThreshold) {
+        } else if (memUsage < dangerouseThreshold) {
             return UsageLevel.WARNING;
         } else {
-            return  UsageLevel.DANGEROUS;
+            return UsageLevel.DANGEROUS;
         }
     }
 
     public UsageLevel reportUse(Object user, long usage) {
         Long oldUsage = memMap.get(user);
-        if(oldUsage == null)
+        if (oldUsage == null)
             oldUsage = 0L;
-        long newTotUsage = totalMemUsed.get() + usage ;
+        long newTotUsage = totalMemUsed.get() + usage;
         // check if the new usage will reach dangerous threshold
-        if(newTotUsage < dangerouseThreshold) {
+        if (newTotUsage < dangerouseThreshold) {
             newTotUsage = totalMemUsed.addAndGet(usage);
             // double check if updating will reach dangerous threshold
-            if(newTotUsage < waringThreshold) {
+            if (newTotUsage < warningThreshold) {
                 // still safe, action taken
                 memMap.put(user, oldUsage + usage);
-                logger.debug("Memory allocated to {}, it is using {} GB {} MB {} B, total usage {} GB {} MB {} B",user.getClass()
-                        , (oldUsage + usage) / TsFileDBConstant.GB, (oldUsage + usage) / TsFileDBConstant.MB % 1024, (oldUsage + usage) % TsFileDBConstant.MB
-                        , newTotUsage / TsFileDBConstant.GB, newTotUsage / TsFileDBConstant.MB % 1024, newTotUsage % TsFileDBConstant.MB);
+                logger.debug("Safe Threshold : Memory allocated to {}, it is using {}, total usage {}", user.getClass()
+                        , MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
                 return UsageLevel.SAFE;
-            } else if(newTotUsage < dangerouseThreshold) {
+            } else if (newTotUsage < dangerouseThreshold) {
                 // become warning because competition with other threads, still take the action
                 memMap.put(user, oldUsage + usage);
-                logger.debug("Memory allocated to {}, it is using {} GB {} MB {} B, total usage {} GB {} MB {} B",user.getClass()
-                        , (oldUsage + usage) / TsFileDBConstant.GB, (oldUsage + usage) / TsFileDBConstant.MB % 1024, (oldUsage + usage) % TsFileDBConstant.MB
-                        , newTotUsage / TsFileDBConstant.GB, newTotUsage / TsFileDBConstant.MB % 1024, newTotUsage % TsFileDBConstant.MB);
+                logger.debug("Warning Threshold : Memory allocated to {}, it is using {}, total usage {}", user.getClass()
+                        , MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
                 return UsageLevel.WARNING;
             } else {
+                logger.warn("Memory request from {} is denied, memory usage : {}", user.getClass(), MemUtils.bytesCntToStr(newTotUsage));
                 // become dangerous because competition with other threads, discard this action
                 totalMemUsed.addAndGet(-usage);
                 return UsageLevel.DANGEROUS;
             }
         } else {
+            logger.warn("Memory request from {} is denied, memory usage : {}", user.getClass(), MemUtils.bytesCntToStr(newTotUsage));
             return UsageLevel.DANGEROUS;
         }
     }
@@ -108,17 +121,17 @@ public class MemController {
     public void reportFree(Object user, long freeSize) {
         Long usage = memMap.get(user);
         if (usage == null)
-            logger.debug("Unregistered memory usage from {}", user.getClass());
-        else if(freeSize > usage){
-            logger.debug("Request to free {} bytes while it only registered {} bytes", freeSize, usage);
+            logger.error("Unregistered memory usage from {}", user.getClass());
+        else if (freeSize > usage) {
+            logger.error("Request to free {} bytes while it only registered {} bytes", freeSize, usage);
             totalMemUsed.addAndGet(-usage);
             memMap.put(user, 0L);
         } else {
             long newTotalMemUsage = totalMemUsed.addAndGet(-freeSize);
             memMap.put(user, usage - freeSize);
-            logger.debug("Memory freed from {}, it is using {} GB {} MB, total usage {} GB {} MB",user.getClass()
-                    , (usage - freeSize) / TsFileDBConstant.GB, (usage - freeSize) / TsFileDBConstant.MB % 1000
-                    , newTotalMemUsage / TsFileDBConstant.GB, newTotalMemUsage / TsFileDBConstant.MB % 1000);
+            logger.debug("Memory freed from {}, it is using {}, total usage {}", user.getClass()
+                    , MemUtils.bytesCntToStr(usage - freeSize)
+                    , MemUtils.bytesCntToStr(newTotalMemUsage));
         }
     }
 }
