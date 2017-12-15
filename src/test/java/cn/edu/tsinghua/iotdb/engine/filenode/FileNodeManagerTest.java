@@ -89,7 +89,7 @@ public class FileNodeManagerTest {
 		tsdbconfig.enableWal = walOpen;
 	}
 
-	@Test
+	//@Test
 	public void testBufferwriteAndAddMetadata() {
 		createBufferwriteInMemory(new Pair<Long, Long>(1000L, 1001L), measurementId);
 		fManager = FileNodeManager.getInstance();
@@ -128,7 +128,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testBufferwriteInsert() {
 
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -175,7 +175,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testOverflowInsert() {
 		// create bufferwrite data
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -231,7 +231,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testOverflowUpdate() {
 
 		// create bufferwrite data
@@ -266,7 +266,7 @@ public class FileNodeManagerTest {
 
 	}
 
-	@Test
+	//@Test
 	public void testOverflowDelete() {
 		// create bufferwrite data
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
