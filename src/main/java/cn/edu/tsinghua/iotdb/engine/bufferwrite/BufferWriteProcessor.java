@@ -532,6 +532,11 @@ public class BufferWriteProcessor extends LRUProcessor {
 	}
 
 	@Override
+	public void flush() throws IOException{
+		recordWriter.flushRowGroup(false);
+	}
+	
+	@Override
 	public void close() throws BufferWriteProcessorException {
 		isFlushingSync = true;
 		try {

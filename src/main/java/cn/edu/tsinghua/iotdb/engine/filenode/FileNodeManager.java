@@ -782,9 +782,22 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		switch (level) {
 			case WARNING:
 				// only select the most urgent (most active or biggest in size) processors to flush
+				// only select top 10% active memory user to flush
+			try {
+				super.flushTop(0.1f);
+			} catch (IOException e) {
+				LOGGER.error("force flush memory data error",e.getMessage());
+				e.printStackTrace();
+			}
 				break;
 			case DANGEROUS:
 				// force all processors to flush
+			try {
+				super.flushAll();
+			} catch (IOException e) {
+				LOGGER.error("force flush memory data error:{}",e.getMessage());
+				e.printStackTrace();
+			}
 				break;
 			case SAFE:
 				// do nothing, this case is impossible

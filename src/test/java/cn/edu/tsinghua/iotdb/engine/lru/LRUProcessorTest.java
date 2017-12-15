@@ -3,6 +3,8 @@ package cn.edu.tsinghua.iotdb.engine.lru;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.IOException;
+
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
@@ -33,6 +35,12 @@ public class LRUProcessorTest {
 
 		@Override
 		public void close() throws ProcessorException {
+			
+		}
+
+		@Override
+		public void flush() throws IOException {
+			// TODO Auto-generated method stub
 			
 		}
 		

@@ -91,16 +91,17 @@ public abstract class LRUProcessor {
 		}
 	}
 
-	public boolean tryLock(boolean isWriteLock){
+	public boolean tryLock(boolean isWriteLock) {
 		if (isWriteLock) {
-			LOGGER.debug("{}: lru write lock-Thread id {}",this.getClass().getSimpleName(),Thread.currentThread().getId());
+			LOGGER.debug("{}: lru write lock-Thread id {}", this.getClass().getSimpleName(),
+					Thread.currentThread().getId());
 			return tryWriteLock();
-		}else{
-			LOGGER.debug("{}: lru read lock-Thread id {}",this.getClass().getSimpleName(),Thread.currentThread().getId());
+		} else {
+			LOGGER.debug("{}: lru read lock-Thread id {}", this.getClass().getSimpleName(),
+					Thread.currentThread().getId());
 			return tryReadLock();
 		}
 	}
-	
 
 	/**
 	 * @param isWriteUnlock
@@ -176,6 +177,8 @@ public abstract class LRUProcessor {
 	 * @return true if subclass doesn't have other implementation.
 	 */
 	public abstract boolean canBeClosed();
+
+	public abstract void flush() throws IOException;
 
 	/**
 	 * Close the processor.<br>

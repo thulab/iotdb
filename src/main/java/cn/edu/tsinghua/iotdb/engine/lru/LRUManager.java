@@ -2,9 +2,11 @@ package cn.edu.tsinghua.iotdb.engine.lru;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -274,6 +276,47 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			}
 		} else {
 			LOGGER.warn("The processorMap does't contains the nameSpacePath {}", nsPath);
+		}
+	}
+
+	protected void flushTop(float percentage) throws IOException {
+		int topActive = 1;
+		List<LRUProcessor> temp = new ArrayList<>();
+		synchronized (processorMap) {
+			topActive = topActive > percentage * processorMap.size() ? topActive
+					: (int) (percentage * processorMap.size());
+			// in order to avoid the out of index error
+			if (topActive > processorMap.size()) {
+				topActive = processorMap.size();
+			}
+			for (int i = 0; i < topActive; i++) {
+				temp.add(processorLRUList.get(i));
+			}
+		}
+		for (LRUProcessor processor : temp) {
+			if (processor.tryWriteLock()) {
+				try {
+					processor.flush();
+				} finally {
+					processor.writeUnlock();
+				}
+			}
+		}
+	}
+
+	protected void flushAll() throws IOException {
+		List<LRUProcessor> temp = new ArrayList<>();
+		synchronized (processorMap) {
+			temp.addAll(processorLRUList);
+		}
+		for (LRUProcessor processor : temp) {
+			if (processor.tryWriteLock()) {
+				try {
+					processor.flush();
+				} finally {
+					processor.writeUnlock();
+				}
+			}
 		}
 	}
 

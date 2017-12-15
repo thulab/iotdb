@@ -512,6 +512,16 @@ public class OverflowProcessor extends LRUProcessor {
 	}
 
 	@Override
+	public void flush() throws IOException{
+		try {
+			flushRowGroupToStore(false);
+		} catch (OverflowProcessorException e) {
+			e.printStackTrace();
+			throw new IOException(e);
+		}
+	}
+	
+	@Override
 	public void close() throws OverflowProcessorException {
 		LOGGER.info("Start to close overflow processor, the nameSpacePath is {}", nameSpacePath);
 		try {

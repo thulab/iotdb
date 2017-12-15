@@ -1073,6 +1073,16 @@ public class FileNodeProcessor extends LRUProcessor {
 		}
 		return false;
 	}
+	
+	@Override
+	public void flush() throws IOException{
+		if(bufferWriteProcessor!=null){
+			bufferWriteProcessor.flush();
+		}
+		if(overflowProcessor!=null){
+			overflowProcessor.flush();
+		}
+	}
 
 	@Override
 	public void close() throws FileNodeProcessorException {
