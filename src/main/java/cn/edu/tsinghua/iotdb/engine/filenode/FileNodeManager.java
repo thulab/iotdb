@@ -207,7 +207,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	}
 
 	public int insert(TSRecord tsRecord) throws FileNodeManagerException {
-		System.out.println(statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqSuccess.name()).get());
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
 
