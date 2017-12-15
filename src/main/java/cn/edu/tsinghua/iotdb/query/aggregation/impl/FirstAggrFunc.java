@@ -28,7 +28,16 @@ public class FirstAggrFunc extends AggregateFunction{
 
     @Override
     public void calculateValueFromPageHeader(PageHeader pageHeader) throws ProcessorException {
-        throw new ProcessorException("PageHeader currently unsupported!");
+        if(resultData.timeLength == 0)
+            initFirst();
+        if (resultData.getTime(0) != -1) {
+            return;
+        }
+        String firstValStr = pageHeader.data_page_header.digest.getStatistics().get(AggregationConstant.FIRST);
+        if(firstValStr == null)
+            throw new ProcessorException("PageHeader contains no FIRST value");
+        resultData.setTime(0, 0);
+        putValueFromStr(firstValStr);
     }
 
     @Override
@@ -126,6 +135,7 @@ public class FirstAggrFunc extends AggregateFunction{
         }
     }
 
+    // add a place holder
     private void initFirst() {
         resultData.putTime(-1);
     }

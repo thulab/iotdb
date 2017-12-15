@@ -7,6 +7,7 @@ import java.util.Map;
 
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -96,4 +97,38 @@ public abstract class AggregateFunction {
      */
     public abstract void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
                                                 DynamicOneColumnData data) throws ProcessorException;
+
+    /**
+     * Convert a value from string to its real data type and put into return data.
+     * @param valueStr
+     */
+    public void putValueFromStr(String valueStr) throws ProcessorException {
+        try{
+            switch (dataType) {
+                case INT32:
+                    resultData.putInt(Integer.parseInt(valueStr));
+                    break;
+                case INT64:
+                    resultData.putLong(Long.parseLong(valueStr));
+                    break;
+                case BOOLEAN:
+                    resultData.putBoolean(Boolean.parseBoolean(valueStr));
+                    break;
+                case ENUMS:
+                case TEXT:
+                    resultData.putBinary(new Binary(valueStr));
+                    break;
+                case DOUBLE:
+                    resultData.putDouble(Double.parseDouble(valueStr));
+                    break;
+                case FLOAT:
+                    resultData.putFloat(Float.parseFloat(valueStr));
+                    break;
+                default:
+                    throw new ProcessorException("Unsupported type " + dataType);
+            }
+        } catch (Exception e) {
+          throw new ProcessorException(e.getMessage());
+        }
+    }
 }

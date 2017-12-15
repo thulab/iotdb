@@ -33,7 +33,22 @@ public class MeanAggrFunc extends AggregateFunction{
 
     @Override
     public void calculateValueFromPageHeader(PageHeader pageHeader) throws ProcessorException {
-        throw new ProcessorException("PageHeader currently unsupported!");
+        if (resultData.timeLength == 0)
+            resultData.putTime(0);
+        String sumValStr = pageHeader.data_page_header.digest.getStatistics().get(AggregationConstant.SUM);
+        if (sumValStr == null)
+            throw new ProcessorException("PageHeader contains no SUM value");
+        double pageSum;
+        try {
+            pageSum = Double.parseDouble(sumValStr);
+        } catch (NumberFormatException e) {
+            throw new ProcessorException("Sum in page header is not a double! " + e.getMessage());
+        }
+        int pageCnt = pageHeader.data_page_header.num_rows;
+
+        sum += pageSum;
+        cnt += pageCnt;
+        updateMean();
     }
 
     @Override
