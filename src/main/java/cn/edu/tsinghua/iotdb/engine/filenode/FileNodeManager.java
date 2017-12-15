@@ -72,6 +72,15 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 			+ "write.global/"
 			+ FileNodeManager.class.getSimpleName();
 
+	// There is no need to add concurrently
+	private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
+		{
+			for (MonitorConstants.FileNodeManagerStatConstants a: MonitorConstants.FileNodeManagerStatConstants.values()){
+				put(a.name(), new AtomicLong(0));
+			}
+		}
+	};
+
 	/**
 	 *
 	 * @return the key represent the params' name, values is AtomicLong type
@@ -79,15 +88,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	public HashMap<String, AtomicLong> getStatParamsHashMap() {
 		return statParamsHashMap;
 	}
-
-	// There is no need to add concurrently
-	private static final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
-		{
-			for (MonitorConstants.FileNodeManagerStatConstants a: MonitorConstants.FileNodeManagerStatConstants.values()){
-				put(a.name(), new AtomicLong(0));
-			}
-		}
-	};
 
 	@Override
 
@@ -110,8 +110,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 		);
 		return new HashMap<String, TSRecord>(){{
 			put(fakeDeltaName, tsRecord);
-		}
-		};
+		}};
 	}
 
 	/**
@@ -208,6 +207,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	}
 
 	public int insert(TSRecord tsRecord) throws FileNodeManagerException {
+		System.out.println(statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TotalReqSuccess.name()).get());
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
 

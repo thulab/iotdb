@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -12,11 +11,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,12 +32,23 @@ public class StatMonitor {
     // key is the store path like root.stats.xxx.xxx, value is an interface
     private HashMap<String, IStatistic> registProcessor;
     private ScheduledExecutorService service;
+
     /**
      * stats params
      */
     private AtomicLong numBackLoop = new AtomicLong(0);
     private AtomicLong numBackLoopError = new AtomicLong(0);
-    private AtomicLong numPointInsert = new AtomicLong(0);
+    private AtomicLong numInsert = new AtomicLong(0);
+
+    public Long getNumPointsInsert() {
+        return numPointsInsert.get();
+    }
+
+    private AtomicLong numPointsInsert = new AtomicLong(0);
+
+    public Long getNumInsert() {
+        return numInsert.get();
+    }
 
     private StatMonitor() {
         mManager = MManager.getInstance();
@@ -52,20 +58,23 @@ public class StatMonitor {
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         backLoopPeriod = config.backLoopPeriod;
         try {
-            if (!mManager.pathExist("root.\\_stats")) {
-                mManager.setStorageLevelToMTree("root.\\_stats");
+            if (!mManager.pathExist("root.stats")) {
+                mManager.setStorageLevelToMTree("root.stats");
             }
-            List<String> fileNames = mManager.getAllFileNames();
-            for (String fileName : fileNames) {
-                String statPrefix = MonitorConstants.getStatPrefix();
-                String statFilePath = statPrefix + "write." + statPrefix.replaceAll(".", "_");
-                if (!MManager.getInstance().pathExist(statFilePath)) {
-                    mManager.addPathToMTree(
-                            statFilePath, "INT64", "RLE", new String[0]
-                    );
-                }
-                registProcessor.put(statFilePath, null);
-            }
+            registProcessor.clear();
+            // Add all the fileNode to registProcessor
+//            List<String> fileNames = mManager.getAllFileNames();
+//            for (String fileName : fileNames) {
+//                String statPrefix = MonitorConstants.getStatPrefix();
+//                String statFilePath = statPrefix + "write." + fileName.replaceAll("\\.", "_");
+//                System.out.println(statFilePath);
+//                if (!MManager.getInstance().pathExist(statFilePath)) {
+//                    mManager.addPathToMTree(
+//                            statFilePath, "INT64", "RLE", new String[0]
+//                    );
+//                }
+//                registProcessor.put(statFilePath, null);
+//            }
         } catch (Exception e) {
             LOGGER.error("MManager.getInstance().setStorageLevelToMTree False");
         }
@@ -75,6 +84,10 @@ public class StatMonitor {
         return StatMonitorHolder.INSTANCE;
     }
 
+
+    public void clearProcessor() {
+        registProcessor.clear();
+    }
     /**
      * @param hashMap       key is statParams name, values is AtomicLong type
      * @param fakeDeltaName is the deltaObject path of this module
@@ -113,18 +126,24 @@ public class StatMonitor {
     public synchronized void registStatMetadata(HashMap<String, String> hashMap) {
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
+                if (entry.getKey() == null) {
+                    LOGGER.error("!!!!!!!!!!!!!!!!!!!!!");
+                    LOGGER.error(entry.getKey());
+                }
+
                 if (!mManager.pathExist(entry.getKey())) {
                     mManager.addPathToMTree(
                             entry.getKey(), entry.getValue(), "RLE", new String[0]);
                 }
             }
         } catch (Exception e) {
-            LOGGER.debug("initialize the metadata error, stat processor may be wrong");
+            LOGGER.error("initialize the metadata error, stat processor may be wrong");
         }
     }
 
     public synchronized void deregistStatistics(String path) {
-        registProcessor.remove(path);
+        registProcessor.put(path, null);
+//        registProcessor.remove(path);
     }
 
     /**
@@ -170,10 +189,13 @@ public class StatMonitor {
     }
 
     private void insert(HashMap<String, TSRecord> tsRecordHashMap) {
+        FileNodeManager fManager = FileNodeManager.getInstance();
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
-                FileNodeManager.getInstance().insert(entry.getValue());
-                numPointInsert.addAndGet(entry.getValue().dataPointList.size());
+                fManager.insert(entry.getValue());
+                numInsert.incrementAndGet();
+                System.out.println("entry.getValue():" + entry.getValue());
+                numPointsInsert.addAndGet(entry.getValue().dataPointList.size());
             } catch (FileNodeManagerException e) {
                 LOGGER.debug(entry.getValue().dataPointList.toString());
                 LOGGER.debug("Insert Stat Points error!");
@@ -192,6 +214,7 @@ public class StatMonitor {
     class statBackLoop implements Runnable {
         public void run() {
             try {
+                LOGGER.debug("---------This is the Time to monitor--------------");
                 HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
                 insert(tsRecordHashMap);
                 numBackLoop.incrementAndGet();

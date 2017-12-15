@@ -87,19 +87,12 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 
 	private Map<String, Object> parameters = null;
 
-	/**
-	 * Stat information
-	 */
-	public enum FileNodeProcessorStatConstants {
-		TotalReqSuccess, TotalReqFail,
-		TotalPointsSuccess, TotalPointsFail,
-	}
+	private final String fakeDeltaName;
 
-	private final String fakeDeltaName = "root.statistics." + FileNodeProcessor.class.getSimpleName();
-
-	private static final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
+	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
 		{
-			for (FileNodeProcessorStatConstants a: FileNodeProcessorStatConstants.values()){
+			for (MonitorConstants.FileNodeProcessorStatConstants a:
+					MonitorConstants.FileNodeProcessorStatConstants.values()){
 				put(a.name(), new AtomicLong(0));
 			}
 		}
@@ -114,8 +107,8 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	public void registStatMetadata() {
 		HashMap<String, String> hashMap = new HashMap<String, String> (){{
 
-			for (MonitorConstants.FileNodeManagerStatConstants c :
-					MonitorConstants.FileNodeManagerStatConstants.values()) {
+			for (MonitorConstants.FileNodeProcessorStatConstants c :
+					MonitorConstants.FileNodeProcessorStatConstants.values()) {
 				put(fakeDeltaName + "." + c.name(), "INT64");
 			}
 		}};
@@ -125,8 +118,8 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
-		for (FileNodeProcessor.FileNodeProcessorStatConstants c :
-				FileNodeProcessor.FileNodeProcessorStatConstants.values()) {
+		for (MonitorConstants.FileNodeProcessorStatConstants c :
+				MonitorConstants.FileNodeProcessorStatConstants.values()) {
 			list.add(fakeDeltaName + "." + c.name());
 		}
 		return list;
@@ -247,6 +240,9 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	public FileNodeProcessor(String fileNodeDirPath, String nameSpacePath, Map<String, Object> parameters)
 			throws FileNodeProcessorException {
 		super(nameSpacePath);
+		fakeDeltaName = MonitorConstants.getStatPrefix()
+				+ "write."
+				+ nameSpacePath.replaceAll("\\.", "_");
 		this.parameters = parameters;
 		String dataDirPath = fileNodeDirPath + nameSpacePath;
 		File dataDir = new File(dataDirPath);
@@ -276,6 +272,15 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 			// add file into the index of file
 			addALLFileIntoIndex(newFileNodes);
 		}
+		//RegistStatService
+//		if (TsFileDBConf.enableStatMonitor) {
+//			StatMonitor statMonitor = StatMonitor.getInstance();
+//			statMonitor.registStatistics(
+//					getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.", "_"),
+//					this
+//			);
+//			registStatMetadata();
+//		}
 	}
 
 	private void addALLFileIntoIndex(List<IntervalFileNode> fileList) {

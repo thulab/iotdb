@@ -10,7 +10,7 @@ public class MonitorConstants {
         return statPrefix;
     }
 
-    public static final String statPrefix = "root.\\_stats.";
+    public static final String statPrefix = "root.stats.";
 
     public static HashMap<String, AtomicLong> iniValues(String constantsType) {
         HashMap<String, AtomicLong> hashMap = new HashMap<>();

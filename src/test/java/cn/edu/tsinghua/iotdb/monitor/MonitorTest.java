@@ -98,13 +98,21 @@ public class MonitorTest {
 
     @Test
     public void testFileNodeManagerMonitorAndAddMetadata() {
-        fManager = FileNodeManager.getInstance();
         StatMonitor statMonitor = StatMonitor.getInstance();
-        statMonitor.activate();
-//        statMonitor.registStatistics(fManager.getClass().getName(), fManager);
-
+        fManager = FileNodeManager.getInstance();
+        fManager.getStatParamsHashMap().forEach((key, value)->value.set(0));
+        statMonitor.clearProcessor();
+        statMonitor.registStatistics(fManager.getClass().getSimpleName(), fManager);
         // add metadata
         MManager mManager = MManager.getInstance();
+        try {
+            if (!mManager.pathExist("root.stats")) {
+                mManager.setStorageLevelToMTree("root.stats");
+            }
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+
         fManager.registStatMetadata();
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
         for (String statParam : statParamsHashMap.keySet()) {
@@ -113,9 +121,10 @@ public class MonitorTest {
             );
         }
 
+        statMonitor.activate();
         // wait for time second
         try {
-            Thread.sleep(5000);
+            Thread.sleep(2100);
             statMonitor.close();
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -124,12 +133,14 @@ public class MonitorTest {
 
         // Get stat data and test right
 
-        HashMap<String, TSRecord> statHashMap = statMonitor.gatherStatistics();
-        Long numInsert = statMonitor.getNumBackLoop();
-
+        HashMap<String, TSRecord> statHashMap = fManager.getAllStatisticsValue();
+        Long numInsert = statMonitor.getNumInsert();
+        Long numPointsInsert = statMonitor.getNumPointsInsert();
         String path = fManager.getAllPathForStatistic().get(0);
         int pos = path.lastIndexOf('.');
         TSRecord fTSRecord = statHashMap.get(path.substring(0, pos));
+        System.out.println(fTSRecord.toString());
+
         assertNotEquals(null, fTSRecord);
         for (DataPoint dataPoint : fTSRecord.dataPointList) {
             String m = dataPoint.getMeasurementId();
@@ -137,7 +148,10 @@ public class MonitorTest {
             if (m.contains("Fail")){
                 assertEquals(v, new Long(0));
             } else if (m.contains("Points")) {
-                assertEquals(v, new Long(numInsert * fManager.getStatParamsHashMap().size()));
+//                System.out.println("Measurements");
+//                System.out.println(m);
+//                System.out.println(numPointsInsert);
+                assertEquals(v, numPointsInsert);
             } else {
                 assertEquals(v, numInsert);
             }

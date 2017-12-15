@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,6 +180,7 @@ public abstract class LRUManager<T extends LRUProcessor> {
 					}
 				}
 				// construct a new processor
+				System.out.println("namespacePath:" + namespacePath);
 				processor = constructNewProcessor(namespacePath);
 				// must use lock and not try lock, because of this processor is
 				// a new processor
