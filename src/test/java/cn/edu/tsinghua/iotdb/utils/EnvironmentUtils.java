@@ -6,6 +6,8 @@ import java.io.IOException;
 import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -37,14 +39,17 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e.getMessage());
 		}
-		FileNodeManager.getInstance().reset();
 		// clean wal
 		WriteLogManager.getInstance().close();
+		// clean cache
+		TsFileMetaDataCache.getInstance().clear();
+		RowGroupBlockMetaDataCache.getInstance().clear();
 		// close metadata
 		MManager.getInstance().clear();
 		MManager.getInstance().flushObjectToFile();
 		// delete all directory
 		cleanAllDir();
+		//FileNodeManager.getInstance().reset();
 	}
 
 	private static void cleanAllDir() throws IOException {

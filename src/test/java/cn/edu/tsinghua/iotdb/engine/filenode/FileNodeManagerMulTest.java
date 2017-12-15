@@ -11,6 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -29,6 +31,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 public class FileNodeManagerMulTest {
 
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
+	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	private String deltaObjectId0 = "root.vehicle.d0";
 
@@ -45,14 +48,17 @@ public class FileNodeManagerMulTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
+	private boolean walOpen;
 
 	@Before
 	public void setUp() throws Exception {
+
 		pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
 		defaultMaxStringLength = tsconfig.maxStringLength;
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		pageSize = tsconfig.pageSizeInByte;
 		rowGroupSize = tsconfig.groupSizeInByte;
+		walOpen = tsdbconfig.enableWal;
 		// set rowgroupsize
 		tsconfig.groupSizeInByte = 10000;
 		tsconfig.pageCheckSizeThreshold = 3;
@@ -70,6 +76,7 @@ public class FileNodeManagerMulTest {
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
+		tsdbconfig.enableWal = walOpen;
 	}
 
 	@Test
@@ -761,7 +768,7 @@ public class FileNodeManagerMulTest {
 				if (temp.overflowChangeType == OverflowChangeType.NO_CHANGE) {
 					assertEquals(200, temp.getStartTime(deltaObjectId2));
 					assertEquals(200, temp.getEndTime(deltaObjectId2));
-				}else{
+				} else {
 					fail("Error");
 				}
 				temp = queryStructure.getBufferwriteDataInFiles().get(0);

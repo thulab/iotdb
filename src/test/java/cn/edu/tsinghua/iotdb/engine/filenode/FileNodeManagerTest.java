@@ -14,6 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.PathUtils;
 import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -37,6 +39,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
  */
 public class FileNodeManagerTest {
 
+	private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
 
 	private FileNodeManager fManager = null;
@@ -52,21 +55,25 @@ public class FileNodeManagerTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
+	private boolean walOpen;
 
 	@Before
 	public void setUp() throws Exception {
+		EnvironmentUtils.cleanEnv();
 		// origin value
 		rowGroupSize = tsconfig.groupSizeInByte;
 		pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		defaultMaxStringLength = tsconfig.maxStringLength;
 		pageSize = tsconfig.pageSizeInByte;
+		walOpen = tsdbconfig.enableWal;
 		// new value
 		tsconfig.duplicateIncompletedPage = true;
 		tsconfig.groupSizeInByte = 2000;
 		tsconfig.pageCheckSizeThreshold = 3;
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
+		tsdbconfig.enableWal = false;
 		MetadataManagerHelper.initMetadata();
 	}
 
@@ -79,6 +86,7 @@ public class FileNodeManagerTest {
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
+		tsdbconfig.enableWal = walOpen;
 	}
 
 	@Test
@@ -594,7 +602,7 @@ public class FileNodeManagerTest {
 			assertEquals(true, overflowData.get(3) != null);
 
 			// wait to merge over
-			waitToSleep(1000);
+			waitToSleep(2000);
 			// query new file and overflow data
 			token = fManager.beginQuery(deltaObjectId);
 			queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
