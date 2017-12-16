@@ -651,6 +651,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 						// handle
 						throw new IOException(e);
 					}
+					MemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 				} else {
 					flushState.setFlushing();
 					switchIndexFromWorkToFlush();
@@ -696,11 +697,11 @@ public class BufferWriteProcessor extends LRUProcessor {
 						} finally {
 							convertBufferLock.writeLock().unlock();
 						}
+						MemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 					};
 					Thread flush = new Thread(flushThread);
 					flush.start();
 				}
-				MemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 			}
 		}
 
