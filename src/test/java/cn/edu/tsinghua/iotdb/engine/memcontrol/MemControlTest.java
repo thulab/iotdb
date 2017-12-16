@@ -130,8 +130,8 @@ public class MemControlTest {
         assertEquals(MemController.UsageLevel.WARNING, MemController.getInstance().getCurrLevel());
 
         // test MemControlTread auto flush
-       /* Thread.sleep(5000);
-        assertEquals(MemController.UsageLevel.SAFE, MemController.getInstance().getCurrLevel());*/
+        Thread.sleep(10000);
+        assertEquals(MemController.UsageLevel.SAFE, MemController.getInstance().getCurrLevel());
     }
 
     public void insert(String deviceId) {

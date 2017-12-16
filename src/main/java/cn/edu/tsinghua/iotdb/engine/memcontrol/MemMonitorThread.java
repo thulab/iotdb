@@ -21,8 +21,13 @@ public class MemMonitorThread extends Thread {
 
     @Override
     public void run() {
+        logger.info("MemMonitorThread started");
         super.run();
         while (true) {
+            if(this.isInterrupted()) {
+                logger.info("MemMonitorThread exiting...");
+                return;
+            }
             MemController.UsageLevel level = MemController.getInstance().getCurrLevel();
             switch (level) {
                 case WARNING:
@@ -31,7 +36,9 @@ public class MemMonitorThread extends Thread {
                             level, MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
                     FileNodeManager.getInstance().forceFlush(level);
                     logger.info("Flush over, current memory size is {}", MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+                    break;
                 case SAFE:
+                    logger.info("Memory check is safe, current usage {}" , MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
                 default:
             }
             try {
