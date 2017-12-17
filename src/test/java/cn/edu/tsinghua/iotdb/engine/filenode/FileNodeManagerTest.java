@@ -56,7 +56,7 @@ public class FileNodeManagerTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
-	private boolean walOpen;
+//	private boolean walOpen;
 	private IoTDB ioTDB;
 
 	@Before
@@ -67,7 +67,7 @@ public class FileNodeManagerTest {
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		defaultMaxStringLength = tsconfig.maxStringLength;
 		pageSize = tsconfig.pageSizeInByte;
-		walOpen = tsdbconfig.enableWal;
+//		walOpen = tsdbconfig.enableWal;
 		// new value
 		tsconfig.duplicateIncompletedPage = true;
 		tsconfig.groupSizeInByte = 2000;
@@ -90,7 +90,7 @@ public class FileNodeManagerTest {
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
-		tsdbconfig.enableWal = walOpen;
+//		tsdbconfig.enableWal = walOpen;
 	}
 
 	//@Test

@@ -49,7 +49,7 @@ public class FileNodeManagerMulTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
-	private boolean walOpen;
+//	private boolean walOpen;
 	private IoTDB ioTDB;
 
 	@Before
@@ -60,7 +60,7 @@ public class FileNodeManagerMulTest {
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		pageSize = tsconfig.pageSizeInByte;
 		rowGroupSize = tsconfig.groupSizeInByte;
-		walOpen = tsdbconfig.enableWal;
+//		walOpen = tsdbconfig.enableWal;
 		// set rowgroupsize
 		tsconfig.groupSizeInByte = 10000;
 		tsconfig.pageCheckSizeThreshold = 3;
@@ -82,7 +82,7 @@ public class FileNodeManagerMulTest {
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
-		tsdbconfig.enableWal = walOpen;
+//		tsdbconfig.enableWal = walOpen;
 	}
 
 	@Test

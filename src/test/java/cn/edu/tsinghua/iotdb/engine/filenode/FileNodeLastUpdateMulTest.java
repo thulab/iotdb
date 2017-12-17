@@ -80,7 +80,7 @@ public class FileNodeLastUpdateMulTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
-	private boolean walOpen;
+//	private boolean walOpen;
 	private IoTDB ioTDB;
 
 	@Before
@@ -91,7 +91,7 @@ public class FileNodeLastUpdateMulTest {
 		defaultMaxStringLength = tsconfig.maxStringLength;
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		pageSize = tsconfig.pageSizeInByte;
-		walOpen = tsdbconfig.enableWal;
+//		walOpen = tsdbconfig.enableWal;
 		// new value
 		tsconfig.groupSizeInByte = 10000;
 		tsconfig.pageCheckSizeThreshold = 3;
@@ -120,7 +120,7 @@ public class FileNodeLastUpdateMulTest {
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
-		tsdbconfig.enableWal = walOpen;
+//		tsdbconfig.enableWal = walOpen;
 	}
 
 	@Test
