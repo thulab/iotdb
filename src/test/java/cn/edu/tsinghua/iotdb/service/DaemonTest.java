@@ -104,18 +104,6 @@ public class DaemonTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-//            overflowDataDirPre = config.overflowDataDir;
-//            fileNodeDirPre = config.fileNodeDir;
-//            bufferWriteDirPre = config.bufferWriteDir;
-//            metadataDirPre = config.metadataDir;
-//            derbyHomePre = config.derbyHome;
-//
-//            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-//            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-//            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-//            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-//            config.derbyHome = FOLDER_HEADER + "/data/derby";
             deamon = new IoTDB();
             deamon.active();
             EnvironmentUtils.envSetUp();
@@ -127,21 +115,6 @@ public class DaemonTest {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
-
-//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-//            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-//            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-//            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-//            FileUtils.deleteDirectory(new File(config.metadataDir));
-//            FileUtils.deleteDirectory(new File(config.derbyHome));
-//            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-//
-//            config.overflowDataDir = overflowDataDirPre;
-//            config.fileNodeDir = fileNodeDirPre;
-//            config.bufferWriteDir = bufferWriteDirPre;
-//            config.metadataDir = metadataDirPre;
-//            config.derbyHome = derbyHomePre;
-
             EnvironmentUtils.cleanEnv();
         }
     }

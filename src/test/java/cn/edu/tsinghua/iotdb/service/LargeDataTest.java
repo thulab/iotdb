@@ -16,6 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,24 +62,13 @@ public class LargeDataTest {
     public void setUp() throws Exception {
         if (testFlag) {
             AggregateEngine.aggregateFetchSize = 4000;
-//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-//            overflowDataDirPre = config.overflowDataDir;
-//            fileNodeDirPre = config.fileNodeDir;
-//            bufferWriteDirPre = config.bufferWriteDir;
-//            metadataDirPre = config.metadataDir;
-//            derbyHomePre = config.derbyHome;
-//
-//            // use small page setting
-//            TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-//            tsFileConfig.maxNumberOfPointsInPage = 100;
-//            tsFileConfig.pageSizeInByte = 1024 * 1024 * 15;
-//            tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
-//
-//            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-//            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-//            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-//            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-//            config.derbyHome = FOLDER_HEADER + "/data/derby";
+
+            // use small page setting
+            TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+            tsFileConfig.maxNumberOfPointsInPage = 100;
+            tsFileConfig.pageSizeInByte = 1024 * 1024 * 15;
+            tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
+
             deamon = new IoTDB();
             deamon.active();
             EnvironmentUtils.envSetUp();
@@ -90,19 +81,6 @@ public class LargeDataTest {
             deamon.stop();
             Thread.sleep(5000);
             EnvironmentUtils.cleanEnv();
-//            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-//            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-//            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-//            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-//            FileUtils.deleteDirectory(new File(config.metadataDir));
-//            FileUtils.deleteDirectory(new File(config.derbyHome));
-//            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-//
-//            config.overflowDataDir = overflowDataDirPre;
-//            config.fileNodeDir = fileNodeDirPre;
-//            config.bufferWriteDir = bufferWriteDirPre;
-//            config.metadataDir = metadataDirPre;
-//            config.derbyHome = derbyHomePre;
         }
     }
 
@@ -117,16 +95,16 @@ public class LargeDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-//            selectAllTest();
-//            aggregationTest();
-//            groupByTest();
-//            allNullSeriesAggregationTest();
-//
-//            allNullSeriesGroupByTest();
-//
-//            negativeValueTest();
-//
-//            fixBigGroupByClassFormNumberTest();
+            selectAllTest();
+            aggregationTest();
+            groupByTest();
+            allNullSeriesAggregationTest();
+
+            allNullSeriesGroupByTest();
+
+            negativeValueTest();
+
+            fixBigGroupByClassFormNumberTest();
 
             seriesTimeDigestTest();
 
