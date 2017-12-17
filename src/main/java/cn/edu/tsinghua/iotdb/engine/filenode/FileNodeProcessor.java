@@ -739,7 +739,8 @@ public class FileNodeProcessor extends LRUProcessor {
 				}
 			}
 		} else {
-			throw new FileNodeProcessorException("No file was changed when merging");
+			LOGGER.error("No file was changed when mergin, the filenode is {}",nameSpacePath);
+			throw new FileNodeProcessorException("No file was changed when merging, the filenode is "+nameSpacePath);
 		}
 		return result;
 	}

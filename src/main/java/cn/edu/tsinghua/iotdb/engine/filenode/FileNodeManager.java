@@ -763,7 +763,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 				fileNodeProcessor.getOverflowProcessor().close();
 			} catch (LRUManagerException | FileNodeProcessorException | BufferWriteProcessorException
 					| OverflowProcessorException e) {
-				LOGGER.error("Merge the filenode processor error", e);
+				LOGGER.error("Merge the filenode processor {} error, the reason is {}",
+						fileNodeProcessor.getNameSpacePath(), e.getMessage());
 				if (fileNodeProcessor != null) {
 					fileNodeProcessor.writeUnlock();
 				}
@@ -772,6 +773,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			try {
 				fileNodeProcessor.merge();
 			} catch (FileNodeProcessorException e) {
+				LOGGER.error("Merge the filenode processor {} error, the reason is {}",
+						fileNodeProcessor.getNameSpacePath(), e.getMessage());
 				throw new ErrorDebugException(e);
 			}
 		}

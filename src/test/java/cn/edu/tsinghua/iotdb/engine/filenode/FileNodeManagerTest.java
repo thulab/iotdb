@@ -61,7 +61,6 @@ public class FileNodeManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		EnvironmentUtils.cleanEnv();
 		// origin value
 		rowGroupSize = tsconfig.groupSizeInByte;
 		pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
@@ -76,14 +75,14 @@ public class FileNodeManagerTest {
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsdbconfig.enableWal = false;
-		ioTDB = new IoTDB();
-		ioTDB.active();
+//		ioTDB = new IoTDB();
+//		ioTDB.active();
 		MetadataManagerHelper.initMetadata();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		ioTDB.stop();
+//		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 		// recovery value
 		tsconfig.groupSizeInByte = rowGroupSize;
