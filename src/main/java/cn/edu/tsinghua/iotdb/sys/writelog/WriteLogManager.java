@@ -17,9 +17,11 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 //import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WriteLogManager {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(WriteLogManager.class);
     // to determine whether system is in recovering process
     public static boolean isRecovering = false;
     // 0 represents BUFFERWRITE insert operation, 1 represents OVERFLOW insert operation
@@ -162,5 +164,12 @@ public class WriteLogManager {
         }
 
         timingService.shutdown();
+
+        try {
+            timingService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("wal manager timing service could not be shutdown");
+            // e.printStackTrace();
+        }
     }
 }
