@@ -68,14 +68,14 @@ public class FileNodeManagerMulTest {
 		tsconfig.maxStringLength = 2;
 		tsconfig.duplicateIncompletedPage = true;
 		tsdbconfig.enableWal = false;
-//		ioTDB = new IoTDB();
-//		ioTDB.active();
+		ioTDB = new IoTDB();
+		ioTDB.active();
 		MetadataManagerHelper.initMetadata2();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-//		ioTDB.stop();
+		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 		tsconfig.groupSizeInByte = rowGroupSize;
 		tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;

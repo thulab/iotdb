@@ -76,14 +76,14 @@ public class FileNodeManagerTest {
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsdbconfig.enableWal = false;
-//		ioTDB = new IoTDB();
-//		ioTDB.active();
+		ioTDB = new IoTDB();
+		ioTDB.active();
 		MetadataManagerHelper.initMetadata();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-//		ioTDB.stop();
+		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 		// recovery value
 		tsconfig.groupSizeInByte = rowGroupSize;
@@ -133,7 +133,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testBufferwriteInsert() {
 
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -180,7 +180,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testOverflowInsert() {
 		// create bufferwrite data
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -236,7 +236,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testOverflowUpdate() {
 
 		// create bufferwrite data
@@ -271,7 +271,7 @@ public class FileNodeManagerTest {
 
 	}
 
-	//@Test
+	@Test
 	public void testOverflowDelete() {
 		// create bufferwrite data
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -298,7 +298,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testRecoveryWait() {
 		File dir = PathUtils.getBufferWriteDir("");
 		if (!dir.exists()) {
@@ -423,7 +423,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testRecoveryMerge() {
 
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -544,7 +544,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testMergeAll() {
 
 		List<Pair<Long, Long>> pairList = new ArrayList<>();
@@ -652,7 +652,7 @@ public class FileNodeManagerTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testOverflowEmptyAndMerge() {
 
 		// write tsfile data
