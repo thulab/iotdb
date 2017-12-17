@@ -223,7 +223,7 @@ public class IoTDB {
         CloseMergeServer.getInstance().closeServer();
     }
 
-    public static void main(String[] args) throws InterruptedException, FileNodeManagerException, IOException {
+    public static void main(String[] args) {
         IoTDB daemon = new IoTDB();
         daemon.active();
     }
