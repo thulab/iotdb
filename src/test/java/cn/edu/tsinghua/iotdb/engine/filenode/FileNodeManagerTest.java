@@ -22,6 +22,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -56,6 +57,7 @@ public class FileNodeManagerTest {
 	private boolean cachePageData;
 	private int pageSize;
 	private boolean walOpen;
+	private IoTDB ioTDB;
 
 	@Before
 	public void setUp() throws Exception {
@@ -74,11 +76,14 @@ public class FileNodeManagerTest {
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsdbconfig.enableWal = false;
+		ioTDB = new IoTDB();
+		ioTDB.active();
 		MetadataManagerHelper.initMetadata();
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 		// recovery value
 		tsconfig.groupSizeInByte = rowGroupSize;

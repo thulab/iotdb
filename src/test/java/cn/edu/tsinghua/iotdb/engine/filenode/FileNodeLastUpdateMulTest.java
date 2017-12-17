@@ -25,6 +25,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -80,6 +81,7 @@ public class FileNodeLastUpdateMulTest {
 	private boolean cachePageData;
 	private int pageSize;
 	private boolean walOpen;
+	private IoTDB ioTDB;
 
 	@Before
 	public void setUp() throws Exception {
@@ -101,13 +103,16 @@ public class FileNodeLastUpdateMulTest {
 		parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
+		ioTDB = new IoTDB();
+		ioTDB.active();
 		MetadataManagerHelper.initMetadata2();
 		nameSpacePath = MManager.getInstance().getFileNameByPath(deltaObjectId0);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-
+		Thread.sleep(2000);
+		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 
 		tsconfig.groupSizeInByte = rowGroupSize;
