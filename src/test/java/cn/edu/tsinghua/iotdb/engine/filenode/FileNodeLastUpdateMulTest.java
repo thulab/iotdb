@@ -103,8 +103,8 @@ public class FileNodeLastUpdateMulTest {
 		parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
-		ioTDB = new IoTDB();
-		ioTDB.active();
+//		ioTDB = new IoTDB();
+//		ioTDB.active();
 		MetadataManagerHelper.initMetadata2();
 		nameSpacePath = MManager.getInstance().getFileNameByPath(deltaObjectId0);
 	}
@@ -112,7 +112,7 @@ public class FileNodeLastUpdateMulTest {
 	@After
 	public void tearDown() throws Exception {
 		Thread.sleep(2000);
-		ioTDB.stop();
+//		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 
 		tsconfig.groupSizeInByte = rowGroupSize;

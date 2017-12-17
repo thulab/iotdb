@@ -76,14 +76,14 @@ public class FileNodeManagerTest {
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsdbconfig.enableWal = false;
-		ioTDB = new IoTDB();
-		ioTDB.active();
+//		ioTDB = new IoTDB();
+//		ioTDB.active();
 		MetadataManagerHelper.initMetadata();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		ioTDB.stop();
+//		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 		// recovery value
 		tsconfig.groupSizeInByte = rowGroupSize;
