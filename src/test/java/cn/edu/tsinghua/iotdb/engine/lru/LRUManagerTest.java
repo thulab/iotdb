@@ -165,7 +165,6 @@ public class LRUManagerTest {
 
 			@Override
 			public void act() throws Exception {
-
 			}
 		};
 
