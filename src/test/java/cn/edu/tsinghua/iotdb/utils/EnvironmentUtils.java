@@ -3,6 +3,9 @@ package cn.edu.tsinghua.iotdb.utils;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -25,16 +28,19 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
  *
  */
 public class EnvironmentUtils {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentUtils.class);
 
 	private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 	private static TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
 
 	public static void cleanEnv() throws IOException {
-		tsFileConfig.duplicateIncompletedPage = false;
+		//tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager
 		try {
 			if (!FileNodeManager.getInstance().closeAll()) {
-				throw new IOException("Can't close the filenode manager");
+				LOGGER.error("Can't close the filenode manager");
+				System.exit(1);
 			}
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e.getMessage());
@@ -88,6 +94,7 @@ public class EnvironmentUtils {
 	
 	public static void envSetUp(){
 		Authorizer.reset();
-		tsFileConfig.duplicateIncompletedPage = true;
+		//tsFileConfig.duplicateIncompletedPage = true;
+		FileNodeManager.getInstance().reset();
 	}
 }

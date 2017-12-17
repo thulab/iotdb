@@ -80,8 +80,6 @@ public class FileNodeLastUpdateMulTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
-//	private boolean walOpen;
-	private IoTDB ioTDB;
 
 	@Before
 	public void setUp() throws Exception {
@@ -91,7 +89,6 @@ public class FileNodeLastUpdateMulTest {
 		defaultMaxStringLength = tsconfig.maxStringLength;
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		pageSize = tsconfig.pageSizeInByte;
-//		walOpen = tsdbconfig.enableWal;
 		// new value
 		tsconfig.groupSizeInByte = 10000;
 		tsconfig.pageCheckSizeThreshold = 3;
@@ -103,8 +100,6 @@ public class FileNodeLastUpdateMulTest {
 		parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
-//		ioTDB = new IoTDB();
-//		ioTDB.active();
 		MetadataManagerHelper.initMetadata2();
 		nameSpacePath = MManager.getInstance().getFileNameByPath(deltaObjectId0);
 	}
@@ -112,7 +107,6 @@ public class FileNodeLastUpdateMulTest {
 	@After
 	public void tearDown() throws Exception {
 		Thread.sleep(2000);
-//		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 
 		tsconfig.groupSizeInByte = rowGroupSize;
@@ -120,7 +114,6 @@ public class FileNodeLastUpdateMulTest {
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
-//		tsdbconfig.enableWal = walOpen;
 	}
 
 	@Test

@@ -45,8 +45,8 @@ public class LRUManagerTest {
 
 	class TestLRUManager extends LRUManager<TestLRUProcessor> {
 
-		protected TestLRUManager(int maxLRUNumber, MManager mManager, String normalDataDir) {
-			super(maxLRUNumber, mManager, normalDataDir);
+		protected TestLRUManager(int maxLRUNumber, String normalDataDir) {
+			super(maxLRUNumber, normalDataDir);
 		}
 
 		@Override
@@ -78,7 +78,7 @@ public class LRUManagerTest {
 	@Test
 	public void test() throws LRUManagerException, InterruptedException {
 
-		manager = new TestLRUManager(1, MManager.getInstance(), dirPath);
+		manager = new TestLRUManager(1, dirPath);
 		File dirFile = new File(dirPath);
 		assertEquals(true, dirFile.exists());
 		assertEquals(true, dirFile.isDirectory());
@@ -138,7 +138,7 @@ public class LRUManagerTest {
 	@Test
 	public void testCloseMultiProcessor() {
 
-		manager = new TestLRUManager(10, MManager.getInstance(), dirPath);
+		manager = new TestLRUManager(10, dirPath);
 		File dirFile = new File(dirPath);
 		assertEquals(true, dirFile.exists());
 		assertEquals(true, dirFile.isDirectory());

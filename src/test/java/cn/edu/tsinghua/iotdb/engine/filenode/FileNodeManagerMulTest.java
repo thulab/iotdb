@@ -49,18 +49,14 @@ public class FileNodeManagerMulTest {
 	private int defaultMaxStringLength;
 	private boolean cachePageData;
 	private int pageSize;
-//	private boolean walOpen;
-	private IoTDB ioTDB;
 
 	@Before
 	public void setUp() throws Exception {
-		System.exit(1);
 		pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
 		defaultMaxStringLength = tsconfig.maxStringLength;
 		cachePageData = tsconfig.duplicateIncompletedPage;
 		pageSize = tsconfig.pageSizeInByte;
 		rowGroupSize = tsconfig.groupSizeInByte;
-//		walOpen = tsdbconfig.enableWal;
 		// set rowgroupsize
 		tsconfig.groupSizeInByte = 10000;
 		tsconfig.pageCheckSizeThreshold = 3;
@@ -68,21 +64,17 @@ public class FileNodeManagerMulTest {
 		tsconfig.maxStringLength = 2;
 		tsconfig.duplicateIncompletedPage = true;
 		tsdbconfig.enableWal = false;
-//		ioTDB = new IoTDB();
-//		ioTDB.active();
 		MetadataManagerHelper.initMetadata2();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-//		ioTDB.stop();
 		EnvironmentUtils.cleanEnv();
 		tsconfig.groupSizeInByte = rowGroupSize;
 		tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;
 		tsconfig.pageSizeInByte = pageSize;
 		tsconfig.maxStringLength = defaultMaxStringLength;
 		tsconfig.duplicateIncompletedPage = cachePageData;
-//		tsdbconfig.enableWal = walOpen;
 	}
 
 	@Test
