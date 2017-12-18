@@ -11,7 +11,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorServer;
 
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -32,10 +30,9 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
-public class IoTDB {
+public class IoTDB implements IoTDBMBean{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
-    private JMXConnectorServer jmxServer;
     private MBeanServer mbs;
     private DBDao dBdao;
     private JDBCServerMBean jdbcMBean;
@@ -44,7 +41,8 @@ public class IoTDB {
     private final String JMX_TYPE = "type";
     private final String JDBC_SERVER_STR = "JDBCServer";
     private final String MONITOR_STR = "Monitor";
-    
+    private final String IOTDB_STR = "IoTDB";
+
 	private static class IoTDBHolder{
 		private static final IoTDB INSTANCE = new IoTDB();
 	}
@@ -93,35 +91,12 @@ public class IoTDB {
         maybeInitJmx();
         registJDBCServer();
         registMonitor();
+        registIoTDBServer();
         startCloseAndMergeServer();
     }
 
     private void maybeInitJmx() {
-        if (System.getProperty(TsFileDBConstant.REMOTE_JMX_PORT_NAME) != null) {
-            LOGGER.warn("JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have been bypassed as the JMX connector server is "
-                    + "already initialized. Please refer to {}.sh/bat for JMX configuration info", TsFileDBConstant.ENV_FILE_NAME, 
-                    TsFileDBConstant.ENV_FILE_NAME, TsFileDBConstant.ENV_FILE_NAME);
-            return;
-        }
-        System.setProperty(TsFileDBConstant.SERVER_RMI_ID, "true");
-        boolean localOnly = false;
-        String jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_REMOTE_JMX_PORT_NAME);
-
-        if (jmxPort == null) {
-            localOnly = true;
-            jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_LOCAL_JMX_PORT_NAME);
-        }
-
-        if (jmxPort == null)
-            return;
-
-        try {
-            jmxServer = JMXServerUtils.createJMXServer(Integer.parseInt(jmxPort), localOnly);
-            if (jmxServer == null)
-                return;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    	JMXServer.getInstance().start();
     }
 
     private void registJDBCServer() throws TTransportException, MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
@@ -138,6 +113,13 @@ public class IoTDB {
         ObjectName mBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR);
         if(!mbs.isRegistered(mBeanName)) {
             mbs.registerMBean(monitorMBean, mBeanName);
+        }
+    }
+    
+    private void registIoTDBServer() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException{
+        ObjectName mBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, IOTDB_STR);
+        if(!mbs.isRegistered(mBeanName)) {
+            mbs.registerMBean(IoTDBHolder.INSTANCE, mBeanName);
         }
     }
 
@@ -185,6 +167,53 @@ public class IoTDB {
         LOGGER.info("{}: Done. Recover operation count {}",TsFileDBConstant.GLOBAL_DB_NAME, cnt);
     }
 
+	@Override
+	public void stop() throws FileNodeManagerException, IOException {
+		// TODO Auto-generated method stub
+		if (dBdao != null) {
+			dBdao.close();
+		}
+
+		FileNodeManager.getInstance().closeAll();
+
+		WriteLogManager.getInstance().close();
+
+		if (jdbcMBean != null) {
+			jdbcMBean.stopServer();
+		}
+
+		JMXServer.getInstance().stop();
+
+		try {
+			ObjectName montiorBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR);
+			if (mbs.isRegistered(montiorBeanName)) {
+				mbs.unregisterMBean(montiorBeanName);
+			}
+		} catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+			LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR, e);
+		}
+
+		try {
+			ObjectName jdbcBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR);
+			if (mbs.isRegistered(jdbcBeanName)) {
+				mbs.unregisterMBean(jdbcBeanName);
+			}
+		} catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+			LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR, e);
+		}
+
+        try {
+            ObjectName iotdbBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, IOTDB_STR);
+            if(mbs.isRegistered(iotdbBeanName)) {
+                mbs.unregisterMBean(iotdbBeanName);
+            }
+        } catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+            LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, IOTDB_STR, e);
+        }
+		
+		CloseMergeServer.getInstance().closeServer();
+	}
+	
     /**
      * start the close and merge server
      */
@@ -192,45 +221,7 @@ public class IoTDB {
         // close and merge regularly
         CloseMergeServer.getInstance().startServer();
     }
-
-    public void stop() throws FileNodeManagerException, IOException {
-        if (dBdao != null) {
-            dBdao.close();
-        }
-
-        FileNodeManager.getInstance().closeAll();
-
-        WriteLogManager.getInstance().close();
-
-        if (jdbcMBean != null) {
-            jdbcMBean.stopServer();
-        }
-
-        if (jmxServer != null) {
-            jmxServer.stop();
-        }
-        
-        try {
-            ObjectName montiorBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR);
-            if(mbs.isRegistered(montiorBeanName)) {
-                mbs.unregisterMBean(montiorBeanName);
-            }
-        } catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
-            LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR, e);
-        }
-
-        try {
-            ObjectName jdbcBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR);
-            if(mbs.isRegistered(jdbcBeanName)) {
-                mbs.unregisterMBean(jdbcBeanName);
-            }
-        } catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
-            LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR, e);
-        }
-        
-        CloseMergeServer.getInstance().closeServer();
-    }
-
+	
     public static void main(String[] args) {
         IoTDB daemon = new IoTDB();
         daemon.active();
