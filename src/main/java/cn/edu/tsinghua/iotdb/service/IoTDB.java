@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -34,7 +35,6 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 public class IoTDB {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
-    static final IoTDB instance = new IoTDB();
     private JMXConnectorServer jmxServer;
     private MBeanServer mbs;
     private DBDao dBdao;
@@ -45,7 +45,15 @@ public class IoTDB {
     private final String JDBC_SERVER_STR = "JDBCServer";
     private final String MONITOR_STR = "Monitor";
     
-    public IoTDB() {
+	private static class IoTDBHolder{
+		private static final IoTDB INSTANCE = new IoTDB();
+	}
+	
+	public static final IoTDB getInstance() {
+		return IoTDBHolder.INSTANCE;
+	}
+    
+    private IoTDB() {
         mbs = ManagementFactory.getPlatformMBeanServer();
     }
 
