@@ -35,7 +35,7 @@ public class IoTDB implements IoTDBMBean{
     private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
     private MBeanServer mbs;
     private DBDao dBdao;
-    private JDBCServerMBean jdbcMBean;
+    private static JDBCServerMBean jdbcMBean;
     private MonitorMBean monitorMBean;
     private final String IOTDB_PACKAGE = "cn.edu.tsinghua.iotdb.service";
     private final String JMX_TYPE = "type";
