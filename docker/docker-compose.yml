@@ -1,0 +1,10 @@
+service1:
+  image: ${IMAGE}
+  ports: []
+  volumes:
+  - /etc/localtime:/etc/localtime:ro
+  - /etc/timezone:/etc/timezone:ro
+  env_file: ${ENV_FILE}
+  environment:
+    HELLO: WORLD
+  command: env
