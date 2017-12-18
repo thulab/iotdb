@@ -7,14 +7,32 @@ import org.slf4j.LoggerFactory;
 
 public class ForceFLushAllPolicy implements Policy {
     private Logger logger = LoggerFactory.getLogger(ForceFLushAllPolicy.class);
+    private Thread workerThread;
 
     @Override
     public void execute() {
-        logger.info("Memory reachs {}, current memory size is {}, flushing.",
+        logger.info("Memory reachs {}, current memory size {}, JVM memory {}, flushing.",
                 MemController.getInstance().getCurrLevel(),
-                MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+                MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()),
+                MemUtils.bytesCntToStr(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
         // TODO : fix : partial flush may always flush the same filenodes
-        FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
-        logger.info("Flush over, current memory size is {}", MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+        // use a thread to avoid blocking
+        if (workerThread == null) {
+            workerThread = new Thread(() -> {
+                FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
+                System.gc();
+            });
+            workerThread.start();
+        } else {
+            if (workerThread.isAlive()) {
+                logger.info("Last flush is ongoing...");
+            } else {
+                workerThread = new Thread(() -> {
+                    FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
+                    System.gc();
+                });
+                workerThread.start();
+            }
+        }
     }
 }

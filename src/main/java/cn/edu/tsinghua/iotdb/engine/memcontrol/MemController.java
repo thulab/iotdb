@@ -103,7 +103,7 @@ public class MemController {
             } else if (newTotUsage < dangerouseThreshold) {
                 // become warning because competition with other threads, still take the action
                 memMap.put(user, oldUsage + usage);
-                logger.debug("Warning Threshold : Memory allocated to {}, it is using {}, total usage {}", user.getClass()
+                logger.info("Warning Threshold : Memory allocated to {}, it is using {}, total usage {}", user.getClass()
                         , MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
                 return UsageLevel.WARNING;
             } else {
