@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.deserialization;
 
+import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowFileIO;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowReadWriter;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFFileMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
@@ -15,9 +16,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 
 /**
- * An Overflow FileDeserialization
+ * An Overflow FileDeserialization program.
  */
 public class OverflowFileDeserialization {
 
@@ -25,31 +29,95 @@ public class OverflowFileDeserialization {
 
     private String fileName;
     private String restoreFileName;
+    private String mergeFileName;
 
-    public OverflowFileDeserialization(String fileName, String restoreFileName) {
-        this.fileName = fileName;
-        this.restoreFileName = restoreFileName;
+    public OverflowFileDeserialization() {
     }
+
 
     public static void main(String[] args) throws IOException {
         String fileName = "overflow/root.dt.wf632815.type4.overflow";
         String restoreFileName = "overflow/root.dt.wf632815.type4.overflow.restore";
 
-        OverflowFileDeserialization deserialization = new OverflowFileDeserialization(fileName, restoreFileName);
-        System.out.println(deserialization.getOverflowRowNumbers());
-//        OverflowFileIO io = new OverflowFileIO(overflowReadWriter, "", struct.lastOverflowRowGroupPosition);
-//        Map<String, Map<String, List<TimeSeriesChunkMetaData>>> ans = io.getSeriesListMap();
-//
-//        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : ans.entrySet()) {
-//            String deltaObjectId = entry.getKey();
-//            System.out.println(deltaObjectId);
-//            //OverflowSeriesImpl overflowSeriesImpl = new OverflowSeriesImpl();
-//        }
+        String folderName = "/Users/beyyes/Desktop/overflow";
+
+        File dirFile = new File(folderName);
+        if(!dirFile.exists() || (!dirFile.isDirectory())){
+            LOGGER.error("the given folder name is wrong");
+            return;
+        }
+
+        OverflowFileDeserialization deserialization = new OverflowFileDeserialization();
+        long overflowNumber = 0;
+        File[] subFiles = dirFile.listFiles();
+        if (subFiles == null || subFiles.length == 0) {
+            LOGGER.error("given folder has no overflow folder");
+            return;
+        }
+        for (File file : subFiles) {
+            if (file.isDirectory()) {
+                File[] ofFiles = file.listFiles();
+                if (ofFiles.length == 2) {
+                    for (File f : ofFiles) {
+                        if (f.getAbsolutePath().endsWith(".restore")) {
+                            long tmpNumber = deserialization.getOverflowRowNumbersForRestoreFile(f.getAbsolutePath());
+                            System.out.println(f.getAbsolutePath() + " " + tmpNumber);
+                            overflowNumber += tmpNumber;
+                        }
+                    }
+                } else if(ofFiles.length == 3) {
+                    for (File f : ofFiles) {
+                        if (f.getAbsolutePath().endsWith(".merge")) {
+                            long tmpNumber = deserialization.getOverflowRowNumbersForMergeFile(f.getAbsolutePath());
+                            System.out.println(f.getAbsolutePath() + " " + tmpNumber);
+                            overflowNumber += tmpNumber;
+                        }
+                    }
+                    String mergeFileName = folderName + "/root.dt.wf632815.type6/root.dt.wf632815.type6.overflow.merge";
+                }
+            }
+        }
+        System.out.println("Final result : " + overflowNumber);
     }
 
-    private long getOverflowRowNumbers() throws IOException {
-        OverflowReadWriter overflowReadWriter = new OverflowReadWriter(fileName);
-        OverflowStoreStruct struct = getLastPos(restoreFileName);
+
+
+    /**
+     * This method is used to calculate the overflow write size using the overflow.merge file.
+     *
+     * @return the number of overflow write rows
+     * @throws IOException file read error
+     */
+    private long getOverflowRowNumbersForMergeFile(String ofMergeFileName) throws IOException {
+        OverflowReadWriter overflowReadWriter = new OverflowReadWriter(ofMergeFileName);
+        OverflowFileIO io = new OverflowFileIO(overflowReadWriter, "", overflowReadWriter.length());
+        Map<String, Map<String, List<TimeSeriesChunkMetaData>>> ans = io.getSeriesListMap();
+
+        long rowNumber = 0;
+        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : ans.entrySet()) {
+            String deltaObjectId = entry.getKey();
+            Map<String, List<TimeSeriesChunkMetaData>> measurementMap = entry.getValue();
+            for (Map.Entry<String, List<TimeSeriesChunkMetaData>> entry1 : measurementMap.entrySet()) {
+                for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : entry1.getValue())
+                    rowNumber += timeSeriesChunkMetaData.getNumRows();
+            }
+            //OverflowSeriesImpl overflowSeriesImpl = new OverflowSeriesImpl();
+        }
+
+        return rowNumber;
+    }
+
+    /**
+     * This method is used to calculate the overflow write size using the overflow.restore file.
+     *
+     * <p> Note that: this estimation may be not accurate.
+     *
+     * @return the number of overflow write rows
+     * @throws IOException file read error
+     */
+    private long getOverflowRowNumbersForRestoreFile(String ofRestoreFileName) throws IOException {
+        // OverflowReadWriter overflowReadWriter = new OverflowReadWriter(fileName);
+        OverflowStoreStruct struct = getLastPos(ofRestoreFileName);
 
         long rowNumber = 0;
         for (OFRowGroupListMetadata rowGroupMetadata : struct.ofFileMetadata.getRowGroupLists()) {
