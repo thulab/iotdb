@@ -226,6 +226,7 @@ public class IoTDB {
     public static void main(String[] args) {
         IoTDB daemon = new IoTDB();
         daemon.active();
+
     }
 
 }
