@@ -129,7 +129,8 @@ public class MemController {
         } else {
             long newTotalMemUsage = totalMemUsed.addAndGet(-freeSize);
             memMap.put(user, usage - freeSize);
-            logger.debug("Memory freed from {}, it is using {}, total usage {}", user.getClass()
+            logger.info("{} freed from {}, it is using {}, total usage {}", MemUtils.bytesCntToStr(freeSize)
+                    ,user.getClass()
                     , MemUtils.bytesCntToStr(usage - freeSize)
                     , MemUtils.bytesCntToStr(newTotalMemUsage));
         }

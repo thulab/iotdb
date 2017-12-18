@@ -34,7 +34,8 @@ public class MemMonitorThread extends Thread {
                 case DANGEROUS:
                     logger.info("Memory reachs {}, current memory size is {}, flushing.",
                             level, MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
-                    FileNodeManager.getInstance().forceFlush(level);
+                    // TODO : fix : partial flush may always flush the same filenodes
+                    FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
                     logger.info("Flush over, current memory size is {}", MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
                     break;
                 case SAFE:
