@@ -151,6 +151,10 @@ public class MManager {
             linkMNodeToPTree(args[1], args[2]);
         } else if (args[0].equals(MetadataOperationType.UNLINK_MNODE_FROM_PTREE)) {
             unlinkMNodeFromPTree(args[1], args[2]);
+        } else if (args[0].equals(MetadataOperationType.ADD_INDEX_TO_PATH)) {
+            addIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
+        } else if (args[0].equals(MetadataOperationType.DELETE_INDEX_FROM_PATH)) {
+            deleteIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
         }
     }
 

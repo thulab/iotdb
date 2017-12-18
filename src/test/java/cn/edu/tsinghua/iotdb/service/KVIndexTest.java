@@ -190,6 +190,7 @@ public class KVIndexTest {
                 boolean hasResultSet = statement.execute(querySQL);
                 // System.out.println(hasResultSet + "...");
                 //        KvMatchIndexQueryPlan planForHeader = new KvMatchIndexQueryPlan(null, null, 0,0,0);
+                Assert.assertTrue(hasResultSet);
                 if (hasResultSet) {
                     ResultSet resultSet = statement.getResultSet();
                     int cnt = 1;
@@ -213,7 +214,6 @@ public class KVIndexTest {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(0);
         } finally {
             if (connection != null) {
                 connection.close();
