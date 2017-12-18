@@ -122,6 +122,13 @@ public class TsfileDBConfig {
 	 */
 	public long memMonitorInterval = 1000;  // in ms
 
+	/**
+	 * Decide how to control memory used by inserting data.
+	 * 0 is RecordMemController, which count the size of every record (tuple).
+	 * 1 is JVMMemController, which use JVM heap memory as threshold.
+	 */
+	public int memControllerType = 0;
+
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {

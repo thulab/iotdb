@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -50,7 +49,7 @@ public class JVMMemController extends BasicMemController {
 
     @Override
     public void close() {
-
+        super.close();
     }
 
     @Override

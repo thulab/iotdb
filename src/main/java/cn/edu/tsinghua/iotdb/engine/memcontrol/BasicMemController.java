@@ -1,13 +1,19 @@
 package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 
 public abstract class BasicMemController {
+
+    public enum CONTROLLER_TYPE {
+        RECORD, JVM
+    }
 
     protected long warningThreshold;
     protected long dangerouseThreshold;
 
     protected MemMonitorThread monitorThread;
+    protected MemStatisticThread memStatisticThread;
 
     public enum UsageLevel {
         SAFE, WARNING, DANGEROUS
@@ -18,11 +24,19 @@ public abstract class BasicMemController {
         dangerouseThreshold = config.memThresholdDangerous;
         monitorThread = new MemMonitorThread(config.memMonitorInterval);
         monitorThread.start();
+        memStatisticThread = new MemStatisticThread();
+        memStatisticThread.start();
     }
 
     // change instance here
     public static BasicMemController getInstance() {
-        return RecordMemController.getInstance();
+        switch (CONTROLLER_TYPE.values()[TsfileDBDescriptor.getInstance().getConfig().memControllerType]) {
+            case JVM:
+                return JVMMemController.getInstance();
+            case RECORD:
+            default:
+                return RecordMemController.getInstance();
+        }
     }
 
     public void setDangerouseThreshold(long dangerouseThreshold) {
@@ -43,7 +57,10 @@ public abstract class BasicMemController {
 
     public abstract void clear();
 
-    public abstract void close();
+    public void close() {
+        monitorThread.interrupt();
+        memStatisticThread.interrupt();
+    }
 
     public abstract UsageLevel reportUse(Object user, long usage);
 

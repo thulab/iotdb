@@ -45,7 +45,7 @@ public class RecordMemController extends BasicMemController{
     }
 
     public void close() {
-        monitorThread.interrupt();
+       super.close();
     }
 
     public UsageLevel getCurrLevel() {

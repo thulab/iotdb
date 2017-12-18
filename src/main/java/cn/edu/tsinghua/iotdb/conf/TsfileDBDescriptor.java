@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,9 @@ public class TsfileDBDescriptor {
 			conf.memThresholdDangerous = Long.parseLong(properties.getProperty("mem_threshold_dangerous", conf.memThresholdDangerous+"").trim());
 
 			conf.memMonitorInterval = Long.parseLong(properties.getProperty("mem_monitor_interval", conf.memMonitorInterval+"").trim());
+
+			conf.memControllerType = Integer.parseInt(properties.getProperty("mem_controller_type", conf.memControllerType+"").trim());
+			conf.memControllerType = conf.memControllerType >= BasicMemController.CONTROLLER_TYPE.values().length ? 0 : conf.memControllerType;
 
 			if(conf.memThresholdWarning <= 0)
 				conf.memThresholdWarning = TsFileDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;

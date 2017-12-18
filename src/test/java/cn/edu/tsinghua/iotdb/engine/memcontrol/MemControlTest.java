@@ -85,7 +85,7 @@ public class MemControlTest {
             config.memThresholdWarning = 3 * TsFileDBConstant.MB;
             config.memThresholdDangerous = 5 * TsFileDBConstant.MB;
 
-            BasicMemController.getInstance().setCheckInterval(10 * 1000);
+            BasicMemController.getInstance().setCheckInterval(15 * 1000);
             BasicMemController.getInstance().setDangerouseThreshold(config.memThresholdDangerous);  // force initialize
             BasicMemController.getInstance().setWarningThreshold(config.memThresholdWarning);
 
@@ -132,7 +132,7 @@ public class MemControlTest {
         assertEquals(BasicMemController.UsageLevel.WARNING, BasicMemController.getInstance().getCurrLevel());
 
         // test MemControlTread auto flush
-        Thread.sleep(10000);
+        Thread.sleep(15000);
         assertEquals(BasicMemController.UsageLevel.SAFE, BasicMemController.getInstance().getCurrLevel());
     }
 
