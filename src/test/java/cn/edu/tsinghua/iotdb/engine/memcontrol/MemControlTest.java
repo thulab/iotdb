@@ -82,9 +82,12 @@ public class MemControlTest {
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
 
-            BasicMemController.getInstance().setCheckInterval(5 * 1000);  // 5s
-            BasicMemController.getInstance().setDangerouseThreshold(2 * TsFileDBConstant.MB);  // force initialize
-            BasicMemController.getInstance().setWarningThreshold(1 * TsFileDBConstant.MB);
+            config.memThresholdWarning = 3 * TsFileDBConstant.MB;
+            config.memThresholdDangerous = 5 * TsFileDBConstant.MB;
+
+            BasicMemController.getInstance().setCheckInterval(10 * 1000);
+            BasicMemController.getInstance().setDangerouseThreshold(config.memThresholdDangerous);  // force initialize
+            BasicMemController.getInstance().setWarningThreshold(config.memThresholdWarning);
 
             deamon = new IoTDB();
             deamon.active();
@@ -144,16 +147,20 @@ public class MemControlTest {
         record.addTuple(new IntDataPoint(s0, 0));
         record.addTuple(new LongDataPoint(s1, 0));
         record.addTuple(new FloatDataPoint(s2, 0.0f));
-        record.addTuple(new StringDataPoint(s3, new Binary("\"sadasgag\"")));
+        record.addTuple(new StringDataPoint(s3, new Binary("\"sadasgagfdhdshdhdfhdfhdhdhdfherherdfsdfbdfsherhedfjerjerdfshfdshxzcvenerhreherjnfdgntrnt" +
+                "ddfhdsf,joreinmoidnfh\"")));
         long recordMemSize = MemUtils.getTsRecordMemBufferwrite(record);
         long insertCnt = config.memThresholdDangerous / recordMemSize * 2;
-
+        System.out.println(Thread.currentThread().getId() + " to insert " + insertCnt);
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (int i = 0; i < insertCnt; i++) {
                 record.time = i + 1;
                 statement.execute(TestUtils.recordToInsert(record));
+                if(i % 1000 == 0) {
+                    System.out.println(Thread.currentThread().getId() + " inserting " + i);
+                }
             }
             statement.close();
         } catch (Exception e) {

@@ -17,6 +17,12 @@ public class MemControllerTest {
     @Test
     public void test() throws BufferWriteProcessorException {
         BasicMemController memController = BasicMemController.getInstance();
+        if(memController instanceof RecordMemController)
+            testRecordMemController();
+    }
+
+    private void testRecordMemController() {
+        BasicMemController memController = BasicMemController.getInstance();
         memController.clear();
         memController.setWarningThreshold(8 * GB);
         memController.setDangerouseThreshold(16 * GB);

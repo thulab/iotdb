@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * This class hold global memory usage of MemUsers.
+ * This class hold global memory usage of MemUsers. This only counts record(tuple) sizes.
  */
 public class RecordMemController extends BasicMemController{
 
@@ -71,14 +71,18 @@ public class RecordMemController extends BasicMemController{
             if (newTotUsage < warningThreshold) {
                 // still safe, action taken
                 memMap.put(user, oldUsage + usage);
-                logger.debug("Safe Threshold : Memory allocated to {}, it is using {}, total usage {}", user.getClass()
-                        , MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
+                logger.debug("Safe Threshold : {} allocated to {}, it is using {}, total usage {}",
+                        MemUtils.bytesCntToStr(usage),
+                        user.getClass(),
+                        MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
                 return UsageLevel.SAFE;
             } else if (newTotUsage < dangerouseThreshold) {
                 // become warning because competition with other threads, still take the action
                 memMap.put(user, oldUsage + usage);
-                logger.info("Warning Threshold : Memory allocated to {}, it is using {}, total usage {}", user.getClass()
-                        , MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
+                logger.debug("Warning Threshold : {} allocated to {}, it is using {}, total usage {}",
+                        MemUtils.bytesCntToStr(usage),
+                        user.getClass(),
+                        MemUtils.bytesCntToStr(oldUsage + usage), MemUtils.bytesCntToStr(newTotUsage));
                 return UsageLevel.WARNING;
             } else {
                 logger.warn("Memory request from {} is denied, memory usage : {}", user.getClass(), MemUtils.bytesCntToStr(newTotUsage));
