@@ -162,9 +162,11 @@ public class WriteLogManager {
         for (Map.Entry<String, WriteLogNode> entry : logNodeMaps.entrySet()) {
             entry.getValue().closeStreams();
         }
-
+        if(timingService.isShutdown()){
+        	return;
+        }
         timingService.shutdown();
-
+        
         try {
             timingService.awaitTermination(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
