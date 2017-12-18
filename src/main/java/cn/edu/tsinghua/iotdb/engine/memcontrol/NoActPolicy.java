@@ -1,0 +1,13 @@
+package cn.edu.tsinghua.iotdb.engine.memcontrol;
+
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class NoActPolicy implements Policy {
+    private Logger logger = LoggerFactory.getLogger(NoActPolicy.class);
+    @Override
+    public void execute() {
+        logger.info("Memory check is safe, current usage {}" , MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+    }
+}

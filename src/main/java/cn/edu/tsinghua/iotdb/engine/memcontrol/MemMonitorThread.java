@@ -11,8 +11,15 @@ public class MemMonitorThread extends Thread {
 
     private long checkInterval = 1000; // in ms
 
+    private Policy safePolicy;
+    private Policy warningPolicy;
+    private Policy dangerousPolicy;
+
     public MemMonitorThread(long checkInterval) {
         this.checkInterval = checkInterval > 0 ? checkInterval : this.checkInterval;
+        this.safePolicy = new NoActPolicy();
+        this.warningPolicy = new ForceFLushAllPolicy();
+        this.dangerousPolicy = new ForceFLushAllPolicy();
     }
 
     public void setCheckInterval(long checkInterval) {
@@ -31,16 +38,16 @@ public class MemMonitorThread extends Thread {
             MemController.UsageLevel level = MemController.getInstance().getCurrLevel();
             switch (level) {
                 case WARNING:
+                    warningPolicy.execute();
+                    break;
                 case DANGEROUS:
-                    logger.info("Memory reachs {}, current memory size is {}, flushing.",
-                            level, MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
-                    // TODO : fix : partial flush may always flush the same filenodes
-                    FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
-                    logger.info("Flush over, current memory size is {}", MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+                    dangerousPolicy.execute();
                     break;
                 case SAFE:
-                    logger.info("Memory check is safe, current usage {}" , MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+                    safePolicy.execute();
+                    break;
                 default:
+                    logger.error("Unknown usage level : {}", level);
             }
             try {
                 Thread.sleep(checkInterval);
