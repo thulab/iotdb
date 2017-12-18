@@ -86,7 +86,6 @@ public class LogicalGenerator {
         if (token == null)
             throw new QueryProcessorException("given token is null");
         int tokenIntType = token.getType();
-        LOG.debug("analyze token: {}", token.getText());
         switch (tokenIntType) {
             case TSParser.TOK_INSERT:
                 analyzeInsert(astNode);
@@ -333,6 +332,7 @@ public class LogicalGenerator {
         updateOp.setValue(astNode.getChild(1).getChild(1).getText());
         analyzeWhere(astNode.getChild(2));
     }
+
 
     private void analyzeDelete(ASTNode astNode) throws LogicalOperatorException {
         initializedOperator = new DeleteOperator(SQLConstant.TOK_DELETE);
@@ -602,7 +602,9 @@ public class LogicalGenerator {
             DateTime datetime = DateTime.parse(timestampStr, DateTimeFormat.forPattern(SQLConstant.determineDateFormat(timestampStr)).withZone(timeZone));
             return datetime.getMillis();
         } catch (Exception e) {
-            throw new LogicalOperatorException(e.getMessage());
+            throw new LogicalOperatorException(String.format("Input time format %s error. "
+                    + "Input like yyyy-MM-dd HH:mm:ss, yyyy-MM-ddTHH:mm:ss or "
+                    + "refer to user document for more info.", timestampStr));
         }
 
     }

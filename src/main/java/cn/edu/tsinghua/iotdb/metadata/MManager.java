@@ -36,7 +36,6 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 public class MManager {
     // private static MManager manager = new MManager();
     private static final String ROOT_NAME = MetadataConstant.ROOT;
-
     // the lock for read/write
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     // The file storing the serialize info for metadata
@@ -47,7 +46,6 @@ public class MManager {
     private BufferedWriter logWriter;
     private boolean writeToLog;
     private String metadataDirPath;
-    private BufferedWriter bw;
 
     private static class MManagerHolder {
         private static final MManager INSTANCE = new MManager();
@@ -153,12 +151,7 @@ public class MManager {
             linkMNodeToPTree(args[1], args[2]);
         } else if (args[0].equals(MetadataOperationType.UNLINK_MNODE_FROM_PTREE)) {
             unlinkMNodeFromPTree(args[1], args[2]);
-        } else if (args[0].equals(MetadataOperationType.ADD_INDEX_TO_PATH)){
-            addIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
-        }else if(args[0].equals(MetadataOperationType.DELETE_INDEX_FROM_PATH)){
-            deleteIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
         }
-
     }
 
     private void initLogStream() {
@@ -170,6 +163,7 @@ public class MManager {
             }
             FileWriter fileWriter;
             try {
+
                 fileWriter = new FileWriter(logFile, true);
                 logWriter = new BufferedWriter(fileWriter);
             } catch (IOException e) {
@@ -185,9 +179,12 @@ public class MManager {
      * <code>getFileNameByPath</code> method first to check timeseries.
      * </p>
      *
-     * @param path     the timeseries path
-     * @param dataType the datetype {@code DataType} for the timeseries
-     * @param encoding the encoding function {@code Encoding} for the timeseries
+     * @param path
+     *            the timeseries path
+     * @param dataType
+     *            the datetype {@code DataType} for the timeseries
+     * @param encoding
+     *            the encoding function {@code Encoding} for the timeseries
      * @param args
      * @throws PathErrorException
      * @throws IOException
@@ -363,7 +360,7 @@ public class MManager {
      * Get all DeltaObject type in current Metadata Tree
      *
      * @return a HashMap contains all distinct DeltaObject type separated by
-     * DeltaObject Type
+     *         DeltaObject Type
      * @throws PathErrorException
      */
     public Map<String, List<ColumnSchema>> getSchemaForAllType() throws PathErrorException {
@@ -395,10 +392,12 @@ public class MManager {
     /**
      * Get all ColumnSchemas for given delta object type
      *
-     * @param path A path represented one Delta object
+     * @param path
+     *            A path represented one Delta object
      * @return a list contains all column schema
      * @throws PathErrorException
      */
+    @Deprecated
     public ArrayList<ColumnSchema> getSchemaForOneType(String path) throws PathErrorException {
 
         lock.readLock().lock();
@@ -411,19 +410,39 @@ public class MManager {
 
     /**
      * <p>Get all ColumnSchemas for the filenode path</p>
-     *
      * @param path
      * @return ArrayList<ColumnSchema> The list of the schema
      */
-    public ArrayList<ColumnSchema> getSchemaForFileName(String path) {
+    public ArrayList<ColumnSchema> getSchemaForFileName(String path){
 
         lock.readLock().lock();
-        try {
+        try{
             return mGraph.getSchemaForOneFileNode(path);
-        } finally {
+        }finally {
             lock.readLock().unlock();
         }
     }
+    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path){
+
+        lock.readLock().lock();
+        try{
+            return mGraph.getSchemaMapForOneFileNode(path);
+        }finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public Map<String,Integer> getNumSchemaMapForOneFileNode(String path){
+
+        lock.readLock().lock();
+        try{
+            return mGraph.getNumSchemaMapForOneFileNode(path);
+        }finally {
+            lock.readLock().unlock();
+        }
+    }
+
+
 
     /**
      * Calculate the count of storage-level nodes included in given path
@@ -463,74 +482,6 @@ public class MManager {
         }
     }
 
-    /**
-     * Get all timeseries path which have specified index
-     *
-     * @param path
-     * @return
-     * @throws PathErrorException
-     */
-    public List<String> getAllIndexPaths(String path, IndexType indexType) throws PathErrorException {
-        lock.readLock().lock();
-        try {
-            List<String> ret = new ArrayList<>();
-            ArrayList<String> paths = getPaths(path);
-            for (String timesereis : paths) {
-                if (getSchemaForOnePath(timesereis).isHasIndex(indexType)) {
-                    ret.add(timesereis);
-                }
-            }
-            return ret;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Get all timeseries path which have any no-real-time index
-     *
-     * @param path
-     * @return
-     * @throws PathErrorException
-     */
-    public Map<String, Set<IndexType>> getAllIndexPaths(String path) throws PathErrorException {
-        lock.readLock().lock();
-        try {
-            Map<String, Set<IndexType>> ret = new HashMap<>();
-            ArrayList<String> paths = getPaths(path);
-            for (String timeseries : paths) {
-                Set<IndexType> indexes = getSchemaForOnePath(timeseries).getIndexSet();
-                if (!indexes.isEmpty()) {
-                    ret.put(timeseries, indexes);
-                }
-            }
-            return ret;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * check the timeseries has index or not
-     *
-     * @param path
-     * @param indexType
-     * @return
-     * @throws PathErrorException
-     */
-    public boolean checkPathIndex(String path, IndexType indexType) throws PathErrorException {
-        lock.readLock().lock();
-        try {
-            if (getSchemaForOnePath(path).isHasIndex(indexType)) {
-                return true;
-            } else {
-                return false;
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
     public boolean checkFileNameByPath(String path) {
 
         lock.readLock().lock();
@@ -546,7 +497,7 @@ public class MManager {
         lock.readLock().lock();
         try {
             HashMap<String, ArrayList<String>> res = getAllPathGroupByFileName(ROOT_NAME);
-            List<String> fileNameList = new ArrayList<>();
+            List<String> fileNameList = new ArrayList<String>();
             for (String fileName : res.keySet()) {
                 fileNameList.add(fileName);
             }
@@ -667,6 +618,74 @@ public class MManager {
         lock.readLock().lock();
         try {
             return mGraph.toString();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Get all timeseries path which have specified index
+     *
+     * @param path
+     * @return
+     * @throws PathErrorException
+     */
+    public List<String> getAllIndexPaths(String path, IndexType indexType) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            List<String> ret = new ArrayList<>();
+            ArrayList<String> paths = getPaths(path);
+            for (String timesereis : paths) {
+                if (getSchemaForOnePath(timesereis).isHasIndex(indexType)) {
+                    ret.add(timesereis);
+                }
+            }
+            return ret;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Get all timeseries path which have any no-real-time index
+     *
+     * @param path
+     * @return
+     * @throws PathErrorException
+     */
+    public Map<String, Set<IndexType>> getAllIndexPaths(String path) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            Map<String, Set<IndexType>> ret = new HashMap<>();
+            ArrayList<String> paths = getPaths(path);
+            for (String timeseries : paths) {
+                Set<IndexType> indexes = getSchemaForOnePath(timeseries).getIndexSet();
+                if (!indexes.isEmpty()) {
+                    ret.put(timeseries, indexes);
+                }
+            }
+            return ret;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * check the timeseries has index or not
+     *
+     * @param path
+     * @param indexType
+     * @return
+     * @throws PathErrorException
+     */
+    public boolean checkPathIndex(String path, IndexType indexType) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            if (getSchemaForOnePath(path).isHasIndex(indexType)) {
+                return true;
+            } else {
+                return false;
+            }
         } finally {
             lock.readLock().unlock();
         }

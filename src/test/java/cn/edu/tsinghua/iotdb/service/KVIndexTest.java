@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileSQLException;
 import cn.edu.tsinghua.iotdb.qp.physical.index.KvMatchIndexQueryPlan;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -108,14 +109,6 @@ public class KVIndexTest {
 
     };
 
-    private String overflowDataDirPre;
-    private String fileNodeDirPre;
-    private String bufferWriteDirPre;
-    private String metadataDirPre;
-    private String derbyHomePre;
-    private String walFolderPre;
-    private String indexFileDirPre;
-
     private IoTDB deamon;
 
     private boolean testFlag = TestUtils.testFlag;
@@ -124,37 +117,11 @@ public class KVIndexTest {
     public void setUp() throws Exception {
         if (testFlag) {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            overflowDataDirPre = config.overflowDataDir;
-            fileNodeDirPre = config.fileNodeDir;
-            bufferWriteDirPre = config.bufferWriteDir;
-            metadataDirPre = config.metadataDir;
-            derbyHomePre = config.derbyHome;
-            maxOpenFolderPre = config.maxOpenFolder;
-            walFolderPre = config.walFolder;
-            indexFileDirPre = config.indexFileDir;
-
-            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-            config.derbyHome = FOLDER_HEADER + "/data/derby";
-            config.walFolder = FOLDER_HEADER + "/data/wals";
-            config.indexFileDir = FOLDER_HEADER + "/data/index";
             config.maxOpenFolder = 1;
             deamon = new IoTDB();
             deamon.active();
+            EnvironmentUtils.envSetUp();
         }
-    }
-
-    private void clearDir(TsfileDBConfig config) throws IOException {
-        FileUtils.deleteDirectory(new File(config.overflowDataDir));
-        FileUtils.deleteDirectory(new File(config.fileNodeDir));
-        FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-        FileUtils.deleteDirectory(new File(config.metadataDir));
-        FileUtils.deleteDirectory(new File(config.derbyHome));
-        FileUtils.deleteDirectory(new File(config.walFolder));
-        FileUtils.deleteDirectory(new File(config.indexFileDir));
-        FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
     }
 
     @After
@@ -162,17 +129,7 @@ public class KVIndexTest {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
-
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            clearDir(config);
-            config.overflowDataDir = overflowDataDirPre;
-            config.fileNodeDir = fileNodeDirPre;
-            config.bufferWriteDir = bufferWriteDirPre;
-            config.metadataDir = metadataDirPre;
-            config.derbyHome = derbyHomePre;
-            config.maxOpenFolder = maxOpenFolderPre;
-            config.walFolder = walFolderPre;
-            config.indexFileDir = indexFileDirPre;
+            EnvironmentUtils.cleanEnv();
         }
     }
 
@@ -234,9 +191,9 @@ public class KVIndexTest {
                     ResultSet resultSet = statement.getResultSet();
                     int cnt = 1;
                     while (resultSet.next()) {
-                        String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(1)
-                                + "," + resultSet.getString(2)
-                                + "," + resultSet.getString(3);
+                        String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(2)
+                                + "," + resultSet.getString(3)
+                                + "," + resultSet.getString(4);
                         System.out.println("testtest-actual\t" + ans);
                         if (!retArray[cnt].equals(ans))
                             Assert.assertEquals(retArray[cnt], ans);
