@@ -9,7 +9,7 @@ public class MemStatisticThread extends Thread{
     private static Logger logger = LoggerFactory.getLogger(MemStatisticThread.class);
 
     // update statistic every such interval
-    private long checkInterval = 1000; // in ms
+    private long checkInterval = 100; // in ms
 
     private long minMemUsage = Long.MAX_VALUE;
     private long maxMemUsage = Long.MIN_VALUE;
