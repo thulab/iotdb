@@ -1,13 +1,11 @@
-package cn.edu.tsinghua.iotdb.engine.demo;
+package cn.edu.tsinghua.iotdb.engine.deserialization;
 
-import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowFileIO;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowReadWriter;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowSeriesImpl;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFFileMetadata;
+import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
+import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TSFileMetaDataConverter;
-import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import org.slf4j.Logger;
@@ -17,33 +15,58 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
- * Created by beyyes on 17/12/18.
+ * An Overflow FileDeserialization
  */
 public class OverflowFileDeserialization {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowFileDeserialization.class);
 
-    static String fileName = "overflow/root.dt.wf632815.type4.overflow";
-    static String restoreFileName = "overflow/root.dt.wf632815.type4.overflow.restore";
+    private String fileName;
+    private String restoreFileName;
 
-    public static void main(String[] args) throws IOException {
-        OverflowReadWriter overflowReadWriter = new OverflowReadWriter(fileName);
-        OverflowStoreStruct struct = getLastPos(restoreFileName);
-        OverflowFileIO io = new OverflowFileIO(overflowReadWriter, "", struct.lastOverflowRowGroupPosition);
-        Map<String, Map<String, List<TimeSeriesChunkMetaData>>> ans = io.getSeriesListMap();
-
-        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : ans.entrySet()) {
-            String deltaObjectId = entry.getKey();
-            System.out.println(deltaObjectId);
-            //OverflowSeriesImpl overflowSeriesImpl = new OverflowSeriesImpl();
-        }
+    public OverflowFileDeserialization(String fileName, String restoreFileName) {
+        this.fileName = fileName;
+        this.restoreFileName = restoreFileName;
     }
 
-    static OverflowStoreStruct getLastPos(String overflowRetoreFilePath) {
+    public static void main(String[] args) throws IOException {
+        String fileName = "overflow/root.dt.wf632815.type4.overflow";
+        String restoreFileName = "overflow/root.dt.wf632815.type4.overflow.restore";
+
+        OverflowFileDeserialization deserialization = new OverflowFileDeserialization(fileName, restoreFileName);
+        System.out.println(deserialization.getOverflowRowNumbers());
+//        OverflowFileIO io = new OverflowFileIO(overflowReadWriter, "", struct.lastOverflowRowGroupPosition);
+//        Map<String, Map<String, List<TimeSeriesChunkMetaData>>> ans = io.getSeriesListMap();
+//
+//        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : ans.entrySet()) {
+//            String deltaObjectId = entry.getKey();
+//            System.out.println(deltaObjectId);
+//            //OverflowSeriesImpl overflowSeriesImpl = new OverflowSeriesImpl();
+//        }
+    }
+
+    private long getOverflowRowNumbers() throws IOException {
+        OverflowReadWriter overflowReadWriter = new OverflowReadWriter(fileName);
+        OverflowStoreStruct struct = getLastPos(restoreFileName);
+
+        long rowNumber = 0;
+        for (OFRowGroupListMetadata rowGroupMetadata : struct.ofFileMetadata.getRowGroupLists()) {
+            //System.out.println("deltaObjectId : " + rowGroupMetadata.getDeltaObjectId());
+            for (OFSeriesListMetadata oFSeriesListMetadata: rowGroupMetadata.getSeriesLists()) {
+                //System.out.println("measurementId : " + oFSeriesListMetadata.getMeasurementId());
+                for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : oFSeriesListMetadata.getMetaDatas())
+                    rowNumber += timeSeriesChunkMetaData.getNumRows();
+                    //System.out.println(timeSeriesChunkMetaData.toString());
+            }
+            //System.out.println();
+        }
+
+        return rowNumber;
+    }
+
+    private OverflowStoreStruct getLastPos(String overflowRetoreFilePath) {
         synchronized (overflowRetoreFilePath) {
 
             File overflowRestoreFile = new File(overflowRetoreFilePath);
@@ -102,7 +125,7 @@ public class OverflowFileDeserialization {
         return null;
     }
 
-    private static class OverflowStoreStruct {
+    private class OverflowStoreStruct {
         public final long lastOverflowFilePosition;
         public final long lastOverflowRowGroupPosition;
         public final OFFileMetadata ofFileMetadata;
