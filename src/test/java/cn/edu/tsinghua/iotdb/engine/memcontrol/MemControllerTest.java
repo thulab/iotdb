@@ -16,7 +16,7 @@ public class MemControllerTest {
 
     @Test
     public void test() throws BufferWriteProcessorException {
-        MemController memController = MemController.getInstance();
+        BasicMemController memController = BasicMemController.getInstance();
         memController.clear();
         memController.setWarningThreshold(8 * GB);
         memController.setDangerouseThreshold(16 * GB);
@@ -27,16 +27,16 @@ public class MemControllerTest {
 
         // every one request 1 GB, should get 7 safes, 8 warning and 5 dangerous
         for(int i = 0; i < 7; i++) {
-            MemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
-            assertEquals(MemController.UsageLevel.SAFE, level);
+            BasicMemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
+            assertEquals(BasicMemController.UsageLevel.SAFE, level);
         }
         for(int i = 7; i < 15; i++) {
-            MemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
-            assertEquals(MemController.UsageLevel.WARNING, level);
+            BasicMemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
+            assertEquals(BasicMemController.UsageLevel.WARNING, level);
         }
         for(int i = 15; i < 20; i++) {
-            MemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
-            assertEquals(MemController.UsageLevel.DANGEROUS, level);
+            BasicMemController.UsageLevel level = memController.reportUse(dummyUser[i], 1 * GB);
+            assertEquals(BasicMemController.UsageLevel.DANGEROUS, level);
         }
         assertEquals(15 * GB, memController.getTotalUsage());
         // every one free its mem
@@ -49,21 +49,21 @@ public class MemControllerTest {
             assertEquals((14 - i) * GB, memController.getTotalUsage());
         }
         // ask for a too big mem
-        MemController.UsageLevel level = memController.reportUse(dummyUser[0], 100 * GB);
-        assertEquals(MemController.UsageLevel.DANGEROUS, level);
+        BasicMemController.UsageLevel level = memController.reportUse(dummyUser[0], 100 * GB);
+        assertEquals(BasicMemController.UsageLevel.DANGEROUS, level);
         // single user ask continuously
         for(int i = 0; i < 8 * 1024 - 1; i++) {
             level = memController.reportUse(dummyUser[0], 1 * MB);
-            assertEquals(MemController.UsageLevel.SAFE, level);
+            assertEquals(BasicMemController.UsageLevel.SAFE, level);
         }
         for(int i = 8 * 1024 - 1; i < 16 * 1024 - 1; i++) {
             level = memController.reportUse(dummyUser[0], 1 * MB);
-            assertEquals(MemController.UsageLevel.WARNING, level);
+            assertEquals(BasicMemController.UsageLevel.WARNING, level);
         }
         for(int i = 16 * 1024 - 1; i < 17 * 1024; i++) {
             level = memController.reportUse(dummyUser[0], 1 * MB);
             System.out.println(memController.getTotalUsage() / GB + " " + memController.getTotalUsage() / MB % 1024);
-            assertEquals(MemController.UsageLevel.DANGEROUS, level);
+            assertEquals(BasicMemController.UsageLevel.DANGEROUS, level);
         }
     }
 }

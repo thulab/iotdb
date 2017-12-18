@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.iotdb.engine.memcontrol.MemController;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -279,7 +279,7 @@ public class OverflowProcessor extends LRUProcessor {
 	// to unify with Methods in BufferWriteProcessor
 	public void insert(String deltaObjectId, TSRecord record) throws OverflowProcessorException {
 		long newUsage = memUsed;
-		MemController.UsageLevel level = MemController.getInstance().reportUse(this, newUsage);
+		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newUsage);
 		switch (level) {
 			case SAFE:
 				for (DataPoint dataPoint : record.dataPointList) {
@@ -290,7 +290,7 @@ public class OverflowProcessor extends LRUProcessor {
 				break;
 			case WARNING:
 				LOGGER.warn("Memory usage will exceed warning threshold, current : {}." ,
-						MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+						MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 				for (DataPoint dataPoint : record.dataPointList) {
 					insert(deltaObjectId, dataPoint.getMeasurementId(), record.time,
 							dataPoint.getType(), dataPoint.getValue().toString());
@@ -299,7 +299,7 @@ public class OverflowProcessor extends LRUProcessor {
 				break;
 			case DANGEROUS:
 				LOGGER.error("Memory usage will exceed dangerous threshold, current : {}." ,
-						MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+						MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 				throw new OverflowProcessorException("Memory usage exceeded dangerous threshold.");
 			default:
 		}
@@ -461,7 +461,7 @@ public class OverflowProcessor extends LRUProcessor {
 						flushState.notify();
 					}
 				}
-				MemController.getInstance().reportFree(this, oldMemUsage);
+				BasicMemController.getInstance().reportFree(this, oldMemUsage);
 			} else {
 				// flush overflow row group asynchronously
 				flushState.setFlushing();
@@ -495,7 +495,7 @@ public class OverflowProcessor extends LRUProcessor {
 								flushState.notify();
 							}
 						}
-						MemController.getInstance().reportFree(this, oldMemUsage);
+						BasicMemController.getInstance().reportFree(this, oldMemUsage);
 					}
 				};
 				AsynflushThread.start();

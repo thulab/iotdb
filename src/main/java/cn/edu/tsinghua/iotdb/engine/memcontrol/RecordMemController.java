@@ -13,51 +13,25 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * This class hold global memory usage of MemUsers.
  */
-public class MemController {
+public class RecordMemController extends BasicMemController{
 
-    private static Logger logger = LoggerFactory.getLogger(MemController.class);
+    private static Logger logger = LoggerFactory.getLogger(RecordMemController.class);
 
     // the key is the reference of the memory user, while the value is its memory usage in byte
     private Map<Object, Long> memMap;
     private AtomicLong totalMemUsed;
 
-    private long warningThreshold;
-    private long dangerouseThreshold;
-
-    private MemMonitorThread monitorThread;
-
-    public enum UsageLevel {
-        SAFE, WARNING, DANGEROUS
-    }
-
-    public void setDangerouseThreshold(long dangerouseThreshold) {
-        this.dangerouseThreshold = dangerouseThreshold;
-    }
-
-    public void setWarningThreshold(long warningThreshold) {
-        this.warningThreshold = warningThreshold;
-    }
-
-    public void setCheckInterval(long checkInterval) {
-        this.monitorThread.setCheckInterval(checkInterval);
-    }
-
-
     private static class InstanceHolder {
-        private static final MemController INSTANCE = new MemController(TsfileDBDescriptor.getInstance().getConfig());
+        private static final RecordMemController INSTANCE = new RecordMemController(TsfileDBDescriptor.getInstance().getConfig());
     }
 
-    private MemController(TsfileDBConfig config) {
+    private RecordMemController(TsfileDBConfig config) {
+        super(config);
         memMap = new HashMap<>();
         totalMemUsed = new AtomicLong(0);
-        warningThreshold = config.memThresholdWarning;
-        dangerouseThreshold = config.memThresholdDangerous;
-
-        monitorThread = new MemMonitorThread(config.memMonitorInterval);
-        monitorThread.start();
     }
 
-    public static MemController getInstance() {
+    public static RecordMemController getInstance() {
         return InstanceHolder.INSTANCE;
     }
 

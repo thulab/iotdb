@@ -1,40 +1,16 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import cn.edu.tsinghua.iotdb.engine.memcontrol.MemController;
-import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
-
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.lru.LRUProcessor;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushState;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
@@ -43,15 +19,27 @@ import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
+import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.IRowGroupWriter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BufferWriteProcessor extends LRUProcessor {
 
@@ -471,7 +459,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 
 		try {
 			long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
-			MemController.UsageLevel level = MemController.getInstance().reportUse(this, newMemUsage);
+			BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newMemUsage);
 			switch (level) {
 				case SAFE:
 					recordWriter.write(tsRecord);
@@ -479,14 +467,14 @@ public class BufferWriteProcessor extends LRUProcessor {
 					break;
 				case WARNING:
 					LOGGER.warn("Memory usage will exceed warning threshold, current : {}." ,
-							MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+							MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 					recordWriter.write(tsRecord);
 					memUsed += newMemUsage;
 					break;
 				case DANGEROUS:
 				default:
 					LOGGER.error("Memory usage will exceed dangerous threshold, current : {}.",
-							MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()));
+							MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 					throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
 			}
 		} catch (IOException | WriteProcessException e) {
@@ -651,7 +639,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 						// handle
 						throw new IOException(e);
 					}
-					MemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
+					BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 				} else {
 					flushState.setFlushing();
 					switchIndexFromWorkToFlush();
@@ -697,7 +685,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 						} finally {
 							convertBufferLock.writeLock().unlock();
 						}
-						MemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
+						BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 					};
 					Thread flush = new Thread(flushThread);
 					flush.start();

@@ -12,14 +12,14 @@ public class ForceFLushAllPolicy implements Policy {
     @Override
     public void execute() {
         logger.info("Memory reachs {}, current memory size {}, JVM memory {}, flushing.",
-                MemController.getInstance().getCurrLevel(),
-                MemUtils.bytesCntToStr(MemController.getInstance().getTotalUsage()),
+                BasicMemController.getInstance().getCurrLevel(),
+                MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()),
                 MemUtils.bytesCntToStr(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
         // TODO : fix : partial flush may always flush the same filenodes
         // use a thread to avoid blocking
         if (workerThread == null) {
             workerThread = new Thread(() -> {
-                FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
+                FileNodeManager.getInstance().forceFlush(BasicMemController.UsageLevel.DANGEROUS);
                 System.gc();
             });
             workerThread.start();
@@ -28,7 +28,7 @@ public class ForceFLushAllPolicy implements Policy {
                 logger.info("Last flush is ongoing...");
             } else {
                 workerThread = new Thread(() -> {
-                    FileNodeManager.getInstance().forceFlush(MemController.UsageLevel.DANGEROUS);
+                    FileNodeManager.getInstance().forceFlush(BasicMemController.UsageLevel.DANGEROUS);
                     System.gc();
                 });
                 workerThread.start();

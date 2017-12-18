@@ -35,7 +35,7 @@ public class MemMonitorThread extends Thread {
                 logger.info("MemMonitorThread exiting...");
                 return;
             }
-            MemController.UsageLevel level = MemController.getInstance().getCurrLevel();
+            BasicMemController.UsageLevel level = BasicMemController.getInstance().getCurrLevel();
             switch (level) {
                 case WARNING:
                     warningPolicy.execute();

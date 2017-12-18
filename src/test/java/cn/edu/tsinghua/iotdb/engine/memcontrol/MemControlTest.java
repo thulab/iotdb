@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
 
 public class MemControlTest {
     private final String FOLDER_HEADER = "src/test/resources";
@@ -83,9 +82,9 @@ public class MemControlTest {
             config.metadataDir = FOLDER_HEADER + "/data/metadata";
             config.derbyHome = FOLDER_HEADER + "/data/derby";
 
-            MemController.getInstance().setCheckInterval(5 * 1000);  // 5s
-            MemController.getInstance().setDangerouseThreshold(2 * TsFileDBConstant.MB);  // force initialize
-            MemController.getInstance().setWarningThreshold(1 * TsFileDBConstant.MB);
+            BasicMemController.getInstance().setCheckInterval(5 * 1000);  // 5s
+            BasicMemController.getInstance().setDangerouseThreshold(2 * TsFileDBConstant.MB);  // force initialize
+            BasicMemController.getInstance().setWarningThreshold(1 * TsFileDBConstant.MB);
 
             deamon = new IoTDB();
             deamon.active();
@@ -127,11 +126,11 @@ public class MemControlTest {
         t1.join();
         t2.join();
         assertEquals(exceptionCaught, true);
-        assertEquals(MemController.UsageLevel.WARNING, MemController.getInstance().getCurrLevel());
+        assertEquals(BasicMemController.UsageLevel.WARNING, BasicMemController.getInstance().getCurrLevel());
 
         // test MemControlTread auto flush
         Thread.sleep(10000);
-        assertEquals(MemController.UsageLevel.SAFE, MemController.getInstance().getCurrLevel());
+        assertEquals(BasicMemController.UsageLevel.SAFE, BasicMemController.getInstance().getCurrLevel());
     }
 
     public void insert(String deviceId) {
