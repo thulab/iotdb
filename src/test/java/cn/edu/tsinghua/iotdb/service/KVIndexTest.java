@@ -124,7 +124,6 @@ public class KVIndexTest {
     public void setUp() throws Exception {
         if (testFlag) {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            clearDir(config);
             overflowDataDirPre = config.overflowDataDir;
             fileNodeDirPre = config.fileNodeDir;
             bufferWriteDirPre = config.bufferWriteDir;
@@ -214,7 +213,6 @@ public class KVIndexTest {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(0);
         } finally {
             if (connection != null) {
                 connection.close();
