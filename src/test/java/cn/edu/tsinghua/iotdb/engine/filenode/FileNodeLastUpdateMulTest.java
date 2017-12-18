@@ -95,7 +95,6 @@ public class FileNodeLastUpdateMulTest {
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsconfig.duplicateIncompletedPage = true;
-		tsdbconfig.enableWal = false;
 
 		parameters = new HashMap<>();
 		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);

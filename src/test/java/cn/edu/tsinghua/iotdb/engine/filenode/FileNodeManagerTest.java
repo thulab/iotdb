@@ -71,7 +71,6 @@ public class FileNodeManagerTest {
 		tsconfig.pageCheckSizeThreshold = 3;
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
-		tsdbconfig.enableWal = false;
 		MetadataManagerHelper.initMetadata();
 	}
 

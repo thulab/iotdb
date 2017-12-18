@@ -63,7 +63,6 @@ public class FileNodeManagerMulTest {
 		tsconfig.pageSizeInByte = 100;
 		tsconfig.maxStringLength = 2;
 		tsconfig.duplicateIncompletedPage = true;
-		tsdbconfig.enableWal = false;
 		MetadataManagerHelper.initMetadata2();
 	}
 
