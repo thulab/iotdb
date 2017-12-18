@@ -64,6 +64,7 @@ public class JMXServer {
         if(jmxServer != null){
             jmxServer.stop();
         }
+        LOGGER.info("shutdown jmx server successfully");
     }
 
     private JMXConnectorServer createJMXServer(int port, boolean local) throws IOException {
