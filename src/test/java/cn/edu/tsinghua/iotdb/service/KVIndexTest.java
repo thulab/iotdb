@@ -117,6 +117,7 @@ public class KVIndexTest {
     public void setUp() throws Exception {
         if (testFlag) {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+            maxOpenFolderPre = config.maxOpenFolder;
             config.maxOpenFolder = 1;
             deamon = new IoTDB();
             deamon.active();
@@ -129,6 +130,8 @@ public class KVIndexTest {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
+            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+            config.maxOpenFolder = maxOpenFolderPre;
             EnvironmentUtils.cleanEnv();
         }
     }

@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
+//unused
 public class KvIndexPerfTestInstance {
     private static IoTDB deamon;
     //We insert all data into one path and create index.
