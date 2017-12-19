@@ -707,9 +707,9 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			}
 			mergeExecutorPool.shutdown();
 			while (!mergeExecutorPool.isTerminated()) {
-				LOGGER.info("Not merge finished, wait 20000ms");
+				LOGGER.info("Not merge finished, wait 2000ms");
 				try {
-					Thread.sleep(20000);
+					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					LOGGER.error("Interruption error when merge, the reason is {}", e.getMessage());
 				}
