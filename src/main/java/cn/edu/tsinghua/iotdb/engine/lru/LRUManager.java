@@ -2,11 +2,10 @@ package cn.edu.tsinghua.iotdb.engine.lru;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -31,17 +30,13 @@ public abstract class LRUManager<T extends LRUProcessor> {
 
 	private static final long removeCheckInterval = 100;
 	// The insecure variable in multiple thread
-	private LinkedList<T> processorLRUList;
 	private Map<String, T> processorMap;
 
-	private int maxLRUNodeNumber;
 	protected final String normalDataDir;
 
 	protected LRUManager(int maxLRUNumber, String normalDataDir) {
-		this.maxLRUNodeNumber = maxLRUNumber;
 		LOGGER.info("The max of LRUProcessor number is {}", maxLRUNumber);
-		processorLRUList = new LinkedList<>();
-		processorMap = new HashMap<>();
+		processorMap = new ConcurrentHashMap<String, T>();
 
 		if (normalDataDir.charAt(normalDataDir.length() - 1) != File.separatorChar)
 			normalDataDir += File.separatorChar;
@@ -69,9 +64,7 @@ public abstract class LRUManager<T extends LRUProcessor> {
 	 * @return
 	 */
 	public boolean containNamespacePath(String namespacePath) {
-		synchronized (processorMap) {
-			return processorMap.containsKey(namespacePath);
-		}
+		return processorMap.containsKey(namespacePath);
 	}
 
 	/**
@@ -135,9 +128,7 @@ public abstract class LRUManager<T extends LRUProcessor> {
 	 * nameSpacePath</br>
 	 * 
 	 * check whether the given namespace path exists. If it doesn't exist, add
-	 * it to list. If the list has been full(list.size == maxLRUNodeNumber),
-	 * remove the last one. If it exists, raise this processor to the first
-	 * position
+	 * it to map.
 	 * 
 	 * @param namespacePath
 	 * @param isWriteLock
@@ -149,91 +140,27 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			throws LRUManagerException {
 
 		T processor = null;
-		LOGGER.debug("Try to get LRUProcessor, the nameSpacePath is {}, Thread is {}", namespacePath,
-				Thread.currentThread().getName());
-		// change the processorMap position and improve concurrent performance
-		synchronized (processorMap) {
-			LOGGER.debug("The Thread {} will get the LRUProcessor, the nameSpacePath is {}",
-					Thread.currentThread().getName(), namespacePath);
-			if (processorMap.containsKey(namespacePath)) {
-				processor = processorMap.get(namespacePath);
-				// should use the try lock
-				// Notice： the lock time
-				// processor.lock(isWriteLock);
-				if (!processor.tryLock(isWriteLock)) {
-					return null;
-				}
-				processorLRUList.remove(processor);
-				processorLRUList.addFirst(processor);
-				LOGGER.debug("The Thread {} get the LRUProcessor in memory, the nameSpacePath is {}",
-						Thread.currentThread().getName(), namespacePath);
-			} else {
-				if (processorLRUList.size() == maxLRUNodeNumber) {
-					LOGGER.warn("The LRU list is full, remove the oldest unused processor");
-					// try to remove the last unused processor, if fail, return
-					// null
-					if (!removeLastUnusedProcessor()) {
-						return null;
-					}
-				}
-				// construct a new processor
-				processor = constructNewProcessor(namespacePath);
-				// must use lock and not try lock, because of this processor is
-				// a new processor
-				processor.lock(isWriteLock);
-				processorLRUList.addFirst(processor);
-				processorMap.put(namespacePath, processor);
-				LOGGER.debug("The thread {} get the LRUProcessor by construction, the nameSpacePath is {}",
-						Thread.currentThread().getName(), namespacePath);
-			}
-			return processor;
-		}
-	}
-
-	private boolean removeLastUnusedProcessor() throws LRUManagerException {
-		// must remove the last unused processor
-		for (int i = processorLRUList.size() - 1; i >= 0; i--) {
-			T processor = processorLRUList.get(i);
-			if (processor.tryWriteLock()) {
-				try {
-					LOGGER.debug("Get the write lock for processor in memory, the nameSpacePath is {}",
-							processor.getNameSpacePath());
-					if (processor.canBeClosed()) {
-						try {
-							processor.close();
-						} catch (ProcessorException e) {
-							LOGGER.error("Close processor error when remove one processor, the nameSpacePath is {}",
-									processor.getNameSpacePath());
-							throw new LRUManagerException(e);
-						}
-						processorLRUList.remove(processor);
-						processorMap.remove(processor.getNameSpacePath());
-						LOGGER.debug(
-								"Get the write lock for processor in memory, and close it, the nameSpacePath is {}",
-								processor.getNameSpacePath());
-						return true;
-					} else {
-						LOGGER.debug(
-								"Get the write lock for processor in memory, but can't be closed, the nameSpacePath is {}",
-								processor.getNameSpacePath());
-					}
-				} finally {
-					processor.writeUnlock();
-				}
-			} else {
-				LOGGER.debug("Can't get the write lock for processor in memory, the nameSpacePath is {}",
-						processor.getNameSpacePath());
-				// if the last update processor can't be closed, should wait to
-				// remove the next
-				try {
-					Thread.sleep(removeCheckInterval);
-				} catch (InterruptedException e) {
-					LOGGER.warn("Interrupted when wait to remove last unused processor");
+		processor = processorMap.get(namespacePath);
+		if (processor != null) {
+			processor.lock(isWriteLock);
+		} else {
+			namespacePath = namespacePath.intern();
+			// calculate the value with same key synchronously
+			synchronized (namespacePath) {
+				if (processorMap.containsKey(namespacePath)) {
+					processor = processorMap.get(namespacePath);
+					processor.lock(isWriteLock);
+				} else {
+					// calculate the value with the key monitor
+					LOGGER.debug("Calcuate the processor, the nameSpacePath is {}, Thread is {}", namespacePath,
+							Thread.currentThread().getId());
+					processor = constructNewProcessor(namespacePath);
+					processorMap.put(namespacePath, processor);
+					processor.lock(isWriteLock);
 				}
 			}
 		}
-		LOGGER.warn("Can't find the unused processor for one loop");
-		return false;
+		return processor;
 	}
 
 	/**
@@ -252,14 +179,13 @@ public abstract class LRUManager<T extends LRUProcessor> {
 						try {
 							LOGGER.info("Close the processor, the nameSpacePath is {}", nsPath);
 							processor.close();
+							// TODO: whether remove the processor in the map or not
+							processorMap.remove(nsPath);
 						} catch (ProcessorException e) {
 							LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}",
 									nsPath);
 							throw new LRUManagerException(e);
 						}
-						// remove from map and list
-						processorIterator.remove();
-						processorLRUList.remove(processor);
 					} else {
 						LOGGER.warn("The processor can't be closed, the nameSpacePath is {}", nsPath);
 					}
@@ -282,20 +208,18 @@ public abstract class LRUManager<T extends LRUProcessor> {
 	 * @throws LRUManagerException
 	 */
 	protected boolean closeAll() throws LRUManagerException {
-		synchronized (processorMap) {
-			Iterator<Entry<String, T>> processorIterator = processorMap.entrySet().iterator();
-			while (processorIterator.hasNext()) {
-				Entry<String, T> processorEntry = processorIterator.next();
-				try {
-					close(processorEntry.getKey(), processorIterator);
-				} catch (LRUManagerException e) {
-					LOGGER.error("Close processor error when close all processors, the nameSpacePath is {}",
-							processorEntry.getKey());
-					throw e;
-				}
+		Iterator<Entry<String, T>> processorIterator = processorMap.entrySet().iterator();
+		while (processorIterator.hasNext()) {
+			Entry<String, T> processorEntry = processorIterator.next();
+			try {
+				close(processorEntry.getKey(), processorIterator);
+			} catch (LRUManagerException e) {
+				LOGGER.error("Close processor error when close all processors, the nameSpacePath is {}",
+						processorEntry.getKey());
+				throw e;
 			}
-			return processorMap.isEmpty();
 		}
+		return processorMap.isEmpty();
 	}
 
 	/**
@@ -306,29 +230,25 @@ public abstract class LRUManager<T extends LRUProcessor> {
 	 * @throws LRUManagerException
 	 */
 	protected boolean closeOneProcessor(String namespacePath) throws LRUManagerException {
-		synchronized (processorMap) {
-			if (processorMap.containsKey(namespacePath)) {
-				LRUProcessor processor = processorMap.get(namespacePath);
-				try {
-					processor.writeLock();
-					// wait until the processor can be closed
-					while (!processor.canBeClosed()) {
-						try {
-							TimeUnit.MILLISECONDS.sleep(100);
-						} catch (InterruptedException e) {
-							LOGGER.warn("Interrupted when waitting to close one processor.");
-						}
+		if (processorMap.containsKey(namespacePath)) {
+			LRUProcessor processor = processorMap.get(namespacePath);
+			try {
+				processor.writeLock();
+				// wait until the processor can be closed
+				while (!processor.canBeClosed()) {
+					try {
+						TimeUnit.MILLISECONDS.sleep(100);
+					} catch (InterruptedException e) {
+						LOGGER.warn("Interrupted when waitting to close one processor.");
 					}
-					processor.close();
-					processorLRUList.remove(processor);
-					processorMap.remove(namespacePath);
-				} catch (ProcessorException e) {
-					LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}.",
-							namespacePath);
-					throw new LRUManagerException(e);
-				} finally {
-					processor.writeUnlock();
 				}
+				processor.close();
+				processorMap.remove(namespacePath);
+			} catch (ProcessorException e) {
+				LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}.", namespacePath);
+				throw new LRUManagerException(e);
+			} finally {
+				processor.writeUnlock();
 			}
 		}
 		return true;
@@ -344,16 +264,4 @@ public abstract class LRUManager<T extends LRUProcessor> {
 	 * @throws LRUManagerException
 	 */
 	protected abstract T constructNewProcessor(String namespacePath) throws LRUManagerException;
-
-	/**
-	 * <p>
-	 * initialize the processor with the key-value object<br>
-	 * 
-	 * @param processor
-	 * @param namespacePath
-	 * @param parameters
-	 * @throws LRUManagerException
-	 */
-	protected abstract void initProcessor(T processor, String namespacePath, Map<String, Object> parameters)
-			throws LRUManagerException;
 }

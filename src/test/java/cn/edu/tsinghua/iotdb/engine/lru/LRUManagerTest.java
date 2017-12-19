@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.exception.LRUManagerException;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
@@ -54,11 +53,6 @@ public class LRUManagerTest {
 			return new TestLRUProcessor(namespacePath);
 		}
 
-		@Override
-		protected void initProcessor(TestLRUProcessor processor, String namespacePath, Map<String, Object> parameters)
-				throws LRUManagerException {
-		}
-
 	}
 
 	private TestLRUManager manager = null;
@@ -96,7 +90,7 @@ public class LRUManagerTest {
 		parameters.put(TEST, action);
 		String deltaObjectId = "root.vehicle.d0";
 		TestLRUProcessor processor = manager.getProcessorWithDeltaObjectIdByLRU(deltaObjectId, true, parameters);
-
+		processor.writeUnlock();
 		// test the lru and getprocessor
 		String deltaObjectId2 = "root.vehicle.d1";
 		// in the same thread, the thread can get the write lock
@@ -108,14 +102,6 @@ public class LRUManagerTest {
 		Thread thread = new Thread(new GetWriterProcessor(deltaObjectId));
 		thread.start();
 		Thread.sleep(100);
-		// the other thread get the write lock for the processor of
-		// deltaObjectId1
-		processor = manager.getProcessorByLRU(deltaObjectId, true);
-		assertEquals(null, processor);
-		// the max of the manager is 1, and the processor of deltaObjectId2
-		// can't construct
-		processor = manager.getProcessorByLRU(deltaObjectId2, true);
-		assertEquals(null, processor);
 		// the processor of deltaObjectId1 is used, the manager closed completly
 		assertEquals(false, manager.closeAll());
 		Thread.sleep(1000);

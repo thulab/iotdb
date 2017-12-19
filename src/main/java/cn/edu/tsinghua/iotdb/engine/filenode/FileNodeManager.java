@@ -112,11 +112,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 		}
 	}
 
-	@Override
-	protected void initProcessor(FileNodeProcessor processor, String namespacePath, Map<String, Object> args)
-			throws LRUManagerException {
-	}
-
 	public void managerRecovery() {
 
 		try {
