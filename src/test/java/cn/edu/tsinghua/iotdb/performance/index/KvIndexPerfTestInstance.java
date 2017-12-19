@@ -73,7 +73,7 @@ public class KvIndexPerfTestInstance {
 
         resultFile = "result.out";
 
-        deamon = new IoTDB();
+        deamon = IoTDB.getInstance();
         deamon.active();
 
         File ff = new File(config.bufferWriteDir);

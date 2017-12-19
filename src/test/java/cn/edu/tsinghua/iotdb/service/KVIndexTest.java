@@ -119,7 +119,7 @@ public class KVIndexTest {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             maxOpenFolderPre = config.maxOpenFolder;
             config.maxOpenFolder = 1;
-            deamon = new IoTDB();
+            deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }
