@@ -142,7 +142,7 @@ public class DaemonTest {
 //                aggregationTest();
 //                multiAggregationTest();
 
-                fillTest();
+                //fillTest();
 
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
