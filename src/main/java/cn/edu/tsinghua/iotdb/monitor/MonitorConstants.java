@@ -20,7 +20,7 @@ public class MonitorConstants {
                     hashMap.put(c.name(), new AtomicLong(0));
                 }
                 break;
-            case "FileNodeProcessorStatConstants":
+            case "FileNodeManagerStatConstants":
                 for (FileNodeManagerStatConstants c : FileNodeManagerStatConstants.values()) {
                     hashMap.put(c.name(), new AtomicLong(0));
                 }

@@ -106,7 +106,6 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	@Override
 	public void registStatMetadata() {
 		HashMap<String, String> hashMap = new HashMap<String, String> (){{
-
 			for (MonitorConstants.FileNodeProcessorStatConstants c :
 					MonitorConstants.FileNodeProcessorStatConstants.values()) {
 				put(fakeDeltaName + "." + c.name(), "INT64");
@@ -244,6 +243,10 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 				+ "write."
 				+ nameSpacePath.replaceAll("\\.", "_");
 		this.parameters = parameters;
+		if (fileNodeDirPath.length() > 0
+				&& fileNodeDirPath.charAt(fileNodeDirPath.length() - 1) != File.separatorChar) {
+			fileNodeDirPath = fileNodeDirPath + File.separatorChar;
+		}
 		String dataDirPath = fileNodeDirPath + nameSpacePath;
 		File dataDir = new File(dataDirPath);
 		if (!dataDir.exists()) {
@@ -273,14 +276,14 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 			addALLFileIntoIndex(newFileNodes);
 		}
 		//RegistStatService
-//		if (TsFileDBConf.enableStatMonitor) {
-//			StatMonitor statMonitor = StatMonitor.getInstance();
-//			statMonitor.registStatistics(
-//					getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.", "_"),
-//					this
-//			);
-//			registStatMetadata();
-//		}
+		if (TsFileDBConf.enableStatMonitor) {
+			StatMonitor statMonitor = StatMonitor.getInstance();
+			statMonitor.registStatistics(
+					getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.", "_"),
+					this
+			);
+			registStatMetadata();
+		}
 	}
 
 	private void addALLFileIntoIndex(List<IntervalFileNode> fileList) {
@@ -805,7 +808,8 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 				}
 			}
 		} else {
-			throw new FileNodeProcessorException("No file was changed when merging");
+			LOGGER.error("No file was changed when mergin, the filenode is {}",nameSpacePath);
+			throw new FileNodeProcessorException("No file was changed when merging, the filenode is "+nameSpacePath);
 		}
 		return result;
 	}
@@ -1147,7 +1151,10 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	@Override
 	public void close() throws FileNodeProcessorException {
 		//the processor's path is
-		StatMonitor.getInstance().deregistStatistics(nameSpacePath);
+		StatMonitor.getInstance().deregistStatistics(
+				getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.",
+						"_")
+		);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);

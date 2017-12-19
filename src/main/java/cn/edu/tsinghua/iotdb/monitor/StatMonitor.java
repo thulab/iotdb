@@ -54,7 +54,6 @@ public class StatMonitor {
         mManager = MManager.getInstance();
         lock = new ReentrantReadWriteLock();
         registProcessor = new HashMap<>();
-        service = Executors.newScheduledThreadPool(1);
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         backLoopPeriod = config.backLoopPeriod;
         try {
@@ -114,12 +113,14 @@ public class StatMonitor {
     }
 
     public void activate() {
+        service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 0, backLoopPeriod, TimeUnit.SECONDS
         );
     }
 
     public synchronized void registStatistics(String path, IStatistic statprocessor) {
+        LOGGER.debug("StatMonitor is in registStatistics:" + path);
         registProcessor.put(path, statprocessor);
     }
 
@@ -142,8 +143,9 @@ public class StatMonitor {
     }
 
     public synchronized void deregistStatistics(String path) {
-        registProcessor.put(path, null);
-//        registProcessor.remove(path);
+        if (registProcessor.containsKey(path)){
+            registProcessor.put(path, null);
+        }
     }
 
     /**
@@ -190,21 +192,31 @@ public class StatMonitor {
 
     private void insert(HashMap<String, TSRecord> tsRecordHashMap) {
         FileNodeManager fManager = FileNodeManager.getInstance();
+        int count = 0;
+        int pointNum;
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
                 fManager.insert(entry.getValue());
                 numInsert.incrementAndGet();
-                System.out.println("entry.getValue():" + entry.getValue());
-                numPointsInsert.addAndGet(entry.getValue().dataPointList.size());
+                LOGGER.debug("insert entry.getValue():" + entry.getValue());
+                pointNum = entry.getValue().dataPointList.size();
+                numPointsInsert.addAndGet(pointNum);
+                count += pointNum;
             } catch (FileNodeManagerException e) {
                 LOGGER.debug(entry.getValue().dataPointList.toString());
                 LOGGER.debug("Insert Stat Points error!");
             }
         }
+        LOGGER.debug("Now StatMonitor is inserting " + count + " points, " +
+                "and the FileNodeManager is " + FileNodeManager.getInstance().getStatParamsHashMap().
+                get(MonitorConstants.FileNodeManagerStatConstants.TotalPoints.name()));
     }
 
     public void close() {
-        service.shutdown();
+        if (service!=null && !service.isShutdown()) {
+            service.shutdown();
+        }
+        registProcessor.clear();
     }
 
     private static class StatMonitorHolder {

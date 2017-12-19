@@ -3,11 +3,13 @@ package cn.edu.tsinghua.iotdb.monitor;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.*;
-import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
+//import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
+import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -34,13 +36,6 @@ public class MonitorTest {
     private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
     private FileNodeManager fManager = null;
-
-    private String deltaObjectId = "root.vehicle.d0";
-    private String deltaObjectId2 = "root.vehicle.d1";
-    private String measurementId = "s0";
-    private String measurementId6 = "s6";
-    private TSDataType dataType = TSDataType.INT32;
-
     private String FileNodeDir;
     private String BufferWriteDir;
     private String overflowDataDir;
@@ -49,46 +44,30 @@ public class MonitorTest {
     private int defaultMaxStringLength = tsconfig.maxStringLength;
     private boolean cachePageData = tsconfig.duplicateIncompletedPage;
     private int pageSize = tsconfig.pageSizeInByte;
+    private StatMonitor statMonitor;
 
     @Before
     public void setUp() throws Exception {
-        FileNodeDir = tsdbconfig.fileNodeDir;
-        BufferWriteDir = tsdbconfig.bufferWriteDir;
-        overflowDataDir = tsdbconfig.overflowDataDir;
-
-        tsdbconfig.fileNodeDir = "filenode" + File.separatorChar;
-        tsdbconfig.bufferWriteDir = "bufferwrite";
-        tsdbconfig.overflowDataDir = "overflow";
-        tsdbconfig.metadataDir = "metadata";
-        tsdbconfig.backLoopPeriod = 1;
+        // origin value
+        rowGroupSize = tsconfig.groupSizeInByte;
+        pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
+        cachePageData = tsconfig.duplicateIncompletedPage;
+        defaultMaxStringLength = tsconfig.maxStringLength;
+        pageSize = tsconfig.pageSizeInByte;
+        // new value
         tsconfig.duplicateIncompletedPage = true;
-        // set rowgroupsize
         tsconfig.groupSizeInByte = 2000;
         tsconfig.pageCheckSizeThreshold = 3;
         tsconfig.pageSizeInByte = 100;
         tsconfig.maxStringLength = 2;
-        EngineTestHelper.delete(tsdbconfig.fileNodeDir);
-        EngineTestHelper.delete(tsdbconfig.bufferWriteDir);
-        EngineTestHelper.delete(tsdbconfig.overflowDataDir);
-        EngineTestHelper.delete(tsdbconfig.walFolder);
-        EngineTestHelper.delete(tsdbconfig.metadataDir);
-        WriteLogManager.getInstance().close();
+        MetadataManagerHelper.initMetadata();
     }
 
     @After
     public void tearDown() throws Exception {
-        WriteLogManager.getInstance().close();
-        MManager.getInstance().flushObjectToFile();
-        EngineTestHelper.delete(tsdbconfig.fileNodeDir);
-        EngineTestHelper.delete(tsdbconfig.bufferWriteDir);
-        EngineTestHelper.delete(tsdbconfig.overflowDataDir);
-        EngineTestHelper.delete(tsdbconfig.walFolder);
-        EngineTestHelper.delete(tsdbconfig.metadataDir);
-
-        tsdbconfig.fileNodeDir = FileNodeDir;
-        tsdbconfig.overflowDataDir = overflowDataDir;
-        tsdbconfig.bufferWriteDir = BufferWriteDir;
-
+        statMonitor.close();
+        EnvironmentUtils.cleanEnv();
+        // recovery value
         tsconfig.groupSizeInByte = rowGroupSize;
         tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;
         tsconfig.pageSizeInByte = pageSize;
@@ -98,20 +77,20 @@ public class MonitorTest {
 
     @Test
     public void testFileNodeManagerMonitorAndAddMetadata() {
-        StatMonitor statMonitor = StatMonitor.getInstance();
         fManager = FileNodeManager.getInstance();
+        statMonitor = StatMonitor.getInstance();
         fManager.getStatParamsHashMap().forEach((key, value)->value.set(0));
         statMonitor.clearProcessor();
         statMonitor.registStatistics(fManager.getClass().getSimpleName(), fManager);
         // add metadata
         MManager mManager = MManager.getInstance();
-        try {
-            if (!mManager.pathExist("root.stats")) {
-                mManager.setStorageLevelToMTree("root.stats");
-            }
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+//        try {
+//            if (!mManager.pathExist("root.stats")) {
+//                mManager.setStorageLevelToMTree("root.stats");
+//            }
+//        } catch (Exception e) {
+//            fail(e.getMessage());
+//        }
 
         fManager.registStatMetadata();
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
@@ -120,7 +99,6 @@ public class MonitorTest {
                     MonitorConstants.getStatPrefix() + "write.global/FileNodeManager." + statParam)
             );
         }
-
         statMonitor.activate();
         // wait for time second
         try {
