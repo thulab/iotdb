@@ -79,6 +79,13 @@ public class StatMonitor {
         }
     }
 
+    public void activate() {
+        LOGGER.debug("activate!");
+        service = Executors.newScheduledThreadPool(1);
+        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
+                1, backLoopPeriod, TimeUnit.SECONDS
+        );
+    }
     public static StatMonitor getInstance() {
         return StatMonitorHolder.INSTANCE;
     }
@@ -110,13 +117,6 @@ public class StatMonitor {
 
     public Long getNumBackLoopError() {
         return numBackLoopError.get();
-    }
-
-    public void activate() {
-        service = Executors.newScheduledThreadPool(1);
-        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
-                0, backLoopPeriod, TimeUnit.SECONDS
-        );
     }
 
     public synchronized void registStatistics(String path, IStatistic statprocessor) {
@@ -213,10 +213,17 @@ public class StatMonitor {
     }
 
     public void close() {
-        if (service!=null && !service.isShutdown()) {
-            service.shutdown();
-        }
         registProcessor.clear();
+        if (service==null || service.isShutdown()){
+            return;
+        }
+
+        service.shutdown();
+        try {
+            service.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("StatMonitor timing service could not be shutdown");
+        }
     }
 
     private static class StatMonitorHolder {

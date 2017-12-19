@@ -8,7 +8,6 @@ import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -49,6 +48,9 @@ public class MonitorTest {
     @Before
     public void setUp() throws Exception {
         // origin value
+        // modify stat parameter
+        tsdbconfig.enableStatMonitor = true;
+        tsdbconfig.backLoopPeriod = 1;
         rowGroupSize = tsconfig.groupSizeInByte;
         pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
         cachePageData = tsconfig.duplicateIncompletedPage;
@@ -102,7 +104,7 @@ public class MonitorTest {
         statMonitor.activate();
         // wait for time second
         try {
-            Thread.sleep(2100);
+            Thread.sleep(3100);
             statMonitor.close();
             Thread.sleep(1000);
         } catch (InterruptedException e) {

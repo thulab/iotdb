@@ -46,6 +46,7 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e.getMessage());
 		}
+//		StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().reset();
 		// clean wal
 		WriteLogManager.getInstance().close();
@@ -58,7 +59,6 @@ public class EnvironmentUtils {
 		// delete all directory
 		cleanAllDir();
 		//FileNodeManager.getInstance().reset();
-		StatMonitor.getInstance().close();
 	}
 
 	private static void cleanAllDir() throws IOException {
@@ -96,6 +96,8 @@ public class EnvironmentUtils {
 	
 	public static void envSetUp(){
 		Authorizer.reset();
+//		TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
+		config.enableStatMonitor = false;
 		//tsFileConfig.duplicateIncompletedPage = true;
 		FileNodeManager.getInstance().reset();
 	}

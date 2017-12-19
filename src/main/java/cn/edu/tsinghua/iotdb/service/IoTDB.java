@@ -148,9 +148,10 @@ public class IoTDB {
     }
 
     private void registStatMonitor() {
-        statMonitor = StatMonitor.getInstance();
-        if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor)
+        if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
+            statMonitor = StatMonitor.getInstance();
             statMonitor.activate();
+        }
     }
 
     /**
@@ -200,7 +201,7 @@ public class IoTDB {
         if (dBdao != null) {
             dBdao.close();
         }
-
+        StatMonitor.getInstance().close();
         FileNodeManager.getInstance().closeAll();
 
         WriteLogManager.getInstance().close();
@@ -211,9 +212,6 @@ public class IoTDB {
 
         if (jmxServer != null) {
             jmxServer.stop();
-        }
-        if (statMonitor != null) {
-            statMonitor.close();
         }
 
         try {
