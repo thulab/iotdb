@@ -29,7 +29,8 @@ public class StatMonitor {
     private final int backLoopPeriod;
     private final MManager mManager;
 
-    // key is the store path like root.stats.xxx.xxx, value is an interface
+    // key is the store path like FileNodeProcessor.root_stats_xxx.xxx
+    // or simple name like:FileNodeManager
     private HashMap<String, IStatistic> registProcessor;
     private ScheduledExecutorService service;
 
@@ -39,16 +40,7 @@ public class StatMonitor {
     private AtomicLong numBackLoop = new AtomicLong(0);
     private AtomicLong numBackLoopError = new AtomicLong(0);
     private AtomicLong numInsert = new AtomicLong(0);
-
-    public Long getNumPointsInsert() {
-        return numPointsInsert.get();
-    }
-
     private AtomicLong numPointsInsert = new AtomicLong(0);
-
-    public Long getNumInsert() {
-        return numInsert.get();
-    }
 
     private StatMonitor() {
         mManager = MManager.getInstance();
@@ -79,21 +71,10 @@ public class StatMonitor {
         }
     }
 
-    public void activate() {
-        LOGGER.debug("activate!");
-        service = Executors.newScheduledThreadPool(1);
-        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
-                1, backLoopPeriod, TimeUnit.SECONDS
-        );
-    }
     public static StatMonitor getInstance() {
         return StatMonitorHolder.INSTANCE;
     }
 
-
-    public void clearProcessor() {
-        registProcessor.clear();
-    }
     /**
      * @param hashMap       key is statParams name, values is AtomicLong type
      * @param fakeDeltaName is the deltaObject path of this module
@@ -109,6 +90,26 @@ public class StatMonitor {
             }
         }};
         return tsRecord;
+    }
+
+    public Long getNumPointsInsert() {
+        return numPointsInsert.get();
+    }
+
+    public Long getNumInsert() {
+        return numInsert.get();
+    }
+
+    public void activate() {
+        LOGGER.debug("activate!");
+        service = Executors.newScheduledThreadPool(1);
+        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
+                1, backLoopPeriod, TimeUnit.SECONDS
+        );
+    }
+
+    public void clearProcessor() {
+        registProcessor.clear();
     }
 
     public Long getNumBackLoop() {
@@ -143,26 +144,39 @@ public class StatMonitor {
     }
 
     public synchronized void deregistStatistics(String path) {
-        if (registProcessor.containsKey(path)){
+        if (registProcessor.containsKey(path)) {
             registProcessor.put(path, null);
         }
     }
 
     /**
-     * TODO: need to complete
+     * TODO: need to complete the query key concept
      *
      * @param key
-     * @return
+     * @return TSRecord, query statistics params
      */
-//    public TSRecord getOneStatisticsValue(String key) {
-//        String queryPath = MonitorConstants.getStatPrefix() +
-//        if (registProcessor.containsKey(key)) {
-//            return registProcessor.get(key).getAllStatisticsValue().get(key);
-//        }
-//        else{
-//
-//        }
-//    }
+    public HashMap<String, TSRecord> getOneStatisticsValue(String key) {
+        // queryPath like fileNode path: root.stats.car1, or FileNodeManager path: FileNodeManager
+        String queryPath;
+        if (key.contains("\\.")) {
+            queryPath = MonitorConstants.getStatPrefix() + key.replaceAll("\\.", "_");
+        } else {
+            queryPath = key;
+        }
+        if (registProcessor.containsKey(queryPath)) {
+            return registProcessor.get(queryPath).getAllStatisticsValue();
+        } else {
+            Long t = System.currentTimeMillis();
+            HashMap<String, TSRecord> hashMap = new HashMap<>();
+            TSRecord tsRecord = convertToTSRecord(
+                    MonitorConstants.iniValues("FileNodeProcessorStatConstants"),
+                    queryPath,
+                    t
+            );
+            hashMap.put(queryPath, tsRecord);
+            return hashMap;
+        }
+    }
 
     public HashMap<String, TSRecord> gatherStatistics() {
         lock.readLock().lock();
@@ -214,7 +228,7 @@ public class StatMonitor {
 
     public void close() {
         registProcessor.clear();
-        if (service==null || service.isShutdown()){
+        if (service == null || service.isShutdown()) {
             return;
         }
 
