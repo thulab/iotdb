@@ -687,11 +687,11 @@ typeClause
 
 interTypeClause
     :
-    KW_LINEAR COMMA value1=Integer unit1=Identifier COMMA value2=Integer unit2=Identifier
-    -> ^(TOK_LINEAR ^(TOK_TIMEUNIT $value1 $unit1) ^(TOK_TIMEUNIT $value2 $unit2))
+    KW_LINEAR (COMMA value1=Integer unit1=Identifier COMMA value2=Integer unit2=Identifier)?
+    -> ^(TOK_LINEAR (^(TOK_TIMEUNIT $value1 $unit1) ^(TOK_TIMEUNIT $value2 $unit2))?)
     |
-    KW_PREVIOUS COMMA value1=Integer unit1=Identifier
-    -> ^(TOK_PREVIOUS ^(TOK_TIMEUNIT $value1 $unit1))
+    KW_PREVIOUS (COMMA value1=Integer unit1=Identifier)?
+    -> ^(TOK_PREVIOUS ^(TOK_TIMEUNIT $value1 $unit1)?)
     ;
 
 
