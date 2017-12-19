@@ -44,8 +44,7 @@ public class OverflowQueryEngine {
     }
 
     /**
-     * <p>
-     * Basic query method.
+     * <p> Basic query method.
      * This method may be invoked many times due to the restriction of fetchSize.
      *
      * @param formNumber   a complex query will be taken out to some disjunctive normal forms in query process,
@@ -222,15 +221,18 @@ public class OverflowQueryEngine {
         return null;
     }
 
-    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType) throws PathErrorException {
+    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
+            throws PathErrorException, IOException, ProcessorException {
         QueryDataSet result = new QueryDataSet();
 
         for (Path path : fillPaths) {
-            String deltaObjectId = path.getDeltaObjectToString();
-            String measurementId = path.getMeasurementToString();
+
             TSDataType dataType = getDataTypeByPath(path);
 
-            result.mapRet.put(path.getFullPath(), new DynamicOneColumnData(dataType, true, true));
+            IFill fill = fillType.get(dataType);
+            fill.setQueryTime(queryTime);
+
+            result.mapRet.put(path.getFullPath(), fill.copy(path).getFillResult());
         }
 
         return result;

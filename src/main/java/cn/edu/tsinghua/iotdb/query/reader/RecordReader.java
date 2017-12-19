@@ -24,6 +24,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
+import static cn.edu.tsinghua.iotdb.query.fill.FillProcessor.getPreviousFillResult;
+import static cn.edu.tsinghua.iotdb.query.fill.FillProcessor.getPreviousFillResultInMemory;
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
 
 /**
@@ -419,8 +421,8 @@ public class RecordReader {
      * @throws IOException
      */
     public void getFillResult(DynamicOneColumnData result, String deltaObjectId, String measurementId,
-                              DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData, SingleSeriesFilterExpression overflowTimeFilter,
-                              long beforeTime, long queryTime) throws PathErrorException, IOException {
+                              DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
+                              SingleSeriesFilterExpression overflowTimeFilter, long beforeTime, long queryTime) throws PathErrorException, IOException {
 
         SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
@@ -435,23 +437,22 @@ public class RecordReader {
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                if (FillProcessor.getPreviousFillResult(result, rowGroupReader.getValueReaders().get(measurementId),
-                        beforeTime, queryTime)) {
+                // get fill result in ValueReader
+                if (getPreviousFillResult(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime,
+                        overflowTimeFilter, updateTrue, updateFalse)) {
                     fillFlag = true;
                     break;
                 }
             }
         }
 
-        if (fillFlag) {
-            return;
+        // get fill result in InsertMemoryData
+        if (getPreviousFillResultInMemory(result, insertMemoryData, beforeTime, queryTime)) {
+            fillFlag = true;
         }
 
-        // add left insert values
-        if (insertMemoryData.hasInsertData()) {
-           // addLeftInsertValue(res, insertMemoryData, fetchSize, timeFilter, updateTrue, updateFalse);
-        } else {
-           //
+        if (result.timeLength == 0) {
+            result.putEmptyTime(queryTime);
         }
     }
 

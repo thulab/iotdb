@@ -16,7 +16,10 @@ public abstract class IFill {
     }
 
     public IFill() {
+    }
 
+    public void setQueryTime(long queryTime) {
+        this.queryTime = queryTime;
     }
 
     public TSDataType getDataType() {

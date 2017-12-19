@@ -37,12 +37,14 @@ public class DaemonTest {
 
     private String[] sqls = new String[]{
             "SET STORAGE GROUP TO root.vehicle",
-            "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-            "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
-            "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
+
             "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
+            "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
+            "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
             "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
+
+            "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
 
             "insert into root.vehicle.d0(timestamp,s0) values(1,101)",
             "insert into root.vehicle.d0(timestamp,s0) values(2,198)",
@@ -128,15 +130,19 @@ public class DaemonTest {
 
                 Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-                selectAllSQLTest();
-                dnfErrorSQLTest();
-                selectWildCardSQLTest();
-                selectAndOperatorTest();
-                selectAndOpeCrossTest();
-                aggregationTest();
-                selectOneColumnWithFilterTest();
-                multiAggregationTest();
-                crossReadTest();
+//                selectAllSQLTest();
+//                dnfErrorSQLTest();
+//                selectWildCardSQLTest();
+//                selectAndOperatorTest();
+//                selectAndOpeCrossTest();
+//                selectOneColumnWithFilterTest();
+//                crossReadTest();
+//                textDataTypeTest();
+//
+//                aggregationTest();
+//                multiAggregationTest();
+
+                fillTest();
 
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
@@ -651,10 +657,37 @@ public class DaemonTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," +
                         resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
-                //System.out.println("=====" + ans);
                 Assert.assertEquals(ans, retArray[cnt++]);
             }
             Assert.assertEquals(cnt, 3);
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void fillTest() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+
+            boolean hasTextMaxResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 199 fill(int[previous, 5m])");
+            Assert.assertTrue(hasTextMaxResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1);
+                System.out.println(ans);
+            }
+            //Assert.assertEquals(cnt, 3);
+
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
