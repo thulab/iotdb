@@ -5,12 +5,12 @@ import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorServer;
 
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -30,173 +30,204 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
-public class IoTDB {
+public class IoTDB implements IoTDBMBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
-    static final IoTDB instance = new IoTDB();
-    private JMXConnectorServer jmxServer;
-    private MBeanServer mbs;
-    private DBDao dBdao;
-    private JDBCServerMBean jdbcMBean;
-    private MonitorMBean monitorMBean;
+	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
+	private MBeanServer mbs;
+	private DBDao dBdao;
+	private static JDBCServerMBean jdbcMBean;
+	private MonitorMBean monitorMBean;
+	private final String IOTDB_PACKAGE = "cn.edu.tsinghua.iotdb.service";
+	private final String JMX_TYPE = "type";
+	private final String JDBC_SERVER_STR = "JDBCServer";
+	private final String MONITOR_STR = "Monitor";
+	private final String IOTDB_STR = "IoTDB";
 
-    public IoTDB() {
-        mbs = ManagementFactory.getPlatformMBeanServer();
-    }
+	private static class IoTDBHolder {
+		private static final IoTDB INSTANCE = new IoTDB();
+	}
 
-    public void active() {
-        StartupChecks checks = new StartupChecks().withDefaultTest();
-        try {
-            checks.verify();
-        } catch (StartupException e) {
-            LOGGER.error("{}: failed to start because of some check fail. {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
-            return;
-        }
-        try {
-            setUp();
-        } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException
-                | NotCompliantMBeanException | TTransportException | IOException e) {
-            LOGGER.error("{}: failed to start because: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
-        } catch (FileNodeManagerException e) {
-            e.printStackTrace();
-        } catch (PathErrorException e) {
-            e.printStackTrace();
-        }
-    }
+	public static final IoTDB getInstance() {
+		return IoTDBHolder.INSTANCE;
+	}
 
-    private void setUp() throws MalformedObjectNameException, InstanceAlreadyExistsException,
-            MBeanRegistrationException, NotCompliantMBeanException, TTransportException, IOException, FileNodeManagerException, PathErrorException {
-    	try {
+	private IoTDB() {
+		mbs = ManagementFactory.getPlatformMBeanServer();
+	}
+
+	public void active() {
+		StartupChecks checks = new StartupChecks().withDefaultTest();
+		try {
+			checks.verify();
+		} catch (StartupException e) {
+			LOGGER.error("{}: failed to start because of some check fail. {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			return;
+		}
+		try {
+			setUp();
+		} catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | TTransportException | IOException e) {
+			LOGGER.error("{}: failed to start because: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+		} catch (FileNodeManagerException e) {
+			e.printStackTrace();
+		} catch (PathErrorException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void setUp() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException,
+			NotCompliantMBeanException, TTransportException, IOException, FileNodeManagerException, PathErrorException {
+		try {
 			initDBDao();
 		} catch (ClassNotFoundException | SQLException | DBDaoInitException e) {
-			LOGGER.error("Fail to start {}!",TsFileDBConstant.GLOBAL_DB_NAME);
+			LOGGER.error("Fail to start {}!", TsFileDBConstant.GLOBAL_DB_NAME);
 			return;
 		}
 
-        initFileNodeManager();
+		initFileNodeManager();
 
-        systemDataRecovery();
+		systemDataRecovery();
 
-        maybeInitJmx();
-        registJDBCServer();
-        registMonitor();
-        startCloseAndMergeServer();
-    }
-
-    private void maybeInitJmx() {
-        if (System.getProperty(TsFileDBConstant.REMOTE_JMX_PORT_NAME) != null) {
-            LOGGER.warn("JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have been bypassed as the JMX connector server is "
-                    + "already initialized. Please refer to {}.sh/bat for JMX configuration info", TsFileDBConstant.ENV_FILE_NAME, 
-                    TsFileDBConstant.ENV_FILE_NAME, TsFileDBConstant.ENV_FILE_NAME);
-            return;
-        }
-        System.setProperty(TsFileDBConstant.SERVER_RMI_ID, "true");
-        boolean localOnly = false;
-        String jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_REMOTE_JMX_PORT_NAME);
-
-        if (jmxPort == null) {
-            localOnly = true;
-            jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_LOCAL_JMX_PORT_NAME);
-        }
-
-        if (jmxPort == null)
-            return;
-
-        try {
-            jmxServer = JMXServerUtils.createJMXServer(Integer.parseInt(jmxPort), localOnly);
-            if (jmxServer == null)
-                return;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void registJDBCServer() throws TTransportException, MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-        jdbcMBean = new JDBCServer();
-        jdbcMBean.startServer();
-        ObjectName mBeanName = new ObjectName("cn.edu.thu.tsfiledb.service", "type", "JDBCServer");
-        mbs.registerMBean(jdbcMBean, mBeanName);
-    }
-    
-	private void registMonitor() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
-		monitorMBean = new Monitor();
-		ObjectName mBeanName = new ObjectName("cn.edu.thu.tsfiledb.service", "type", "Monitor");
-		mbs.registerMBean(monitorMBean, mBeanName);
+		maybeInitJmx();
+		registJDBCServer();
+		registMonitor();
+		registIoTDBServer();
+		startCloseAndMergeServer();
 	}
 
-    private void initDBDao() throws ClassNotFoundException, SQLException, DBDaoInitException {
-        dBdao = new DBDao();
-        dBdao.open();
-    }
+	private void maybeInitJmx() {
+		JMXServer.getInstance().start();
+	}
 
-    private void initFileNodeManager() {
-        FileNodeManager.getInstance().managerRecovery();
-    }
+	private void registJDBCServer() throws TTransportException, MalformedObjectNameException,
+			InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
+		jdbcMBean = new JDBCServer();
+		jdbcMBean.startServer();
+		ObjectName mBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR);
+		if (!mbs.isRegistered(mBeanName)) {
+			mbs.registerMBean(jdbcMBean, mBeanName);
+		}
+	}
 
-    /**
-     * Recover data using system log.
-     *
-     * @throws IOException
-     */
-    private void systemDataRecovery() throws IOException, FileNodeManagerException, PathErrorException {
-        LOGGER.info("{}: start checking write log...",TsFileDBConstant.GLOBAL_DB_NAME);
-//        QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
-        WriteLogManager writeLogManager = WriteLogManager.getInstance();
-        writeLogManager.recovery();
-        long cnt = 0L;
-        PhysicalPlan plan;
-        WriteLogManager.isRecovering = true;
-        while ((plan = writeLogManager.getPhysicalPlan()) != null) {
-            try {
-                if (plan instanceof InsertPlan) {
-                    InsertPlan insertPlan = (InsertPlan) plan;
-                    WriteLogRecovery.multiInsert(insertPlan);
-                } else if (plan instanceof UpdatePlan) {
-                    UpdatePlan updatePlan = (UpdatePlan) plan;
-                    WriteLogRecovery.update(updatePlan);
-                } else if (plan instanceof DeletePlan){
-                    DeletePlan deletePlan = (DeletePlan) plan;
-                    WriteLogRecovery.delete(deletePlan);
-                }
-                cnt++;
-            } catch (ProcessorException e) {
-                e.printStackTrace();
-                throw new IOException("Error in recovery from write log");
-            }
-        }
-        WriteLogManager.isRecovering = false;
-        LOGGER.info("{}: Done. Recover operation count {}",TsFileDBConstant.GLOBAL_DB_NAME, cnt);
-    }
+	private void registMonitor() throws MalformedObjectNameException, InstanceAlreadyExistsException,
+			MBeanRegistrationException, NotCompliantMBeanException {
+		monitorMBean = new Monitor();
+		ObjectName mBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR);
+		if (!mbs.isRegistered(mBeanName)) {
+			mbs.registerMBean(monitorMBean, mBeanName);
+		}
+	}
 
-    /**
-     * start the close and merge server
-     */
-    private void startCloseAndMergeServer() {
-        // close and merge regularly
-        CloseMergeServer.getInstance().startServer();
-    }
+	private void registIoTDBServer() throws MalformedObjectNameException, InstanceAlreadyExistsException,
+			MBeanRegistrationException, NotCompliantMBeanException {
+		ObjectName mBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, IOTDB_STR);
+		if (!mbs.isRegistered(mBeanName)) {
+			mbs.registerMBean(IoTDBHolder.INSTANCE, mBeanName);
+		}
+	}
 
-    public void stop() throws FileNodeManagerException, IOException {
-        if (dBdao != null) {
-            dBdao.close();
-        }
+	private void initDBDao() throws ClassNotFoundException, SQLException, DBDaoInitException {
+		dBdao = new DBDao();
+		dBdao.open();
+	}
 
-        FileNodeManager.getInstance().closeAll();
+	private void initFileNodeManager() {
+		FileNodeManager.getInstance().managerRecovery();
+	}
 
-        if (jdbcMBean != null) {
-            jdbcMBean.stopServer();
-        }
+	/**
+	 * Recover data using system log.
+	 *
+	 * @throws IOException
+	 */
+	private void systemDataRecovery() throws IOException, FileNodeManagerException, PathErrorException {
+		LOGGER.info("{}: start checking write log...", TsFileDBConstant.GLOBAL_DB_NAME);
+		// QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
+		WriteLogManager writeLogManager = WriteLogManager.getInstance();
+		writeLogManager.recovery();
+		long cnt = 0L;
+		PhysicalPlan plan;
+		WriteLogManager.isRecovering = true;
+		while ((plan = writeLogManager.getPhysicalPlan()) != null) {
+			try {
+				if (plan instanceof InsertPlan) {
+					InsertPlan insertPlan = (InsertPlan) plan;
+					WriteLogRecovery.multiInsert(insertPlan);
+				} else if (plan instanceof UpdatePlan) {
+					UpdatePlan updatePlan = (UpdatePlan) plan;
+					WriteLogRecovery.update(updatePlan);
+				} else if (plan instanceof DeletePlan) {
+					DeletePlan deletePlan = (DeletePlan) plan;
+					WriteLogRecovery.delete(deletePlan);
+				}
+				cnt++;
+			} catch (ProcessorException e) {
+				e.printStackTrace();
+				throw new IOException("Error in recovery from write log");
+			}
+		}
+		WriteLogManager.isRecovering = false;
+		LOGGER.info("{}: Done. Recover operation count {}", TsFileDBConstant.GLOBAL_DB_NAME, cnt);
+	}
 
-        if (jmxServer != null) {
-            jmxServer.stop();
-        }
-        CloseMergeServer.getInstance().closeServer();
-    }
+	@Override
+	public void stop() throws FileNodeManagerException, IOException {
+		// TODO Auto-generated method stub
+		if (dBdao != null) {
+			dBdao.close();
+		}
 
-    public static void main(String[] args) {
-        IoTDB daemon = new IoTDB();
-        daemon.active();
-	    
-    }
+		FileNodeManager.getInstance().closeAll();
+
+		WriteLogManager.getInstance().close();
+
+		if (jdbcMBean != null) {
+			jdbcMBean.stopServer();
+		}
+
+		JMXServer.getInstance().stop();
+
+		try {
+			ObjectName montiorBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR);
+			if (mbs.isRegistered(montiorBeanName)) {
+				mbs.unregisterMBean(montiorBeanName);
+			}
+		} catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+			LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR, e);
+		}
+
+		try {
+			ObjectName jdbcBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR);
+			if (mbs.isRegistered(jdbcBeanName)) {
+				mbs.unregisterMBean(jdbcBeanName);
+			}
+		} catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+			LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, JDBC_SERVER_STR, e);
+		}
+
+		try {
+			ObjectName iotdbBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, IOTDB_STR);
+			if (mbs.isRegistered(iotdbBeanName)) {
+				mbs.unregisterMBean(iotdbBeanName);
+			}
+		} catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+			LOGGER.error("Failed to unregisterMBean {}:{}={}", IOTDB_PACKAGE, JMX_TYPE, IOTDB_STR, e);
+		}
+
+		CloseMergeServer.getInstance().closeServer();
+	}
+
+	/**
+	 * start the close and merge server
+	 */
+	private void startCloseAndMergeServer() {
+		// close and merge regularly
+		CloseMergeServer.getInstance().startServer();
+	}
+
+	public static void main(String[] args) {
+		IoTDB daemon = new IoTDB();
+		daemon.active();
+
+	}
 
 }
