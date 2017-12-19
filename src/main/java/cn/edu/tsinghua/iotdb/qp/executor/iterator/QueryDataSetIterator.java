@@ -101,12 +101,15 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
                         break;
                     case AGGREGATION:
                         data = executor.aggregate(getAggrePair(), filterStructures);
+                        noNext = true;
                         break;
                     case GROUPBY:
                         data = executor.groupBy(getAggrePair(), filterStructures, unit, origin, intervals, fetchSize);
                         break;
                     case FILL:
                         data = executor.fill(paths, queryTime, fillType);
+                        noNext = true;
+                        break;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
