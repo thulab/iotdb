@@ -30,11 +30,14 @@ public class CloseMergeServer {
 	private static final long mergePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForMerge;
 	private static final long closePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForFlush;
 
-	private boolean isStart = false;
+	private volatile boolean isStart = false;
 
-	private static final CloseMergeServer SERVER = new CloseMergeServer();
+	private static CloseMergeServer SERVER = new CloseMergeServer();
 
-	public static CloseMergeServer getInstance() {
+	public synchronized static CloseMergeServer getInstance() {
+		if (SERVER == null) {
+			SERVER = new CloseMergeServer();
+		}
 		return SERVER;
 	}
 
@@ -54,14 +57,16 @@ public class CloseMergeServer {
 	}
 
 	public void closeServer() {
-		
+
 		if (isStart) {
-			LOGGER.info("shutdown the close and merge server");
+			LOGGER.info("prepare to shutdown the close and merge server");
 			isStart = false;
 			synchronized (service) {
 				service.shutdown();
 				service.notify();
 			}
+			SERVER = null;
+			LOGGER.info("shutdown close and merge server successfully");
 		} else {
 			LOGGER.warn("the close and merge daemon is not running now");
 		}
