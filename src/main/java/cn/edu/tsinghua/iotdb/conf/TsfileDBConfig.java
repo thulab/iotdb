@@ -107,7 +107,7 @@ public class TsfileDBConfig {
 	/**
 	 * How many thread can concurrently flush. When <= 0, use CPU core number.
 	 */
-	public int concurrentFlushThread = 0;
+	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
 
