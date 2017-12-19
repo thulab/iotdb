@@ -19,8 +19,12 @@ public class FlushManager {
         pool = Executors.newFixedThreadPool(config.concurrentFlushThread);
     }
 
-    public FlushManager getInstance(){
+    static public FlushManager getInstance(){
         return InstanceHolder.instance;
+    }
+
+    public void close() {
+        pool.shutdown();
     }
 
     synchronized public void submit(Runnable task) {
