@@ -822,7 +822,7 @@ public class ValueReaderProcessor {
         while ((lastAggregationResult.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
             pageCount++;
-            LOG.debug("calculate aggregation using given common timestamps, read page {}, offset : {}", pageCount, lastAggregationResult.pageOffset);
+            //LOG.debug("calculate aggregation using given common timestamps, read page {}, offset : {}", pageCount, lastAggregationResult.pageOffset);
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
             Digest pageDigest = pageHeader.data_page_header.getDigest();
