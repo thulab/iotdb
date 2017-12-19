@@ -95,13 +95,11 @@ public class OverflowFileDeserialization {
 
         long rowNumber = 0;
         for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : ans.entrySet()) {
-            String deltaObjectId = entry.getKey();
             Map<String, List<TimeSeriesChunkMetaData>> measurementMap = entry.getValue();
             for (Map.Entry<String, List<TimeSeriesChunkMetaData>> entry1 : measurementMap.entrySet()) {
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : entry1.getValue())
                     rowNumber += timeSeriesChunkMetaData.getNumRows();
             }
-            //OverflowSeriesImpl overflowSeriesImpl = new OverflowSeriesImpl();
         }
 
         return rowNumber;
