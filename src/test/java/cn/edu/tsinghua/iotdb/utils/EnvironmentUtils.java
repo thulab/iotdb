@@ -46,7 +46,7 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e.getMessage());
 		}
-//		StatMonitor.getInstance().close();
+		StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().reset();
 		// clean wal
 		WriteLogManager.getInstance().close();

@@ -83,13 +83,12 @@ public class IoTDB {
 		}
 
         initFileNodeManager();
-
+        registStatMonitor();
         systemDataRecovery();
 
         maybeInitJmx();
         registJDBCServer();
         registMonitor();
-        registStatMonitor();
         startCloseAndMergeServer();
     }
 
