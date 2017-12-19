@@ -161,7 +161,7 @@ public class KVIndexTest {
                     Statement statement = connection.createStatement();
                     statement.execute(sql);
                     if ("merge".equals(sql)) {
-//                        Thread.sleep(3000);
+//						Thread.sleep(3000);
                         System.out.println("process merge operation");
                     }
                     statement.close();

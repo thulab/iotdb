@@ -163,14 +163,19 @@ public class KvMatchIndex  implements IoTIndex {
                     logger.warn("{} delete failed", buildFile.getAbsolutePath());
                 }
 
-                QueryDataSet dataSet = getDataInTsFile(path, fileInfo.getFilePath());
+				Map<String,Object> map = getDataInTsFile(path, fileInfo.getFilePath());
+                QueryDataSet dataSet = (QueryDataSet)(map.get("data"));
                 Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
+				
                 indexFls.add(indexFile);
                 Boolean rs = result.get();
                 if (!rs) {
                     overall = false;
                     break;
                 }
+				
+				TsFile tsfile = (TsFile)(map.get("tsfile"));
+				tsfile.close();
             }
 
             if (overall && parameters != null) {
@@ -249,9 +254,12 @@ public class KvMatchIndex  implements IoTIndex {
             }
 
             // 1. build index asynchronously
-            QueryDataSet dataSet = getDataInTsFile(path, newFile.getFilePath());
+			Map<String,Object> map = getDataInTsFile(path, newFile.getFilePath());
+            QueryDataSet dataSet = (QueryDataSet)(map.get("data"));
             Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
             result.get();
+			TsFile tsfile = (TsFile)(map.get("tsfile"));
+			tsfile.close();
 //            KvMatchIndexBuilder rs = new KvMatchIndexBuilder(indexConfig, path, dataSet, IndexFileUtils.getIndexFilePath(path, newFile.getFilePath()));
 //            Boolean rr = rs.call();
             return true;
@@ -620,11 +628,14 @@ public class KvMatchIndex  implements IoTIndex {
     /**
      * get the data only in file
      */
-    public QueryDataSet getDataInTsFile(Path path, String filePath) throws IOException {
-        TsRandomAccessLocalFileReader input = new TsRandomAccessLocalFileReader(filePath);
-        TsFile readTsFile = new TsFile(input);
-        ArrayList<Path> paths = new ArrayList<>();
-        paths.add(path);
-        return readTsFile.query(paths, null, null);
+    public Map<String,Object> getDataInTsFile(Path path, String filePath) throws IOException {
+		TsRandomAccessLocalFileReader input = new TsRandomAccessLocalFileReader(filePath);
+		TsFile readTsFile = new TsFile(input);
+		ArrayList<Path> paths = new ArrayList<>();
+		paths.add(path);
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("tsfile", readTsFile);
+		map.put("data", readTsFile.query(paths, null, null));
+		return map;
     }
 }
