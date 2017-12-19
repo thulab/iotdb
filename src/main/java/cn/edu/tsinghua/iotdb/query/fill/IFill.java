@@ -10,21 +10,21 @@ import java.io.IOException;
 
 public abstract class IFill {
 
-    protected long queryTime;
-
-    protected TSDataType dataType;
+    long queryTime;
 
     public IFill(TSDataType dataType, long queryTime) {
-        this.queryTime = queryTime;
-        this.dataType = dataType;
+    }
+
+    public IFill() {
+
     }
 
     public TSDataType getDataType() {
-        return this.dataType;
+        return null;
     }
 
     public long getQueryTime() {
-        return this.queryTime;
+        return 0;
     }
 
     public abstract IFill copy(Path path);

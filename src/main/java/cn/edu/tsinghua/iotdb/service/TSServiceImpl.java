@@ -368,22 +368,28 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			// Restore column header of aggregate to func(column_name), only
 			// support single aggregate function for now
 
-			if (((MultiQueryPlan)plan).getType() == MultiQueryPlan.QueryType.QUERY) {
-				for (Path p : paths) {
-					columns.add(p.getFullPath());
-				}
-			} else {
-				//aggregation or groupby
-				List<String> aggregations = plan.getAggregations();
-				if(aggregations.size() != paths.size()) {
-					for (int i = 1; i < paths.size(); i++) {
-						aggregations.add(aggregations.get(0));
+			switch (((MultiQueryPlan)plan).getType()) {
+				case QUERY:
+				case FILL:
+					for (Path p : paths) {
+						columns.add(p.getFullPath());
 					}
-				}
-				for(int i = 0; i < paths.size(); i++) {
-					columns.add(aggregations.get(i) + "(" + paths.get(i).getFullPath() + ")");
-				}
+					break;
+				case GROUPBY:
+				case AGGREGATION:
+					List<String> aggregations = plan.getAggregations();
+					if(aggregations.size() != paths.size()) {
+						for (int i = 1; i < paths.size(); i++) {
+							aggregations.add(aggregations.get(0));
+						}
+					}
+					for(int i = 0; i < paths.size(); i++) {
+						columns.add(aggregations.get(i) + "(" + paths.get(i).getFullPath() + ")");
+					}
+					break;
+				default: throw new TException("unsupported query type: " + ((MultiQueryPlan)plan).getType());
 			}
+
 			resp.setOperationType(((MultiQueryPlan)plan).getType().toString());
 			TSHandleIdentifier operationId = new TSHandleIdentifier(ByteBuffer.wrap(username.get().getBytes()),
 					ByteBuffer.wrap(("PASS".getBytes())));

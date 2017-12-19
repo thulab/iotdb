@@ -43,9 +43,9 @@ public class FillProcessor {
                                                 long beforeTime, long queryTime)
             throws IOException {
 
-        if (beforeTime > valueReader.getEndTime()) {
-            return false;
-        }
+//        if (beforeTime > valueReader.getEndTime()) {
+//            return false;
+//        }
 
         TSDataType dataType = valueReader.getDataType();
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;

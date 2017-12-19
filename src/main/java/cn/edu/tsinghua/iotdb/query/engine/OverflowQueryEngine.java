@@ -222,7 +222,7 @@ public class OverflowQueryEngine {
         return null;
     }
 
-    public QueryDataSet fill(List<Path> fillPaths, Map<TSDataType, IFill> fillType) throws PathErrorException {
+    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType) throws PathErrorException {
         QueryDataSet result = new QueryDataSet();
 
         for (Path path : fillPaths) {

@@ -25,6 +25,8 @@ public class PreviousFill extends IFill {
 
     private Path path;
 
+    private TSDataType dataType;
+
     private DynamicOneColumnData result;
 
     public PreviousFill(TSDataType dataType, long queryTime, long beforeRange) {
@@ -39,9 +41,13 @@ public class PreviousFill extends IFill {
 
     }
 
+    public PreviousFill(long beforeRange) {
+        this.beforeRange = beforeRange;
+    }
+
     @Override
     public IFill copy(Path path) {
-        return new PreviousFill(path, dataType, queryTime, beforeRange);
+        return new PreviousFill(beforeRange);
     }
 
     @Override
