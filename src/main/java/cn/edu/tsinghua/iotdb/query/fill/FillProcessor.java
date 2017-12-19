@@ -12,6 +12,7 @@ import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
+import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
@@ -44,12 +45,17 @@ public class FillProcessor {
      * @return
      * @throws IOException
      */
-    public static boolean getPreviousFillResult(DynamicOneColumnData result, ValueReader valueReader,
-                                                long beforeTime, long queryTime, SingleSeriesFilterExpression timeFilter,
-                                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse)
+    public static boolean getPreviousFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
+                                                      long beforeTime, long queryTime, SingleSeriesFilterExpression timeFilter,
+                                                      DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse)
             throws IOException {
 
         if (beforeTime > valueReader.getEndTime()) {
+            return false;
+        }
+
+        IntervalTimeVisitor intervalTimeVisitor = new IntervalTimeVisitor();
+        if (timeFilter != null && !intervalTimeVisitor.satisfy(timeFilter, valueReader.getStartTime(), valueReader.getEndTime())) {
             return false;
         }
 
@@ -67,9 +73,11 @@ public class FillProcessor {
             long pageMinTime = pageHeader.data_page_header.min_timestamp;
             long pageMaxTime = pageHeader.data_page_header.max_timestamp;
 
+            // TODO this branch need to be covered by test case
             if (beforeTime > pageMaxTime) {
                 pageReader.skipCurrentPage();
                 offset += lastAvailable - bis.available();
+                continue;
             }
 
             InputStream page = pageReader.getNextPage();
@@ -78,6 +86,10 @@ public class FillProcessor {
             long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
             int timeIdx = 0;
 
+            SingleValueVisitor singleValueVisitor = null;
+            if (timeFilter != null) {
+                singleValueVisitor = new SingleValueVisitor(timeFilter);
+            }
             switch (dataType) {
                 case INT32:
                     while (valueReader.decoder.hasNext(page)) {
@@ -86,10 +98,14 @@ public class FillProcessor {
 
                         int v = valueReader.decoder.readInt(page);
 
-                        if (time < beforeTime) {
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
                             continue;
                         }
-                        if (time >= beforeTime && time <= queryTime) {
+
+                        if (time < beforeTime) {
+                            continue;
+                        } else if (time >= beforeTime && time <= queryTime) {
                             result.setTime(0, time);
 
                             // TODO this branch need to be covered by test case
@@ -102,8 +118,7 @@ public class FillProcessor {
                             }
                             result.setInt(0, v);
                             continue;
-                        }
-                        if (time > queryTime) {
+                        } else {
                             return true;
                         }
                     }
@@ -113,17 +128,20 @@ public class FillProcessor {
                         long time = timestamps[timeIdx];
                         timeIdx++;
 
+                        // TODO this branch need to be covered by test case for overflow delete operation
                         long v = valueReader.decoder.readLong(page);
+
+                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                            continue;
+                        }
 
                         if (time < beforeTime) {
                             continue;
-                        }
-                        if (time >= beforeTime && time <= queryTime) {
+                        }else if (time >= beforeTime && time <= queryTime) {
                             result.setTime(0, time);
                             result.setLong(0, v);
                             continue;
-                        }
-                        if (time > queryTime) {
+                        } else {
                             return true;
                         }
                     }
@@ -135,10 +153,10 @@ public class FillProcessor {
         return false;
     }
 
-    public static boolean getPreviousFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
+    public static void getPreviousFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
                                                         long beforeTime, long queryTime)
             throws IOException {
-        boolean fillFlag = false;
+
         while (insertMemoryData.hasInsertData()) {
             long time = insertMemoryData.getCurrentMinTime();
             if (time > queryTime) {
@@ -157,31 +175,41 @@ public class FillProcessor {
                                 result.setInt(0, insertMemoryData.getCurrentIntValue());
                             }
                         }
+                        break;
+                    case INT64:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putLong(insertMemoryData.getCurrentIntValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime < time) {
+                                result.setTime(0, time);
+                                result.setLong(0, insertMemoryData.getCurrentIntValue());
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
-                fillFlag = true;
             }
             insertMemoryData.removeCurrentValue();
         }
-        return fillFlag;
     }
 
-    /**
-     * Return false if we haven't get the correct previous value before queryTime.
-     *
-     * @param result
-     * @param valueReader
-     * @param beforeTime
-     * @param queryTime
-     * @return
-     * @throws IOException
-     */
-    public static boolean getLinearFillResult(DynamicOneColumnData result, ValueReader valueReader,
-                                                long beforeTime, long queryTime, long afterTime)
+
+    public static boolean getLinearFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
+                                                    long beforeTime, long queryTime, long afterTime, SingleSeriesFilterExpression timeFilter,
+                                                    DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse)
             throws IOException {
 
         if (beforeTime > valueReader.getEndTime()) {
+            return false;
+        }
+        if (afterTime < valueReader.getStartTime()) {
+            return true;
+        }
+        IntervalTimeVisitor intervalTimeVisitor = new IntervalTimeVisitor();
+        if (timeFilter != null && !intervalTimeVisitor.satisfy(timeFilter, valueReader.getStartTime(), valueReader.getEndTime())) {
             return false;
         }
 
@@ -199,17 +227,25 @@ public class FillProcessor {
             long pageMinTime = pageHeader.data_page_header.min_timestamp;
             long pageMaxTime = pageHeader.data_page_header.max_timestamp;
 
+            // TODO test covered
             if (beforeTime > pageMaxTime) {
                 pageReader.skipCurrentPage();
                 offset += lastAvailable - bis.available();
+                continue;
             }
-
+            if (afterTime < pageMinTime) {
+                return true;
+            }
             InputStream page = pageReader.getNextPage();
             offset += lastAvailable - bis.available();
             valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
             long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
             int timeIdx = 0;
 
+            SingleValueVisitor singleValueVisitor = null;
+            if (timeFilter != null) {
+                singleValueVisitor = new SingleValueVisitor(timeFilter);
+            }
             switch (dataType) {
                 case INT32:
                     while (valueReader.decoder.hasNext(page)) {
@@ -218,15 +254,20 @@ public class FillProcessor {
 
                         int v = valueReader.decoder.readInt(page);
 
-                        if (time < beforeTime) {
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
                             continue;
                         }
-                        if (time >= beforeTime && time <= queryTime) {
+
+                        if (time < beforeTime) {
+                            continue;
+                        } else if (time >= beforeTime && time <= queryTime) {
                             result.setTime(0, time);
                             result.setInt(0, v);
                             continue;
-                        }
-                        if (time > queryTime) {
+                        } else {
+                            result.setTime(1, time);
+                            result.setInt(1, v);
                             return true;
                         }
                     }
@@ -238,15 +279,20 @@ public class FillProcessor {
 
                         long v = valueReader.decoder.readLong(page);
 
-                        if (time < beforeTime) {
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
                             continue;
                         }
-                        if (time >= beforeTime && time <= queryTime) {
+
+                        if (time < beforeTime) {
+                            continue;
+                        }else if (time >= beforeTime && time <= queryTime) {
                             result.setTime(0, time);
                             result.setLong(0, v);
                             continue;
-                        }
-                        if (time > queryTime) {
+                        } else {
+                            result.setTime(1, time);
+                            result.setLong(1, v);
                             return true;
                         }
                     }
@@ -258,5 +304,77 @@ public class FillProcessor {
         return false;
     }
 
+    public static void getLinearFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
+                                                        long beforeTime, long queryTime, long afterTime)
+            throws IOException {
 
+        while (insertMemoryData.hasInsertData()) {
+            long time = insertMemoryData.getCurrentMinTime();
+
+            if (time >= beforeTime && time <= queryTime) {
+                switch (result.dataType) {
+                    case INT32:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putInt(insertMemoryData.getCurrentIntValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            // TODO existTime == time is a special situation
+                            if (existTime <= time) {
+                                result.setTime(0, time);
+                                result.setInt(0, insertMemoryData.getCurrentIntValue());
+                            }
+                        }
+                        break;
+                    case INT64:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putLong(insertMemoryData.getCurrentIntValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime <= time) {
+                                result.setTime(0, time);
+                                result.setLong(0, insertMemoryData.getCurrentIntValue());
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } else if (time > queryTime) {
+                switch (result.dataType) {
+                    case INT32:
+                        if (result.timeLength == 0) {
+                            return;
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime <= queryTime) {
+                                result.putTime(time);
+                                result.putInt(insertMemoryData.getCurrentIntValue());
+                                return;
+                            } else {
+                                return;
+                            }
+                        }
+                    case INT64:
+                        if (result.timeLength == 0) {
+                            return;
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime <= queryTime) {
+                                result.putTime(time);
+                                result.putLong(insertMemoryData.getCurrentLongValue());
+                                return;
+                            } else {
+                                return;
+                            }
+                        }
+                    default:
+                        break;
+                }
+                break;
+            }
+            insertMemoryData.removeCurrentValue();
+        }
+    }
 }

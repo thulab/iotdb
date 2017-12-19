@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.service;
 
 import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
 import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.sql.Connection;
@@ -142,7 +143,7 @@ public class DaemonTest {
 //                aggregationTest();
 //                multiAggregationTest();
 
-                //fillTest();
+//                fillTest();
 
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
@@ -163,6 +164,72 @@ public class DaemonTest {
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void selectAllSQLTest() throws ClassNotFoundException, SQLException {
+        String[] retArray = new String[]{
+                "1,null,1101,null,null,999",
+                "2,null,40000,2.22,null,null",
+                "3,null,null,3.33,null,null",
+                "4,null,null,4.44,null,null",
+                "50,null,50000,null,null,null",
+                "60,null,null,null,aaaaa,null",
+                "70,null,null,null,bbbbb,null",
+                "80,null,null,null,ccccc,null",
+                "100,null,199,null,null,null",
+                "101,null,199,null,tomorrow is another day,null",
+                "102,null,180,10.0,tomorrow is another day,null",
+                "103,null,199,null,null,null",
+                "104,33333,190,null,null,null",
+                "105,33333,199,11.11,null,null",
+                "106,99,null,null,null,null",
+                "1000,22222,55555,1000.11,null,888",
+                "946684800000,null,100,null,good,null"
+        };
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select * from root");
+            Assert.assertTrue(hasResultSet);
+
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
+                        + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d1s0);
+                Assert.assertEquals(retArray[cnt], ans);
+                cnt++;
+            }
+            Assert.assertEquals(17, cnt);
+            statement.close();
+
+            retArray = new String[]{
+                    "100,true"
+            };
+            statement = connection.createStatement();
+            hasResultSet = statement.execute("select s4 from root.vehicle.d0");
+            Assert.assertTrue(hasResultSet);
+
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s4);
+                Assert.assertEquals(ans, retArray[cnt]);
+                cnt++;
+            }
+            Assert.assertEquals(1, cnt);
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -240,72 +307,6 @@ public class DaemonTest {
         } catch (Exception e) {
             fail(e.getMessage());
             e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    private void selectAllSQLTest() throws ClassNotFoundException, SQLException {
-        String[] retArray = new String[]{
-                "1,null,1101,null,null,999",
-                "2,null,40000,2.22,null,null",
-                "3,null,null,3.33,null,null",
-                "4,null,null,4.44,null,null",
-                "50,null,50000,null,null,null",
-                "60,null,null,null,aaaaa,null",
-                "70,null,null,null,bbbbb,null",
-                "80,null,null,null,ccccc,null",
-                "100,null,199,null,null,null",
-                "101,null,199,null,tomorrow is another day,null",
-                "102,null,180,10.0,tomorrow is another day,null",
-                "103,null,199,null,null,null",
-                "104,33333,190,null,null,null",
-                "105,33333,199,11.11,null,null",
-                "106,99,null,null,null,null",
-                "1000,22222,55555,1000.11,null,888",
-                "946684800000,null,100,null,good,null"
-        };
-
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select * from root");
-            Assert.assertTrue(hasResultSet);
-
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
-                        + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d1s0);
-                Assert.assertEquals(retArray[cnt], ans);
-                cnt++;
-            }
-            Assert.assertEquals(17, cnt);
-            statement.close();
-
-            retArray = new String[]{
-                    "100,true"
-            };
-            statement = connection.createStatement();
-            hasResultSet = statement.execute("select s4 from root.vehicle.d0");
-            Assert.assertTrue(hasResultSet);
-
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s4);
-                Assert.assertEquals(ans, retArray[cnt]);
-                cnt++;
-            }
-            Assert.assertEquals(1, cnt);
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();
@@ -678,15 +679,28 @@ public class DaemonTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
 
-            boolean hasTextMaxResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 199 fill(int[previous, 5m])");
-            Assert.assertTrue(hasTextMaxResultSet);
+            // int32 previous fill test 1, previous fill has value
+            boolean hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 199 fill(int32[previous, 5m])");
+            Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1);
-                System.out.println(ans);
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1);
+                assertEquals("199,99", ans);
             }
-            //Assert.assertEquals(cnt, 3);
+            Assert.assertEquals(cnt, 1);
+
+            // int32 previous fill test 2, previous fill has no value
+            hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 103 fill(int32[previous, 5m])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1);
+                assertEquals("103,null", ans);
+            }
+            Assert.assertEquals(cnt, 1);
+
 
             statement.close();
         } catch (Exception e) {

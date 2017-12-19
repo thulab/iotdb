@@ -11,29 +11,33 @@ import java.io.IOException;
 public abstract class IFill {
 
     long queryTime;
+    TSDataType dataType;
 
     public IFill(TSDataType dataType, long queryTime) {
+        this.dataType = dataType;
+        this.queryTime = queryTime;
     }
 
     public IFill() {
     }
 
+    public abstract IFill copy(Path path);
+
+    public abstract DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException;
+
     public void setQueryTime(long queryTime) {
         this.queryTime = queryTime;
     }
 
+    public void setDataType(TSDataType dataType) {
+        this.dataType = dataType;
+    }
+
     public TSDataType getDataType() {
-        return null;
+        return this.dataType;
     }
 
     public long getQueryTime() {
-        return 0;
+        return this.queryTime;
     }
-
-    public abstract IFill copy(Path path);
-
-    public abstract boolean hasNext();
-
-    public abstract DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException;
-
 }

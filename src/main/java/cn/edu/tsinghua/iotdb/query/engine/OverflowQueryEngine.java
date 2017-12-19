@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
@@ -230,11 +231,12 @@ public class OverflowQueryEngine {
             TSDataType dataType = getDataTypeByPath(path);
 
             IFill fill = fillType.get(dataType);
-            fill.setQueryTime(queryTime);
+            if (fill instanceof PreviousFill) {
+                PreviousFill previousFill = (PreviousFill) fill;
+                result.mapRet.put(path.getFullPath(), new PreviousFill(path, dataType, queryTime, previousFill.getBeforeRange()).getFillResult());
+            }
 
-            result.mapRet.put(path.getFullPath(), fill.copy(path).getFillResult());
         }
-
         return result;
     }
 

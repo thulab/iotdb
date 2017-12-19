@@ -9,7 +9,6 @@ import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
@@ -25,20 +24,19 @@ public class PreviousFill extends IFill {
 
     private Path path;
 
-    private TSDataType dataType;
-
     private DynamicOneColumnData result;
 
     public PreviousFill(TSDataType dataType, long queryTime, long beforeRange) {
         super(dataType, queryTime);
         this.beforeRange = beforeRange;
+        result = new DynamicOneColumnData(dataType, true, true);
     }
 
     public PreviousFill(Path path, TSDataType dataType, long queryTime, long beforeRange) {
         super(dataType, queryTime);
         this.path = path;
         this.beforeRange = beforeRange;
-
+        result = new DynamicOneColumnData(dataType, true, true);
     }
 
     public PreviousFill(long beforeRange) {
@@ -47,17 +45,16 @@ public class PreviousFill extends IFill {
 
     @Override
     public IFill copy(Path path) {
-        return new PreviousFill(beforeRange);
+        return new PreviousFill(path, dataType, queryTime, beforeRange);
     }
 
-    @Override
-    public boolean hasNext() {
-        return this.result == null;
+    public long getBeforeRange() {
+        return beforeRange;
     }
+
 
     @Override
     public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
-        result = new DynamicOneColumnData(dataType, true, true);
 
         SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), queryTime - beforeRange, true);
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
@@ -65,13 +62,13 @@ public class PreviousFill extends IFill {
 
         String deltaObjectId = path.getDeltaObjectToString();
         String measurementId = path.getMeasurementToString();
-        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(-1);
+        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("FillQuery", -1);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);
 
         List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(fillTimeFilter, null, null,
-                result, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                null, recordReader.insertPageInMemory, recordReader.overflowInfo);
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
@@ -82,9 +79,9 @@ public class PreviousFill extends IFill {
                 insertTrue, updateTrue, updateFalse,
                 overflowTimeFilter, null, null, dataType);
 
-        recordReader.getFillResult(result, deltaObjectId, measurementId,
+        recordReader.getPreviousFillResult(result, deltaObjectId, measurementId,
                 updateTrue, updateFalse, recordReader.insertAllData, overflowTimeFilter, queryTime - beforeRange, queryTime);
 
-        return null;
+        return result;
     }
 }

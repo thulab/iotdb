@@ -623,7 +623,7 @@ public class LogicalGenerator {
 			case "double": return TSDataType.DOUBLE;
 			case "boolean": return TSDataType.BOOLEAN;
 			case "text": return TSDataType.TEXT;
-			default: throw new LogicalOperatorException("not a valid fill type" + type);
+			default: throw new LogicalOperatorException("not a valid fill type : " + type);
 		}
 	}
 
