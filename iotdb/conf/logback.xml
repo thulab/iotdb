@@ -94,9 +94,9 @@
 	</appender>
 	
 
-	<logger name="cn.edu.tsinghua.iotdb.service" level="info" />
-	<logger name="cn.edu.tsinghua.iotdb.conf" level="info" />
-	<root level="ERROR">
+	<!--<logger name="cn.edu.tsinghua.iotdb.service" level="info" />-->
+	<!--<logger name="cn.edu.tsinghua.iotdb.conf" level="info" />-->
+	<root level="debug">
 		<appender-ref ref="FILEDEBUG" />
 		<appender-ref ref="FILEINFO" />
 		<appender-ref ref="FILEWARN" />
