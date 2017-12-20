@@ -19,7 +19,6 @@ import org.apache.thrift.TException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -338,7 +337,7 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public ResultSet getGeneratedKeys() throws SQLException {
-		throw new SQLFeatureNotSupportedException("Method not supported");
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
@@ -354,12 +353,12 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public boolean getMoreResults() throws SQLException {
-		return false;
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
 	public boolean getMoreResults(int arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException("Method not supported");
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
@@ -391,7 +390,7 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public int getUpdateCount() throws SQLException {
-		return 0;
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
@@ -401,7 +400,7 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public boolean isCloseOnCompletion() throws SQLException {
-		return false;
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
@@ -411,17 +410,17 @@ public class TsfileStatement implements Statement {
 
 	@Override
 	public boolean isPoolable() throws SQLException {
-		return false;
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
 	public void setCursorName(String arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException("Method not supported");
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
 	public void setEscapeProcessing(boolean enable) throws SQLException {
-		throw new SQLFeatureNotSupportedException("Method not supported");
+		throw new SQLException("Method not supported");
 	}
 
 	@Override
