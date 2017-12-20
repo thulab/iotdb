@@ -52,7 +52,6 @@ public class PreviousFill extends IFill {
         return beforeRange;
     }
 
-
     @Override
     public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
 
@@ -62,7 +61,7 @@ public class PreviousFill extends IFill {
 
         String deltaObjectId = path.getDeltaObjectToString();
         String measurementId = path.getMeasurementToString();
-        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("FillQuery", -1);
+        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("PreviousFill", -1);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);

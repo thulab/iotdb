@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
 import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
@@ -222,20 +223,26 @@ public class OverflowQueryEngine {
         return null;
     }
 
-    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
-            throws PathErrorException, IOException, ProcessorException {
+    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType) {
         QueryDataSet result = new QueryDataSet();
 
-        for (Path path : fillPaths) {
+        try {
+            for (Path path : fillPaths) {
 
-            TSDataType dataType = getDataTypeByPath(path);
+                TSDataType dataType = getDataTypeByPath(path);
 
-            IFill fill = fillType.get(dataType);
-            if (fill instanceof PreviousFill) {
-                PreviousFill previousFill = (PreviousFill) fill;
-                result.mapRet.put(path.getFullPath(), new PreviousFill(path, dataType, queryTime, previousFill.getBeforeRange()).getFillResult());
+                IFill fill = fillType.get(dataType);
+                if (fill instanceof PreviousFill) {
+                    PreviousFill previousFill = (PreviousFill) fill;
+                    result.mapRet.put(path.getFullPath(), new PreviousFill(path, dataType, queryTime, previousFill.getBeforeRange()).getFillResult());
+                } else {
+                    LinearFill linearFill = (LinearFill) fill;
+                    result.mapRet.put(path.getFullPath(), new LinearFill(path, dataType, queryTime,
+                            linearFill.getBeforeRange(), linearFill.getAfterRange()).getFillResult());
+                }
             }
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return result;
     }

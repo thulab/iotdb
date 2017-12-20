@@ -76,7 +76,7 @@ public class LinearFill extends IFill{
 
         String deltaObjectId = path.getDeltaObjectToString();
         String measurementId = path.getMeasurementToString();
-        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("FillQuery", -1);
+        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("LinearFill", -1);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);

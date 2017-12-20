@@ -429,16 +429,12 @@ public class RecordReader {
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        // fillFlag is true, means that we has got the collect fill value in time range[beforeTime, queryTime]
-        boolean fillFlag = false;
-
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 // get fill result in ValueReader
                 if (FillProcessor.getPreviousFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime,
                         overflowTimeFilter, updateTrue, updateFalse)) {
-                    fillFlag = true;
                     break;
                 }
             }
@@ -480,16 +476,13 @@ public class RecordReader {
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        // fillFlag is true, means that we has got the collect fill value in time range[beforeTime, queryTime]
-        boolean fillFlag = false;
-
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                // get fill result in ValueReader
+
+                // has get fill result in ValueReader
                 if (FillProcessor.getLinearFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime, afterTime,
                         overflowTimeFilter, updateTrue, updateFalse)) {
-                    fillFlag = true;
                     break;
                 }
             }
@@ -509,6 +502,9 @@ public class RecordReader {
         } else {
             long startTime = result.getTime(0);
             long endTime = result.getTime(1);
+            if (startTime == queryTime || endTime == queryTime) {
+                logger.error("fill unreachable!!");
+            }
             switch (result.dataType) {
                 case INT32:
                     int startIntValue = result.getInt(0);
@@ -516,18 +512,26 @@ public class RecordReader {
                     result.timeLength = result.valueLength = 1;
                     result.setTime(0, queryTime);
                     int fillIntValue = startIntValue + (int)((endIntValue-startIntValue)/(endTime-startTime));
-                    result.putInt(fillIntValue);
+                    result.setInt(0, fillIntValue);
                     break;
                 case INT64:
                     long startLongValue = result.getLong(0);
                     long endLongValue = result.getLong(1);
                     result.timeLength = result.valueLength = 1;
                     result.setTime(0, queryTime);
-                    long fillLongValue = startLongValue + (int)((endLongValue-startLongValue)/(endTime-startTime));
-                    result.putLong(fillLongValue);
+                    long fillLongValue = startLongValue + (int)((endLongValue-startLongValue)/(endTime-startTime)*(queryTime-startTime));
+                    result.setLong(0, fillLongValue);
                     break;
                 case FLOAT:
+                    float startFloatValue = result.getFloat(0);
+                    float endFloatValue = result.getFloat(1);
+                    result.timeLength = result.valueLength = 1;
+                    result.setTime(0, queryTime);
+                    float fillFloatValue = startFloatValue + (float)((endFloatValue-startFloatValue)/(endTime-startTime)*(queryTime-startTime));
+                    result.setFloat(0, fillFloatValue);
+                    break;
                 case DOUBLE:
+                    break;
                 default:
                     break;
 
@@ -544,7 +548,5 @@ public class RecordReader {
      */
     public void close() throws IOException, ProcessorException {
         readerManager.close();
-        // unlock for one subQuery
-        ReadLockManager.getInstance().unlockForSubQuery(deltaObjectUID, measurementID, lockToken);
     }
 }

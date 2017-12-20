@@ -57,12 +57,6 @@ public class ReadLockManager {
         return token;
     }
 
-    @Deprecated
-    public void unlockForSubQuery(String deltaObjectUID, String measurementID
-            , int token) throws ProcessorException {
-
-    }
-
     /**
      * When jdbc connection is closed normally or quit abnormally, this method should be invoked.<br>
      * All read cache in this request should be released.

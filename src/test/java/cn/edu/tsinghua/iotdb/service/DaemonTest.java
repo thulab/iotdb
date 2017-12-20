@@ -143,7 +143,7 @@ public class DaemonTest {
 //                aggregationTest();
 //                multiAggregationTest();
 
-//                fillTest();
+                fillTest();
 
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
@@ -685,8 +685,9 @@ public class DaemonTest {
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1);
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
                 assertEquals("199,99", ans);
+                cnt ++;
             }
             Assert.assertEquals(cnt, 1);
 
@@ -696,11 +697,36 @@ public class DaemonTest {
             resultSet = statement.getResultSet();
             cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1);
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
                 assertEquals("103,null", ans);
+                cnt ++;
             }
             Assert.assertEquals(cnt, 1);
 
+            // int32 linear fill test 1, linear fill has value in queryTime
+            hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 105 fill(int32[linear, 5m, 5m])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                assertEquals("105,33333", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(cnt, 1);
+
+            // int32, float linear fill test , linear fill has value in [queryTime-beforeRange, queryTime+afterRange]
+            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 80 fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
+                //System.out.println("====" + ans);
+                assertEquals("80,20120,8.751837", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(cnt, 1);
 
             statement.close();
         } catch (Exception e) {
