@@ -1,3 +1,6 @@
+# Status
+[![Build Status](https://travis-ci.org/thulab/iotdb-jdbc.svg?branch=master)](https://travis-ci.org/thulab/iotdb-jdbc)
+
 # Usage
 
 ## Dependencies
