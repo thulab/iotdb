@@ -24,7 +24,7 @@ public class FlushManager {
     }
 
     public void close() {
-        pool.shutdown();
+        pool.shutdownNow();
     }
 
     synchronized public void submit(Runnable task) {
