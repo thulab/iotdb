@@ -23,8 +23,18 @@ public class FlushManager {
         return InstanceHolder.instance;
     }
 
-    public void close() {
+    /**
+     * Block new flush submits and exit when all RUNNING THREAD in the pool end.
+     */
+    public void forceClose() {
         pool.shutdownNow();
+    }
+
+    /**
+     * Block new flush submits and exit when all RUNNING THREADS AND TASKS IN THE QUEUE end.
+     */
+    public void close() {
+        pool.shutdown();
     }
 
     synchronized public void submit(Runnable task) {
