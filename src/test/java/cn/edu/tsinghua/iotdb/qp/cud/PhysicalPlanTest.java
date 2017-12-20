@@ -1,9 +1,13 @@
 package cn.edu.tsinghua.iotdb.qp.cud;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
+import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
+import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -107,6 +111,45 @@ public class PhysicalPlanTest {
             fail();
         MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
         assertEquals(111, mergePlan.getUnit());
+    }
+
+    @Test
+    public void testFill1() throws QueryProcessorException, ArgsErrorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear, 5m, 5m], boolean[previous, 5m])";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        assertEquals(5000, mergePlan.getQueryTime());
+        assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
+        assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
+        assertEquals(300000, ((PreviousFill)mergePlan.getFillType().get(TSDataType.BOOLEAN)).getBeforeRange());
+    }
+
+    @Test
+    public void testFill2() throws QueryProcessorException, ArgsErrorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear], boolean[previous])";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        assertEquals(5000, mergePlan.getQueryTime());
+        assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
+        assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
+        assertEquals(-1, ((PreviousFill)mergePlan.getFillType().get(TSDataType.BOOLEAN)).getBeforeRange());
+    }
+
+    @Test
+    public void testFill3() throws QueryProcessorException, ArgsErrorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear, 5m], boolean[previous])";
+        try {
+            PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        } catch (Exception e) {
+            assertTrue(true);
+        }
     }
 
 }

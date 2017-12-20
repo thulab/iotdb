@@ -29,7 +29,7 @@ public class LinearFill extends IFill{
     public LinearFill(long beforeRange, long afterRange) {
         this.beforeRange = beforeRange;
         this.afterRange = afterRange;
-        result = new DynamicOneColumnData(dataType, true, true);
+//        result = new DynamicOneColumnData(dataType, true, true);
     }
 
     public LinearFill(TSDataType dataType, long queryTime, long beforeRange, long afterRange) {
@@ -45,6 +45,22 @@ public class LinearFill extends IFill{
         this.beforeRange = beforeRange;
         this.afterRange = afterRange;
         result = new DynamicOneColumnData(dataType, true, true);
+    }
+
+    public long getBeforeRange() {
+        return beforeRange;
+    }
+
+    public void setBeforeRange(long beforeRange) {
+        this.beforeRange = beforeRange;
+    }
+
+    public long getAfterRange() {
+        return afterRange;
+    }
+
+    public void setAfterRange(long afterRange) {
+        this.afterRange = afterRange;
     }
 
     @Override
