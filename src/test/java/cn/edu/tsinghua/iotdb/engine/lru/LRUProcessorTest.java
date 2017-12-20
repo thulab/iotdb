@@ -17,7 +17,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 public class LRUProcessorTest {
 	
 	
-	class TestLRUProcessor extends LRUProcessor{
+	class TestLRUProcessor extends Processor{
 
 		public TestLRUProcessor(String nameSpacePath) {
 			super(nameSpacePath);

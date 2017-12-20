@@ -352,7 +352,7 @@ public class FileNodeManagerTest {
 		}
 
 		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
-		fileNodeManager.managerRecovery();
+		fileNodeManager.recovery();
 		try {
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
 			assertEquals(null, queryStructure.getCurrentPage());
@@ -398,7 +398,7 @@ public class FileNodeManagerTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		fileNodeManager.managerRecovery();
+		fileNodeManager.recovery();
 		try {
 			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
 			assertEquals(null, queryStructure.getCurrentPage());
@@ -488,7 +488,7 @@ public class FileNodeManagerTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		fileNodeManager.managerRecovery();
+		fileNodeManager.recovery();
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e1) {

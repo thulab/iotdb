@@ -45,7 +45,7 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e.getMessage());
 		}
-		FileNodeManager.getInstance().reset();
+		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
 		WriteLogManager.getInstance().close();
 		// clean cache
@@ -95,6 +95,6 @@ public class EnvironmentUtils {
 	public static void envSetUp(){
 		Authorizer.reset();
 		//tsFileConfig.duplicateIncompletedPage = true;
-		FileNodeManager.getInstance().reset();
+		FileNodeManager.getInstance().resetFileNodeManager();
 	}
 }

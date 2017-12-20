@@ -24,7 +24,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.lru.LRUProcessor;
+import cn.edu.tsinghua.iotdb.engine.lru.Processor;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
@@ -52,7 +52,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
-public class FileNodeProcessor extends LRUProcessor {
+public class FileNodeProcessor extends Processor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -264,7 +264,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bufferwriteCloseAction);
 			parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
 			try {
-				bufferWriteProcessor = new BufferWriteProcessor(nameSpacePath, fileNames[fileNames.length - 1],
+				bufferWriteProcessor = new BufferWriteProcessor(processorPath, fileNames[fileNames.length - 1],
 						parameters);
 			} catch (BufferWriteProcessorException e) {
 				// unlock
@@ -277,7 +277,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
 		try {
-			overflowProcessor = new OverflowProcessor(nameSpacePath, parameters);
+			overflowProcessor = new OverflowProcessor(processorPath, parameters);
 		} catch (OverflowProcessorException e) {
 			// unlock
 			writeUnlock();
@@ -511,7 +511,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			multiPassLockToken++;
 		}
 		newMultiPassTokenSet.add(multiPassLockToken);
-		LOGGER.debug("Add multi token:{}, nsPath:{}.", multiPassLockToken, nameSpacePath);
+		LOGGER.debug("Add multi token:{}, nsPath:{}.", multiPassLockToken, processorPath);
 		return multiPassLockToken;
 	}
 
@@ -519,7 +519,7 @@ public class FileNodeProcessor extends LRUProcessor {
 		if (newMultiPassTokenSet.contains(token)) {
 			newMultiPassLock.readLock().unlock();
 			newMultiPassTokenSet.remove(token);
-			LOGGER.debug("Remove multi token:{}, nspath:{}, new set:{}, lock:{}", token, nameSpacePath,
+			LOGGER.debug("Remove multi token:{}, nspath:{}, new set:{}, lock:{}", token, processorPath,
 					newMultiPassTokenSet, newMultiPassLock);
 			return true;
 		} else if (oldMultiPassTokenSet != null && oldMultiPassTokenSet.contains(token)) {
@@ -586,7 +586,7 @@ public class FileNodeProcessor extends LRUProcessor {
 
 	public void merge() throws FileNodeProcessorException {
 
-		LOGGER.debug("begin to merge: the filenode is {}, the thread id is {}", nameSpacePath,
+		LOGGER.debug("begin to merge: the filenode is {}, the thread id is {}", processorPath,
 				Thread.currentThread().getId());
 		//
 		// change status from work to merge
@@ -639,7 +639,7 @@ public class FileNodeProcessor extends LRUProcessor {
 				writeStoreToDisk(fileNodeProcessorStore);
 			} catch (FileNodeProcessorException e) {
 				LOGGER.error("Merge: write filenode information to revocery file failed, the nameSpacePath is {}.",
-						nameSpacePath);
+						processorPath);
 				writeUnlock();
 				throw new FileNodeProcessorException(e);
 			}
@@ -667,7 +667,7 @@ public class FileNodeProcessor extends LRUProcessor {
 			throw new FileNodeProcessorException(e);
 		}
 		// unlock this filenode
-		LOGGER.debug("Merge: the filenode is {}, status from work to merge.", nameSpacePath);
+		LOGGER.debug("Merge: the filenode is {}, status from work to merge.", processorPath);
 		writeUnlock();
 
 		// query buffer data and overflow data, and merge them
@@ -749,15 +749,15 @@ public class FileNodeProcessor extends LRUProcessor {
 				}
 			}
 		} else {
-			LOGGER.error("No file was changed when mergin, the filenode is {}", nameSpacePath);
-			throw new FileNodeProcessorException("No file was changed when merging, the filenode is " + nameSpacePath);
+			LOGGER.error("No file was changed when mergin, the filenode is {}", processorPath);
+			throw new FileNodeProcessorException("No file was changed when merging, the filenode is " + processorPath);
 		}
 		return result;
 	}
 
 	private void switchMergeToWaitingv2(List<IntervalFileNode> backupIntervalFiles, boolean needEmpty)
 			throws FileNodeProcessorException {
-		LOGGER.debug("Merge: the filenode is {}, switch merge to wait, the backupIntervalFiles is {}", nameSpacePath,
+		LOGGER.debug("Merge: the filenode is {}, switch merge to wait, the backupIntervalFiles is {}", processorPath,
 				backupIntervalFiles);
 		writeLock();
 		try {
@@ -829,10 +829,10 @@ public class FileNodeProcessor extends LRUProcessor {
 					writeStoreToDisk(fileNodeProcessorStore);
 				} catch (FileNodeProcessorException e) {
 					LOGGER.error("Merge: write filenode information to revocery file failed, the nameSpacePath is {}.",
-							nameSpacePath);
+							processorPath);
 					throw new FileNodeProcessorException(
 							"Merge: write filenode information to revocery file failed, the nameSpacePath is "
-									+ nameSpacePath);
+									+ processorPath);
 				}
 			}
 		} finally {
@@ -843,7 +843,7 @@ public class FileNodeProcessor extends LRUProcessor {
 	private void switchWaitingToWorkingv2(List<IntervalFileNode> backupIntervalFiles)
 			throws FileNodeProcessorException {
 
-		LOGGER.debug("Merge: the filenode is {}, switch wait to work, newIntervalFileNodes is {}", nameSpacePath,
+		LOGGER.debug("Merge: the filenode is {}, switch wait to work, newIntervalFileNodes is {}", processorPath,
 				newFileNodes);
 
 		if (oldMultiPassLock != null) {
@@ -862,7 +862,7 @@ public class FileNodeProcessor extends LRUProcessor {
 						&& bufferwriteDirPath.charAt(bufferwriteDirPath.length() - 1) != File.separatorChar) {
 					bufferwriteDirPath = bufferwriteDirPath + File.separatorChar;
 				}
-				bufferwriteDirPath = bufferwriteDirPath + nameSpacePath;
+				bufferwriteDirPath = bufferwriteDirPath + processorPath;
 				File bufferwriteDir = new File(bufferwriteDirPath);
 				if (!bufferwriteDir.exists()) {
 					bufferwriteDir.mkdirs();
@@ -959,9 +959,9 @@ public class FileNodeProcessor extends LRUProcessor {
 				RowRecord firstRecord = queryer.getNextRecord();
 
 				if (recordWriter == null) {
-					outputPath = constructOutputFilePath(nameSpacePath, firstRecord.timestamp
+					outputPath = constructOutputFilePath(processorPath, firstRecord.timestamp
 							+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
-					FileSchema fileSchema = constructFileSchema(nameSpacePath);
+					FileSchema fileSchema = constructFileSchema(processorPath);
 					recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
 				}
 
