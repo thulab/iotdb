@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
@@ -433,8 +434,8 @@ public class RecordReader {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 // get fill result in ValueReader
-                if (FillProcessor.getPreviousFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime,
-                        overflowTimeFilter, updateTrue, updateFalse)) {
+                if (FillProcessor.getPreviousFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId),
+                        beforeTime, queryTime, overflowTimeFilter, updateTrue, updateFalse)) {
                     break;
                 }
             }
@@ -479,7 +480,6 @@ public class RecordReader {
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-
                 // has get fill result in ValueReader
                 if (FillProcessor.getLinearFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime, afterTime,
                         overflowTimeFilter, updateTrue, updateFalse)) {
@@ -531,9 +531,15 @@ public class RecordReader {
                     result.setFloat(0, fillFloatValue);
                     break;
                 case DOUBLE:
+                    double startDoubleValue = result.getFloat(0);
+                    double endDoubleValue = result.getFloat(1);
+                    result.timeLength = result.valueLength = 1;
+                    result.setTime(0, queryTime);
+                    double fillDoubleValue = startDoubleValue + (double)((endDoubleValue-startDoubleValue)/(endTime-startTime)*(queryTime-startTime));
+                    result.setDouble(0, fillDoubleValue);
                     break;
                 default:
-                    break;
+                    throw new UnSupportedFillTypeException("Unsupported linear fill data type : " + result.dataType);
 
             }
 

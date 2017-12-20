@@ -230,6 +230,22 @@ public class OverflowQueryEngine {
             for (Path path : fillPaths) {
 
                 TSDataType dataType = getDataTypeByPath(path);
+                if (!fillType.containsKey(dataType)) {
+                    switch (dataType) {
+                        case INT32:
+                        case INT64:
+                        case FLOAT:
+                        case DOUBLE:
+                            result.mapRet.put(path.getFullPath(),
+                                    new LinearFill(path, dataType, queryTime, 0, 0).getFillResult());
+                            break;
+                        default:
+                            result.mapRet.put(path.getFullPath(),
+                                    new PreviousFill(path, dataType, queryTime, 0).getFillResult());
+                            break;
+                    }
+                    continue;
+                }
 
                 IFill fill = fillType.get(dataType);
                 if (fill instanceof PreviousFill) {

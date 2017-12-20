@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.fill;
 
+import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -95,31 +96,31 @@ public class FillProcessor {
             switch (dataType) {
                 case INT32:
                     while (valueReader.decoder.hasNext(page)) {
-                        long time = timestamps[timeIdx];
+                        long curTime = timestamps[timeIdx];
                         timeIdx++;
 
                         int v = valueReader.decoder.readInt(page);
 
                         // TODO this branch need to be covered by test case for overflow delete operation
-                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
-                        if (time < beforeTime) {
-                            continue;
-                        } else if (time >= beforeTime && time <= queryTime) {
-                            result.setTime(0, time);
+                        if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
                                 v = updateTrue.getInt(updateTrue.curIdx);
                             }
                             result.setInt(0, v);
-                            continue;
+                            if (curTime == queryTime) {
+                                return true;
+                            }
                         } else {
                             return true;
                         }
@@ -127,27 +128,167 @@ public class FillProcessor {
                     break;
                 case INT64:
                     while (valueReader.decoder.hasNext(page)) {
-                        long time = timestamps[timeIdx];
+                        long curTime = timestamps[timeIdx];
                         timeIdx++;
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         long v = valueReader.decoder.readLong(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
-                        if (time < beforeTime) {
-                            continue;
-                        }else if (time >= beforeTime && time <= queryTime) {
-                            result.setTime(0, time);
+                        if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.setTime(0, curTime);
+
+                            // TODO this branch need to be covered by test case
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
+                                updateTrue.curIdx ++;
+                            }
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                v = updateTrue.getLong(updateTrue.curIdx);
+                            }
                             result.setLong(0, v);
-                            continue;
+                            if (curTime == queryTime) {
+                                return true;
+                            }
                         } else {
                             return true;
                         }
                     }
                     break;
+                case FLOAT:
+                    while (valueReader.decoder.hasNext(page)) {
+                        long curTime = timestamps[timeIdx];
+                        timeIdx++;
+
+                        float v = valueReader.decoder.readFloat(page);
+
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                            continue;
+                        }
+
+                        if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.setTime(0, curTime);
+
+                            // TODO this branch need to be covered by test case
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
+                                updateTrue.curIdx ++;
+                            }
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                v = updateTrue.getFloat(updateTrue.curIdx);
+                            }
+                            result.setFloat(0, v);
+                            if (curTime == queryTime) {
+                                return true;
+                            }
+                        } else {
+                            return true;
+                        }
+                    }
+                    break;
+                case DOUBLE:
+                    while (valueReader.decoder.hasNext(page)) {
+                        long curTime = timestamps[timeIdx];
+                        timeIdx++;
+
+                        double v = valueReader.decoder.readDouble(page);
+
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                            continue;
+                        }
+
+                        if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.setTime(0, curTime);
+
+                            // TODO this branch need to be covered by test case
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
+                                updateTrue.curIdx ++;
+                            }
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                v = updateTrue.getDouble(updateTrue.curIdx);
+                            }
+                            result.setDouble(0, v);
+                            if (curTime == queryTime) {
+                                return true;
+                            }
+                        } else {
+                            return true;
+                        }
+                    }
+                    break;
+                case BOOLEAN:
+                    while (valueReader.decoder.hasNext(page)) {
+                        long curTime = timestamps[timeIdx];
+                        timeIdx++;
+
+                        boolean v = valueReader.decoder.readBoolean(page);
+
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                            continue;
+                        }
+
+                        if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.setTime(0, curTime);
+
+                            // TODO this branch need to be covered by test case
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
+                                updateTrue.curIdx ++;
+                            }
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                v = updateTrue.getBoolean(updateTrue.curIdx);
+                            }
+                            result.setBoolean(0, v);
+                            if (curTime == queryTime) {
+                                return true;
+                            }
+                        } else {
+                            return true;
+                        }
+                    }
+                    break;
+                case TEXT:
+                    while (valueReader.decoder.hasNext(page)) {
+                        long curTime = timestamps[timeIdx];
+                        timeIdx++;
+
+                        Binary v = valueReader.decoder.readBinary(page);
+
+                        // TODO this branch need to be covered by test case for overflow delete operation
+                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                            continue;
+                        }
+
+                        if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.setTime(0, curTime);
+
+                            // TODO this branch need to be covered by test case
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
+                                updateTrue.curIdx ++;
+                            }
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                v = updateTrue.getBinary(updateTrue.curIdx);
+                            }
+                            result.setBinary(0, v);
+                            if (curTime == queryTime) {
+                                return true;
+                            }
+                        } else {
+                            return true;
+                        }
+                    }
+                    break;
+                default:
+                    LOG.error("Unsupported previous fill data type : " + result.dataType);
+                    throw new UnSupportedFillTypeException("Unsupported previous fill data type : " + result.dataType);
             }
 
         }
@@ -181,17 +322,66 @@ public class FillProcessor {
                     case INT64:
                         if (result.timeLength == 0) {
                             result.putTime(time);
-                            result.putLong(insertMemoryData.getCurrentIntValue());
+                            result.putLong(insertMemoryData.getCurrentLongValue());
                         } else {
                             long existTime = result.getTime(0);
                             if (existTime < time) {
                                 result.setTime(0, time);
-                                result.setLong(0, insertMemoryData.getCurrentIntValue());
+                                result.setLong(0, insertMemoryData.getCurrentLongValue());
+                            }
+                        }
+                        break;
+                    case FLOAT:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putFloat(insertMemoryData.getCurrentFloatValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime < time) {
+                                result.setTime(0, time);
+                                result.setFloat(0, insertMemoryData.getCurrentFloatValue());
+                            }
+                        }
+                        break;
+                    case DOUBLE:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putDouble(insertMemoryData.getCurrentDoubleValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime < time) {
+                                result.setTime(0, time);
+                                result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+                            }
+                        }
+                        break;
+                    case BOOLEAN:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putBoolean(insertMemoryData.getCurrentBooleanValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime < time) {
+                                result.setTime(0, time);
+                                result.setBoolean(0, insertMemoryData.getCurrentBooleanValue());
+                            }
+                        }
+                        break;
+                    case TEXT:
+                        if (result.timeLength == 0) {
+                            result.putTime(time);
+                            result.putBinary(insertMemoryData.getCurrentBinaryValue());
+                        } else {
+                            long existTime = result.getTime(0);
+                            if (existTime < time) {
+                                result.setTime(0, time);
+                                result.setBinary(0, insertMemoryData.getCurrentBinaryValue());
                             }
                         }
                         break;
                     default:
-                        break;
+                        LOG.error("Unsupported previous fill data type : " + result.dataType);
+                        throw new UnSupportedFillTypeException("Unsupported previous fill data type : " + result.dataType);
                 }
             }
             insertMemoryData.removeCurrentValue();
@@ -320,13 +510,11 @@ public class FillProcessor {
 
                         long v = valueReader.decoder.readLong(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(time)) {
                             continue;
                         }
 
                         if (time >= beforeTime && time <= queryTime) {
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
                                 updateTrue.curIdx ++;
                             }
@@ -341,7 +529,6 @@ public class FillProcessor {
                                 return true;
                             }
                         } else if (time > queryTime){
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
                                 updateTrue.curIdx ++;
                             }
@@ -362,13 +549,11 @@ public class FillProcessor {
 
                         float v = valueReader.decoder.readFloat(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(time)) {
                             continue;
                         }
 
                         if (time >= beforeTime && time <= queryTime) {
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
                                 updateTrue.curIdx ++;
                             }
@@ -383,7 +568,6 @@ public class FillProcessor {
                                 return true;
                             }
                         } else if (time > queryTime){
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
                                 updateTrue.curIdx ++;
                             }
@@ -404,13 +588,11 @@ public class FillProcessor {
 
                         double v = valueReader.decoder.readDouble(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(time)) {
                             continue;
                         }
 
                         if (time >= beforeTime && time <= queryTime) {
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
                                 updateTrue.curIdx ++;
                             }
@@ -425,7 +607,6 @@ public class FillProcessor {
                                 return true;
                             }
                         } else if (time > queryTime){
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
                                 updateTrue.curIdx ++;
                             }
@@ -440,7 +621,8 @@ public class FillProcessor {
                     }
                     break;
                 default:
-                    LOG.error("not support!");
+                    LOG.error("Unsupported linear fill data type : " + dataType);
+                    throw new UnSupportedFillTypeException("Unsupported linear fill data type : " + dataType);
             }
 
         }
@@ -523,7 +705,6 @@ public class FillProcessor {
                             result.putLong(insertMemoryData.getCurrentLongValue());
                         } else if (result.timeLength == 1){
                             long existTime = result.getTime(0);
-                            // TODO existTime == time is a special situation, need test covered
                             if (existTime <= curTime) {
                                 result.setTime(0, curTime);
                                 result.setLong(0, insertMemoryData.getCurrentLongValue());
@@ -579,7 +760,6 @@ public class FillProcessor {
                             result.putFloat(insertMemoryData.getCurrentFloatValue());
                         } else if (result.timeLength == 1){
                             long existTime = result.getTime(0);
-                            // TODO existTime == time is a special situation, need test covered
                             if (existTime <= curTime) {
                                 result.setTime(0, curTime);
                                 result.setFloat(0, insertMemoryData.getCurrentFloatValue());
@@ -629,9 +809,63 @@ public class FillProcessor {
                     }
                     break;
                 case DOUBLE:
+                    if (curTime >= beforeTime && curTime < queryTime) {
+                        if (result.timeLength == 0) {
+                            result.putTime(curTime);
+                            result.putDouble(insertMemoryData.getCurrentDoubleValue());
+                        } else if (result.timeLength == 1){
+                            long existTime = result.getTime(0);
+                            if (existTime <= curTime) {
+                                result.setTime(0, curTime);
+                                result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+                            }
+                        } else if (result.timeLength == 2){
+                            long existTime = result.getTime(0);
+                            if (existTime <= curTime) {
+                                result.setTime(0, curTime);
+                                result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+                            }
+                        } else {
+                            LOG.error("Linear fill unreachable!");
+                        }
+                    } else if (curTime == queryTime) {
+                        result.timeLength = result.valueLength = 1;
+                        result.setTime(0, curTime);
+                        result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+
+                        // get the time equals queryTime, end this function
+                        return;
+                    } else if (curTime > queryTime) {
+                        if (result.timeLength == 0) {
+                            return;
+                        } else if (result.timeLength == 1) {
+                            long existTime = result.getTime(0);
+                            if (existTime < queryTime) {
+                                result.putTime(curTime);
+                                result.putDouble(insertMemoryData.getCurrentDoubleValue());
+                                return;
+                            } else {
+                                return;
+                            }
+                        } else if (result.timeLength == 2) {
+                            long existTime = result.getTime(1);
+                            if (existTime <= queryTime) {
+                                return;
+                            } else {
+                                if (curTime <= existTime) {
+                                    result.setTime(1, existTime);
+                                    result.setDouble(1, insertMemoryData.getCurrentDoubleValue());
+                                }
+                                return;
+                            }
+                        } else {
+                            LOG.error("Linear fill unreachable!");
+                        }
+                    }
                     break;
                 default:
-                        break;
+                    LOG.error("Unsupported linear fill data type : " + result.dataType);
+                    throw new UnSupportedFillTypeException("Unsupported linear fill data type : " + result.dataType);
             }
 
             insertMemoryData.removeCurrentValue();

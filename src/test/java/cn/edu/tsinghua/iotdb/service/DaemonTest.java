@@ -131,17 +131,17 @@ public class DaemonTest {
 
                 Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-//                selectAllSQLTest();
-//                dnfErrorSQLTest();
-//                selectWildCardSQLTest();
-//                selectAndOperatorTest();
-//                selectAndOpeCrossTest();
-//                selectOneColumnWithFilterTest();
-//                crossReadTest();
-//                textDataTypeTest();
-//
-//                aggregationTest();
-//                multiAggregationTest();
+                selectAllSQLTest();
+                dnfErrorSQLTest();
+                selectWildCardSQLTest();
+                selectAndOperatorTest();
+                selectAndOpeCrossTest();
+                selectOneColumnWithFilterTest();
+                crossReadTest();
+                textDataTypeTest();
+
+                aggregationTest();
+                multiAggregationTest();
 
                 fillTest();
 
@@ -716,7 +716,8 @@ public class DaemonTest {
             Assert.assertEquals(cnt, 1);
 
             // int32, float linear fill test , linear fill has value in [queryTime-beforeRange, queryTime+afterRange]
-            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 80 fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
+            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 80 " +
+                    "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
             Assert.assertTrue(hasResultSet);
             resultSet = statement.getResultSet();
             cnt = 0;
@@ -724,6 +725,20 @@ public class DaemonTest {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
                 //System.out.println("====" + ans);
                 assertEquals("80,20120,8.751837", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(cnt, 1);
+
+            // float linear fill test, linear fill has no value in [queryTime-beforeRange, queryTime]
+            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 1001 " +
+                    "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
+                //System.out.println("====" + ans);
+                assertEquals("1001,null,null", ans);
                 cnt ++;
             }
             Assert.assertEquals(cnt, 1);
