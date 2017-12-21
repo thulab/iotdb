@@ -106,6 +106,7 @@ public abstract class AbstractClient {
 		int cnt = 0;
 		ResultSetMetaData resultSetMetaData = res.getMetaData();
 		int colCount = resultSetMetaData.getColumnCount();
+		System.out.println(colCount);
 		boolean printTimestamp = true;
 		if (res.getMetaData().getColumnTypeName(0) != null) {
 			printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
