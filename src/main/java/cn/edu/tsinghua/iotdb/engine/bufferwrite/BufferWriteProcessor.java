@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -583,8 +584,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 			if (lastFlushTime > 0) {
 				long thisFlushTime = System.currentTimeMillis();
 				long flushTimeInterval = thisFlushTime - lastFlushTime;
-				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastFlushTime,
-						thisFlushTime, flushTimeInterval);
+				DateTime lastDateTime = new DateTime(lastFlushTime,TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				DateTime thisDateTime = new DateTime(thisFlushTime,TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
+						thisDateTime, flushTimeInterval);
 				lastFlushTime = thisFlushTime;
 			}
 			if (recordCount > 0) {
