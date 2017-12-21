@@ -74,7 +74,7 @@ public class FlushManager {
     }
 
     synchronized public void submit(Runnable task) {
-        pool.submit(task);
+        pool.execute(task);
     }
 
 }
