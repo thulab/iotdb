@@ -132,6 +132,6 @@ public class MultiQueryPlan extends PhysicalPlan {
     }
 
     public enum QueryType {
-        QUERY, AGGREGATION, GROUPBY, FILL
+        QUERY, AGGREGATION, GROUPBY, INDEXQUERY, FILL
     }
 }
