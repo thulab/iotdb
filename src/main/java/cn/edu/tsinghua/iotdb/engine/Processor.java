@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.engine.lru;
+package cn.edu.tsinghua.iotdb.engine;
 
 import java.io.IOException;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -23,7 +23,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
  *
  */
 public abstract class Processor {
-	protected String processorName;
+	private String processorName;
 	private final ReadWriteLock lock;
 
 	/**

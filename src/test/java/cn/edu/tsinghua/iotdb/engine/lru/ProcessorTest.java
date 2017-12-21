@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
@@ -14,7 +15,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
  * @author liukun
  *
  */
-public class LRUProcessorTest {
+public class ProcessorTest {
 	
 	
 	class TestLRUProcessor extends Processor{

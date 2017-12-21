@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.lru.Processor;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
@@ -107,13 +107,13 @@ public class FileNodeManager {
 		this.baseDir = baseDir;
 		File dir = new File(baseDir);
 		if (dir.mkdirs()) {
-			LOGGER.info("{} dir home is not exists, create it", this.getClass().getSimpleName());
+			LOGGER.info("{} dir home doesn't exists, create it", dir.getPath());
 		}
 
 		TsFileConf.duplicateIncompletedPage = true;
 		this.overflowedFileNodeName = readOverflowSetFromDisk();
 		if (overflowedFileNodeName == null) {
-			LOGGER.error("Read the overflow nameSpacePath set from filenode manager restore file error.");
+			LOGGER.error("Read the {} file error.", restoreFileName);
 			overflowedFileNodeName = new HashSet<>();
 		}
 	}
@@ -131,31 +131,31 @@ public class FileNodeManager {
 	}
 
 	private FileNodeProcessor getProcessor(String path, boolean isWriteLock) throws FileNodeManagerException {
-		String nsPath;
+		String filenodeName;
 		try {
-			nsPath = MManager.getInstance().getFileNameByPath(path);
+			filenodeName = MManager.getInstance().getFileNameByPath(path);
 		} catch (PathErrorException e) {
-			LOGGER.error("MManager get filenode path error, path is {}", path);
+			LOGGER.error("MManager get filenode name error, path is {}", path);
 			throw new FileNodeManagerException(e);
 		}
 		FileNodeProcessor processor = null;
-		processor = processorMap.get(nsPath);
+		processor = processorMap.get(filenodeName);
 		if (processor != null) {
 			processor.lock(isWriteLock);
 		} else {
-			nsPath = nsPath.intern();
+			filenodeName = filenodeName.intern();
 			// calculate the value with same key synchronously
-			synchronized (nsPath) {
-				processor = processorMap.get(nsPath);
+			synchronized (filenodeName) {
+				processor = processorMap.get(filenodeName);
 				if (processor != null) {
 					processor.lock(isWriteLock);
 				} else {
 					// calculate the value with the key monitor
-					LOGGER.debug("Calcuate the processor, the filenode is {}, Thread is {}", nsPath,
+					LOGGER.debug("Calcuate the processor, the filenode is {}, Thread is {}", filenodeName,
 							Thread.currentThread().getId());
-					processor = constructNewProcessor(nsPath);
+					processor = constructNewProcessor(filenodeName);
 					processor.lock(isWriteLock);
-					processorMap.put(nsPath, processor);
+					processorMap.put(filenodeName, processor);
 				}
 			}
 		}
@@ -239,7 +239,7 @@ public class FileNodeManager {
 							filenodeName, timestamp);
 					throw new FileNodeManagerException(e);
 				}
-				// Add the new interval file to newfilelist
+				// Add a new interval file to newfilelist
 				if (bufferWriteProcessor.isNewProcessor()) {
 					bufferWriteProcessor.setNewProcessor(false);
 					String fileAbsolutePath = bufferWriteProcessor.getFileAbsolutePath();
@@ -409,7 +409,8 @@ public class FileNodeManager {
 	public int beginQuery(String deltaObjectId) throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		try {
-			LOGGER.debug("Get the FileNodeProcessor: {}, begin query.", fileNodeProcessor.getProcessorName());
+			LOGGER.debug("Get the FileNodeProcessor: filenode is {}, begin query.",
+					fileNodeProcessor.getProcessorName());
 			int token = fileNodeProcessor.addMultiPassLock();
 			return token;
 		} finally {
@@ -422,7 +423,7 @@ public class FileNodeManager {
 			throws FileNodeManagerException {
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
-		LOGGER.debug("Get the FileNodeProcessor: {}, query.", fileNodeProcessor.getProcessorName());
+		LOGGER.debug("Get the FileNodeProcessor: filenode is {}, query.", fileNodeProcessor.getProcessorName());
 		try {
 			QueryStructure queryStructure = null;
 			// query operation must have overflow processor
@@ -457,7 +458,8 @@ public class FileNodeManager {
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		try {
-			LOGGER.debug("Get the FileNodeProcessor: {}, end query.", fileNodeProcessor.getProcessorName());
+			LOGGER.debug("Get the FileNodeProcessor: {}, filenode is {}, end query.",
+					fileNodeProcessor.getProcessorName());
 			fileNodeProcessor.removeMultiPassLock(token);
 		} finally {
 			fileNodeProcessor.writeUnlock();
@@ -749,7 +751,7 @@ public class FileNodeManager {
 				}
 			}
 			fileNodeManagerStatus = FileNodeManagerStatus.NONE;
-			LOGGER.info("finish merging all filenode {}", allChangedFileNodes);
+			LOGGER.info("Merge finished, the merged filenode is {}", allChangedFileNodes);
 		}
 	}
 
@@ -768,9 +770,8 @@ public class FileNodeManager {
 				do {
 					fileNodeProcessor = getProcessor(fileNodeNamespacePath, true);
 				} while (fileNodeProcessor == null);
-				LOGGER.info("Get the FileNodeProcessor: {} to merge.", fileNodeProcessor.getProcessorName());
-
-				// if bufferwrite and overflow exist
+				LOGGER.info("Get the FileNodeProcessor: the filenode is {}, merge.",
+						fileNodeProcessor.getProcessorName());
 				// close buffer write
 				if (fileNodeProcessor.hasBufferwriteProcessor()) {
 					while (!fileNodeProcessor.getBufferWriteProcessor().canBeClosed()) {
@@ -779,7 +780,6 @@ public class FileNodeManager {
 					fileNodeProcessor.getBufferWriteProcessor().close();
 					fileNodeProcessor.setBufferwriteProcessroToClosed();
 				}
-
 				// get overflow processor
 				Map<String, Object> parameters = new HashMap<>();
 				parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
