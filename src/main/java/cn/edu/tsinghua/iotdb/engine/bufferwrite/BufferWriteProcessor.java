@@ -701,6 +701,9 @@ public class BufferWriteProcessor extends LRUProcessor {
 				}
 				long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
 				long timeInterval = System.currentTimeMillis() - startFlushTime;
+				if (timeInterval == 0) {
+					timeInterval = 1;
+				}
 				// remove the feature: fill the row group
 				// fillInRowGroupSize(actualTotalRowGroupSize);
 				LOGGER.info(

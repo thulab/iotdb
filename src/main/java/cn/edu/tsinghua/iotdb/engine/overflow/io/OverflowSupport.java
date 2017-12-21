@@ -311,7 +311,11 @@ public class OverflowSupport {
 				overflowSeriesWriter.flushToFileWriter(fileWriter);
 			}
 		}
+		// statistic this flush information
 		long timeInterval = System.currentTimeMillis() - startTime;
+		if (timeInterval <= 0) {
+			timeInterval = 1;
+		}
 		long flushSize = fileWriter.getPos() - lastPos;
 		LOGGER.info("Asynchronous flush overflow rowgroup, actual:{}, time consume:{} ms, flush rate:{} bytes/ms",
 				flushSize, timeInterval, flushSize / timeInterval);
