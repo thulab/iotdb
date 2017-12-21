@@ -35,7 +35,7 @@ public class ReadLockManager {
      * this variable represents that whether it is the second execution of aggregation method.
      * aggregation method must be executed once when a aggregation query.
      */
-    private ThreadLocal<QueryDataSet> aggregateThreadLocal;
+    // private ThreadLocal<QueryDataSet> aggregateThreadLocal;
 
     private ReadLockManager() {
     }
@@ -73,10 +73,6 @@ public class ReadLockManager {
         }
         locksMap.remove();
         recordReaderCache.clear();
-
-        if (aggregateThreadLocal != null && aggregateThreadLocal.get() != null) {
-            aggregateThreadLocal.remove();
-        }
 
         if (groupByCalcTime != null && groupByCalcTime.get() != null) {
             groupByCalcTime.remove();
@@ -141,10 +137,4 @@ public class ReadLockManager {
         this.groupByEngineWithFilterLocal = t;
     }
 
-    public ThreadLocal<QueryDataSet> getAggregateThreadLocal() {
-        if (this.aggregateThreadLocal == null) {
-            this.aggregateThreadLocal = new ThreadLocal<>();
-        }
-        return this.aggregateThreadLocal;
-    }
 }

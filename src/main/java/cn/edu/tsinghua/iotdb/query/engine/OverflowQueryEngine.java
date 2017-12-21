@@ -77,9 +77,11 @@ public class OverflowQueryEngine {
     }
 
     /**
-     * <p>
-     * Basic aggregation method,
+     * <p> Basic aggregation method,
      * both single aggregation method or multi aggregation method is implemented here.
+     *
+     * <p> Notice that: this method is invoked only once by <code>QueryProcessExecutor</code>
+     * in an aggregation query.
      *
      * @param aggres           a list of aggregations and corresponding path
      * @param filterStructures see <code>FilterStructure</code>, a list of all conjunction form
@@ -90,18 +92,7 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-
-        // TODO aggregation is invoked once currently, aggregateThreadLocal could be removed
-        ThreadLocal<QueryDataSet> aggregateThreadLocal = ReadLockManager.getInstance().getAggregateThreadLocal();
-
-        // the aggregation method will only be executed once
-        if (aggregateThreadLocal.get() != null) {
-            QueryDataSet ans = aggregateThreadLocal.get();
-            ans.clear();
-            aggregateThreadLocal.remove();
-            return ans;
-        }
-
+        
         List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
 
         // to remove duplicate queries, such as select count(s0),count(s0).
@@ -125,7 +116,7 @@ public class OverflowQueryEngine {
             }
             ansQueryDataSet.mapRet.put(EngineUtils.aggregationKey(aggregateFunction, pair.left), aggregateFunction.resultData);
         }
-        aggregateThreadLocal.set(ansQueryDataSet);
+        // aggregateThreadLocal.set(ansQueryDataSet);
         return ansQueryDataSet;
     }
 
