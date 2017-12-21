@@ -91,6 +91,7 @@ public class OverflowQueryEngine {
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
 
+        // TODO aggregation is invoked once currently, aggregateThreadLocal could be removed
         ThreadLocal<QueryDataSet> aggregateThreadLocal = ReadLockManager.getInstance().getAggregateThreadLocal();
 
         // the aggregation method will only be executed once

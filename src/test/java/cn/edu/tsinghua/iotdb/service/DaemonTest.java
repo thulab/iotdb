@@ -136,7 +136,6 @@ public class DaemonTest {
                 selectAndOperatorTest();
                 selectAndOpeCrossTest();
                 selectOneColumnWithFilterTest();
-                crossReadTest();
                 textDataTypeTest();
 
                 aggregationTest();
@@ -144,6 +143,7 @@ public class DaemonTest {
 
                 fillTest();
 
+                crossReadTest();
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
                 fail(e.getMessage());
@@ -484,7 +484,7 @@ public class DaemonTest {
                 Assert.assertEquals("aaaaa", ans);
                 cnt++;
             }
-            Assert.assertEquals(cnt, 1);
+            Assert.assertEquals(1, cnt);
             statement.close();
 
             statement = connection.createStatement();
@@ -500,7 +500,7 @@ public class DaemonTest {
                 Assert.assertEquals("888", ans2);
                 cnt++;
             }
-            Assert.assertEquals(cnt, 1);
+            Assert.assertEquals(1, cnt);
 
             statement.close();
         } catch (Exception e) {
@@ -533,9 +533,9 @@ public class DaemonTest {
             int cnt = 0;
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1);
-                Assert.assertEquals(ans, retArray[cnt++]);
+                Assert.assertEquals(retArray[cnt++], ans);
             }
-            Assert.assertEquals(cnt, 3);
+            Assert.assertEquals(3, cnt);
 
             statement.close();
         } catch (Exception e) {
@@ -548,6 +548,123 @@ public class DaemonTest {
         }
     }
 
+    private void textDataTypeTest() throws ClassNotFoundException, SQLException {
+        String[] retArray = new String[]{
+                "101,199,null,tomorrow is another day",
+                "102,180,10.0,tomorrow is another day",
+                "946684800000,100,null,good"
+        };
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+
+            boolean hasTextMaxResultSet = statement.execute("select s1,s2,s3 from root.vehicle.d0 where s3 = 'tomorrow is another day' or s3 = 'good'");
+            Assert.assertTrue(hasTextMaxResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," +
+                        resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
+                Assert.assertEquals(ans, retArray[cnt++]);
+            }
+            Assert.assertEquals(3, cnt);
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void fillTest() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+
+            // int32 previous fill test 1, previous fill has value
+            boolean hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 199 fill(int32[previous, 5m])");
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                assertEquals("199,99", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(1, cnt);
+
+            // int32 previous fill test 2, previous fill has no value
+            hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 103 fill(int32[previous, 5m])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                assertEquals("103,null", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(1, cnt);
+
+            // int32 linear fill test 1, linear fill has value in queryTime
+            hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 105 fill(int32[linear, 5m, 5m])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                assertEquals("105,33333", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(1, cnt);
+
+            // int32, float linear fill test , linear fill has value in [queryTime-beforeRange, queryTime+afterRange]
+            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 80 " +
+                    "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
+                //System.out.println("====" + ans);
+                assertEquals("80,20120,8.751837", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(1, cnt);
+
+            // float linear fill test, linear fill has no value in [queryTime-beforeRange, queryTime]
+            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 1001 " +
+                    "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
+                //System.out.println("====" + ans);
+                assertEquals("1001,null,null", ans);
+                cnt ++;
+            }
+            Assert.assertEquals(1, cnt);
+
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    // this test modify the data, should be located lastly
     private void crossReadTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
                 "1,101,1101,7.0",
@@ -626,122 +743,6 @@ public class DaemonTest {
                 cnt++;
             }
             //Assert.assertEquals(cnt, 8);
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    private void textDataTypeTest() throws ClassNotFoundException, SQLException {
-        String[] retArray = new String[]{
-                "101,199,null,tomorrow is another day",
-                "102,180,10.0,tomorrow is another day",
-                "946684800000,100,null,good"
-        };
-
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-
-            boolean hasTextMaxResultSet = statement.execute("select s1,s2,s3 from root.vehicle.d0 where s3 = 'tomorrow is another day' or s3 = 'good'");
-            Assert.assertTrue(hasTextMaxResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," +
-                        resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
-                Assert.assertEquals(ans, retArray[cnt++]);
-            }
-            Assert.assertEquals(cnt, 3);
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    private void fillTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-
-            // int32 previous fill test 1, previous fill has value
-            boolean hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 199 fill(int32[previous, 5m])");
-            Assert.assertTrue(hasResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
-                assertEquals("199,99", ans);
-                cnt ++;
-            }
-            Assert.assertEquals(cnt, 1);
-
-            // int32 previous fill test 2, previous fill has no value
-            hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 103 fill(int32[previous, 5m])");
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
-                assertEquals("103,null", ans);
-                cnt ++;
-            }
-            Assert.assertEquals(cnt, 1);
-
-            // int32 linear fill test 1, linear fill has value in queryTime
-            hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 105 fill(int32[linear, 5m, 5m])");
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
-                assertEquals("105,33333", ans);
-                cnt ++;
-            }
-            Assert.assertEquals(cnt, 1);
-
-            // int32, float linear fill test , linear fill has value in [queryTime-beforeRange, queryTime+afterRange]
-            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 80 " +
-                    "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
-                //System.out.println("====" + ans);
-                assertEquals("80,20120,8.751837", ans);
-                cnt ++;
-            }
-            Assert.assertEquals(cnt, 1);
-
-            // float linear fill test, linear fill has no value in [queryTime-beforeRange, queryTime]
-            hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 1001 " +
-                    "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
-                //System.out.println("====" + ans);
-                assertEquals("1001,null,null", ans);
-                cnt ++;
-            }
-            Assert.assertEquals(cnt, 1);
-
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();
