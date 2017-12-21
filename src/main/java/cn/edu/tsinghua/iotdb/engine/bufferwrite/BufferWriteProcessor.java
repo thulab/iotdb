@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.lru.LRUProcessor;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushState;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
@@ -584,8 +585,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 			if (lastFlushTime > 0) {
 				long thisFlushTime = System.currentTimeMillis();
 				long flushTimeInterval = thisFlushTime - lastFlushTime;
-				DateTime lastDateTime = new DateTime(lastFlushTime,TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				DateTime thisDateTime = new DateTime(thisFlushTime,TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				DateTime lastDateTime = new DateTime(lastFlushTime,
+						TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				DateTime thisDateTime = new DateTime(thisFlushTime,
+						TsfileDBDescriptor.getInstance().getConfig().timeZone);
 				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
 						thisDateTime, flushTimeInterval);
 				lastFlushTime = thisFlushTime;
@@ -684,8 +687,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 							convertBufferLock.writeLock().unlock();
 						}
 					};
-					Thread flush = new Thread(flushThread);
-					flush.start();
+					FlushManager.getInstance().submit(flushThread);
 				}
 			}
 		}
