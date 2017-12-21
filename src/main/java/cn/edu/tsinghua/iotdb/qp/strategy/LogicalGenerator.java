@@ -560,6 +560,7 @@ public class LogicalGenerator {
             }
         } else {
             originTime = parseTimeFormat(SQLConstant.START_TIME_STR);
+            
         }
         ((QueryOperator) initializedOperator).setOrigin(originTime);
     }
