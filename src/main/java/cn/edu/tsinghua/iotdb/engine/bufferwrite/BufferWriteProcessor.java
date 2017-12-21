@@ -197,7 +197,7 @@ public class BufferWriteProcessor extends Processor {
 			// API of kr
 			bufferIOWriter = new BufferWriteIOWriter(output, lastPosition, pair.right);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the bufferwrite io when recovery, the nameSpacePath is {}.", processorPath);
+			LOGGER.error("Can't get the bufferwrite io when recovery, the nameSpacePath is {}.", processorName);
 			throw new BufferWriteProcessorException(e);
 		}
 		try {
@@ -470,7 +470,7 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			recordWriter.write(tsRecord);
 		} catch (IOException | WriteProcessException e) {
-			LOGGER.error("Write TSRecord error, the TSRecord is {}, the nameSpacePath is {}.", tsRecord, processorPath);
+			LOGGER.error("Write TSRecord error, the TSRecord is {}, the nameSpacePath is {}.", tsRecord, processorName);
 			throw new BufferWriteProcessorException(e);
 		}
 	}
@@ -501,12 +501,12 @@ public class BufferWriteProcessor extends Processor {
 
 	@Override
 	public boolean canBeClosed() {
-		LOGGER.info("Check nameSpacePath {} can be closed or not.", processorPath);
+		LOGGER.info("Check nameSpacePath {} can be closed or not.", processorName);
 		if (flushState.isFlushing()) {
-			LOGGER.info("The nameSpacePath {} can't be closed.", processorPath);
+			LOGGER.info("The nameSpacePath {} can't be closed.", processorName);
 			return false;
 		} else {
-			LOGGER.info("The nameSpacePath {} can be closed.", processorPath);
+			LOGGER.info("The nameSpacePath {} can be closed.", processorName);
 			return true;
 		}
 	}
@@ -523,7 +523,7 @@ public class BufferWriteProcessor extends Processor {
 			// delete the restore for this bufferwrite processor
 			deleteRestoreFile();
 		} catch (IOException e) {
-			LOGGER.error("Close the bufferwrite processor error, the nameSpacePath is {}.", processorPath);
+			LOGGER.error("Close the bufferwrite processor error, the nameSpacePath is {}.", processorName);
 			throw new BufferWriteProcessorException(e);
 		} catch (Exception e) {
 			LOGGER.error("Close the bufferwrite processor failed, when call the action function.");
@@ -585,7 +585,7 @@ public class BufferWriteProcessor extends Processor {
 						try {
 							flushState.wait();
 						} catch (InterruptedException e) {
-							LOGGER.error("Interrupt error when waitting to flush, the processor:{}.", processorPath, e);
+							LOGGER.error("Interrupt error when waitting to flush, the processor:{}.", processorName, e);
 						}
 					}
 				}
@@ -599,7 +599,7 @@ public class BufferWriteProcessor extends Processor {
 
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					// For WAL
-					WriteLogManager.getInstance().startBufferWriteFlush(processorPath);
+					WriteLogManager.getInstance().startBufferWriteFlush(processorName);
 				}
 
 				// flush bufferwrite data
@@ -609,10 +609,10 @@ public class BufferWriteProcessor extends Processor {
 						writeStoreToDisk();
 						filenodeFlushAction.act();
 						if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-							WriteLogManager.getInstance().endBufferWriteFlush(processorPath);
+							WriteLogManager.getInstance().endBufferWriteFlush(processorName);
 						}
 					} catch (IOException e) {
-						LOGGER.error("Flush row group to store failed, processor:{}.", processorPath);
+						LOGGER.error("Flush row group to store failed, processor:{}.", processorName);
 						throw e;
 					} catch (BufferWriteProcessorException e) {
 						// write restore error
@@ -631,14 +631,14 @@ public class BufferWriteProcessor extends Processor {
 
 					Runnable flushThread;
 					flushThread = () -> {
-						LOGGER.info("{} synchronous flush start,-Thread id {}.", processorPath,
+						LOGGER.info("{} synchronous flush start,-Thread id {}.", processorName,
 								Thread.currentThread().getId());
 						try {
 							asyncFlushRowGroupToStore();
 							writeStoreToDisk();
 							filenodeFlushAction.act();
 							if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-								WriteLogManager.getInstance().endBufferWriteFlush(processorPath);
+								WriteLogManager.getInstance().endBufferWriteFlush(processorName);
 							}
 						} catch (IOException e) {
 							/*
@@ -646,7 +646,7 @@ public class BufferWriteProcessor extends Processor {
 							 * exception
 							 */
 							LOGGER.error(String.format("%s Asynchronous flush error, sleep this thread-%s.",
-									processorPath, Thread.currentThread().getId()), e);
+									processorName, Thread.currentThread().getId()), e);
 							// TODO
 						} catch (BufferWriteProcessorException e) {
 							LOGGER.error("Write bufferwrite information to disk failed.", e);
@@ -663,7 +663,7 @@ public class BufferWriteProcessor extends Processor {
 						try {
 							synchronized (flushState) {
 								switchIndexFromFlushToWork();
-								LOGGER.info("{} synchronous flush end,-Thread is {}.", processorPath,
+								LOGGER.info("{} synchronous flush end,-Thread is {}.", processorName,
 										Thread.currentThread().getId());
 								flushState.setUnFlushing();
 								flushState.notify();
@@ -691,7 +691,7 @@ public class BufferWriteProcessor extends Processor {
 				long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
 				// remove the feature: fill the row group
 				// fillInRowGroupSize(actualTotalRowGroupSize);
-				LOGGER.info("{} asynchronous flush total row group size:{}, actual:{}, less:{}.", processorPath,
+				LOGGER.info("{} asynchronous flush total row group size:{}, actual:{}, less:{}.", processorName,
 						primaryRowGroupSize, actualTotalRowGroupSize, primaryRowGroupSize - actualTotalRowGroupSize);
 			}
 		}

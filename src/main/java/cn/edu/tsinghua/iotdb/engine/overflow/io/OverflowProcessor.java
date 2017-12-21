@@ -158,7 +158,7 @@ public class OverflowProcessor extends Processor {
 
 			} catch (IOException e) {
 				LOGGER.error("Flush the information for the overflow processor error, the nameSpacePath is {}",
-						processorPath);
+						processorName);
 				throw new OverflowProcessorException(e);
 			} finally {
 				if (fileOutputStream != null) {
@@ -375,7 +375,7 @@ public class OverflowProcessor extends Processor {
 
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 				try {
-					WriteLogManager.getInstance().startOverflowFlush(processorPath);
+					WriteLogManager.getInstance().startOverflowFlush(processorName);
 				} catch (IOException e1) {
 					throw new OverflowProcessorException(e1);
 				}
@@ -409,7 +409,7 @@ public class OverflowProcessor extends Processor {
 					// nameSpacePath set
 					filenodeManagerFlushAction.act();
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						WriteLogManager.getInstance().endOverflowFlush(processorPath);
+						WriteLogManager.getInstance().endOverflowFlush(processorName);
 					}
 				} catch (IOException e) {
 					LOGGER.error("Flush overflow rowGroup to file failed synchronously");
@@ -444,7 +444,7 @@ public class OverflowProcessor extends Processor {
 							// nameSpacePath set
 							filenodeManagerFlushAction.act();
 							if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-								WriteLogManager.getInstance().endOverflowFlush(processorPath);
+								WriteLogManager.getInstance().endOverflowFlush(processorName);
 							}
 						} catch (IOException e) {
 							LOGGER.error("Flush overflow rowgroup to file error in asynchronously.", e);
@@ -477,18 +477,18 @@ public class OverflowProcessor extends Processor {
 
 	@Override
 	public void close() throws OverflowProcessorException {
-		LOGGER.info("Start to close overflow processor, the nameSpacePath is {}", processorPath);
+		LOGGER.info("Start to close overflow processor, the nameSpacePath is {}", processorName);
 		try {
 			flushRowGroupToStore(true);
 		} catch (OverflowProcessorException e) {
-			LOGGER.error("Close the overflow processor error, the nameSpacePath is {}", processorPath);
+			LOGGER.error("Close the overflow processor error, the nameSpacePath is {}", processorName);
 			throw new OverflowProcessorException(e);
 		}
 		long lastUpdateOffset = -1L;
 		try {
 			lastUpdateOffset = ofSupport.endFile();
 		} catch (IOException e) {
-			LOGGER.error("Get the last update time failed, the nameSpacePath is {}", processorPath);
+			LOGGER.error("Get the last update time failed, the nameSpacePath is {}", processorName);
 			throw new OverflowProcessorException(e);
 		}
 		if (lastUpdateOffset != -1) {

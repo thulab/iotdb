@@ -23,7 +23,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
  *
  */
 public abstract class Processor {
-	protected String processorPath;
+	protected String processorName;
 	private final ReadWriteLock lock;
 
 	/**
@@ -31,8 +31,8 @@ public abstract class Processor {
 	 * 
 	 * @param nameSpacePath
 	 */
-	public Processor(String nameSpacePath) {
-		this.processorPath = nameSpacePath;
+	public Processor(String processorName) {
+		this.processorName = processorName;
 		this.lock = new ReentrantReadWriteLock();
 	}
 
@@ -101,8 +101,8 @@ public abstract class Processor {
 	 * 
 	 * @return
 	 */
-	public String getProcessorPath() {
-		return processorPath;
+	public String getProcessorName() {
+		return processorName;
 	}
 
 	/**
@@ -127,7 +127,7 @@ public abstract class Processor {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((processorPath == null) ? 0 : processorPath.hashCode());
+		result = prime * result + ((processorName == null) ? 0 : processorName.hashCode());
 		return result;
 	}
 
@@ -140,10 +140,10 @@ public abstract class Processor {
 		if (getClass() != obj.getClass())
 			return false;
 		Processor other = (Processor) obj;
-		if (processorPath == null) {
-			if (other.processorPath != null)
+		if (processorName == null) {
+			if (other.processorName != null)
 				return false;
-		} else if (!processorPath.equals(other.processorPath))
+		} else if (!processorName.equals(other.processorName))
 			return false;
 		return true;
 	}
