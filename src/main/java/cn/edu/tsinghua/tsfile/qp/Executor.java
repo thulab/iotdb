@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.qp;
 
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryConfig;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryEngine;
@@ -14,7 +14,7 @@ import java.util.List;
  * This class used to execute Queries on TSFile
  */
 public class Executor {
-    public static List<QueryDataSet> query(TSRandomAccessFileReader in, List<QueryConfig> queryConfigs, HashMap<String, Long> parameters) {
+    public static List<QueryDataSet> query(ITsRandomAccessFileReader in, List<QueryConfig> queryConfigs, HashMap<String, Long> parameters) {
         QueryEngine queryEngine;
         List<QueryDataSet> dataSets = new ArrayList<>();
         try {
