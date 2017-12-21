@@ -559,8 +559,7 @@ public class LogicalGenerator {
                 originTime = Long.valueOf(originNode.getText());
             }
         } else {
-            originTime = parseTimeFormat(SQLConstant.START_TIME_STR);
-            
+            originTime = parseTimeFormat(SQLConstant.START_TIME_STR); 
         }
         ((QueryOperator) initializedOperator).setOrigin(originTime);
     }
