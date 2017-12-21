@@ -551,6 +551,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 		private Map<String, IRowGroupWriter> flushingRowGroupWriters;
 		private Set<String> flushingRowGroupSet;
 		private long flushingRecordCount;
+		private long lastFlushTime = -1;
 
 		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter, FileSchema schema)
 				throws WriteProcessException {
@@ -578,6 +579,14 @@ public class BufferWriteProcessor extends LRUProcessor {
 
 		@Override
 		protected void flushRowGroup(boolean isFillRowGroup) throws IOException {
+			// calculate the time interval between last flush and this flush
+			if (lastFlushTime > 0) {
+				long thisFlushTime = System.currentTimeMillis();
+				long flushTimeInterval = thisFlushTime - lastFlushTime;
+				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastFlushTime,
+						thisFlushTime, flushTimeInterval);
+				lastFlushTime = thisFlushTime;
+			}
 			if (recordCount > 0) {
 				synchronized (flushState) {
 					// This thread wait until the subThread flush finished
@@ -679,7 +688,9 @@ public class BufferWriteProcessor extends LRUProcessor {
 		}
 
 		private void asyncFlushRowGroupToStore() throws IOException {
+
 			if (flushingRecordCount > 0) {
+				long startFlushTime = System.currentTimeMillis();
 				long totalMemStart = deltaFileWriter.getPos();
 				for (String deltaObjectId : flushingRowGroupSet) {
 					long rowGroupStart = deltaFileWriter.getPos();
@@ -689,10 +700,14 @@ public class BufferWriteProcessor extends LRUProcessor {
 					deltaFileWriter.endRowGroup(deltaFileWriter.getPos() - rowGroupStart);
 				}
 				long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
+				long timeInterval = System.currentTimeMillis() - startFlushTime;
 				// remove the feature: fill the row group
 				// fillInRowGroupSize(actualTotalRowGroupSize);
-				LOGGER.info("{} asynchronous flush total row group size:{}, actual:{}, less:{}.", nameSpacePath,
-						primaryRowGroupSize, actualTotalRowGroupSize, primaryRowGroupSize - actualTotalRowGroupSize);
+				LOGGER.info(
+						"{} asynchronous flush total row group size:{}, actual:{}, less:{}, time consume:{} ms, flush rate:{} bytes/ms",
+						nameSpacePath, primaryRowGroupSize, actualTotalRowGroupSize,
+						primaryRowGroupSize - actualTotalRowGroupSize, timeInterval,
+						actualTotalRowGroupSize / timeInterval);
 			}
 		}
 

@@ -269,7 +269,7 @@ public class OverflowSupport {
 			return res;
 		}
 		OverflowSeriesImpl seriesImpl = overflowMap.get(deltaObjectId).get(measurementId);
-		if(seriesImpl.getTSDataType()!=dataType){
+		if (seriesImpl.getTSDataType() != dataType) {
 			seriesImpl.setType(dataType);
 			seriesImpl.reset();
 		}
@@ -303,12 +303,18 @@ public class OverflowSupport {
 	public void flushRowGroupToStore() throws IOException {
 		// seek to tail of overflowFileIO
 		fileWriter.toTail();
+		long lastPos = fileWriter.getPos();
+		long startTime = System.currentTimeMillis();
 		// flush every overflowSeries to overflowFileIO
 		for (Map<String, OverflowSeriesImpl> overflowSeriesWriters : overflowMap.values()) {
 			for (OverflowSeriesImpl overflowSeriesWriter : overflowSeriesWriters.values()) {
 				overflowSeriesWriter.flushToFileWriter(fileWriter);
 			}
 		}
+		long timeInterval = System.currentTimeMillis() - startTime;
+		long flushSize = fileWriter.getPos() - lastPos;
+		LOGGER.info("Asynchronous flush overflow rowgroup, actual:{}, time consume:{} ms, flush rate:{} bytes/ms",
+				flushSize, timeInterval, flushSize / timeInterval);
 	}
 
 	/**

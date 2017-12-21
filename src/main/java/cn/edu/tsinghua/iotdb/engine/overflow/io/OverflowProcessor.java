@@ -54,6 +54,7 @@ public class OverflowProcessor extends LRUProcessor {
 	private Action filenodeFlushAction = null;
 	private Action filenodeManagerBackUpAction = null;
 	private Action filenodeManagerFlushAction = null;
+	private long lastFlushTime = -1;
 
 	public OverflowProcessor(String nameSpacePath, Map<String, Object> parameters) throws OverflowProcessorException {
 		super(nameSpacePath);
@@ -361,6 +362,12 @@ public class OverflowProcessor extends LRUProcessor {
 	}
 
 	private void flushRowGroupToStore(boolean synchronize) throws OverflowProcessorException {
+		if(lastFlushTime>0){
+			long thisFLushTime = System.currentTimeMillis();
+			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastFlushTime,
+					thisFLushTime, thisFLushTime-lastFlushTime);
+			lastFlushTime = thisFLushTime;
+		}
 		if (recordCount > 0) {
 			synchronized (flushState) {
 				while (flushState.isFlushing()) {
