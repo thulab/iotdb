@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -597,7 +596,7 @@ public class FileNodeProcessor extends Processor {
 				long s1 = intervalFileNode.getStartTime(deltaObjectId);
 				long e1 = intervalFileNode.getEndTime(deltaObjectId);
 				if (e1 >= startTime && (s1 <= endTime || endTime == -1)) {
-					DataFileInfo dataFileInfo = new DataFileInfo(s1, e1, intervalFileNode.filePath);
+					DataFileInfo dataFileInfo = new DataFileInfo(s1, e1, intervalFileNode.getFilePath());
 					dataFileInfos.add(dataFileInfo);
 				}
 			}
@@ -786,28 +785,27 @@ public class FileNodeProcessor extends Processor {
 		return result;
 	}
 
-    private List<DataFileInfo> getDataFileInfoForIndex(Path path, List<IntervalFileNode> sourceFileNodes) {
-        String deltaObjectId = path.getDeltaObjectToString();
-        List<DataFileInfo> dataFileInfos = new ArrayList<>();
-        for (IntervalFileNode intervalFileNode : sourceFileNodes) {
-            if (intervalFileNode.isClosed()) {
-                if (intervalFileNode.getStartTime(deltaObjectId) != -1) {
-                    DataFileInfo dataFileInfo = new DataFileInfo(intervalFileNode.getStartTime
-                            (deltaObjectId),
-                            intervalFileNode.getEndTime(deltaObjectId), intervalFileNode.filePath);
-                    dataFileInfos.add(dataFileInfo);
-                }
-            }
-        }
-        return dataFileInfos;
-    }
+	private List<DataFileInfo> getDataFileInfoForIndex(Path path, List<IntervalFileNode> sourceFileNodes) {
+		String deltaObjectId = path.getDeltaObjectToString();
+		List<DataFileInfo> dataFileInfos = new ArrayList<>();
+		for (IntervalFileNode intervalFileNode : sourceFileNodes) {
+			if (intervalFileNode.isClosed()) {
+				if (intervalFileNode.getStartTime(deltaObjectId) != -1) {
+					DataFileInfo dataFileInfo = new DataFileInfo(intervalFileNode.getStartTime(deltaObjectId),
+							intervalFileNode.getEndTime(deltaObjectId), intervalFileNode.getFilePath());
+					dataFileInfos.add(dataFileInfo);
+				}
+			}
+		}
+		return dataFileInfos;
+	}
 
 	private void mergeIndex() throws FileNodeProcessorException {
 		try {
-			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
 				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
-						nameSpacePath, allIndexSeries);
+						getProcessorName(), allIndexSeries);
 				for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
 					String series = entry.getKey();
 					Path path = new Path(series);
@@ -831,10 +829,10 @@ public class FileNodeProcessor extends Processor {
 
 	private void switchMergeIndex() throws FileNodeProcessorException {
 		try {
-			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
 				LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
-						nameSpacePath, allIndexSeries);
+						getProcessorName(), allIndexSeries);
 				for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
 					String series = entry.getKey();
 					Path path = new Path(series);
@@ -1214,25 +1212,28 @@ public class FileNodeProcessor extends Processor {
 				/*
 				 * add index for close
 				 */
-                Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(nameSpacePath);
+				Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 
-                if (!allIndexSeries.isEmpty()) {
-                    LOGGER.info("Close buffer write file and append index file, the nameSpacePath is {}, the index " +
-                                    "type is {}, the index path is {}",
-                            nameSpacePath, "kvindex", allIndexSeries);
+				if (!allIndexSeries.isEmpty()) {
+					LOGGER.info(
+							"Close buffer write file and append index file, the nameSpacePath is {}, the index "
+									+ "type is {}, the index path is {}",
+							getProcessorName(), "kvindex", allIndexSeries);
 					for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
-                        Path path = new Path(entry.getKey());
-                        String deltaObjectId = path.getDeltaObjectToString();
+						Path path = new Path(entry.getKey());
+						String deltaObjectId = path.getDeltaObjectToString();
 						if (currentIntervalFileNode.getStartTime(deltaObjectId) != -1) {
-							DataFileInfo dataFileInfo = new DataFileInfo(currentIntervalFileNode.getStartTime(deltaObjectId),
-									currentIntervalFileNode.getEndTime(deltaObjectId), currentIntervalFileNode.filePath);
+							DataFileInfo dataFileInfo = new DataFileInfo(
+									currentIntervalFileNode.getStartTime(deltaObjectId),
+									currentIntervalFileNode.getEndTime(deltaObjectId),
+									currentIntervalFileNode.getFilePath());
 							for (IndexType indexType : entry.getValue())
 								IndexManager.getIndexInstance(indexType).build(path, dataFileInfo, null);
 						}
-                    }
+					}
 				}
 
-			} catch (BufferWriteProcessorException | PathErrorException | IndexManagerException  e) {
+			} catch (BufferWriteProcessorException | PathErrorException | IndexManagerException e) {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
 			}

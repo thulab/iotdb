@@ -177,7 +177,7 @@ public class FileNodeManager {
 				} else {
 					fileNodeProcessor.writeUnlock();
 				}
-				//add index check sum
+				// add index check sum
 				fileNodeProcessor.rebuildIndex();
 			}
 		} catch (PathErrorException | FileNodeManagerException | FileNodeProcessorException e) {
@@ -459,31 +459,23 @@ public class FileNodeManager {
 	}
 
 	/**
-	 *
-	 *
-	 * @param path : the column path
-	 * @param startTime : the startTime of index
-	 * @param endTime : the endTime of index
+	 * @param path
+	 *            : the column path
+	 * @param startTime
+	 *            : the startTime of index
+	 * @param endTime
+	 *            : the endTime of index
 	 *
 	 * @throws FileNodeManagerException
 	 */
 	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
-		FileNodeProcessor fileNodeProcessor = null;
 		String deltaObjectId = path.getDeltaObjectToString();
+		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		try {
-			do {
-				fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(deltaObjectId, false);
-			} while (fileNodeProcessor == null);
-			LOGGER.debug("Get the FileNodeProcessor: {}, query.", fileNodeProcessor.getNameSpacePath());
-
+			LOGGER.debug("Get the FileNodeProcessor: the filenode is {}, query.", fileNodeProcessor.getProcessorName());
 			return fileNodeProcessor.indexQuery(deltaObjectId, startTime, endTime);
-		} catch (LRUManagerException e) {
-			e.printStackTrace();
-			throw new FileNodeManagerException(e);
 		} finally {
-			if (fileNodeProcessor != null) {
-				fileNodeProcessor.readUnlock();
-			}
+			fileNodeProcessor.readUnlock();
 		}
 	}
 
@@ -769,7 +761,8 @@ public class FileNodeManager {
 
 		@Override
 		public void run() {
-			ExecutorService mergeExecutorPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			ExecutorService mergeExecutorPool = Executors
+					.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			for (String fileNodeNamespacePath : allChangedFileNodes) {
 				MergeOneProcessor mergeOneProcessorThread = new MergeOneProcessor(fileNodeNamespacePath);
 				mergeExecutorPool.execute(mergeOneProcessorThread);
