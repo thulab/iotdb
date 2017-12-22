@@ -68,12 +68,12 @@ public class OverflowProcessor extends Processor {
 		if (!dataDir.exists()) {
 			dataDir.mkdirs();
 			LOGGER.warn("The overflow processor data dir doesn't exists, and mkdir the dir {}",
-					dataDir.getAbsolutePath());
+					dataDir.getPath());
 		}
 		// overflow file name in the overflow data dir with the special
 		// nameSpacePath.overflow
 		fileName = nameSpacePath + storeFileName;
-		overflowOutputFilePath = new File(dataDir, fileName).getAbsolutePath();
+		overflowOutputFilePath = new File(dataDir, fileName).getPath();
 		overflowRetoreFilePath = overflowOutputFilePath + restoreFileName;
 
 		// read information from overflow restore file

@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.engine.lru;
+package cn.edu.tsinghua.iotdb.engine;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

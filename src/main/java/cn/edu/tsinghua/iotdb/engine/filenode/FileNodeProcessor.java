@@ -199,7 +199,7 @@ public class FileNodeProcessor extends Processor {
 			dataDir.mkdirs();
 			LOGGER.warn("The filenode processor data dir doesn't exists, and mkdir the dir {}", dataDirPath);
 		}
-		fileNodeRestoreFilePath = new File(dataDir, nameSpacePath + restoreFile).getAbsolutePath();
+		fileNodeRestoreFilePath = new File(dataDir, nameSpacePath + restoreFile).getPath();
 		try {
 			fileNodeProcessorStore = readStoreToDisk();
 		} catch (FileNodeProcessorException e) {
@@ -880,11 +880,11 @@ public class FileNodeProcessor extends Processor {
 				if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 					String bufferFileRestorePath = newFileNodes.get(newFileNodes.size() - 1).filePath + ".restore";
 					File bufferRestoreFile = new File(bufferwriteDir, bufferFileRestorePath);
-					bufferFiles.add(bufferRestoreFile.getAbsolutePath());
+					bufferFiles.add(bufferRestoreFile.getPath());
 				}
 
 				for (File file : bufferwriteDir.listFiles()) {
-					if (!bufferFiles.contains(file.getAbsolutePath())) {
+					if (!bufferFiles.contains(file.getPath())) {
 						file.delete();
 					}
 				}
@@ -1007,7 +1007,7 @@ public class FileNodeProcessor extends Processor {
 			dataDir.mkdirs();
 		}
 		File outputFile = new File(dataDir, fileName);
-		return outputFile.getAbsolutePath();
+		return outputFile.getPath();
 	}
 
 	private FileSchema constructFileSchema(String nameSpacePath) throws WriteProcessException {

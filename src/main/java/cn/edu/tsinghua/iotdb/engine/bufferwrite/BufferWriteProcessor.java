@@ -101,8 +101,8 @@ public class BufferWriteProcessor extends Processor {
 		}
 		File outputFile = new File(dataDir, fileName);
 		File restoreFile = new File(dataDir, restoreFileName);
-		bufferwriteRestoreFilePath = restoreFile.getAbsolutePath();
-		bufferwriteOutputFilePath = outputFile.getAbsolutePath();
+		bufferwriteRestoreFilePath = restoreFile.getPath();
+		bufferwriteOutputFilePath = outputFile.getPath();
 		// get the fileschema
 		try {
 			fileSchema = constructFileSchema(nameSpacePath);
@@ -124,7 +124,7 @@ public class BufferWriteProcessor extends Processor {
 				outputWriter = new TsRandomAccessFileWriter(outputFile);
 			} catch (IOException e) {
 				LOGGER.error("Construct the TSRandomAccessFileWriter error, the absolutePath is {}.",
-						outputFile.getAbsolutePath());
+						outputFile.getPath());
 				throw new BufferWriteProcessorException(e);
 			}
 
