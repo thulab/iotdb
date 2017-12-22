@@ -736,7 +736,7 @@ public class FileNodeManager {
 
 		@Override
 		public void run() {
-			ExecutorService mergeExecutorPool = Executors.newFixedThreadPool(TsFileDBConf.mergeConcurrentThreads);
+			ExecutorService mergeExecutorPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			for (String fileNodeNamespacePath : allChangedFileNodes) {
 				MergeOneProcessor mergeOneProcessorThread = new MergeOneProcessor(fileNodeNamespacePath);
 				mergeExecutorPool.execute(mergeOneProcessorThread);
