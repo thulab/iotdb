@@ -74,6 +74,7 @@ public class BufferWriteProcessor extends Processor {
 	// this is the bufferwrite file absolute path
 	private String bufferwriteRestoreFilePath;
 	private String bufferwriteOutputFilePath;
+	private String bufferwriterelativePath;
 
 	private boolean isNewProcessor = false;
 
@@ -81,9 +82,9 @@ public class BufferWriteProcessor extends Processor {
 	private Action bufferwriteCloseAction = null;
 	private Action filenodeFlushAction = null;
 
-	public BufferWriteProcessor(String nameSpacePath, String fileName, Map<String, Object> parameters)
+	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters)
 			throws BufferWriteProcessorException {
-		super(nameSpacePath);
+		super(processorName);
 
 		this.fileName = fileName;
 		String restoreFileName = fileName + restoreFile;
@@ -93,7 +94,7 @@ public class BufferWriteProcessor extends Processor {
 				&& bufferwriteDirPath.charAt(bufferwriteDirPath.length() - 1) != File.separatorChar) {
 			bufferwriteDirPath = bufferwriteDirPath + File.separatorChar;
 		}
-		String dataDirPath = bufferwriteDirPath + nameSpacePath;
+		String dataDirPath = bufferwriteDirPath + processorName;
 		File dataDir = new File(dataDirPath);
 		if (!dataDir.exists()) {
 			dataDir.mkdirs();
@@ -103,11 +104,12 @@ public class BufferWriteProcessor extends Processor {
 		File restoreFile = new File(dataDir, restoreFileName);
 		bufferwriteRestoreFilePath = restoreFile.getPath();
 		bufferwriteOutputFilePath = outputFile.getPath();
+		bufferwriterelativePath = processorName+File.separatorChar+fileName;
 		// get the fileschema
 		try {
-			fileSchema = constructFileSchema(nameSpacePath);
+			fileSchema = constructFileSchema(processorName);
 		} catch (PathErrorException | WriteProcessException e) {
-			LOGGER.error("Get the FileSchema error, the nameSpacePath is {}.", nameSpacePath);
+			LOGGER.error("Get the FileSchema error, the bufferwrite is {}.", processorName);
 			throw new BufferWriteProcessorException(e);
 		}
 		//
@@ -131,7 +133,7 @@ public class BufferWriteProcessor extends Processor {
 			try {
 				bufferIOWriter = new BufferWriteIOWriter(outputWriter);
 			} catch (IOException e) {
-				LOGGER.error("Get the BufferWriteIOWriter error, the nameSpacePath is {}.", nameSpacePath);
+				LOGGER.error("Get the BufferWriteIOWriter error, the bufferwrite is {}.", processorName);
 				throw new BufferWriteProcessorException(e);
 			}
 
@@ -197,7 +199,7 @@ public class BufferWriteProcessor extends Processor {
 			// API of kr
 			bufferIOWriter = new BufferWriteIOWriter(output, lastPosition, pair.right);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the bufferwrite io when recovery, the nameSpacePath is {}.", getProcessorName());
+			LOGGER.error("Can't get the bufferwrite io when recovery, the bufferwrite is {}.", getProcessorName());
 			throw new BufferWriteProcessorException(e);
 		}
 		try {
@@ -383,13 +385,13 @@ public class BufferWriteProcessor extends Processor {
 		return result;
 	}
 
-	private FileSchema constructFileSchema(String nameSpacePath) throws PathErrorException, WriteProcessException {
+	private FileSchema constructFileSchema(String processorName) throws PathErrorException, WriteProcessException {
 		List<ColumnSchema> columnSchemaList;
 
-		columnSchemaList = mManager.getSchemaForFileName(nameSpacePath);
+		columnSchemaList = mManager.getSchemaForFileName(processorName);
 		FileSchema fileSchema = null;
 		try {
-			fileSchema = getFileSchemaFromColumnSchema(columnSchemaList, nameSpacePath);
+			fileSchema = getFileSchemaFromColumnSchema(columnSchemaList, processorName);
 		} catch (WriteProcessException e) {
 			LOGGER.error("Get the FileSchema error, the list of ColumnSchema is {}.", columnSchemaList);
 			throw e;
@@ -397,7 +399,7 @@ public class BufferWriteProcessor extends Processor {
 		return fileSchema;
 	}
 
-	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String nameSpacePath)
+	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String processorName)
 			throws WriteProcessException {
 		JSONArray rowGroup = new JSONArray();
 		for (ColumnSchema col : schemaList) {
@@ -405,7 +407,7 @@ public class BufferWriteProcessor extends Processor {
 		}
 		JSONObject jsonSchema = new JSONObject();
 		jsonSchema.put(JsonFormatConstant.JSON_SCHEMA, rowGroup);
-		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, nameSpacePath);
+		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, processorName);
 		return new FileSchema(jsonSchema);
 	}
 
@@ -428,8 +430,8 @@ public class BufferWriteProcessor extends Processor {
 		return fileName;
 	}
 
-	public String getFileAbsolutePath() {
-		return bufferwriteOutputFilePath;
+	public String getFileRelativePath() {
+		return bufferwriterelativePath;
 	}
 
 	public boolean isNewProcessor() {
@@ -470,7 +472,7 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			recordWriter.write(tsRecord);
 		} catch (IOException | WriteProcessException e) {
-			LOGGER.error("Write TSRecord error, the TSRecord is {}, the nameSpacePath is {}.", tsRecord, getProcessorName());
+			LOGGER.error("Write TSRecord error, the TSRecord is {}, the bufferwrite is {}.", tsRecord, getProcessorName());
 			throw new BufferWriteProcessorException(e);
 		}
 	}
@@ -501,12 +503,12 @@ public class BufferWriteProcessor extends Processor {
 
 	@Override
 	public boolean canBeClosed() {
-		LOGGER.info("Check nameSpacePath {} can be closed or not.", getProcessorName());
+		LOGGER.info("Check bufferwrite {} can be closed or not.", getProcessorName());
 		if (flushState.isFlushing()) {
-			LOGGER.info("The nameSpacePath {} can't be closed.", getProcessorName());
+			LOGGER.info("The bufferwrite {} can't be closed.", getProcessorName());
 			return false;
 		} else {
-			LOGGER.info("The nameSpacePath {} can be closed.", getProcessorName());
+			LOGGER.info("The bufferwrite {} can be closed.", getProcessorName());
 			return true;
 		}
 	}
@@ -523,7 +525,7 @@ public class BufferWriteProcessor extends Processor {
 			// delete the restore for this bufferwrite processor
 			deleteRestoreFile();
 		} catch (IOException e) {
-			LOGGER.error("Close the bufferwrite processor error, the nameSpacePath is {}.", getProcessorName());
+			LOGGER.error("Close the bufferwrite processor error, the bufferwrite is {}.", getProcessorName());
 			throw new BufferWriteProcessorException(e);
 		} catch (Exception e) {
 			LOGGER.error("Close the bufferwrite processor failed, when call the action function.");

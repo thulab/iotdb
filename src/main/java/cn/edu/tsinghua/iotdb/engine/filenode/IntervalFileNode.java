@@ -1,10 +1,14 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 
 /**
  * This class is used to store one bufferwrite file status.<br>
@@ -16,19 +20,19 @@ import java.util.Set;
 public class IntervalFileNode implements Serializable {
 
 	private static final long serialVersionUID = -4309683416067212549L;
-
-	public String filePath;
+	private String relativePath;
 	public OverflowChangeType overflowChangeType;
 
 	private Map<String, Long> startTimeMap;
 	private Map<String, Long> endTimeMap;
 	private Set<String> mergeChanged = new HashSet<>();
+	private static String baseDir = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir;
 
 	public IntervalFileNode(Map<String, Long> startTimeMap, Map<String, Long> endTimeMap, OverflowChangeType type,
-			String filePath) {
+			String relativePath) {
 
 		this.overflowChangeType = type;
-		this.filePath = filePath;
+		this.relativePath = relativePath;
 
 		this.startTimeMap = startTimeMap;
 		this.endTimeMap = endTimeMap;
@@ -40,13 +44,13 @@ public class IntervalFileNode implements Serializable {
 	 * 
 	 * @param startTime
 	 * @param type
-	 * @param filePath
+	 * @param relativePath
 	 * @param errFilePath
 	 */
-	public IntervalFileNode(OverflowChangeType type, String filePath) {
+	public IntervalFileNode(OverflowChangeType type, String relativePath) {
 
 		this.overflowChangeType = type;
-		this.filePath = filePath;
+		this.relativePath = relativePath;
 
 		startTimeMap = new HashMap<>();
 		endTimeMap = new HashMap<>();
@@ -104,6 +108,23 @@ public class IntervalFileNode implements Serializable {
 		startTimeMap.remove(deltaObjectId);
 		endTimeMap.remove(deltaObjectId);
 	}
+	
+	public String getFilePath(){
+		if(relativePath==null){
+			return relativePath;
+		}
+		return new File(baseDir,relativePath).getPath();
+	}
+	
+	public void setRelativePath(String relativePath){
+		
+		this.relativePath = relativePath;
+	}
+	
+	public String getRelativePath(){
+
+		return relativePath;
+	}
 
 	public boolean checkEmpty() {
 
@@ -116,7 +137,7 @@ public class IntervalFileNode implements Serializable {
 		endTimeMap.clear();
 		mergeChanged.clear();
 		overflowChangeType = OverflowChangeType.NO_CHANGE;
-		filePath = null;
+		relativePath = null;
 	}
 
 	public void changeTypeToChanged(FileNodeProcessorStatus fileNodeProcessorState) {
@@ -153,7 +174,7 @@ public class IntervalFileNode implements Serializable {
 
 		Map<String, Long> startTimeMap = new HashMap<>(this.startTimeMap);
 		Map<String, Long> endTimeMap = new HashMap<>(this.endTimeMap);
-		return new IntervalFileNode(startTimeMap, endTimeMap, overflowChangeType, filePath);
+		return new IntervalFileNode(startTimeMap, endTimeMap, overflowChangeType, relativePath);
 	}
 
 	@Override
@@ -161,7 +182,7 @@ public class IntervalFileNode implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((endTimeMap == null) ? 0 : endTimeMap.hashCode());
-		result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+		result = prime * result + ((relativePath == null) ? 0 : relativePath.hashCode());
 		result = prime * result + ((overflowChangeType == null) ? 0 : overflowChangeType.hashCode());
 		result = prime * result + ((startTimeMap == null) ? 0 : startTimeMap.hashCode());
 		return result;
@@ -181,10 +202,10 @@ public class IntervalFileNode implements Serializable {
 				return false;
 		} else if (!endTimeMap.equals(other.endTimeMap))
 			return false;
-		if (filePath == null) {
-			if (other.filePath != null)
+		if (relativePath == null) {
+			if (other.relativePath != null)
 				return false;
-		} else if (!filePath.equals(other.filePath))
+		} else if (!relativePath.equals(other.relativePath))
 			return false;
 		if (overflowChangeType != other.overflowChangeType)
 			return false;
@@ -198,7 +219,7 @@ public class IntervalFileNode implements Serializable {
 
 	@Override
 	public String toString() {
-		return "IntervalFileNode [filePath=" + filePath + ", overflowChangeType=" + overflowChangeType
+		return "IntervalFileNode [relativePath=" + relativePath + ", overflowChangeType=" + overflowChangeType
 				+ ", startTimeMap=" + startTimeMap + ", endTimeMap=" + endTimeMap + ", mergeChanged=" + mergeChanged
 				+ "]";
 	}

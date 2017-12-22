@@ -383,7 +383,7 @@ public class FileNodeManagerTest {
 		File file3 = new File(dir, file3Name);
 		file0.mkdir();
 		fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
-				file3.getAbsolutePath());
+				file3Name);
 		newFileNodes.clear();
 		newFileNodes.add(fileNode);
 		fileNodeProcessorStore = new FileNodeProcessorStore(lastUpdateTimeMap, emptyIntervalFileNode, newFileNodes,
@@ -402,7 +402,7 @@ public class FileNodeManagerTest {
 			assertEquals(null, queryStructure.getBufferwriteDataInDisk());
 			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
 			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
-			assertEquals(file3.getAbsolutePath(), temp.filePath);
+			assertEquals(file3.getPath(), temp.getFilePath());
 			fileNodeManager.closeAll();
 		} catch (FileNodeManagerException e) {
 			e.printStackTrace();
@@ -660,7 +660,7 @@ public class FileNodeManagerTest {
 			queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
 			fileNodeManager.endQuery(deltaObjectId, token);
 			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
-			originFilePath = queryStructure.getBufferwriteDataInFiles().get(0).filePath;
+			originFilePath = queryStructure.getBufferwriteDataInFiles().get(0).getFilePath();
 			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
 			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 			assertEquals(100, temp.getStartTime(deltaObjectId));

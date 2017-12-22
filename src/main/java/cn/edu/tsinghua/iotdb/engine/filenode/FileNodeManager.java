@@ -242,9 +242,9 @@ public class FileNodeManager {
 				// Add a new interval file to newfilelist
 				if (bufferWriteProcessor.isNewProcessor()) {
 					bufferWriteProcessor.setNewProcessor(false);
-					String fileAbsolutePath = bufferWriteProcessor.getFileAbsolutePath();
+					String bufferwriteRelativePath = bufferWriteProcessor.getFileRelativePath();
 					try {
-						fileNodeProcessor.addIntervalFileNode(timestamp, fileAbsolutePath);
+						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteRelativePath);
 					} catch (Exception e) {
 						throw new FileNodeManagerException(e);
 					}
