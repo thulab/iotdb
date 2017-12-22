@@ -540,7 +540,7 @@ public class FileNodeManager {
 					}
 				}
 				processor.close();
-				// processorMap.remove(namespacePath);
+				processorMap.remove(namespacePath);
 			} catch (ProcessorException e) {
 				LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}.", namespacePath);
 				throw new FileNodeManagerException(e);
