@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.tsinghua.iotdb.index.IndexManager;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
@@ -175,6 +177,8 @@ public class FileNodeManager {
 				} else {
 					fileNodeProcessor.writeUnlock();
 				}
+				//add index check sum
+				fileNodeProcessor.rebuildIndex();
 			}
 		} catch (PathErrorException | FileNodeManagerException | FileNodeProcessorException e) {
 			LOGGER.error("Restore all FileNode failed, the reason is {}", e.getMessage());
@@ -451,6 +455,35 @@ public class FileNodeManager {
 			return queryStructure;
 		} finally {
 			fileNodeProcessor.readUnlock();
+		}
+	}
+
+	/**
+	 *
+	 *
+	 * @param path : the column path
+	 * @param startTime : the startTime of index
+	 * @param endTime : the endTime of index
+	 *
+	 * @throws FileNodeManagerException
+	 */
+	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = null;
+		String deltaObjectId = path.getDeltaObjectToString();
+		try {
+			do {
+				fileNodeProcessor = getProcessorWithDeltaObjectIdByLRU(deltaObjectId, false);
+			} while (fileNodeProcessor == null);
+			LOGGER.debug("Get the FileNodeProcessor: {}, query.", fileNodeProcessor.getNameSpacePath());
+
+			return fileNodeProcessor.indexQuery(deltaObjectId, startTime, endTime);
+		} catch (LRUManagerException e) {
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		} finally {
+			if (fileNodeProcessor != null) {
+				fileNodeProcessor.readUnlock();
+			}
 		}
 	}
 
