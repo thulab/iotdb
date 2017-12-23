@@ -370,30 +370,33 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			List<String> columns = new ArrayList<>();
 			// Restore column header of aggregate to func(column_name), only
 			// support single aggregate function for now
-			switch (((MultiQueryPlan)plan).getType()) {
+			if (plan.getOperatorType() == INDEXQUERY){
+				columns = ((IndexQueryPlan)plan).getColumnHeader();
+			} else{
+				switch (((MultiQueryPlan) plan).getType()) {
 				case QUERY:
 				case FILL:
 					for (Path p : paths) {
 						columns.add(p.getFullPath());
 					}
 					break;
-				case INDEXQUERY:
-					columns = ((IndexQueryPlan)plan).getColumnHeader();
-					break;
 				case GROUPBY:
 				case AGGREGATION:
 					List<String> aggregations = plan.getAggregations();
-					if(aggregations.size() != paths.size()) {
+					if (aggregations.size() != paths.size()) {
 						for (int i = 1; i < paths.size(); i++) {
 							aggregations.add(aggregations.get(0));
 						}
 					}
-					for(int i = 0; i < paths.size(); i++) {
+					for (int i = 0; i < paths.size(); i++) {
 						columns.add(aggregations.get(i) + "(" + paths.get(i).getFullPath() + ")");
 					}
 					break;
-				default: throw new TException("unsupported query type: " + ((MultiQueryPlan)plan).getType());
+				default:
+					throw new TException("unsupported query type: " + ((MultiQueryPlan) plan).getType());
+				}
 			}
+
 				
 			if (plan.getOperatorType() == INDEXQUERY) {
 				resp.setOperationType(INDEXQUERY.toString());
