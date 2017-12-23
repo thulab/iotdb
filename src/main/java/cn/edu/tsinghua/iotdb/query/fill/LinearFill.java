@@ -69,8 +69,20 @@ public class LinearFill extends IFill{
 
     @Override
     public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
-        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), queryTime - beforeRange, true);
-        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime + afterRange, true);
+        long beforeTime, afterTime;
+        if (beforeRange == -1) {
+            beforeTime = 0;
+        } else {
+            beforeTime = queryTime - beforeRange;
+        }
+        if (afterRange == -1) {
+            afterTime = Long.MAX_VALUE;
+        } else {
+            afterTime = queryTime + afterRange;
+        }
+
+        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
+        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), afterTime, true);
         SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
 
         String deltaObjectId = path.getDeltaObjectToString();

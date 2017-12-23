@@ -600,8 +600,10 @@ public class DaemonTest {
                 cnt ++;
             }
             Assert.assertEquals(1, cnt);
+            statement.close();
 
             // int32 previous fill test 2, previous fill has no value
+            statement = connection.createStatement();
             hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 103 fill(int32[previous, 5m])");
             Assert.assertTrue(hasResultSet);
             resultSet = statement.getResultSet();
@@ -612,8 +614,10 @@ public class DaemonTest {
                 cnt ++;
             }
             Assert.assertEquals(1, cnt);
+            statement.close();
 
             // int32 linear fill test 1, linear fill has value in queryTime
+            statement = connection.createStatement();
             hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time = 105 fill(int32[linear, 5m, 5m])");
             Assert.assertTrue(hasResultSet);
             resultSet = statement.getResultSet();
@@ -624,8 +628,10 @@ public class DaemonTest {
                 cnt ++;
             }
             Assert.assertEquals(1, cnt);
+            statement.close();
 
             // int32, float linear fill test , linear fill has value in [queryTime-beforeRange, queryTime+afterRange]
+            statement = connection.createStatement();
             hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 80 " +
                     "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
             Assert.assertTrue(hasResultSet);
@@ -638,8 +644,10 @@ public class DaemonTest {
                 cnt ++;
             }
             Assert.assertEquals(1, cnt);
+            statement.close();
 
             // float linear fill test, linear fill has no value in [queryTime-beforeRange, queryTime]
+            statement = connection.createStatement();
             hasResultSet = statement.execute("select s1,s2 from root.vehicle.d0 where time = 1001 " +
                     "fill(int64[linear, 5m, 5m], float[linear, 100ms, 1000ms])");
             Assert.assertTrue(hasResultSet);
@@ -652,8 +660,8 @@ public class DaemonTest {
                 cnt ++;
             }
             Assert.assertEquals(1, cnt);
-
             statement.close();
+
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

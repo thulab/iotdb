@@ -66,7 +66,7 @@ public class FillProcessor {
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;
 
         long offset = valueReader.getFileOffset();
-        while ((offset - valueReader.getFileOffset()) <= valueReader.totalSize) {
+        while ((offset - valueReader.getFileOffset()) < valueReader.totalSize) {
             ByteArrayInputStream bis = valueReader.initBAISForOnePage(offset);
             long lastAvailable = bis.available();
 
@@ -107,6 +107,7 @@ public class FillProcessor {
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
@@ -139,6 +140,7 @@ public class FillProcessor {
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
@@ -171,6 +173,7 @@ public class FillProcessor {
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
@@ -203,6 +206,7 @@ public class FillProcessor {
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
@@ -235,6 +239,7 @@ public class FillProcessor {
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
@@ -267,6 +272,7 @@ public class FillProcessor {
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, curTime);
 
                             // TODO this branch need to be covered by test case
@@ -430,7 +436,7 @@ public class FillProcessor {
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;
 
         long offset = valueReader.getFileOffset();
-        while ((offset - valueReader.getFileOffset()) <= valueReader.totalSize) {
+        while ((offset - valueReader.getFileOffset()) < valueReader.totalSize) {
             ByteArrayInputStream bis = valueReader.initBAISForOnePage(offset);
             long lastAvailable = bis.available();
 
@@ -482,6 +488,7 @@ public class FillProcessor {
                                     && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
                                 v = updateTrue.getInt(updateTrue.curIdx);
                             }
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, time);
                             result.setInt(0, v);
 
@@ -522,6 +529,7 @@ public class FillProcessor {
                                     && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
                                 v = updateTrue.getLong(updateTrue.curIdx);
                             }
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, time);
                             result.setLong(0, v);
 
@@ -561,6 +569,7 @@ public class FillProcessor {
                                     && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
                                 v = updateTrue.getFloat(updateTrue.curIdx);
                             }
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, time);
                             result.setFloat(0, v);
 
@@ -600,6 +609,7 @@ public class FillProcessor {
                                     && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
                                 v = updateTrue.getDouble(updateTrue.curIdx);
                             }
+                            result.timeLength = result.valueLength = 1;
                             result.setTime(0, time);
                             result.setDouble(0, v);
 

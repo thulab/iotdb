@@ -34,11 +34,11 @@ public class LargeDataTest {
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
-    private final String d1s0 = "root.vehicle.d1.s0";
-
     private final String d0s2 = "root.vehicle.d0.s2";
     private final String d0s3 = "root.vehicle.d0.s3";
     private final String d0s4 = "root.vehicle.d0.s4";
+
+    private final String d1s0 = "root.vehicle.d1.s0";
     private final String d1s1 = "root.vehicle.d1.s1";
     
     private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
@@ -109,18 +109,20 @@ public class LargeDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            selectAllTest();
-            aggregationTest();
-            groupByTest();
-            allNullSeriesAggregationTest();
+//            selectAllTest();
+//            aggregationTest();
+//            groupByTest();
+//            allNullSeriesAggregationTest();
+//
+//            allNullSeriesGroupByTest();
+//
+//            negativeValueTest();
+//
+//            fixBigGroupByClassFormNumberTest();
+//
+//            seriesTimeDigestTest();
 
-            allNullSeriesGroupByTest();
-
-            negativeValueTest();
-
-            fixBigGroupByClassFormNumberTest();
-
-            seriesTimeDigestTest();
+            fillTest();
 
             connection.close();
         }
@@ -485,6 +487,74 @@ public class LargeDataTest {
             }
             //System.out.println(cnt);
             assertEquals(3012, cnt);
+            statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void fillTest() throws SQLException, ClassNotFoundException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet;
+            ResultSet resultSet;
+            int cnt;
+
+//            // null test
+//            hasResultSet = statement.execute("select s0,s1,s2,s3,s4 from root.vehicle.d0 where time = 199 fill(int32[previous, 5m])");
+//            Assert.assertTrue(hasResultSet);
+//            resultSet = statement.getResultSet();
+//            cnt = 0;
+//            while (resultSet.next()) {
+//                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
+//                        + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d0s4);
+//                assertEquals("199,null,null,null,null,null", ans);
+//                cnt ++;
+//            }
+//            Assert.assertEquals(1, cnt);
+//            statement.close();
+//
+//            // has value in queryTime
+//            statement = connection.createStatement();
+//            hasResultSet = statement.execute("select s0,s1,s2,s3,s4 from root.vehicle.d0 where time = 12000 fill(int32[previous, 5m])");
+//            Assert.assertTrue(hasResultSet);
+//            resultSet = statement.getResultSet();
+//            cnt = 0;
+//            while (resultSet.next()) {
+//                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
+//                        + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d0s4);
+//                assertEquals("12000,0,15,10.0,A,null", ans);
+//                //System.out.println("=====" + ans);
+//                cnt ++;
+//            }
+//            Assert.assertEquals(1, cnt);
+//            statement.close();
+
+            // doesn't have value in queryTime
+            statement = connection.createStatement();
+            hasResultSet = statement.execute("select s0,s1,s2,s3,s4 from root.vehicle.d0 " +
+                    "where time = 24001 fill(int32[previous, 5m], int64[linear, 100ms, 100ms]," +
+                    "float[linear, 100ms, 10m], double[previous, 10m])");
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
+                        + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d0s4);
+                assertEquals("24001,59,null,12.960541,null,null", ans);
+                System.out.println("=====" + ans);
+                cnt ++;
+            }
+            Assert.assertEquals(1, cnt);
             statement.close();
 
         } catch (Exception e) {

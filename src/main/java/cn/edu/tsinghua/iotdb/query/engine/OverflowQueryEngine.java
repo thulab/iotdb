@@ -92,7 +92,7 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-        
+
         List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
 
         // to remove duplicate queries, such as select count(s0),count(s0).

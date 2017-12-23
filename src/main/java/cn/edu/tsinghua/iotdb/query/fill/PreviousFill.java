@@ -54,6 +54,9 @@ public class PreviousFill extends IFill {
 
     @Override
     public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
+        if (beforeRange == -1) {
+            beforeRange = queryTime;
+        }
 
         SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), queryTime - beforeRange, true);
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
