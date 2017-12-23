@@ -42,7 +42,7 @@ public class OverflowFileDeserialization {
         String folderName = "/Users/beyyes/Desktop/overflow";
 
         File dirFile = new File(folderName);
-        if(!dirFile.exists() || (!dirFile.isDirectory())){
+        if (!dirFile.exists() || (!dirFile.isDirectory())) {
             LOGGER.error("the given folder name is wrong");
             return;
         }
@@ -65,7 +65,7 @@ public class OverflowFileDeserialization {
                             overflowNumber += tmpNumber;
                         }
                     }
-                } else if(ofFiles.length == 3) {
+                } else if (ofFiles.length == 3) {
                     for (File f : ofFiles) {
                         if (f.getAbsolutePath().endsWith(".merge")) {
                             long tmpNumber = deserialization.getOverflowRowNumbersForMergeFile(f.getAbsolutePath());
@@ -73,7 +73,6 @@ public class OverflowFileDeserialization {
                             overflowNumber += tmpNumber;
                         }
                     }
-                    String mergeFileName = folderName + "/root.dt.wf632815.type6/root.dt.wf632815.type6.overflow.merge";
                 }
             }
         }
@@ -81,10 +80,10 @@ public class OverflowFileDeserialization {
     }
 
 
-
     /**
      * This method is used to calculate the overflow write size using the overflow.merge file.
      *
+     * @param ofMergeFileName overflow file name which ends with '.merge'
      * @return the number of overflow write rows
      * @throws IOException file read error
      */
@@ -107,88 +106,77 @@ public class OverflowFileDeserialization {
 
     /**
      * This method is used to calculate the overflow write size using the overflow.restore file.
-     *
+     * <p>
      * <p> Note that: this estimation may be not accurate.
      *
      * @return the number of overflow write rows
      * @throws IOException file read error
      */
     private long getOverflowRowNumbersForRestoreFile(String ofRestoreFileName) throws IOException {
-        // OverflowReadWriter overflowReadWriter = new OverflowReadWriter(fileName);
         OverflowStoreStruct struct = getLastPos(ofRestoreFileName);
 
         long rowNumber = 0;
         for (OFRowGroupListMetadata rowGroupMetadata : struct.ofFileMetadata.getRowGroupLists()) {
-            //System.out.println("deltaObjectId : " + rowGroupMetadata.getDeltaObjectId());
-            for (OFSeriesListMetadata oFSeriesListMetadata: rowGroupMetadata.getSeriesLists()) {
-                //System.out.println("measurementId : " + oFSeriesListMetadata.getMeasurementId());
+            for (OFSeriesListMetadata oFSeriesListMetadata : rowGroupMetadata.getSeriesLists()) {
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : oFSeriesListMetadata.getMetaDatas())
                     rowNumber += timeSeriesChunkMetaData.getNumRows();
-                    //System.out.println(timeSeriesChunkMetaData.toString());
             }
-            //System.out.println();
         }
 
         return rowNumber;
     }
 
-    private OverflowStoreStruct getLastPos(String overflowRetoreFilePath) {
-        synchronized (overflowRetoreFilePath) {
+    private OverflowStoreStruct getLastPos(String overflowRetoreFilePath) throws FileNotFoundException {
 
-            File overflowRestoreFile = new File(overflowRetoreFilePath);
-            if (!overflowRestoreFile.exists()) {
-                LOGGER.error("file not exist");
+        File overflowRestoreFile = new File(overflowRetoreFilePath);
+        if (!overflowRestoreFile.exists()) {
+            LOGGER.error("file not exist");
+        }
+        byte[] buff = new byte[8];
+        FileInputStream fileInputStream = fileInputStream = new FileInputStream(overflowRestoreFile);
+        int off = 0;
+        int len = buff.length - off;
+        cn.edu.tsinghua.iotdb.engine.overflow.thrift.OFFileMetadata thriftfileMetadata = null;
+        try {
+            do {
+                int num = fileInputStream.read(buff, off, len);
+                off = off + num;
+                len = len - num;
+            } while (len > 0);
+            long lastOverflowFilePosition = BytesUtils.bytesToLong(buff);
+
+            if (lastOverflowFilePosition != -1) {
+                return new OverflowStoreStruct(lastOverflowFilePosition, -1, null);
             }
-            byte[] buff = new byte[8];
-            FileInputStream fileInputStream = null;
-            try {
-                fileInputStream = new FileInputStream(overflowRestoreFile);
-            } catch (FileNotFoundException e) {
-                LOGGER.error("The overflow restore file is not found, the file path is {}", overflowRetoreFilePath);
-            }
-            int off = 0;
-            int len = buff.length - off;
-            cn.edu.tsinghua.iotdb.engine.overflow.thrift.OFFileMetadata thriftfileMetadata = null;
-            try {
-                do {
-                    int num = fileInputStream.read(buff, off, len);
-                    off = off + num;
-                    len = len - num;
-                } while (len > 0);
-                long lastOverflowFilePosition = BytesUtils.bytesToLong(buff);
 
-                if (lastOverflowFilePosition != -1) {
-                    return new OverflowStoreStruct(lastOverflowFilePosition, -1, null);
-                }
+            off = 0;
+            len = buff.length - off;
+            do {
+                int num = fileInputStream.read(buff, off, len);
+                off = off + num;
+                len = len - num;
+            } while (len > 0);
 
-                off = 0;
-                len = buff.length - off;
-                do {
-                    int num = fileInputStream.read(buff, off, len);
-                    off = off + num;
-                    len = len - num;
-                } while (len > 0);
-
-                long lastOverflowRowGroupPosition = BytesUtils.bytesToLong(buff);
-                thriftfileMetadata = OverflowReadWriteThriftFormatUtils.readOFFileMetaData(fileInputStream);
-                TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
-                OFFileMetadata ofFileMetadata = metadataConverter.toOFFileMetadata(thriftfileMetadata);
-                return new OverflowStoreStruct(lastOverflowFilePosition, lastOverflowRowGroupPosition, ofFileMetadata);
-            } catch (IOException e) {
-                LOGGER.error(
-                        "Read the data: lastOverflowFilePostion, lastOverflowRowGroupPostion, offilemetadata error");
-            } finally {
-                if (fileInputStream != null) {
-                    try {
-                        fileInputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            long lastOverflowRowGroupPosition = BytesUtils.bytesToLong(buff);
+            thriftfileMetadata = OverflowReadWriteThriftFormatUtils.readOFFileMetaData(fileInputStream);
+            TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
+            OFFileMetadata ofFileMetadata = metadataConverter.toOFFileMetadata(thriftfileMetadata);
+            return new OverflowStoreStruct(lastOverflowFilePosition, lastOverflowRowGroupPosition, ofFileMetadata);
+        } catch (IOException e) {
+            LOGGER.error(
+                    "Read the data: lastOverflowFilePostion, lastOverflowRowGroupPostion, offilemetadata error");
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
 
         return null;
+
     }
 
     private class OverflowStoreStruct {
@@ -198,7 +186,6 @@ public class OverflowFileDeserialization {
 
         public OverflowStoreStruct(long lastOverflowFilePosition, long lastOverflowRowGroupPosition,
                                    OFFileMetadata ofFileMetadata) {
-            super();
             this.lastOverflowFilePosition = lastOverflowFilePosition;
             this.lastOverflowRowGroupPosition = lastOverflowRowGroupPosition;
             this.ofFileMetadata = ofFileMetadata;
