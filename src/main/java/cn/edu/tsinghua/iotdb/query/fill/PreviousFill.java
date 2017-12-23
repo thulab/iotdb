@@ -26,12 +26,6 @@ public class PreviousFill extends IFill {
 
     private DynamicOneColumnData result;
 
-    public PreviousFill(TSDataType dataType, long queryTime, long beforeRange) {
-        super(dataType, queryTime);
-        this.beforeRange = beforeRange;
-        result = new DynamicOneColumnData(dataType, true, true);
-    }
-
     public PreviousFill(Path path, TSDataType dataType, long queryTime, long beforeRange) {
         super(dataType, queryTime);
         this.path = path;

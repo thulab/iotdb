@@ -31,13 +31,6 @@ public class LinearFill extends IFill{
         this.afterRange = afterRange;
     }
 
-    public LinearFill(TSDataType dataType, long queryTime, long beforeRange, long afterRange) {
-        super(dataType, queryTime);
-        this.beforeRange = beforeRange;
-        this.afterRange = afterRange;
-        result = new DynamicOneColumnData(dataType, true, true);
-    }
-
     public LinearFill(Path path, TSDataType dataType, long queryTime, long beforeRange, long afterRange) {
         super(dataType, queryTime);
         this.path = path;
