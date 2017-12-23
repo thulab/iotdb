@@ -69,8 +69,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 	 */
 	// TODO: regularize the stat path
 	private final String fakeDeltaName = MonitorConstants.getStatPrefix()
-			+ "write.global/"
-			+ FileNodeManager.class.getSimpleName();
+			+ "write.global";
 
 	// There is no need to add concurrently
 	private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
