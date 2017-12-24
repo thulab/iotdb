@@ -79,6 +79,7 @@ public class FileNodeProcessor extends Processor {
 
 	private static final String restoreFile = ".restore";
 	private String fileNodeRestoreFilePath = null;
+	private String baseDirPath;
 
 	private BufferWriteProcessor bufferWriteProcessor = null;
 	private OverflowProcessor overflowProcessor = null;
@@ -197,11 +198,11 @@ public class FileNodeProcessor extends Processor {
 				&& fileNodeDirPath.charAt(fileNodeDirPath.length() - 1) != File.separatorChar) {
 			fileNodeDirPath = fileNodeDirPath + File.separatorChar;
 		}
-		String dataDirPath = fileNodeDirPath + processorName;
-		File dataDir = new File(dataDirPath);
+		this.baseDirPath = fileNodeDirPath + processorName;
+		File dataDir = new File(this.baseDirPath);
 		if (!dataDir.exists()) {
 			dataDir.mkdirs();
-			LOGGER.warn("The filenode processor data dir doesn't exists, and mkdir the dir {}", dataDirPath);
+			LOGGER.warn("The filenode processor data dir doesn't exists, and mkdir the dir {}", baseDirPath);
 		}
 		fileNodeRestoreFilePath = new File(dataDir, processorName + restoreFile).getPath();
 		try {

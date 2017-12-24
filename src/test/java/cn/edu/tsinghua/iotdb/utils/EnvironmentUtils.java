@@ -43,7 +43,7 @@ public class EnvironmentUtils {
 				System.exit(1);
 			}
 		} catch (FileNodeManagerException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		}
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
