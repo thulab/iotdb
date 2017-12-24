@@ -90,15 +90,17 @@ public class LinearFill extends IFill{
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-        DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+        if (updateTrue == null) {
+            updateTrue = new DynamicOneColumnData(dataType, true);
+        }
         SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
         recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                insertTrue, updateTrue, updateFalse,
+                insertTrue, updateTrue, null,
                 overflowTimeFilter, null, null, dataType);
 
         recordReader.getLinearFillResult(result, deltaObjectId, measurementId,
-                updateTrue, updateFalse, recordReader.insertAllData, overflowTimeFilter, queryTime - beforeRange, queryTime, queryTime + afterRange);
+                updateTrue, recordReader.insertAllData, overflowTimeFilter, beforeTime, queryTime, afterTime);
 
         return result;
     }

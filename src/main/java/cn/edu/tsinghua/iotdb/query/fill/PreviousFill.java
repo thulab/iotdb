@@ -48,11 +48,14 @@ public class PreviousFill extends IFill {
 
     @Override
     public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
+        long beforeTime;
         if (beforeRange == -1) {
-            beforeRange = queryTime;
+            beforeTime = 0;
+        } else {
+            beforeTime = queryTime - beforeRange;
         }
 
-        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), queryTime - beforeRange, true);
+        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
         SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
 
@@ -68,15 +71,17 @@ public class PreviousFill extends IFill {
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-        DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+        if (updateTrue == null) {
+            updateTrue = new DynamicOneColumnData(dataType, true);
+        }
         SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
         recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                insertTrue, updateTrue, updateFalse,
+                insertTrue, updateTrue, null,
                 overflowTimeFilter, null, null, dataType);
 
         recordReader.getPreviousFillResult(result, deltaObjectId, measurementId,
-                updateTrue, updateFalse, recordReader.insertAllData, overflowTimeFilter, queryTime - beforeRange, queryTime);
+                updateTrue, recordReader.insertAllData, overflowTimeFilter, beforeTime, queryTime);
 
         return result;
     }

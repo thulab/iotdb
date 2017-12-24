@@ -35,20 +35,18 @@ public class FillProcessor {
     /**
      * Return false if we haven't get the correct previous value before queryTime.
      *
-     * @param result
-     * @param valueReader
-     * @param beforeTime
-     * @param queryTime
-     * @param timeFilter
-     * @param updateTrue
-     * @param updateFalse Note that, updateFalse is got from value filter, in fill function, there only have time filter,
-     *                    so updateFalse is useless
-     * @return
-     * @throws IOException
+     * @param result fill result data
+     * @param valueReader stores data of series in a rowgroup
+     * @param beforeTime before time
+     * @param queryTime query time
+     * @param timeFilter time filter
+     * @param updateTrue overflow update operation
+     * @return false if we haven't get the correct previous value before queryTime.
+     * @throws IOException TsFile read error
      */
     public static boolean getPreviousFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
                                                       long beforeTime, long queryTime, SingleSeriesFilterExpression timeFilter,
-                                                      DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse)
+                                                      DynamicOneColumnData updateTrue)
             throws IOException {
 
         if (beforeTime > valueReader.getEndTime()) {
@@ -76,7 +74,6 @@ public class FillProcessor {
             long pageMinTime = pageHeader.data_page_header.min_timestamp;
             long pageMaxTime = pageHeader.data_page_header.max_timestamp;
 
-            // TODO this branch need to be covered by test case
             if (beforeTime > pageMaxTime) {
                 pageReader.skipCurrentPage();
                 offset += lastAvailable - bis.available();
@@ -101,24 +98,29 @@ public class FillProcessor {
 
                         int v = valueReader.decoder.readInt(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
+                        // this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, curTime);
 
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
                             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= curTime) {
                                 v = updateTrue.getInt(updateTrue.curIdx);
                             }
-                            result.setInt(0, v);
+
+                            if (result.timeLength == 0) {
+                                result.putTime(curTime);
+                                result.putInt(v);
+                            } else {
+                                result.setTime(0, curTime);
+                                result.setInt(0, v);
+                            }
+
                             if (curTime == queryTime) {
                                 return true;
                             }
@@ -134,24 +136,28 @@ public class FillProcessor {
 
                         long v = valueReader.decoder.readLong(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, curTime);
 
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
                             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= curTime) {
                                 v = updateTrue.getLong(updateTrue.curIdx);
                             }
-                            result.setLong(0, v);
+
+                            if (result.timeLength == 0) {
+                                result.putTime(curTime);
+                                result.putLong(v);
+                            } else {
+                                result.setTime(0, curTime);
+                                result.setLong(0, v);
+                            }
+
                             if (curTime == queryTime) {
                                 return true;
                             }
@@ -167,24 +173,28 @@ public class FillProcessor {
 
                         float v = valueReader.decoder.readFloat(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, curTime);
 
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
                             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= curTime) {
                                 v = updateTrue.getFloat(updateTrue.curIdx);
                             }
-                            result.setFloat(0, v);
+
+                            if (result.timeLength == 0) {
+                                result.putTime(curTime);
+                                result.putFloat(v);
+                            } else {
+                                result.setTime(0, curTime);
+                                result.setFloat(0, v);
+                            }
+
                             if (curTime == queryTime) {
                                 return true;
                             }
@@ -200,24 +210,28 @@ public class FillProcessor {
 
                         double v = valueReader.decoder.readDouble(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, curTime);
 
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
                             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= curTime) {
                                 v = updateTrue.getDouble(updateTrue.curIdx);
                             }
-                            result.setDouble(0, v);
+
+                            if (result.timeLength == 0) {
+                                result.putTime(curTime);
+                                result.putDouble(v);
+                            } else {
+                                result.setTime(0, curTime);
+                                result.setDouble(0, v);
+                            }
+
                             if (curTime == queryTime) {
                                 return true;
                             }
@@ -233,24 +247,28 @@ public class FillProcessor {
 
                         boolean v = valueReader.decoder.readBoolean(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, curTime);
 
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
                             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= curTime) {
                                 v = updateTrue.getBoolean(updateTrue.curIdx);
                             }
-                            result.setBoolean(0, v);
+
+                            if (result.timeLength == 0) {
+                                result.putTime(curTime);
+                                result.putBoolean(v);
+                            } else {
+                                result.setTime(0, curTime);
+                                result.setBoolean(0, v);
+                            }
+
                             if (curTime == queryTime) {
                                 return true;
                             }
@@ -266,24 +284,28 @@ public class FillProcessor {
 
                         Binary v = valueReader.decoder.readBinary(page);
 
-                        // TODO this branch need to be covered by test case for overflow delete operation
                         if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
                             continue;
                         }
 
                         if (curTime >= beforeTime && curTime <= queryTime) {
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, curTime);
 
-                            // TODO this branch need to be covered by test case
                             while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < curTime) {
                                 updateTrue.curIdx ++;
                             }
                             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= curTime
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= curTime) {
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= curTime) {
                                 v = updateTrue.getBinary(updateTrue.curIdx);
                             }
-                            result.setBinary(0, v);
+
+                            if (result.timeLength == 0) {
+                                result.putTime(curTime);
+                                result.putBinary(v);
+                            } else {
+                                result.setTime(0, curTime);
+                                result.setBinary(0, v);
+                            }
+
                             if (curTime == queryTime) {
                                 return true;
                             }
@@ -302,85 +324,94 @@ public class FillProcessor {
         return false;
     }
 
+    /**
+     * Get the previous  fill result using the data in <code>InsertDynamicData</code>
+     *
+     * @param result previous fill result
+     * @param insertMemoryData see <code>InsertDynamicData</code>
+     * @param beforeTime fill before time
+     * @param queryTime fill query time
+     * @throws IOException file stream read error
+     */
     public static void getPreviousFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
                                                         long beforeTime, long queryTime)
             throws IOException {
 
         while (insertMemoryData.hasInsertData()) {
-            long time = insertMemoryData.getCurrentMinTime();
-            if (time > queryTime) {
+            long currentTime = insertMemoryData.getCurrentMinTime();
+            if (currentTime > queryTime) {
                 break;
             }
-            if (time >= beforeTime && time <= queryTime) {
+            if (currentTime >= beforeTime && currentTime <= queryTime) {
                 switch (result.dataType) {
                     case INT32:
                         if (result.timeLength == 0) {
-                            result.putTime(time);
+                            result.putTime(currentTime);
                             result.putInt(insertMemoryData.getCurrentIntValue());
                         } else {
                             long existTime = result.getTime(0);
-                            if (existTime < time) {
-                                result.setTime(0, time);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setInt(0, insertMemoryData.getCurrentIntValue());
                             }
                         }
                         break;
                     case INT64:
                         if (result.timeLength == 0) {
-                            result.putTime(time);
+                            result.putTime(currentTime);
                             result.putLong(insertMemoryData.getCurrentLongValue());
                         } else {
                             long existTime = result.getTime(0);
-                            if (existTime < time) {
-                                result.setTime(0, time);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setLong(0, insertMemoryData.getCurrentLongValue());
                             }
                         }
                         break;
                     case FLOAT:
                         if (result.timeLength == 0) {
-                            result.putTime(time);
+                            result.putTime(currentTime);
                             result.putFloat(insertMemoryData.getCurrentFloatValue());
                         } else {
                             long existTime = result.getTime(0);
-                            if (existTime < time) {
-                                result.setTime(0, time);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setFloat(0, insertMemoryData.getCurrentFloatValue());
                             }
                         }
                         break;
                     case DOUBLE:
                         if (result.timeLength == 0) {
-                            result.putTime(time);
+                            result.putTime(currentTime);
                             result.putDouble(insertMemoryData.getCurrentDoubleValue());
                         } else {
                             long existTime = result.getTime(0);
-                            if (existTime < time) {
-                                result.setTime(0, time);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
                             }
                         }
                         break;
                     case BOOLEAN:
                         if (result.timeLength == 0) {
-                            result.putTime(time);
+                            result.putTime(currentTime);
                             result.putBoolean(insertMemoryData.getCurrentBooleanValue());
                         } else {
                             long existTime = result.getTime(0);
-                            if (existTime < time) {
-                                result.setTime(0, time);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setBoolean(0, insertMemoryData.getCurrentBooleanValue());
                             }
                         }
                         break;
                     case TEXT:
                         if (result.timeLength == 0) {
-                            result.putTime(time);
+                            result.putTime(currentTime);
                             result.putBinary(insertMemoryData.getCurrentBinaryValue());
                         } else {
                             long existTime = result.getTime(0);
-                            if (existTime < time) {
-                                result.setTime(0, time);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setBinary(0, insertMemoryData.getCurrentBinaryValue());
                             }
                         }
@@ -403,20 +434,19 @@ public class FillProcessor {
      * <p> If the function returns true, the <code>RowGroupReader</code> traverse invoked in {@code RecordReader.getLinearFillResult}
      * is over.
      *
-     * @param result
-     * @param valueReader
-     * @param beforeTime
-     * @param queryTime
-     * @param afterTime
-     * @param timeFilter
-     * @param updateTrue
-     * @param updateFalse useless
-     * @return
-     * @throws IOException
+     * @param result linear fill result
+     * @param valueReader stores the data of series in a rowgroup
+     * @param beforeTime linear fill begin time
+     * @param queryTime linear fill begin time
+     * @param afterTime linear fill begin time
+     * @param timeFilter time filter
+     * @param updateTrue overflow update operation
+     * @return see above
+     * @throws IOException TsFile read error
      */
     public static boolean getLinearFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
                                                     long beforeTime, long queryTime, long afterTime, SingleSeriesFilterExpression timeFilter,
-                                                    DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse)
+                                                    DynamicOneColumnData updateTrue)
             throws IOException {
 
         if (beforeTime > valueReader.getEndTime()) {
@@ -469,163 +499,200 @@ public class FillProcessor {
             switch (dataType) {
                 case INT32:
                     while (valueReader.decoder.hasNext(page)) {
-                        long time = timestamps[timeIdx];
+                        long currentTime = timestamps[timeIdx];
                         timeIdx++;
 
                         int v = valueReader.decoder.readInt(page);
 
                         // TODO this branch need to be covered by test case for overflow delete operation
-                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
                             continue;
                         }
 
-                        if (time >= beforeTime && time <= queryTime) {
+                        if (currentTime >= beforeTime && currentTime <= queryTime) {
                             // TODO this branch need to be covered by test case
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getInt(updateTrue.curIdx);
                             }
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, time);
-                            result.setInt(0, v);
 
-                            if (time == queryTime) {
+                            if (result.timeLength == 0) {
+                                result.putTime(currentTime);
+                                result.putInt(v);
+                            } else {
+                                result.setTime(0, currentTime);
+                                result.setInt(0, v);
+                            }
+
+                            if (currentTime == queryTime) {
                                 return true;
                             }
-                        } else if (time > queryTime){
+                        } else if (currentTime > queryTime){
                             // TODO this branch need to be covered by test case
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getInt(updateTrue.curIdx);
                             }
-                            result.setTime(1, time);
-                            result.setInt(1, v);
+
+                            if (result.timeLength <= 1) {
+                                result.putTime(currentTime);
+                                result.putInt(v);
+                            } else  {
+                                LOG.error("linear fill unreachable");
+                            }
                             return true;
                         }
                     }
                     break;
                 case INT64:
                     while (valueReader.decoder.hasNext(page)) {
-                        long time = timestamps[timeIdx];
+                        long currentTime = timestamps[timeIdx];
                         timeIdx++;
 
                         long v = valueReader.decoder.readLong(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
                             continue;
                         }
 
-                        if (time >= beforeTime && time <= queryTime) {
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                        if (currentTime >= beforeTime && currentTime <= queryTime) {
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getLong(updateTrue.curIdx);
                             }
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, time);
-                            result.setLong(0, v);
+                            if (result.timeLength == 0) {
+                                result.putTime(currentTime);
+                                result.putLong(v);
+                            } else {
+                                result.setTime(0, currentTime);
+                                result.setLong(0, v);
+                            }
 
-                            if (time == queryTime) {
+                            if (currentTime == queryTime) {
                                 return true;
                             }
-                        } else if (time > queryTime){
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                        } else if (currentTime > queryTime){
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getLong(updateTrue.curIdx);
                             }
-                            result.setTime(1, time);
-                            result.setLong(1, v);
+
+                            if (result.timeLength <= 1) {
+                                result.putTime(currentTime);
+                                result.putLong(v);
+                            } else  {
+                                LOG.error("linear fill unreachable");
+                            }
                             return true;
                         }
                     }
                     break;
                 case FLOAT:
                     while (valueReader.decoder.hasNext(page)) {
-                        long time = timestamps[timeIdx];
+                        long currentTime = timestamps[timeIdx];
                         timeIdx++;
 
                         float v = valueReader.decoder.readFloat(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
                             continue;
                         }
 
-                        if (time >= beforeTime && time <= queryTime) {
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                        if (currentTime >= beforeTime && currentTime <= queryTime) {
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getFloat(updateTrue.curIdx);
                             }
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, time);
-                            result.setFloat(0, v);
+                            if (result.timeLength == 0) {
+                                result.putTime(currentTime);
+                                result.putFloat(v);
+                            } else {
+                                result.setTime(0, currentTime);
+                                result.setFloat(0, v);
+                            }
 
-                            if (time == queryTime) {
+                            if (currentTime == queryTime) {
                                 return true;
                             }
-                        } else if (time > queryTime){
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                        } else if (currentTime > queryTime){
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getFloat(updateTrue.curIdx);
                             }
-                            result.setTime(1, time);
-                            result.setFloat(1, v);
+
+                            if (result.timeLength <= 1) {
+                                result.putTime(currentTime);
+                                result.putFloat(v);
+                            } else  {
+                                LOG.error("linear fill unreachable");
+                            }
                             return true;
                         }
                     }
                     break;
                 case DOUBLE:
                     while (valueReader.decoder.hasNext(page)) {
-                        long time = timestamps[timeIdx];
+                        long currentTime = timestamps[timeIdx];
                         timeIdx++;
 
                         double v = valueReader.decoder.readDouble(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(time)) {
+                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
                             continue;
                         }
 
-                        if (time >= beforeTime && time <= queryTime) {
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                        if (currentTime >= beforeTime && currentTime <= queryTime) {
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getDouble(updateTrue.curIdx);
                             }
-                            result.timeLength = result.valueLength = 1;
-                            result.setTime(0, time);
-                            result.setDouble(0, v);
+                            if (result.timeLength == 0) {
+                                result.putTime(currentTime);
+                                result.putDouble(v);
+                            } else {
+                                result.setTime(0, currentTime);
+                                result.setDouble(0, v);
+                            }
 
-                            if (time == queryTime) {
+                            if (currentTime == queryTime) {
                                 return true;
                             }
-                        } else if (time > queryTime){
-                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < time) {
+                        } else if (currentTime > queryTime){
+                            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2 + 1) < currentTime) {
                                 updateTrue.curIdx ++;
                             }
-                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= time
-                                    && updateTrue.getTime(updateTrue.curIdx*2) >= time) {
+                            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= currentTime
+                                    && updateTrue.getTime(updateTrue.curIdx*2+1) >= currentTime) {
                                 v = updateTrue.getDouble(updateTrue.curIdx);
                             }
-                            result.setTime(1, time);
-                            result.setDouble(1, v);
+
+                            if (result.timeLength <= 1) {
+                                result.putTime(currentTime);
+                                result.putDouble(v);
+                            } else  {
+                                LOG.error("linear fill unreachable");
+                            }
                             return true;
                         }
                     }
@@ -640,53 +707,73 @@ public class FillProcessor {
         return false;
     }
 
+    /**
+     * Get the linear fill result using the data in <code>InsertDynamicData</code>
+     *
+     * @param result result data
+     * @param insertMemoryData see <code>InsertDynamicData</code>
+     * @param beforeTime linear fill before time
+     * @param queryTime linear fill query time
+     * @param afterTime linear fill after time
+     * @throws IOException file stream read error
+     */
     public static void getLinearFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
                                                         long beforeTime, long queryTime, long afterTime)
             throws IOException {
 
         while (insertMemoryData.hasInsertData()) {
-            long curTime = insertMemoryData.getCurrentMinTime();
+            long currentTime = insertMemoryData.getCurrentMinTime();
 
-            if (curTime > afterTime) {
+            if (currentTime > afterTime) {
                 return;
             }
 
             switch (result.dataType) {
                 case INT32:
-                    if (curTime >= beforeTime && curTime < queryTime) {
+                    if (currentTime >= beforeTime && currentTime < queryTime) {
                         if (result.timeLength == 0) {
-                            result.putTime(curTime);
+                            result.putTime(currentTime);
                             result.putInt(insertMemoryData.getCurrentIntValue());
                         } else if (result.timeLength == 1){
                             long existTime = result.getTime(0);
                             // TODO existTime == time is a special situation, need test covered
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
+                                result.setInt(0, insertMemoryData.getCurrentIntValue());
+                            } else if (existTime > queryTime) {
+                                result.putTime(result.getTime(0));
+                                result.putInt(result.getInt(0));
+                                result.setTime(0, currentTime);
                                 result.setInt(0, insertMemoryData.getCurrentIntValue());
                             }
-                        } else if (result.timeLength == 2){
+                        } else if (result.timeLength == 2) {
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setInt(0, insertMemoryData.getCurrentIntValue());
                             }
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
-                    } else if (curTime == queryTime) {
-                        result.timeLength = result.valueLength = 1;
-                        result.setTime(0, curTime);
-                        result.setInt(0, insertMemoryData.getCurrentIntValue());
+                    } else if (currentTime == queryTime) {
+                        if (result.timeLength == 0) {
+                            result.putTime(currentTime);
+                            result.putInt(insertMemoryData.getCurrentIntValue());
+                        } else {
+                            result.timeLength = result.valueLength = 1;
+                            result.setTime(0, currentTime);
+                            result.setInt(0, insertMemoryData.getCurrentIntValue());
+                        }
 
                         // get the time equals queryTime, end this function
                         return;
-                    } else if (curTime > queryTime) {
+                    } else if (currentTime > queryTime) {
                         if (result.timeLength == 0) {
                             return;
                         } else if (result.timeLength == 1) {
                             long existTime = result.getTime(0);
                             if (existTime < queryTime) {
-                                result.putTime(curTime);
+                                result.putTime(currentTime);
                                 result.putInt(insertMemoryData.getCurrentIntValue());
                                 return;
                             } else {
@@ -694,54 +781,66 @@ public class FillProcessor {
                             }
                         } else if (result.timeLength == 2) {
                             long existTime = result.getTime(1);
-                            if (existTime <= queryTime) {
-                                return;
-                            } else {
-                                if (curTime <= existTime) {
-                                    result.setTime(1, existTime);
-                                    result.setInt(1, insertMemoryData.getCurrentIntValue());
-                                }
-                                return;
+
+                            if (currentTime <= existTime) {
+                                result.setTime(1, existTime);
+                                result.setInt(1, insertMemoryData.getCurrentIntValue());
+                            } else if (currentTime <= queryTime) {
+                                LOG.error("linear fill unreachable");
                             }
+                            return;
+
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
+                        return;
                     }
                     break;
                 case INT64:
-                    if (curTime >= beforeTime && curTime < queryTime) {
+                    if (currentTime >= beforeTime && currentTime < queryTime) {
                         if (result.timeLength == 0) {
-                            result.putTime(curTime);
+                            result.putTime(currentTime);
                             result.putLong(insertMemoryData.getCurrentLongValue());
                         } else if (result.timeLength == 1){
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            // TODO existTime == time is a special situation, need test covered
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
+                                result.setLong(0, insertMemoryData.getCurrentLongValue());
+                            } else if (existTime > queryTime) {
+                                result.putTime(result.getTime(0));
+                                result.putLong(result.getLong(0));
+                                result.setTime(0, currentTime);
                                 result.setLong(0, insertMemoryData.getCurrentLongValue());
                             }
-                        } else if (result.timeLength == 2){
+                        } else if (result.timeLength == 2) {
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setLong(0, insertMemoryData.getCurrentLongValue());
                             }
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
-                    } else if (curTime == queryTime) {
-                        result.timeLength = result.valueLength = 1;
-                        result.setTime(0, curTime);
-                        result.setLong(0, insertMemoryData.getCurrentLongValue());
+                    } else if (currentTime == queryTime) {
+                        if (result.timeLength == 0) {
+                            result.putTime(currentTime);
+                            result.putLong(insertMemoryData.getCurrentLongValue());
+                        } else {
+                            result.timeLength = result.valueLength = 1;
+                            result.setTime(0, currentTime);
+                            result.setLong(0, insertMemoryData.getCurrentLongValue());
+                        }
 
                         // get the time equals queryTime, end this function
                         return;
-                    } else if (curTime > queryTime) {
+                    } else if (currentTime > queryTime) {
                         if (result.timeLength == 0) {
                             return;
                         } else if (result.timeLength == 1) {
                             long existTime = result.getTime(0);
                             if (existTime < queryTime) {
-                                result.putTime(curTime);
+                                result.putTime(currentTime);
                                 result.putLong(insertMemoryData.getCurrentLongValue());
                                 return;
                             } else {
@@ -749,54 +848,66 @@ public class FillProcessor {
                             }
                         } else if (result.timeLength == 2) {
                             long existTime = result.getTime(1);
-                            if (existTime <= queryTime) {
-                                return;
-                            } else {
-                                if (curTime <= existTime) {
-                                    result.setTime(1, existTime);
-                                    result.setLong(1, insertMemoryData.getCurrentLongValue());
-                                }
-                                return;
+
+                            if (currentTime <= existTime) {
+                                result.setTime(1, existTime);
+                                result.setLong(1, insertMemoryData.getCurrentLongValue());
+                            } else if (currentTime <= queryTime) {
+                                LOG.error("linear fill unreachable");
                             }
+                            return;
+
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
+                        return;
                     }
                     break;
                 case FLOAT:
-                    if (curTime >= beforeTime && curTime < queryTime) {
+                    if (currentTime >= beforeTime && currentTime < queryTime) {
                         if (result.timeLength == 0) {
-                            result.putTime(curTime);
+                            result.putTime(currentTime);
                             result.putFloat(insertMemoryData.getCurrentFloatValue());
                         } else if (result.timeLength == 1){
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            // TODO existTime == time is a special situation, need test covered
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
+                                result.setFloat(0, insertMemoryData.getCurrentFloatValue());
+                            } else if (existTime > queryTime) {
+                                result.putTime(result.getTime(0));
+                                result.putFloat(result.getFloat(0));
+                                result.setTime(0, currentTime);
                                 result.setFloat(0, insertMemoryData.getCurrentFloatValue());
                             }
-                        } else if (result.timeLength == 2){
+                        } else if (result.timeLength == 2) {
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setFloat(0, insertMemoryData.getCurrentFloatValue());
                             }
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
-                    } else if (curTime == queryTime) {
-                        result.timeLength = result.valueLength = 1;
-                        result.setTime(0, curTime);
-                        result.setFloat(0, insertMemoryData.getCurrentFloatValue());
+                    } else if (currentTime == queryTime) {
+                        if (result.timeLength == 0) {
+                            result.putTime(currentTime);
+                            result.putFloat(insertMemoryData.getCurrentFloatValue());
+                        } else {
+                            result.timeLength = result.valueLength = 1;
+                            result.setTime(0, currentTime);
+                            result.setFloat(0, insertMemoryData.getCurrentFloatValue());
+                        }
 
                         // get the time equals queryTime, end this function
                         return;
-                    } else if (curTime > queryTime) {
+                    } else if (currentTime > queryTime) {
                         if (result.timeLength == 0) {
                             return;
                         } else if (result.timeLength == 1) {
                             long existTime = result.getTime(0);
                             if (existTime < queryTime) {
-                                result.putTime(curTime);
+                                result.putTime(currentTime);
                                 result.putFloat(insertMemoryData.getCurrentFloatValue());
                                 return;
                             } else {
@@ -804,54 +915,66 @@ public class FillProcessor {
                             }
                         } else if (result.timeLength == 2) {
                             long existTime = result.getTime(1);
-                            if (existTime <= queryTime) {
-                                return;
-                            } else {
-                                if (curTime <= existTime) {
-                                    result.setTime(1, existTime);
-                                    result.setFloat(1, insertMemoryData.getCurrentFloatValue());
-                                }
-                                return;
+
+                            if (currentTime <= existTime) {
+                                result.setTime(1, existTime);
+                                result.setFloat(1, insertMemoryData.getCurrentFloatValue());
+                            } else if (currentTime <= queryTime) {
+                                LOG.error("linear fill unreachable");
                             }
+                            return;
+
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
+                        return;
                     }
                     break;
                 case DOUBLE:
-                    if (curTime >= beforeTime && curTime < queryTime) {
+                    if (currentTime >= beforeTime && currentTime < queryTime) {
                         if (result.timeLength == 0) {
-                            result.putTime(curTime);
+                            result.putTime(currentTime);
                             result.putDouble(insertMemoryData.getCurrentDoubleValue());
                         } else if (result.timeLength == 1){
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            // TODO existTime == time is a special situation, need test covered
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
+                                result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+                            } else if (existTime > queryTime) {
+                                result.putTime(result.getTime(0));
+                                result.putDouble(result.getDouble(0));
+                                result.setTime(0, currentTime);
                                 result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
                             }
-                        } else if (result.timeLength == 2){
+                        } else if (result.timeLength == 2) {
                             long existTime = result.getTime(0);
-                            if (existTime <= curTime) {
-                                result.setTime(0, curTime);
+                            if (existTime <= currentTime) {
+                                result.setTime(0, currentTime);
                                 result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
                             }
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
-                    } else if (curTime == queryTime) {
-                        result.timeLength = result.valueLength = 1;
-                        result.setTime(0, curTime);
-                        result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+                    } else if (currentTime == queryTime) {
+                        if (result.timeLength == 0) {
+                            result.putTime(currentTime);
+                            result.putDouble(insertMemoryData.getCurrentDoubleValue());
+                        } else {
+                            result.timeLength = result.valueLength = 1;
+                            result.setTime(0, currentTime);
+                            result.setDouble(0, insertMemoryData.getCurrentDoubleValue());
+                        }
 
                         // get the time equals queryTime, end this function
                         return;
-                    } else if (curTime > queryTime) {
+                    } else if (currentTime > queryTime) {
                         if (result.timeLength == 0) {
                             return;
                         } else if (result.timeLength == 1) {
                             long existTime = result.getTime(0);
                             if (existTime < queryTime) {
-                                result.putTime(curTime);
+                                result.putTime(currentTime);
                                 result.putDouble(insertMemoryData.getCurrentDoubleValue());
                                 return;
                             } else {
@@ -859,18 +982,19 @@ public class FillProcessor {
                             }
                         } else if (result.timeLength == 2) {
                             long existTime = result.getTime(1);
-                            if (existTime <= queryTime) {
-                                return;
-                            } else {
-                                if (curTime <= existTime) {
-                                    result.setTime(1, existTime);
-                                    result.setDouble(1, insertMemoryData.getCurrentDoubleValue());
-                                }
-                                return;
+
+                            if (currentTime <= existTime) {
+                                result.setTime(1, existTime);
+                                result.setDouble(1, insertMemoryData.getCurrentDoubleValue());
+                            } else if (currentTime <= queryTime) {
+                                LOG.error("linear fill unreachable");
                             }
+                            return;
+
                         } else {
                             LOG.error("Linear fill unreachable!");
                         }
+                        return;
                     }
                     break;
                 default:
