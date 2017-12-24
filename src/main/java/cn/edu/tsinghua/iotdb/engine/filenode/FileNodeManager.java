@@ -161,6 +161,7 @@ public class FileNodeManager {
 				}
 			}
 		}
+		processorMap.putIfAbsent(path, processor);
 		return processor;
 	}
 
