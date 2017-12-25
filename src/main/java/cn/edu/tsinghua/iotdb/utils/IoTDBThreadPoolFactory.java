@@ -80,7 +80,7 @@ public class IoTDBThreadPoolFactory {
 		return Executors.newScheduledThreadPool(corePoolSize, new IoTThreadFactory(poolName));
 	}
 
-	public static ExecutorService createJDBCThreadPool(Args args, String poolName) {
+	public static ExecutorService createJDBCClientThreadPool(Args args, String poolName) {
 		SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
 		return new ThreadPoolExecutor(args.minWorkerThreads, args.maxWorkerThreads, args.stopTimeoutVal,
 				args.stopTimeoutUnit, executorQueue, (ThreadFactory) new IoTThreadFactory(poolName));
