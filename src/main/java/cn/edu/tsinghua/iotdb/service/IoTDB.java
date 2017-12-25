@@ -11,7 +11,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorServer;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
@@ -87,7 +86,7 @@ public class IoTDB implements IoTDBMBean {
 		}
 
 		initFileNodeManager();
-//        registStatMonitor();
+        registStatMonitor();
 		systemDataRecovery();
 
 		maybeInitJmx();

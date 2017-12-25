@@ -7,18 +7,15 @@ import cn.edu.tsinghua.iotdb.engine.filenode.*;
 import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -52,7 +49,6 @@ public class MonitorTest {
         EnvironmentUtils.envSetUp();
         tsdbconfig.enableStatMonitor = true;
         tsdbconfig.backLoopPeriod = 1;
-        MetadataManagerHelper.initMetadata();
     }
 
     @After
@@ -65,6 +61,7 @@ public class MonitorTest {
     public void testFileNodeManagerMonitorAndAddMetadata() {
         fManager = FileNodeManager.getInstance();
         statMonitor = StatMonitor.getInstance();
+        statMonitor.registMeta();
         fManager.getStatParamsHashMap().forEach((key, value)->value.set(0));
         statMonitor.clearProcessor();
         statMonitor.registStatistics(fManager.getClass().getSimpleName(), fManager);
@@ -77,7 +74,6 @@ public class MonitorTest {
 //        } catch (Exception e) {
 //            fail(e.getMessage());
 //        }
-
         fManager.registStatMetadata();
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
         for (String statParam : statParamsHashMap.keySet()) {
@@ -88,7 +84,7 @@ public class MonitorTest {
         statMonitor.activate();
         // wait for time second
         try {
-            Thread.sleep(3100);
+            Thread.sleep(3300);
             statMonitor.close();
             Thread.sleep(1000);
         } catch (InterruptedException e) {

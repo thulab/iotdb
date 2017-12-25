@@ -100,6 +100,16 @@ public class StatMonitor {
         return numInsert.get();
     }
 
+    public void registMeta() {
+        try {
+            if (!mManager.pathExist("root.stats")) {
+                mManager.setStorageLevelToMTree("root.stats");
+            }
+        } catch (Exception e){
+            LOGGER.error("MManager.getInstance().setStorageLevelToMTree False");
+        }
+    }
+
     public void activate() {
         LOGGER.debug("activate!");
         service = Executors.newScheduledThreadPool(1);
@@ -127,7 +137,7 @@ public class StatMonitor {
         stateLock.writeLock().unlock();
     }
 
-    public synchronized void registStatMetadata(HashMap<String, String> hashMap) {
+    public synchronized void registMeta(HashMap<String, String> hashMap) {
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
                 if (entry.getKey() == null) {

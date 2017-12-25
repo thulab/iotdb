@@ -122,7 +122,7 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 				put(fakeDeltaName + "." + c.name(), "INT64");
 			}
 		}};
-		StatMonitor.getInstance().registStatMetadata(hashMap);
+		StatMonitor.getInstance().registMeta(hashMap);
 	}
 
 	@Override

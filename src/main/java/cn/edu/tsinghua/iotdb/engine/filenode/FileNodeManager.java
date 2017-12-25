@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
@@ -128,7 +127,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 				put(fakeDeltaName + "." + c.name(), "INT64");
 			}
 		}};
-		StatMonitor.getInstance().registStatMetadata(hashMap);
+		StatMonitor.getInstance().registMeta(hashMap);
 	}
 
 	private Action overflowBackUpAction = new Action() {
