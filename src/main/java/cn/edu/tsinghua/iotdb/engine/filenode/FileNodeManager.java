@@ -163,8 +163,8 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 		}
 		if (TsFileDBConf.enableStatMonitor) {
 			StatMonitor statMonitor = StatMonitor.getInstance();
-			statMonitor.registStatistics(getClass().getSimpleName(), this);
 			registStatMetadata();
+			statMonitor.registStatistics(getClass().getSimpleName(), this);
 		}
 	}
 

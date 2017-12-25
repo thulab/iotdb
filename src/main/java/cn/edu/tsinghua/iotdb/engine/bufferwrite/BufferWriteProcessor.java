@@ -604,6 +604,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 				// flush bufferwrite data
 				if (isFlushingSync) {
 					try {
+						LOGGER.info("Synchronous flushing start,-Thread id {}.", Thread.currentThread().getId());
 						super.flushRowGroup(false);
 						writeStoreToDisk();
 						filenodeFlushAction.act();

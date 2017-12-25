@@ -278,11 +278,11 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 		//RegistStatService
 		if (TsFileDBConf.enableStatMonitor) {
 			StatMonitor statMonitor = StatMonitor.getInstance();
+			registStatMetadata();
 			statMonitor.registStatistics(
 					getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.", "_"),
 					this
 			);
-			registStatMetadata();
 		}
 	}
 
@@ -1151,6 +1151,7 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	@Override
 	public void close() throws FileNodeProcessorException {
 		//the processor's path is
+		LOGGER.debug("Now we are closing the FileNodeProcessor:" + this.fakeDeltaName);
 		StatMonitor.getInstance().deregistStatistics(
 				getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.",
 						"_")

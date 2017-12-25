@@ -18,6 +18,7 @@ import cn.edu.tsinghua.iotdb.exception.LRUManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import sun.security.ssl.Debug;
 
 /**
  * <p>
@@ -288,6 +289,10 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			Iterator<Entry<String, T>> processorIterator = processorMap.entrySet().iterator();
 			while (processorIterator.hasNext()) {
 				Entry<String, T> processorEntry = processorIterator.next();
+				if (processorEntry.getKey().equals("root.stats")) {
+					continue;
+				}
+				LOGGER.debug("Now we are closing ...:" + processorEntry.getKey());
 				try {
 					close(processorEntry.getKey(), processorIterator);
 				} catch (LRUManagerException e) {

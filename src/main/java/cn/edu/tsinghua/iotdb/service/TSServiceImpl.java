@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;
