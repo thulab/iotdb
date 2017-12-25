@@ -289,9 +289,9 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			Iterator<Entry<String, T>> processorIterator = processorMap.entrySet().iterator();
 			while (processorIterator.hasNext()) {
 				Entry<String, T> processorEntry = processorIterator.next();
-				if (processorEntry.getKey().equals("root.stats")) {
-					continue;
-				}
+//				if (processorEntry.getKey().equals("root.stats")) {
+//					continue;
+//				}
 				LOGGER.debug("Now we are closing ...:" + processorEntry.getKey());
 				try {
 					close(processorEntry.getKey(), processorIterator);

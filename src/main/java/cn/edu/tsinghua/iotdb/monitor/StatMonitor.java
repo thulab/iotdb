@@ -8,7 +8,6 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
-import org.json.zip.None;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,11 +185,12 @@ public class StatMonitor {
         Long t = System.currentTimeMillis();
         HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
         for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
+            // Attention the key being inserted is important: or the path may be wrong
             if (entry.getValue() == null) {
 //                continue;
                 tsRecordHashMap.put("",
                         convertToTSRecord(
-                                MonitorConstants.iniValues("FileNodeProcessorStatConstants"),
+                                MonitorConstants.iniValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
                                 entry.getKey(),
                                 t
                         )
@@ -216,7 +216,6 @@ public class StatMonitor {
                 LOGGER.debug("Entry.getValue" + entry.getValue().toString());
                 fManager.insert(entry.getValue());
                 numInsert.incrementAndGet();
-                LOGGER.debug("insert entry.getValue():" + entry.getValue());
                 pointNum = entry.getValue().dataPointList.size();
                 numPointsInsert.addAndGet(pointNum);
                 count += pointNum;

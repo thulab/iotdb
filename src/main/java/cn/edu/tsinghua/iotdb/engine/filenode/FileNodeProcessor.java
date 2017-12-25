@@ -146,7 +146,9 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
 			}
 		}};
-		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
+		// Attention: Need to notify the class method, Not just Processor
+//		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
+		tsRecordHashMap.put(fakeDeltaName, tsRecord);
 		return tsRecordHashMap;
 	}
 
@@ -291,7 +293,7 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 			StatMonitor statMonitor = StatMonitor.getInstance();
 			registStatMetadata();
 			statMonitor.registStatistics(
-					getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.", "_"),
+					fakeDeltaName,
 					this
 			);
 		}
@@ -1261,10 +1263,7 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	public void close() throws FileNodeProcessorException {
 		//the processor's path is
 		LOGGER.debug("Now we are closing the FileNodeProcessor:" + this.fakeDeltaName);
-		StatMonitor.getInstance().deregistStatistics(
-				getClass().getSimpleName() + "." + nameSpacePath.replaceAll("\\.",
-						"_")
-		);
+		StatMonitor.getInstance().deregistStatistics(fakeDeltaName);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);

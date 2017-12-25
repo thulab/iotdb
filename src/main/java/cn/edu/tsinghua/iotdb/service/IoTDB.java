@@ -178,7 +178,6 @@ public class IoTDB {
 		LOGGER.info("{}: Done. Recover operation count {}", TsFileDBConstant.GLOBAL_DB_NAME, cnt);
 	}
 
-	@Override
 	public void stop() throws FileNodeManagerException, IOException {
 		// TODO Auto-generated method stub
 		if (dBdao != null) {

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MonitorConstants {
+    public static final String FILENODE_PROCESSOR_CONST = "FILENODE_PROCESSOR_CONST";
+    public static final String FILENODE_MANAGER_CONST = "FileNodeManagerStatConstants";
     public static String getStatPrefix() {
         return statPrefix;
     }
@@ -15,8 +17,8 @@ public class MonitorConstants {
     public static HashMap<String, AtomicLong> iniValues(String constantsType) {
         HashMap<String, AtomicLong> hashMap = new HashMap<>();
         switch (constantsType) {
-            case "MonitorConstants":
-                for (FileNodeManagerStatConstants c : FileNodeManagerStatConstants.values()) {
+            case "FILENODE_PROCESSOR_CONST":
+                for (FileNodeProcessorStatConstants c : FileNodeProcessorStatConstants.values()) {
                     hashMap.put(c.name(), new AtomicLong(0));
                 }
                 break;
