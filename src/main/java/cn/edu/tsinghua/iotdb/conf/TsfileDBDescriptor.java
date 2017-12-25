@@ -94,6 +94,12 @@ public class TsfileDBDescriptor {
 			conf.memControllerType = Integer.parseInt(properties.getProperty("mem_controller_type", conf.memControllerType+"").trim());
 			conf.memControllerType = conf.memControllerType >= BasicMemController.CONTROLLER_TYPE.values().length ? 0 : conf.memControllerType;
 
+			conf.bufferwriteMetaSizeThreshold = Long.parseLong(properties.getProperty("bufferwrite_meta_size_threshold", conf.bufferwriteMetaSizeThreshold + "").trim());
+			conf.bufferwriteFileSizeThreshold = Long.parseLong(properties.getProperty("bufferwrite_file_size_threshold", conf.bufferwriteFileSizeThreshold + "").trim());
+
+			conf.overflowMetaSizeThreshold = Long.parseLong(properties.getProperty("overflow_meta_size_threshold", conf.overflowMetaSizeThreshold + "").trim());
+			conf.overflowFileSizeThreshold = Long.parseLong(properties.getProperty("overflow_file_size_threshold", conf.overflowFileSizeThreshold + "").trim());
+
 			if(conf.memThresholdWarning <= 0)
 				conf.memThresholdWarning = TsFileDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;
 			if(conf.memThresholdDangerous < conf.memThresholdWarning)

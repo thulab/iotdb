@@ -129,6 +129,27 @@ public class TsfileDBConfig {
 	 */
 	public int memControllerType = 0;
 
+	/**
+	 * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
+	 */
+	public long bufferwriteMetaSizeThreshold = 200 * 1024 * 1024L;
+
+	/**
+	 * When a bufferwrite's file size (in byte) exceed this, the bufferwrite is forced closed.
+	 */
+	public long bufferwriteFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
+
+	/**
+	 * When a overflow's metadata size (in byte) exceed this, the overflow is forced closed.
+	 */
+	public long overflowMetaSizeThreshold = 200 * 1024 * 1024L;
+
+	/**
+	 * When a overflow's file size (in byte) exceed this, the overflow is forced closed.
+	 */
+	public long overflowFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
+
+
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {

@@ -462,6 +462,7 @@ public class OverflowProcessor extends LRUProcessor {
 					}
 				}
 				BasicMemController.getInstance().reportFree(this, oldMemUsage);
+				checkSize();
 			} else {
 				// flush overflow row group asynchronously
 				flushState.setFlushing();
@@ -496,6 +497,7 @@ public class OverflowProcessor extends LRUProcessor {
 							}
 						}
 						BasicMemController.getInstance().reportFree(this, oldMemUsage);
+						checkSize();
 					}
 				};
 				AsynflushThread.start();
@@ -611,6 +613,47 @@ public class OverflowProcessor extends LRUProcessor {
 			this.lastOverflowFilePosition = lastOverflowFilePosition;
 			this.lastOverflowRowGroupPosition = lastOverflowRowGroupPosition;
 			this.ofFileMetadata = ofFileMetadata;
+		}
+	}
+
+	/**
+	 * @return The sum of all timeseries's metadata size within this file.
+	 */
+	public long getMetaSize() {
+		// TODO : [MemControl] implement this
+		return 0;
+	}
+
+	/**
+	 * @return The file size of the OverflowFile corresponding to this processor.
+	 */
+	public long getFileSize() {
+		// TODO : save this variable to avoid object creation?
+		File file = new File(overflowOutputFilePath);
+		return file.length();
+	}
+
+	/**
+	 * Close current OverflowFile and open a new one for future writes.
+	 * Block new writes and wait until current writes finish.
+	 */
+	public void rollToNewFile() {
+		// TODO : [MemControl] implement this
+	}
+
+	/**
+	 * Check if this OverflowFile has too big metadata or file.
+	 * If true, close current file and open a new one.
+	 */
+	private void checkSize() {
+		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		long metaSize = getMetaSize();
+		long fileSize = getFileSize();
+		if(metaSize >= config.bufferwriteMetaSizeThreshold ||
+				fileSize >= config.bufferwriteFileSizeThreshold) {
+			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}",
+					this.fileName, MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
+			rollToNewFile();
 		}
 	}
 }

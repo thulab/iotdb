@@ -640,6 +640,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 						throw new IOException(e);
 					}
 					BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
+					checkSize();
 				} else {
 					flushState.setFlushing();
 					switchIndexFromWorkToFlush();
@@ -686,6 +687,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 							convertBufferLock.writeLock().unlock();
 						}
 						BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
+						checkSize();
 					};
 					Thread flush = new Thread(flushThread);
 					flush.start();
@@ -741,4 +743,44 @@ public class BufferWriteProcessor extends LRUProcessor {
 		bufferIOWriter.addNewRowGroupMetaDataToBackUp();
 	}
 
-}
+	/**
+	 * @return The sum of all timeseries's metadata size within this file.
+	 */
+	public long getMetaSize() {
+		// TODO : [MemControl] implement this
+		return 0;
+	}
+
+	/**
+	 * @return The file size of the TsFile corresponding to this processor.
+	 */
+	public long getFileSize() {
+		// TODO : save this variable to avoid object creation?
+		File file = new File(bufferwriteOutputFilePath);
+		return file.length();
+	}
+
+	/**
+	 * Close current TsFile and open a new one for future writes.
+	 * Block new writes and wait until current writes finish.
+	 */
+	public void rollToNewFile() {
+		// TODO : [MemControl] implement this
+	}
+
+	/**
+	 * Check if this TsFile has too big metadata or file.
+	 * If true, close current file and open a new one.
+	 */
+	private void checkSize() {
+		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		long metaSize = getMetaSize();
+		long fileSize = getFileSize();
+		if(metaSize >= config.bufferwriteMetaSizeThreshold ||
+				fileSize >= config.bufferwriteFileSizeThreshold) {
+			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}",
+					this.fileName, MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
+			rollToNewFile();
+		}
+	}
+ }
