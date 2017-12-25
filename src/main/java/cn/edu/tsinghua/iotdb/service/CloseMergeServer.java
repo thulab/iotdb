@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.utils.ThreadPoolFactory;
+import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 
 /**
  * This is one server for close and merge regularly
@@ -43,7 +43,7 @@ public class CloseMergeServer {
 	}
 
 	private CloseMergeServer() {
-		service = ThreadPoolFactory.newScheduledThreadPool(2, "CloseAndMerge");
+		service = IoTDBThreadPoolFactory.newScheduledThreadPool(2, "CloseAndMerge");
 	}
 
 	public void startServer() {

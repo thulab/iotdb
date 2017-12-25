@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author liukun
  *
  */
-public class ThreadPoolFactory {
+public class IoTDBThreadPoolFactory {
 
 	/**
 	 * see {@link Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}

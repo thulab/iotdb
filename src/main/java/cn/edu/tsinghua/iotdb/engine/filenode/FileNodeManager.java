@@ -34,7 +34,7 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
-import cn.edu.tsinghua.iotdb.utils.ThreadPoolFactory;
+import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -737,7 +737,7 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 
 		@Override
 		public void run() {
-			ExecutorService mergeExecutorPool = ThreadPoolFactory
+			ExecutorService mergeExecutorPool = IoTDBThreadPoolFactory
 					.newFixedThreadPool(TsFileDBConf.mergeConcurrentThreads, "Merge");
 			for (String fileNodeNamespacePath : allChangedFileNodes) {
 				MergeOneProcessor mergeOneProcessorThread = new MergeOneProcessor(fileNodeNamespacePath);
