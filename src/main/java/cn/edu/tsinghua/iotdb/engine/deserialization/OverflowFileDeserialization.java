@@ -27,7 +27,7 @@ public class OverflowFileDeserialization {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowFileDeserialization.class);
 
-    private String fileName;
+    private static String folderName = "your file name";;
     private String restoreFileName;
     private String mergeFileName;
 
@@ -36,14 +36,9 @@ public class OverflowFileDeserialization {
 
 
     public static void main(String[] args) throws IOException {
-        String fileName = "overflow/root.dt.wf632815.type4.overflow";
-        String restoreFileName = "overflow/root.dt.wf632815.type4.overflow.restore";
-
-        String folderName = "/Users/beyyes/Desktop/overflow";
-
         File dirFile = new File(folderName);
         if (!dirFile.exists() || (!dirFile.isDirectory())) {
-            LOGGER.error("the given folder name is wrong");
+            LOGGER.error("the given folder name {} is wrong", folderName);
             return;
         }
 
@@ -51,7 +46,7 @@ public class OverflowFileDeserialization {
         long overflowNumber = 0;
         File[] subFiles = dirFile.listFiles();
         if (subFiles == null || subFiles.length == 0) {
-            LOGGER.error("given folder has no overflow folder");
+            LOGGER.error("the given folder {} has no overflow folder", folderName);
             return;
         }
         for (File file : subFiles) {
@@ -126,11 +121,11 @@ public class OverflowFileDeserialization {
         return rowNumber;
     }
 
-    private OverflowStoreStruct getLastPos(String overflowRetoreFilePath) throws FileNotFoundException {
+    private OverflowStoreStruct getLastPos(String overflowRestoreFilePath) throws FileNotFoundException {
 
-        File overflowRestoreFile = new File(overflowRetoreFilePath);
+        File overflowRestoreFile = new File(overflowRestoreFilePath);
         if (!overflowRestoreFile.exists()) {
-            LOGGER.error("file not exist");
+            LOGGER.error("given restore file {} does not exist", overflowRestoreFile);
         }
         byte[] buff = new byte[8];
         FileInputStream fileInputStream = fileInputStream = new FileInputStream(overflowRestoreFile);
@@ -164,7 +159,8 @@ public class OverflowFileDeserialization {
             return new OverflowStoreStruct(lastOverflowFilePosition, lastOverflowRowGroupPosition, ofFileMetadata);
         } catch (IOException e) {
             LOGGER.error(
-                    "Read the data: lastOverflowFilePostion, lastOverflowRowGroupPostion, offilemetadata error");
+                    "Read the data: lastOverflowFilePosition, lastOverflowRowGroupPosition, offilemetadata meets error : "
+            + e.getMessage());
         } finally {
             if (fileInputStream != null) {
                 try {
