@@ -10,8 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,9 +104,7 @@ public class DaemonTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-            TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
-            tsdbconfig.enableStatMonitor = false;
-            deamon = new IoTDB();
+            deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }

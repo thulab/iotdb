@@ -74,6 +74,8 @@ public class EnvironmentUtils {
 		cleanDir(config.walFolder);
 		// delete derby
 		cleanDir(config.derbyHome);
+		// delete index
+		cleanDir(config.indexFileDir);
 		// delte data
 		cleanDir("data");
 		// delte derby log

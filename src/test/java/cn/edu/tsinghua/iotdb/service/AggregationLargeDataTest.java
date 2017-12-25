@@ -13,8 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,8 +29,6 @@ public class AggregationLargeDataTest {
     private final String d0s2 = "root.vehicle.d0.s2";
     private final String d0s3 = "root.vehicle.d0.s3";
     private final String d0s4 = "root.vehicle.d0.s4";
-    private final String d1s0 = "root.vehicle.d1.s0";
-    private final String d1s1 = "root.vehicle.d1.s1";
 
     private static String[] createSql = new String[]{
             "SET STORAGE GROUP TO root.vehicle",
@@ -108,9 +104,7 @@ public class AggregationLargeDataTest {
     public void setUp() throws Exception {
         if (testFlag) {
             AggregateEngine.aggregateFetchSize = 4000;
-            TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
-            tsdbconfig.enableStatMonitor = false;
-            deamon = new IoTDB();
+            deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }
