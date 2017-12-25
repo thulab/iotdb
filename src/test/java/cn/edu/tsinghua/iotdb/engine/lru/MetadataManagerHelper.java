@@ -17,7 +17,6 @@ public class MetadataManagerHelper {
 			mmanager.setStorageLevelToMTree("root.vehicle.d0");
 			mmanager.setStorageLevelToMTree("root.vehicle.d1");
 			mmanager.setStorageLevelToMTree("root.vehicle.d2");
-			mmanager.setStorageLevelToMTree("root.stats");
 
 			mmanager.addPathToMTree("root.vehicle.d0.s0", "INT32", "RLE", new String[0]);
 			mmanager.addPathToMTree("root.vehicle.d0.s1", "INT64", "RLE", new String[0]);
@@ -51,7 +50,6 @@ public class MetadataManagerHelper {
 		mmanager.clear();
 		try {
 			mmanager.setStorageLevelToMTree("root.vehicle");
-			mmanager.setStorageLevelToMTree("root.stats");
 
 			mmanager.addPathToMTree("root.vehicle.d0.s0", "INT32", "RLE", new String[0]);
 			mmanager.addPathToMTree("root.vehicle.d0.s1", "INT64", "RLE", new String[0]);

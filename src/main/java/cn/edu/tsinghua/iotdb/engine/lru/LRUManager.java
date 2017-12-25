@@ -179,7 +179,6 @@ public abstract class LRUManager<T extends LRUProcessor> {
 					}
 				}
 				// construct a new processor
-//				System.out.println("namespacePath:" + namespacePath);
 				processor = constructNewProcessor(namespacePath);
 				// must use lock and not try lock, because of this processor is
 				// a new processor
@@ -289,10 +288,6 @@ public abstract class LRUManager<T extends LRUProcessor> {
 			Iterator<Entry<String, T>> processorIterator = processorMap.entrySet().iterator();
 			while (processorIterator.hasNext()) {
 				Entry<String, T> processorEntry = processorIterator.next();
-//				if (processorEntry.getKey().equals("root.stats")) {
-//					continue;
-//				}
-				LOGGER.debug("Now we are closing ...:" + processorEntry.getKey());
 				try {
 					close(processorEntry.getKey(), processorIterator);
 				} catch (LRUManagerException e) {

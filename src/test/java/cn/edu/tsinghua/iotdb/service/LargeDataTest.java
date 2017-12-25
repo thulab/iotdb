@@ -67,6 +67,7 @@ public class LargeDataTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
+            EnvironmentUtils.closeStatMonitor();
             AggregateEngine.aggregateFetchSize = 4000;
 
             // use small page setting

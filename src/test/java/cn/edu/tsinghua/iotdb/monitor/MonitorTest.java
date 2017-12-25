@@ -49,19 +49,9 @@ public class MonitorTest {
     public void setUp() throws Exception {
         // origin value
         // modify stat parameter
+        EnvironmentUtils.envSetUp();
         tsdbconfig.enableStatMonitor = true;
         tsdbconfig.backLoopPeriod = 1;
-        rowGroupSize = tsconfig.groupSizeInByte;
-        pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
-        cachePageData = tsconfig.duplicateIncompletedPage;
-        defaultMaxStringLength = tsconfig.maxStringLength;
-        pageSize = tsconfig.pageSizeInByte;
-        // new value
-        tsconfig.duplicateIncompletedPage = true;
-        tsconfig.groupSizeInByte = 2000;
-        tsconfig.pageCheckSizeThreshold = 3;
-        tsconfig.pageSizeInByte = 100;
-        tsconfig.maxStringLength = 2;
         MetadataManagerHelper.initMetadata();
     }
 
@@ -69,12 +59,6 @@ public class MonitorTest {
     public void tearDown() throws Exception {
         statMonitor.close();
         EnvironmentUtils.cleanEnv();
-        // recovery value
-        tsconfig.groupSizeInByte = rowGroupSize;
-        tsconfig.pageCheckSizeThreshold = pageCheckSizeThreshold;
-        tsconfig.pageSizeInByte = pageSize;
-        tsconfig.maxStringLength = defaultMaxStringLength;
-        tsconfig.duplicateIncompletedPage = cachePageData;
     }
 
     @Test

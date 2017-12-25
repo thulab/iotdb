@@ -11,6 +11,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorServer;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
@@ -32,7 +33,7 @@ import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
-public class IoTDB {
+public class IoTDB implements IoTDBMBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
 	private MBeanServer mbs;
@@ -45,7 +46,6 @@ public class IoTDB {
 	private final String MONITOR_STR = "Monitor";
 	private final String IOTDB_STR = "IoTDB";
     private StatMonitor statMonitor;
-
 	private static class IoTDBHolder {
 		private static final IoTDB INSTANCE = new IoTDB();
 	}
@@ -87,7 +87,7 @@ public class IoTDB {
 		}
 
 		initFileNodeManager();
-        registStatMonitor();
+//        registStatMonitor();
 		systemDataRecovery();
 
 		maybeInitJmx();
@@ -178,6 +178,7 @@ public class IoTDB {
 		LOGGER.info("{}: Done. Recover operation count {}", TsFileDBConstant.GLOBAL_DB_NAME, cnt);
 	}
 
+	@Override
 	public void stop() throws FileNodeManagerException, IOException {
 		// TODO Auto-generated method stub
 		if (dBdao != null) {

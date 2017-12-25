@@ -95,7 +95,11 @@ public class EnvironmentUtils {
 			}
 		}
 	}
-	
+
+	public static void closeStatMonitor() {
+		config.enableStatMonitor = false;
+	}
+
 	public static void envSetUp(){
 		Authorizer.reset();
 //		TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();

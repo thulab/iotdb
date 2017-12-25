@@ -2,7 +2,12 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
@@ -437,8 +442,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 		}
 
 		long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
-		LOGGER.debug("Get the FileNodeProcessor: {}, the last update time is: {}, the update time is from {} to {}",
-				fileNodeProcessor.getNameSpacePath(), lastUpdateTime, startTime, endTime);
 		if (startTime > lastUpdateTime) {
 			LOGGER.warn("The update range is error, startTime {} is gt lastUpdateTime {}", startTime, lastUpdateTime);
 			fileNodeProcessor.writeUnlock();
@@ -505,8 +508,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 		}
 
 		long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
-		LOGGER.debug("Get the FileNodeProcessor: {}, the last update time is: {}, the delete time is from 0 to {}",
-				fileNodeProcessor.getNameSpacePath(), lastUpdateTime, timestamp);
 		// no bufferwrite data, the delete operation is invalid
 		if (lastUpdateTime == -1) {
 			LOGGER.warn("The last update time is -1, delete overflow is invalid");
@@ -543,7 +544,6 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> implements IS
 			fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
 			addNameSpaceToOverflowList(fileNodeProcessor.getNameSpacePath());
 			fileNodeProcessor.writeUnlock();
-			LOGGER.debug("Unlock the FileNodeProcessor: {}", fileNodeProcessor.getNameSpacePath());
 		}
 	}
 

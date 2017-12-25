@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
