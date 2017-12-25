@@ -116,7 +116,7 @@ public class JDBCServer implements JDBCServerMBean {
             try {
         		serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().rpcPort);
                 poolArgs = new TThreadPoolServer.Args(serverTransport);
-                poolArgs.executorService = IoTDBThreadPoolFactory.createJDBCClientThreadPool(poolArgs, "JDBC-client");
+                poolArgs.executorService = IoTDBThreadPoolFactory.createJDBCClientThreadPool(poolArgs, "JDBC-Client");
                 poolArgs.processor(processor);
                 poolArgs.protocolFactory(protocolFactory);
                 poolServer = new TThreadPoolServer(poolArgs);
