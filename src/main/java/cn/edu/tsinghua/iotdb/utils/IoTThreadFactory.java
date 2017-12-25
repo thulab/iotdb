@@ -13,13 +13,13 @@ public class IoTThreadFactory implements ThreadFactory {
 	public IoTThreadFactory(String poolName) {
 		SecurityManager s = System.getSecurityManager();
 		group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-		// thread pool name format : pool-number-poolName-thread-
-		this.namePrefix = "pool-" + poolNumber.getAndIncrement() + "-" + poolName + "-thread-";
+		// thread pool name format : pool-number-IoTDB-poolName-thread-
+		this.namePrefix = "pool-" + poolNumber.getAndIncrement() + "IoTDB" + "-" + poolName + "-thread-";
 	}
 
 	@Override
 	public Thread newThread(Runnable r) {
-		// thread name format : pool-number-poolName-thread-threadnum
+		// thread name format : pool-number-IoTDB-poolName-thread-threadnum
 		Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
 		if (t.isDaemon())
 			t.setDaemon(false);
