@@ -14,7 +14,7 @@ public class IoTThreadFactory implements ThreadFactory {
 		SecurityManager s = System.getSecurityManager();
 		group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
 		// thread pool name format : pool-number-IoTDB-poolName-thread-
-		this.namePrefix = "pool-" + poolNumber.getAndIncrement() + "IoTDB" + "-" + poolName + "-thread-";
+		this.namePrefix = "pool-" + poolNumber.getAndIncrement() + "-IoTDB" + "-" + poolName + "-thread-";
 	}
 
 	@Override
