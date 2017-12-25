@@ -4,6 +4,8 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -11,6 +13,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,13 +27,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class StatMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
-    // Design for mutual access service
     private final ReadWriteLock stateLock;
     private final int backLoopPeriod;
-    private final MManager mManager;
 
-    // key is the store path like FileNodeProcessor.root_stats_xxx.xxx
-    // or simple name like:FileNodeManager
+    // key is the store path like FileNodeProcessor.root_stats_xxx.xxx,
+    // or simple name like:FileNodeManager. And value is interface implement
+    // statistics function
     private HashMap<String, IStatistic> registProcessor;
     private ScheduledExecutorService service;
 
@@ -43,31 +45,19 @@ public class StatMonitor {
     private AtomicLong numPointsInsert = new AtomicLong(0);
 
     private StatMonitor() {
-        mManager = MManager.getInstance();
+        MManager mManager = MManager.getInstance();
         stateLock = new ReentrantReadWriteLock();
         registProcessor = new HashMap<>();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         backLoopPeriod = config.backLoopPeriod;
         try {
-            if (!mManager.pathExist("root.stats")) {
-                mManager.setStorageLevelToMTree("root.stats");
+            String prefix = MonitorConstants.getStatPrefix();
+
+            if (!mManager.pathExist(prefix)) {
+                mManager.setStorageLevelToMTree(prefix);
             }
-            registProcessor.clear();
-            // Add all the fileNode to registProcessor
-//            List<String> fileNames = mManager.getAllFileNames();
-//            for (String fileName : fileNames) {
-//                String statPrefix = MonitorConstants.getStatPrefix();
-//                String statFilePath = statPrefix + "write." + fileName.replaceAll("\\.", "_");
-//                System.out.println(statFilePath);
-//                if (!MManager.getInstance().pathExist(statFilePath)) {
-//                    mManager.addPathToMTree(
-//                            statFilePath, "INT64", "RLE", new String[0]
-//                    );
-//                }
-//                registProcessor.put(statFilePath, null);
-//            }
         } catch (Exception e) {
-            LOGGER.error("MManager.getInstance().setStorageLevelToMTree False");
+            LOGGER.error("MManager setStorageLevelToMTree False, {}", e.getMessage());
         }
     }
 
@@ -101,17 +91,18 @@ public class StatMonitor {
     }
 
     public void registMeta() {
+        MManager mManager = MManager.getInstance();
+        String prefix = MonitorConstants.getStatPrefix();
         try {
-            if (!mManager.pathExist("root.stats")) {
-                mManager.setStorageLevelToMTree("root.stats");
+            if (!mManager.pathExist(prefix)) {
+                mManager.setStorageLevelToMTree(prefix);
             }
         } catch (Exception e){
-            LOGGER.error("MManager.getInstance().setStorageLevelToMTree False");
+            LOGGER.error("MManager setStorageLevelToMTree False, Because {}", e.getMessage());
         }
     }
 
     public void activate() {
-        LOGGER.debug("activate!");
         service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
@@ -132,16 +123,17 @@ public class StatMonitor {
 
     public void registStatistics(String path, IStatistic statprocessor) {
         stateLock.writeLock().lock();
-        LOGGER.debug("StatMonitor is in registStatistics:" + path);
+        LOGGER.debug("StatMonitor is in registStatistics: {}", path);
         registProcessor.put(path, statprocessor);
         stateLock.writeLock().unlock();
     }
 
     public synchronized void registMeta(HashMap<String, String> hashMap) {
+        MManager mManager = MManager.getInstance();
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
                 if (entry.getKey() == null) {
-                    LOGGER.error(entry.getKey());
+                    LOGGER.error("Registering MetaData, {} is null",  entry.getKey());
                 }
 
                 if (!mManager.pathExist(entry.getKey())) {
@@ -149,8 +141,8 @@ public class StatMonitor {
                             entry.getKey(), entry.getValue(), "RLE", new String[0]);
                 }
             }
-        } catch (Exception e) {
-            LOGGER.error("initialize the metadata error, stat processor may be wrong");
+        } catch (MetadataArgsErrorException|IOException|PathErrorException e) {
+            LOGGER.error("initialize the metadata error, Because {}", e.getMessage());
         }
     }
 
@@ -172,19 +164,21 @@ public class StatMonitor {
         // queryPath like fileNode path: root.stats.car1, or FileNodeManager path: FileNodeManager
         String queryPath;
         if (key.contains("\\.")) {
-            queryPath = MonitorConstants.getStatPrefix() + key.replaceAll("\\.", "_");
+            queryPath = MonitorConstants.getStatPrefix()
+                    + MonitorConstants.MONITOR_PATH_SEPERATOR
+                    + key.replaceAll("\\.", "_");
         } else {
             queryPath = key;
         }
         if (registProcessor.containsKey(queryPath)) {
             return registProcessor.get(queryPath).getAllStatisticsValue();
         } else {
-            Long t = System.currentTimeMillis();
+            Long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> hashMap = new HashMap<>();
             TSRecord tsRecord = convertToTSRecord(
                     MonitorConstants.iniValues("FileNodeProcessorStatConstants"),
                     queryPath,
-                    t
+                    currentTimeMillis
             );
             hashMap.put(queryPath, tsRecord);
             return hashMap;
@@ -192,27 +186,24 @@ public class StatMonitor {
     }
 
     public HashMap<String, TSRecord> gatherStatistics() {
-        Long t = System.currentTimeMillis();
+        Long currentTimeMillis = System.currentTimeMillis();
         HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
         for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
-            // Attention the key being inserted is important: or the path may be wrong
             if (entry.getValue() == null) {
-//                continue;
-                tsRecordHashMap.put("",
+                tsRecordHashMap.put(entry.getKey(),
                         convertToTSRecord(
                                 MonitorConstants.iniValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
                                 entry.getKey(),
-                                t
+                                currentTimeMillis
                         )
                 );
             } else {
                 tsRecordHashMap.putAll(entry.getValue().getAllStatisticsValue());
             }
         }
-        LOGGER.debug("tsRecordHashMap:" + tsRecordHashMap.toString());
-        //TODO: need to reset the time information?
-        for (String key : tsRecordHashMap.keySet()) {
-            tsRecordHashMap.get(key).time = t;
+        LOGGER.debug("Values of tsRecordHashMap is : {}", tsRecordHashMap.toString());
+        for (TSRecord value : tsRecordHashMap.values()) {
+            value.time = currentTimeMillis;
         }
         return tsRecordHashMap;
     }
@@ -223,20 +214,18 @@ public class StatMonitor {
         int pointNum;
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
-                LOGGER.debug("Entry.getValue" + entry.getValue().toString());
                 fManager.insert(entry.getValue());
                 numInsert.incrementAndGet();
                 pointNum = entry.getValue().dataPointList.size();
                 numPointsInsert.addAndGet(pointNum);
                 count += pointNum;
             } catch (FileNodeManagerException e) {
-                LOGGER.debug(entry.getValue().dataPointList.toString());
-                LOGGER.debug("Insert Stat Points error!");
+                LOGGER.error("Inserting Stat Points error, {}",  e.getMessage());
             }
         }
-        LOGGER.debug("Now StatMonitor is inserting " + count + " points, " +
-                "and the FileNodeManager is " + FileNodeManager.getInstance().getStatParamsHashMap().
-                get(MonitorConstants.FileNodeManagerStatConstants.TotalPoints.name()));
+        LOGGER.debug("Now StatMonitor is inserting {} points, " +
+                "and the FileNodeManager is {}", count, fManager.getStatParamsHashMap().
+                get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name()));
     }
 
     public void close() {
@@ -249,7 +238,7 @@ public class StatMonitor {
         try {
             service.awaitTermination(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            LOGGER.error("StatMonitor timing service could not be shutdown");
+            LOGGER.error("StatMonitor timing service could not be shutdown with info:{}", e.getMessage());
         }
     }
 

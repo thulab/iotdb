@@ -184,6 +184,11 @@ public class IoTDB implements IoTDBMBean {
 			dBdao.close();
 		}
 
+		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
+			statMonitor = StatMonitor.getInstance();
+			statMonitor.close();
+		}
+
 		FileNodeManager.getInstance().closeAll();
 
 		WriteLogManager.getInstance().close();

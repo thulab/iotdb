@@ -62,23 +62,18 @@ public class MonitorTest {
         fManager = FileNodeManager.getInstance();
         statMonitor = StatMonitor.getInstance();
         statMonitor.registMeta();
-        fManager.getStatParamsHashMap().forEach((key, value)->value.set(0));
+        fManager.getStatParamsHashMap().forEach((key, value) -> value.set(0));
         statMonitor.clearProcessor();
         statMonitor.registStatistics(fManager.getClass().getSimpleName(), fManager);
         // add metadata
         MManager mManager = MManager.getInstance();
-//        try {
-//            if (!mManager.pathExist("root.stats")) {
-//                mManager.setStorageLevelToMTree("root.stats");
-//            }
-//        } catch (Exception e) {
-//            fail(e.getMessage());
-//        }
         fManager.registStatMetadata();
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
         for (String statParam : statParamsHashMap.keySet()) {
             assertEquals(true, mManager.pathExist(
-                    MonitorConstants.getStatPrefix() + "write.global." + statParam)
+                    MonitorConstants.getStatPrefix()
+                            + MonitorConstants.MONITOR_PATH_SEPERATOR
+                            + "write.global." + statParam)
             );
         }
         statMonitor.activate();
@@ -105,12 +100,9 @@ public class MonitorTest {
         for (DataPoint dataPoint : fTSRecord.dataPointList) {
             String m = dataPoint.getMeasurementId();
             Long v = (Long) dataPoint.getValue();
-            if (m.contains("Fail")){
+            if (m.contains("FAIL")) {
                 assertEquals(v, new Long(0));
-            } else if (m.contains("Points")) {
-//                System.out.println("Measurements");
-//                System.out.println(m);
-//                System.out.println(numPointsInsert);
+            } else if (m.contains("POINTS")) {
                 assertEquals(v, numPointsInsert);
             } else {
                 assertEquals(v, numInsert);

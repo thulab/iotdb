@@ -253,6 +253,7 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 			throws FileNodeProcessorException {
 		super(nameSpacePath);
 		fakeDeltaName = MonitorConstants.getStatPrefix()
+				+ MonitorConstants.MONITOR_PATH_SEPERATOR
 				+ "write."
 				+ nameSpacePath.replaceAll("\\.", "_");
 		this.parameters = parameters;
@@ -1262,7 +1263,7 @@ public class FileNodeProcessor extends LRUProcessor implements IStatistic{
 	@Override
 	public void close() throws FileNodeProcessorException {
 		//the processor's path is
-		LOGGER.debug("Now we are closing the FileNodeProcessor:" + this.fakeDeltaName);
+		LOGGER.debug("Deregister the FileNodeProcessor:" + this.fakeDeltaName);
 		StatMonitor.getInstance().deregistStatistics(fakeDeltaName);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {

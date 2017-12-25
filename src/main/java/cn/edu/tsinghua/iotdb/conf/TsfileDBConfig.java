@@ -117,7 +117,7 @@ public class TsfileDBConfig {
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
 
 	/**
-	 * The statMonitor's BackLoop period
+	 * The statMonitor's BackLoop period, 5s is enough
 	 */
 	public int backLoopPeriod = 5;
 
