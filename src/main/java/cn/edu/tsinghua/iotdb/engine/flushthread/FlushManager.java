@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.flushthread;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.utils.ThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
 import java.util.concurrent.ExecutorService;
@@ -20,7 +21,7 @@ public class FlushManager {
 
     private FlushManager() {
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        pool = Executors.newFixedThreadPool(config.concurrentFlushThread);
+        pool = ThreadPoolFactory.newFixedThreadPool(config.concurrentFlushThread, "Flush");
     }
 
     static public FlushManager getInstance(){
