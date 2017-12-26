@@ -37,6 +37,7 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -460,6 +461,11 @@ public class FileNodeManager {
 	}
 
 	/**
+<<<<<<< HEAD
+=======
+	 *
+	 *
+>>>>>>> origin/master
 	 * @param path
 	 *            : the column path
 	 * @param startTime
@@ -762,8 +768,8 @@ public class FileNodeManager {
 
 		@Override
 		public void run() {
-			ExecutorService mergeExecutorPool = Executors
-					.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			ExecutorService mergeExecutorPool = IoTDBThreadPoolFactory
+					.newFixedThreadPool(TsFileDBConf.mergeConcurrentThreads, "Merge");
 			for (String fileNodeNamespacePath : allChangedFileNodes) {
 				MergeOneProcessor mergeOneProcessorThread = new MergeOneProcessor(fileNodeNamespacePath);
 				mergeExecutorPool.execute(mergeOneProcessorThread);
