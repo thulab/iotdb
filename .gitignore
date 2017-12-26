@@ -34,4 +34,6 @@ tsfile-jdbc/src/main/resources/output/queryRes.csv
 *.tar.gz
 *.tar
 data/
-
+filenode/
+metadata/
+overflow/
