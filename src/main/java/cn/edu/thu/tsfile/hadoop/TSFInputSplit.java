@@ -1,10 +1,14 @@
 package cn.edu.thu.tsfile.hadoop;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
+import java.util.List;
 
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
+import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
+import jdk.internal.util.xml.impl.Input;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -16,8 +20,8 @@ public class TSFInputSplit extends InputSplit implements Writable{
 
     
 	private Path path;
-    private String deviceId;
-    private int indexOfDeviceRowGroup;
+    private int numOfDeviceRowGroup;
+    private List<RowGroupMetaData> deviceRowGroupMetaDataList;
     private long start;
     private long length;
     private String[] hosts;
@@ -28,17 +32,16 @@ public class TSFInputSplit extends InputSplit implements Writable{
 
     /**
      * @param path
-     * @param deviceId
-     * @param indexOfDeviceRowGroup
+     * @param deviceRowGroupMetaDataList
      * @param start
      * @param length
      * @param hosts
      */
-    public TSFInputSplit(Path path, String deviceId, int indexOfDeviceRowGroup, long start, long length,
+    public TSFInputSplit(Path path, List<RowGroupMetaData> deviceRowGroupMetaDataList, long start, long length,
                          String[] hosts) {
         this.path = path;
-        this.deviceId = deviceId;
-        this.indexOfDeviceRowGroup = indexOfDeviceRowGroup;
+        this.deviceRowGroupMetaDataList = deviceRowGroupMetaDataList;
+        this.numOfDeviceRowGroup = deviceRowGroupMetaDataList.size();
         this.start = start;
         this.length = length;
         this.hosts = hosts;
@@ -59,31 +62,31 @@ public class TSFInputSplit extends InputSplit implements Writable{
     }
 
     /**
-     * @return the deviceId
+     * @return the numOfDeviceRowGroup
      */
-    public String getDeviceId() {
-        return deviceId;
+    public int getNumOfDeviceRowGroup() {
+        return numOfDeviceRowGroup;
     }
 
     /**
-     * @param deviceId the deviceId to set
+     * @param numOfDeviceRowGroup the numOfDeviceRowGroup to set
      */
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setNumOfDeviceRowGroup(int numOfDeviceRowGroup) {
+        this.numOfDeviceRowGroup = numOfDeviceRowGroup;
     }
 
     /**
-     * @return the indexOfDeviceRowGroup
+     * @return the deviceRowGroupMetaDataList
      */
-    public int getIndexOfDeviceRowGroup() {
-        return indexOfDeviceRowGroup;
+    public List<RowGroupMetaData> getDeviceRowGroupMetaDataList() {
+        return deviceRowGroupMetaDataList;
     }
 
     /**
-     * @param indexOfDeviceRowGroup the indexOfDeviceRowGroup to set
+     * @param deviceRowGroupMetaDataList the deviceRowGroupMetaDataList to set
      */
-    public void setIndexOfDeviceRowGroup(int indexOfDeviceRowGroup) {
-        this.indexOfDeviceRowGroup = indexOfDeviceRowGroup;
+    public void setDeviceRowGroupMetaDataList(List<RowGroupMetaData> deviceRowGroupMetaDataList) {
+        this.deviceRowGroupMetaDataList = deviceRowGroupMetaDataList;
     }
 
     /**
@@ -113,8 +116,6 @@ public class TSFInputSplit extends InputSplit implements Writable{
     @Override
     public void write(DataOutput out) throws IOException {
         out.writeUTF(path.toString());
-        out.writeUTF(deviceId);
-        out.writeInt(indexOfDeviceRowGroup);
         out.writeLong(start);
         out.writeLong(length);
         out.writeInt(hosts.length);
@@ -122,13 +123,14 @@ public class TSFInputSplit extends InputSplit implements Writable{
             String string = hosts[i];
             out.writeUTF(string);
         }
+        out.writeInt(numOfDeviceRowGroup);
+        RowGroupBlockMetaData rowGroupBlockMetaData = new TsRowGroupBlockMetaData(deviceRowGroupMetaDataList).convertToThrift();
+        ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(rowGroupBlockMetaData, (OutputStream)out);
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
         path = new Path(in.readUTF());
-        deviceId = in.readUTF();
-        this.indexOfDeviceRowGroup = in.readInt();
         this.start = in.readLong();
         this.length = in.readLong();
         int len = in.readInt();
@@ -136,12 +138,16 @@ public class TSFInputSplit extends InputSplit implements Writable{
         for (int i = 0; i < len; i++) {
             hosts[i] = in.readUTF();
         }
+        this.numOfDeviceRowGroup = in.readInt();
+        TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
+        tsRowGroupBlockMetaData.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData((InputStream)in));
+        deviceRowGroupMetaDataList = tsRowGroupBlockMetaData.getRowGroups();
     }
 
 	@Override
 	public String toString() {
-		return "TSFInputSplit [path=" + path + ", deviceId=" + deviceId + ", indexOfDeviceRowGroup="
-				+ indexOfDeviceRowGroup + ", start=" + start + ", length=" + length + ", hosts="
+		return "TSFInputSplit [path=" + path + ", numOfDeviceGroup=" + numOfDeviceRowGroup + ", deviceRowGroupMetaDataList="
+				+ deviceRowGroupMetaDataList + ", start=" + start + ", length=" + length + ", hosts="
 				+ Arrays.toString(hosts) + "]";
 	}
 

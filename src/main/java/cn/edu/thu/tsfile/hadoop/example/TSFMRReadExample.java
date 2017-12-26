@@ -1,8 +1,15 @@
 package cn.edu.thu.tsfile.hadoop.example;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
+import cn.edu.thu.tsfile.hadoop.TSFHadoopException;
+import cn.edu.thu.tsfile.hadoop.TSFOutputFormat;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -36,6 +43,7 @@ public class TSFMRReadExample {
 				throws IOException, InterruptedException {
 
 			Text deltaObjectId = (Text) value.get()[1];
+			System.out.println("Map:" + deltaObjectId);
 			context.write(deltaObjectId, one);
 		}
 	}
@@ -43,29 +51,35 @@ public class TSFMRReadExample {
 	public static class TSReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 
 		@Override
-		protected void reduce(Text key, Iterable<IntWritable> iterator,
+		protected void reduce(Text key, Iterable<IntWritable> values,
 				Reducer<Text, IntWritable, Text, IntWritable>.Context context)
 				throws IOException, InterruptedException {
 
 			int sum = 0;
-			for (IntWritable intWritable : iterator) {
+			for (IntWritable intWritable : values) {
 				sum = sum + intWritable.get();
 			}
+			System.out.println("Reduce:" + key + "\t" + sum);
 			context.write(key, new IntWritable(sum));
 		}
 	}
 
-	public static void main(String[] args) throws IOException, ClassNotFoundException{
+	public static void main(String[] args) throws IOException, ClassNotFoundException, TSFHadoopException, URISyntaxException {
 
-		if (args.length != 3) {
-			System.out.println("Please give hdfs url, input path, output path");
-			return;
-		}
-		// like: hfds://ip:port
-		String HDFSURL = args[0];
-		String inputPath = args[1];
-		String outputPaht = args[2];
-		// TsFileHelper.writeTsFile(inputPath);
+//		if (args.length != 3) {
+//			System.out.println("Please give hdfs url, input path, output path");
+//			return;
+//		}
+//		// like: hfds://ip:port
+//		String HDFSURL = args[0];
+//		String inputPath = args[1];
+//		String outputPaht = args[2];
+//		// TsFileHelper.writeTsFile(inputPath);
+
+		String HDFSURL = "hdfs://localhost:8020";
+		Path inputPath = new Path("/east/tsfile");
+//		String inputPath = "/Users/East/tsfile";
+		Path outputPath = new Path("/east/output");
 		
 		Configuration configuration = new Configuration();
 		configuration.set("fs.defaultFS", HDFSURL);
@@ -77,7 +91,7 @@ public class TSFMRReadExample {
 		job.setReducerClass(TSReducer.class);
 		// set inputformat and outputformat
 		job.setInputFormatClass(TSFInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+//		job.setOutputFormatClass(TSFOutputFormat.class);
 		// set mapper output key and value
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(IntWritable.class);
@@ -85,17 +99,23 @@ public class TSFMRReadExample {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
 		// set input file path
-		TSFInputFormat.setInputPaths(job, new Path(inputPath));
+		TSFInputFormat.setInputPaths(job, inputPath);
 		// set output file path
-		TextOutputFormat.setOutputPath(job, new Path(outputPaht));
+		TSFOutputFormat.setOutputPath(job, outputPath);
+		outputPath.getFileSystem(job.getConfiguration()).deleteOnExit(outputPath);
+
 		/**
 		 * set configuration for TSFInputFormat
 		 */
 		TSFInputFormat.setReadTime(job, true); // read time data
 		TSFInputFormat.setReadDeltaObjectId(job, true); // read deltaObjectId
-		// TSFInputFormat.setReadColumns(job, value); // set read columns
+		String[] devices = {"root.car.d1"};
+//		TSFInputFormat.setReadDevices(job, devices);
+		String[] sensors = { "s1", "s2", "s3", "s4"};
+//		TSFInputFormat.setReadSensors(job, sensors);
 		boolean isSuccess = false;
 		try {
+			System.out.println("Start to complete job~");
 			isSuccess = job.waitForCompletion(true);
 		} catch (InterruptedException e) {
 			e.printStackTrace();

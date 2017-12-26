@@ -1,19 +1,15 @@
 package cn.edu.thu.tsfile.hadoop;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.format.FileMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -27,8 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TSFileMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
 /**
  * @author liukun
@@ -37,10 +34,6 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSFInputFormat.class);
 
-	/*
-	 * For read columns selected
-	 */
-	public static final String READ_COLUMNS = "tsfile.read.columns";
 	/*
 	 * For read time
 	 */
@@ -62,41 +55,80 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 	 */
 	public static final String FILTER_EXIST = "tsfile.filter.exist";
 
+	public static final String READ_DEVICES = "tsfile.read.deltaobject";
+	public static final String READ_SENSORS = "tsfile.read.measurement";
+
 	private static final String SPERATOR = ",";
 
 	/**
-	 * Set the columns which want to be read
+	 * Set the devices which want to be read
 	 *
 	 * @param job
 	 * @param value
 	 * @throws TSFHadoopException
 	 */
-	public static void setReadColumns(Job job, String[] value) throws TSFHadoopException {
+	public static void setReadDevices(Job job, String[] value) throws TSFHadoopException {
 		if (value == null || value.length < 1) {
-			throw new TSFHadoopException("The columns selected is null or empty");
+			throw new TSFHadoopException("The devices selected is null or empty");
 		} else {
-			String columns = "";
-			for (String column : value) {
-				columns = columns + column + ",";
+			String devices = "";
+			for (String device : value) {
+				devices = devices + device + SPERATOR;
 			}
 			// Get conf type
-			job.getConfiguration().set(READ_COLUMNS, (String) columns.subSequence(0, columns.length() - 1));
+			job.getConfiguration().set(READ_DEVICES, (String) devices.subSequence(0, devices.length() - 1));
 		}
 	}
 
 	/**
-	 * Get the columns which want to be read
+	 * Get the devices which want to be read
 	 *
 	 * @param configuration
-	 * @return if don't set the columns, return null
+	 * @return if don't set the devices, return null
 	 */
-	public static String[] getReadColumns(Configuration configuration) {
-		String columns = configuration.get(READ_COLUMNS);
-		if (columns == null || columns.length() < 1) {
+	public static List<String> getReadDevices(Configuration configuration) {
+		String devices = configuration.get(READ_DEVICES);
+		if (devices == null || devices.length() < 1) {
 			return null;
 		} else {
-			String[] cols = columns.split(SPERATOR);
-			return cols;
+			List<String> deviceList = Arrays.asList(devices.split(SPERATOR));
+			return deviceList;
+		}
+	}
+
+	/**
+	 * Set the sensors which want to be read
+	 *
+	 * @param job
+	 * @param value
+	 * @throws TSFHadoopException
+	 */
+	public static void setReadSensors(Job job, String[] value) throws TSFHadoopException {
+		if (value == null || value.length < 1) {
+			throw new TSFHadoopException("The sensors selected is null or empty");
+		} else {
+			String sensors = "";
+			for (String sensor : value) {
+				sensors = sensors + sensor + SPERATOR;
+			}
+			// Get conf type
+			job.getConfiguration().set(READ_SENSORS, (String) sensors.subSequence(0, sensors.length() - 1));
+		}
+	}
+
+	/**
+	 * Get the sensors which want to be read
+	 *
+	 * @param configuration
+	 * @return if don't set the sensors, return null
+	 */
+	public static List<String> getReadSensors(Configuration configuration) {
+		String sensors = configuration.get(READ_SENSORS);
+		if (sensors == null || sensors.length() < 1) {
+			return null;
+		} else {
+			List<String> sensorList = Arrays.asList(sensors.split(SPERATOR));
+			return sensorList;
 		}
 	}
 
@@ -231,10 +263,9 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 				System.out.println("The block location information is " + Arrays.toString(blockLocations));
 				HDFSInputStream hdfsInputStream = new HDFSInputStream(path, configuration);
 				FileReader fileReader = new FileReader(hdfsInputStream);
-				TSFileMetaData tsfMetaData = fileReader.getFileMetadata();
-				fileReader.close();
 				// Get the timeserise to test
-				splits.addAll(generateSplits(path, tsfMetaData, blockLocations));
+				splits.addAll(generateSplits(path, fileReader, blockLocations));
+				fileReader.close();
 			} else {
 				LOGGER.warn("The file length is " + length);
 			}
@@ -251,12 +282,12 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 	 * information with the filter
 	 *
 	 * @param path
-	 * @param tsfMetaData
+	 * @param fileReader
 	 * @param blockLocations
 	 * @return
 	 * @throws IOException
 	 */
-	private List<TSFInputSplit> generateSplits(Path path, TSFileMetaData tsfMetaData, BlockLocation[] blockLocations)
+	private List<TSFInputSplit> generateSplits(Path path, FileReader fileReader, BlockLocation[] blockLocations)
 			throws IOException {
 		Map<String, Integer> mapRowGroups = new HashMap<String, Integer>();
 		List<TSFInputSplit> splits = new ArrayList<TSFInputSplit>();
@@ -270,52 +301,46 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 		};
 		Arrays.sort(blockLocations, comparator);
 
-		int rowGroupIndex = 0;
-		for (RowGroupMetaData rowGroupMetaData : tsfMetaData.getRowGroups()) {
+		List<RowGroupMetaData> rowGroupMetaDataList = new ArrayList<>();
+		int currentBlockIndex = 0;
+		long splitSize = 0;
+		long splitStart = 0;
+		List<String> hosts = new ArrayList<>();
+		for (RowGroupMetaData rowGroupMetaData : fileReader.getSortedRowGroupMetaDataList()) {
 			LOGGER.info("The rowGroupMetaData information is {}", rowGroupMetaData);
-			String deviceId = rowGroupMetaData.getDeltaObjectUID();
+
 			long start = getRowGroupStart(rowGroupMetaData);
 			int blkIndex = getBlockLocationIndex(blockLocations, start);
-			String[] hosts = null;
-			if (blkIndex >= 0) {
-				try {
-					hosts = blockLocations[blkIndex].getHosts();
-				} catch (IOException e) {
-					e.printStackTrace();
-					throw e;
-				}
-			} else {
-				try {
-					hosts = blockLocations[0].getHosts();
-				} catch (IOException e) {
-					e.printStackTrace();
-					throw e;
-				}
+			if(hosts.size() == 0)
+			{
+				hosts.addAll(Arrays.asList(blockLocations[blkIndex].getHosts()));
+				splitStart = start;
 			}
-			/*
-			 * if (mapRowGroups.containsKey(deviceId)) { int index =
-			 * mapRowGroups.get(deviceId); mapRowGroups.put(deviceId, index +
-			 * 1); // check the filter is null
-			 * LOGGER.info("The split information:" + "\n" + "path:" +
-			 * path.toString() + "\t" + "deviceId:" + deviceId + "\t" + "Index:"
-			 * + index + "\t" + "start:" + start + "\t" + "length:" +
-			 * rowGroupMetaData.getTotalByteSize() + "\t" + "hosts:" + hosts);
-			 * splits.add(makeSplit(path, deviceId, index, start,
-			 * rowGroupMetaData.getTotalByteSize(), hosts)); } else {
-			 * mapRowGroups.put(deviceId, 1);
-			 * LOGGER.info("The split information:" + "\n" + "path:" +
-			 * path.toString() + "\t" + "deviceId:" + deviceId + "\t" + "Index:"
-			 * + 0 + "\t" + "start:" + start + "\t" + "length:" +
-			 * rowGroupMetaData.getTotalByteSize() + "\t" + "hosts:" + hosts);
-			 * splits.add(makeSplit(path, deviceId, 0, start,
-			 * rowGroupMetaData.getTotalByteSize(), hosts)); }
-			 */
-			TSFInputSplit tsfInputSplit = makeSplit(path, deviceId, rowGroupIndex, start,
-					rowGroupMetaData.getTotalByteSize(), hosts);
-			LOGGER.info("The tsfile inputsplit information is {}", tsfInputSplit);
-			splits.add(tsfInputSplit);
-			rowGroupIndex++;
+
+			if(blkIndex != currentBlockIndex)
+			{
+				TSFInputSplit tsfInputSplit = makeSplit(path, rowGroupMetaDataList, splitStart,
+						splitSize, hosts);
+				LOGGER.info("The tsfile inputsplit information is {}", tsfInputSplit);
+				splits.add(tsfInputSplit);
+
+				currentBlockIndex = blkIndex;
+				rowGroupMetaDataList.clear();
+				rowGroupMetaDataList.add(rowGroupMetaData);
+				splitStart = start;
+				splitSize = rowGroupMetaData.getTotalByteSize();
+				hosts.clear();
+			}
+			else
+			{
+				rowGroupMetaDataList.add(rowGroupMetaData);
+				splitSize += rowGroupMetaData.getTotalByteSize();
+			}
 		}
+		TSFInputSplit tsfInputSplit = makeSplit(path, rowGroupMetaDataList, splitStart,
+				splitSize, hosts);
+		LOGGER.info("The tsfile inputsplit information is {}", tsfInputSplit);
+		splits.add(tsfInputSplit);
 		return splits;
 	}
 
@@ -336,9 +361,9 @@ public class TSFInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
 		return -1;
 	}
 
-	private TSFInputSplit makeSplit(Path path, String deviceUID, int numOfRowGroupMetaDate, long start, long length,
-			String[] hosts) {
-		return new TSFInputSplit(path, deviceUID, numOfRowGroupMetaDate, start, length, hosts);
+	private TSFInputSplit makeSplit(Path path, List<RowGroupMetaData> rowGroupMataDataList, long start, long length,
+			List<String> hosts) {
+		String[] hosts_str = hosts.toArray(new String[hosts.size()]);
+		return new TSFInputSplit(path, rowGroupMataDataList, start, length, hosts_str);
 	}
-
 }

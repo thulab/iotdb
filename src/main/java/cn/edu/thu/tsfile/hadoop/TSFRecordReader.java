@@ -1,9 +1,10 @@
 package cn.edu.thu.tsfile.hadoop;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
@@ -26,9 +27,10 @@ import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryConfig;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryEngine;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.HadoopQueryEngine;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
+import sun.rmi.runtime.Log;
 
 /**
  * @author liukun
@@ -38,7 +40,11 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSFRecordReader.class);
 
 	private QueryDataSet dataSet = null;
-	private String deviceId = null;
+	private List<Field> fields = null;
+	private long timestamp = 0;
+	private String deviceId;
+	private int sensorNum = 0;
+	private int sensorIndex = 0;
 	private boolean isReadDeviceId = false;
 	private boolean isReadTime = false;
 	private int arraySize = 0;
@@ -58,53 +64,59 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	@Override
 	public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
 		if (split instanceof TSFInputSplit) {
+			LOGGER.info("Current split is a TSFSplit,start to initialize~");
+
 			TSFInputSplit tsfInputSplit = (TSFInputSplit) split;
 			Path path = tsfInputSplit.getPath();
-			deviceId = tsfInputSplit.getDeviceId();
-			int rowGroupIndex = tsfInputSplit.getIndexOfDeviceRowGroup();
+			List<RowGroupMetaData> rowGroupMetaDataList = tsfInputSplit.getDeviceRowGroupMetaDataList();
 			Configuration configuration = context.getConfiguration();
 			hdfsInputStream = new HDFSInputStream(path, configuration);
 			// Get the read columns and filter information
-			String[] columns = TSFInputFormat.getReadColumns(configuration);
+			List<String> deviceIdList = TSFInputFormat.getReadDevices(configuration);
+			if(deviceIdList == null)deviceIdList = initDeviceIdList(rowGroupMetaDataList);
+			List<String> sensorIdList = TSFInputFormat.getReadSensors(configuration);
+			if(sensorIdList == null)sensorIdList = initSensorIdList(rowGroupMetaDataList);
+			LOGGER.info("Devices:" + deviceIdList);
+			LOGGER.info("Sensors:" + sensorIdList);
+
+			this.sensorNum = sensorIdList.size();
 			isReadDeviceId = TSFInputFormat.getReadDeltaObject(configuration);
 			isReadTime = TSFInputFormat.getReadTime(configuration);
-			// Don't read any columns( series, time, deviceid)
-			if ((columns == null || columns.length < 1) && (isReadDeviceId == false && isReadTime == false)) {
-				LOGGER.error("The read columns is null or empty");
-				throw new InterruptedException("The read columns is null or empty");
-			}
 			if (isReadDeviceId) {
 				arraySize++;
 			}
 			if (isReadTime) {
 				arraySize++;
 			}
-			// Just read time or deviceid
-			if (columns == null || columns.length < 1) {
-				FileReader fileReader = new FileReader(hdfsInputStream);
-				List<TimeSeriesMetadata> series = fileReader.getFileMetadata().getTimeSeriesList();
-				List<String> seriesName = new ArrayList<>();
-				for (TimeSeriesMetadata timeSeries : series) {
-					seriesName.add(timeSeries.getMeasurementUID());
-				}
-				columns = seriesName.toArray(new String[seriesName.size()]);
-			}
-			arraySize += columns.length;
-			// Read data using query engine
-			String selectColumns = "";
-			for (int i = 0; i < columns.length; i++) {
-				selectColumns = selectColumns + deviceId + SEPARATOR_DEVIDE_SERIES + columns[i] + SEPARATOR_SERIES;
-			}
-			selectColumns = selectColumns.substring(0, selectColumns.length() - 1);
-			QueryConfig queryConfig = new QueryConfig(selectColumns);
-			QueryEngine queryEngine = new QueryEngine(hdfsInputStream);
-			dataSet = queryEngine.queryInOneRowGroup(queryConfig, rowGroupIndex);
+			arraySize += sensorNum;
+
+			HadoopQueryEngine queryEngine = new HadoopQueryEngine(hdfsInputStream, rowGroupMetaDataList);
+			dataSet = queryEngine.queryWithSpecificRowGroups(deviceIdList, sensorIdList, null, null, null);
+			LOGGER.info("Initialization complete~");
 		} else {
 			LOGGER.error("The InputSplit class is not {}, the class is {}", TSFInputSplit.class.getName(),
 					split.getClass().getName());
 			throw new InternalError(String.format("The InputSplit class is not %s, the class is %s",
 					TSFInputSplit.class.getName(), split.getClass().getName()));
 		}
+	}
+
+	private List<String> initDeviceIdList(List<RowGroupMetaData> rowGroupMetaDataList) {
+		Set<String> deviceIdSet = new HashSet<>();
+		for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDataList) {
+			deviceIdSet.add(rowGroupMetaData.getDeltaObjectID());
+		}
+		return new ArrayList<>(deviceIdSet);
+	}
+
+	private List<String> initSensorIdList(List<RowGroupMetaData> rowGroupMetaDataList){
+		Set<String> sensorIdSet = new HashSet<>();
+		for(RowGroupMetaData rowGroupMetaData : rowGroupMetaDataList) {
+			for(TimeSeriesChunkMetaData timeSeriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()){
+				sensorIdSet.add(timeSeriesChunkMetaData.getProperties().getMeasurementUID());
+			}
+		}
+		return new ArrayList<>(sensorIdSet);
 	}
 
 	/*
@@ -114,7 +126,26 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	 */
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
-		return dataSet.next();
+		LOGGER.info("Start to get next data~");
+		sensorIndex += sensorNum;
+
+		if(fields == null || sensorIndex >= fields.size()){
+			LOGGER.info("Start another row~");
+			if(!dataSet.next()){
+				LOGGER.info("Finish all rows~");
+				return false;
+			}
+
+			RowRecord rowRecord = dataSet.getCurrentRecord();
+			fields = rowRecord.getFields();
+			timestamp = rowRecord.getTime();
+			sensorIndex = 0;
+			LOGGER.info("New time is " + timestamp);
+			LOGGER.info("New fields are " + fields);
+		}
+		deviceId = fields.get(sensorIndex).deltaObjectId;
+
+		return true;
 	}
 
 	/*
@@ -134,10 +165,12 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	 */
 	@Override
 	public ArrayWritable getCurrentValue() throws IOException, InterruptedException {
-		RowRecord rowRecord = dataSet.getCurrentRecord();
+		LOGGER.info("Start to get current value~");
+
 		Writable[] writables = getEmptyWritables();
 		Text deviceid = new Text(deviceId);
-		LongWritable time = new LongWritable(rowRecord.getTime());
+		LongWritable time = new LongWritable(timestamp);
+		LOGGER.info("device:" + deviceId + "\ttimestamp:" + time);
 		int index = 0;
 		if (isReadTime && isReadDeviceId) {
 			writables[0] = time;
@@ -150,11 +183,18 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			writables[0] = deviceid;
 			index = 1;
 		}
-		List<Field> fields = rowRecord.getFields();
-		for (Field field : fields) {
+
+		LOGGER.info("Start to get real data, sensor index is " + sensorIndex + ", sensor num is " + sensorNum);
+		LOGGER.info("Fields are:" + fields);
+		for(int i = 0;i < sensorNum;i++)
+		{
+			LOGGER.info("Current index is " + i);
+			Field field = fields.get(sensorIndex + i);
 			if (field.isNull()) {
+				LOGGER.info("Current value is null");
 				writables[index] = NullWritable.get();
 			} else {
+				LOGGER.info("Current type is " + field.dataType);
 				switch (field.dataType) {
 				case INT32:
 					writables[index] = new IntWritable(field.getIntV());
@@ -179,8 +219,10 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 					throw new InterruptedException(String.format("The data type %s is not support ", field.dataType));
 				}
 			}
+			LOGGER.info("Get:" + writables[index]);
 			index++;
 		}
+		LOGGER.info("Get array:" + writables);
 		return new ArrayWritable(Writable.class, writables);
 	}
 

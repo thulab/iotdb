@@ -45,8 +45,8 @@ public class TsFileHelper {
 			ITsRandomAccessFileWriter output = new TsRandomAccessFileWriter(new File(filePath));
 			TsFile tsFile = new TsFile(output, jsonSchema);
 			String line = "";
-			for(int i = 1;i<100;i++){
-				line = "root.car.d1,"+i+",s1,1,s2,1,s3,0.1,s4,0.1";
+			for(int i = 1;i<1000;i++){
+				line = "root.car.d1,"+i+",s1," + i + ",s2,1,s3,0.1,s4,0.1";
 				tsFile.writeLine(line);
 			}
 			tsFile.writeLine("root.car.d2,5, s1, 5, s2, 50, s3, 200.5, s4, 0.5");
@@ -98,11 +98,14 @@ public class TsFileHelper {
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException{
-		String filePath = "tsfile";
+//		String filePath = "/Users/East/software/IoTDB/tsfile-hadoop-connector/tsfile";
+		String filePath = "/Users/East/tsfile_big";
 		File file = new File(filePath);
 		System.out.println(file.exists());
 		file.delete();
 		writeTsFile(filePath);
+
+		System.out.println("Now print results:");
 		TsFile tsFile = new TsFile(new TsRandomAccessLocalFileReader(filePath));
 		System.out.println(tsFile.getAllColumns());
 		System.out.println(tsFile.getAllDeltaObject());

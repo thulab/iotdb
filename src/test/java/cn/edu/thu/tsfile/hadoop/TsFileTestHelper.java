@@ -47,7 +47,7 @@ public class TsFileTestHelper {
 			ITsRandomAccessFileWriter output = new TsRandomAccessFileWriter(new File(filePath));
 			TsFile tsFile = new TsFile(output, jsonSchema);
 			String line = "";
-			for(int i = 1;i<100;i++){
+			for(int i = 1;i<10;i++){
 				line = "root.car.d1,"+i+",s1,1,s2,1,s3,0.1,s4,0.1,s5,true,s6,tsfile";
 				tsFile.writeLine(line);
 			}
