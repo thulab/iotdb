@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -54,33 +55,20 @@ public class MemControlTest {
             "CREATE TIMESERIES root.house.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN"
     };
 
-    private String overflowDataDirPre;
-    private String fileNodeDirPre;
-    private String bufferWriteDirPre;
-    private String metadataDirPre;
-    private String derbyHomePre;
-
     TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
     private IoTDB deamon;
 
-    private boolean testFlag = true;
+    private boolean testFlag = false;
     private boolean exceptionCaught = false;
+
+    public MemControlTest() {
+    }
 
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-
-            overflowDataDirPre = config.overflowDataDir;
-            fileNodeDirPre = config.fileNodeDir;
-            bufferWriteDirPre = config.bufferWriteDir;
-            metadataDirPre = config.metadataDir;
-            derbyHomePre = config.derbyHome;
-
-            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-            config.derbyHome = FOLDER_HEADER + "/data/derby";
+            deamon = IoTDB.getInstance();
+            EnvironmentUtils.envSetUp();
 
             config.memThresholdWarning = 3 * TsFileDBConstant.MB;
             config.memThresholdDangerous = 5 * TsFileDBConstant.MB;
@@ -89,7 +77,6 @@ public class MemControlTest {
             BasicMemController.getInstance().setDangerouseThreshold(config.memThresholdDangerous);  // force initialize
             BasicMemController.getInstance().setWarningThreshold(config.memThresholdWarning);
 
-            deamon = new IoTDB();
             deamon.active();
             insertSQL();
         }
@@ -100,20 +87,7 @@ public class MemControlTest {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
-
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-            FileUtils.deleteDirectory(new File(config.metadataDir));
-            FileUtils.deleteDirectory(new File(config.derbyHome));
-            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-
-            config.overflowDataDir = overflowDataDirPre;
-            config.fileNodeDir = fileNodeDirPre;
-            config.bufferWriteDir = bufferWriteDirPre;
-            config.metadataDir = metadataDirPre;
-            config.derbyHome = derbyHomePre;
+            EnvironmentUtils.cleanEnv();
         }
     }
 

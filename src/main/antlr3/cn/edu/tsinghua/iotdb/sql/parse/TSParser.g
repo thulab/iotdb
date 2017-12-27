@@ -129,7 +129,7 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
 
         xlateMap.put("KW_DATETIME", "DATETIME");
         xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
-
+        xlateMap.put("KW_TIME", "TIME");
         xlateMap.put("KW_CLUSTERED", "CLUSTERED");
 
         xlateMap.put("KW_INTO", "INTO");
@@ -152,7 +152,7 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
         xlateMap.put("COLON", ":");
         xlateMap.put("COMMA", ",");
         xlateMap.put("SEMICOLON", ");");
-		
+
         xlateMap.put("LPAREN", "(");
         xlateMap.put("RPAREN", ")");
         xlateMap.put("LSQUARE", "[");
@@ -229,7 +229,7 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
                 + input.LT(1) != null ? " " + getTokenErrorDisplay(input.LT(1)) : ""
                 + input.LT(1) != null ? " " + getTokenErrorDisplay(input.LT(1)) : ""
                 + input.LT(3) != null ? " " + getTokenErrorDisplay(input.LT(3)) : "";
-                        
+
         } else if (e instanceof MismatchedTokenException) {
             MismatchedTokenException mte = (MismatchedTokenException) e;
             msg = super.getErrorMessage(e, xlateNames) + (input.LT(-1) == null ? "":" near '" + input.LT(-1).getText()) + "'"
@@ -238,7 +238,11 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
             FailedPredicateException fpe = (FailedPredicateException) e;
             msg = "Failed to recognize predicate '" + fpe.token.getText() + "'. Failed rule: '" + fpe.ruleName + "'";
         } else {
-            msg = super.getErrorMessage(e, xlateNames);
+            if(xlateMap.containsKey("KW_"+e.token.getText().toUpperCase())){
+                msg = e.token.getText() + " is a key word. Please refer to SQL document and check whether it can be used here or not.";
+            } else {
+                msg = super.getErrorMessage(e, xlateNames);
+            }
         }
 
         if (msgs.size() > 0) {
@@ -274,7 +278,7 @@ numberOrString // identifier is string or integer
     ;
 
 numberOrStringWidely
-    : number 
+    : number
     | StringLiteral
     ;
 
@@ -602,8 +606,8 @@ indexWithEqualExpression
 
 
 dropIndexStatement
-    : KW_DROP KW_INDEX KW_ON prefixPath
-    -> ^(TOK_DROP ^(TOK_INDEX prefixPath))
+    : KW_DROP KW_INDEX func=Identifier KW_ON p=timeseries
+    -> ^(TOK_DROP ^(TOK_INDEX $p ^(TOK_FUNC $func)))
     ;
 
 /*
@@ -628,8 +632,8 @@ identifier
 //    ;
 
 selectClause
-    : KW_SELECT KW_INDEX func=Identifier LPAREN p=prefixPath COMMA file=StringLiteral COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN (fromClause)?
-    -> ^(TOK_SELECT_INDEX $func $p $file $epsilon ($alpha $beta)?) fromClause?
+    : KW_SELECT KW_INDEX func=Identifier LPAREN p1=timeseries COMMA p2=timeseries COMMA n1=dateFormatWithNumber COMMA n2=dateFormatWithNumber COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN (fromClause)?
+    -> ^(TOK_SELECT_INDEX $func $p1 $p2 $n1 $n2 $epsilon ($alpha $beta)?) fromClause?
     | KW_SELECT clusteredPath (COMMA clusteredPath)* fromClause
     -> ^(TOK_SELECT clusteredPath+) fromClause
     ;
@@ -718,6 +722,7 @@ nullCondition
 atomExpression
     :
     (KW_NULL) => KW_NULL -> TOK_NULL
+    | (KW_TIME) => KW_TIME -> ^(TOK_PATH KW_TIME)
     | (constant) => constant
     | prefixPath
     | suffixPath

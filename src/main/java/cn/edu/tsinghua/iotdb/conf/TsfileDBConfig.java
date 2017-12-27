@@ -73,6 +73,11 @@ public class TsfileDBConfig {
 	public String walFolder = "wals";
 
 	/**
+	 * Data directory for index files (KV-match indexes)
+	 */
+	public String indexFileDir = "index";
+
+	/**
 	 * The maximum concurrent thread number for merging overflow
 	 */
 	public int mergeConcurrentThreads = 10;
@@ -104,6 +109,11 @@ public class TsfileDBConfig {
 	 */
 	public long periodTimeForMerge = 7200;
 
+	/**
+	 * How many thread can concurrently flush. When <= 0, use CPU core number.
+	 */
+	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
+
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
 
 	/**
@@ -127,7 +137,7 @@ public class TsfileDBConfig {
 	 * 0 is RecordMemController, which count the size of every record (tuple).
 	 * 1 is JVMMemController, which use JVM heap memory as threshold.
 	 */
-	public int memControllerType = 0;
+	public int memControllerType = 1;
 
 	/**
 	 * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
@@ -173,5 +183,6 @@ public class TsfileDBConfig {
 		metadataDir = dataDir + metadataDir;
 		derbyHome = dataDir + derbyHome;
 		walFolder = dataDir + walFolder;
+		indexFileDir = dataDir + indexFileDir;
 	}
 }

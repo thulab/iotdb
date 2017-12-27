@@ -1,7 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.lru.LRUProcessor;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushState;
@@ -30,6 +32,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.IRowGroupWriter;
+import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -293,7 +296,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 			out.write(BytesUtils.intToBytes(metadataSize));
 			// write metadata
 			out.write(baos.toByteArray());
-			// write tsfile position using byte[8] which is present one long number
+			// write tsfile position using byte[8] which is present one long
+			// number
 			byte[] lastPositionBytes = BytesUtils.longToBytes(lastPosition);
 			out.write(lastPositionBytes);
 			LOGGER.info("Write restore information to the restore file.");
@@ -348,14 +352,16 @@ public class BufferWriteProcessor extends LRUProcessor {
 				byte[] thriftBytes = new byte[metadataSize];
 				randomAccessFile.read(thriftBytes);
 				ByteArrayInputStream inputStream = new ByteArrayInputStream(thriftBytes);
-				RowGroupBlockMetaData rowGroupBlockMetaData = ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(inputStream);
+				RowGroupBlockMetaData rowGroupBlockMetaData = ReadWriteThriftFormatUtils
+						.readRowGroupBlockMetaData(inputStream);
 				TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
 				blockMeta.convertToTSF(rowGroupBlockMetaData);
 				groupMetaDatas.addAll(blockMeta.getRowGroups());
 				lastRowgroupSize = groupMetaDatas.size();
 				point = randomAccessFile.getFilePointer();
 			}
-			// read the tsfile position information using byte[8] which is present one long number.
+			// read the tsfile position information using byte[8] which is
+			// present one long number.
 			randomAccessFile.read(lastPostionBytes);
 		} catch (FileNotFoundException e) {
 			LOGGER.error("The restore file is not exist, the restore file path is {}.", bufferwriteRestoreFilePath);
@@ -484,7 +490,7 @@ public class BufferWriteProcessor extends LRUProcessor {
 	}
 
 	public Pair<List<Object>, List<RowGroupMetaData>> getIndexAndRowGroupList(String deltaObjectId,
-																			  String measurementId) {
+			String measurementId) {
 		List<Object> memData = null;
 		List<RowGroupMetaData> list = null;
 		// wait until flush over
@@ -564,9 +570,10 @@ public class BufferWriteProcessor extends LRUProcessor {
 		private Map<String, IRowGroupWriter> flushingRowGroupWriters;
 		private Set<String> flushingRowGroupSet;
 		private long flushingRecordCount;
+		private long lastFlushTime = -1;
 
-		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter,
-								FileSchema schema) throws WriteProcessException {
+		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter, FileSchema schema)
+				throws WriteProcessException {
 			super(ioFileWriter, schema, conf);
 		}
 
@@ -591,6 +598,18 @@ public class BufferWriteProcessor extends LRUProcessor {
 
 		@Override
 		protected void flushRowGroup(boolean isFillRowGroup) throws IOException {
+			// calculate the time interval between last flush and this flush
+			if (lastFlushTime > 0) {
+				long thisFlushTime = System.currentTimeMillis();
+				long flushTimeInterval = thisFlushTime - lastFlushTime;
+				DateTime lastDateTime = new DateTime(lastFlushTime,
+						TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				DateTime thisDateTime = new DateTime(thisFlushTime,
+						TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
+						thisDateTime, flushTimeInterval);
+				lastFlushTime = thisFlushTime;
+			}
 			if (recordCount > 0) {
 				synchronized (flushState) {
 					// This thread wait until the subThread flush finished
@@ -648,7 +667,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 
 					Runnable flushThread;
 					flushThread = () -> {
-						LOGGER.info("Asynchronous flushing start,-Thread id {}.", Thread.currentThread().getId());
+						LOGGER.info("{} synchronous flush start,-Thread id {}.", nameSpacePath,
+								Thread.currentThread().getId());
 						try {
 							asyncFlushRowGroupToStore();
 							writeStoreToDisk();
@@ -679,7 +699,8 @@ public class BufferWriteProcessor extends LRUProcessor {
 						try {
 							synchronized (flushState) {
 								switchIndexFromFlushToWork();
-								LOGGER.info("Asynchronous flushing end,-Thread is {}.", Thread.currentThread().getId());
+								LOGGER.info("{} synchronous flush end,-Thread is {}.", nameSpacePath,
+										Thread.currentThread().getId());
 								flushState.setUnFlushing();
 								flushState.notify();
 							}
@@ -689,14 +710,15 @@ public class BufferWriteProcessor extends LRUProcessor {
 						BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
 						checkSize();
 					};
-					Thread flush = new Thread(flushThread);
-					flush.start();
+					FlushManager.getInstance().submit(flushThread);
 				}
 			}
 		}
 
 		private void asyncFlushRowGroupToStore() throws IOException {
+
 			if (flushingRecordCount > 0) {
+				long startFlushTime = System.currentTimeMillis();
 				long totalMemStart = deltaFileWriter.getPos();
 				for (String deltaObjectId : flushingRowGroupSet) {
 					long rowGroupStart = deltaFileWriter.getPos();
@@ -706,11 +728,17 @@ public class BufferWriteProcessor extends LRUProcessor {
 					deltaFileWriter.endRowGroup(deltaFileWriter.getPos() - rowGroupStart);
 				}
 				long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
+				long timeInterval = System.currentTimeMillis() - startFlushTime;
+				if (timeInterval == 0) {
+					timeInterval = 1;
+				}
 				// remove the feature: fill the row group
 				// fillInRowGroupSize(actualTotalRowGroupSize);
-				LOGGER.info("Asynchronous total row group size:{}, actual:{}, less:{}.", primaryRowGroupSize,
-						actualTotalRowGroupSize, primaryRowGroupSize - actualTotalRowGroupSize);
-				LOGGER.info("Asynchronous write row group end.");
+				LOGGER.info(
+						"{} asynchronous flush total row group size:{}, actual:{}, less:{}, time consume:{} ms, flush rate:{} bytes/ms",
+						nameSpacePath, primaryRowGroupSize, actualTotalRowGroupSize,
+						primaryRowGroupSize - actualTotalRowGroupSize, timeInterval,
+						actualTotalRowGroupSize / timeInterval);
 			}
 		}
 

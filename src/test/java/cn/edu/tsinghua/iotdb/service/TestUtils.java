@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class TestUtils {
 
-    static boolean testFlag = !true;
+    static boolean testFlag = true;
 
     public static String insertTemplate = "insert into %s(timestamp%s) values(%d%s)";
 

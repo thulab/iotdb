@@ -57,20 +57,20 @@ public class OverflowQueryEngine {
      * @throws IOException        TsFile read error
      */
     public QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-                              FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize)
+                              FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
         this.formNumber = formNumber;
         if (queryDataSet != null) {
             queryDataSet.clear();
         }
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
-            return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, null);
+            return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, readLock);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
             return crossSeriesQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         } else {
             return querySeriesUsingFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
-                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, null);
+                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, readLock);
         }
     }
 
@@ -149,7 +149,7 @@ public class OverflowQueryEngine {
 
         if (groupByCalcTime.get() == null) {
 
-            LOGGER.info("calculate aggregations the 1 time");
+            LOGGER.debug("calculate aggregations the 1 time");
             groupByCalcTime.set(2);
 
             SingleSeriesFilterExpression intervalFilter = null;
@@ -191,7 +191,7 @@ public class OverflowQueryEngine {
             }
         } else {
 
-            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+            LOGGER.debug(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
 
             groupByCalcTime.set(groupByCalcTime.get() + 1);
             try {

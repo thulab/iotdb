@@ -1,37 +1,46 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_time;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_time;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.FileNotFoundException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.sql.*;
-
-import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
-import static org.junit.Assert.*;
+import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 
 
 public class LargeDataTest {
 
-    private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
+    private final String d1s0 = "root.vehicle.d1.s0";
+
     private final String d0s2 = "root.vehicle.d0.s2";
     private final String d0s3 = "root.vehicle.d0.s3";
     private final String d0s4 = "root.vehicle.d0.s4";
-    private final String d1s0 = "root.vehicle.d1.s0";
     private final String d1s1 = "root.vehicle.d1.s1";
+    
     private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
 
     private static String[] create_sql = new String[]{
@@ -47,40 +56,32 @@ public class LargeDataTest {
             "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
     };
 
-    private String overflowDataDirPre;
-    private String fileNodeDirPre;
-    private String bufferWriteDirPre;
-    private String metadataDirPre;
-    private String derbyHomePre;
-
     private IoTDB deamon;
 
     private boolean testFlag = TestUtils.testFlag;
+    TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+    private int maxNumberOfPointsInPage;
+    private int pageSizeInByte;
+    private int groupSizeInByte;
 
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
             AggregateEngine.aggregateFetchSize = 4000;
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            overflowDataDirPre = config.overflowDataDir;
-            fileNodeDirPre = config.fileNodeDir;
-            bufferWriteDirPre = config.bufferWriteDir;
-            metadataDirPre = config.metadataDir;
-            derbyHomePre = config.derbyHome;
 
             // use small page setting
-            TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+            // origin value
+            maxNumberOfPointsInPage = tsFileConfig.maxNumberOfPointsInPage;
+            pageSizeInByte = tsFileConfig.pageSizeInByte;
+            groupSizeInByte = tsFileConfig.groupSizeInByte;
+            // new value
             tsFileConfig.maxNumberOfPointsInPage = 100;
             tsFileConfig.pageSizeInByte = 1024 * 1024 * 15;
             tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
 
-            config.overflowDataDir = FOLDER_HEADER + "/data/overflow";
-            config.fileNodeDir = FOLDER_HEADER + "/data/digest";
-            config.bufferWriteDir = FOLDER_HEADER + "/data/delta";
-            config.metadataDir = FOLDER_HEADER + "/data/metadata";
-            config.derbyHome = FOLDER_HEADER + "/data/derby";
-            deamon = new IoTDB();
+            deamon = IoTDB.getInstance();
             deamon.active();
+            EnvironmentUtils.envSetUp();
         }
     }
 
@@ -89,20 +90,11 @@ public class LargeDataTest {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
-
-            TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-            FileUtils.deleteDirectory(new File(config.overflowDataDir));
-            FileUtils.deleteDirectory(new File(config.fileNodeDir));
-            FileUtils.deleteDirectory(new File(config.bufferWriteDir));
-            FileUtils.deleteDirectory(new File(config.metadataDir));
-            FileUtils.deleteDirectory(new File(config.derbyHome));
-            FileUtils.deleteDirectory(new File(FOLDER_HEADER + "/data"));
-
-            config.overflowDataDir = overflowDataDirPre;
-            config.fileNodeDir = fileNodeDirPre;
-            config.bufferWriteDir = bufferWriteDirPre;
-            config.metadataDir = metadataDirPre;
-            config.derbyHome = derbyHomePre;
+            //recovery value
+            tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
+            tsFileConfig.pageSizeInByte = pageSizeInByte;
+            tsFileConfig.groupSizeInByte = groupSizeInByte;
+            EnvironmentUtils.cleanEnv();
         }
     }
 
@@ -117,7 +109,7 @@ public class LargeDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            selectAllTest();
+            selectOneSeriesWithValueFilterTest();
             aggregationTest();
             groupByTest();
             allNullSeriesAggregationTest();
@@ -128,11 +120,13 @@ public class LargeDataTest {
 
             fixBigGroupByClassFormNumberTest();
 
+            seriesTimeDigestTest();
+
             connection.close();
         }
     }
 
-    private void selectAllTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
+    private void selectOneSeriesWithValueFilterTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
 
         String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
 
@@ -452,6 +446,45 @@ public class LargeDataTest {
                 cnt++;
             }
             assertEquals(11, cnt);
+            statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    // https://github.com/thulab/iotdb/issues/192
+    private void seriesTimeDigestTest() throws ClassNotFoundException, SQLException {
+
+        // [3000, 13599] , [13700,23999]
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        ;
+        boolean hasResultSet;
+        Statement statement;
+
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            statement = connection.createStatement();
+            hasResultSet = statement.execute("select s0 "
+                    + "from root.vehicle.d0 where time > 22987");
+            assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
+                //System.out.println(ans);
+                //assertEquals(retArray[cnt], ans);
+                cnt++;
+            }
+            //System.out.println(cnt);
+            assertEquals(3012, cnt);
             statement.close();
 
         } catch (Exception e) {

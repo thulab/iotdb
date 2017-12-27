@@ -105,6 +105,10 @@ public class TsfileDBDescriptor {
 			if(conf.memThresholdDangerous < conf.memThresholdWarning)
 				conf.memThresholdDangerous = Math.max(conf.memThresholdWarning, TsFileDBConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
 
+			conf.concurrentFlushThread  = Integer.parseInt(properties.getProperty("concurrent_flush_thread", conf.concurrentFlushThread + ""));
+			if(conf.concurrentFlushThread <= 0)
+				conf.concurrentFlushThread = Runtime.getRuntime().availableProcessors();
+
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {
 				conf.timeZone = DateTimeZone.forID(tmpTimeZone.trim());

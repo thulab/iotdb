@@ -17,6 +17,7 @@ public class SQLConstant {
     public static final String RESERVED_FREQ = "freq";
     public static final String IS_AGGREGATION = "IS_AGGREGATION";
     public static final String NOW_FUNC = "now";
+    public static final String START_TIME_STR = "1970-1-01T00:00:00";
 
 	private static final String TIME_FORMAT_PATTERN = "^\\d{4}%s\\d{1,2}%s\\d{1,2}%s\\d{1,2}:\\d{2}:\\d{2}%s$";
 	public static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>() {
@@ -94,9 +95,10 @@ public class SQLConstant {
     public static final int TOK_DELETE = 25;
     public static final int TOK_UPDATE = 26;
     public static final int TOK_QUERY = 27;
-    
+
     public static final int TOK_CREATE_INDEX = 31;
-    public static final int TOK_SELECT_INDEX = 32;
+    public static final int TOK_DROP_INDEX = 32;
+    public static final int TOK_QUERY_INDEX = 33;
 
     public static final int TOK_AUTHOR_CREATE = 41;
     public static final int TOK_AUTHOR_DROP = 42;
