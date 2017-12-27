@@ -17,7 +17,7 @@ public class MemMonitorThread extends Thread {
 
     public MemMonitorThread(long checkInterval) {
         this.checkInterval = checkInterval > 0 ? checkInterval : this.checkInterval;
-        this.safePolicy = new NoActPolicy();
+        this.safePolicy = new FlushPartialPolicy();
         this.warningPolicy = new ForceFLushAllPolicy();
         this.dangerousPolicy = new ForceFLushAllPolicy();
     }

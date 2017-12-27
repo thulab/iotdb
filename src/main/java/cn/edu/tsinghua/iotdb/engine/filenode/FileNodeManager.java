@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
+import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.lru.LRUManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
@@ -830,7 +831,15 @@ public class FileNodeManager extends LRUManager<FileNodeProcessor> {
 			}
 				break;
 			case SAFE:
-				// do nothing, this case is impossible
+				// if the flush thread pool is not full ( or half full), start a new flush task
+				if(FlushManager.getInstance().getActiveCnt() < 0.5 * FlushManager.getInstance().getThreadCnt()) {
+					try {
+						super.flushTop(0.01f);
+					} catch (IOException e) {
+						LOGGER.error("force flush memory data error:{}",e.getMessage());
+						e.printStackTrace();
+					}
+				}
 				break;
 		}
 	}
