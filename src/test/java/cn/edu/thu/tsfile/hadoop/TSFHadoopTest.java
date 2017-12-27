@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -38,7 +37,6 @@ public class TSFHadoopTest {
 
 		TsFileTestHelper.deleteTsFile(tsfilePath);
 		inputformat = new TSFInputFormat();
-
 	}
 
 	@After
@@ -61,8 +59,8 @@ public class TSFHadoopTest {
 		//
 		String[] value = { "s1", "s2", "s3" };
 		try {
-			TSFInputFormat.setReadSensors(job, value);
-			String[] getValue = (String[])TSFInputFormat.getReadSensors(job.getConfiguration()).toArray();
+			TSFInputFormat.setReadMeasurementIds(job, value);
+			String[] getValue = (String[])TSFInputFormat.getReadMeasurementIds(job.getConfiguration()).toArray();
 			assertArrayEquals(value, getValue);
 		} catch (TSFHadoopException e) {
 			e.printStackTrace();
@@ -130,9 +128,9 @@ public class TSFHadoopTest {
 			// set input path to the job
 			TSFInputFormat.setInputPaths(job, tsfilePath);
 			String[] devices = {"root.car.d1"};
-			TSFInputFormat.setReadDevices(job, devices);
+			TSFInputFormat.setReadDeltaObjectIds(job, devices);
 			String[] sensors = { "s1", "s2", "s3", "s4", "s5", "s6"};
-			TSFInputFormat.setReadSensors(job, sensors);
+			TSFInputFormat.setReadMeasurementIds(job, sensors);
 			TSFInputFormat.setReadDeltaObjectId(job, false);
 			TSFInputFormat.setReadTime(job, false);
 			List<InputSplit> inputSplits = inputformat.getSplits(job);

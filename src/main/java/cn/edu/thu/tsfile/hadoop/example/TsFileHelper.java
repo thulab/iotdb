@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -18,6 +20,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 
 public class TsFileHelper {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(TsFileHelper.class);
 	
 	public static void deleteTsFile(String filePath){
 		File file = new File(filePath);
@@ -39,7 +43,6 @@ public class TsFileHelper {
 
 		
 		JSONObject jsonSchema = getJsonSchema();
-		
 		
 		try {
 			ITsRandomAccessFileWriter output = new TsRandomAccessFileWriter(new File(filePath));
@@ -98,21 +101,13 @@ public class TsFileHelper {
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException{
-//		String filePath = "/Users/East/software/IoTDB/tsfile-hadoop-connector/tsfile";
-		String filePath = "/Users/East/tsfile_big";
+		String filePath = "example_mr.tsfile";
 		File file = new File(filePath);
-		System.out.println(file.exists());
 		file.delete();
 		writeTsFile(filePath);
-
-		System.out.println("Now print results:");
 		TsFile tsFile = new TsFile(new TsRandomAccessLocalFileReader(filePath));
-		System.out.println(tsFile.getAllColumns());
-		System.out.println(tsFile.getAllDeltaObject());
-		System.out.println(tsFile.getAllSeries());
-		System.out.println(tsFile.getDeltaObjectRowGroupCount());
-		System.out.println(tsFile.getDeltaObjectTypes());
-		System.out.println(tsFile.getRowGroupPosList());
-		
+		LOGGER.info("Get columns information: {}",tsFile.getAllColumns());
+		LOGGER.info("Get all deltaObjectId: {}",tsFile.getAllDeltaObject());
+		tsFile.close();
 	}
 }
