@@ -1,10 +1,11 @@
 package cn.edu.thu.tsfile.hadoop;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
@@ -23,14 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.thu.tsfile.hadoop.io.HDFSInputStream;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
-import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryConfig;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.HadoopQueryEngine;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
-import sun.rmi.runtime.Log;
 
 /**
  * @author liukun
@@ -48,19 +47,9 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	private boolean isReadDeviceId = false;
 	private boolean isReadTime = false;
 	private int arraySize = 0;
-	
 	private HDFSInputStream hdfsInputStream;
 
-	private static final String SEPARATOR_DEVIDE_SERIES = ".";
-	private static final String SEPARATOR_SERIES = "|";
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.apache.hadoop.mapreduce.RecordReader#initialize(org.apache.hadoop.
-	 * mapreduce.InputSplit, org.apache.hadoop.mapreduce.TaskAttemptContext)
-	 */
 	@Override
 	public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
 		if (split instanceof TSFInputSplit) {
@@ -72,14 +61,14 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			Configuration configuration = context.getConfiguration();
 			hdfsInputStream = new HDFSInputStream(path, configuration);
 			// Get the read columns and filter information
-			List<String> deviceIdList = TSFInputFormat.getReadDevices(configuration);
-			if(deviceIdList == null)deviceIdList = initDeviceIdList(rowGroupMetaDataList);
-			List<String> sensorIdList = TSFInputFormat.getReadSensors(configuration);
-			if(sensorIdList == null)sensorIdList = initSensorIdList(rowGroupMetaDataList);
-			LOGGER.info("Devices:" + deviceIdList);
-			LOGGER.info("Sensors:" + sensorIdList);
+			List<String> deltaObjectIdsList = TSFInputFormat.getReadDeltaObjectIds(configuration);
+			if(deltaObjectIdsList == null)deltaObjectIdsList = initDeviceIdList(rowGroupMetaDataList);
+			List<String> measurementIdsList = TSFInputFormat.getReadMeasurementIds(configuration);
+			if(measurementIdsList == null)measurementIdsList = initSensorIdList(rowGroupMetaDataList);
+			LOGGER.info("deltaObjectIds:" + deltaObjectIdsList);
+			LOGGER.info("Sensors:" + measurementIdsList);
 
-			this.sensorNum = sensorIdList.size();
+			this.sensorNum = measurementIdsList.size();
 			isReadDeviceId = TSFInputFormat.getReadDeltaObject(configuration);
 			isReadTime = TSFInputFormat.getReadTime(configuration);
 			if (isReadDeviceId) {
@@ -91,7 +80,7 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			arraySize += sensorNum;
 
 			HadoopQueryEngine queryEngine = new HadoopQueryEngine(hdfsInputStream, rowGroupMetaDataList);
-			dataSet = queryEngine.queryWithSpecificRowGroups(deviceIdList, sensorIdList, null, null, null);
+			dataSet = queryEngine.queryWithSpecificRowGroups(deltaObjectIdsList, measurementIdsList, null, null, null);
 			LOGGER.info("Initialization complete~");
 		} else {
 			LOGGER.error("The InputSplit class is not {}, the class is {}", TSFInputSplit.class.getName(),
@@ -119,11 +108,6 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 		return new ArrayList<>(sensorIdSet);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.apache.hadoop.mapreduce.RecordReader#nextKeyValue()
-	 */
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
 		LOGGER.info("Start to get next data~");
@@ -148,21 +132,11 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.apache.hadoop.mapreduce.RecordReader#getCurrentKey()
-	 */
 	@Override
 	public NullWritable getCurrentKey() throws IOException, InterruptedException {
 		return NullWritable.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.apache.hadoop.mapreduce.RecordReader#getCurrentValue()
-	 */
 	@Override
 	public ArrayWritable getCurrentValue() throws IOException, InterruptedException {
 		LOGGER.info("Start to get current value~");
@@ -226,21 +200,11 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 		return new ArrayWritable(Writable.class, writables);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.apache.hadoop.mapreduce.RecordReader#getProgress()
-	 */
 	@Override
 	public float getProgress() throws IOException, InterruptedException {
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.apache.hadoop.mapreduce.RecordReader#close()
-	 */
 	@Override
 	public void close() throws IOException {
 		dataSet = null;
