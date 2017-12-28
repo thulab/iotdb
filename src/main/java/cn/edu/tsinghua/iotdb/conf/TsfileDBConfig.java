@@ -41,7 +41,7 @@ public class TsfileDBConfig {
 	/**
 	 * Data directory
 	 */
-	public String dataDir = "data";
+	public String dataDir = null;
 	/**
 	 * Data directory of Overflow data
 	 */
@@ -71,6 +71,11 @@ public class TsfileDBConfig {
 	 * Data directory of Write ahead log folder.
 	 */
 	public String walFolder = "wals";
+
+	/**
+	 * Data directory for index files (KV-match indexes)
+	 */
+	public String indexFileDir = "index";
 
 	/**
 	 * The maximum concurrent thread number for merging overflow
@@ -104,11 +109,26 @@ public class TsfileDBConfig {
 	 */
 	public long periodTimeForMerge = 7200;
 
+	/**
+	 * How many thread can concurrently flush. When <= 0, use CPU core number.
+	 */
+	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
+
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
 
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {
+		if(dataDir == null){
+			dataDir = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
+			if(dataDir == null){
+				dataDir = "data";
+			} else {
+				if (dataDir.length() > 0 && !dataDir.endsWith(File.separator)) {
+					dataDir = dataDir + File.separatorChar + "data";
+				}
+			}
+		}
 		// filenode dir
 		if (dataDir.length() > 0 && !dataDir.endsWith(File.separator)) {
 			dataDir = dataDir + File.separatorChar;
@@ -119,5 +139,6 @@ public class TsfileDBConfig {
 		metadataDir = dataDir + metadataDir;
 		derbyHome = dataDir + derbyHome;
 		walFolder = dataDir + walFolder;
+		indexFileDir = dataDir + indexFileDir;
 	}
 }

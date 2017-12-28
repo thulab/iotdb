@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 
 /**
  * This is one server for close and merge regularly
@@ -22,7 +23,7 @@ public class CloseMergeServer {
 
 	private MergeServerThread mergeServer = new MergeServerThread();
 	private CloseServerThread closeServer = new CloseServerThread();
-	private ScheduledThreadPoolExecutor service;
+	private ScheduledExecutorService service;
 	private CloseAndMergeDaemon closeAndMergeDaemon = new CloseAndMergeDaemon();
 
 	private static final long mergeDelay = TsfileDBDescriptor.getInstance().getConfig().periodTimeForMerge;
@@ -30,16 +31,19 @@ public class CloseMergeServer {
 	private static final long mergePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForMerge;
 	private static final long closePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForFlush;
 
-	private boolean isStart = false;
+	private volatile boolean isStart = false;
 
-	private static final CloseMergeServer SERVER = new CloseMergeServer();
+	private static CloseMergeServer SERVER = new CloseMergeServer();
 
-	public static CloseMergeServer getInstance() {
+	public synchronized static CloseMergeServer getInstance() {
+		if (SERVER == null) {
+			SERVER = new CloseMergeServer();
+		}
 		return SERVER;
 	}
 
 	private CloseMergeServer() {
-		service = new ScheduledThreadPoolExecutor(2);
+		service = IoTDBThreadPoolFactory.newScheduledThreadPool(2, "CloseAndMerge");
 	}
 
 	public void startServer() {
@@ -54,14 +58,16 @@ public class CloseMergeServer {
 	}
 
 	public void closeServer() {
-		
+
 		if (isStart) {
-			LOGGER.info("shutdown the close and merge server");
+			LOGGER.info("prepare to shutdown the close and merge server");
 			isStart = false;
 			synchronized (service) {
 				service.shutdown();
 				service.notify();
 			}
+			SERVER = null;
+			LOGGER.info("shutdown close and merge server successfully");
 		} else {
 			LOGGER.warn("the close and merge daemon is not running now");
 		}

@@ -1,17 +1,16 @@
 #!/bin/sh
 
-if [ -z "${TSFILE_HOME}" ]; then
-  export TSFILE_HOME="$(cd "`dirname "$0"`"/..; pwd)"
+if [ -z "${IOTDB_HOME}" ]; then
+  export IOTDB_HOME="$(cd "`dirname "$0"`"/..; pwd)"
 fi
 
-TSFILE_CONF=${TSFILE_HOME}/conf
-TSFILE_LOGS=${TSFILE_HOME}/logs
+IOTDB_CONF=${IOTDB_HOME}/conf
+# IOTDB_LOGS=${IOTDB_HOME}/logs
 
-
-if [ -f "$TSFILE_CONF/iotdb-env.sh" ]; then
-    . "$TSFILE_CONF/iotdb-env.sh"
+if [ -f "$IOTDB_CONF/iotdb-env.sh" ]; then
+    . "$IOTDB_CONF/iotdb-env.sh"
 else
-    echo "can't find $TSFILE_CONF/iotdb-env.sh"
+    echo "can't find $IOTDB_CONF/iotdb-env.sh"
 fi
 
 
@@ -32,13 +31,12 @@ if [ -z $JAVA ] ; then
 fi
 
 CLASSPATH=""
-for f in ${TSFILE_HOME}/lib/*.jar; do
+for f in ${IOTDB_HOME}/lib/*.jar; do
   CLASSPATH=${CLASSPATH}":"$f
 done
 
 MAIN_CLASS=cn.edu.tsinghua.iotdb.service.IoTDB
 
-"$JAVA" -DTSFILE_HOME=${TSFILE_HOME} -Dlogback.configurationFile=${TSFILE_CONF}/logback.xml $TSFILEDB_DERBY_OPTS $TSFILEDB_JMX_OPTS -Dname=iotdb\.IoTDB -cp "$CLASSPATH" "$MAIN_CLASS" 
-
+"$JAVA" -DIOTDB_HOME=${IOTDB_HOME} -DTSFILE_HOME=${IOTDB_HOME} -DIOTDB_CONF=${IOTDB_CONF} -Dlogback.configurationFile=${IOTDB_CONF}/logback.xml $IOTDB_DERBY_OPTS $IOTDB_JMX_OPTS -Dname=iotdb\.IoTDB -cp "$CLASSPATH" "$MAIN_CLASS"
 
 exit $?

@@ -39,12 +39,6 @@ public class OverflowQueryEngine {
     /** the formNumber represents the ordinal of disjunctive normal form of each query part **/
     private int formNumber = -1;
 
-    /**
-     * this variable represents that whether it is the second execution of aggregation method.
-     * aggregation method must be executed once when a aggregation query.
-     */
-    private static ThreadLocal<QueryDataSet> aggregateThreadLocal = new ThreadLocal<>();
-
     public OverflowQueryEngine() {
     }
 
@@ -63,20 +57,20 @@ public class OverflowQueryEngine {
      * @throws IOException        TsFile read error
      */
     public QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-                              FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize)
+                              FilterExpression valueFilter, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
         this.formNumber = formNumber;
         if (queryDataSet != null) {
             queryDataSet.clear();
         }
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
-            return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, null);
+            return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, readLock);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
             return crossSeriesQuery(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         } else {
             return querySeriesUsingFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
-                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, null);
+                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, readLock);
         }
     }
 
@@ -94,46 +88,42 @@ public class OverflowQueryEngine {
      */
     public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
-        
-        try {
-            LOGGER.debug("Aggregation content: {}", aggres.toString());
 
-            List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
+        ThreadLocal<QueryDataSet> aggregateThreadLocal = ReadLockManager.getInstance().getAggregateThreadLocal();
 
-            // to remove duplicate queries, such as select count(s0),count(s0).
-            Set<String> duplicatedAggregations = new HashSet<>();
-            for (Pair<Path, String> pair : aggres) {
-                TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
-                AggregateFunction aggregateFunction = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
-                if (duplicatedAggregations.contains(EngineUtils.aggregationKey(aggregateFunction, pair.left))) {
-                    continue;
-                }
-                duplicatedAggregations.add(EngineUtils.aggregationKey(aggregateFunction, pair.left));
-                aggregations.add(new Pair<>(pair.left, aggregateFunction));
-            }
-
-            if (aggregateThreadLocal.get() != null) {
-                QueryDataSet ans = aggregateThreadLocal.get();
-                ans.clear();
-                aggregateThreadLocal.remove();
-                return ans;
-            }
-
-            AggregateEngine.multiAggregate(aggregations, filterStructures);
-            QueryDataSet ansQueryDataSet = new QueryDataSet();
-            for (Pair<Path, AggregateFunction> pair : aggregations) {
-                AggregateFunction aggregateFunction = pair.right;
-                if (aggregateFunction.resultData.timeLength == 0) {
-                    aggregateFunction.putDefaultValue();
-                }
-                ansQueryDataSet.mapRet.put(EngineUtils.aggregationKey(aggregateFunction, pair.left), aggregateFunction.resultData);
-            }
-            aggregateThreadLocal.set(ansQueryDataSet);
-            return ansQueryDataSet;
-        } catch (Exception e) {
-            e.printStackTrace();
+        // the aggregation method will only be executed once
+        if (aggregateThreadLocal.get() != null) {
+            QueryDataSet ans = aggregateThreadLocal.get();
+            ans.clear();
+            aggregateThreadLocal.remove();
+            return ans;
         }
-        return null;
+
+        List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
+
+        // to remove duplicate queries, such as select count(s0),count(s0).
+        Set<String> duplicatedAggregations = new HashSet<>();
+        for (Pair<Path, String> pair : aggres) {
+            TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
+            AggregateFunction aggregateFunction = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
+            if (duplicatedAggregations.contains(EngineUtils.aggregationKey(aggregateFunction, pair.left))) {
+                continue;
+            }
+            duplicatedAggregations.add(EngineUtils.aggregationKey(aggregateFunction, pair.left));
+            aggregations.add(new Pair<>(pair.left, aggregateFunction));
+        }
+
+        AggregateEngine.multiAggregate(aggregations, filterStructures);
+        QueryDataSet ansQueryDataSet = new QueryDataSet();
+        for (Pair<Path, AggregateFunction> pair : aggregations) {
+            AggregateFunction aggregateFunction = pair.right;
+            if (aggregateFunction.resultData.timeLength == 0) {
+                aggregateFunction.putDefaultValue();
+            }
+            ansQueryDataSet.mapRet.put(EngineUtils.aggregationKey(aggregateFunction, pair.left), aggregateFunction.resultData);
+        }
+        aggregateThreadLocal.set(ansQueryDataSet);
+        return ansQueryDataSet;
     }
 
     /**
@@ -153,13 +143,13 @@ public class OverflowQueryEngine {
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize) {
 
-        ThreadLocal<Integer> groupByCalcTime = ReadLockManager.getInstance().getGroupByCalcCalcTime();
+        ThreadLocal<Integer> groupByCalcTime = ReadLockManager.getInstance().getGroupByCalcTime();
         ThreadLocal<GroupByEngineNoFilter>  groupByEngineNoFilterLocal = ReadLockManager.getInstance().getGroupByEngineNoFilterLocal();
         ThreadLocal<GroupByEngineWithFilter> groupByEngineWithFilterLocal = ReadLockManager.getInstance().getGroupByEngineWithFilterLocal();
 
         if (groupByCalcTime.get() == null) {
 
-            LOGGER.info("calculate aggregations the 1 time");
+            LOGGER.debug("calculate aggregations the 1 time");
             groupByCalcTime.set(2);
 
             SingleSeriesFilterExpression intervalFilter = null;
@@ -201,7 +191,7 @@ public class OverflowQueryEngine {
             }
         } else {
 
-            LOGGER.info(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
+            LOGGER.debug(String.format("calculate group by result function the %s time", String.valueOf(groupByCalcTime.get())));
 
             groupByCalcTime.set(groupByCalcTime.get() + 1);
             try {

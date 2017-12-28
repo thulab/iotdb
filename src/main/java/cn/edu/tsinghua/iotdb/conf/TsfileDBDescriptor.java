@@ -11,9 +11,6 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-
-
 public class TsfileDBDescriptor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
 
@@ -43,16 +40,19 @@ public class TsfileDBDescriptor {
 		InputStream inputStream = null;
 		String url = System.getProperty(TsFileDBConstant.IOTDB_CONF, null);
 		if (url == null) {
-			url = System.getProperty(SystemConstant.TSFILE_HOME, null);
+			url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
 			if (url != null) {
 				url = url + File.separatorChar + "conf" + File.separatorChar + TsfileDBConfig.CONFIG_NAME;
 			} else {
-				LOGGER.warn("Cannot find TSFILE_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", TsfileDBConfig.CONFIG_NAME);
+				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", TsfileDBConfig.CONFIG_NAME);
 				// update all data path
 				conf.updateDataPath();
 				return;
 			}
+		} else{
+			url += (File.separatorChar + TsfileDBConfig.CONFIG_NAME);
 		}
+		
 		try {
 			inputStream = new FileInputStream(new File(url));
 		} catch (FileNotFoundException e) {
@@ -84,7 +84,11 @@ public class TsfileDBDescriptor {
 			
 			conf.periodTimeForFlush = Long.parseLong(properties.getProperty("period_time_for_flush_in_second", conf.periodTimeForFlush+"").trim());
 			conf.periodTimeForMerge = Long.parseLong(properties.getProperty("period_time_for_merge_in_second", conf.periodTimeForMerge+"").trim());
-			
+
+			conf.concurrentFlushThread  = Integer.parseInt(properties.getProperty("concurrent_flush_thread", conf.concurrentFlushThread + ""));
+			if(conf.concurrentFlushThread <= 0)
+				conf.concurrentFlushThread = Runtime.getRuntime().availableProcessors();
+
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {
 				conf.timeZone = DateTimeZone.forID(tmpTimeZone.trim());
