@@ -37,74 +37,70 @@ public class KVIndexTest {
             {"SET STORAGE GROUP TO root.vehicle.d1"},
             {"CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE"},
             {"CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE"},
-//          s0第一个文件
+//          create the first file of sensor s0
             {"insert into root.vehicle.d0(timestamp,s0) values(1,101)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(2,102)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(3,103)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(4,104)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(5,105)"},
-//          创建索引
+//          create index for d0.s0
             {"create index on root.vehicle.d0.s0 using kvindex with window_length=2, since_time=0"},
-//          强行切断d0.s0，生成d1.s0文件
+//          close the first file of d1.s0 which closes d0.s0 due to the threshold number of existing Filenodes is 1
             {"insert into root.vehicle.d1(timestamp,s0) values(5,102)"},
-//          s0第二个文件
+//          create the second file of sensor s0
             {"insert into root.vehicle.d0(timestamp,s0) values(6,106)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(7,107)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(8,108)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(9,109)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(10,110)"},
 
-//          强行切断d0.s0，生成第二个d1.s0文件
+//          close the second file of d0.s0
             {"insert into root.vehicle.d1(timestamp,s0) values(6,102)"},
-//          s0第三个文件，处于未关闭状态
+//          create the thrid file of d0.s0 which is unclosed.
             {"insert into root.vehicle.d0(timestamp,s0) values(11,111)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(12,112)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(13,113)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(14,114)"},
             {"insert into root.vehicle.d0(timestamp,s0) values(15,115)"},
-//          修改d2.s0，强行切断d0.s0，生成第三个d0.s0文件
+//          update the file of d0.s0
             {"update root.vehicle SET d0.s0 = 33333 WHERE time >= 6 and time <= 7"},
             {"insert into root.vehicle.d0(timestamp,s0) values(7,102)"},
-//          单文件索引查询
-//            {
-//                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 4, 7, 0.0, 1.0, 0.0) from root" +
-//                            ".vehicle.d0.s0",
-//                    "0,4,7,0.0",
-//            },
-//            {
-//                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
-//                    "0,2,5,0.0",
-//            },
+//          query kvindex within a single file
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 1, 4, 0.0, 1.0, 0.0) from root" +
-                            ".indextest.d0.s0",
-                    "0,1,4,0.0",
-            },
-//          跨文件索引，涉及到Overflow的查询
-
-//          merge操作
-            {"merge"},
-//          单文件索引查询
-            {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select kvindex(root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,2,5,0.0",
             },
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 3, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select kvindex(root.vehicle.d0.s0, 1, 4, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "0,1,4,0.0",
+            },
+//          query kvindex across multiple files involving Overflow file.
+            {
+                    "select kvindex(root.vehicle.d0.s0, 4, 7, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "0,4,7,0.0",
+            },
+//          merge
+            {"merge"},
+//          query index in a single file after merging operation
+            {
+                    "select kvindex(root.vehicle.d0.s0, 2, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "0,2,5,0.0",
+            },
+            {
+                    "select kvindex(root.vehicle.d0.s0, 3, 5, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,3,5,0.0",
             },
-
-//          跨文件索引，涉及到Overflow的查询
+//          query kvindex across multiple files
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 5, 8, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "select kvindex(root.vehicle.d0.s0, 5, 8, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
                     "0,5,8,0.0",
             },
-//          删除索引
+//          drop the index
             {"drop index kvindex on root.vehicle.d0.s0"},
-////          再次查询
+//          query the dropped index will throw exception
             {
-                    "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
-                    "0,1,4,0.0",
+                    "select kvindex(root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0",
+                    "The timeseries root.vehicle.d0.s0 hasn't been indexed.",
             },
 
     };
@@ -129,7 +125,7 @@ public class KVIndexTest {
     public void tearDown() throws Exception {
         if (testFlag) {
             deamon.stop();
-            Thread.sleep(5000);
+            Thread.sleep(500);
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             config.maxOpenFolder = maxOpenFolderPre;
             EnvironmentUtils.cleanEnv();
@@ -139,7 +135,7 @@ public class KVIndexTest {
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
         if (testFlag) {
-            Thread.sleep(5000);
+            Thread.sleep(500);
             executeSQL();
         }
     }
@@ -150,24 +146,17 @@ public class KVIndexTest {
         try {
             for (String[] sqlRet : sqls) {
                 String sql = sqlRet[0];
-                System.out.println("testtest-sql\t" + sql);
+                System.out.println("test-sql\t" + sql);
                 if ("".equals(sql))
                     return;
-//                if("select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 1, 3, 0)".equals(sql))
-//                    System.out.println();
                 if (sqlRet.length == 1) {
                     //长度1，non-query语句
                     connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
                     Statement statement = connection.createStatement();
                     statement.execute(sql);
-                    if ("merge".equals(sql)) {
-//						Thread.sleep(3000);
-                        System.out.println("process merge operation");
-                    }
                     statement.close();
                 } else {
                     //长度2，query语句，第二项是结果
-//                    String[] retArray = (String[]) sqlRet[1];
                     query(sql, sqlRet);
                 }
             }
@@ -188,8 +177,6 @@ public class KVIndexTest {
             Statement statement = connection.createStatement();
             try {
                 boolean hasResultSet = statement.execute(querySQL);
-                // System.out.println(hasResultSet + "...");
-                //        KvMatchIndexQueryPlan planForHeader = new KvMatchIndexQueryPlan(null, null, 0,0,0);
                 Assert.assertTrue(hasResultSet);
                 if (hasResultSet) {
                     ResultSet resultSet = statement.getResultSet();
@@ -198,7 +185,6 @@ public class KVIndexTest {
                         String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(2)
                                 + "," + resultSet.getString(3)
                                 + "," + resultSet.getString(4);
-                        System.out.println("testtest-actual\t" + ans);
                         if (!retArray[cnt].equals(ans))
                             Assert.assertEquals(retArray[cnt], ans);
                         cnt++;
@@ -209,8 +195,8 @@ public class KVIndexTest {
                         Assert.assertEquals(retArray.length, cnt);
                 }
             } catch (TsfileSQLException e) {
-                Assert.assertEquals(e.getMessage(),"The timeseries root.vehicle.d0.s0 hasn't been indexed.");
-                Assert.assertEquals(querySQL, "select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 6, 9, 0.0, 1.0, 0.0) from root.vehicle.d0.s0");
+                Assert.assertEquals(retArray[1], e.getMessage());
+
             }
         } catch (Exception e) {
             e.printStackTrace();
