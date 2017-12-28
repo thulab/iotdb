@@ -99,6 +99,7 @@ public class FileNodeManager {
 	public synchronized void resetFileNodeManager() {
 		this.backUpOverflowedFileNodeName = new HashSet<>();
 		this.overflowedFileNodeName = new HashSet<>();
+		this.processorMap.clear();
 	}
 
 	private FileNodeManager(String baseDir) {

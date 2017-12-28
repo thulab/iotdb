@@ -102,6 +102,7 @@ public class AggregationLargeDataTest {
         if (testFlag) {
             AggregateEngine.aggregateFetchSize = 4000;
             deamon = IoTDB.getInstance();
+            deamon.stop();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }
@@ -216,6 +217,27 @@ public class AggregationLargeDataTest {
         };
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute("select s0,s1,s2 from root.vehicle.d0 where s1 >= 0");
+            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0)
+                        + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
+                System.out.println(ans);
+            }
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
