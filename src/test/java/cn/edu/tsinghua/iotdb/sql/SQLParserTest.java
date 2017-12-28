@@ -973,13 +973,12 @@ public class SQLParserTest {
     @Test
     public void selectIndex1() throws ParseException, RecognitionException {
         ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_QUERY",
-                "TOK_SELECT_INDEX", "subsequence_matching",
-                "TOK_PATH", "TOK_ROOT", "a", "b", "c",
+                "TOK_SELECT_INDEX", "kvindex",
                 "TOK_PATH", "TOK_ROOT", "a", "b", "c",
                 "123", "132", "123.1",
                 "TOK_WHERE", "<", "TOK_PATH", "time", "10"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("select index subsequence_matching(root.a.b.c, root.a.b.c, 123, 132 , 123.1) where time < 10");
+        ASTNode astTree = ParseGenerator.generateAST("select kvindex(root.a.b.c, 123, 132 , 123.1) where time < 10");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -988,6 +987,7 @@ public class SQLParserTest {
             assertEquals(rec.get(i), ans.get(i));
             i++;
         }
+        System.out.println(astTree.dump());
     }
 
     @Test
