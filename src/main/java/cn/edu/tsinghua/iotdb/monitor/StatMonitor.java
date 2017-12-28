@@ -27,7 +27,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class StatMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
-    private final ReadWriteLock stateLock;
     private final int backLoopPeriod;
 
     // key is the store path like FileNodeProcessor.root_stats_xxx.xxx,
@@ -46,7 +45,6 @@ public class StatMonitor {
 
     private StatMonitor() {
         MManager mManager = MManager.getInstance();
-        stateLock = new ReentrantReadWriteLock();
         registProcessor = new HashMap<>();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         backLoopPeriod = config.backLoopPeriod;
@@ -122,10 +120,10 @@ public class StatMonitor {
     }
 
     public void registStatistics(String path, IStatistic statprocessor) {
-        stateLock.writeLock().lock();
-        LOGGER.debug("StatMonitor is in registStatistics: {}", path);
-        registProcessor.put(path, statprocessor);
-        stateLock.writeLock().unlock();
+        synchronized (registProcessor) {
+            LOGGER.debug("StatMonitor is in registStatistics: {}", path);
+            registProcessor.put(path, statprocessor);
+        }
     }
 
     public synchronized void registMeta(HashMap<String, String> hashMap) {
@@ -147,11 +145,11 @@ public class StatMonitor {
     }
 
     public void deregistStatistics(String path) {
-        stateLock.writeLock().lock();
-        if (registProcessor.containsKey(path)) {
-            registProcessor.put(path, null);
+        synchronized (registProcessor) {
+            if (registProcessor.containsKey(path)) {
+                registProcessor.put(path, null);
+            }
         }
-        stateLock.writeLock().unlock();
     }
 
     /**
@@ -186,26 +184,28 @@ public class StatMonitor {
     }
 
     public HashMap<String, TSRecord> gatherStatistics() {
-        Long currentTimeMillis = System.currentTimeMillis();
-        HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-        for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
-            if (entry.getValue() == null) {
-                tsRecordHashMap.put(entry.getKey(),
-                        convertToTSRecord(
-                                MonitorConstants.iniValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
-                                entry.getKey(),
-                                currentTimeMillis
-                        )
-                );
-            } else {
-                tsRecordHashMap.putAll(entry.getValue().getAllStatisticsValue());
+        synchronized (registProcessor) {
+            Long currentTimeMillis = System.currentTimeMillis();
+            HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
+            for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
+                if (entry.getValue() == null) {
+                    tsRecordHashMap.put(entry.getKey(),
+                            convertToTSRecord(
+                                    MonitorConstants.iniValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
+                                    entry.getKey(),
+                                    currentTimeMillis
+                            )
+                    );
+                } else {
+                    tsRecordHashMap.putAll(entry.getValue().getAllStatisticsValue());
+                }
             }
+            LOGGER.debug("Values of tsRecordHashMap is : {}", tsRecordHashMap.toString());
+            for (TSRecord value : tsRecordHashMap.values()) {
+                value.time = currentTimeMillis;
+            }
+            return tsRecordHashMap;
         }
-        LOGGER.debug("Values of tsRecordHashMap is : {}", tsRecordHashMap.toString());
-        for (TSRecord value : tsRecordHashMap.values()) {
-            value.time = currentTimeMillis;
-        }
-        return tsRecordHashMap;
     }
 
     private void insert(HashMap<String, TSRecord> tsRecordHashMap) {
@@ -249,7 +249,6 @@ public class StatMonitor {
     class statBackLoop implements Runnable {
         public void run() {
             try {
-                stateLock.writeLock().lock();
                 LOGGER.debug("---------This is the Time to monitor--------------");
                 HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
                 insert(tsRecordHashMap);
@@ -257,8 +256,6 @@ public class StatMonitor {
             } catch (Exception e) {
                 e.printStackTrace();
                 numBackLoopError.incrementAndGet();
-            }finally {
-                stateLock.writeLock().unlock();
             }
         }
     }
