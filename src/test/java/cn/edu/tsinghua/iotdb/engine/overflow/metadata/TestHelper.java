@@ -7,12 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TInTimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TInTimeSeriesChunkMetaDataTest;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaDataTest;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaDataTest;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;

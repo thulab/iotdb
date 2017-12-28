@@ -1,10 +1,6 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import static cn.edu.tsinghua.iotdb.service.TestUtils.count;
-import static cn.edu.tsinghua.iotdb.service.TestUtils.max_time;
-import static cn.edu.tsinghua.iotdb.service.TestUtils.max_value;
-import static cn.edu.tsinghua.iotdb.service.TestUtils.min_time;
-import static cn.edu.tsinghua.iotdb.service.TestUtils.min_value;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.fail;
 
 import java.sql.Connection;
