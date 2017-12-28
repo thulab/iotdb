@@ -498,11 +498,10 @@ public class RecordReader {
                 result.putEmptyTime(queryTime);
             }
         } else {
+            // startTime and endTime will not be equals to queryTime
             long startTime = result.getTime(0);
             long endTime = result.getTime(1);
-            if (startTime == queryTime || endTime == queryTime) {
-                logger.error("fill unreachable!!");
-            }
+
             switch (result.dataType) {
                 case INT32:
                     int startIntValue = result.getInt(0);
@@ -529,8 +528,8 @@ public class RecordReader {
                     result.setFloat(0, fillFloatValue);
                     break;
                 case DOUBLE:
-                    double startDoubleValue = result.getFloat(0);
-                    double endDoubleValue = result.getFloat(1);
+                    double startDoubleValue = result.getDouble(0);
+                    double endDoubleValue = result.getDouble(1);
                     result.timeLength = result.valueLength = 1;
                     result.setTime(0, queryTime);
                     double fillDoubleValue = startDoubleValue + (double)((endDoubleValue-startDoubleValue)/(endTime-startTime)*(queryTime-startTime));
