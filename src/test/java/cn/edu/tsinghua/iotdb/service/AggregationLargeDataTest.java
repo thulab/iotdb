@@ -123,7 +123,7 @@ public class AggregationLargeDataTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-//            selectAllSQLTest();
+            selectAllSQLTest();
             meanAggreWithSingleFilterTest();
             sumAggreWithSingleFilterTest();
             firstAggreWithSingleFilterTest();
@@ -407,7 +407,7 @@ public class AggregationLargeDataTest {
 
     private void meanAggreWithMultiFilterTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
-                "0,165.80900409276944,211.82702702702701,27.530176610078502"
+                "0,121538.0,733,165.80900409276944,211.82702702702701,27.530176610078502"
         };
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -415,16 +415,16 @@ public class AggregationLargeDataTest {
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select mean(s0),mean(s1),mean(s2) from root.vehicle.d0 " +
+            boolean hasResultSet = statement.execute("select sum(s0),count(s0),mean(s0),mean(s1),mean(s2) from root.vehicle.d0 " +
                     "where s1 >= 0 or s2 < 10");
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
             while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(mean(d0s0))
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(sum(d0s0)) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(mean(d0s0))
                         + "," + resultSet.getString(mean(d0s1)) + "," + resultSet.getString(mean(d0s2));
-                //String ans = resultSet.getString(mean(d0s3));
-                //System.out.println("!!!!!============ " + ans);
+                System.out.println("!!!!!============ " + ans);
                 Assert.assertEquals(retArray[cnt], ans);
                 cnt++;
             }
