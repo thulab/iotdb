@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import cn.edu.tsinghua.iotdb.index.IndexManager;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +109,7 @@ public class FileNodeManager {
 		this.baseDir = baseDir;
 		File dir = new File(baseDir);
 		if (dir.mkdirs()) {
-			LOGGER.info("{} dir home doesn't exists, create it", dir.getPath());
+			LOGGER.info("{} dir home doesn't exist, create it", dir.getPath());
 		}
 
 		TsFileConf.duplicateIncompletedPage = true;
@@ -128,7 +127,7 @@ public class FileNodeManager {
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
 			return new FileNodeProcessor(baseDir, filenodeName, parameters);
 		} catch (FileNodeProcessorException e) {
-			LOGGER.error("Can't construct the FileNodeProcessor, the filenode is {}", filenodeName);
+			LOGGER.error(String.format("Can't construct the FileNodeProcessor, the filenode is %s", filenodeName), e);
 			throw new FileNodeManagerException(e);
 		}
 	}
@@ -162,7 +161,7 @@ public class FileNodeManager {
 				}
 			}
 		}
-		//processorMap.putIfAbsent(path, processor);
+		// processorMap.putIfAbsent(path, processor);
 		return processor;
 	}
 
@@ -461,11 +460,7 @@ public class FileNodeManager {
 	}
 
 	/**
-<<<<<<< HEAD
-=======
-	 *
-	 *
->>>>>>> origin/master
+	 * 
 	 * @param path
 	 *            : the column path
 	 * @param startTime
@@ -527,7 +522,7 @@ public class FileNodeManager {
 	}
 
 	/**
-	 * close one processor which is in the LRU list
+	 * close one processor
 	 * 
 	 * @param namespacePath
 	 * @return

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 
 /**
  * This class is used to store one bufferwrite file status.<br>
@@ -36,16 +35,14 @@ public class IntervalFileNode implements Serializable {
 
 		this.startTimeMap = startTimeMap;
 		this.endTimeMap = endTimeMap;
-		
+
 	}
 
 	/**
 	 * This is just used to construct a new bufferwritefile
 	 * 
-	 * @param startTime
 	 * @param type
 	 * @param relativePath
-	 * @param errFilePath
 	 */
 	public IntervalFileNode(OverflowChangeType type, String relativePath) {
 
@@ -108,20 +105,21 @@ public class IntervalFileNode implements Serializable {
 		startTimeMap.remove(deltaObjectId);
 		endTimeMap.remove(deltaObjectId);
 	}
-	
-	public String getFilePath(){
-		if(relativePath==null){
+
+	public String getFilePath() {
+
+		if (relativePath == null) {
 			return relativePath;
 		}
-		return new File(baseDir,relativePath).getPath();
+		return new File(baseDir, relativePath).getPath();
 	}
-	
-	public void setRelativePath(String relativePath){
-		
+
+	public void setRelativePath(String relativePath) {
+
 		this.relativePath = relativePath;
 	}
-	
-	public String getRelativePath(){
+
+	public String getRelativePath() {
 
 		return relativePath;
 	}
@@ -179,6 +177,7 @@ public class IntervalFileNode implements Serializable {
 
 	@Override
 	public int hashCode() {
+
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((endTimeMap == null) ? 0 : endTimeMap.hashCode());
@@ -190,6 +189,7 @@ public class IntervalFileNode implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
+
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -219,8 +219,9 @@ public class IntervalFileNode implements Serializable {
 
 	@Override
 	public String toString() {
-		return "IntervalFileNode [relativePath=" + relativePath + ", overflowChangeType=" + overflowChangeType
-				+ ", startTimeMap=" + startTimeMap + ", endTimeMap=" + endTimeMap + ", mergeChanged=" + mergeChanged
-				+ "]";
+		
+		return String.format(
+				"IntervalFileNode [relativePath=%s,overflowChangeType=%s, startTimeMap=%s, endTimeMap=%s, mergeChanged=%s]",
+				relativePath, overflowChangeType, startTimeMap, endTimeMap, mergeChanged);
 	}
 }
