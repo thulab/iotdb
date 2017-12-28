@@ -634,7 +634,7 @@ identifier
 selectClause
     : KW_SELECT clusteredPath (COMMA clusteredPath)* fromClause
     -> ^(TOK_SELECT clusteredPath+) fromClause
-    | KW_SELECT indexcmd = KW_KVINDEX LPAREN p=suffixPath COMMA n1=dateFormatWithNumber COMMA n2=dateFormatWithNumber COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN fromClause
+    | KW_SELECT indexcmd = KW_KVINDEX LPAREN p=timeseries COMMA n1=dateFormatWithNumber COMMA n2=dateFormatWithNumber COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN fromClause
     -> ^(TOK_SELECT_INDEX $indexcmd $p $n1 $n2 $epsilon ($alpha $beta)?) fromClause
     ;
 
