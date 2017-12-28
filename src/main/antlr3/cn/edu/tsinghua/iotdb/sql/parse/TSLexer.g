@@ -65,6 +65,8 @@ KW_LINK: 'LINK' ;
 KW_UNLINK: 'UNLINK';
 KW_USING: 'USING';
 
+KW_KVINDEX: 'KVINDEX';
+
 QUOTE : '\'' ;
 
 DOT : '.'; // generated as a part of Number rule

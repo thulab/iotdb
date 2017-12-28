@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp.strategy;
 
+import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.GeneratePhysicalPlanException;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
@@ -12,6 +13,7 @@ import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexQueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.InsertOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.QueryOperator;
+import cn.edu.tsinghua.iotdb.qp.logical.crud.SFWOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.SelectOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.UpdateOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.index.KvMatchIndexQueryOperator;
@@ -114,10 +116,14 @@ public class PhysicalGenerator {
 			return new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
 					indexOperator.getStartTime(), indexOperator.getIndexOperatorType(), indexOperator.getIndexType());
 		case INDEXQUERY:
+			List<Path> queryPathList = ((SFWOperator)operator).getFromOperator().getPrefixPaths();
+			if(queryPathList.size() != 1)
+				throw new IndexManagerException("The number of index query paths must be 1, given: " + queryPathList
+						.size());
 			switch (((IndexQueryOperator) operator).getIndexType()){
 				case KvIndex:
 					KvMatchIndexQueryOperator indexQueryOperator = (KvMatchIndexQueryOperator) operator;
-					KvMatchIndexQueryPlan indexQueryPlan = new KvMatchIndexQueryPlan(indexQueryOperator.getPath(),
+					KvMatchIndexQueryPlan indexQueryPlan = new KvMatchIndexQueryPlan(queryPathList.get(0),
 							indexQueryOperator.getPatternPath(), indexQueryOperator.getEpsilon(),
 							indexQueryOperator.getStartTime(), indexQueryOperator.getEndTime());
 					indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
