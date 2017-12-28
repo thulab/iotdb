@@ -104,6 +104,7 @@ public class FileNodeManager {
 	public synchronized void resetFileNodeManager() {
 		this.backUpOverflowedFileNodeName = new HashSet<>();
 		this.overflowedFileNodeName = new HashSet<>();
+		this.processorMap.clear();
 	}
 
 	private FileNodeManager(String baseDir) {
@@ -888,7 +889,7 @@ public class FileNodeManager {
 		}
 	}
 
-	private void flushAll() throws IOException {
+	public void flushAll() throws IOException {
 		for (FileNodeProcessor processor : processorMap.values()) {
 			processor.tryLock(true);
 			try {
