@@ -955,11 +955,11 @@ public class SQLParserTest {
     public void createIndex2() throws ParseException, RecognitionException {
         ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_CREATE", "TOK_INDEX",
                 "TOK_PATH" ,"TOK_ROOT", "a", "b", "c",
-                "TOK_FUNC", "kv-match2",
+                "TOK_FUNC", "kvindex",
                 "TOK_WITH", "TOK_INDEX_KV", "xxx", "50", "TOK_INDEX_KV", "xxx", "123",
                 "TOK_WHERE", ">", "TOK_PATH", "time" ,"TOK_DATETIME", "now"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("create index on root.a.b.c using kv-match2 with xxx=50,xxx=123 where time > now();");
+        ASTNode astTree = ParseGenerator.generateAST("create index on root.a.b.c using kvindex with xxx=50,xxx=123 where time > now();");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -974,11 +974,12 @@ public class SQLParserTest {
     public void selectIndex1() throws ParseException, RecognitionException {
         ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_QUERY",
                 "TOK_SELECT_INDEX", "kvindex",
-                "TOK_PATH", "TOK_ROOT", "a", "b", "c",
+                "TOK_PATH", "b", "c",
                 "123", "132", "123.1",
+                "TOK_FROM", "TOK_PATH" ,"TOK_ROOT", "a",
                 "TOK_WHERE", "<", "TOK_PATH", "time", "10"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("select kvindex(root.a.b.c, 123, 132 , 123.1) where time < 10");
+        ASTNode astTree = ParseGenerator.generateAST("select kvindex(b.c, 123, 132, 123.1) from root.a where time < 10");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -993,14 +994,13 @@ public class SQLParserTest {
     @Test
     public void selectIndex2() throws ParseException, RecognitionException {
         ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_QUERY",
-                "TOK_SELECT_INDEX", "subsequence_matching",
-                "TOK_PATH", "TOK_ROOT", "a", "b", "c",
-                "TOK_PATH", "TOK_ROOT", "a", "b", "c",
+                "TOK_SELECT_INDEX", "kvindex",
+                "TOK_PATH", "c",
                 "123", "132", "123.1", "0.123", "0.5",
-                "TOK_FROM", "TOK_PATH", "TOK_ROOT", "a", "b"));
+                "TOK_FROM", "TOK_PATH", "TOK_ROOT", "a", "b", "c"));
         ArrayList<String> rec = new ArrayList<>();
 //        ASTNode astTree = ParseGenerator.generateAST("select index kvindex(root.vehicle.d0.s0, root.vehicle.d0.s0, 1, 3, 0.0, 1.0, 0.0) from root.vehicle.d0.s0");
-        ASTNode astTree = ParseGenerator.generateAST("select index subsequence_matching(root.a.b.c, root.a.b.c, 123, 132 , 123.1, 0.123, 0.5) from root.a.b;");
+        ASTNode astTree = ParseGenerator.generateAST("select kvindex(c, 123, 132 , 123.1, 0.123, 0.5) from root.a.b;");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
@@ -1015,13 +1015,14 @@ public class SQLParserTest {
     public void selectIndex3() throws ParseException, RecognitionException {
         ArrayList<String> ans = new ArrayList<>(Arrays.asList("TOK_QUERY",
                 "TOK_SELECT_INDEX", "kvindex",
-                "TOK_PATH", "TOK_ROOT", "a", "b", "c",
-                "TOK_PATH", "TOK_ROOT", "a", "b", "c",
+                "TOK_PATH", "b", "c",
                 "TOK_DATETIME", "2016-11-16T16:22:33+08:00",
                 "TOK_DATETIME", "now",
-                "123.1", "0.123", "0.5"));
+                "123.1", "0.123", "0.5",
+                "TOK_FROM", "TOK_PATH", "TOK_ROOT", "a",
+                "TOK_WHERE", "<", "TOK_PATH", "time", "10"));
         ArrayList<String> rec = new ArrayList<>();
-        ASTNode astTree = ParseGenerator.generateAST("select index kvindex(root.a.b.c, root.a.b.c, 2016-11-16T16:22:33+08:00, now() , 123.1, 0.123, 0.5)");
+        ASTNode astTree = ParseGenerator.generateAST("select kvindex(b.c, 2016-11-16T16:22:33+08:00, now() , 123.1, 0.123, 0.5) from root.a where time < 10");
         astTree = ParseUtils.findRootNonNullToken(astTree);
         recursivePrintSon(astTree, rec);
 
