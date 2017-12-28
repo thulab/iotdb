@@ -77,7 +77,7 @@ public class TSFMRReadExample {
 //		// TsFileHelper.writeTsFile(inputPath);
 
 		String HDFSURL = "hdfs://localhost:8020";
-		Path inputPath = new Path("/east/tsfile");
+		Path inputPath = new Path("/east/tsfile_full");
 //		String inputPath = "/Users/East/tsfile";
 		Path outputPath = new Path("/east/output");
 		
@@ -110,9 +110,9 @@ public class TSFMRReadExample {
 		TSFInputFormat.setReadTime(job, true); // read time data
 		TSFInputFormat.setReadDeltaObjectId(job, true); // read deltaObjectId
 		String[] devices = {"root.car.d1"};
-//		TSFInputFormat.setReadDevices(job, devices);
+		TSFInputFormat.setReadDevices(job, devices);
 		String[] sensors = { "s1", "s2", "s3", "s4"};
-//		TSFInputFormat.setReadSensors(job, sensors);
+		TSFInputFormat.setReadSensors(job, sensors);
 		boolean isSuccess = false;
 		try {
 			System.out.println("Start to complete job~");
