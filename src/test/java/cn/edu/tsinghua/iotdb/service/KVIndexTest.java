@@ -125,7 +125,7 @@ public class KVIndexTest {
     public void tearDown() throws Exception {
         if (testFlag) {
             deamon.stop();
-            Thread.sleep(500);
+            Thread.sleep(5000);
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             config.maxOpenFolder = maxOpenFolderPre;
             EnvironmentUtils.cleanEnv();
@@ -135,7 +135,7 @@ public class KVIndexTest {
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
         if (testFlag) {
-            Thread.sleep(500);
+            Thread.sleep(5000);
             executeSQL();
         }
     }
