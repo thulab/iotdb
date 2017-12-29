@@ -1,45 +1,33 @@
 package cn.edu.tsinghua.iotdb.monitor;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.filenode.*;
-//import cn.edu.tsinghua.iotdb.engine.overflow.io.EngineTestHelper;
-import cn.edu.tsinghua.iotdb.engine.lru.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 /**
  * @author Liliang
  */
 
 public class MonitorTest {
-    private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
     private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
     private FileNodeManager fManager = null;
-    private String FileNodeDir;
-    private String BufferWriteDir;
-    private String overflowDataDir;
-    private int rowGroupSize;
-    private int pageCheckSizeThreshold = tsconfig.pageCheckSizeThreshold;
-    private int defaultMaxStringLength = tsconfig.maxStringLength;
-    private boolean cachePageData = tsconfig.duplicateIncompletedPage;
-    private int pageSize = tsconfig.pageSizeInByte;
     private StatMonitor statMonitor;
 
     @Before

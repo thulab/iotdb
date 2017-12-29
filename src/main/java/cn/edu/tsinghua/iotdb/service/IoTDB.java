@@ -133,7 +133,7 @@ public class IoTDB implements IoTDBMBean {
 	}
 
 	private void initFileNodeManager() {
-		FileNodeManager.getInstance().managerRecovery();
+		FileNodeManager.getInstance().recovery();
 	}
 
     private void registStatMonitor() {

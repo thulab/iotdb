@@ -44,10 +44,10 @@ public class EnvironmentUtils {
 				System.exit(1);
 			}
 		} catch (FileNodeManagerException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		}
 		StatMonitor.getInstance().close();
-		FileNodeManager.getInstance().reset();
+		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
 		WriteLogManager.getInstance().close();
 		// clean cache
@@ -105,6 +105,6 @@ public class EnvironmentUtils {
 //		TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 		config.enableStatMonitor = false;
 		//tsFileConfig.duplicateIncompletedPage = true;
-		FileNodeManager.getInstance().reset();
+		FileNodeManager.getInstance().resetFileNodeManager();
 	}
 }
