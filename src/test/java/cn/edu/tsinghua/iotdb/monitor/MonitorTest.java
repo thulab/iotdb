@@ -16,6 +16,8 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -86,7 +88,6 @@ public class MonitorTest {
         String path = fManager.getAllPathForStatistic().get(0);
         int pos = path.lastIndexOf('.');
         TSRecord fTSRecord = statHashMap.get(path.substring(0, pos));
-        System.out.println(fTSRecord.toString());
 
         assertNotEquals(null, fTSRecord);
         for (DataPoint dataPoint : fTSRecord.dataPointList) {
@@ -96,13 +97,13 @@ public class MonitorTest {
             if (m == "TOTAL_REQ_SUCCESS") {
                 assertEquals(v, numInsert);
             }
-//            if (m.contains("FAIL")) {
-//                assertEquals(v, new Long(0));
-//            } else if (m.contains("POINTS")) {
-//                assertEquals(v, numPointsInsert);
-//            } else {
-//                assertEquals(v, numInsert);
-//            }
+            if (m.contains("FAIL")) {
+                assertEquals(v, new Long(0));
+            } else if (m.contains("POINTS")) {
+                assertEquals(v, numPointsInsert);
+            } else {
+                assertEquals(v, numInsert);
+            }
         }
 
         try {

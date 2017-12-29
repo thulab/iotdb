@@ -163,6 +163,9 @@ public class FileNodeManager implements IStatistic {
 	public synchronized void resetFileNodeManager() {
 		this.backUpOverflowedFileNodeName = new HashSet<>();
 		this.overflowedFileNodeName = new HashSet<>();
+		for(String key:statParamsHashMap.keySet()){
+			statParamsHashMap.put(key, new AtomicLong());
+		}
 	}
 
 	private FileNodeManager(String baseDir) {
