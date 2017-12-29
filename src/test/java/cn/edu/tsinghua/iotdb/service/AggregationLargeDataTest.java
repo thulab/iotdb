@@ -124,22 +124,22 @@ public class AggregationLargeDataTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-//            selectAllSQLTest();
+            selectAllSQLTest();
             meanAggreWithSingleFilterTest();
-//            sumAggreWithSingleFilterTest();
-//            firstAggreWithSingleFilterTest();
-//            countAggreWithSingleFilterTest();
-//            minMaxTimeAggreWithSingleFilterTest();
-//            minValueAggreWithSingleFilterTest();
-//            maxValueAggreWithSingleFilterTest();
-//            countAggreWithMultiFilterTest();
-//            minTimeAggreWithMultiFilterTest();
-//            maxTimeAggreWithMultiFilterTest();
-//            minValueAggreWithMultiFilterTest();
-//            maxValueAggreWithMultiFilterTest();
-//            meanAggreWithMultiFilterTest();
-//            sumAggreWithMultiFilterTest();
-//            firstAggreWithMultiFilterTest();
+            sumAggreWithSingleFilterTest();
+            firstAggreWithSingleFilterTest();
+            countAggreWithSingleFilterTest();
+            minMaxTimeAggreWithSingleFilterTest();
+            minValueAggreWithSingleFilterTest();
+            maxValueAggreWithSingleFilterTest();
+            countAggreWithMultiFilterTest();
+            minTimeAggreWithMultiFilterTest();
+            maxTimeAggreWithMultiFilterTest();
+            minValueAggreWithMultiFilterTest();
+            maxValueAggreWithMultiFilterTest();
+            meanAggreWithMultiFilterTest();
+            sumAggreWithMultiFilterTest();
+            firstAggreWithMultiFilterTest();
             connection.close();
         }
     }

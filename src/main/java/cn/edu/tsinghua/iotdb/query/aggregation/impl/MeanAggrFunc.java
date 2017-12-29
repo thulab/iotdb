@@ -159,7 +159,7 @@ public class MeanAggrFunc extends AggregateFunction{
         switch (data.dataType) {
             case INT32:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
-                    System.out.println("Agg " + data.getTime(data.curIdx) + "," + data.getInt(data.curIdx));
+                    //System.out.println("Agg " + data.getTime(data.curIdx) + "," + data.getInt(data.curIdx));
                     sum += data.getInt(data.curIdx);
                     cnt++;
                 }
@@ -421,7 +421,7 @@ public class MeanAggrFunc extends AggregateFunction{
         }
         groupUpdateMean(partitionStart);
     }
-    
+
     private void updateMean() {
         if(cnt > 0) {
             if(isResultSet)

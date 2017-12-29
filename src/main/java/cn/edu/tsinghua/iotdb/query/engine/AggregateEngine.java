@@ -184,7 +184,6 @@ public class AggregateEngine {
                     DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
                     DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
                     SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
-
                     recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
                             insertTrue, updateTrue, updateFalse,
                             newTimeFilter, null, null, dataType);

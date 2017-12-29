@@ -819,7 +819,9 @@ public class ValueReaderProcessor {
         TsDigest digest = valueReader.getDigest();
         DigestForFilter digestFF = new StrDigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 digest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
-        LOG.debug("calculate aggregation using given common timestamps, series Digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
+        LOG.debug("calculate aggregation using given common timestamps, series Digest min and max is: "
+                + digestFF.getMinValue() + " --- " + digestFF.getMaxValue()
+        + "min, max time is : " + valueReader.getStartTime() + "--" + valueReader.getEndTime());
 
         DigestVisitor digestVisitor = new DigestVisitor();
         ByteArrayInputStream bis = valueReader.initBAISForOnePage(lastAggregationResult.pageOffset);
