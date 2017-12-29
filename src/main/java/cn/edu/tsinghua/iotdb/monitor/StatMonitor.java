@@ -143,6 +143,7 @@ public class StatMonitor {
     }
 
     public void deregistStatistics(String path) {
+        LOGGER.debug("Dereegister {} to StatMonitor for stopping statistics service", path);
         synchronized (statisticMap) {
             if (statisticMap.containsKey(path)) {
             	statisticMap.put(path, null);
@@ -222,9 +223,6 @@ public class StatMonitor {
                 LOGGER.error("Inserting Stat Points error.",  e);
             }
         }
-        LOGGER.debug("Now StatMonitor is inserting {} points and the FileNodeManager is {}",
-                count, fManager.getStatParamsHashMap().
-                get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name()));
     }
 
     public void close() {
