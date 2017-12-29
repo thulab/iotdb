@@ -112,16 +112,16 @@ public class LargeDataTest {
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            selectOneSeriesWithValueFilterTest();
+            /*selectOneSeriesWithValueFilterTest();
             aggregationTest();
             groupByTest();
             allNullSeriesAggregationTest();
 
-            allNullSeriesGroupByTest();
+            allNullSeriesGroupByTest();*/
 
             negativeValueTest();
 
-            fixBigGroupByClassFormNumberTest();
+           /* fixBigGroupByClassFormNumberTest();
 
             seriesTimeDigestTest();
 
@@ -129,7 +129,7 @@ public class LargeDataTest {
 
             linearFillTest();
 
-            connection.close();
+            connection.close();*/
         }
     }
 

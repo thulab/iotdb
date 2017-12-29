@@ -56,10 +56,10 @@ public class JVMMemController extends BasicMemController {
     public UsageLevel reportUse(Object user, long usage) {
         long memUsage = getTotalUsage() + usage;
         if (memUsage < warningThreshold) {
-            logger.debug("Safe Threshold : {} allocated to {}, total usage {}",
+           /* logger.debug("Safe Threshold : {} allocated to {}, total usage {}",
                     MemUtils.bytesCntToStr(usage),
                     user.getClass(),
-                    MemUtils.bytesCntToStr(memUsage));
+                    MemUtils.bytesCntToStr(memUsage));*/
             return UsageLevel.SAFE;
         } else if (memUsage < dangerouseThreshold) {
             logger.debug("Warning Threshold : {} allocated to {}, total usage {}",
