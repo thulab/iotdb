@@ -35,9 +35,9 @@ public class IndexTest {
 		assertEquals("root.laptop.d1.s1", indexPlan.getPaths().get(0).getFullPath());
 		assertEquals(2, indexPlan.getParameters().keySet().size());
 		assertTrue(indexPlan.getParameters().containsKey("window_length"));
-		assertEquals(2, indexPlan.getParameters().get("window_length"));
+		assertEquals("2", indexPlan.getParameters().get("window_length"));
 		assertTrue(indexPlan.getParameters().containsKey("since_time"));
-		assertEquals(0L, indexPlan.getParameters().get("since_time"));
+		assertEquals("0", indexPlan.getParameters().get("since_time"));
 //		assertEquals(0, indexPlan.getStartTime());
 	}
 

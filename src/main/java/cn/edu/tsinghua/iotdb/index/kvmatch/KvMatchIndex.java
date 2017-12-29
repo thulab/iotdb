@@ -115,8 +115,14 @@ public class KvMatchIndex  implements IoTIndex {
                 indexConfig = indexConfigStore.getOrDefault(path.getFullPath(), new IndexConfig());
             }
             else {
-                indexConfig.setWindowLength((int) parameters.getOrDefault(IndexConfig.PARAM_WINDOW_LENGTH, IndexConfig.DEFAULT_WINDOW_LENGTH));
-                indexConfig.setSinceTime((long) parameters.getOrDefault(IndexConfig.PARAM_SINCE_TIME, IndexConfig.DEFAULT_SINCE_TIME));
+                if(parameters.containsKey(IndexConfig.PARAM_WINDOW_LENGTH))
+                    indexConfig.setWindowLength(Integer.valueOf((String)parameters.get(IndexConfig.PARAM_WINDOW_LENGTH)));
+                else
+                    indexConfig.setWindowLength(IndexConfig.DEFAULT_WINDOW_LENGTH);
+                if(parameters.containsKey(IndexConfig.PARAM_SINCE_TIME))
+                    indexConfig.setSinceTime(Long.valueOf((String)parameters.get(IndexConfig.PARAM_SINCE_TIME)));
+                else
+                    indexConfig.setSinceTime(IndexConfig.DEFAULT_SINCE_TIME);
             }
 
             long startTime = indexConfig.getSinceTime();
@@ -232,8 +238,14 @@ public class KvMatchIndex  implements IoTIndex {
                 indexConfig = indexConfigStore.getOrDefault(path.getFullPath(), new IndexConfig());
             }
             else {
-                indexConfig.setWindowLength((int) parameters.getOrDefault(IndexConfig.PARAM_WINDOW_LENGTH, IndexConfig.DEFAULT_WINDOW_LENGTH));
-                indexConfig.setSinceTime((long) parameters.getOrDefault(IndexConfig.PARAM_SINCE_TIME, IndexConfig.DEFAULT_SINCE_TIME));
+                if(parameters.containsKey(IndexConfig.PARAM_WINDOW_LENGTH))
+                    indexConfig.setWindowLength(Integer.valueOf((String)parameters.get(IndexConfig.PARAM_WINDOW_LENGTH)));
+                else
+                    indexConfig.setWindowLength(IndexConfig.DEFAULT_WINDOW_LENGTH);
+                if(parameters.containsKey(IndexConfig.PARAM_SINCE_TIME))
+                    indexConfig.setSinceTime(Long.valueOf((String)parameters.get(IndexConfig.PARAM_SINCE_TIME)));
+                else
+                    indexConfig.setSinceTime(IndexConfig.DEFAULT_SINCE_TIME);
             }
 
             long startTime = indexConfig.getSinceTime();

@@ -972,12 +972,12 @@ public class LogicalGenerator {
     }
 
 
-    private Map<String, Integer> parseIndexWithParameters(ASTNode astNode) {
-        Map<String, Integer> indexParameters = new HashMap<String, Integer>();
+    private Map<String, String> parseIndexWithParameters(ASTNode astNode) {
+        Map<String, String> indexParameters = new HashMap<>();
         for (int i = 0; i < astNode.getChildCount(); i++) {
             ASTNode child = astNode.getChild(i);
-            String key = child.getChild(0).getText();
-            Integer value = Integer.valueOf(child.getChild(1).getText());
+            String key = child.getChild(0).getText().toLowerCase();
+            String value = child.getChild(1).getText().toLowerCase();
             indexParameters.put(key, value);
         }
         return indexParameters;
@@ -1003,7 +1003,7 @@ public class LogicalGenerator {
             for (int i = 1; i < childCount; i++) {
                 ASTNode child = funcNode.getChild(i);
                 if (child.getToken().getType() == TSParser.TOK_WITH) {
-                    Map<String, Integer> indexParameters = parseIndexWithParameters(child);
+                    Map<String, String> indexParameters = parseIndexWithParameters(child);
                     indexOperator.setParameters(indexParameters);
                 } else if (child.getToken().getType() == TSParser.TOK_WHERE) {
                     analyzeWhere(child);
