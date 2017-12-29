@@ -26,5 +26,5 @@ public interface IStatistic {
      * @return a list of string like "root.stats.xxx.statisticsParams",
      * the name is the statistics name need to store
      */
-    public List<String> getAllPathForStatistic();
+    List<String> getAllPathForStatistic();
 }

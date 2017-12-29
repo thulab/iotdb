@@ -177,9 +177,8 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 		@Override
 		public void act() throws Exception {
-
-			// update the lastUpdatetime, newIntervalList and Notice: thread
-			// safe
+			
+			// update the lastUpdatetime, newIntervalList and Notice: thread safe
 			synchronized (fileNodeProcessorStore) {
 				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
 				addLastTimeToIntervalFile();
@@ -252,7 +251,8 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		super(processorName);
 		statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
 				+ MonitorConstants.MONITOR_PATH_SEPERATOR
-				+ "write."
+				+ MonitorConstants.fileNodePath
+				+ MonitorConstants.MONITOR_PATH_SEPERATOR
 				+ processorName.replaceAll("\\.", "_");
 
 		this.parameters = parameters;
@@ -1264,8 +1264,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	@Override
 	public void close() throws FileNodeProcessorException {
-		//the processor's path is
-		LOGGER.debug("Deregister the FileNodeProcessor:" + this.statStorageDeltaName);
+		LOGGER.debug("Deregister the filenode processor: {}",getProcessorName());
 		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
@@ -1284,7 +1283,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 				}
 				bufferWriteProcessor.close();
 				bufferWriteProcessor = null;
-				/*
+				/**
 				 * add index for close
 				 */
 				Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());

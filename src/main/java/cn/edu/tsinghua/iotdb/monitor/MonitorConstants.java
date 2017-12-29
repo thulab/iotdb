@@ -9,11 +9,11 @@ public class MonitorConstants {
     public static final String MONITOR_PATH_SEPERATOR = ".";
     public static final String statStorageGroupPrefix = "root.stats";
 
-    // Module Storage Path
+    // statistic for write module
     public static final String fileNodeManagerPath = "write.global";
+    public static final String fileNodePath = "write";
 
     /**
-     *
      * @param constantsType: produce initialization values for Statistics Params
      * @return : HashMap contains all the Statistics Params
      */
