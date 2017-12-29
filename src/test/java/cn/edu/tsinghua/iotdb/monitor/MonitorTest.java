@@ -68,7 +68,7 @@ public class MonitorTest {
         statMonitor.activate();
         // wait for time second
         try {
-            Thread.sleep(3600);
+            Thread.sleep(5000);
             statMonitor.close();
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -91,7 +91,7 @@ public class MonitorTest {
         for (DataPoint dataPoint : fTSRecord.dataPointList) {
             String m = dataPoint.getMeasurementId();
             Long v = (Long) dataPoint.getValue();
-            System.out.println( m + "measurement is error value:" + v);
+            System.out.println( m + " measurement,  value:" + v);
             if (m == "TOTAL_REQ_SUCCESS") {
                 assertEquals(v, numInsert);
             }

@@ -53,7 +53,7 @@ public class StatMonitor {
                 mManager.setStorageLevelToMTree(prefix);
             }
         } catch (Exception e) {
-            LOGGER.error("MManager setStorageLevelToMTree False, {}", e.getMessage());
+            LOGGER.error("MManager setStorageLevelToMTree False.", e);
         }
     }
 
@@ -138,7 +138,7 @@ public class StatMonitor {
                 }
             }
         } catch (MetadataArgsErrorException|IOException|PathErrorException e) {
-            LOGGER.error("initialize the metadata error, Because {}", e.getMessage());
+            LOGGER.error("initialize the metadata error.", e);
         }
     }
 
@@ -219,25 +219,24 @@ public class StatMonitor {
                 count += pointNum;
             } catch (FileNodeManagerException e) {
                 numInsertError.incrementAndGet();
-                LOGGER.error("Inserting Stat Points error, {}",  e.getMessage());
+                LOGGER.error("Inserting Stat Points error.",  e);
             }
         }
         LOGGER.debug("Now StatMonitor is inserting {} points and the FileNodeManager is {}",
-                count, fManager.getStatParamsHashMap().
-                get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name()));
+                count, fManager.getStatParamsHashMap().get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name()));
     }
 
     public void close() {
-        iStatistic.clear();
+
         if (service == null || service.isShutdown()) {
             return;
         }
-
+        iStatistic.clear();
         service.shutdown();
         try {
             service.awaitTermination(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            LOGGER.error("StatMonitor timing service could not be shutdown with info:{}", e.getMessage());
+            LOGGER.error("StatMonitor timing service could not be shutdown.", e);
         }
     }
 
