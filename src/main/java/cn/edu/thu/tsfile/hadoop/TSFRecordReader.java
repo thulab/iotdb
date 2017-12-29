@@ -53,8 +53,6 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 	@Override
 	public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
 		if (split instanceof TSFInputSplit) {
-			LOGGER.info("Current split is a TSFSplit,start to initialize~");
-
 			TSFInputSplit tsfInputSplit = (TSFInputSplit) split;
 			Path path = tsfInputSplit.getPath();
 			List<RowGroupMetaData> rowGroupMetaDataList = tsfInputSplit.getDeviceRowGroupMetaDataList();
@@ -81,7 +79,6 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 
 			HadoopQueryEngine queryEngine = new HadoopQueryEngine(hdfsInputStream, rowGroupMetaDataList);
 			dataSet = queryEngine.queryWithSpecificRowGroups(deltaObjectIdsList, measurementIdsList, null, null, null);
-			LOGGER.info("Initialization complete~");
 		} else {
 			LOGGER.error("The InputSplit class is not {}, the class is {}", TSFInputSplit.class.getName(),
 					split.getClass().getName());
@@ -110,7 +107,6 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
-		LOGGER.info("Start to get next data~");
 		sensorIndex += sensorNum;
 
 		if(fields == null || sensorIndex >= fields.size()){
@@ -124,8 +120,6 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			fields = rowRecord.getFields();
 			timestamp = rowRecord.getTime();
 			sensorIndex = 0;
-			LOGGER.info("New time is " + timestamp);
-			LOGGER.info("New fields are " + fields);
 		}
 		deviceId = fields.get(sensorIndex).deltaObjectId;
 
@@ -139,12 +133,10 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 
 	@Override
 	public ArrayWritable getCurrentValue() throws IOException, InterruptedException {
-		LOGGER.info("Start to get current value~");
 
 		Writable[] writables = getEmptyWritables();
 		Text deviceid = new Text(deviceId);
 		LongWritable time = new LongWritable(timestamp);
-		LOGGER.info("device:" + deviceId + "\ttimestamp:" + time);
 		int index = 0;
 		if (isReadTime && isReadDeviceId) {
 			writables[0] = time;
@@ -158,17 +150,13 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 			index = 1;
 		}
 
-		LOGGER.info("Start to get real data, sensor index is " + sensorIndex + ", sensor num is " + sensorNum);
-		LOGGER.info("Fields are:" + fields);
 		for(int i = 0;i < sensorNum;i++)
 		{
-			LOGGER.info("Current index is " + i);
 			Field field = fields.get(sensorIndex + i);
 			if (field.isNull()) {
 				LOGGER.info("Current value is null");
 				writables[index] = NullWritable.get();
 			} else {
-				LOGGER.info("Current type is " + field.dataType);
 				switch (field.dataType) {
 				case INT32:
 					writables[index] = new IntWritable(field.getIntV());
@@ -193,10 +181,8 @@ public class TSFRecordReader extends RecordReader<NullWritable, ArrayWritable> {
 					throw new InterruptedException(String.format("The data type %s is not support ", field.dataType));
 				}
 			}
-			LOGGER.info("Get:" + writables[index]);
 			index++;
 		}
-		LOGGER.info("Get array:" + writables);
 		return new ArrayWritable(Writable.class, writables);
 	}
 

@@ -68,7 +68,7 @@ public class TSFMRReadExample {
 
 		Configuration configuration = new Configuration();
 		// set file system configuration
-		configuration.set("fs.defaultFS", HDFSURL);
+		//configuration.set("fs.defaultFS", HDFSURL);
 		Job job = Job.getInstance(configuration);
 		job.setJobName("TsFile read jar");
 		job.setJarByClass(TSFMRReadExample.class);
@@ -92,9 +92,9 @@ public class TSFMRReadExample {
 		 */
 		TSFInputFormat.setReadTime(job, true); // configure reading time enable
 		TSFInputFormat.setReadDeltaObjectId(job, true); // configure reading deltaObjectId enable
-		String[] deltaObjectIds = { "root.car.d1" };// configure reading which deltaObjectIds
+		String[] deltaObjectIds = { "device_1" };// configure reading which deltaObjectIds
 		TSFInputFormat.setReadDeltaObjectIds(job, deltaObjectIds);
-		String[] measurementIds = { "s1", "s2", "s3", "s4" };// configure reading which measurementIds
+		String[] measurementIds = { "sensor_1", };// configure reading which measurementIds
 		TSFInputFormat.setReadMeasurementIds(job, measurementIds);
 		boolean isSuccess = false;
 		try {
