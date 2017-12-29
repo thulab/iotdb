@@ -2,6 +2,7 @@ package cn.edu.tsinghua.tsfile.qp.optimizer;
 
 import cn.edu.tsinghua.tsfile.qp.common.FilterOperator;
 import cn.edu.tsinghua.tsfile.qp.exception.MergeFilterException;
+import cn.edu.tsinghua.tsfile.qp.common.BasicOperator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -107,5 +108,13 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
             filter.setChildrenList(ret);
             return null;
         }
+    }
+
+    private boolean allIsBasic(List<FilterOperator> children) {
+        for(FilterOperator child: children) {
+            if(!(child instanceof BasicOperator))
+                return false;
+        }
+        return true;
     }
 }

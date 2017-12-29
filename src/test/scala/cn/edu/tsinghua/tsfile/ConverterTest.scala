@@ -7,8 +7,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary
 import cn.edu.tsinghua.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
 import cn.edu.tsinghua.tsfile.io.CreateTSFile
 import cn.edu.tsinghua.tsfile.qp.common.SQLConstant
-import cn.edu.tsinghua.tsfile.timeseries.read.LocalFileInput
-import cn.edu.tsinghua.tsfile.timeseries.read.metadata.SeriesSchema
+import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader
+import cn.edu.tsinghua.tsfile.timeseries.read.management.SeriesSchema
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryConfig
 import org.apache.spark.sql.sources.{Filter, GreaterThan, LessThan, Or}
 import org.apache.spark.sql.types._
@@ -36,7 +36,7 @@ class ConverterTest extends FunSuite with BeforeAndAfterAll {
   }
 
   test("testToQueryConfigs") {
-    val in = new LocalFileInput(tsfilePath)
+    val in = new TsRandomAccessLocalFileReader(tsfilePath)
 
     val requiredSchema = StructType(Seq(
       StructField("s1", IntegerType, nullable = true)

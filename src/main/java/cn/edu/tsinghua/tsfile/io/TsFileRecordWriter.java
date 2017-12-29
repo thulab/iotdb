@@ -28,7 +28,7 @@ public class TsFileRecordWriter extends RecordWriter<NullWritable, TSRecord> {
 	@Override
 	public synchronized void write(NullWritable arg0, TSRecord tsRecord) throws IOException {
 		try {
-			tsFile.writeLine(tsRecord);
+			tsFile.writeRecord(tsRecord);
 		} catch (WriteProcessException e) {
 			e.printStackTrace();
 		}

@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.qp;
 
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.qp.common.FilterOperator;
 import cn.edu.tsinghua.tsfile.qp.common.SQLConstant;
 import cn.edu.tsinghua.tsfile.qp.common.SingleQuery;
@@ -28,7 +28,7 @@ public class QueryProcessor {
 
     //construct logical query plans first, then convert them to physical ones
     public List<TSQueryPlan> generatePlans(FilterOperator filter, List<String> paths, List<String> columnNames,
-                                           TSRandomAccessFileReader in, Long start, Long end) throws QueryProcessorException, IOException {
+                                           ITsRandomAccessFileReader in, Long start, Long end) throws QueryProcessorException, IOException {
 
         List<TSQueryPlan> queryPlans = new ArrayList<>();
 

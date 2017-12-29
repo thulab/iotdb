@@ -3,9 +3,9 @@ package cn.edu.tsinghua.tsfile
 import java.util
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader
 import cn.edu.tsinghua.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
-import cn.edu.tsinghua.tsfile.timeseries.read.metadata.SeriesSchema
+import cn.edu.tsinghua.tsfile.timeseries.read.management.SeriesSchema
 import cn.edu.tsinghua.tsfile.timeseries.read.query.{QueryConfig, QueryEngine}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileStatus
@@ -172,7 +172,7 @@ object Converter {
     * @return TSFile physical query plans
     */
   def toQueryConfigs(
-                      in: TSRandomAccessFileReader,
+                      in: ITsRandomAccessFileReader,
                       requiredSchema: StructType,
                       filters: Seq[Filter],
                       columnNames: ArrayBuffer[String],

@@ -3,8 +3,7 @@ package cn.edu.tsinghua.tsfile.io;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
-import cn.edu.tsinghua.tsfile.common.utils.RandomAccessOutputStream;
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
@@ -25,7 +24,7 @@ public class CreateTSFile {
             file.delete();
 
         JSONObject jsonSchema = generateSchema1();
-        TSRandomAccessFileWriter output = new RandomAccessOutputStream(new File(tsfilePath));
+        TsRandomAccessFileWriter output = new  TsRandomAccessFileWriter(new File(tsfilePath));
         TsFile tsFile = new TsFile(output, jsonSchema);
 
         tsFile.writeLine("root.car.d1,1, s1, 1, s2, 10, s3, 100.1");
@@ -46,7 +45,7 @@ public class CreateTSFile {
             file.delete();
 
         JSONObject jsonSchema = generateSchema2();
-        TSRandomAccessFileWriter output = new RandomAccessOutputStream(new File(tsfilePath));
+        TsRandomAccessFileWriter output = new  TsRandomAccessFileWriter(new File(tsfilePath));
         TsFile tsFile = new TsFile(output, jsonSchema);
 
         tsFile.writeLine("root.car.d1,1, s1, 1");

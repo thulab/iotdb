@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.tsfile.qp.optimizer;
 
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.metadata.SeriesSchema;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.management.SeriesSchema;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryEngine;
 import cn.edu.tsinghua.tsfile.qp.common.BasicOperator;
 import cn.edu.tsinghua.tsfile.qp.common.FilterOperator;
@@ -25,7 +25,7 @@ public class PhysicalOptimizer {
     }
 
     public List<TSQueryPlan> optimize(SingleQuery singleQuery, List<String> paths,
-                                      TSRandomAccessFileReader in, Long start, Long end) throws IOException {
+                                      ITsRandomAccessFileReader in, Long start, Long end) throws IOException {
         QueryEngine queryEngine = new QueryEngine(in);
         List<String> actualDeltaObjects = queryEngine.getAllDeltaObjectUIDByPartition(start, end);
         List<SeriesSchema> actualSeries = queryEngine.getAllSeriesSchema();

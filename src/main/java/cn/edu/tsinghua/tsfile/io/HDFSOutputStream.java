@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.io;
 
-import cn.edu.tsinghua.tsfile.common.utils.TSRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -15,7 +15,7 @@ import java.io.OutputStream;
  * interface {@link}TSRandomAccessFileWriter
  *
  */
-public class HDFSOutputStream implements TSRandomAccessFileWriter {
+public class HDFSOutputStream implements ITsRandomAccessFileWriter {
 
 	private FSDataOutputStream fsDataOutputStream;
 
