@@ -61,7 +61,7 @@ public class BufferwriteMetaSizeControlTest {
     private TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
     private TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig();
 
-    private boolean skip = false;
+    private boolean skip = !false;
 
     @Before
     public void setUp() throws Exception {
