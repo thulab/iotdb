@@ -177,7 +177,7 @@ public class LargeDataTest {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
                         + "," + resultSet.getString(mean(d0s0)) + "," + resultSet.getString(first(d0s0))
                         + "," + resultSet.getString(sum(d0s0));
-                assertEquals("0,16340,119.76315789473684,2000,1956930.0", ans);
+                assertEquals("0,16440,159.58211678832117,2000,2623530.0", ans);
                 cnt++;
             }
             assertEquals(1, cnt);
@@ -390,7 +390,7 @@ public class LargeDataTest {
 
     private void negativeValueTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
 
-        String countSql = "select count(s0),mean(s0),first(s0),sum(s0) from root.vehicle.d0 where s0 < 0";
+        String countSql = "select count(s0),sum(s0),mean(s0),first(s0) from root.vehicle.d0 where s0 < 0";
         //String countSql = "select s0 from root.vehicle.d0 where s0 < 0";
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -402,11 +402,15 @@ public class LargeDataTest {
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
+            double sum = 0;
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
                         + "," + resultSet.getString(mean(d0s0)) + "," + resultSet.getString(first(d0s0))
                         + "," + resultSet.getString(sum(d0s0));
-                Assert.assertEquals("0,950,-10.0,-1,-9500.0", ans);
+                //String ans = resultSet.getString(sum(d0s0));
+                //System.out.println("0,855,-10.0,-1,-8550.0" + ans);
+                Assert.assertEquals("0,855,-10.0,-1,-8550.0", ans);
+                //sum += Double.valueOf(resultSet.getString(d0s0));
                 cnt++;
             }
             assertEquals(1, cnt);

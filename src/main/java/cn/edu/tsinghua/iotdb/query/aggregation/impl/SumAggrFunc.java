@@ -256,6 +256,7 @@ public class SumAggrFunc extends AggregateFunction {
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasInsertData()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
+                    //System.out.println(">>>> dy >> " + insertMemoryData.getCurrentMinTime() + " " + insertMemoryData.getCurrentIntValue());
                     int val = insertMemoryData.getCurrentIntValue();
                     sum += val;
                     timeIndex ++;
