@@ -1,21 +1,26 @@
 package cn.edu.tsinghua.tsfile.io;
 
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import java.io.IOException;
+import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 
 /**
  * This class is used to wrap the {@link}FSDataInputStream and implement the
  * interface {@link}TSRandomAccessFileReader.
  *
+ * @author liukun
  */
 public class HDFSInputStream implements ITsRandomAccessFileReader {
 
-	private final FSDataInputStream fsDataInputStream;
-	private final long length;
+	private FSDataInputStream fsDataInputStream;
+	private FileStatus fileStatus;
 
 	public HDFSInputStream(String filePath) throws IOException {
 
@@ -24,12 +29,14 @@ public class HDFSInputStream implements ITsRandomAccessFileReader {
 
 	public HDFSInputStream(String filePath, Configuration configuration) throws IOException {
 
-		this(new Path(filePath),configuration);
+		this(new Path(filePath), configuration);
 	}
 
-	public HDFSInputStream(Path path, Configuration conf) throws IOException {
-		length = path.getFileSystem(conf).getFileStatus(path).getLen();
-		fsDataInputStream = path.getFileSystem(conf).open(path);
+	public HDFSInputStream(Path path, Configuration configuration) throws IOException {
+
+		FileSystem fs = FileSystem.get(configuration);
+		fsDataInputStream = fs.open(path);
+		fileStatus = fs.getFileStatus(path);
 	}
 
 	public void seek(long offset) throws IOException {
@@ -44,7 +51,7 @@ public class HDFSInputStream implements ITsRandomAccessFileReader {
 
 	public long length() throws IOException {
 
-		return length;
+		return fileStatus.getLen();
 	}
 
 	public int readInt() throws IOException {
