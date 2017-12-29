@@ -39,6 +39,7 @@ public class StatMonitor {
     private AtomicLong numBackLoop = new AtomicLong(0);
     private AtomicLong numInsert = new AtomicLong(0);
     private AtomicLong numPointsInsert = new AtomicLong(0);
+    private AtomicLong numInsertError = new AtomicLong(0);
 
     private StatMonitor() {
         MManager mManager = MManager.getInstance();
@@ -83,6 +84,10 @@ public class StatMonitor {
 
     public long getNumInsert() {
         return numInsert.get();
+    }
+
+    public long getNumInsertError() {
+        return numInsertError.get();
     }
 
     public void registStatStorageGroup() {
