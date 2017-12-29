@@ -102,9 +102,7 @@ public class EnvironmentUtils {
 
 	public static void envSetUp(){
 		Authorizer.reset();
-//		TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 		config.enableStatMonitor = false;
-		//tsFileConfig.duplicateIncompletedPage = true;
 		FileNodeManager.getInstance().resetFileNodeManager();
 	}
 }

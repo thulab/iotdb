@@ -88,7 +88,6 @@ public class FileNodeManager implements IStatistic {
 	};
 
 	/**
-	 *
 	 * @return the key represent the params' name, values is AtomicLong type
 	 */
 	public HashMap<String, AtomicLong> getStatParamsHashMap() {

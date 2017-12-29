@@ -30,7 +30,7 @@ public class StatMonitor {
     // key is the store path like FileNodeProcessor.root_stats_xxx.xxx,
     // or simple name like:FileNodeManager. And value is interface implement
     // statistics function
-    private HashMap<String, IStatistic> iStatistic;
+    private HashMap<String, IStatistic> statisticMap;
     private ScheduledExecutorService service;
 
     /**
@@ -42,7 +42,7 @@ public class StatMonitor {
 
     private StatMonitor() {
         MManager mManager = MManager.getInstance();
-        iStatistic = new HashMap<>();
+        statisticMap = new HashMap<>();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         backLoopPeriod = config.backLoopPeriod;
         try {
@@ -105,7 +105,7 @@ public class StatMonitor {
     }
 
     public void clearIStatisticMap() {
-        iStatistic.clear();
+    	statisticMap.clear();
     }
 
     public long getNumBackLoop() {
@@ -113,9 +113,9 @@ public class StatMonitor {
     }
 
     public void registStatistics(String path, IStatistic iStatistic) {
-        synchronized (this.iStatistic) {
-            LOGGER.debug("register {} to StatMonitor for statistics service", path);
-            this.iStatistic.put(path, iStatistic);
+        synchronized (statisticMap) {
+            LOGGER.debug("Register {} to StatMonitor for statistics service", path);
+            this.statisticMap.put(path, iStatistic);
         }
     }
 
@@ -133,14 +133,14 @@ public class StatMonitor {
                 }
             }
         } catch (MetadataArgsErrorException|IOException|PathErrorException e) {
-            LOGGER.error("initialize the metadata error, Because {}", e.getMessage());
+            LOGGER.error("Initialize the metadata error.", e);
         }
     }
 
     public void deregistStatistics(String path) {
-        synchronized (iStatistic) {
-            if (iStatistic.containsKey(path)) {
-                iStatistic.put(path, null);
+        synchronized (statisticMap) {
+            if (statisticMap.containsKey(path)) {
+            	statisticMap.put(path, null);
             }
         }
     }
@@ -161,13 +161,13 @@ public class StatMonitor {
         } else {
             queryPath = key;
         }
-        if (iStatistic.containsKey(queryPath)) {
-            return iStatistic.get(queryPath).getAllStatisticsValue();
+        if (statisticMap.containsKey(queryPath)) {
+            return statisticMap.get(queryPath).getAllStatisticsValue();
         } else {
             long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> hashMap = new HashMap<>();
             TSRecord tsRecord = convertToTSRecord(
-                    MonitorConstants.initValues("FileNodeProcessorStatConstants"),
+                    MonitorConstants.initValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
                     queryPath,
                     currentTimeMillis
             );
@@ -177,10 +177,10 @@ public class StatMonitor {
     }
 
     public HashMap<String, TSRecord> gatherStatistics() {
-        synchronized (iStatistic) {
+        synchronized (statisticMap) {
             long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-            for (Map.Entry<String, IStatistic> entry : iStatistic.entrySet()) {
+            for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
                 if (entry.getValue() == null) {
                     tsRecordHashMap.put(entry.getKey(),
                             convertToTSRecord(
@@ -213,7 +213,7 @@ public class StatMonitor {
                 numPointsInsert.addAndGet(pointNum);
                 count += pointNum;
             } catch (FileNodeManagerException e) {
-                LOGGER.error("Inserting Stat Points error, {}",  e.getMessage());
+                LOGGER.error("Inserting Stat Points error.",e);
             }
         }
         LOGGER.debug("Now StatMonitor is inserting {} points and the FileNodeManager is {}",
@@ -222,7 +222,7 @@ public class StatMonitor {
     }
 
     public void close() {
-        iStatistic.clear();
+    	statisticMap.clear();
         if (service == null || service.isShutdown()) {
             return;
         }

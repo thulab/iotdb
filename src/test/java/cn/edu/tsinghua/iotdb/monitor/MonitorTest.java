@@ -62,7 +62,8 @@ public class MonitorTest {
             assertEquals(true, mManager.pathExist(
                     MonitorConstants.statStorageGroupPrefix
                             + MonitorConstants.MONITOR_PATH_SEPERATOR
-                            + "write.global." + statParam)
+                            + MonitorConstants.fileNodeManagerPath
+                            + MonitorConstants.MONITOR_PATH_SEPERATOR + statParam)
             );
         }
         statMonitor.activate();
