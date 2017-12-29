@@ -54,12 +54,13 @@ public class ValueReaderProcessor {
         if (res.pageOffset == -1) {
             res.pageOffset = valueReader.getFileOffset();
         }
-
+        
         // TODO: new updateTrueData and updateFalseData is redundant
         updateTrueData = (updateTrueData == null ? new DynamicOneColumnData(dataType, true) : updateTrueData);
         updateFalseData = (updateFalseData == null ? new DynamicOneColumnData(dataType, true) : updateFalseData);
 
         // TODO: optimize by jt ?
+
         TsDigest digest = valueReader.getDigest();
         DigestForFilter valueDigest = new StrDigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 digest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
@@ -832,7 +833,7 @@ public class ValueReaderProcessor {
         while ((lastAggregationResult.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
             pageCount++;
-            LOG.debug("calculate aggregation using given common timestamps, read page {}, offset : {}", pageCount, lastAggregationResult.pageOffset);
+            //LOG.debug("calculate aggregation using given common timestamps, read page {}, offset : {}", pageCount, lastAggregationResult.pageOffset);
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
             Digest pageDigest = pageHeader.data_page_header.getDigest();
