@@ -322,18 +322,22 @@ public class RecordReader {
 
     private DynamicOneColumnData queryOriginalDataUsingTimestamps(String deltaObjectId, String measurementId,
                                                                   SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps)
-            throws IOException {
+            throws IOException, PathErrorException {
 
         DynamicOneColumnData res = null;
+        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
         List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
         for (int i = 0; i < rowGroupReaderList.size(); i++) {
-            RowGroupReader dbRowGroupReader = rowGroupReaderList.get(i);
-            if (i == 0) {
-                res = dbRowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-            } else {
-                DynamicOneColumnData tmpRes = dbRowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-                res.mergeRecord(tmpRes);
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                if (res == null) {
+                    res = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
+                } else {
+                    DynamicOneColumnData tmpRes = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
+                    res.mergeRecord(tmpRes);
+                }
             }
         }
         return res;

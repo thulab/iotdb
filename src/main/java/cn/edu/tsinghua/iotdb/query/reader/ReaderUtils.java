@@ -672,6 +672,9 @@ public class ReaderUtils {
                                     int v = decoder.readInt(page);
                                     aggregatePathQueryResult.putInt(v);
                                     aggregatePathQueryResult.insertTrueIndex++;
+                                    if (commonTimestamp >= 1000) {
+                                        System.out.println("---" + commonTimestamp + " " + v);
+                                    }
                                 }
 
                                 // no matter if time is satisfied with time filter, the two index will plus

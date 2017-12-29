@@ -1,25 +1,22 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.inte_test;
 
 
-import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
+import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.service.TestUtils;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import java.sql.*;
 
-public class AggregationLargeDataTest {
+import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
+import static org.junit.Assert.fail;
+
+public class XAggregationLargeDataTest {
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
@@ -217,27 +214,34 @@ public class AggregationLargeDataTest {
         };
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select s0,s1,s2 from root.vehicle.d0 where s1 >= 0");
-            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
-            Assert.assertTrue(hasResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0)
-                        + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
-                //System.out.println(ans);
-            }
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
+//        try {
+//            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+//            Statement statement = connection.createStatement();
+//            boolean hasResultSet = statement.execute("select s0,s1,s2 from root.vehicle.d0 where s1 >= 0");
+//            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
+//            Assert.assertTrue(hasResultSet);
+//            ResultSet resultSet = statement.getResultSet();
+//            double sum = 0;
+//            int cnt = 0;
+//            while (resultSet.next()) {
+//                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0)
+//                        + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
+//                System.out.println("===" + ans);
+//                if (!resultSet.getString(d0s0).equals("null")) {
+//                    sum += Double.valueOf(resultSet.getString(d0s0));
+//                    cnt += 1;
+//                }
+//            }
+//            System.out.println("Result:" + sum + " " + cnt + " " + sum/cnt);
+//            statement.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            fail(e.getMessage());
+//        } finally {
+//            if (connection != null) {
+//                connection.close();
+//            }
+//        }
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
