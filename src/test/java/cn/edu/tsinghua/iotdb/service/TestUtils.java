@@ -10,7 +10,6 @@ public class TestUtils {
 
     public static String insertTemplate = "insert into %s(timestamp%s) values(%d%s)";
 
-    static String count(String path) {
     public static String first(String path) {
         return String.format("first(%s)", path);
     }
