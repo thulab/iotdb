@@ -889,7 +889,7 @@ public class FileNodeManager {
 		}
 	}
 
-	public void flushAll() throws IOException {
+	private void flushAll() throws IOException {
 		for (FileNodeProcessor processor : processorMap.values()) {
 			processor.tryLock(true);
 			try {
@@ -909,13 +909,13 @@ public class FileNodeManager {
 				return (int) (o2.memoryUsage() - o1.memoryUsage());
 			}
 		});
-		int flushNum = (int) (tempProcessors.size() * 0.1) > 1 ? (int) (tempProcessors.size() * 0.1) : 1;
-		for(int i = 0;i<flushNum&&i<tempProcessors.size();i++){
+		int flushNum = (int) (tempProcessors.size() * percentage) > 1 ? (int) (tempProcessors.size() * percentage) : 1;
+		for (int i = 0; i < flushNum && i < tempProcessors.size(); i++) {
 			FileNodeProcessor processor = tempProcessors.get(i);
 			processor.writeLock();
-			try{
+			try {
 				processor.flush();
-			}finally {
+			} finally {
 				processor.writeUnlock();
 			}
 		}
