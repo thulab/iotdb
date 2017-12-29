@@ -86,7 +86,7 @@ public class IoTDB implements IoTDBMBean {
 		}
 
 		initFileNodeManager();
-        registStatMonitor();
+        enableStatMonitor();
 		systemDataRecovery();
 
 		maybeInitJmx();
@@ -136,7 +136,7 @@ public class IoTDB implements IoTDBMBean {
 		FileNodeManager.getInstance().recovery();
 	}
 
-    private void registStatMonitor() {
+    private void enableStatMonitor() {
         if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
             statMonitor = StatMonitor.getInstance();
             statMonitor.activate();

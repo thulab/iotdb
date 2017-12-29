@@ -12,7 +12,12 @@ public class MonitorConstants {
     // Module Storage Path
     public static final String fileNodeManagerPath = "write.global";
 
-    public static HashMap<String, AtomicLong> iniValues(String constantsType) {
+    /**
+     *
+     * @param constantsType: produce initialization values for Statistics Params
+     * @return : HashMap contains all the Statistics Params
+     */
+    public static HashMap<String, AtomicLong> initValues(String constantsType) {
         HashMap<String, AtomicLong> hashMap = new HashMap<>();
         switch (constantsType) {
             case FILENODE_PROCESSOR_CONST:

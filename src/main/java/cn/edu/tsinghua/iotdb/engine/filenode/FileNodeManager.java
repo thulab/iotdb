@@ -16,7 +16,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import cn.edu.tsinghua.iotdb.service.Monitor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,11 +74,6 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * Stat information
 	 */
-
-	/**
-	 * statStorageDeltaName represent the xxx.xxx.xxx store path
-	 *
-	 */
 	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
 			+ MonitorConstants.fileNodeManagerPath;
 
@@ -112,7 +106,7 @@ public class FileNodeManager implements IStatistic {
 
 	@Override
 	public HashMap<String, TSRecord> getAllStatisticsValue() {
-		Long curTime = System.currentTimeMillis();
+		long curTime = System.currentTimeMillis();
 		TSRecord tsRecord = StatMonitor.convertToTSRecord(getStatParamsHashMap(), statStorageDeltaName, curTime);
 		return new HashMap<String, TSRecord>() {
 			{
@@ -134,7 +128,7 @@ public class FileNodeManager implements IStatistic {
 				}
 			}
 		};
-		StatMonitor.getInstance().registMeta(hashMap);
+		StatMonitor.getInstance().registStatStorageGroup(hashMap);
 	}
 
 	private Action overflowBackUpAction = new Action() {

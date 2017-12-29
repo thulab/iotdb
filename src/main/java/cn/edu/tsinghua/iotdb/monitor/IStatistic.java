@@ -21,6 +21,7 @@ public interface IStatistic {
     void registStatMetadata();
 
     /**
+     * Get all the Module's statistics params time-series path
      *
      * @return a list of string like "root.stats.xxx.statisticsParams",
      * the name is the statistics name need to store

@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import cn.edu.tsinghua.iotdb.service.Monitor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -123,7 +122,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 				put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(), MonitorConstants.DataType);
 			}
 		}};
-		StatMonitor.getInstance().registMeta(hashMap);
+		StatMonitor.getInstance().registStatStorageGroup(hashMap);
 	}
 
 	@Override
@@ -147,8 +146,6 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
 			}
 		}};
-		// Attention: Need to notify the class method, Not just Processor
-//		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
 		tsRecordHashMap.put(statStorageDeltaName, tsRecord);
 		return tsRecordHashMap;
 	}

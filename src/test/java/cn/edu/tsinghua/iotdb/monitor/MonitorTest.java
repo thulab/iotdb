@@ -41,6 +41,7 @@ public class MonitorTest {
 
     @After
     public void tearDown() throws Exception {
+        tsdbconfig.enableStatMonitor = false;
         statMonitor.close();
         EnvironmentUtils.cleanEnv();
     }
@@ -49,7 +50,7 @@ public class MonitorTest {
     public void testFileNodeManagerMonitorAndAddMetadata() {
         fManager = FileNodeManager.getInstance();
         statMonitor = StatMonitor.getInstance();
-        statMonitor.registMeta();
+        statMonitor.registStatStorageGroup();
         fManager.getStatParamsHashMap().forEach((key, value) -> value.set(0));
         statMonitor.clearIStatisticMap();
         statMonitor.registStatistics(fManager.getClass().getSimpleName(), fManager);

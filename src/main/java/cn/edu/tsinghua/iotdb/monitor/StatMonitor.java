@@ -37,7 +37,6 @@ public class StatMonitor {
      * stats params
      */
     private AtomicLong numBackLoop = new AtomicLong(0);
-    private AtomicLong numBackLoopError = new AtomicLong(0);
     private AtomicLong numInsert = new AtomicLong(0);
     private AtomicLong numPointsInsert = new AtomicLong(0);
 
@@ -67,7 +66,7 @@ public class StatMonitor {
      * @param curTime       TODO need to be fixed may contains overflow
      * @return TSRecord contains the DataPoints of a statGroupDeltaName
      */
-    public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap, String statGroupDeltaName, Long curTime) {
+    public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap, String statGroupDeltaName, long curTime) {
         TSRecord tsRecord = new TSRecord(curTime, statGroupDeltaName);
         tsRecord.dataPointList = new ArrayList<DataPoint>() {{
             for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
@@ -78,15 +77,15 @@ public class StatMonitor {
         return tsRecord;
     }
 
-    public Long getNumPointsInsert() {
+    public long getNumPointsInsert() {
         return numPointsInsert.get();
     }
 
-    public Long getNumInsert() {
+    public long getNumInsert() {
         return numInsert.get();
     }
 
-    public void registMeta() {
+    public void registStatStorageGroup() {
         MManager mManager = MManager.getInstance();
         String prefix = MonitorConstants.statStorageGroupPrefix;
         try {
@@ -94,7 +93,7 @@ public class StatMonitor {
                 mManager.setStorageLevelToMTree(prefix);
             }
         } catch (Exception e){
-            LOGGER.error("MManager setStorageLevelToMTree False, Because {}", e.getMessage());
+            LOGGER.error("MManager setStorageLevelToMTree False, Because {}", e);
         }
     }
 
@@ -109,22 +108,18 @@ public class StatMonitor {
         iStatistic.clear();
     }
 
-    public Long getNumBackLoop() {
+    public long getNumBackLoop() {
         return numBackLoop.get();
-    }
-
-    public Long getNumBackLoopError() {
-        return numBackLoopError.get();
     }
 
     public void registStatistics(String path, IStatistic iStatistic) {
         synchronized (this.iStatistic) {
-            LOGGER.debug("StatMonitor is in registStatistics: {}", path);
+            LOGGER.debug("register {} to StatMonitor for statistics service", path);
             this.iStatistic.put(path, iStatistic);
         }
     }
 
-    public synchronized void registMeta(HashMap<String, String> hashMap) {
+    public synchronized void registStatStorageGroup(HashMap<String, String> hashMap) {
         MManager mManager = MManager.getInstance();
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
@@ -169,10 +164,10 @@ public class StatMonitor {
         if (iStatistic.containsKey(queryPath)) {
             return iStatistic.get(queryPath).getAllStatisticsValue();
         } else {
-            Long currentTimeMillis = System.currentTimeMillis();
+            long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> hashMap = new HashMap<>();
             TSRecord tsRecord = convertToTSRecord(
-                    MonitorConstants.iniValues("FileNodeProcessorStatConstants"),
+                    MonitorConstants.initValues("FileNodeProcessorStatConstants"),
                     queryPath,
                     currentTimeMillis
             );
@@ -183,13 +178,13 @@ public class StatMonitor {
 
     public HashMap<String, TSRecord> gatherStatistics() {
         synchronized (iStatistic) {
-            Long currentTimeMillis = System.currentTimeMillis();
+            long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
             for (Map.Entry<String, IStatistic> entry : iStatistic.entrySet()) {
                 if (entry.getValue() == null) {
                     tsRecordHashMap.put(entry.getKey(),
                             convertToTSRecord(
-                                    MonitorConstants.iniValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
+                                    MonitorConstants.initValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
                                     entry.getKey(),
                                     currentTimeMillis
                             )
@@ -221,8 +216,8 @@ public class StatMonitor {
                 LOGGER.error("Inserting Stat Points error, {}",  e.getMessage());
             }
         }
-        LOGGER.debug("Now StatMonitor is inserting {} points, " +
-                "and the FileNodeManager is {}", count, fManager.getStatParamsHashMap().
+        LOGGER.debug("Now StatMonitor is inserting {} points and the FileNodeManager is {}",
+                count, fManager.getStatParamsHashMap().
                 get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name()));
     }
 
@@ -246,15 +241,9 @@ public class StatMonitor {
 
     class statBackLoop implements Runnable {
         public void run() {
-            try {
-                LOGGER.debug("---------This is the Time to monitor--------------");
-                HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
-                insert(tsRecordHashMap);
-                numBackLoop.incrementAndGet();
-            } catch (Exception e) {
-                e.printStackTrace();
-                numBackLoopError.incrementAndGet();
-            }
+            HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
+            insert(tsRecordHashMap);
+            numBackLoop.incrementAndGet();
         }
     }
 }
