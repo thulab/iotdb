@@ -8,16 +8,22 @@ import java.util.List;
 
 public interface IStatistic {
     /**
-     * @return An HashMap that contains the Module path like: root.stats.FileNodeManager,
+     * @return An HashMap that contains the Module path like: root.stats.write.global,
      * and its value as TSRecord format contains all the statistics measurement
      */
     HashMap<String, TSRecord> getAllStatisticsValue();
 
+    /**
+     * A method need to provide an HashMap to statMonitor to register statistics info params
+     * HashMap key is the param storage path like "root.stats.xxx.statisticsParams", value is
+     * its dataType: MonitorConstants.DataType
+     */
     void registStatMetadata();
 
     /**
      *
-     * @return a list of string like "root.statistics.xxx.xxx."
+     * @return a list of string like "root.stats.xxx.statisticsParams",
+     * the name is the statistics name need to store
      */
     public List<String> getAllPathForStatistic();
 }

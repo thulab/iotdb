@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.service.Monitor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -98,13 +99,13 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	private Map<String, Object> parameters = null;
 
-	private final String fakeDeltaName;
+	private final String statStorageDeltaName;
 
 	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
 		{
-			for (MonitorConstants.FileNodeProcessorStatConstants a:
+			for (MonitorConstants.FileNodeProcessorStatConstants statConstant:
 					MonitorConstants.FileNodeProcessorStatConstants.values()){
-				put(a.name(), new AtomicLong(0));
+				put(statConstant.name(), new AtomicLong(0));
 			}
 		}
 	};
@@ -117,9 +118,9 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	@Override
 	public void registStatMetadata() {
 		HashMap<String, String> hashMap = new HashMap<String, String> (){{
-			for (MonitorConstants.FileNodeProcessorStatConstants c :
+			for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
 					MonitorConstants.FileNodeProcessorStatConstants.values()) {
-				put(fakeDeltaName + "." + c.name(), "INT64");
+				put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(), MonitorConstants.DataType);
 			}
 		}};
 		StatMonitor.getInstance().registMeta(hashMap);
@@ -128,9 +129,9 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
-		for (MonitorConstants.FileNodeProcessorStatConstants c :
+		for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
 				MonitorConstants.FileNodeProcessorStatConstants.values()) {
-			list.add(fakeDeltaName + "." + c.name());
+			list.add(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
 		}
 		return list;
 	}
@@ -139,7 +140,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	public HashMap<String, TSRecord> getAllStatisticsValue() {
 		Long curTime = System.currentTimeMillis();
 		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-		TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
+		TSRecord tsRecord = new TSRecord(curTime, statStorageDeltaName);
 		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
 		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
 			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
@@ -148,7 +149,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		}};
 		// Attention: Need to notify the class method, Not just Processor
 //		tsRecordHashMap.put(getClass().getSimpleName(), tsRecord);
-		tsRecordHashMap.put(fakeDeltaName, tsRecord);
+		tsRecordHashMap.put(statStorageDeltaName, tsRecord);
 		return tsRecordHashMap;
 	}
 
@@ -252,7 +253,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	public FileNodeProcessor(String fileNodeDirPath, String processorName, Map<String, Object> parameters)
 			throws FileNodeProcessorException {
 		super(processorName);
-		fakeDeltaName = MonitorConstants.getStatPrefix()
+		statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
 				+ MonitorConstants.MONITOR_PATH_SEPERATOR
 				+ "write."
 				+ processorName.replaceAll("\\.", "_");
@@ -295,7 +296,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			StatMonitor statMonitor = StatMonitor.getInstance();
 			registStatMetadata();
 			statMonitor.registStatistics(
-					fakeDeltaName,
+					statStorageDeltaName,
 					this
 			);
 		}
@@ -489,7 +490,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	/**
 	 * For insert overflow
-	 * 
+	 *
 	 * @param timestamp
 	 */
 	public void changeTypeToChanged(String deltaObjectId, long timestamp) {
@@ -511,7 +512,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	/**
 	 * For update overflow
-	 * 
+	 *
 	 * @param startTime
 	 * @param endTime
 	 */
@@ -538,7 +539,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	/**
 	 * For delete overflow
-	 * 
+	 *
 	 * @param timestamp
 	 */
 	public void changeTypeToChangedForDelete(String deltaObjectId, long timestamp) {
@@ -562,7 +563,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	/**
 	 * Search the index of the interval by the timestamp
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param timestamp
 	 * @param fileList
@@ -1267,8 +1268,8 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	@Override
 	public void close() throws FileNodeProcessorException {
 		//the processor's path is
-		LOGGER.debug("Deregister the FileNodeProcessor:" + this.fakeDeltaName);
-		StatMonitor.getInstance().deregistStatistics(fakeDeltaName);
+		LOGGER.debug("Deregister the FileNodeProcessor:" + this.statStorageDeltaName);
+		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);

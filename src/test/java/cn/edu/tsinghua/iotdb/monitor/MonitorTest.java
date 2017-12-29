@@ -51,7 +51,7 @@ public class MonitorTest {
         statMonitor = StatMonitor.getInstance();
         statMonitor.registMeta();
         fManager.getStatParamsHashMap().forEach((key, value) -> value.set(0));
-        statMonitor.clearProcessor();
+        statMonitor.clearIStatisticMap();
         statMonitor.registStatistics(fManager.getClass().getSimpleName(), fManager);
         // add metadata
         MManager mManager = MManager.getInstance();
@@ -59,7 +59,7 @@ public class MonitorTest {
         HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
         for (String statParam : statParamsHashMap.keySet()) {
             assertEquals(true, mManager.pathExist(
-                    MonitorConstants.getStatPrefix()
+                    MonitorConstants.statStorageGroupPrefix
                             + MonitorConstants.MONITOR_PATH_SEPERATOR
                             + "write.global." + statParam)
             );
@@ -67,7 +67,7 @@ public class MonitorTest {
         statMonitor.activate();
         // wait for time second
         try {
-            Thread.sleep(3300);
+            Thread.sleep(3600);
             statMonitor.close();
             Thread.sleep(1000);
         } catch (InterruptedException e) {

@@ -19,8 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author liliang
@@ -32,7 +30,7 @@ public class StatMonitor {
     // key is the store path like FileNodeProcessor.root_stats_xxx.xxx,
     // or simple name like:FileNodeManager. And value is interface implement
     // statistics function
-    private HashMap<String, IStatistic> registProcessor;
+    private HashMap<String, IStatistic> iStatistic;
     private ScheduledExecutorService service;
 
     /**
@@ -45,11 +43,11 @@ public class StatMonitor {
 
     private StatMonitor() {
         MManager mManager = MManager.getInstance();
-        registProcessor = new HashMap<>();
+        iStatistic = new HashMap<>();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         backLoopPeriod = config.backLoopPeriod;
         try {
-            String prefix = MonitorConstants.getStatPrefix();
+            String prefix = MonitorConstants.statStorageGroupPrefix;
 
             if (!mManager.pathExist(prefix)) {
                 mManager.setStorageLevelToMTree(prefix);
@@ -65,12 +63,12 @@ public class StatMonitor {
 
     /**
      * @param hashMap       key is statParams name, values is AtomicLong type
-     * @param fakeDeltaName is the deltaObject path of this module
+     * @param statGroupDeltaName is the deltaObject path of this module
      * @param curTime       TODO need to be fixed may contains overflow
-     * @return TSRecord contains the DataPoints of a fakeDeltaName
+     * @return TSRecord contains the DataPoints of a statGroupDeltaName
      */
-    public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap, String fakeDeltaName, Long curTime) {
-        TSRecord tsRecord = new TSRecord(curTime, fakeDeltaName);
+    public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap, String statGroupDeltaName, Long curTime) {
+        TSRecord tsRecord = new TSRecord(curTime, statGroupDeltaName);
         tsRecord.dataPointList = new ArrayList<DataPoint>() {{
             for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
                 AtomicLong value = (AtomicLong) entry.getValue();
@@ -90,7 +88,7 @@ public class StatMonitor {
 
     public void registMeta() {
         MManager mManager = MManager.getInstance();
-        String prefix = MonitorConstants.getStatPrefix();
+        String prefix = MonitorConstants.statStorageGroupPrefix;
         try {
             if (!mManager.pathExist(prefix)) {
                 mManager.setStorageLevelToMTree(prefix);
@@ -107,8 +105,8 @@ public class StatMonitor {
         );
     }
 
-    public void clearProcessor() {
-        registProcessor.clear();
+    public void clearIStatisticMap() {
+        iStatistic.clear();
     }
 
     public Long getNumBackLoop() {
@@ -119,10 +117,10 @@ public class StatMonitor {
         return numBackLoopError.get();
     }
 
-    public void registStatistics(String path, IStatistic statprocessor) {
-        synchronized (registProcessor) {
+    public void registStatistics(String path, IStatistic iStatistic) {
+        synchronized (this.iStatistic) {
             LOGGER.debug("StatMonitor is in registStatistics: {}", path);
-            registProcessor.put(path, statprocessor);
+            this.iStatistic.put(path, iStatistic);
         }
     }
 
@@ -145,9 +143,9 @@ public class StatMonitor {
     }
 
     public void deregistStatistics(String path) {
-        synchronized (registProcessor) {
-            if (registProcessor.containsKey(path)) {
-                registProcessor.put(path, null);
+        synchronized (iStatistic) {
+            if (iStatistic.containsKey(path)) {
+                iStatistic.put(path, null);
             }
         }
     }
@@ -162,14 +160,14 @@ public class StatMonitor {
         // queryPath like fileNode path: root.stats.car1, or FileNodeManager path: FileNodeManager
         String queryPath;
         if (key.contains("\\.")) {
-            queryPath = MonitorConstants.getStatPrefix()
+            queryPath = MonitorConstants.statStorageGroupPrefix
                     + MonitorConstants.MONITOR_PATH_SEPERATOR
                     + key.replaceAll("\\.", "_");
         } else {
             queryPath = key;
         }
-        if (registProcessor.containsKey(queryPath)) {
-            return registProcessor.get(queryPath).getAllStatisticsValue();
+        if (iStatistic.containsKey(queryPath)) {
+            return iStatistic.get(queryPath).getAllStatisticsValue();
         } else {
             Long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> hashMap = new HashMap<>();
@@ -184,10 +182,10 @@ public class StatMonitor {
     }
 
     public HashMap<String, TSRecord> gatherStatistics() {
-        synchronized (registProcessor) {
+        synchronized (iStatistic) {
             Long currentTimeMillis = System.currentTimeMillis();
             HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-            for (Map.Entry<String, IStatistic> entry : registProcessor.entrySet()) {
+            for (Map.Entry<String, IStatistic> entry : iStatistic.entrySet()) {
                 if (entry.getValue() == null) {
                     tsRecordHashMap.put(entry.getKey(),
                             convertToTSRecord(
@@ -229,7 +227,7 @@ public class StatMonitor {
     }
 
     public void close() {
-        registProcessor.clear();
+        iStatistic.clear();
         if (service == null || service.isShutdown()) {
             return;
         }

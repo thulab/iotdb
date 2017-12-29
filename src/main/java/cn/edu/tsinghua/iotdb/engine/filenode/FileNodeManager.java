@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.service.Monitor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +77,11 @@ public class FileNodeManager implements IStatistic {
 	 */
 
 	/**
-	 * fakeDeltaName represent the xxx.xxx.xxx store path
+	 * statStorageDeltaName represent the xxx.xxx.xxx store path
 	 *
 	 */
-	private final String fakeDeltaName = MonitorConstants.getStatPrefix() + MonitorConstants.MONITOR_PATH_SEPERATOR
-			+ "write.global";
+	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
+			+ MonitorConstants.fileNodeManagerPath;
 
 	// There is no need to add concurrently
 	private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
@@ -103,8 +104,8 @@ public class FileNodeManager implements IStatistic {
 	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
-		for (MonitorConstants.FileNodeManagerStatConstants c : MonitorConstants.FileNodeManagerStatConstants.values()) {
-			list.add(fakeDeltaName + "." + c.name());
+		for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants.values()) {
+			list.add(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
 		}
 		return list;
 	}
@@ -112,10 +113,10 @@ public class FileNodeManager implements IStatistic {
 	@Override
 	public HashMap<String, TSRecord> getAllStatisticsValue() {
 		Long curTime = System.currentTimeMillis();
-		TSRecord tsRecord = StatMonitor.convertToTSRecord(getStatParamsHashMap(), fakeDeltaName, curTime);
+		TSRecord tsRecord = StatMonitor.convertToTSRecord(getStatParamsHashMap(), statStorageDeltaName, curTime);
 		return new HashMap<String, TSRecord>() {
 			{
-				put(fakeDeltaName, tsRecord);
+				put(statStorageDeltaName, tsRecord);
 			}
 		};
 	}
@@ -127,9 +128,9 @@ public class FileNodeManager implements IStatistic {
 	public void registStatMetadata() {
 		HashMap<String, String> hashMap = new HashMap<String, String>() {
 			{
-				for (MonitorConstants.FileNodeManagerStatConstants c : MonitorConstants.FileNodeManagerStatConstants
+				for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants
 						.values()) {
-					put(fakeDeltaName + "." + c.name(), "INT64");
+					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(), MonitorConstants.DataType);
 				}
 			}
 		};
