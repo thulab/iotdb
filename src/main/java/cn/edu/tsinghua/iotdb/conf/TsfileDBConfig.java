@@ -160,6 +160,7 @@ public class TsfileDBConfig {
 	public long overflowFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
 
 
+	/*
 	 * The statMonitor's BackLoop period, 5s is enough
 	 */
 	public int backLoopPeriod = 5;
