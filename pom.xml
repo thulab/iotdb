@@ -5,7 +5,7 @@
 
 	<groupId>cn.edu.thu</groupId>
 	<artifactId>iotdb-grafana</artifactId>
-	<version>0.3.0</version>
+	<version>0.4.0</version>
 	<packaging>war</packaging>
 
 	<name>iotdb-grafana</name>
@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>cn.edu.tsinghua</groupId>
 			<artifactId>iotdb-jdbc</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0</version>
 		</dependency>
 
 	</dependencies>
