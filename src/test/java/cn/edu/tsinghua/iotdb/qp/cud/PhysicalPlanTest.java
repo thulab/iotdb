@@ -34,7 +34,22 @@ public class PhysicalPlanTest {
                 new Path(new StringContainer(
                         new String[] {"root", "vehicle", "d1", "s1"},
                         SystemConstant.PATH_SEPARATOR));
+        Path path2 =
+                new Path(new StringContainer(
+                        new String[] {"root", "vehicle", "d2", "s1"},
+                        SystemConstant.PATH_SEPARATOR));
+        Path path3 =
+                new Path(new StringContainer(
+                        new String[] {"root", "vehicle", "d3", "s1"},
+                        SystemConstant.PATH_SEPARATOR));
+        Path path4 =
+                new Path(new StringContainer(
+                        new String[] {"root", "vehicle", "d4", "s1"},
+                        SystemConstant.PATH_SEPARATOR));
         processor.getExecutor().insert(path1, 10, "10");
+        processor.getExecutor().insert(path2, 10, "10");
+        processor.getExecutor().insert(path3, 10, "10");
+        processor.getExecutor().insert(path4, 10, "10");
     }
 
     @Test
