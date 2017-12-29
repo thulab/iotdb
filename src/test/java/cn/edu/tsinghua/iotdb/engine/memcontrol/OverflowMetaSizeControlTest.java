@@ -101,8 +101,8 @@ public class OverflowMetaSizeControlTest {
             // wait to flush
             Thread.sleep(1000);
             assertTrue(ofprocessor.getMetaSize() < dbConfig.overflowMetaSizeThreshold);
-            fail("Method unimplemented");
             ofprocessor.close();
+            fail("Method unimplemented");
         } catch (OverflowProcessorException e) {
             e.printStackTrace();
             fail(e.getMessage());

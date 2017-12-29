@@ -100,9 +100,9 @@ public class OverflowFileSizeControlTest {
             }
             // wait to flush
             Thread.sleep(1000);
+            ofprocessor.close();
             assertTrue(ofprocessor.getFileSize() < dbConfig.overflowFileSizeThreshold);
             fail("Method unimplemented");
-            ofprocessor.close();
         } catch (OverflowProcessorException e) {
             e.printStackTrace();
             fail(e.getMessage());

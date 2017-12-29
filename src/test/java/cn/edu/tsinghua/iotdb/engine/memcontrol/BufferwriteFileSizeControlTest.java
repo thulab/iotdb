@@ -133,7 +133,7 @@ public class BufferwriteFileSizeControlTest {
             e.printStackTrace();
         }
         processor.close();
-        fail("Method unimplemented");
         assertTrue(processor.getFileSize() < dbConfig.bufferwriteFileSizeThreshold);
+        fail("Method unimplemented");
     }
 }

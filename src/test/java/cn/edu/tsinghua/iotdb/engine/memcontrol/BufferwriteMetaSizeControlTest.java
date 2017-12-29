@@ -131,8 +131,9 @@ public class BufferwriteMetaSizeControlTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        assertTrue(processor.getMetaSize() < dbConfig.bufferwriteFileSizeThreshold);
         processor.close();
         fail("Method unimplemented");
-        assertTrue(processor.getMetaSize() < dbConfig.bufferwriteFileSizeThreshold);
+
     }
 }
