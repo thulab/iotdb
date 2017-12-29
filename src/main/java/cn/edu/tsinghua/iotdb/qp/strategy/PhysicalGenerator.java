@@ -116,14 +116,15 @@ public class PhysicalGenerator {
 			return new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
 					indexOperator.getStartTime(), indexOperator.getIndexOperatorType(), indexOperator.getIndexType());
 		case INDEXQUERY:
-			List<Path> queryPathList = ((SFWOperator)operator).getFromOperator().getPrefixPaths();
-			if(queryPathList.size() != 1)
-				throw new IndexManagerException("The number of index query paths must be 1, given: " + queryPathList
-						.size());
+//			List<Path> queryPathList = ((SFWOperator)operator).getFromOperator().getPrefixPaths();
+//			if(queryPathList.size() != 1)
+//				throw new IndexManagerException("The number of index query paths must be 1, given: " + queryPathList
+//						.size());
 			switch (((IndexQueryOperator) operator).getIndexType()){
 				case KvIndex:
 					KvMatchIndexQueryOperator indexQueryOperator = (KvMatchIndexQueryOperator) operator;
-					KvMatchIndexQueryPlan indexQueryPlan = new KvMatchIndexQueryPlan(queryPathList.get(0),
+					KvMatchIndexQueryPlan indexQueryPlan = new KvMatchIndexQueryPlan(
+							indexQueryOperator.getSelectOperator().getSuffixPaths().get(0),
 							indexQueryOperator.getPatternPath(), indexQueryOperator.getEpsilon(),
 							indexQueryOperator.getStartTime(), indexQueryOperator.getEndTime());
 					indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
