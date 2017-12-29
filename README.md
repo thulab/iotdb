@@ -121,9 +121,6 @@ mvn clean scala:compile compile package
 
 	```scala
 	import cn.edu.thu.tsfile._
-	import org.apache.spark.sql.SparkSession
-
-	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//read data in TsFile and create a table
 	val df = spark.read.tsfile("test.tsfile")
@@ -140,9 +137,6 @@ mvn clean scala:compile compile package
 
 	```scala
 	import cn.edu.thu.tsfile._
-    import org.apache.spark.sql.SparkSession
-	
-    val spark = SparkSession.builder().master("local").getOrCreate()
 	val df = spark.read
 	      .format("cn.edu.thu.tsfile")
 	      .load("test.tsfile")
@@ -154,9 +148,6 @@ mvn clean scala:compile compile package
 
 	```scala
 	import cn.edu.thu.tsfile._
-    import org.apache.spark.sql.SparkSession
-   	
-	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	//create a table in SparkSQL and build relation with a TsFile
 	spark.sql("create temporary view TsFile using cn.edu.thu.tsfile options(path = \"test.tsfile\")")
@@ -169,10 +160,6 @@ mvn clean scala:compile compile package
 
 	```scala
 	import cn.edu.thu.tsfile._
-	import org.apache.spark.sql.SparkSession
-	import scala.collection.mutable
-
-	val spark = SparkSession.builder().master("local").getOrCreate()
 		
 	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("test.tsfile")
 	    
@@ -186,9 +173,6 @@ mvn clean scala:compile compile package
 
 	```scala
 	import cn.edu.thu.tsfile._
-    import org.apache.spark.sql.SparkSession
-   	
-	val spark = SparkSession.builder().master("local").getOrCreate()
 
 	val df = spark.read.tsfile("test.tsfile").write.tsfile("out")
 
@@ -198,10 +182,6 @@ mvn clean scala:compile compile package
 
 	```scala
 	import cn.edu.thu.tsfile._
-	import org.apache.spark.sql.SparkSession
-	import scala.collection.mutable
-
-	val spark = SparkSession.builder().master("local").getOrCreate()
 		
 	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("test.tsfile")
 	    
@@ -212,9 +192,9 @@ mvn clean scala:compile compile package
 ### 6.2 spark-shell
 
 ```
-$ bin/spark-shell --jars tsfile-spark-connector-0.1.0.jar,tsfile-0.1.0.jar
+$ bin/spark-shell --jars tsfile-spark-connector-0.4.0.jar,tsfile-0.4.0.jar
 
-scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test1.tsfile\")")
+scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test.tsfile\")")
 
 scala> val df = sql("select * from TsFile_table")
 
