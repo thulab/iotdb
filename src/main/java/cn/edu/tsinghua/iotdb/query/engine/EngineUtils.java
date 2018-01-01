@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -14,8 +13,6 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFa
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.and;
 
@@ -47,40 +44,32 @@ public class EngineUtils {
      */
     public static List<Object> getOverflowInfoAndFilterDataInMem(SingleSeriesFilterExpression queryTimeFilter,
                   SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                  DynamicOneColumnData res, DynamicOneColumnData insertDataInMemory, List<Object> overflowParams) {
+                  DynamicOneColumnData res, DynamicOneColumnData lastPageData, List<Object> overflowParams) {
 
         List<Object> paramList = new ArrayList<>();
 
-        if (res == null) {
-            // time filter of overflow is not null,
-            // new time filter should be an intersection of query time filter and overflow time filter
-            if (overflowParams.get(3) != null) {
-                if (queryTimeFilter != null)
-                    queryTimeFilter = (SingleSeriesFilterExpression) and(queryTimeFilter, (SingleSeriesFilterExpression) overflowParams.get(3));
-                else
-                    queryTimeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
-            }
-
-            DynamicOneColumnData updateTrue = (DynamicOneColumnData) overflowParams.get(1);
-            insertDataInMemory = getSatisfiedData(updateTrue, queryTimeFilter, freqFilter, valueFilter, insertDataInMemory);
-
-            DynamicOneColumnData overflowInsertTrue = (DynamicOneColumnData) overflowParams.get(0);
-            // add insert records from memory in BufferWriter stage
-            if (overflowInsertTrue == null) {
-                overflowInsertTrue = insertDataInMemory;
-            } else {
-                overflowInsertTrue = mergeOverflowAndMemory(overflowInsertTrue, insertDataInMemory);
-            }
-            paramList.add(overflowInsertTrue);
-            paramList.add(overflowParams.get(1));
-            paramList.add(overflowParams.get(2));
-            paramList.add(queryTimeFilter);
-        } else {
-            paramList.add(res.insertTrue);
-            paramList.add(res.updateTrue);
-            paramList.add(res.updateFalse);
-            paramList.add(res.timeFilter);
+        // time filter of overflow is not null,
+        // new time filter should be an intersection of query time filter and overflow time filter
+        if (overflowParams.get(3) != null) {
+            if (queryTimeFilter != null)
+                queryTimeFilter = (SingleSeriesFilterExpression) and(queryTimeFilter, (SingleSeriesFilterExpression) overflowParams.get(3));
+            else
+                queryTimeFilter = (SingleSeriesFilterExpression) overflowParams.get(3);
         }
+
+        DynamicOneColumnData updateTrue = (DynamicOneColumnData) overflowParams.get(1);
+        lastPageData = getSatisfiedData(updateTrue, queryTimeFilter, valueFilter, lastPageData);
+
+        DynamicOneColumnData overflowInsertTrue = (DynamicOneColumnData) overflowParams.get(0);
+        if (overflowInsertTrue == null) {
+            overflowInsertTrue = lastPageData;
+        } else {
+            overflowInsertTrue = mergeOverflowAndLastPage(overflowInsertTrue, lastPageData);
+        }
+        paramList.add(overflowInsertTrue);
+        paramList.add(overflowParams.get(1));
+        paramList.add(overflowParams.get(2));
+        paramList.add(queryTimeFilter);
 
         return paramList;
     }
@@ -89,169 +78,156 @@ public class EngineUtils {
      * Get satisfied values from a DynamicOneColumnData.
      *
      */
-    private static DynamicOneColumnData getSatisfiedData(DynamicOneColumnData updateTrue, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter
-            , SingleSeriesFilterExpression valueFilter, DynamicOneColumnData oneColData) {
-        if (oneColData == null) {
+    private static DynamicOneColumnData getSatisfiedData(DynamicOneColumnData updateTrue,
+                                                         SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                                                         DynamicOneColumnData lastPageData) {
+        if (lastPageData == null) {
             return null;
         }
-        if (oneColData.valueLength == 0) {
-            return oneColData;
+        if (lastPageData.valueLength == 0) {
+            return lastPageData;
         }
 
-        // update the value in oneColData according to updateTrue
-        oneColData = updateValueAccordingToUpdateTrue(updateTrue, oneColData);
-        DynamicOneColumnData res = new DynamicOneColumnData(oneColData.dataType, true);
+        lastPageData = updateValueAccordingToUpdateTrue(updateTrue, lastPageData);
+        DynamicOneColumnData res = new DynamicOneColumnData(lastPageData.dataType, true);
         SingleValueVisitor<?> timeVisitor = null;
         if (timeFilter != null) {
             timeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
         }
         SingleValueVisitor<?> valueVisitor = null;
         if (valueFilter != null) {
-            valueVisitor = getSingleValueVisitorByDataType(oneColData.dataType, valueFilter);
+            valueVisitor = getSingleValueVisitorByDataType(lastPageData.dataType, valueFilter);
         }
 
-        switch (oneColData.dataType) {
+        switch (lastPageData.dataType) {
             case BOOLEAN:
-                for (int i = 0; i < oneColData.valueLength; i++) {
-                    boolean v = oneColData.getBoolean(i);
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    boolean v = lastPageData.getBoolean(i);
                     if ((valueFilter == null && timeFilter == null)
                             || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i)))
+                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
                             || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter)
-                            && timeVisitor.verify(oneColData.getTime(i)))) {
+                            && timeVisitor.verify(lastPageData.getTime(i)))) {
                         res.putBoolean(v);
-                        res.putTime(oneColData.getTime(i));
+                        res.putTime(lastPageData.getTime(i));
                     }
                 }
                 break;
             case DOUBLE:
-                for (int i = 0; i < oneColData.valueLength; i++) {
-                    double v = oneColData.getDouble(i);
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    double v = lastPageData.getDouble(i);
                     if ((valueFilter == null && timeFilter == null)
                             || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i)))
+                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
                             || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(oneColData.getTime(i)))) {
+                            && timeVisitor.verify(lastPageData.getTime(i)))) {
                         res.putDouble(v);
-                        res.putTime(oneColData.getTime(i));
+                        res.putTime(lastPageData.getTime(i));
                     }
                 }
                 break;
             case FLOAT:
-                for (int i = 0; i < oneColData.valueLength; i++) {
-                    float v = oneColData.getFloat(i);
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    float v = lastPageData.getFloat(i);
                     if ((valueFilter == null && timeFilter == null)
                             || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i)))
+                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
                             || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(oneColData.getTime(i)))) {
+                            && timeVisitor.verify(lastPageData.getTime(i)))) {
                         res.putFloat(v);
-                        res.putTime(oneColData.getTime(i));
+                        res.putTime(lastPageData.getTime(i));
                     }
                 }
                 break;
             case INT32:
-                for (int i = 0; i < oneColData.valueLength; i++) {
-                    int v = oneColData.getInt(i);
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    int v = lastPageData.getInt(i);
                     if ((valueFilter == null && timeFilter == null)
                             || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i)))
+                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
                             || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(oneColData.getTime(i)))) {
+                            && timeVisitor.verify(lastPageData.getTime(i)))) {
                         res.putInt(v);
-                        res.putTime(oneColData.getTime(i));
+                        res.putTime(lastPageData.getTime(i));
                     }
                 }
                 break;
             case INT64:
-                for (int i = 0; i < oneColData.valueLength; i++) {
-                    long v = oneColData.getLong(i);
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    long v = lastPageData.getLong(i);
                     if ((valueFilter == null && timeFilter == null)
                             || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i)))
+                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
                             || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(oneColData.getTime(i)))) {
+                            && timeVisitor.verify(lastPageData.getTime(i)))) {
                         res.putLong(v);
-                        res.putTime(oneColData.getTime(i));
+                        res.putTime(lastPageData.getTime(i));
                     }
                 }
                 break;
             case TEXT:
-                for (int i = 0; i < oneColData.valueLength; i++) {
-                    Binary v = oneColData.getBinary(i);
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    Binary v = lastPageData.getBinary(i);
                     if ((valueFilter == null && timeFilter == null)
                             || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i)))
+                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
                             || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter)
-                            && timeVisitor.verify(oneColData.getTime(i)))) {
+                            && timeVisitor.verify(lastPageData.getTime(i)))) {
                         res.putBinary(v);
-                        res.putTime(oneColData.getTime(i));
+                        res.putTime(lastPageData.getTime(i));
                     }
                 }
                 break;
             default:
-                throw new UnSupportedDataTypeException("UnSupported data type for read: " + oneColData.dataType);
+                throw new UnSupportedDataTypeException("UnSupported data type for read: " + lastPageData.dataType);
         }
 
         return res;
     }
 
-    //    private boolean mayHasSatisfiedValue(SingleSeriesFilterExpression timeFilter, SingleValueVisitor<?> timeVisitor,
-//                                         SingleSeriesFilterExpression valueFilter, SingleValueVisitor<?> valueVisitor) {
-//        if ((valueFilter == null && timeFilter == null) ||
-//                (valueFilter != null && timeFilter == null && valueVisitor.verify(v)) ||
-//                (valueFilter == null && timeFilter != null && timeVisitor.verify(oneColData.getTime(i))) ||
-//                (valueFilter != null && timeFilter != null && valueVisitor.verify(v) && timeVisitor.verify(oneColData.getTime(i)))) {
-//            return true;
-//        }
-//        return false;
-//    }
-
     private static DynamicOneColumnData updateValueAccordingToUpdateTrue(DynamicOneColumnData updateTrue
-            , DynamicOneColumnData oneColData) {
-        if (updateTrue == null) {
-            return oneColData;
-        }
-        if (oneColData == null) {
+            , DynamicOneColumnData lastPageData) {
+
+        if (lastPageData == null) {
             return null;
         }
+
         int idx = 0;
         for (int i = 0; i < updateTrue.valueLength; i++) {
-            while (idx < oneColData.valueLength && updateTrue.getTime(i * 2 + 1) >= oneColData.getTime(idx)) {
-                if (updateTrue.getTime(i * 2) <= oneColData.getTime(idx)) {
-                    // oneColData.updateAValueFromDynamicOneColumnData(updateTrue, i, idx);
-                    switch (oneColData.dataType) {
+            while (idx < lastPageData.valueLength && updateTrue.getTime(i * 2 + 1) >= lastPageData.getTime(idx)) {
+                if (updateTrue.getTime(i * 2) <= lastPageData.getTime(idx)) {
+                    switch (lastPageData.dataType) {
                         case BOOLEAN:
-                            oneColData.setBoolean(idx, updateTrue.getBoolean(i));
+                            lastPageData.setBoolean(idx, updateTrue.getBoolean(i));
                             break;
                         case INT32:
-                            oneColData.setInt(idx, updateTrue.getInt(i));
+                            lastPageData.setInt(idx, updateTrue.getInt(i));
                             break;
                         case INT64:
-                            oneColData.setLong(idx, updateTrue.getLong(i));
+                            lastPageData.setLong(idx, updateTrue.getLong(i));
                             break;
                         case FLOAT:
-                            oneColData.setFloat(idx, updateTrue.getFloat(i));
+                            lastPageData.setFloat(idx, updateTrue.getFloat(i));
                             break;
                         case DOUBLE:
-                            oneColData.setDouble(idx, updateTrue.getDouble(i));
+                            lastPageData.setDouble(idx, updateTrue.getDouble(i));
                             break;
                         case TEXT:
-                            oneColData.setBinary(idx, updateTrue.getBinary(i));
+                            lastPageData.setBinary(idx, updateTrue.getBinary(i));
                             break;
                         case ENUMS:
                         default:
-                            throw new UnSupportedDataTypeException(String.valueOf(oneColData.dataType));
+                            throw new UnSupportedDataTypeException(String.valueOf(lastPageData.dataType));
                     }
                 }
                 idx++;
             }
-            if (idx >= oneColData.valueLength) {
+            if (idx >= lastPageData.valueLength) {
                 break;
             }
         }
 
-        return oneColData;
+        return lastPageData;
     }
 
     private static SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SingleSeriesFilterExpression filter) {
@@ -275,38 +251,38 @@ public class EngineUtils {
      * Important: If there is two fields whose timestamp are equal, use the value
      * from overflow.
      *
-     * @param overflowData data in overflow insert
-     * @param memoryData data in buffer write insert
+     * @param overflowInsertData data in overflow insert
+     * @param lastPageData data in buffer write insert
      * @return merge result of the overflow and memory insert
      */
-    private static DynamicOneColumnData mergeOverflowAndMemory(DynamicOneColumnData overflowData, DynamicOneColumnData memoryData) {
-        if (overflowData == null && memoryData == null) {
+    private static DynamicOneColumnData mergeOverflowAndLastPage(DynamicOneColumnData overflowInsertData, DynamicOneColumnData lastPageData) {
+        if (overflowInsertData == null && lastPageData == null) {
             return null;
-        } else if (overflowData != null && memoryData == null) {
-            return overflowData;
-        } else if (overflowData == null) {
-            return memoryData;
+        } else if (overflowInsertData != null && lastPageData == null) {
+            return overflowInsertData;
+        } else if (overflowInsertData == null) {
+            return lastPageData;
         }
 
-        DynamicOneColumnData res = new DynamicOneColumnData(overflowData.dataType, true);
-        int overflowIdx = 0;
-        int memoryIdx = 0;
-        while (overflowIdx < overflowData.valueLength || memoryIdx < memoryData.valueLength) {
-            while (overflowIdx < overflowData.valueLength && (memoryIdx >= memoryData.valueLength ||
-                    memoryData.getTime(memoryIdx) >= overflowData.getTime(overflowIdx))) {
-                res.putTime(overflowData.getTime(overflowIdx));
-                res.putAValueFromDynamicOneColumnData(overflowData, overflowIdx);
-                if (memoryIdx < memoryData.valueLength && memoryData.getTime(memoryIdx) == overflowData.getTime(overflowIdx)) {
-                    memoryIdx++;
+        DynamicOneColumnData res = new DynamicOneColumnData(overflowInsertData.dataType, true);
+        int overflowInsertIdx = 0;
+        int lastPageIdx = 0;
+        while (overflowInsertIdx < overflowInsertData.valueLength || lastPageIdx < lastPageData.valueLength) {
+            while (overflowInsertIdx < overflowInsertData.valueLength && (lastPageIdx >= lastPageData.valueLength ||
+                    lastPageData.getTime(lastPageIdx) >= overflowInsertData.getTime(overflowInsertIdx))) {
+                res.putTime(overflowInsertData.getTime(overflowInsertIdx));
+                res.putAValueFromDynamicOneColumnData(overflowInsertData, overflowInsertIdx);
+                if (lastPageIdx < lastPageData.valueLength && lastPageData.getTime(lastPageIdx) == overflowInsertData.getTime(overflowInsertIdx)) {
+                    lastPageIdx++;
                 }
-                overflowIdx++;
+                overflowInsertIdx++;
             }
 
-            while (memoryIdx < memoryData.valueLength && (overflowIdx >= overflowData.valueLength ||
-                    overflowData.getTime(overflowIdx) > memoryData.getTime(memoryIdx))) {
-                res.putTime(memoryData.getTime(memoryIdx));
-                res.putAValueFromDynamicOneColumnData(memoryData, memoryIdx);
-                memoryIdx++;
+            while (lastPageIdx < lastPageData.valueLength && (overflowInsertIdx >= overflowInsertData.valueLength ||
+                    overflowInsertData.getTime(overflowInsertIdx) > lastPageData.getTime(lastPageIdx))) {
+                res.putTime(lastPageData.getTime(lastPageIdx));
+                res.putAValueFromDynamicOneColumnData(lastPageData, lastPageIdx);
+                lastPageIdx++;
             }
         }
 

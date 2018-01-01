@@ -179,7 +179,7 @@ public class AggregateEngine {
 
                     // TODO the parameter there could be optimized using aggregateTimestamps
                     List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null, null,
-                            recordReader.insertPageInMemory, recordReader.overflowInfo);
+                            recordReader.lastPageInMemory, recordReader.overflowInfo);
                     DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                     DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
                     DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -243,7 +243,7 @@ public class AggregateEngine {
             if (recordReader.insertAllData == null) {
                 // get overflow params merged with bufferwrite insert data
                 List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, null, null, null,
-                        recordReader.insertPageInMemory, recordReader.overflowInfo);
+                        recordReader.lastPageInMemory, recordReader.overflowInfo);
                 DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                 DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
                 DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -291,7 +291,7 @@ public class AggregateEngine {
         if (res == null) {
             // get four overflow params
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, freqFilter, valueFilter,
-                    res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);

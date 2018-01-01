@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,6 @@ import cn.edu.tsinghua.iotdb.engine.filenode.QueryStructure;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 
 /**
@@ -49,8 +48,8 @@ public class RecordReaderFactory {
 	 * @throws ProcessorException
 	 */
 	public RecordReader getRecordReader(String deltaObjectUID, String measurementID,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-            Integer readLock, String prefix) throws ProcessorException {
+										SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+										Integer readLock, String prefix) throws ProcessorException, PathErrorException {
 		int token = 0;
 		if (readLock == null) {
 			token = readLockManager.lock(deltaObjectUID);
@@ -58,8 +57,8 @@ public class RecordReaderFactory {
 			token = readLock;
 		}
 		String cacheDeltaKey = prefix + deltaObjectUID;
-		if (readLockManager.recordReaderCache.containsRecordReader(cacheDeltaKey, measurementID)) {
-			return readLockManager.recordReaderCache.get(cacheDeltaKey, measurementID);
+		if (readLockManager.recordReaderCacheV1.containsRecordReader(cacheDeltaKey, measurementID)) {
+			return readLockManager.recordReaderCacheV1.get(cacheDeltaKey, measurementID);
 		} else {
 			QueryStructure queryStructure;
 			try {
@@ -69,13 +68,13 @@ public class RecordReaderFactory {
 				throw new ProcessorException(e.getMessage());
 			}
 			RecordReader recordReader = createANewRecordReader(deltaObjectUID, measurementID, queryStructure, token);
-			readLockManager.recordReaderCache.put(cacheDeltaKey, measurementID, recordReader);
+			readLockManager.recordReaderCacheV1.put(cacheDeltaKey, measurementID, recordReader);
 			return recordReader;
 		}
 	}
 
 	private RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
-			QueryStructure queryStructure, int token) throws ProcessorException {
+												QueryStructure queryStructure, int token) throws ProcessorException, PathErrorException {
 		RecordReader recordReader;
 
 		List<IntervalFileNode> fileNodes = queryStructure.getBufferwriteDataInFiles();
@@ -131,10 +130,10 @@ public class RecordReaderFactory {
 
 	// TODO this method is only used in test case and KV-match index
 	public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException, ProcessorException {
-		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
+		if (readLockManager.recordReaderCacheV1.containsRecordReader(deltaObjectId, measurementId)) {
 			// close the RecordReader read stream.
-			readLockManager.recordReaderCache.get(deltaObjectId, measurementId).close();
-			readLockManager.recordReaderCache.remove(deltaObjectId, measurementId);
+			readLockManager.recordReaderCacheV1.get(deltaObjectId, measurementId).close();
+			readLockManager.recordReaderCacheV1.remove(deltaObjectId, measurementId);
 		}
 	}
 }

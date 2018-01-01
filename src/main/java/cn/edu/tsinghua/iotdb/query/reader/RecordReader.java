@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.query.reader;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -9,7 +10,6 @@ import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
-import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import org.slf4j.Logger;
@@ -28,53 +28,76 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
 
 /**
- * This class implements several read methods which can read data in different ways.<br>
- * A RecordReader only represents a (deltaObject, measurement).
- * This class provides some APIs for reading.
+ * A <code>RecordReader</code> contains all the data variables which is needed in read process.
+ * Note that : it only contains the data of a (deltaObjectID, measurementID).
  *
  */
 public class RecordReader {
 
     static final Logger logger = LoggerFactory.getLogger(RecordReader.class);
 
-    private String deltaObjectUID, measurementID;
+    private String deltaObjectID, measurementID;
+
+    /** for read lock **/
+    private int lockToken;
+
+    /** data type **/
+    private TSDataType dataType;
 
     /** compression type in this series **/
     public CompressionTypeName compressionTypeName;
 
-    /** ReaderManager for current (deltaObjectUID, measurementID) **/
-    private ReaderManager readerManager;
+    /** 1. TsFile ReaderManager for current (deltaObjectID, measurementID) **/
+    public ReaderManager tsFileReaderManager;
 
-    /** for lock **/
-    private int lockToken;
-
-    /** bufferwrite data, the data page in memory **/
-    public DynamicOneColumnData insertPageInMemory;
-
-    /** bufferwrite data, the unsealed page **/
+    /** 2. bufferwrite data, the unsealed page **/
     public List<ByteArrayInputStream> bufferWritePageList;
 
-    /** insertPageInMemory + bufferWritePageList + overflow **/
-    public InsertDynamicData insertAllData;
+    /** 3. bufferwrite insert data, the last page data in memory **/
+    public DynamicOneColumnData lastPageInMemory;
 
-    /** overflow data **/
-    public List<Object> overflowInfo;
+    /** 4. overflow insert data **/
+    public DynamicOneColumnData overflowInsertData;
+
+    /** 5. overflow update data **/
+    public DynamicOneColumnData overflowUpdateData;
+
+    /** 6. series time filter **/
+    public SingleSeriesFilterExpression timeFilter;
+
+    /** 7. series value filter **/
+    public SingleSeriesFilterExpression valueFilter;
+
+    //////////// Old data
+    public List<Object> overflowInfo = new ArrayList<>();
+
+    /** lastPageInMemory + bufferWritePageList + overflow **/
+    public InsertDynamicData insertAllData;
 
     /**
      * @param filePathList bufferwrite file has been serialized completely
      * @throws IOException file error
      */
-    public RecordReader(List<String> filePathList, String deltaObjectUID, String measurementID, int lockToken,
-                        DynamicOneColumnData insertPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
-                        List<Object> overflowInfo) throws IOException {
-        this.readerManager = new ReaderManager(filePathList);
-        this.deltaObjectUID = deltaObjectUID;
+    public RecordReader(List<String> filePathList, String deltaObjectID, String measurementID, int lockToken,
+                        DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
+                        List<Object> overflowInfo) throws IOException, PathErrorException {
+        this.tsFileReaderManager = new ReaderManager(filePathList);
+        this.deltaObjectID = deltaObjectID;
         this.measurementID = measurementID;
         this.lockToken = lockToken;
-        this.insertPageInMemory = insertPageInMemory;
+        this.lastPageInMemory = lastPageInMemory;
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
-        this.overflowInfo = overflowInfo;
+        this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
+
+        for (int i = 0;i < 3;i++) {
+            if (overflowInfo.get(i) == null) {
+                this.overflowInfo.add(new DynamicOneColumnData(dataType, true));
+            } else {
+                this.overflowInfo.add(overflowInfo.get(i));
+            }
+        }
+        this.overflowInfo.add(overflowInfo.get(3));
     }
 
     /**
@@ -84,17 +107,26 @@ public class RecordReader {
      * @throws IOException file error
      */
     public RecordReader(List<String> filePathList, String unsealedFilePath,
-                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectUID, String measurementID, int lockToken,
-                        DynamicOneColumnData insertPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
-                        List<Object> overflowInfo) throws IOException {
-        this.readerManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
-        this.deltaObjectUID = deltaObjectUID;
+                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectID, String measurementID, int lockToken,
+                        DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
+                        List<Object> overflowInfo) throws IOException, PathErrorException {
+        this.tsFileReaderManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
+        this.deltaObjectID = deltaObjectID;
         this.measurementID = measurementID;
         this.lockToken = lockToken;
-        this.insertPageInMemory = insertPageInMemory;
+        this.lastPageInMemory = lastPageInMemory;
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
-        this.overflowInfo = overflowInfo;
+        this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
+
+        for (int i = 0;i < 3;i++) {
+            if (overflowInfo.get(i) == null) {
+                this.overflowInfo.add(new DynamicOneColumnData(dataType, true));
+            } else {
+                this.overflowInfo.add(overflowInfo.get(i));
+            }
+        }
+        this.overflowInfo.add(overflowInfo.get(3));
     }
 
     /**
@@ -104,25 +136,24 @@ public class RecordReader {
      * @throws IOException
      */
     public DynamicOneColumnData queryOneSeries(String deltaObjectId, String measurementId,
-                                               DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertMemoryData,
-                                               SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData res, int fetchSize)
+                                               DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, InsertDynamicData insertData,
+                                               SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                                               DynamicOneColumnData res, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
-        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-
-        List<RowGroupReader> dbRowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
         int rowGroupIndex = 0;
         if (res != null) {
             rowGroupIndex = res.getRowGroupIndex();
         }
 
         // iterative res, res may be expand
-        for (; rowGroupIndex < dbRowGroupReaderList.size(); rowGroupIndex++) {
-            RowGroupReader dbRowGroupReader = dbRowGroupReaderList.get(rowGroupIndex);
-            if (dbRowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    dbRowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                res = ValueReaderProcessor.getValuesWithOverFlow(dbRowGroupReader.getValueReaders().get(measurementId),
-                        updateTrue, updateFalse, insertMemoryData, timeFilter, null, valueFilter, res, fetchSize);
+        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                res = ValueReaderProcessor.getValuesWithOverFlow(rowGroupReader.getValueReaders().get(measurementId),
+                        updateTrue, updateFalse, insertData, timeFilter, null, valueFilter, res, fetchSize);
                 if (res.valueLength >= fetchSize) {
                     return res;
                 }
@@ -134,9 +165,9 @@ public class RecordReader {
         }
 
         // add left insert values
-        if (insertMemoryData.hasInsertData()) {
+        if (insertData.hasInsertData()) {
             // TODO the timeFilter, updateTrue, updateFalse in addLeftInsertValue method is unnecessary?
-            res.hasReadAll = addLeftInsertValue(res, insertMemoryData, fetchSize, timeFilter, updateTrue, updateFalse);
+            res.hasReadAll = addLeftInsertValue(res, insertData, fetchSize, timeFilter, updateTrue, updateFalse);
         } else {
             res.hasReadAll = true;
         }
@@ -164,9 +195,7 @@ public class RecordReader {
                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter
     ) throws ProcessorException, IOException, PathErrorException {
 
-        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-
-        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, timeFilter);
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
@@ -212,9 +241,7 @@ public class RecordReader {
 
         boolean stillHasUnReadData;
 
-        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-
-        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
 
         int commonTimestampsIndex = 0;
 
@@ -269,7 +296,6 @@ public class RecordReader {
                                                      InsertDynamicData insertMemoryData)
             throws ProcessorException, IOException, PathErrorException {
         // TODO a hasNext method in IoTDB read process is needed!
-        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
         SingleValueVisitor filterVerifier = null;
         if (overflowTimeFilter != null) {
             filterVerifier = new SingleValueVisitor(overflowTimeFilter);
@@ -332,7 +358,7 @@ public class RecordReader {
         DynamicOneColumnData res = null;
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
         for (int i = 0; i < rowGroupReaderList.size(); i++) {
             RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
@@ -435,7 +461,7 @@ public class RecordReader {
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
         SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
 
-        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
         TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
@@ -481,8 +507,7 @@ public class RecordReader {
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), afterTime, true);
         SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
 
-        List<RowGroupReader> rowGroupReaderList = readerManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
-        TSDataType dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
@@ -559,6 +584,6 @@ public class RecordReader {
      * @throws ProcessorException
      */
     public void close() throws IOException, ProcessorException {
-        readerManager.close();
+        tsFileReaderManager.close();
     }
 }

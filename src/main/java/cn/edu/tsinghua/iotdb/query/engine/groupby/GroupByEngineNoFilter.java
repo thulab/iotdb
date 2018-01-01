@@ -218,7 +218,7 @@ public class GroupByEngineNoFilter {
 
             // get overflow params merged with bufferwrite insert data
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, null, null,
-                    res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);

@@ -18,7 +18,6 @@ import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.index.common.OverflowBufferWriteInfo;
 import cn.edu.tsinghua.iotdb.index.common.QueryDataSetIterator;
 import cn.edu.tsinghua.iotdb.index.utils.IndexFileUtils;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
@@ -602,8 +601,8 @@ public class KvMatchIndex  implements IoTIndex {
             PageReader pageReader = new PageReader(recordReader.bufferWritePageList.get(0), recordReader.compressionTypeName);
             PageHeader pageHeader = pageReader.getNextPageHeader();
             bufferWriteBeginTime = pageHeader.data_page_header.min_timestamp;
-        } else if (recordReader.insertPageInMemory != null && recordReader.insertPageInMemory.timeLength > 0) {
-            bufferWriteBeginTime = recordReader.insertPageInMemory.getTime(0);
+        } else if (recordReader.lastPageInMemory != null && recordReader.lastPageInMemory.timeLength > 0) {
+            bufferWriteBeginTime = recordReader.lastPageInMemory.getTime(0);
         }
 
         DynamicOneColumnData insert = (DynamicOneColumnData) recordReader.overflowInfo.get(0);

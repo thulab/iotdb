@@ -54,12 +54,6 @@ public class ValueReaderProcessor {
         if (res.pageOffset == -1) {
             res.pageOffset = valueReader.getFileOffset();
         }
-        
-        // TODO: new updateTrueData and updateFalseData is redundant
-        updateTrueData = (updateTrueData == null ? new DynamicOneColumnData(dataType, true) : updateTrueData);
-        updateFalseData = (updateFalseData == null ? new DynamicOneColumnData(dataType, true) : updateFalseData);
-
-        // TODO: optimize by jt ?
 
         TsDigest digest = valueReader.getDigest();
         DigestForFilter valueDigest = new StrDigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),

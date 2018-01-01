@@ -296,7 +296,7 @@ public class OverflowQueryEngine {
 
             // get overflow params merged with bufferwrite insert data
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
-                    res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
@@ -364,7 +364,7 @@ public class OverflowQueryEngine {
 
             // get overflow params merged with bufferwrite insert data
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter,
-                    res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             // TODO updateTrue and updateFalse could be replaced by recordReader.overflowInfo?
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
@@ -440,7 +440,7 @@ public class OverflowQueryEngine {
 
                 // get overflow params merged with bufferwrite insert data
                 List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
-                        null, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                        null, recordReader.lastPageInMemory, recordReader.overflowInfo);
                 DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                 DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
                 DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
@@ -490,7 +490,7 @@ public class OverflowQueryEngine {
 
             // get four overflow params
             List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, freqFilter, valueFilter,
-                    res, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);

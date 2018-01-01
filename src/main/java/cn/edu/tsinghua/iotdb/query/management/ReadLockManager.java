@@ -7,7 +7,6 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 
 
 public class ReadLockManager {
@@ -20,7 +19,10 @@ public class ReadLockManager {
     private ThreadLocal<HashMap<String, Integer>> locksMap = new ThreadLocal<>();
 
     /** this is no need to set as ThreadLocal, RecordReaderCache has ThreadLocal variable**/
-    public RecordReaderCache recordReaderCache = new RecordReaderCache();
+    public RecordReaderCache recordReaderCacheV1 = new RecordReaderCache();
+
+    /** this is no need to set as ThreadLocal, RecordReaderCache has ThreadLocal variable**/
+    public RecordReaderCache recordReaderCacheV2 = new RecordReaderCache();
 
     /** represents the execute time of group by method**/
     private ThreadLocal<Integer> groupByCalcTime;
@@ -72,7 +74,7 @@ public class ReadLockManager {
             unlockForQuery(key, locks.get(key));
         }
         locksMap.remove();
-        recordReaderCache.clear();
+        recordReaderCacheV1.clear();
 
         if (groupByCalcTime != null && groupByCalcTime.get() != null) {
             groupByCalcTime.remove();

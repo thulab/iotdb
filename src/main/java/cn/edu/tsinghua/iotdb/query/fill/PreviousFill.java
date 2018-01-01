@@ -67,7 +67,7 @@ public class PreviousFill extends IFill {
                 fillTimeFilter, null, null, null, recordReaderPrefix);
 
         List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(fillTimeFilter, null, null,
-                null, recordReader.insertPageInMemory, recordReader.overflowInfo);
+                null, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
         DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
