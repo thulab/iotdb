@@ -15,6 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import java.io.IOException;
 import java.util.List;
 
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.copy;
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
 
 
@@ -93,10 +94,11 @@ public class LinearFill extends IFill{
         if (updateTrue == null) {
             updateTrue = new DynamicOneColumnData(dataType, true);
         }
+        DynamicOneColumnData updateTrue_copy = EngineUtils.copy(updateTrue);
         SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
         recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                insertTrue, updateTrue, null,
+                insertTrue, updateTrue_copy, null,
                 overflowTimeFilter, null, null, dataType);
 
         recordReader.getLinearFillResult(result, deltaObjectId, measurementId,

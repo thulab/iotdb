@@ -57,8 +57,8 @@ public class RecordReaderFactory {
 			token = readLock;
 		}
 		String cacheDeltaKey = prefix + deltaObjectUID;
-		if (readLockManager.recordReaderCacheV1.containsRecordReader(cacheDeltaKey, measurementID)) {
-			return readLockManager.recordReaderCacheV1.get(cacheDeltaKey, measurementID);
+		if (readLockManager.recordReaderCache.containsRecordReader(cacheDeltaKey, measurementID)) {
+			return readLockManager.recordReaderCache.get(cacheDeltaKey, measurementID);
 		} else {
 			QueryStructure queryStructure;
 			try {
@@ -68,7 +68,7 @@ public class RecordReaderFactory {
 				throw new ProcessorException(e.getMessage());
 			}
 			RecordReader recordReader = createANewRecordReader(deltaObjectUID, measurementID, queryStructure, token);
-			readLockManager.recordReaderCacheV1.put(cacheDeltaKey, measurementID, recordReader);
+			readLockManager.recordReaderCache.put(cacheDeltaKey, measurementID, recordReader);
 			return recordReader;
 		}
 	}
@@ -130,10 +130,10 @@ public class RecordReaderFactory {
 
 	// TODO this method is only used in test case and KV-match index
 	public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException, ProcessorException {
-		if (readLockManager.recordReaderCacheV1.containsRecordReader(deltaObjectId, measurementId)) {
+		if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
 			// close the RecordReader read stream.
-			readLockManager.recordReaderCacheV1.get(deltaObjectId, measurementId).close();
-			readLockManager.recordReaderCacheV1.remove(deltaObjectId, measurementId);
+			readLockManager.recordReaderCache.get(deltaObjectId, measurementId).close();
+			readLockManager.recordReaderCache.remove(deltaObjectId, measurementId);
 		}
 	}
 }

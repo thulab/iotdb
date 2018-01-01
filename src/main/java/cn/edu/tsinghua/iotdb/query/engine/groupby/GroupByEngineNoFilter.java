@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.aggregationKey;
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.copy;
 
 /**
  * Group by aggregation implementation without <code>FilterStructure</code>.
@@ -222,11 +223,13 @@ public class GroupByEngineNoFilter {
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
             DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
             SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue, updateFalse,
+                    insertTrue, updateTrue_copy, updateFalse_copy,
                     newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
             res = recordReader.queryOneSeries(deltaObjectID, measurementID,
                     updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, null, res, queryFetchSize);

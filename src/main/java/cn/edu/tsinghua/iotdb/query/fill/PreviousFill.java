@@ -74,10 +74,11 @@ public class PreviousFill extends IFill {
         if (updateTrue == null) {
             updateTrue = new DynamicOneColumnData(dataType, true);
         }
+        DynamicOneColumnData updateTrue_copy = EngineUtils.copy(updateTrue);
         SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
         recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                insertTrue, updateTrue, null,
+                insertTrue, updateTrue_copy, null,
                 overflowTimeFilter, null, null, dataType);
 
         recordReader.getPreviousFillResult(result, deltaObjectId, measurementId,

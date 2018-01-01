@@ -246,11 +246,13 @@ public class AggregateEngine {
                         recordReader.lastPageInMemory, recordReader.overflowInfo);
                 DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                 DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+                DynamicOneColumnData updateTrue_copy = copy(updateTrue);
                 DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+                DynamicOneColumnData updateFalse_copy = copy(updateFalse);
                 SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
                 recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                        insertTrue, updateTrue, updateFalse,
+                        insertTrue, updateTrue_copy, updateFalse_copy,
                         newTimeFilter, null, null, dataType);
 
                 recordReader.aggregate(deltaObjectUID, measurementUID, aggregateFunction,

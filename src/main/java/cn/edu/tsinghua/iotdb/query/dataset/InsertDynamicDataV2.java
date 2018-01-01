@@ -1,16 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.dataset;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.StrDigestForFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
@@ -22,29 +12,64 @@ import cn.edu.tsinghua.tsfile.format.Digest;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.utils.StrDigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A new DynamicOneColumnData which replaces insertTrue and contains unsealed PageList.
+ * A new DynamicOneColumnData which replaces overflowInsertData and contains unsealed PageList.
  *
  * // TODO the structure between page and overflow is not clear
  *
  * @author CGF
  */
-public class InsertDynamicData extends DynamicOneColumnData {
-    private static final Logger LOG = LoggerFactory.getLogger(InsertDynamicData.class);
-    public List<ByteArrayInputStream> pageList;
+public class InsertDynamicDataV2 {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InsertDynamicDataV2.class);
+    private TSDataType dataType;
+    private CompressionTypeName compressionTypeName;
+
+    /** unsealed page list **/
+    private List<ByteArrayInputStream> pageList;
     private int pageIndex = 0;
     private PageReader pageReader = null;
-    private CompressionTypeName compressionTypeName;
-    private TSDataType dataType;
-    private Decoder timeDecoder = new DeltaBinaryDecoder.LongDeltaDecoder(), valueDecoder, freDecoder;
+    /** value inputstream for current read page, this variable is not null **/
+    private InputStream page = null;
+    /** time for current read page **/
+    private long[] timeValues;
+
+    private int curTimeIndex = -1;
+
+    /** last page data in memory **/
+    private DynamicOneColumnData lastPageData;
+
+    /** overflow insert data, this variable is not null **/
+    private DynamicOneColumnData overflowInsertData;
+
+    /** overflow update data which is satisfied with filter, this variable is not null **/
+    private DynamicOneColumnData overflowUpdateTrue;
+
+    /** overflow update data which is not satisfied with filter, this variable is not null**/
+    private DynamicOneColumnData overflowUpdateFalse;
+    
+    private Decoder timeDecoder = new DeltaBinaryDecoder.LongDeltaDecoder(), valueDecoder;
     private long currentSatisfiedPageTime = -1; // timestamp for page list
-    public SingleSeriesFilterExpression timeFilter, valueFilter, frequencyFilter;
+
+    /** time filter for this series **/
+    public SingleSeriesFilterExpression timeFilter;
+    /** value filter for this series **/
+    public SingleSeriesFilterExpression valueFilter;
 
     private int curSatisfiedIntValue;
     private boolean curSatisfiedBooleanValue;
@@ -52,31 +77,31 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private float curSatisfiedFloatValue;
     private double curSatisfiedDoubleValue;
     private Binary curSatisfiedBinaryValue;
-    private int curTimeIndex = -1;
-    private long[] timeValues; // time for current read page
-    private InputStream page = null; // value inputstream for current read page
 
     private DigestVisitor digestVisitor = new DigestVisitor();
     private SingleValueVisitor singleValueVisitor;
     private SingleValueVisitor singleTimeVisitor;
 
-    public InsertDynamicData(List<ByteArrayInputStream> pageList, CompressionTypeName compressionName,
-                             DynamicOneColumnData insertTrue, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
-                             SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression frequencyFilter,
-                             TSDataType dataType) {
-        this.pageList = pageList;
+    public InsertDynamicDataV2(TSDataType dataType, CompressionTypeName compressionName,
+                               List<ByteArrayInputStream> pageList, DynamicOneColumnData lastPageData,
+                               DynamicOneColumnData overflowInsertData, DynamicOneColumnData overflowoverflowUpdateTrue, DynamicOneColumnData overflowoverflowUpdateFalse,
+                               SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter) {
+        this.dataType = dataType;
         this.compressionTypeName = compressionName;
-        this.insertTrue = insertTrue;
-        this.updateTrue = updateTrue == null ? new DynamicOneColumnData(dataType, true) : updateTrue;
-        this.updateFalse = updateFalse == null ? new DynamicOneColumnData(dataType, true) : updateFalse;;
+
+        this.pageList = pageList == null ? new ArrayList<>() : pageList;
+        this.lastPageData = lastPageData == null ? new DynamicOneColumnData(dataType, true) : lastPageData;
+
+        this.overflowInsertData = overflowInsertData == null ? new DynamicOneColumnData(dataType, true) : overflowInsertData;
+        this.overflowUpdateTrue = overflowoverflowUpdateTrue == null ? new DynamicOneColumnData(dataType, true) : overflowoverflowUpdateTrue;
+        this.overflowUpdateFalse = overflowoverflowUpdateFalse == null ? new DynamicOneColumnData(dataType, true) : overflowoverflowUpdateFalse;
+
         this.timeFilter = timeFilter;
         this.valueFilter = valueFilter;
-        this.frequencyFilter = frequencyFilter;
-        this.dataType = dataType;
-        if (valueFilter != null)
-            this.singleValueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
         if (timeFilter != null)
             this.singleTimeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
+        if (valueFilter != null)
+            this.singleValueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
     }
 
     public TSDataType getDataType() {
@@ -85,11 +110,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public long getCurrentMinTime() {
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getTime(insertTrue.insertTrueIndex);
+            return overflowInsertData.getTime(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getTime(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getTime(overflowInsertData.curIdx);
         }
 
         return currentSatisfiedPageTime;
@@ -97,14 +122,14 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public int getCurrentIntValue() {
 
-        // will not exist: currentSatisfiedPageTime = -1 (page list has been read all), but insertTrue still has unread timestamp
+        // will not exist: currentSatisfiedPageTime = -1 (page list has been read all), but overflowInsertData still has unread timestamp
         // insert time is ok
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getInt(insertTrue.insertTrueIndex);
+            return overflowInsertData.getInt(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getInt(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getInt(overflowInsertData.curIdx);
         } else {
             return curSatisfiedIntValue;
         }
@@ -112,11 +137,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public boolean getCurrentBooleanValue() {
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getBoolean(insertTrue.insertTrueIndex);
+            return overflowInsertData.getBoolean(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getBoolean(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getBoolean(overflowInsertData.curIdx);
         } else {
             return curSatisfiedBooleanValue;
         }
@@ -124,11 +149,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public long getCurrentLongValue() {
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getLong(insertTrue.insertTrueIndex);
+            return overflowInsertData.getLong(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getLong(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getLong(overflowInsertData.curIdx);
         } else {
             return curSatisfiedLongValue;
         }
@@ -136,11 +161,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public float getCurrentFloatValue() {
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getFloat(insertTrue.insertTrueIndex);
+            return overflowInsertData.getFloat(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getFloat(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getFloat(overflowInsertData.curIdx);
         } else {
             return curSatisfiedFloatValue;
         }
@@ -148,11 +173,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public double getCurrentDoubleValue() {
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getDouble(insertTrue.insertTrueIndex);
+            return overflowInsertData.getDouble(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getDouble(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getDouble(overflowInsertData.curIdx);
         } else {
             return curSatisfiedDoubleValue;
         }
@@ -160,11 +185,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
     public Binary getCurrentBinaryValue() {
         if (currentSatisfiedPageTime == -1) {
-            return insertTrue.getBinary(insertTrue.insertTrueIndex);
+            return overflowInsertData.getBinary(overflowInsertData.curIdx);
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            return insertTrue.getBinary(insertTrue.insertTrueIndex);
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            return overflowInsertData.getBinary(overflowInsertData.curIdx);
         } else {
             return curSatisfiedBinaryValue;
         }
@@ -195,15 +220,15 @@ public class InsertDynamicData extends DynamicOneColumnData {
      */
     public void removeCurrentValue() throws IOException {
         if (currentSatisfiedPageTime == -1) {
-            insertTrue.insertTrueIndex++;
+            overflowInsertData.curIdx++;
         }
 
-        if (insertTrue.insertTrueIndex < insertTrue.valueLength && insertTrue.getTime(insertTrue.insertTrueIndex) <= currentSatisfiedPageTime) {
-            if (insertTrue.getTime(insertTrue.insertTrueIndex) < currentSatisfiedPageTime) {
-                insertTrue.insertTrueIndex++;
+        if (overflowInsertData.curIdx < overflowInsertData.valueLength && overflowInsertData.getTime(overflowInsertData.curIdx) <= currentSatisfiedPageTime) {
+            if (overflowInsertData.getTime(overflowInsertData.curIdx) < currentSatisfiedPageTime) {
+                overflowInsertData.curIdx++;
                 return;
             } else {
-                insertTrue.insertTrueIndex++;
+                overflowInsertData.curIdx++;
             }
         }
 
@@ -218,10 +243,26 @@ public class InsertDynamicData extends DynamicOneColumnData {
         }
     }
 
-    /**
-     * Only when the current page data has been read completely, this method could be invoked.
-     */
+    private boolean readPageList() {
+        return false;
+    }
+
+    private boolean readLastPage() {
+        return false;
+    }
+
     public boolean hasInsertData() throws IOException {
+        boolean hasNext = false;
+
+        if (pageIndex < pageList.size()) {
+            hasNext = readPageList();
+            if (hasNext)
+                return true;
+        }
+
+        hasNext = readLastPage();
+
+
         if (currentSatisfiedPageTime != -1)
             return true;
 
@@ -247,12 +288,12 @@ public class InsertDynamicData extends DynamicOneColumnData {
                 LOG.debug("Page min time:{}, max time:{}, min value:{}, max value:{}", String.valueOf(mint),
                         String.valueOf(maxt), pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE), pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE));
 
-                while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < mint) {
-                    updateTrue.curIdx ++;
+                while (overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < mint) {
+                    overflowUpdateTrue.curIdx ++;
                 }
 
-                while (updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < mint) {
-                    updateFalse.curIdx ++;
+                while (overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < mint) {
+                    overflowUpdateFalse.curIdx ++;
                 }
 
                 // not satisfied with time filter.
@@ -260,21 +301,21 @@ public class InsertDynamicData extends DynamicOneColumnData {
                     pageReaderReset();
                     continue;
                 } else {
-                    // no updateTrue and updateFalse, not satisfied with valueFilter
-                    if (updateTrue.curIdx >= updateTrue.valueLength && updateFalse != null && updateFalse.curIdx >= updateFalse.valueLength
+                    // no overflowUpdateTrue and overflowUpdateFalse, not satisfied with valueFilter
+                    if (overflowUpdateTrue.curIdx >= overflowUpdateTrue.valueLength && overflowUpdateFalse != null && overflowUpdateFalse.curIdx >= overflowUpdateFalse.valueLength
                             && valueFilter != null && !digestVisitor.satisfy(valueDigest, valueFilter)) {
                         pageReaderReset();
                         continue;
                     }
-                    // has updateTrue, updateTrue not update this page and not satisfied with valueFilter
-                    else if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) >= maxt &&
+                    // has overflowUpdateTrue, overflowUpdateTrue not update this page and not satisfied with valueFilter
+                    else if (overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) >= maxt &&
                             valueFilter != null && !digestVisitor.satisfy(valueDigest, valueFilter)) {
                         pageReaderReset();
                         continue;
                     }
-                    // has updateFalse and updateFalse update this page all
-                    else if (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength &&
-                            updateFalse.getTime(updateFalse.curIdx*2) >= mint && updateFalse.getTime(updateFalse.curIdx*2+1) <= maxt) {
+                    // has overflowUpdateFalse and overflowUpdateFalse update this page all
+                    else if (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength &&
+                            overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) >= mint && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) <= maxt) {
                         pageReaderReset();
                         continue;
                     }
@@ -317,18 +358,18 @@ public class InsertDynamicData extends DynamicOneColumnData {
                             curSatisfiedIntValue = valueDecoder.readInt(page);
 
                             if (timeFilter == null || singleTimeVisitor.verify(timeValues[curTimeIndex])) {
-                                while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateTrue.curIdx ++;
-                                while (updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateFalse.curIdx ++;
+                                while (overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateTrue.curIdx ++;
+                                while (overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateFalse.curIdx ++;
 
-                                // updateTrue.valueLength*2 - 1
-                                if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
+                                // overflowUpdateTrue.valueLength*2 - 1
+                                if (overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = timeValues[curTimeIndex];
-                                    curSatisfiedIntValue = updateTrue.getInt(updateTrue.curIdx);
+                                    curSatisfiedIntValue = overflowUpdateTrue.getInt(overflowUpdateTrue.curIdx);
                                     pageFindFlag = true;
                                     break;
-                                } else if (updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
+                                } else if (overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = -1;
                                     curTimeIndex++;
                                 } else {
@@ -364,18 +405,18 @@ public class InsertDynamicData extends DynamicOneColumnData {
                             curSatisfiedLongValue = valueDecoder.readLong(page);
 
                             if (timeFilter == null || singleTimeVisitor.verify(timeValues[curTimeIndex])) {
-                                while (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateTrue.curIdx ++;
-                                while (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateFalse.curIdx ++;
+                                while (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateTrue.curIdx ++;
+                                while (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateFalse.curIdx ++;
 
-                                // updateTrue.valueLength*2 - 1
-                                if (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
+                                // overflowUpdateTrue.valueLength*2 - 1
+                                if (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = timeValues[curTimeIndex];
-                                    curSatisfiedLongValue = updateTrue.getLong(updateTrue.curIdx);
+                                    curSatisfiedLongValue = overflowUpdateTrue.getLong(overflowUpdateTrue.curIdx);
                                     pageFindFlag = true;
                                     break;
-                                } else if (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
+                                } else if (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = -1;
                                     curTimeIndex++;
                                 } else {
@@ -411,18 +452,18 @@ public class InsertDynamicData extends DynamicOneColumnData {
                             curSatisfiedFloatValue = valueDecoder.readFloat(page);
 
                             if (timeFilter == null || singleTimeVisitor.verify(timeValues[curTimeIndex])) {
-                                while (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateTrue.curIdx ++;
-                                while (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateFalse.curIdx ++;
+                                while (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateTrue.curIdx ++;
+                                while (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateFalse.curIdx ++;
 
-                                // updateTrue.valueLength*2 - 1
-                                if (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
+                                // overflowUpdateTrue.valueLength*2 - 1
+                                if (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = timeValues[curTimeIndex];
-                                    curSatisfiedFloatValue = updateTrue.getFloat(updateTrue.curIdx);
+                                    curSatisfiedFloatValue = overflowUpdateTrue.getFloat(overflowUpdateTrue.curIdx);
                                     pageFindFlag = true;
                                     break;
-                                } else if (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
+                                } else if (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = -1;
                                     curTimeIndex++;
                                 } else {
@@ -458,18 +499,18 @@ public class InsertDynamicData extends DynamicOneColumnData {
                             curSatisfiedDoubleValue = valueDecoder.readDouble(page);
 
                             if (timeFilter == null || singleTimeVisitor.verify(timeValues[curTimeIndex])) {
-                                while (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateTrue.curIdx ++;
-                                while (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateFalse.curIdx ++;
+                                while (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateTrue.curIdx ++;
+                                while (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateFalse.curIdx ++;
 
-                                // updateTrue.valueLength*2 - 1
-                                if (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
+                                // overflowUpdateTrue.valueLength*2 - 1
+                                if (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = timeValues[curTimeIndex];
-                                    curSatisfiedDoubleValue = updateTrue.getDouble(updateTrue.curIdx);
+                                    curSatisfiedDoubleValue = overflowUpdateTrue.getDouble(overflowUpdateTrue.curIdx);
                                     pageFindFlag = true;
                                     break;
-                                } else if (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
+                                } else if (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = -1;
                                     curTimeIndex++;
                                 } else {
@@ -505,18 +546,18 @@ public class InsertDynamicData extends DynamicOneColumnData {
                             curSatisfiedBooleanValue = valueDecoder.readBoolean(page);
 
                             if (timeFilter == null || singleTimeVisitor.verify(timeValues[curTimeIndex])) {
-                                while (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateTrue.curIdx ++;
-                                while (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateFalse.curIdx ++;
+                                while (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateTrue.curIdx ++;
+                                while (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateFalse.curIdx ++;
 
-                                // updateTrue.valueLength*2 - 1
-                                if (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
+                                // overflowUpdateTrue.valueLength*2 - 1
+                                if (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = timeValues[curTimeIndex];
-                                    curSatisfiedBooleanValue = updateTrue.getBoolean(updateTrue.curIdx);
+                                    curSatisfiedBooleanValue = overflowUpdateTrue.getBoolean(overflowUpdateTrue.curIdx);
                                     pageFindFlag = true;
                                     break;
-                                } else if (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
+                                } else if (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = -1;
                                     curTimeIndex++;
                                 } else {
@@ -552,18 +593,18 @@ public class InsertDynamicData extends DynamicOneColumnData {
                             curSatisfiedBinaryValue = valueDecoder.readBinary(page);
 
                             if (timeFilter == null || singleTimeVisitor.verify(timeValues[curTimeIndex])) {
-                                while (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateTrue.curIdx ++;
-                                while (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < timeValues[curTimeIndex])
-                                    updateFalse.curIdx ++;
+                                while (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateTrue.curIdx ++;
+                                while (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < timeValues[curTimeIndex])
+                                    overflowUpdateFalse.curIdx ++;
 
-                                // updateTrue.valueLength*2 - 1
-                                if (updateTrue != null && updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
+                                // overflowUpdateTrue.valueLength*2 - 1
+                                if (overflowUpdateTrue != null && overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = timeValues[curTimeIndex];
-                                    curSatisfiedBinaryValue = updateTrue.getBinary(updateTrue.curIdx);
+                                    curSatisfiedBinaryValue = overflowUpdateTrue.getBinary(overflowUpdateTrue.curIdx);
                                     pageFindFlag = true;
                                     break;
-                                } else if (updateFalse != null && updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
+                                } else if (overflowUpdateFalse != null && overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= timeValues[curTimeIndex]) {
                                     currentSatisfiedPageTime = -1;
                                     curTimeIndex++;
                                 } else {
@@ -594,35 +635,35 @@ public class InsertDynamicData extends DynamicOneColumnData {
             }
         }
 
-        // insertTrue value already satisfy the time filter
-        while (insertTrue != null && insertTrue.insertTrueIndex < insertTrue.valueLength) {
-            while (updateTrue.curIdx < updateTrue.valueLength &&
-                    updateTrue.getTime(updateTrue.curIdx*2+1) < insertTrue.getTime(insertTrue.insertTrueIndex))
-                updateTrue.curIdx += 1;
-            while (updateFalse.curIdx < updateFalse.valueLength &&
-                    updateFalse.getTime(updateFalse.curIdx*2+1) < insertTrue.getTime(insertTrue.insertTrueIndex))
-                updateFalse.curIdx += 1;
+        // overflowInsertData value already satisfy the time filter
+        while (overflowInsertData != null && overflowInsertData.curIdx < overflowInsertData.valueLength) {
+            while (overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength &&
+                    overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2+1) < overflowInsertData.getTime(overflowInsertData.curIdx))
+                overflowUpdateTrue.curIdx += 1;
+            while (overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength &&
+                    overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2+1) < overflowInsertData.getTime(overflowInsertData.curIdx))
+                overflowUpdateFalse.curIdx += 1;
 
-            if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= insertTrue.getTime(insertTrue.insertTrueIndex)) {
-                // currentSatisfiedPageTime = insertTrue.getTime(insertTrue.insertTrueIndex);
+            if (overflowUpdateTrue.curIdx < overflowUpdateTrue.valueLength && overflowUpdateTrue.getTime(overflowUpdateTrue.curIdx*2) <= overflowInsertData.getTime(overflowInsertData.curIdx)) {
+                // currentSatisfiedPageTime = overflowInsertData.getTime(overflowInsertData.curIdx);
                 updateNewValue();
                 return true;
             }
 
-            if (updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2) <= insertTrue.getTime(insertTrue.insertTrueIndex)) {
-                insertTrue.insertTrueIndex ++;
+            if (overflowUpdateFalse.curIdx < overflowUpdateFalse.valueLength && overflowUpdateFalse.getTime(overflowUpdateFalse.curIdx*2) <= overflowInsertData.getTime(overflowInsertData.curIdx)) {
+                overflowInsertData.curIdx ++;
                 continue;
             }
 
             if (valueFilter == null || insertValueSatisfied()) {
 
                 // no page time, or overflow insert time is smaller than page time
-//                if (currentSatisfiedPageTime == -1 || insertTrue.getTime(insertTrue.insertTrueIndex) < currentSatisfiedPageTime)
-//                    currentSatisfiedPageTime = insertTrue.getTime(insertTrue.insertTrueIndex);
+//                if (currentSatisfiedPageTime == -1 || overflowInsertData.getTime(overflowInsertData.curIdx) < currentSatisfiedPageTime)
+//                    currentSatisfiedPageTime = overflowInsertData.getTime(overflowInsertData.curIdx);
 
                 return true;
             } else {
-                insertTrue.insertTrueIndex++;
+                overflowInsertData.curIdx++;
             }
         }
 
@@ -632,17 +673,17 @@ public class InsertDynamicData extends DynamicOneColumnData {
     private boolean insertValueSatisfied() {
         switch (dataType) {
             case INT32:
-                return singleValueVisitor.satisfyObject(insertTrue.getInt(insertTrue.insertTrueIndex), valueFilter);
+                return singleValueVisitor.satisfyObject(overflowInsertData.getInt(overflowInsertData.curIdx), valueFilter);
             case INT64:
-                return singleValueVisitor.satisfyObject(insertTrue.getLong(insertTrue.insertTrueIndex), valueFilter);
+                return singleValueVisitor.satisfyObject(overflowInsertData.getLong(overflowInsertData.curIdx), valueFilter);
             case FLOAT:
-                return singleValueVisitor.satisfyObject(insertTrue.getFloat(insertTrue.insertTrueIndex), valueFilter);
+                return singleValueVisitor.satisfyObject(overflowInsertData.getFloat(overflowInsertData.curIdx), valueFilter);
             case DOUBLE:
-                return singleValueVisitor.satisfyObject(insertTrue.getDouble(insertTrue.insertTrueIndex), valueFilter);
+                return singleValueVisitor.satisfyObject(overflowInsertData.getDouble(overflowInsertData.curIdx), valueFilter);
             case TEXT:
-                return singleValueVisitor.satisfyObject(insertTrue.getBinary(insertTrue.insertTrueIndex), valueFilter);
+                return singleValueVisitor.satisfyObject(overflowInsertData.getBinary(overflowInsertData.curIdx), valueFilter);
             case BOOLEAN:
-                return singleValueVisitor.satisfyObject(insertTrue.getBoolean(insertTrue.insertTrueIndex), valueFilter);
+                return singleValueVisitor.satisfyObject(overflowInsertData.getBoolean(overflowInsertData.curIdx), valueFilter);
             default:
                 throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
         }
@@ -668,10 +709,10 @@ public class InsertDynamicData extends DynamicOneColumnData {
                 stream.reset();
             }
         }
-        if (insertTrue != null)
-            insertTrue.insertTrueIndex = 0;
-        updateTrue.curIdx = 0;
-        updateFalse.curIdx = 0;
+        if (overflowInsertData != null)
+            overflowInsertData.curIdx = 0;
+        overflowUpdateTrue.curIdx = 0;
+        overflowUpdateFalse.curIdx = 0;
         pageIndex = 0;
         pageReader = null;
         curTimeIndex = 0;
@@ -679,33 +720,33 @@ public class InsertDynamicData extends DynamicOneColumnData {
     }
 
     /**
-     * update the value of insertTrue used updateData.
+     * update the value of overflowInsertData used updateData.
      */
     private void updateNewValue() {
         switch (dataType) {
             case INT32:
-                curSatisfiedIntValue = updateTrue.getInt(updateTrue.curIdx);
-                insertTrue.setInt(insertTrue.insertTrueIndex, curSatisfiedIntValue);
+                curSatisfiedIntValue = overflowUpdateTrue.getInt(overflowUpdateTrue.curIdx);
+                overflowInsertData.setInt(overflowInsertData.curIdx, curSatisfiedIntValue);
                 break;
             case INT64:
-                curSatisfiedLongValue = updateTrue.getLong(updateTrue.curIdx);
-                insertTrue.setLong(insertTrue.insertTrueIndex, curSatisfiedLongValue);
+                curSatisfiedLongValue = overflowUpdateTrue.getLong(overflowUpdateTrue.curIdx);
+                overflowInsertData.setLong(overflowInsertData.curIdx, curSatisfiedLongValue);
                 break;
             case FLOAT:
-                curSatisfiedFloatValue = updateTrue.getFloat(updateTrue.curIdx);
-                insertTrue.setFloat(insertTrue.insertTrueIndex, curSatisfiedFloatValue);
+                curSatisfiedFloatValue = overflowUpdateTrue.getFloat(overflowUpdateTrue.curIdx);
+                overflowInsertData.setFloat(overflowInsertData.curIdx, curSatisfiedFloatValue);
                 break;
             case DOUBLE:
-                curSatisfiedDoubleValue = updateTrue.getDouble(updateTrue.curIdx);
-                insertTrue.setDouble(insertTrue.insertTrueIndex, curSatisfiedDoubleValue);
+                curSatisfiedDoubleValue = overflowUpdateTrue.getDouble(overflowUpdateTrue.curIdx);
+                overflowInsertData.setDouble(overflowInsertData.curIdx, curSatisfiedDoubleValue);
                 break;
             case TEXT:
-                curSatisfiedBinaryValue = updateTrue.getBinary(updateTrue.curIdx);
-                insertTrue.setBinary(insertTrue.insertTrueIndex, curSatisfiedBinaryValue);
+                curSatisfiedBinaryValue = overflowUpdateTrue.getBinary(overflowUpdateTrue.curIdx);
+                overflowInsertData.setBinary(overflowInsertData.curIdx, curSatisfiedBinaryValue);
                 break;
             case BOOLEAN:
-                curSatisfiedBooleanValue = updateTrue.getBoolean(updateTrue.curIdx);
-                insertTrue.setBoolean(insertTrue.insertTrueIndex, curSatisfiedBooleanValue);
+                curSatisfiedBooleanValue = overflowUpdateTrue.getBoolean(overflowUpdateTrue.curIdx);
+                overflowInsertData.setBoolean(overflowInsertData.curIdx, curSatisfiedBooleanValue);
                 break;
             default:
                 throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);

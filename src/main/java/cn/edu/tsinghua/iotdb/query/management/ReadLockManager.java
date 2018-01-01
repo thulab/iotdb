@@ -19,10 +19,7 @@ public class ReadLockManager {
     private ThreadLocal<HashMap<String, Integer>> locksMap = new ThreadLocal<>();
 
     /** this is no need to set as ThreadLocal, RecordReaderCache has ThreadLocal variable**/
-    public RecordReaderCache recordReaderCacheV1 = new RecordReaderCache();
-
-    /** this is no need to set as ThreadLocal, RecordReaderCache has ThreadLocal variable**/
-    public RecordReaderCache recordReaderCacheV2 = new RecordReaderCache();
+    public RecordReaderCache recordReaderCache = new RecordReaderCache();
 
     /** represents the execute time of group by method**/
     private ThreadLocal<Integer> groupByCalcTime;
@@ -74,7 +71,7 @@ public class ReadLockManager {
             unlockForQuery(key, locks.get(key));
         }
         locksMap.remove();
-        recordReaderCacheV1.clear();
+        recordReaderCache.clear();
 
         if (groupByCalcTime != null && groupByCalcTime.get() != null) {
             groupByCalcTime.remove();

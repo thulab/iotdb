@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.aggregationKey;
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.copy;
 
 /**
  * Group by aggregation implementation with <code>FilterStructure</code>.
@@ -374,11 +375,13 @@ public class GroupByEngineWithFilter {
                         null, recordReader.lastPageInMemory, recordReader.overflowInfo);
                 DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                 DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+                DynamicOneColumnData updateTrue_copy = copy(updateTrue);
                 DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+                DynamicOneColumnData updateFalse_copy = copy(updateFalse);
                 SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
                 recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                        insertTrue, updateTrue, updateFalse,
+                        insertTrue, updateTrue_copy, updateFalse_copy,
                         newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
                 data = recordReader.queryUsingTimestamps(deltaObjectId, measurementId,
                         recordReader.insertAllData.timeFilter, aggregateTimestamps.stream().mapToLong(i->i).toArray(), recordReader.insertAllData);
@@ -421,11 +424,13 @@ public class GroupByEngineWithFilter {
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
             DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
             SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue, updateFalse,
+                    insertTrue, updateTrue_copy, updateFalse_copy,
                     newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
                     updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);

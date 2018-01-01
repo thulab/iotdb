@@ -6,12 +6,23 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
  * Created by beyyes on 17/12/31.
  */
 public class UpdateOperation {
-    private DynamicOneColumnData updateTrue;
-    private DynamicOneColumnData updateFalse;
+    private DynamicOneColumnData updateOperation;
+    private int idx;
 
-    public UpdateOperation() {}
+    public UpdateOperation(DynamicOneColumnData data) {
+        this.updateOperation = data;
+        idx = 0;
+    }
+
+    public boolean hasNext() {
+        return idx < updateOperation.valueLength;
+    }
 
     public long getUpdateStartTime() {
-        return 0;
+        return updateOperation.getTime(idx * 2);
+    }
+
+    public long getUpdateEndTime() {
+        return updateOperation.getTime(idx * 2 + 1);
     }
 }
