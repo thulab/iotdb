@@ -108,6 +108,9 @@ public class LargeDataTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            aggregationWithoutFilterTest();
+
+            selectAllTest();
 
             selectOneSeriesWithValueFilterTest();
             aggregationTest();
@@ -130,6 +133,35 @@ public class LargeDataTest {
         }
     }
 
+    private void selectAllTest() throws ClassNotFoundException, SQLException {
+        String selectSql = "select * from root";
+
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute(selectSql);
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                cnt++;
+            }
+            //System.out.println("cnt ::" + cnt);
+            assertEquals(23400, cnt);
+            statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
     private void selectOneSeriesWithValueFilterTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
 
         String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
@@ -149,6 +181,45 @@ public class LargeDataTest {
             }
             //System.out.println("select ====== " + cnt);
             assertEquals(16440, cnt);
+            statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void aggregationWithoutFilterTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
+
+        String sql = "select count(s0),mean(s0),first(s0),sum(s0)," +
+                "count(s1),mean(s1),first(s1),sum(s1) from root.vehicle.d0";
+        //String countSql = "select count(s0) from root.vehicle.d0";
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(sum(d0s0)) + "," + resultSet.getString(mean(d0s0))
+                        + "," + resultSet.getString(first(d0s0)) + "," + resultSet.getString(count(d0s1))
+                        + "," + resultSet.getString(sum(d0s1)) + "," + resultSet.getString(mean(d0s1))
+                        + "," + resultSet.getString(first(d0s1));
+                //String ans = resultSet.getString(2);
+                //System.out.println("~~~" + ans);
+                // 0,23400,2672550.0,114.21153846153847,2000,23200,1.2213278715E10,526434.4273706897,4
+                assertEquals("0,23400,2672550.0,114.21153846153847,2000,23200,1.2213278715E10,526434.4273706897,4", ans);
+                cnt++;
+            }
+            assertEquals(1, cnt);
             statement.close();
 
         } catch (Exception e) {

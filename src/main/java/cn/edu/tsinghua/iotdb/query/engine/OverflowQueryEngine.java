@@ -295,7 +295,7 @@ public class OverflowQueryEngine {
         if (res == null) {
 
             // get overflow params merged with bufferwrite insert data
-            List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
+            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null,
                     res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
@@ -363,7 +363,7 @@ public class OverflowQueryEngine {
         if (res == null) {
 
             // get overflow params merged with bufferwrite insert data
-            List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(timeFilter, freqFilter, valueFilter,
+            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(timeFilter, freqFilter, valueFilter,
                     res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             // TODO updateTrue and updateFalse could be replaced by recordReader.overflowInfo?
@@ -439,7 +439,7 @@ public class OverflowQueryEngine {
             if (recordReader.insertAllData == null) {
 
                 // get overflow params merged with bufferwrite insert data
-                List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, null, null,
+                List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null,
                         null, recordReader.lastPageInMemory, recordReader.overflowInfo);
                 DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                 DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
@@ -489,7 +489,7 @@ public class OverflowQueryEngine {
         if (res == null) {
 
             // get four overflow params
-            List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(null, freqFilter, valueFilter,
+            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, freqFilter, valueFilter,
                     res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);

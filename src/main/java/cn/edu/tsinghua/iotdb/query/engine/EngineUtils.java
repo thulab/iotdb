@@ -42,9 +42,9 @@ public class EngineUtils {
     /**
      *  Merge the overflow insert data with the bufferwrite insert data.
      */
-    public static List<Object> getOverflowInfoAndFilterDataInMem(SingleSeriesFilterExpression queryTimeFilter,
-                  SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                  DynamicOneColumnData res, DynamicOneColumnData lastPageData, List<Object> overflowParams) {
+    public static List<Object> getOverflowMergedWithLastPageData(SingleSeriesFilterExpression queryTimeFilter,
+                                                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+                                                                 DynamicOneColumnData res, DynamicOneColumnData lastPageData, List<Object> overflowParams) {
 
         List<Object> paramList = new ArrayList<>();
 
@@ -103,38 +103,9 @@ public class EngineUtils {
             case BOOLEAN:
                 for (int i = 0; i < lastPageData.valueLength; i++) {
                     boolean v = lastPageData.getBoolean(i);
-                    if ((valueFilter == null && timeFilter == null)
-                            || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
-                            || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter)
-                            && timeVisitor.verify(lastPageData.getTime(i)))) {
+                    if ((timeFilter == null || timeVisitor.verify(lastPageData.getTime(i))) &&
+                            (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
                         res.putBoolean(v);
-                        res.putTime(lastPageData.getTime(i));
-                    }
-                }
-                break;
-            case DOUBLE:
-                for (int i = 0; i < lastPageData.valueLength; i++) {
-                    double v = lastPageData.getDouble(i);
-                    if ((valueFilter == null && timeFilter == null)
-                            || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
-                            || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(lastPageData.getTime(i)))) {
-                        res.putDouble(v);
-                        res.putTime(lastPageData.getTime(i));
-                    }
-                }
-                break;
-            case FLOAT:
-                for (int i = 0; i < lastPageData.valueLength; i++) {
-                    float v = lastPageData.getFloat(i);
-                    if ((valueFilter == null && timeFilter == null)
-                            || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
-                            || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(lastPageData.getTime(i)))) {
-                        res.putFloat(v);
                         res.putTime(lastPageData.getTime(i));
                     }
                 }
@@ -142,11 +113,8 @@ public class EngineUtils {
             case INT32:
                 for (int i = 0; i < lastPageData.valueLength; i++) {
                     int v = lastPageData.getInt(i);
-                    if ((valueFilter == null && timeFilter == null)
-                            || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
-                            || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(lastPageData.getTime(i)))) {
+                    if ((timeFilter == null || timeVisitor.verify(lastPageData.getTime(i))) &&
+                            (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
                         res.putInt(v);
                         res.putTime(lastPageData.getTime(i));
                     }
@@ -155,12 +123,29 @@ public class EngineUtils {
             case INT64:
                 for (int i = 0; i < lastPageData.valueLength; i++) {
                     long v = lastPageData.getLong(i);
-                    if ((valueFilter == null && timeFilter == null)
-                            || (valueFilter != null && timeFilter == null && valueVisitor.verify(v))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
-                            || (valueFilter != null && timeFilter != null && valueVisitor.verify(v)
-                            && timeVisitor.verify(lastPageData.getTime(i)))) {
+                    if ((timeFilter == null || timeVisitor.verify(lastPageData.getTime(i))) &&
+                            (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
                         res.putLong(v);
+                        res.putTime(lastPageData.getTime(i));
+                    }
+                }
+                break;
+            case FLOAT:
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    float v = lastPageData.getFloat(i);
+                    if ((timeFilter == null || timeVisitor.verify(lastPageData.getTime(i))) &&
+                            (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
+                        res.putFloat(v);
+                        res.putTime(lastPageData.getTime(i));
+                    }
+                }
+                break;
+            case DOUBLE:
+                for (int i = 0; i < lastPageData.valueLength; i++) {
+                    double v = lastPageData.getDouble(i);
+                    if ((timeFilter == null || timeVisitor.verify(lastPageData.getTime(i))) &&
+                            (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
+                        res.putDouble(v);
                         res.putTime(lastPageData.getTime(i));
                     }
                 }
@@ -168,11 +153,8 @@ public class EngineUtils {
             case TEXT:
                 for (int i = 0; i < lastPageData.valueLength; i++) {
                     Binary v = lastPageData.getBinary(i);
-                    if ((valueFilter == null && timeFilter == null)
-                            || (valueFilter != null && timeFilter == null && valueVisitor.satisfyObject(v, valueFilter))
-                            || (valueFilter == null && timeFilter != null && timeVisitor.verify(lastPageData.getTime(i)))
-                            || (valueFilter != null && timeFilter != null && valueVisitor.satisfyObject(v, valueFilter)
-                            && timeVisitor.verify(lastPageData.getTime(i)))) {
+                    if ((timeFilter == null || timeVisitor.verify(lastPageData.getTime(i))) &&
+                            (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
                         res.putBinary(v);
                         res.putTime(lastPageData.getTime(i));
                     }

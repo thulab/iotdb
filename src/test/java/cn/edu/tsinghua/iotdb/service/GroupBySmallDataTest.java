@@ -584,7 +584,7 @@ public class GroupBySmallDataTest {
 					String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0)) + ","
 							+ resultSet.getString(max_value(d0s0)) + "," + resultSet.getString(min_value(d0s0)) + ","
 							+ resultSet.getString(max_time(d0s0)) + "," + resultSet.getString(min_time(d0s0));
-					System.out.println(ans);
+					//System.out.println(ans);
 					cnt++;
 				}
 			}
@@ -597,7 +597,7 @@ public class GroupBySmallDataTest {
 			int cnt = 1;
 			while (resultSet.next()) {
 				String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0));
-				System.out.println(ans);
+				//System.out.println(ans);
 				cnt++;
 			}
 			statement.close();
@@ -757,7 +757,7 @@ public class GroupBySmallDataTest {
 				String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0)) + ","
 						+ resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2)) + ","
 						+ resultSet.getString(count(d0s3));
-				System.out.println(ans);
+				//System.out.println(ans);
 				switch (cnt) {
 					case 1:
 						Assert.assertEquals("100,null,1,null,null", ans);

@@ -604,9 +604,11 @@ public class InsertDynamicData extends DynamicOneColumnData {
 
         // insertTrue value already satisfy the time filter
         while (insertTrue != null && insertTrue.insertTrueIndex < insertTrue.valueLength) {
-            while (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2+1) < insertTrue.getTime(insertTrue.insertTrueIndex))
+            while (updateTrue.curIdx < updateTrue.valueLength &&
+                    updateTrue.getTime(updateTrue.curIdx*2+1) < insertTrue.getTime(insertTrue.insertTrueIndex))
                 updateTrue.curIdx += 1;
-            while (updateFalse.curIdx < updateFalse.valueLength && updateFalse.getTime(updateFalse.curIdx*2+1) < insertTrue.getTime(insertTrue.insertTrueIndex))
+            while (updateFalse.curIdx < updateFalse.valueLength &&
+                    updateFalse.getTime(updateFalse.curIdx*2+1) < insertTrue.getTime(insertTrue.insertTrueIndex))
                 updateFalse.curIdx += 1;
 
             if (updateTrue.curIdx < updateTrue.valueLength && updateTrue.getTime(updateTrue.curIdx*2) <= insertTrue.getTime(insertTrue.insertTrueIndex)) {
@@ -676,10 +678,8 @@ public class InsertDynamicData extends DynamicOneColumnData {
         }
         if (insertTrue != null)
             insertTrue.insertTrueIndex = 0;
-        if (updateTrue != null)
-            updateTrue.curIdx = 0;
-        if (updateFalse != null)
-            updateFalse.curIdx = 0;
+        updateTrue.curIdx = 0;
+        updateFalse.curIdx = 0;
         pageIndex = 0;
         pageReader = null;
         curTimeIndex = 0;
@@ -760,174 +760,5 @@ public class InsertDynamicData extends DynamicOneColumnData {
         }
 
         return res;
-    }
-
-    // Below are used for aggregate function
-    private long rowNum = 0;
-    private long minTime = Long.MAX_VALUE, maxTime = Long.MIN_VALUE;
-    private int minIntValue = Integer.MAX_VALUE, maxIntValue = Integer.MIN_VALUE;
-    private long minLongValue = Long.MAX_VALUE, maxLongValue = Long.MIN_VALUE;
-    private float minFloatValue = Float.MAX_VALUE, maxFloatValue = Float.MIN_VALUE;
-    private double minDoubleValue = Double.MIN_VALUE, maxDoubleValue = Double.MIN_VALUE;
-    private Binary minBinaryValue = null, maxBinaryValue = null;
-    private boolean minBooleanValue = true, maxBooleanValue = false;
-
-    private void calcIntAggregation() {
-        minTime = Math.min(minTime, getCurrentMinTime());
-        maxTime = Math.max(maxTime, getCurrentMinTime());
-        minIntValue = Math.min(minIntValue, getCurrentIntValue());
-        maxIntValue = Math.max(maxIntValue, getCurrentIntValue());
-    }
-
-    private void calcLongAggregation() {
-        minTime = Math.min(minTime, getCurrentMinTime());
-        maxTime = Math.max(maxTime, getCurrentMinTime());
-        minLongValue = Math.min(minLongValue, getCurrentLongValue());
-        maxLongValue = Math.max(maxLongValue, getCurrentLongValue());
-    }
-
-    private void calcFloatAggregation() {
-        minTime = Math.min(minTime, getCurrentMinTime());
-        maxTime = Math.max(maxTime, getCurrentMinTime());
-        minFloatValue = Math.min(minFloatValue, getCurrentFloatValue());
-        maxFloatValue = Math.max(maxFloatValue, getCurrentFloatValue());
-    }
-
-    private void calcDoubleAggregation() {
-        minTime = Math.min(minTime, getCurrentMinTime());
-        maxTime = Math.max(maxTime, getCurrentMinTime());
-        minDoubleValue = Math.min(minDoubleValue, getCurrentDoubleValue());
-        maxDoubleValue = Math.max(maxDoubleValue, getCurrentDoubleValue());
-    }
-
-    private void calcTextAggregation() {
-        minTime = Math.min(minTime, getCurrentMinTime());
-        maxTime = Math.max(maxTime, getCurrentMinTime());
-        if (minBinaryValue == null) {
-            minBinaryValue = getCurrentBinaryValue();
-        }
-        if (maxBinaryValue == null) {
-            maxBinaryValue = getCurrentBinaryValue();
-        }
-        if (getCurrentBinaryValue().compareTo(minBinaryValue) < 0) {
-            minBinaryValue = getCurrentBinaryValue();
-        }
-        if (getCurrentBinaryValue().compareTo(maxBinaryValue) > 0) {
-            maxBinaryValue = getCurrentBinaryValue();
-        }
-    }
-
-    private void calcBooleanAggregation() {
-        minTime = Math.min(minTime, getCurrentMinTime());
-        maxTime = Math.max(maxTime, getCurrentMinTime());
-        if (minBooleanValue) {
-            minBooleanValue = getCurrentBooleanValue();
-        }
-        if (!maxBooleanValue) {
-            maxBooleanValue = getCurrentBooleanValue();
-        }
-    }
-
-    public Object calcAggregation(String aggType) throws IOException, ProcessorException {
-        readStatusReset();
-        rowNum = 0;
-        minTime = Long.MAX_VALUE;
-        maxTime = Long.MIN_VALUE;
-        minIntValue = Integer.MAX_VALUE;
-        maxIntValue = Integer.MIN_VALUE;
-        minLongValue = Long.MAX_VALUE;
-        maxLongValue = Long.MIN_VALUE;
-        minFloatValue = Float.MAX_VALUE;
-        maxFloatValue = Float.MIN_VALUE;
-        minDoubleValue = Double.MIN_VALUE;
-        maxDoubleValue = Double.MIN_VALUE;
-        minBinaryValue = null;
-        maxBinaryValue = null;
-
-        while (hasInsertData()) {
-            switch (dataType) {
-                case INT32:
-                    rowNum++;
-                    calcIntAggregation();
-                    removeCurrentValue();
-                    break;
-                case INT64:
-                    rowNum++;
-                    calcLongAggregation();
-                    removeCurrentValue();
-                    break;
-                case FLOAT:
-                    rowNum++;
-                    calcFloatAggregation();
-                    removeCurrentValue();
-                    break;
-                case DOUBLE:
-                    rowNum++;
-                    calcDoubleAggregation();
-                    removeCurrentValue();
-                    break;
-                case TEXT:
-                    rowNum++;
-                    calcTextAggregation();
-                    removeCurrentValue();
-                    break;
-                case BOOLEAN:
-                    rowNum++;
-                    calcBooleanAggregation();
-                    removeCurrentValue();
-                    break;
-                default:
-                    LOG.error("Aggregation Error!");
-                    throw new UnSupportedDataTypeException(dataType.toString());
-            }
-        }
-
-        switch (aggType) {
-            case AggregationConstant.COUNT:
-                return rowNum == 0 ? null : rowNum;
-            case AggregationConstant.MIN_TIME:
-                return rowNum == 0 ? null : minTime;
-            case AggregationConstant.MAX_TIME:
-                return rowNum == 0 ? null : maxTime;
-            case AggregationConstant.MIN_VALUE:
-                switch (dataType) {
-                    case INT32:
-                        return rowNum == 0 ? null : minIntValue;
-                    case INT64:
-                        return rowNum == 0 ? null : minLongValue;
-                    case FLOAT:
-                        return rowNum == 0 ? null : minFloatValue;
-                    case DOUBLE:
-                        return rowNum == 0 ? null : minDoubleValue;
-                    case TEXT:
-                        return rowNum == 0 ? null : minBinaryValue;
-                    case BOOLEAN:
-                        return rowNum == 0 ? null : minBooleanValue;
-                    default:
-                        LOG.error("Aggregation Error!");
-                        throw new UnSupportedDataTypeException("UnSupported datatype: " + dataType);
-
-                }
-            case AggregationConstant.MAX_VALUE:
-                switch (dataType) {
-                    case INT32:
-                        return rowNum == 0 ? null : maxIntValue;
-                    case INT64:
-                        return rowNum == 0 ? null : maxLongValue;
-                    case FLOAT:
-                        return rowNum == 0 ? null : maxFloatValue;
-                    case DOUBLE:
-                        return rowNum == 0 ? null : maxDoubleValue;
-                    case TEXT:
-                        return rowNum == 0 ? null : maxBinaryValue;
-                    case BOOLEAN:
-                        return rowNum == 0 ? null : maxBooleanValue;
-                    default:
-                        LOG.error("Aggregation Error!");
-                        throw new UnSupportedDataTypeException("UnSupported datatype: " + dataType);
-                }
-            default:
-                throw new ProcessorException("AggregateFunction not support. Name:" + aggType);
-        }
     }
 }

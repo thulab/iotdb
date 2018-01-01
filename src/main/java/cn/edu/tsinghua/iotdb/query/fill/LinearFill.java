@@ -85,7 +85,7 @@ public class LinearFill extends IFill{
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);
 
-        List<Object> params = EngineUtils.getOverflowInfoAndFilterDataInMem(fillTimeFilter, null, null,
+        List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(fillTimeFilter, null, null,
                 null, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
         DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
