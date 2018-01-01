@@ -68,8 +68,7 @@ public class ReaderUtils {
     }
 
     /**
-     * <p>
-     * Read one page data,
+     * <p> Read one page data,
      * this page data may be changed by overflow operation, so the overflow parameter is required.
      *
      * @param dataType the <code>DataType</code> of the read page

@@ -182,10 +182,12 @@ public class AggregateEngine {
                             recordReader.lastPageInMemory, recordReader.overflowInfo);
                     DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
                     DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+                    DynamicOneColumnData updateTrue_copy = copy(updateTrue);
                     DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+                    DynamicOneColumnData updateFalse_copy = copy(updateFalse);
                     SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
                     recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                            insertTrue, updateTrue, updateFalse,
+                            insertTrue, updateTrue_copy, updateFalse_copy,
                             newTimeFilter, null, null, dataType);
 
                     Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
@@ -297,9 +299,9 @@ public class AggregateEngine {
 
             DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
             DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-            DynamicOneColumnData updateTrue2 = copy(updateTrue);
+            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
             DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-            DynamicOneColumnData updateFalse2 = copy(updateFalse);
+            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
             SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
             recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
@@ -307,7 +309,7 @@ public class AggregateEngine {
                     newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
 
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
-                    updateTrue2, updateFalse2, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
+                    updateTrue_copy, updateFalse_copy, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
             res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,

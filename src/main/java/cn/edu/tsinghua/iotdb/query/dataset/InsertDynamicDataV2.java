@@ -39,6 +39,7 @@ public class InsertDynamicDataV2 {
     private static final Logger LOG = LoggerFactory.getLogger(InsertDynamicDataV2.class);
     private TSDataType dataType;
     private CompressionTypeName compressionTypeName;
+    private boolean hasNext = false;
 
     /** unsealed page list **/
     private List<ByteArrayInputStream> pageList;
@@ -252,7 +253,8 @@ public class InsertDynamicDataV2 {
     }
 
     public boolean hasInsertData() throws IOException {
-        boolean hasNext = false;
+        if (hasNext)
+            return true;
 
         if (pageIndex < pageList.size()) {
             hasNext = readPageList();
