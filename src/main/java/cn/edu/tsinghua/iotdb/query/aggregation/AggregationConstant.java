@@ -14,6 +14,8 @@ public class AggregationConstant {
     public static final String COUNT = StatisticConstant.COUNT;
 
     public static final String FIRST = StatisticConstant.FIRST;
+    // TODO : create constant in TsFile
+    public static final String LAST = "last";
 
     public static final String MEAN = StatisticConstant.MEAN;
     public static final String SUM = StatisticConstant.SUM;
