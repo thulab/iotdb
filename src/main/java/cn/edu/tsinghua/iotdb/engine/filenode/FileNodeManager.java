@@ -401,6 +401,103 @@ public class FileNodeManager implements IStatistic {
 		return insertType;
 	}
 
+	public int insertStat(TSRecord tsRecord) throws FileNodeManagerException {
+		long timestamp = tsRecord.time;
+		String deltaObjectId = tsRecord.deltaObjectId;
+
+		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+		int insertType = 0;
+
+		try {
+			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
+			String filenodeName = fileNodeProcessor.getProcessorName();
+			if (timestamp <= lastUpdateTime) {
+				Map<String, Object> parameters = new HashMap<>();
+				parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
+				parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
+				// get overflow processor
+				OverflowProcessor overflowProcessor;
+				try {
+					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+				} catch (FileNodeProcessorException e) {
+					LOGGER.error(
+							String.format("Get the overflow processor failed, the filenode is {}, insert time is {}",
+									filenodeName, timestamp),
+							e);
+					throw new FileNodeManagerException(e);
+				}
+				// write wal
+				try {
+					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+						if (!WriteLogManager.isRecovering) {
+							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.OVERFLOW);
+						}
+					}
+				} catch (IOException | PathErrorException e) {
+					LOGGER.error("Error in write WAL.", e);
+					throw new FileNodeManagerException(e);
+				}
+				// write overflow data
+				for (DataPoint dataPoint : tsRecord.dataPointList) {
+					try {
+						overflowProcessor.insert(deltaObjectId, dataPoint.getMeasurementId(), timestamp,
+								dataPoint.getType(), dataPoint.getValue().toString());
+					} catch (ProcessorException e) {
+						LOGGER.error("Insert into overflow error, the reason is {}", e.getMessage());
+						throw new FileNodeManagerException(e);
+					}
+				}
+				// change the type of tsfile to overflowed
+				fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
+				addFileNodeNameToOverflowSet(filenodeName);
+				insertType = 1;
+			} else {
+				// get bufferwrite processor
+				BufferWriteProcessor bufferWriteProcessor;
+				try {
+					bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor(filenodeName, timestamp);
+				} catch (FileNodeProcessorException e) {
+					LOGGER.error("Get the bufferwrite processor failed, the filenode is {}, insert time is {}",
+							filenodeName, timestamp);
+					throw new FileNodeManagerException(e);
+				}
+				// Add a new interval file to newfilelist
+				if (bufferWriteProcessor.isNewProcessor()) {
+					bufferWriteProcessor.setNewProcessor(false);
+					String bufferwriteRelativePath = bufferWriteProcessor.getFileRelativePath();
+					try {
+						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteRelativePath);
+					} catch (Exception e) {
+						throw new FileNodeManagerException(e);
+					}
+				}
+				// write wal
+				try {
+					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+						if (!WriteLogManager.isRecovering) {
+							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.BUFFERWRITER);
+						}
+					}
+				} catch (IOException | PathErrorException e) {
+					LOGGER.error("Error in write WAL.", e);
+					throw new FileNodeManagerException(e);
+				}
+				// Write data
+				try {
+					bufferWriteProcessor.write(tsRecord);
+				} catch (BufferWriteProcessorException e) {
+					throw new FileNodeManagerException(e);
+				}
+				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
+				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
+				insertType = 2;
+			}
+		} finally {
+			fileNodeProcessor.writeUnlock();
+		}
+		return insertType;
+	}
+
 	private void addFileNodeNameToOverflowSet(String filenodeName) throws FileNodeManagerException {
 		synchronized (overflowedFileNodeName) {
 			if (!overflowedFileNodeName.contains(filenodeName)) {

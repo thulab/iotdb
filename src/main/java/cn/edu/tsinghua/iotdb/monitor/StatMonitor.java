@@ -221,7 +221,7 @@ public class StatMonitor {
         int pointNum;
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
-                fManager.insert(entry.getValue());
+                fManager.insertStat(entry.getValue());
                 numInsert.incrementAndGet();
                 pointNum = entry.getValue().dataPointList.size();
                 numPointsInsert.addAndGet(pointNum);
@@ -255,7 +255,6 @@ public class StatMonitor {
         public void run() {
             long currentTimeMillis = System.currentTimeMillis();
             long hour = (currentTimeMillis - runningTimeMillis)/3600000;
-//            long hour = (currentTimeMillis - runningTimeMillis)/1000;
             if (hour - StatMonitorRetainInterval >= 0) {
                 runningTimeMillis = currentTimeMillis;
                 // delete timeseries
