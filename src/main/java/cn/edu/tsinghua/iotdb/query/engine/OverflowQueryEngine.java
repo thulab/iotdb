@@ -295,25 +295,30 @@ public class OverflowQueryEngine {
         if (res == null) {
 
             // get overflow params merged with bufferwrite insert data
-            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null,
-                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null,
+//                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
-            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
+//            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+//            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
+//            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+            DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
+            DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
 
-            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue_copy, updateFalse_copy,
-                    newTimeFilter, null, null, getDataTypeByPath(path));
+            recordReader.insertAllData = new InsertDynamicData(getDataTypeByPath(path), recordReader.compressionTypeName,
+                    recordReader.bufferWritePageList,
+                    recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                    recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, null);
+
             res = recordReader.queryOneSeries(deltaObjectID, measurementID,
-                    updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, null, res, fetchSize);
-            res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+                    overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, recordReader.overflowTimeFilter,
+                    null, res, fetchSize);
+            //res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res = recordReader.queryOneSeries(deltaObjectID, measurementID,
-                    res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, null, res, fetchSize);
+                    res.updateTrue, res.updateFalse, recordReader.insertAllData, recordReader.overflowTimeFilter, null, res, fetchSize);
         }
 
         return res;
@@ -365,23 +370,27 @@ public class OverflowQueryEngine {
         if (res == null) {
 
             // get overflow params merged with bufferwrite insert data
-            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(timeFilter, freqFilter, valueFilter,
-                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(overflowTimeFilter, freqFilter, valueFilter,
+//                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//
+//            // TODO updateTrue and updateFalse could be replaced by recordReader.overflowInfo?
+//            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
+//            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+//            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
+//            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
-            // TODO updateTrue and updateFalse could be replaced by recordReader.overflowInfo?
-            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+            recordReader.insertAllData = new InsertDynamicData(getDataTypeByPath(path), recordReader.compressionTypeName,
+                    recordReader.bufferWritePageList,
+                    recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                    recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
+            DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
+            DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
 
-            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue, updateFalse,
-                    newTimeFilter, valueFilter, null, getDataTypeByPath(path));
             res = recordReader.queryOneSeries(deltaObjectId, measurementId,
-                    updateTrue_copy, updateFalse_copy, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
-            res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+                    overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, timeFilter, valueFilter, res, fetchSize);
+            //res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res = recordReader.queryOneSeries(deltaObjectId, measurementId,
                     res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, valueFilter, res, fetchSize);
@@ -433,7 +442,7 @@ public class OverflowQueryEngine {
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
             String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 
-            //TODO an optimization : timeFilter could be [minTime, maxTime of timestamps]
+            //TODO an optimization : overflowTimeFilter could be [minTime, maxTime of timestamps]
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null, null, null, null, recordReaderPrefix);
 
@@ -441,22 +450,25 @@ public class OverflowQueryEngine {
             if (recordReader.insertAllData == null) {
 
                 // get overflow params merged with bufferwrite insert data
-                List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null,
-                        null, recordReader.lastPageInMemory, recordReader.overflowInfo);
-                DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-                DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-                DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-                DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-                DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-                SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//                List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null,
+//                        null, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//                DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//                DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//                DynamicOneColumnData updateTrue_copy = copy(updateTrue);
+//                DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+//                DynamicOneColumnData updateFalse_copy = copy(updateFalse);
+//                SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+                recordReader.insertAllData = new InsertDynamicData(getDataTypeByPath(path), recordReader.compressionTypeName,
+                        recordReader.bufferWritePageList,
+                        recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                        recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
+                DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
+                DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
 
-                recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                        insertTrue, updateTrue_copy, updateFalse_copy,
-                        newTimeFilter, null, freqFilter, getDataTypeByPath(path));
-
+                //TODO overflowUpdate and overflowUpdateFalse parameter is needed
                 DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(
-                        deltaObjectId, measurementId, newTimeFilter, timestamps, recordReader.insertAllData);
-                queryResult.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+                        deltaObjectId, measurementId, timeFilter, timestamps, recordReader.insertAllData);
+                //queryResult.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
                 DynamicOneColumnData queryAnswer = recordReader.queryUsingTimestamps(
@@ -493,22 +505,31 @@ public class OverflowQueryEngine {
         if (res == null) {
 
             // get four overflow params
-            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, freqFilter, valueFilter,
-                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, freqFilter, valueFilter,
+//                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//
+//            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
+//            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+//            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
+//            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//
+//            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+//                    insertTrue, updateTrue, updateFalse,
+//                    newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
 
-            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+            recordReader.insertAllData = new InsertDynamicData(getDataTypeByPath(new Path(deltaObjectUID + "." + measurementUID)),
+                    recordReader.compressionTypeName,
+                    recordReader.bufferWritePageList,
+                    recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                    recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
+            DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
+            DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
 
-            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue, updateFalse,
-                    newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
-                    updateTrue_copy, updateFalse_copy, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
-            res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+                    overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, null, valueFilter, res, fetchSize);
+            //res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
                     res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, valueFilter, res, fetchSize);

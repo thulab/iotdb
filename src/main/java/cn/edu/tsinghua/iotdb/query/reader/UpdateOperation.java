@@ -59,4 +59,11 @@ public class UpdateOperation {
     public Binary getText() {
         return updateOperation.getBinary(idx);
     }
+
+    public boolean verify(long time) {
+        if (idx < updateOperation.valueLength && getUpdateStartTime() <= time && getUpdateEndTime() >= time)
+            return true;
+
+        return false;
+    }
 }

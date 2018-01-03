@@ -102,7 +102,7 @@ public class ValueReaderProcessor {
             DigestForFilter valueDigestFF = new StrDigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),
                     digest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
 
-            // construct timeFilter
+            // construct overflowTimeFilter
             long mint = pageHeader.data_page_header.min_timestamp;
             long maxt = pageHeader.data_page_header.max_timestamp;
             DigestForFilter timeDigestFF = new DigestForFilter(mint, maxt);

@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
-import cn.edu.tsinghua.iotdb.query.engine.EngineUtils;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
@@ -218,22 +217,32 @@ public class GroupByEngineNoFilter {
         if (res == null) {
 
             // get overflow params merged with bufferwrite insert data
-            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(timeFilter, null, null,
-                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(overflowTimeFilter, null, null,
+//                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
 
-            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
+//            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+//            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
+//            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//
+//            recordReader.insertAllData = new InsertDynamicData(MManager.getInstance().getSeriesType(path.getFullPath()), recordReader.compressionTypeName,
+//                    recordReader.bufferWritePageList, recordReader.lastPageInMemory,
+//                    recordReader.overflowInsertData, updateTrue_copy, updateFalse_copy,
+//                    newTimeFilter, null, null);
+            recordReader.insertAllData = new InsertDynamicData(MManager.getInstance().getSeriesType(path.getFullPath()),
+                    recordReader.compressionTypeName,
+                    recordReader.bufferWritePageList,
+                    recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                    recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
+            DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
+            DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
 
-            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue_copy, updateFalse_copy,
-                    newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID,
-                    updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, null, res, queryFetchSize);
-            res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+
+//            res = recordReader.queryOneSeries(deltaObjectID, measurementID,
+//                    overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, and(overflowTimeFilter, recordReader.overflowTimeFilter), null, res, queryFetchSize);
+            //res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res.clearData();
             res = recordReader.queryOneSeries(deltaObjectID, measurementID,

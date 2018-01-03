@@ -16,7 +16,6 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
 
 import java.io.IOException;
-import java.util.List;
 
 public class PreviousFill extends IFill {
 
@@ -66,23 +65,31 @@ public class PreviousFill extends IFill {
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);
 
-        List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(fillTimeFilter, null, null,
-                null, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//        List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(fillTimeFilter, null, null,
+//                null, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//
+//        DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//        DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//        if (updateTrue == null) {
+//            updateTrue = new DynamicOneColumnData(dataType, true);
+//        }
+//        DynamicOneColumnData updateTrue_copy = EngineUtils.copy(updateTrue);
+//        SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//        recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+//                insertTrue, updateTrue_copy, null,
+//                overflowTimeFilter, null, null, dataType);
 
-        DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-        DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-        if (updateTrue == null) {
-            updateTrue = new DynamicOneColumnData(dataType, true);
-        }
-        DynamicOneColumnData updateTrue_copy = EngineUtils.copy(updateTrue);
-        SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+        recordReader.insertAllData = new InsertDynamicData(dataType,
+                recordReader.compressionTypeName,
+                recordReader.bufferWritePageList,
+                recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
+        DynamicOneColumnData overflowUpdateTrueCopy = EngineUtils.copy(recordReader.overflowUpdateTrue);
+        DynamicOneColumnData overflowUpdateFalseCopy = EngineUtils.copy(recordReader.overflowUpdateFalse);
 
-        recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                insertTrue, updateTrue_copy, null,
-                overflowTimeFilter, null, null, dataType);
 
         recordReader.getPreviousFillResult(result, deltaObjectId, measurementId,
-                updateTrue, recordReader.insertAllData, overflowTimeFilter, beforeTime, queryTime);
+                overflowUpdateTrueCopy, recordReader.insertAllData, fillTimeFilter, beforeTime, queryTime);
 
         return result;
     }

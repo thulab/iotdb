@@ -87,7 +87,8 @@ public class ReaderUtils {
      */
     public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimeValues,
                                                    Decoder decoder, InputStream page, DynamicOneColumnData res,
-                                                   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+                                                   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+                                                   SingleSeriesFilterExpression valueFilter,
                                                    InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] idx) throws IOException {
         // This method is only used for aggregation function.
 
@@ -187,20 +188,22 @@ public class ReaderUtils {
                 case BOOLEAN:
                     while (decoder.hasNext(page)) {
                         // put insert points
-                        while (insertMemoryData.curIdx < insertMemoryData.valueLength && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getTime(insertMemoryData.curIdx) <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getTime(insertMemoryData.curIdx));
-                            res.putBoolean(insertMemoryData.getBoolean(insertMemoryData.curIdx));
-                            insertMemoryData.curIdx++;
+                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
+                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
+                            res.putTime(insertMemoryData.getCurrentMinTime());
+                            res.putBoolean(insertMemoryData.getCurrentBooleanValue());
                             res.insertTrueIndex++;
                             // if equal, take value from insertTrue and skip one
                             // value from page
-                            if (insertMemoryData.getTime(insertMemoryData.curIdx - 1) == pageTimeValues[timeIdx]) {
+                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
+                                insertMemoryData.removeCurrentValue();
                                 timeIdx++;
                                 decoder.readBoolean(page);
                                 if (!decoder.hasNext(page)) {
                                     break;
                                 }
+                            } else {
+                                insertMemoryData.removeCurrentValue();
                             }
                         }
 
@@ -261,20 +264,21 @@ public class ReaderUtils {
                 case INT64:
                     while (decoder.hasNext(page)) {
                         // put insert points
-                        while (insertMemoryData.curIdx < insertMemoryData.valueLength && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getTime(insertMemoryData.curIdx) <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getTime(insertMemoryData.curIdx));
-                            res.putLong(insertMemoryData.getLong(insertMemoryData.curIdx));
-                            insertMemoryData.curIdx++;
+                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
+                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
+                            res.putTime(insertMemoryData.getCurrentMinTime());
+                            res.putLong(insertMemoryData.getCurrentLongValue());
                             res.insertTrueIndex++;
-                            // if equal, take value from insertTrue and skip one
-                            // value from page
-                            if (insertMemoryData.getTime(insertMemoryData.curIdx - 1) == pageTimeValues[timeIdx]) {
+                            // if equal, take value from insertTrue and skip one value from page
+                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
+                                insertMemoryData.removeCurrentValue();
                                 timeIdx++;
                                 decoder.readLong(page);
                                 if (!decoder.hasNext(page)) {
                                     break;
                                 }
+                            } else {
+                                insertMemoryData.removeCurrentValue();
                             }
                         }
                         if (!decoder.hasNext(page)) {
@@ -335,20 +339,22 @@ public class ReaderUtils {
                 case FLOAT:
                     while (decoder.hasNext(page)) {
                         // put insert points
-                        while (insertMemoryData.curIdx < insertMemoryData.valueLength && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getTime(insertMemoryData.curIdx) <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getTime(insertMemoryData.curIdx));
-                            res.putFloat(insertMemoryData.getFloat(insertMemoryData.curIdx));
-                            insertMemoryData.curIdx++;
+                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
+                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
+                            res.putTime(insertMemoryData.getCurrentMinTime());
+                            res.putFloat(insertMemoryData.getCurrentFloatValue());
                             res.insertTrueIndex++;
                             // if equal, take value from insertTrue and skip one
                             // value from page
-                            if (insertMemoryData.getTime(insertMemoryData.curIdx - 1) == pageTimeValues[timeIdx]) {
+                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
+                                insertMemoryData.removeCurrentValue();
                                 timeIdx++;
                                 decoder.readFloat(page);
                                 if (!decoder.hasNext(page)) {
                                     break;
                                 }
+                            } else {
+                                insertMemoryData.removeCurrentValue();
                             }
                         }
                         if (!decoder.hasNext(page)) {
@@ -410,20 +416,22 @@ public class ReaderUtils {
                 case DOUBLE:
                     while (decoder.hasNext(page)) {
                         // put insert points
-                        while (insertMemoryData.curIdx < insertMemoryData.valueLength && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getTime(insertMemoryData.curIdx) <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getTime(insertMemoryData.curIdx));
-                            res.putDouble(insertMemoryData.getDouble(insertMemoryData.curIdx));
-                            insertMemoryData.curIdx++;
+                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
+                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
+                            res.putTime(insertMemoryData.getCurrentMinTime());
+                            res.putDouble(insertMemoryData.getCurrentDoubleValue());
                             res.insertTrueIndex++;
                             // if equal, take value from insertTrue and skip one
                             // value from page
-                            if (insertMemoryData.getTime(insertMemoryData.curIdx - 1) == pageTimeValues[timeIdx]) {
+                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
+                                insertMemoryData.removeCurrentValue();
                                 timeIdx++;
                                 decoder.readDouble(page);
                                 if (!decoder.hasNext(page)) {
                                     break;
                                 }
+                            } else {
+                                insertMemoryData.removeCurrentValue();
                             }
                         }
                         if (!decoder.hasNext(page)) {
@@ -484,20 +492,21 @@ public class ReaderUtils {
                 case TEXT:
                     while (decoder.hasNext(page)) {
                         // put insert points
-                        while (insertMemoryData.curIdx < insertMemoryData.valueLength && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getTime(insertMemoryData.curIdx) <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getTime(insertMemoryData.curIdx));
-                            res.putBinary(insertMemoryData.getBinary(insertMemoryData.curIdx));
-                            insertMemoryData.curIdx++;
-                            res.insertTrueIndex++;
-                            // if equal, take value from insertTrue and skip one
-                            // value from page
-                            if (insertMemoryData.getTime(insertMemoryData.curIdx - 1) == pageTimeValues[timeIdx]) {
+                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
+                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
+                            res.putTime(insertMemoryData.getCurrentMinTime());
+                            res.putBinary(insertMemoryData.getCurrentBinaryValue());
+
+                            // if equal, take value from insertTrue and skip one value from page
+                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
+                                insertMemoryData.removeCurrentValue();
                                 timeIdx++;
                                 decoder.readBinary(page);
                                 if (!decoder.hasNext(page)) {
                                     break;
                                 }
+                            } else {
+                                insertMemoryData.removeCurrentValue();
                             }
                         }
                         if (!decoder.hasNext(page)) {

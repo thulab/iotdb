@@ -286,8 +286,10 @@ public class EngineUtils {
 
     public static DynamicOneColumnData copy(DynamicOneColumnData data) {
         if (data == null) {
-            return null;
+            // if data is null, return a DynamicOneColumnData which has no value
+            return new DynamicOneColumnData(TSDataType.INT64, true);
         }
+
         DynamicOneColumnData ans = new DynamicOneColumnData(data.dataType, true);
         for (int i = 0;i < data.timeLength;i ++) {
             ans.putTime(data.getTime(i));

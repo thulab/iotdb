@@ -60,10 +60,13 @@ public class RecordReader {
     public DynamicOneColumnData overflowInsertData;
 
     /** 5. overflow update data **/
-    public DynamicOneColumnData overflowUpdateData;
+    public DynamicOneColumnData overflowUpdateTrue;
 
-    /** 6. series time filter **/
-    public SingleSeriesFilterExpression timeFilter;
+    /** 5. overflow update data **/
+    public DynamicOneColumnData overflowUpdateFalse;
+
+    /** 6. series time filter, this filter is the filter **/
+    public SingleSeriesFilterExpression overflowTimeFilter;
 
     /** 7. series value filter **/
     public SingleSeriesFilterExpression valueFilter;
@@ -98,6 +101,11 @@ public class RecordReader {
             }
         }
         this.overflowInfo.add(overflowInfo.get(3));
+
+        this.overflowInsertData = (DynamicOneColumnData) overflowInfo.get(0);
+        this.overflowUpdateTrue = (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowUpdateFalse = (DynamicOneColumnData) overflowInfo.get(2);
+        this.overflowTimeFilter = (SingleSeriesFilterExpression) this.overflowInfo.get(3);
     }
 
     /**
@@ -118,6 +126,9 @@ public class RecordReader {
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
+        this.overflowInsertData = (DynamicOneColumnData) overflowInfo.get(0);
+        this.overflowUpdateTrue = (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowUpdateFalse = (DynamicOneColumnData) overflowInfo.get(2);
 
         for (int i = 0;i < 3;i++) {
             if (overflowInfo.get(i) == null) {
@@ -127,6 +138,11 @@ public class RecordReader {
             }
         }
         this.overflowInfo.add(overflowInfo.get(3));
+
+        this.overflowInsertData = (DynamicOneColumnData) overflowInfo.get(0);
+        this.overflowUpdateTrue = (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowUpdateFalse = (DynamicOneColumnData) overflowInfo.get(2);
+        this.overflowTimeFilter = (SingleSeriesFilterExpression) this.overflowInfo.get(3);
     }
 
     /**
@@ -166,7 +182,7 @@ public class RecordReader {
 
         // add left insert values
         if (insertData.hasInsertData()) {
-            // TODO the timeFilter, updateTrue, updateFalse in addLeftInsertValue method is unnecessary?
+            // TODO the overflowTimeFilter, updateTrue, updateFalse in addLeftInsertValue method is unnecessary?
             res.hasReadAll = addLeftInsertValue(res, insertData, fetchSize, timeFilter, updateTrue, updateFalse);
         } else {
             res.hasReadAll = true;

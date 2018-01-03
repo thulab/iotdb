@@ -194,7 +194,7 @@ public class MeanAggrFunc extends AggregateFunction{
     }
 
     private void updateMean(InsertDynamicData data) throws ProcessorException {
-        logger.debug("Receiving a page of {}, size is {}", data.getDataType(), data.timeLength);
+        logger.debug("Receiving a page of {} InsertDynamic", data.getDataType());
         switch (data.getDataType()) {
             case INT32:
                 try {

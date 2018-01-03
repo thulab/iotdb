@@ -380,9 +380,9 @@ public class GroupByEngineWithFilter {
                 DynamicOneColumnData updateFalse_copy = copy(updateFalse);
                 SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
 
-                recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                        insertTrue, updateTrue_copy, updateFalse_copy,
-                        newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
+//                recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+//                        insertTrue, updateTrue_copy, updateFalse_copy,
+//                        newTimeFilter, null, null, MManager.getInstance().getSeriesType(path.getFullPath()));
                 data = recordReader.queryUsingTimestamps(deltaObjectId, measurementId,
                         recordReader.insertAllData.timeFilter, aggregateTimestamps.stream().mapToLong(i->i).toArray(), recordReader.insertAllData);
                 data.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
@@ -419,22 +419,31 @@ public class GroupByEngineWithFilter {
 
         if (res == null) {
             // get four overflow params
-            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, freqFilter, valueFilter,
-                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, freqFilter, valueFilter,
+//                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
+//
+//            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
+//            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
+//            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
+//            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
+//            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
+//            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+//
+//            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
+//                    insertTrue, updateTrue_copy, updateFalse_copy,
+//                    newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
 
-            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
+            recordReader.insertAllData = new InsertDynamicData(MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID),
+                    recordReader.compressionTypeName,
+                    recordReader.bufferWritePageList,
+                    recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
+                    recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
+            DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
+            DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
 
-            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-                    insertTrue, updateTrue_copy, updateFalse_copy,
-                    newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
-                    updateTrue, updateFalse, recordReader.insertAllData, newTimeFilter, valueFilter, res, fetchSize);
-            res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+                    overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, recordReader.overflowTimeFilter, valueFilter, res, fetchSize);
+            //res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
         } else {
             res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
                     res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, valueFilter, res, fetchSize);

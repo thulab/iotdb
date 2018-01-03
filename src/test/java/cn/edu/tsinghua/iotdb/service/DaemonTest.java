@@ -132,17 +132,17 @@ public class DaemonTest {
                 Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
                 selectAllSQLTest();
-                dnfErrorSQLTest();
-                selectWildCardSQLTest();
-                selectAndOperatorTest();
-                selectAndOpeCrossTest();
-                selectOneColumnWithFilterTest();
-                textDataTypeTest();
-
-                aggregationTest();
-                multiAggregationTest();
-
-                fillTest();
+//                dnfErrorSQLTest();
+//                selectWildCardSQLTest();
+//                selectAndOperatorTest();
+//                selectAndOpeCrossTest();
+//                selectOneColumnWithFilterTest();
+//                textDataTypeTest();
+//
+//                aggregationTest();
+//                multiAggregationTest();
+//
+//                fillTest();
 
                 crossReadTest();
                 connection.close();

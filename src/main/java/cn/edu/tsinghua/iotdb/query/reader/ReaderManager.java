@@ -63,7 +63,7 @@ public class ReaderManager {
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
                 if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
 
-                    // to filter some file whose (startTime, endTime) is not satisfied with the timeFilter
+                    // to filter some file whose (startTime, endTime) is not satisfied with the overflowTimeFilter
                     IntervalTimeVisitor metaFilter = new IntervalTimeVisitor();
                     if (timeFilter != null && !metaFilter.satisfy(timeFilter, tsFileMetaData.getDeltaObject(deltaObjectUID).startTime,
                             tsFileMetaData.getDeltaObject(deltaObjectUID).endTime))
