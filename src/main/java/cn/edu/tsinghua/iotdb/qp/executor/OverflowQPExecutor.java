@@ -1,12 +1,9 @@
 package cn.edu.tsinghua.iotdb.qp.executor;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -450,7 +447,23 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 							throw new ProcessorException(
 									String.format("There are no timeseries in the prefix of %s path", p.getFullPath()));
 						}
-						pathSet.addAll(subPaths);
+						ArrayList<String> newSubPaths = new ArrayList<>();
+						for (String eachPath : subPaths) {
+							int sepIndex = eachPath.indexOf(".");
+							if (sepIndex == -1) {
+								continue;
+							}
+							sepIndex = eachPath.indexOf(".", sepIndex + 1);
+							if (sepIndex == -1) {
+								continue;
+							}
+							String eachPathPrefix = eachPath.substring(0, sepIndex);
+							if (eachPathPrefix.equals(MonitorConstants.statStorageGroupPrefix)) {
+								continue;
+							}
+							newSubPaths.add(eachPath);
+						}
+						pathSet.addAll(newSubPaths);
 					}
 					for (String p : pathSet) {
 						if (!mManager.pathExist(p)) {
