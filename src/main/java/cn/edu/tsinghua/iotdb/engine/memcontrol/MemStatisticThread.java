@@ -22,7 +22,7 @@ public class MemStatisticThread extends Thread{
     private int reportCycle = 60;
 
     public MemStatisticThread() {
-        this.setName("IoTDB-MemStatistic-Thread");
+        this.setName("IoTDB-MemStatistic-thread");
     }
 
     @Override
