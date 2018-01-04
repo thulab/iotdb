@@ -14,11 +14,11 @@ https://github.com/thulab/tsfile.git
 
 The versions required for Spark and Java are as follow:
 
-| Spark Version | Scala Version | Java Version |
-| ------------- | ------------- | ------------ |
-| `2.0+`        | `2.11`        | `1.8`        |
+| Spark Version | Scala Version | Java Version | TsFile |
+| ------------- | ------------- | ------------ |------------ |
+| `2.0+`        | `2.11`        | `1.8`        | `0.4.0`|
 
-
+ATTENTION: Please check the jar packages in the root directory  of your spark and replace libthrift-0.9.2.jar and libfb303-0.9.2.jar with libthrift-0.9.1.jar and libfb303-0.9.1.jar respectively.
 
 ## 3. TsFile Type <=> SparkSQL type
 
@@ -115,89 +115,98 @@ mvn clean scala:compile compile package
 
 ## 6. Examples
 
+The path of 'test.tsfile' used in the following examples is "src/test/resources/test.tsfile". Please upload 'test.tsfile' to hdfs in advance and the directory is "/test.tsfile".
+
+
 ### 6.1 Scala API
 
 * **Example 1**
 
 	```scala
-	import cn.edu.thu.tsfile._
-
+	import cn.edu.tsinghua.tsfile._
+	
 	//read data in TsFile and create a table
-	val df = spark.read.tsfile("test.tsfile")
-	df.createOrReplaceTempView("TsFile_table")
-
+	val df = spark.read.tsfile("/test.tsfile")
+	df.createOrReplaceTempView("tsfile_table")
+	
 	//query with filter
-	val newDf = spark.sql("select * from TsFile_table where sensor_1 > 1.2").cache()
-
+	val newDf = spark.sql("select * from tsfile_table where s1 > 1.2").cache()
+	
 	newDf.show()
-
 	```
 
 * **Example 2**
 
 	```scala
-	import cn.edu.thu.tsfile._
 	val df = spark.read
-	      .format("cn.edu.thu.tsfile")
-	      .load("test.tsfile")
+       .format("cn.edu.tsinghua.tsfile")
+       .load("/test.tsfile ")
 	df.filter("time < 10").show()
-
 	```
 
 * **Example 3**
 
 	```scala
-	import cn.edu.thu.tsfile._
-
 	//create a table in SparkSQL and build relation with a TsFile
-	spark.sql("create temporary view TsFile using cn.edu.thu.tsfile options(path = \"test.tsfile\")")
-
-	spark.sql("select * from TsFile where sensor_1 > 1.2").show()
-
+	spark.sql("create temporary view tsfile_table using cn.edu.tsinghua.tsfile options(path = \"test.ts\")")
+	
+	spark.sql("select * from tsfile_table where s1 > 1.2").show()
 	```
 	
 * **Example 4(using options to read)**
 
 	```scala
-	import cn.edu.thu.tsfile._
-		
-	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("test.tsfile")
-	    
+	import cn.edu.tsinghua.tsfile._
+	
+	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("/test.tsfile")
+	     
 	//create a table in SparkSQL and build relation with a TsFile
 	df.createOrReplaceTempView("tsfile_table")
-	
-	spark.sql("select * from tsfile_table where turbine = 'turbine1' and device = 'car' and time < 10").show()
+	 
+	spark.sql("select * from tsfile_table where turbine = 'd1' and device = 'car' and time < 10").show()
 	```
 
 * **Example 5(write)**
 
 	```scala
-	import cn.edu.thu.tsfile._
-
-	val df = spark.read.tsfile("test.tsfile").write.tsfile("out")
-
+	import cn.edu.tsinghua.tsfile._
+	
+	val df = spark.read.tsfile("/test.tsfile").write.tsfile("/out")
 	```
 	
 * **Example 6(using options to write)**
 
 	```scala
-	import cn.edu.thu.tsfile._
-		
-	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("test.tsfile")
-	    
-	df.write.option("delta_object_name", "root.device.turbine").tsfile("out")
+	import cn.edu.tsinghua.tsfile._
+	
+	val df = spark.read.option("delta_object_name", "root.device.turbine").tsfile("/test.tsfile")
+	     
+	df.write.option("delta_object_name", "root.device.turbine").tsfile("/out")
 	```
 
 
 ### 6.2 spark-shell
 
+#### 6.2.1 Example
 ```
-$ bin/spark-shell --jars tsfile-spark-connector-0.4.0.jar,tsfile-0.4.0.jar
+$ bin/spark-shell --jars tsfile-spark-connector-0.1.0.jar,tsfile-0.1.0.jar
 
-scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test.tsfile\")")
+scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test1.tsfile\")")
 
 scala> val df = sql("select * from TsFile_table")
 
 scala> df.write.tsfile("out")
-
+```
+#### 6.2.2 Start Spark
+##### 6.2.2.1 Local Mode
+```
+./spark-2.0.1-bin-hadoop2.7/bin/spark-shell  --jars  tsfile-0.4.0.jar,tsfile-spark-connector-0.4.0.jar
+```
+ATTENTION:
+* Please replace "spark-2.0.1-bin-hadoop2.7/bin/spark-shell" with the real path of your spark-shell.
+* Multiple jar packages are separated by commas without any spaces.
+* The latest version used is v0.4.0.
+##### 6.2.2.2 Distributed Mode
+```
+. /spark-2.0.1-bin-hadoop2.7/bin/spark-shell  --jars  tsfile-0.4.0.jar,tsfile-spark-connector-0.4.0.jar  --master spark://ip:7077
 ```
