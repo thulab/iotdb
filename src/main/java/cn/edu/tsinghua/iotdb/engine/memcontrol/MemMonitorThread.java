@@ -17,6 +17,7 @@ public class MemMonitorThread extends Thread {
     private Policy dangerousPolicy;
 
     public MemMonitorThread(TsfileDBConfig config) {
+        this.setName("IoTDB-MemMonitor-thread");
         long checkInterval = config.memMonitorInterval;
         this.checkInterval = checkInterval > 0 ? checkInterval : this.checkInterval;
         if(config.enableSmallFlush)

@@ -41,6 +41,6 @@ public class FlushPartialPolicy implements Policy{
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException ignored) {
             }
-        });
+        },"IoTDB-FlushPartialPolicy-Thread");
     }
 }
