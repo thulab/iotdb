@@ -186,19 +186,8 @@ The path of 'test.tsfile' used in the following examples is "src/test/resources/
 
 
 ### 6.2 spark-shell
-
-#### 6.2.1 Example
-```
-$ bin/spark-shell --jars tsfile-spark-connector-0.1.0.jar,tsfile-0.1.0.jar
-
-scala> sql("CREATE TEMPORARY TABLE TsFile_table USING cn.edu.thu.tsfile OPTIONS (path \"hdfs://localhost:9000/test1.tsfile\")")
-
-scala> val df = sql("select * from TsFile_table")
-
-scala> df.write.tsfile("out")
-```
-#### 6.2.2 Start Spark
-##### 6.2.2.1 Local Mode
+#### 6.2.1 Start Spark
+##### 6.2.1.1 Local Mode
 ```
 ./spark-2.0.1-bin-hadoop2.7/bin/spark-shell  --jars  tsfile-0.4.0.jar,tsfile-spark-connector-0.4.0.jar
 ```
@@ -206,7 +195,7 @@ ATTENTION:
 * Please replace "spark-2.0.1-bin-hadoop2.7/bin/spark-shell" with the real path of your spark-shell.
 * Multiple jar packages are separated by commas without any spaces.
 * The latest version used is v0.4.0.
-##### 6.2.2.2 Distributed Mode
+##### 6.2.1.2 Distributed Mode
 ```
 . /spark-2.0.1-bin-hadoop2.7/bin/spark-shell  --jars  tsfile-0.4.0.jar,tsfile-spark-connector-0.4.0.jar  --master spark://ip:7077
 ```
