@@ -39,7 +39,7 @@ public class LastAggrFunc extends AggregateFunction {
         Digest pageDigest = pageHeader.data_page_header.getDigest();
 
         // TODO : need to convert to a static method?
-        DigestForFilter digest = new StrDigestForFilter(pageDigest.getStatistics().get(AggregationConstant.LAST),
+        DigestForFilter digest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.LAST),
                 pageDigest.getStatistics().get(AggregationConstant.LAST), dataType);
         Comparable<?> val = digest.getMaxValue();
         updateLast(val);
