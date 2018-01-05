@@ -198,6 +198,7 @@ public class InsertDynamicData {
             return true;
 
         if (overflowInsertData.hasNext() && examineOverflowInsert()) {
+            hasNext = true;
             overflowInsertData.next();
             return true;
         }
@@ -310,6 +311,7 @@ public class InsertDynamicData {
     private boolean examineOverflowInsert() {
 
         //In current overflow implementation version, overflow insert data must be satisfied with time filter.
+        //data may be inserted after deleting.
 
         //if (overflowTimeFilter != null && singleTimeVisitor.verify(overflowInsertData.getInsertTime()))
         //    return false;

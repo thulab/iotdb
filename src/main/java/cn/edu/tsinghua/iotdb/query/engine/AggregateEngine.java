@@ -175,32 +175,11 @@ public class AggregateEngine {
                         null, null, null, null,
                         ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal));
 
-                if (recordReader.insertAllData == null) {
+                if (recordReader.insertMemoryData == null) {
+                    recordReader.buildInsertMemoryData(null, null);
 
-                    // TODO the parameter there could be optimized using aggregateTimestamps
-//                    List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, null, null, null,
-//                            recordReader.lastPageInMemory, recordReader.overflowInfo);
-//                    DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-//                    DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-//                    DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-//                    DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-//                    DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-//                    SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
-//                    recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-//                            insertTrue, updateTrue_copy, updateFalse_copy,
-//                            newTimeFilter, null, null, dataType);
-
-                    DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
-                    DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
-
-                    recordReader.insertAllData = new InsertDynamicData(dataType, recordReader.compressionTypeName,
-                            recordReader.bufferWritePageList,
-                            recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
-                            recordReader.overflowUpdateFalse, null, null);
-
-                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
-                            overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData,
-                            recordReader.overflowTimeFilter, null, aggregateTimestamps);
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID,
+                            aggregateFunction, null,  aggregateTimestamps);
 
                     boolean hasUnReadDataFlag = aggrPair.right;
                     aggregationHasUnReadDataMap.put(aggregationPathOrdinal, hasUnReadDataFlag);
@@ -209,10 +188,8 @@ public class AggregateEngine {
                     }
 
                 } else {
-                    // TODO update is not a copy
-                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID, aggregateFunction,
-                            recordReader.overflowUpdateTrue, recordReader.overflowUpdateFalse, recordReader.insertAllData,
-                            recordReader.insertAllData.timeFilter, null, aggregateTimestamps);
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID,
+                            aggregateFunction, null, aggregateTimestamps);
                     boolean hasUnReadDataFlag = aggrPair.right;
                     aggregationHasUnReadDataMap.put(aggregationPathOrdinal, hasUnReadDataFlag);
                     if (hasUnReadDataFlag) {
@@ -236,7 +213,7 @@ public class AggregateEngine {
      * @throws ProcessorException
      * @throws IOException
      */
-    private static void multiAggregateWithoutFilter(List<Pair<Path, AggregateFunction>> aggres, SingleSeriesFilterExpression timeFilter)
+    private static void multiAggregateWithoutFilter(List<Pair<Path, AggregateFunction>> aggres, SingleSeriesFilterExpression queryTimeFilter)
             throws PathErrorException, ProcessorException, IOException {
 
         int aggreNumber = 0;
@@ -249,33 +226,12 @@ public class AggregateEngine {
             TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
 
             RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                    timeFilter, null, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber));
+                    queryTimeFilter, null, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber));
 
-            if (recordReader.insertAllData == null) {
-                // get overflow params merged with bufferwrite insert data
-//                List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(overflowTimeFilter, null, null, null,
-//                        recordReader.lastPageInMemory, recordReader.overflowInfo);
-//                DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-//                DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-//                DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-//                DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-//                DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-//                SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
-//
-//                recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-//                        insertTrue, updateTrue_copy, updateFalse_copy,
-//                        newTimeFilter, null, null, dataType);
+            if (recordReader.insertMemoryData == null) {
+                recordReader.buildInsertMemoryData(queryTimeFilter, null);
 
-                recordReader.insertAllData = new InsertDynamicData(dataType,
-                        recordReader.compressionTypeName,
-                        recordReader.bufferWritePageList,
-                        recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
-                        recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
-                DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
-                DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
-
-                recordReader.aggregate(deltaObjectUID, measurementUID, aggregateFunction,
-                        overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, timeFilter, null, null);
+                recordReader.aggregate(deltaObjectUID, measurementUID, aggregateFunction, queryTimeFilter,  null);
 
             } else {
                 DynamicOneColumnData aggData = aggregateFunction.resultData;
@@ -296,48 +252,25 @@ public class AggregateEngine {
      * <code>RecordReaderCache</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCache</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    private static DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
+    private static DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter, SingleSeriesFilterExpression freqFilter,
                                                                     DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
-        String deltaObjectUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getDeltaObjectUID();
-        String measurementUID = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries().getMeasurementUID();
+        String deltaObjectUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getDeltaObjectUID();
+        String measurementUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getMeasurementUID();
 
         // query prefix here must not be conflict with query in multiAggregate method
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                null, freqFilter, valueFilter, null, valueFilterPrefix);
+                null, freqFilter, queryValueFilter, null, valueFilterPrefix);
 
         if (res == null) {
-            // get four overflow params
-//            List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(null, freqFilter, valueFilter,
-//                    res, recordReader.lastPageInMemory, recordReader.overflowInfo);
-//
-//            DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-//            DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-//            DynamicOneColumnData updateTrue_copy = copy(updateTrue);
-//            DynamicOneColumnData updateFalse = (DynamicOneColumnData) params.get(2);
-//            DynamicOneColumnData updateFalse_copy = copy(updateFalse);
-//            SingleSeriesFilterExpression newTimeFilter = (SingleSeriesFilterExpression) params.get(3);
-//
-//            recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-//                    insertTrue, updateTrue, updateFalse,
-//                    newTimeFilter, valueFilter, null, MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID));
-            recordReader.insertAllData = new InsertDynamicData(MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementUID),
-                    recordReader.compressionTypeName,
-                    recordReader.bufferWritePageList,
-                    recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
-                    recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
-            DynamicOneColumnData overflowUpdateTrueCopy = copy(recordReader.overflowUpdateTrue);
-            DynamicOneColumnData overflowUpdateFalseCopy = copy(recordReader.overflowUpdateFalse);
+            recordReader.buildInsertMemoryData(null, queryValueFilter);
 
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
-                    overflowUpdateTrueCopy, overflowUpdateFalseCopy, recordReader.insertAllData, recordReader.overflowTimeFilter, valueFilter, res, fetchSize);
-            //res.putOverflowInfo(insertTrue, updateTrue, updateFalse, newTimeFilter);
+            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, null, fetchSize);
         } else {
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID,
-                    res.updateTrue, res.updateFalse, recordReader.insertAllData, res.timeFilter, valueFilter, res, fetchSize);
+            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, res, fetchSize);
         }
 
         return res;

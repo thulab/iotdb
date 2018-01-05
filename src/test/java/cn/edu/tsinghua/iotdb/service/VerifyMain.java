@@ -29,7 +29,7 @@ public class VerifyMain {
     private static final String TIMESTAMP_STR = "Time";
     private static String[] booleanValue = new String[]{"true", "false"};
 
-    public static void main1(String[] args) {
+    public static void main(String[] args) {
 
         // SELECT max_value(s_76) FROM root.performf.group_4.d_41 WHERE root.performf.group_4.d_41.s_76 > 0.0
         // GROUP BY(250000ms, 1262275200000,[2010-01-02 02:59:59,2010-01-02 03:16:39])
@@ -59,6 +59,17 @@ public class VerifyMain {
             sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 123);
         }
 
+        for (int time = 2000; time < 2500; time++) {
+            if (time >= 20)
+                cnt++;
+            String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time);
+            sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time + 1);
+            sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time + 2);
+            sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[time % 5]);
+        }
+
+
+
         System.out.println("!!!!" + cnt);
 
         // buffwrite data, unsealed file
@@ -70,8 +81,6 @@ public class VerifyMain {
             sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 77);
         }
 
-
-        // bufferwrite data, memory data
         for (int time = 200000; time < 201000; time++) {
 
             String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, -time % 20);
@@ -79,23 +88,15 @@ public class VerifyMain {
             sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, -time % 77);
         }
 
-        // overflow delete
-        // =====  statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
-
-        // overflow insert, time < 3000
-        for (int time = 2000; time < 2500; time++) {
-            if (time >= 20)
-                cnt++;
-            String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time);
-            sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time + 1);
-            sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time + 2);
-            sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[time % 5]);
+        for (int time = 200900; time < 201000; time++) {
+            cnt ++;
+            String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, 6666);
         }
+        // =====  statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
+        // statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
         System.out.println("====" + cnt);  // 16340
 
-        // overflow update
-        // statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
     }
 
@@ -139,7 +140,7 @@ public class VerifyMain {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main4(String[] args) {
 
         double sum0 = 0, sum1 = 0;
         long count0 = 0, count1 = 0;

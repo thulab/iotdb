@@ -84,32 +84,10 @@ public class LinearFill extends IFill{
         RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 fillTimeFilter, null, null, null, recordReaderPrefix);
 
-//        List<Object> params = EngineUtils.getOverflowMergedWithLastPageData(fillTimeFilter, null, null,
-//                null, recordReader.lastPageInMemory, recordReader.overflowInfo);
-//
-//        DynamicOneColumnData insertTrue = (DynamicOneColumnData) params.get(0);
-//        DynamicOneColumnData updateTrue = (DynamicOneColumnData) params.get(1);
-//        if (updateTrue == null) {
-//            updateTrue = new DynamicOneColumnData(dataType, true);
-//        }
-//        DynamicOneColumnData updateTrue_copy = EngineUtils.copy(updateTrue);
-//        SingleSeriesFilterExpression overflowTimeFilter = (SingleSeriesFilterExpression) params.get(3);
-
-//        recordReader.insertAllData = new InsertDynamicData(recordReader.bufferWritePageList, recordReader.compressionTypeName,
-//                insertTrue, updateTrue_copy, null,
-//                overflowTimeFilter, null, null, dataType);
-
-        recordReader.insertAllData = new InsertDynamicData(dataType,
-                recordReader.compressionTypeName,
-                recordReader.bufferWritePageList,
-                recordReader.lastPageInMemory, recordReader.overflowInsertData, recordReader.overflowUpdateTrue,
-                recordReader.overflowUpdateFalse, recordReader.overflowTimeFilter, recordReader.valueFilter);
-        DynamicOneColumnData overflowUpdateTrueCopy = EngineUtils.copy(recordReader.overflowUpdateTrue);
-        DynamicOneColumnData overflowUpdateFalseCopy = EngineUtils.copy(recordReader.overflowUpdateFalse);
+        recordReader.buildInsertMemoryData(fillTimeFilter, null);
 
         // updateFalse is useless because there is no value filter
-        recordReader.getLinearFillResult(result, deltaObjectId, measurementId,
-                overflowUpdateTrueCopy, recordReader.insertAllData, fillTimeFilter, beforeTime, queryTime, afterTime);
+        recordReader.getLinearFillResult(result, deltaObjectId, measurementId, fillTimeFilter, beforeTime, queryTime, afterTime);
 
         return result;
     }

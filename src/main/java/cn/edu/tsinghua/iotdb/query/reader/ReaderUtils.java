@@ -77,7 +77,6 @@ public class ReaderUtils {
      * @param page Page data
      * @param res same as result data, we need pass it many times
      * @param timeFilter time filter
-     * @param freqFilter frequency filter
      * @param valueFilter value filter
      * @param insertMemoryData the memory data(bufferwrite along with overflow)
      * @param update update operation array, update[0] means updateTrue data, update[1] means updateFalse data
@@ -87,8 +86,7 @@ public class ReaderUtils {
      */
     public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimeValues,
                                                    Decoder decoder, InputStream page, DynamicOneColumnData res,
-                                                   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-                                                   SingleSeriesFilterExpression valueFilter,
+                                                   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
                                                    InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] idx) throws IOException {
         // This method is only used for aggregation function.
 
@@ -587,7 +585,6 @@ public class ReaderUtils {
      * @param decoder the decoder of DataPage
      * @param page the DataPage need to be aggregated
      * @param timeFilter time filter
-     * @param freqFilter frequency filter
      * @param commonTimestamps the timestamps which aggregation must satisfy
      * @param commonTimestampsIndex the read time index of timestamps which aggregation must satisfy
      * @param insertMemoryData bufferwrite memory insert data with overflow operation
@@ -601,8 +598,7 @@ public class ReaderUtils {
      */
     public static Pair<DynamicOneColumnData, Integer> readOnePage(TSDataType dataType, long[] pageTimeStamps,
                 Decoder decoder, InputStream page,
-                SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-                List<Long> commonTimestamps, int commonTimestampsIndex,
+                SingleSeriesFilterExpression timeFilter, List<Long> commonTimestamps, int commonTimestampsIndex,
                 InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check

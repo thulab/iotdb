@@ -36,8 +36,7 @@ public class ValueReaderProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ValueReaderProcessor.class);
 
     static DynamicOneColumnData getValuesWithOverFlow(ValueReader valueReader, DynamicOneColumnData updateTrueData, DynamicOneColumnData updateFalseData,
-                                               InsertDynamicData insertMemoryData, SingleSeriesFilterExpression timeFilter,
-                                               SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+                                               InsertDynamicData insertMemoryData, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
                                                DynamicOneColumnData res, int fetchSize) throws IOException {
 
         TSDataType dataType = valueReader.getDataType();
@@ -70,7 +69,6 @@ public class ValueReaderProcessor {
         }
 
         IntervalTimeVisitor seriesTimeVisitor = new IntervalTimeVisitor();
-        // TODO seriesTimeVisitor has multithreading problem
         if (timeFilter != null && !seriesTimeVisitor.satisfy(timeFilter, valueReader.getStartTime(), valueReader.getEndTime())) {
             LOG.debug("series time digest does not satisfy time filter");
             res.plusRowGroupIndexAndInitPageOffset();
@@ -97,7 +95,6 @@ public class ValueReaderProcessor {
             PageHeader pageHeader = pageReader.getNextPageHeader();
 
             // construct valueFilter
-            // System.out.println(res.pageOffset + "|" + fileOffset + "|" + totalSize);
             Digest pageDigest = pageHeader.data_page_header.getDigest();
             DigestForFilter valueDigestFF = new StrDigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),
                     digest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
@@ -626,8 +623,8 @@ public class ValueReaderProcessor {
     }
 
     static void aggregate(ValueReader valueReader, AggregateFunction func, InsertDynamicData insertMemoryData,
-                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression timeFilter,
-                                SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
+                                DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
+                                SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter)
             throws IOException, ProcessorException {
 
         TSDataType dataType = valueReader.dataType;
@@ -721,7 +718,7 @@ public class ValueReaderProcessor {
                 valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
 
                 res = ReaderUtils.readOnePage(dataType, timeValues, valueReader.decoder, page, res,
-                        timeFilter, freqFilter, valueFilter, insertMemoryData, update, updateIdx);
+                        timeFilter, valueFilter, insertMemoryData, update, updateIdx);
                 func.calculateValueFromDataPage(res);
                 res.clearData();
             }
@@ -742,15 +739,15 @@ public class ValueReaderProcessor {
      * @param updateTrue overflow update operation which satisfy the filter
      * @param updateFalse overflow update operation which doesn't satisfy the filter
      * @param overflowTimeFilter time filter
-     * @param freqFilter frequency filter
      * @param aggregationTimestamps the timestamps which aggregation must satisfy
      * @return an int value, represents the read time index of timestamps
      * @throws IOException TsFile read error
      * @throws ProcessorException get read info error
      */
     static int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction aggregateFunction, InsertDynamicData insertMemoryData,
-                                 DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse, SingleSeriesFilterExpression overflowTimeFilter,
-                                 SingleSeriesFilterExpression freqFilter, List<Long> aggregationTimestamps) throws IOException, ProcessorException {
+                                        DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
+                                        SingleSeriesFilterExpression overflowTimeFilter, List<Long> aggregationTimestamps)
+            throws IOException, ProcessorException {
         TSDataType dataType = valueReader.dataType;
 
         // to ensure that updateTrue and updateFalse is not null
@@ -822,7 +819,7 @@ public class ValueReaderProcessor {
 
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePage(
                     dataType, pageTimeValues, valueReader.decoder, page,
-                    overflowTimeFilter, freqFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx);
+                    overflowTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx);
 
             if (pageData.left != null && pageData.left.valueLength > 0)
                 aggregateFunction.calculateValueFromDataPage(pageData.left);
