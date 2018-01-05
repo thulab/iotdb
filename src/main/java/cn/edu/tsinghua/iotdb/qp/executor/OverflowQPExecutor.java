@@ -455,6 +455,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 							}
 							newSubPaths.add(eachSubPath);
 						}
+						//Attention: Monitor storage group path is not allowed to be delete
 						pathSet.addAll(newSubPaths);
 					}
 					for (String p : pathSet) {
