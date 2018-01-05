@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.service.Monitor;
+import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class StatMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
 
-    private static long runningTimeMillis = System.currentTimeMillis();
+    private long runningTimeMillis = System.currentTimeMillis();
     private final int backLoopPeriod;
     private final int  StatMonitorRetainInterval;
 
@@ -111,7 +112,7 @@ public class StatMonitor {
     }
 
     public void activate() {
-        service = Executors.newScheduledThreadPool(1);
+        service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, "StatMonitorService");
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
         );
@@ -221,7 +222,7 @@ public class StatMonitor {
         int pointNum;
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
-                fManager.insertStat(entry.getValue());
+                fManager.insert(entry.getValue());
                 numInsert.incrementAndGet();
                 pointNum = entry.getValue().dataPointList.size();
                 numPointsInsert.addAndGet(pointNum);
@@ -257,7 +258,7 @@ public class StatMonitor {
             long hour = (currentTimeMillis - runningTimeMillis)/3600000;
             if (hour - StatMonitorRetainInterval >= 0) {
                 runningTimeMillis = currentTimeMillis;
-                // delete timeseries
+                // delete time-series data
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 try {
                     for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {

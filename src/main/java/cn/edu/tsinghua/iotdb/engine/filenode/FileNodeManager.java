@@ -93,6 +93,12 @@ public class FileNodeManager implements IStatistic {
 		}
 	};
 
+	private void updateStatHashMapWhenFail(TSRecord tsRecord) {
+		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
+				.incrementAndGet();
+		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
+				.addAndGet(tsRecord.dataPointList.size());
+	}
 	/**
 	 * @return the key represent the params' name, values is AtomicLong type
 	 */
@@ -268,9 +274,15 @@ public class FileNodeManager implements IStatistic {
 	public int insert(TSRecord tsRecord) throws FileNodeManagerException {
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
-
-		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
-				.addAndGet(tsRecord.dataPointList.size());
+		boolean isMonitor = false;
+		String className = Thread.currentThread().getStackTrace()[2].getClassName();
+		if (className.contains("StatMonitor")) {
+			isMonitor = true;
+		}
+		if (isMonitor) {
+			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
+					.addAndGet(tsRecord.dataPointList.size());
+		}
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		int insertType = 0;
@@ -291,10 +303,9 @@ public class FileNodeManager implements IStatistic {
 							String.format("Get the overflow processor failed, the filenode is {}, insert time is {}",
 									filenodeName, timestamp),
 							e);
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-							.incrementAndGet();
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-							.addAndGet(tsRecord.dataPointList.size());
+					if (isMonitor) {
+						updateStatHashMapWhenFail(tsRecord);
+					}
 					throw new FileNodeManagerException(e);
 				}
 				// write wal
@@ -306,10 +317,9 @@ public class FileNodeManager implements IStatistic {
 					}
 				} catch (IOException | PathErrorException e) {
 					LOGGER.error("Error in write WAL.", e);
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-							.incrementAndGet();
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-							.addAndGet(tsRecord.dataPointList.size());
+					if (isMonitor) {
+						updateStatHashMapWhenFail(tsRecord);
+					}
 					throw new FileNodeManagerException(e);
 				}
 				// write overflow data
@@ -319,10 +329,9 @@ public class FileNodeManager implements IStatistic {
 								dataPoint.getType(), dataPoint.getValue().toString());
 					} catch (ProcessorException e) {
 						LOGGER.error("Insert into overflow error, the reason is {}", e.getMessage());
-						statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-								.incrementAndGet();
-						statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-								.addAndGet(tsRecord.dataPointList.size());
+						if (isMonitor) {
+							updateStatHashMapWhenFail(tsRecord);
+						}
 						throw new FileNodeManagerException(e);
 					}
 				}
@@ -338,10 +347,9 @@ public class FileNodeManager implements IStatistic {
 				} catch (FileNodeProcessorException e) {
 					LOGGER.error("Get the bufferwrite processor failed, the filenode is {}, insert time is {}",
 							filenodeName, timestamp);
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-							.incrementAndGet();
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-							.addAndGet(tsRecord.dataPointList.size());
+					if (isMonitor) {
+						updateStatHashMapWhenFail(tsRecord);
+					}
 					throw new FileNodeManagerException(e);
 				}
 				// Add a new interval file to newfilelist
@@ -351,10 +359,9 @@ public class FileNodeManager implements IStatistic {
 					try {
 						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteRelativePath);
 					} catch (Exception e) {
-						statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-								.incrementAndGet();
-						statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-								.addAndGet(tsRecord.dataPointList.size());
+						if (isMonitor) {
+							updateStatHashMapWhenFail(tsRecord);
+						}
 						throw new FileNodeManagerException(e);
 					}
 				}
@@ -367,20 +374,18 @@ public class FileNodeManager implements IStatistic {
 					}
 				} catch (IOException | PathErrorException e) {
 					LOGGER.error("Error in write WAL.", e);
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-							.incrementAndGet();
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-							.addAndGet(tsRecord.dataPointList.size());
+					if (isMonitor) {
+						updateStatHashMapWhenFail(tsRecord);
+					}
 					throw new FileNodeManagerException(e);
 				}
 				// Write data
 				try {
 					bufferWriteProcessor.write(tsRecord);
 				} catch (BufferWriteProcessorException e) {
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
-							.incrementAndGet();
-					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_FAIL.name())
-							.addAndGet(tsRecord.dataPointList.size());
+					if (isMonitor) {
+						updateStatHashMapWhenFail(tsRecord);
+					}
 					throw new FileNodeManagerException(e);
 				}
 				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
@@ -390,110 +395,16 @@ public class FileNodeManager implements IStatistic {
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
-		fileNodeProcessor.getStatParamsHashMap()
-				.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_POINTS_SUCCESS.name())
-				.addAndGet(tsRecord.dataPointList.size());
-		fileNodeProcessor.getStatParamsHashMap()
-				.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_REQ_SUCCESS.name()).incrementAndGet();
-		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_SUCCESS.name()).incrementAndGet();
-		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_SUCCESS.name())
-				.addAndGet(tsRecord.dataPointList.size());
-		return insertType;
-	}
-
-	public int insertStat(TSRecord tsRecord) throws FileNodeManagerException {
-		long timestamp = tsRecord.time;
-		String deltaObjectId = tsRecord.deltaObjectId;
-
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
-		int insertType = 0;
-
-		try {
-			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
-			String filenodeName = fileNodeProcessor.getProcessorName();
-			if (timestamp <= lastUpdateTime) {
-				Map<String, Object> parameters = new HashMap<>();
-				parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, overflowBackUpAction);
-				parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, overflowFlushAction);
-				// get overflow processor
-				OverflowProcessor overflowProcessor;
-				try {
-					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
-				} catch (FileNodeProcessorException e) {
-					LOGGER.error(
-							String.format("Get the overflow processor failed, the filenode is {}, insert time is {}",
-									filenodeName, timestamp),
-							e);
-					throw new FileNodeManagerException(e);
-				}
-				// write wal
-				try {
-					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						if (!WriteLogManager.isRecovering) {
-							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.OVERFLOW);
-						}
-					}
-				} catch (IOException | PathErrorException e) {
-					LOGGER.error("Error in write WAL.", e);
-					throw new FileNodeManagerException(e);
-				}
-				// write overflow data
-				for (DataPoint dataPoint : tsRecord.dataPointList) {
-					try {
-						overflowProcessor.insert(deltaObjectId, dataPoint.getMeasurementId(), timestamp,
-								dataPoint.getType(), dataPoint.getValue().toString());
-					} catch (ProcessorException e) {
-						LOGGER.error("Insert into overflow error, the reason is {}", e.getMessage());
-						throw new FileNodeManagerException(e);
-					}
-				}
-				// change the type of tsfile to overflowed
-				fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
-				addFileNodeNameToOverflowSet(filenodeName);
-				insertType = 1;
-			} else {
-				// get bufferwrite processor
-				BufferWriteProcessor bufferWriteProcessor;
-				try {
-					bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor(filenodeName, timestamp);
-				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Get the bufferwrite processor failed, the filenode is {}, insert time is {}",
-							filenodeName, timestamp);
-					throw new FileNodeManagerException(e);
-				}
-				// Add a new interval file to newfilelist
-				if (bufferWriteProcessor.isNewProcessor()) {
-					bufferWriteProcessor.setNewProcessor(false);
-					String bufferwriteRelativePath = bufferWriteProcessor.getFileRelativePath();
-					try {
-						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteRelativePath);
-					} catch (Exception e) {
-						throw new FileNodeManagerException(e);
-					}
-				}
-				// write wal
-				try {
-					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						if (!WriteLogManager.isRecovering) {
-							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.BUFFERWRITER);
-						}
-					}
-				} catch (IOException | PathErrorException e) {
-					LOGGER.error("Error in write WAL.", e);
-					throw new FileNodeManagerException(e);
-				}
-				// Write data
-				try {
-					bufferWriteProcessor.write(tsRecord);
-				} catch (BufferWriteProcessorException e) {
-					throw new FileNodeManagerException(e);
-				}
-				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
-				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
-				insertType = 2;
-			}
-		} finally {
-			fileNodeProcessor.writeUnlock();
+		//Modify the insert
+		if (isMonitor) {
+			fileNodeProcessor.getStatParamsHashMap()
+					.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_POINTS_SUCCESS.name())
+					.addAndGet(tsRecord.dataPointList.size());
+			fileNodeProcessor.getStatParamsHashMap()
+					.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_REQ_SUCCESS.name()).incrementAndGet();
+			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_SUCCESS.name()).incrementAndGet();
+			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_SUCCESS.name())
+					.addAndGet(tsRecord.dataPointList.size());
 		}
 		return insertType;
 	}
