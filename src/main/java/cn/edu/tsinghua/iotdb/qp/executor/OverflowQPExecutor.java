@@ -448,20 +448,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 									String.format("There are no timeseries in the prefix of %s path", p.getFullPath()));
 						}
 						ArrayList<String> newSubPaths = new ArrayList<>();
-						for (String eachPath : subPaths) {
-							int sepIndex = eachPath.indexOf(".");
-							if (sepIndex == -1) {
+						for (String eachSubPath : subPaths) {
+							String filenodeName = mManager.getFileNameByPath(eachSubPath);
+							if (filenodeName.equals(MonitorConstants.statStorageGroupPrefix)) {
 								continue;
 							}
-							sepIndex = eachPath.indexOf(".", sepIndex + 1);
-							if (sepIndex == -1) {
-								continue;
-							}
-							String eachPathPrefix = eachPath.substring(0, sepIndex);
-							if (eachPathPrefix.equals(MonitorConstants.statStorageGroupPrefix)) {
-								continue;
-							}
-							newSubPaths.add(eachPath);
+							newSubPaths.add(eachSubPath);
 						}
 						pathSet.addAll(newSubPaths);
 					}
