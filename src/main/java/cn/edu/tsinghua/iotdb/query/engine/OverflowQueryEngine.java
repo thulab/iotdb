@@ -309,8 +309,7 @@ public class OverflowQueryEngine {
      */
     private QueryDataSet querySeriesUsingFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
                                                 SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                                                QueryDataSet queryDataSet, int fetchSize,
-                                                Integer readLock) throws ProcessorException, IOException {
+                                                QueryDataSet queryDataSet, int fetchSize, Integer readLock) throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
@@ -360,8 +359,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 3: cross series read.
      */
-    private QueryDataSet crossSeriesQuery(List<Path> paths,
-                                          SingleSeriesFilterExpression queryTimeFilter, CrossSeriesFilterExpression queryValueFilter,
+    private QueryDataSet crossSeriesQuery(List<Path> paths, SingleSeriesFilterExpression queryTimeFilter, CrossSeriesFilterExpression queryValueFilter,
                                           QueryDataSet queryDataSet, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
@@ -373,10 +371,8 @@ public class OverflowQueryEngine {
             queryDataSet = new QueryDataSet();
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(queryTimeFilter, null, queryValueFilter, fetchSize) {
                 @Override
-                public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
-                                                               SingleSeriesFilterExpression valueFilter, int valueFilterNumber)
-                        throws ProcessorException, IOException {
-
+                public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize, SingleSeriesFilterExpression valueFilter,
+                                                               int valueFilterNumber) throws ProcessorException, IOException {
                     try {
                         return querySeriesForCross(valueFilter, freqFilter, res, fetchSize, valueFilterNumber);
                     } catch (PathErrorException e) {
@@ -404,7 +400,6 @@ public class OverflowQueryEngine {
 
             if (recordReader.insertMemoryData == null) {
                 recordReader.buildInsertMemoryData(queryTimeFilter, null);
-                // TODO overflow update data is needed?
                 DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(deltaObjectId, measurementId, timestamps);
                 ret.mapRet.put(queryKey, queryResult);
             } else {

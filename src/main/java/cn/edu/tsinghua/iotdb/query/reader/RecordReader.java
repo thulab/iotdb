@@ -200,7 +200,6 @@ public class RecordReader {
         }
 
         while (insertMemoryData.hasInsertData()) {
-            long curTime = insertMemoryData.getCurrentMinTime();
             putMemoryDataToResult(res, insertMemoryData);
             insertMemoryData.removeCurrentValue();
 
