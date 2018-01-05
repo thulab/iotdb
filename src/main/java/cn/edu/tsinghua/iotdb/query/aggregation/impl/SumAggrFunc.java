@@ -8,7 +8,6 @@ import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
