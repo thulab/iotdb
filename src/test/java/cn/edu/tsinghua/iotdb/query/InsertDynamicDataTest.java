@@ -34,7 +34,7 @@ public class InsertDynamicDataTest {
     private FilterSeries<Long> timeSeries = timeFilterSeries();
     private FilterSeries<Float> valueSeries = floatFilterSeries(deltaObjectId, measurementId, FilterSeriesType.VALUE_FILTER);
 
-    //@Test
+    @Test
     public void queryWithoutFilterTest() throws IOException {
         TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
         config.duplicateIncompletedPage = true;
@@ -92,7 +92,7 @@ public class InsertDynamicDataTest {
         //System.out.println("..." + cnt);
     }
 
-    //@Test
+    @Test
     public void queryFilterTest() throws IOException {
         TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
         config.duplicateIncompletedPage = true;
