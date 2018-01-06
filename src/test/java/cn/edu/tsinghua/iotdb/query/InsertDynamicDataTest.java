@@ -92,7 +92,7 @@ public class InsertDynamicDataTest {
         //System.out.println("..." + cnt);
     }
 
-    @Test
+    //@Test
     public void queryFilterTest() throws IOException {
         TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
         config.duplicateIncompletedPage = true;

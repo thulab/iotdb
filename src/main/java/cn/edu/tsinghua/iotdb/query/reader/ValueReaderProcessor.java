@@ -748,11 +748,8 @@ public class ValueReaderProcessor {
                                         DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
                                         SingleSeriesFilterExpression overflowTimeFilter, List<Long> aggregationTimestamps)
             throws IOException, ProcessorException {
-        TSDataType dataType = valueReader.dataType;
 
-        // to ensure that updateTrue and updateFalse is not null
-        updateTrue = (updateTrue == null ? new DynamicOneColumnData(dataType, true) : updateTrue);
-        updateFalse = (updateFalse == null ? new DynamicOneColumnData(dataType, true) : updateFalse);
+        TSDataType dataType = valueReader.dataType;
 
         DynamicOneColumnData[] update = new DynamicOneColumnData[2];
         update[0] = updateTrue;
