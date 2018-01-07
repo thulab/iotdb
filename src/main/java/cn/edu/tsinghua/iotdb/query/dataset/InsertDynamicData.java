@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
+
 /**
  * InsertDynamicData is encapsulating class for page list, last page and overflow data.
  * A hasNext and removeCurrentValue method is recommended.
@@ -574,14 +576,16 @@ public class InsertDynamicData {
         while (overflowUpdateFalse.hasNext() && overflowUpdateFalse.getUpdateEndTime() < time)
             overflowUpdateFalse.next();
 
+        if (overflowUpdateFalse.verify(time)) {
+            return false;
+        }
+
         switch (dataType) {
             case INT32:
                 if (overflowUpdateTrue.verify(time)){
                     currentSatisfiedTime = time;
                     curSatisfiedIntValue = overflowUpdateTrue.getInt();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getInt(), valueFilter)) {
                     currentSatisfiedTime = time;
@@ -594,8 +598,6 @@ public class InsertDynamicData {
                     currentSatisfiedTime = time;
                     curSatisfiedLongValue = overflowUpdateTrue.getLong();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getLong(), valueFilter)) {
                     currentSatisfiedTime = time;
@@ -608,8 +610,6 @@ public class InsertDynamicData {
                     currentSatisfiedTime = time;
                     curSatisfiedFloatValue = overflowUpdateTrue.getFloat();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getFloat(), valueFilter)) {
                     currentSatisfiedTime = time;
@@ -622,8 +622,6 @@ public class InsertDynamicData {
                     currentSatisfiedTime = time;
                     curSatisfiedDoubleValue = overflowUpdateTrue.getDouble();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getDouble(), valueFilter)) {
                     currentSatisfiedTime = time;
@@ -636,8 +634,6 @@ public class InsertDynamicData {
                     currentSatisfiedTime = time;
                     curSatisfiedBinaryValue = overflowUpdateTrue.getText();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getText(), valueFilter)) {
                     currentSatisfiedTime = time;
@@ -650,8 +646,6 @@ public class InsertDynamicData {
                     currentSatisfiedTime = time;
                     curSatisfiedBooleanValue = overflowUpdateTrue.getBoolean();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getBoolean(), valueFilter)) {
                     currentSatisfiedTime = time;
@@ -668,25 +662,6 @@ public class InsertDynamicData {
         pageIndex++;
         pageReader = null;
         currentSatisfiedTime = -1;
-    }
-
-    private SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SingleSeriesFilterExpression filter) {
-        if (filter == null) {
-            return new SingleValueVisitor<>();
-        }
-
-        switch (type) {
-            case INT32:
-                return new SingleValueVisitor<Integer>(filter);
-            case INT64:
-                return new SingleValueVisitor<Long>(filter);
-            case FLOAT:
-                return new SingleValueVisitor<Float>(filter);
-            case DOUBLE:
-                return new SingleValueVisitor<Double>(filter);
-            default:
-                return SingleValueVisitorFactory.getSingleValueVisitor(type);
-        }
     }
 
     /**

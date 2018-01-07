@@ -639,10 +639,6 @@ public class ValueReaderProcessor {
         LOG.debug("Calculate aggregation : Column Digest min and max is: " + digestFF.getMinValue() + " --- " + digestFF.getMaxValue());
         DigestVisitor digestVisitor = new DigestVisitor();
 
-        // to ensure that updateTrue and updateFalse is not null
-        updateTrue = (updateTrue == null ? new DynamicOneColumnData(dataType, true) : updateTrue);
-        updateFalse = (updateFalse == null ? new DynamicOneColumnData(dataType, true) : updateFalse);
-
         // if this series is not satisfied to the value filter, then return.
         if (updateTrue.valueLength == 0 && insertMemoryData == null && valueFilter != null
                 && !digestVisitor.satisfy(digestFF, valueFilter)) {
