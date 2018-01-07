@@ -140,8 +140,7 @@ public class ValueReaderProcessor {
 
             valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
 
-            // record the length of this res before the new records in this page
-            // were put in.
+            // record the length of this res before the new records in this page were put in.
             int resPreviousLength = res.valueLength;
 
             SingleValueVisitor<?> timeVisitor = null;

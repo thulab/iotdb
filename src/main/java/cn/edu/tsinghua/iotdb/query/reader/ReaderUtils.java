@@ -29,8 +29,8 @@ public class ReaderUtils {
 
     /**
      * -1: no updateTrue data, no updateFalse data.
-     * 0: updateTrue data < updateFalse data.
-     * 1: updateFalse data < updateTrue data.
+     * 0: updateTrue data is first.
+     * 1: updateFalse data is first.
      *
      * @param updateTrueIdx  index of updateTrue DynamicOneColumn
      * @param updateFalseIdx index of updateFalse DynamicOneColumn
@@ -140,9 +140,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 0) {
+                        } else if (mode == 0) {
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
                                 // update the value
@@ -155,9 +153,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 1) {
+                        } else if (mode == 1) {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
@@ -206,9 +202,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 0) {
+                        }else if (mode == 0) {
                             boolean v = decoder.readBoolean(page);
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
@@ -222,9 +216,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 1) {
+                        }else if (mode == 1) {
                             boolean v = decoder.readBoolean(page);
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
@@ -273,9 +265,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 0) {
+                        } else if (mode == 0) {
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
                                 // TODO update the value, need to discuss the logic with gf?
@@ -289,9 +279,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 1) {
+                        } else if (mode == 1) {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
@@ -340,9 +328,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 0) {
+                        } else if (mode == 0) {
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
                                 // update the value
@@ -356,9 +342,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 1) {
+                        } else if (mode == 1) {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
@@ -407,9 +391,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 0) {
+                        } else if (mode == 0) {
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
                                 // update the value
@@ -423,9 +405,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 1) {
+                        } else if (mode == 1) {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
@@ -473,9 +453,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 0) {
+                        } else if (mode == 0) {
                             if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
                                 // update the value
@@ -489,9 +467,7 @@ public class ReaderUtils {
                                 res.putTime(pageTimeValues[timeIdx]);
                             }
                             timeIdx++;
-                        }
-
-                        if (mode == 1) {
+                        } else if (mode == 1) {
                             if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
                                     && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
                                 // do nothing
@@ -636,9 +612,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateTrue data < updateFalse data.
-                        else if (mode == 0) {
+                        } else if (mode == 0) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 intValue = decoder.readInt(page);
 
@@ -667,9 +641,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateFalse data < updateTrue data.
-                        else if (mode == 1) {
+                        } else if (mode == 1) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 intValue = decoder.readInt(page);
 
@@ -791,9 +763,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateTrue data < updateFalse data.
-                        else if (mode == 0) {
+                        } else if (mode == 0) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 booleanValue = decoder.readBoolean(page);
 
@@ -822,9 +792,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateFalse data < updateTrue data.
-                        else if (mode == 1) {
+                        } else if (mode == 1) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 booleanValue = decoder.readBoolean(page);
 
@@ -946,9 +914,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateTrue data < updateFalse data.
-                        else if (mode == 0) {
+                        } else if (mode == 0) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 longValue = decoder.readLong(page);
 
@@ -977,9 +943,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateFalse data < updateTrue data.
-                        else if (mode == 1) {
+                        } else if (mode == 1) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 longValue = decoder.readLong(page);
 
@@ -1101,9 +1065,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateTrue data < updateFalse data.
-                        else if (mode == 0) {
+                        } else if (mode == 0) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 floatValue = decoder.readFloat(page);
 
@@ -1132,9 +1094,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateFalse data < updateTrue data.
-                        else if (mode == 1) {
+                        } else if (mode == 1) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 floatValue = decoder.readFloat(page);
 
@@ -1256,9 +1216,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateTrue data < updateFalse data.
-                        else if (mode == 0) {
+                        } else if (mode == 0) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 doubleValue = decoder.readDouble(page);
 
@@ -1287,9 +1245,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateFalse data < updateTrue data.
-                        else if (mode == 1) {
+                        } else if (mode == 1) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 doubleValue = decoder.readDouble(page);
 
@@ -1411,9 +1367,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateTrue data < updateFalse data.
-                        else if (mode == 0) {
+                        } else if (mode == 0) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 binaryValue = decoder.readBinary(page);
 
@@ -1442,9 +1396,7 @@ public class ReaderUtils {
                             } else {
                                 commonTimestampsIndex += 1;
                             }
-                        }
-                        // updateFalse data < updateTrue data.
-                        else if (mode == 1) {
+                        } else if (mode == 1) {
                             if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
                                 binaryValue = decoder.readBinary(page);
 
