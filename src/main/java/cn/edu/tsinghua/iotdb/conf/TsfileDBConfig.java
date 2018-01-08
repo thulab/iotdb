@@ -200,11 +200,6 @@ public class TsfileDBConfig {
 	 */
 	public int StatMonitorRetainInterval = 3;
 
-	/**
-	 * the maximum number of writing instances existing in same time.
-	 */
-
-
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {
