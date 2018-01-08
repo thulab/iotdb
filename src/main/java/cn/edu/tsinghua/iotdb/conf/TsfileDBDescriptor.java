@@ -69,6 +69,9 @@ public class TsfileDBDescriptor {
 			properties.load(inputStream);
 			conf.enableStatMonitor = Boolean.parseBoolean(properties.getProperty("enable_stat_monitor", conf.enableStatMonitor + ""));
 			conf.backLoopPeriod = Integer.parseInt(properties.getProperty("back_loop_period", conf.backLoopPeriod + ""));
+			conf.StatMonitorDetectFreq = Integer.parseInt(properties.getProperty("stat_monitor_detect_freq", conf.StatMonitorDetectFreq + ""));
+			conf.StatMonitorRetainInterval = Integer.parseInt(properties.getProperty("stat_monitor_retain_interval", conf.StatMonitorRetainInterval + ""));
+
 			conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",conf.rpcPort+""));
 			
 			conf.enableWal = Boolean.parseBoolean(properties.getProperty("enable_wal", conf.enableWal+""));

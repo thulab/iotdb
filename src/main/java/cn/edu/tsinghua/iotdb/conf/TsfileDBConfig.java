@@ -175,13 +175,15 @@ public class TsfileDBConfig {
 	 */
 	public long smallFlushInterval = 60 * 1000;
 
-	/*
-	 * The statMonitor's BackLoop period, 5s is enough
+	/**
+	 * The statMonitor write statistics info to IoTDB every backLoopPeriod secs
+	  * the period is 5s by default
 	 */
 	public int backLoopPeriod = 5;
 
 	/**
-	 * Set whether to enable statistics service
+	 * Set true to enable statistics monitor service,
+     * false to stop statistics service
 	 */
 	public boolean enableStatMonitor = true;
 
@@ -193,7 +195,7 @@ public class TsfileDBConfig {
 	public int StatMonitorDetectFreq = 1;
 
 	/**
-	 * Set the maximum time the monitor statistics information keep,
+	 * Set the maximum time the monitor statistics information keeps in IoTDB,
 	 * The units is hours, default is 3 hours
 	 */
 	public int StatMonitorRetainInterval = 3;
