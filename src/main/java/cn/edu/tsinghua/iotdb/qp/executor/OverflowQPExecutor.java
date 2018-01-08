@@ -441,7 +441,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			case DELETE_PATH:
 				if (deletePathList != null && !deletePathList.isEmpty()) {
 					Set<String> pathSet = new HashSet<>();
-					//Attention: Monitor storage group path is not allowed to be delete
+					//Attention: Monitor storage group path is not allowed to be deleted
 					for (Path p : deletePathList) {
 						ArrayList<String> subPaths = mManager.getPaths(p.getFullPath());
 						if (subPaths.isEmpty()) {
