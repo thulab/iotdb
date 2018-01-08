@@ -189,8 +189,8 @@ public class TsfileDBConfig {
 
 	/**
 	 * Set the time interval the monitor performs delete detection,
-	 * The units is hours, default is 1 hours, every 3 hours stat monitor
-	 * perform delete operation
+	 * The units is hours, default is 1 hours, the stat monitor
+	 * perform delete operation every StatMonitorDetectFreq hour.
 	 */
 	public int StatMonitorDetectFreq = 1;
 
