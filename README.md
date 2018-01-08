@@ -115,7 +115,7 @@ mvn clean scala:compile compile package
 
 ## 6. Examples
 
-The path of 'test.tsfile' used in the following examples is "src/test/resources/test.tsfile". Please upload 'test.tsfile' to hdfs in advance and the directory is "/test.tsfile".
+The path of 'test.tsfile' used in the following examples is "data/test.tsfile". Please upload 'test.tsfile' to hdfs in advance and the directory is "/test.tsfile".
 
 
 ### 6.1 Scala API
