@@ -36,6 +36,7 @@ public class OverflowSupport {
 	private Map<String, Map<String, OverflowSeriesImpl>> overflowMap;
 	private OverflowFileIO fileWriter;
 	private Compressor compressor;
+	private volatile long memUsage;
 
 	private TSFileConfig conf = TSFileDescriptor.getInstance().getConfig();
 
@@ -197,7 +198,17 @@ public class OverflowSupport {
 				memSize += measurementWrite.getMemorySize();
 			}
 		}
+		memUsage = memSize;
 		return memSize;
+	}
+
+	/**
+	 * get the memory usage which is just an estimated result.
+	 * 
+	 * @return estimated memory usage.
+	 */
+	public long getMemoryUsage() {
+		return memUsage;
 	}
 
 	/**
