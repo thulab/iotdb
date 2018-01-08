@@ -271,14 +271,10 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	public int insert(TSRecord tsRecord) throws FileNodeManagerException {
+	public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
-		boolean isMonitor = false;
-		String className = Thread.currentThread().getStackTrace()[2].getClassName();
-		if (className.contains("StatMonitor")) {
-			isMonitor = true;
-		}
+
 		if (isMonitor) {
 			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
 					.addAndGet(tsRecord.dataPointList.size());

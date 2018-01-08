@@ -40,7 +40,7 @@ class WriteLogRecovery {
             DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementList.get(i), value);
             tsRecord.addTuple(dataPoint);
         }
-        FileNodeManager.getInstance().insert(tsRecord);
+        FileNodeManager.getInstance().insert(tsRecord, false);
     }
 
     static void update(UpdatePlan updatePlan) throws FileNodeManagerException, PathErrorException {

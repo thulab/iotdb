@@ -221,7 +221,7 @@ public class StatMonitor {
         int pointNum;
         for (Map.Entry<String, TSRecord> entry : tsRecordHashMap.entrySet()) {
             try {
-                fManager.insert(entry.getValue());
+                fManager.insert(entry.getValue(), true);
                 numInsert.incrementAndGet();
                 pointNum = entry.getValue().dataPointList.size();
                 numPointsInsert.addAndGet(pointNum);
