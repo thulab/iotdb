@@ -106,8 +106,8 @@ public class QueryProcessor {
             case LOADDATA:
             case INSERT:
             case INDEX:
-            case INDEXQUERY:
                 return operator;
+            case INDEXQUERY:
             case QUERY:
             case UPDATE:
             case DELETE:

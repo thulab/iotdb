@@ -11,7 +11,7 @@ import java.util.Map;
 public final class IndexOperator extends SFWOperator {
 
 	private Path path;
-	private Map<String, Integer> parameters;
+	private Map<String, String> parameters;
 	private long startTime;
 	private final IndexOperatorType  indexOperatorType;
 
@@ -21,7 +21,7 @@ public final class IndexOperator extends SFWOperator {
 		super(tokenIntType);
 		this.indexOperatorType = indexOperatorType;
 		this.indexType = indexType;
-		operatorType = Operator.OperatorType.INDEX;
+		this.operatorType = Operator.OperatorType.INDEX;
 		this.parameters = new HashMap<>();
 	}
 
@@ -42,11 +42,11 @@ public final class IndexOperator extends SFWOperator {
 		this.path = path;
 	}
 
-	public Map<String, Integer> getParameters() {
+	public Map<String, String> getParameters() {
 		return parameters;
 	}
 
-	public void setParameters(Map<String, Integer> parameters) {
+	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
 	}
 

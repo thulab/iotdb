@@ -596,8 +596,8 @@ indexStatement
     ;
 
 createIndexStatement
-    : KW_CREATE KW_INDEX KW_ON p=timeseries KW_USING func=Identifier indexWithClause? whereClause?
-    -> ^(TOK_CREATE ^(TOK_INDEX $p ^(TOK_FUNC $func indexWithClause? whereClause?)))
+    : KW_CREATE KW_INDEX KW_ON p=timeseries KW_USING func=KW_KVINDEX indexWithClause?
+    -> ^(TOK_CREATE ^(TOK_INDEX $p ^(TOK_FUNC $func indexWithClause?)))
     ;
 
 
@@ -618,7 +618,7 @@ indexWithEqualExpression
 
 
 dropIndexStatement
-    : KW_DROP KW_INDEX func=Identifier KW_ON p=timeseries
+    : KW_DROP KW_INDEX func=KW_KVINDEX KW_ON p=timeseries
     -> ^(TOK_DROP ^(TOK_INDEX $p ^(TOK_FUNC $func)))
     ;
 
@@ -644,10 +644,10 @@ identifier
 //    ;
 
 selectClause
-    : KW_SELECT KW_INDEX func=Identifier LPAREN p1=timeseries COMMA p2=timeseries COMMA n1=dateFormatWithNumber COMMA n2=dateFormatWithNumber COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN (fromClause)?
-    -> ^(TOK_SELECT_INDEX $func $p1 $p2 $n1 $n2 $epsilon ($alpha $beta)?) fromClause?
-    | KW_SELECT clusteredPath (COMMA clusteredPath)* fromClause
+    : KW_SELECT clusteredPath (COMMA clusteredPath)* fromClause
     -> ^(TOK_SELECT clusteredPath+) fromClause
+    | KW_SELECT indexcmd = KW_KVINDEX LPAREN p=timeseries COMMA n1=dateFormatWithNumber COMMA n2=dateFormatWithNumber COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN fromClause
+    -> ^(TOK_SELECT_INDEX $indexcmd $p $n1 $n2 $epsilon ($alpha $beta)?) fromClause
     ;
 
 clusteredPath

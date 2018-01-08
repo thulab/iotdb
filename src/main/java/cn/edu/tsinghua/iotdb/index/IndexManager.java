@@ -22,14 +22,14 @@ public class IndexManager {
 
     public enum IndexType {
         KvIndex;
-        public static IndexType getIndexType(String indexNameString) throws IndexManagerException {
-            String normalized = indexNameString.toLowerCase();
+        public static IndexType getIndexType(String indexTypeString) throws IndexManagerException {
+            String normalized = indexTypeString.toLowerCase();
             switch (normalized){
                 case "kvindex":
                 case "kv-match":
                     return KvIndex;
                 default:
-                    throw new IndexManagerException("unsupport index type:" + indexNameString);
+                    throw new IndexManagerException("unsupport index type:" + indexTypeString);
             }
         }
     }

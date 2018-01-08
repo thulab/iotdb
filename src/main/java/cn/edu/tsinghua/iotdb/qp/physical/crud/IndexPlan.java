@@ -23,14 +23,13 @@ public class IndexPlan extends
 
 	private final IndexType indexType;
 
-	public IndexPlan(Path path, Map<String, Integer> parameters,long startTime,IndexOperatorType indexOperatorType, IndexType indexType) {
+	public IndexPlan(Path path, Map<String, String> parameters,long startTime,IndexOperatorType indexOperatorType, IndexType indexType) {
 		super(false, INDEX);
 		this.path = path;
 		this.indexType = indexType;
 		this.indexOperatorType = indexOperatorType;
 		this.parameters = new HashMap<>();
 		this.parameters.putAll(parameters);
-		this.parameters.put(IndexConfig.PARAM_SINCE_TIME, startTime);
 	}
 
 	public IndexOperatorType getIndexOperatorType(){

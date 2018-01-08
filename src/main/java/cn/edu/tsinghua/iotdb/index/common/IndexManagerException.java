@@ -1,12 +1,10 @@
 package cn.edu.tsinghua.iotdb.index.common;
 
-public class IndexManagerException extends Exception {
+import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+
+public class IndexManagerException extends QueryProcessorException {
 
     private static final long serialVersionUID = 6261687971768311032L;
-
-    public IndexManagerException() {
-        super();
-    }
 
     public IndexManagerException(String message) {
         super(message);

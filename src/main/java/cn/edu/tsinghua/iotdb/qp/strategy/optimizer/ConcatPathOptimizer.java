@@ -46,10 +46,8 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
             LOG.warn("given SFWOperator doesn't have prefix paths, cannot concat path");
             return operator;
         }
-        SelectOperator select = sfwOperator.getSelectOperator();
-
         // concat select paths
-        concatSelect(prefixPaths, select);
+        concatSelect(prefixPaths, sfwOperator);
 
         // concat filter
         FilterOperator filter = sfwOperator.getFilterOperator();
@@ -60,11 +58,21 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
     }
 
 
-    private void concatSelect(List<Path> fromPaths, SelectOperator selectOperator)
+    private void concatSelect(List<Path> fromPaths, SFWOperator sfwOperator)
             throws LogicalOptimizeException {
         List<Path> suffixPaths;
+        SelectOperator selectOperator = sfwOperator.getSelectOperator();
         if (selectOperator == null || (suffixPaths = selectOperator.getSuffixPaths()).isEmpty()) {
-            throw new LogicalOptimizeException("given SFWOperator doesn't have suffix paths, cannot concat path");
+            //This branch only happens in the case of index query.
+            //Index query has exactly one query path occurring in FROM clause and has no select operator.
+            if(fromPaths.size() != 1 || !fromPaths.get(0).startWith(SQLConstant.ROOT)){
+                throw new LogicalOptimizeException("For the SFWOperator without selectOperators, " +
+                        "it should has one path starting with ROOT. The actual path list is: " + fromPaths);
+            }
+            selectOperator = new SelectOperator(SQLConstant.TOK_SELECT);
+            selectOperator.setSuffixPathList(fromPaths);
+            sfwOperator.setSelectOperator(selectOperator);
+            return;
         }
         if(selectOperator.getAggregations().size() != 0 && selectOperator.getSuffixPaths().size() != selectOperator.getAggregations().size())
             throw new LogicalOptimizeException("Common queries and aggregated queries are not allowed to appear at the same time");

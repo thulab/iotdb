@@ -15,6 +15,7 @@ import cn.edu.tsinghua.iotdb.qp.logical.crud.DeleteOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FromOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexOperator;
+import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexQueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.InsertOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.QueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.SFWOperator;
@@ -181,7 +182,8 @@ public class LogicalGenerator {
                 // command. Thus, do
                 // nothing and call analyze() with children nodes recursively.
                 if (astNode.getChild(0).getType() == TSParser.TOK_SELECT_INDEX) {
-                    initializedOperator = new KvMatchIndexQueryOperator(SQLConstant.TOK_QUERY_INDEX);
+                    String indexTypeString = astNode.getChild(0).getChild(0).getText().toLowerCase();
+                    initializedOperator = IndexQueryOperator.getIndexQueryOperator(indexTypeString);
                     break;
                 }
                 initializedOperator = new QueryOperator(SQLConstant.TOK_QUERY);
@@ -974,12 +976,12 @@ public class LogicalGenerator {
     }
 
 
-    private Map<String, Integer> parseIndexWithParameters(ASTNode astNode) {
-        Map<String, Integer> indexParameters = new HashMap<String, Integer>();
+    private Map<String, String> parseIndexWithParameters(ASTNode astNode) {
+        Map<String, String> indexParameters = new HashMap<>();
         for (int i = 0; i < astNode.getChildCount(); i++) {
             ASTNode child = astNode.getChild(i);
-            String key = child.getChild(0).getText();
-            Integer value = Integer.valueOf(child.getChild(1).getText());
+            String key = child.getChild(0).getText().toLowerCase();
+            String value = child.getChild(1).getText().toLowerCase();
             indexParameters.put(key, value);
         }
         return indexParameters;
@@ -990,7 +992,7 @@ public class LogicalGenerator {
         Path path = parsePath(indexNode.getChild(0));
         ASTNode funcNode = indexNode.getChild(1);
         String indexName = funcNode.getChild(0).getText();
-        IndexType indexType = null;
+        IndexType indexType;
         try {
             indexType = IndexType.getIndexType(indexName);
         } catch (IndexManagerException e) {
@@ -1005,7 +1007,7 @@ public class LogicalGenerator {
             for (int i = 1; i < childCount; i++) {
                 ASTNode child = funcNode.getChild(i);
                 if (child.getToken().getType() == TSParser.TOK_WITH) {
-                    Map<String, Integer> indexParameters = parseIndexWithParameters(child);
+                    Map<String, String> indexParameters = parseIndexWithParameters(child);
                     indexOperator.setParameters(indexParameters);
                 } else if (child.getToken().getType() == TSParser.TOK_WHERE) {
                     analyzeWhere(child);
@@ -1045,26 +1047,23 @@ public class LogicalGenerator {
     }
 
     private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
-//        astNode = astNode.getChild(0);
-        String indexQueryName = astNode.getChild(0).getText().toLowerCase();
-        switch (indexQueryName) {
-            case "kvindex":
-                KvMatchIndexQueryOperator indexQuery = new KvMatchIndexQueryOperator(SQLConstant.TOK_QUERY_INDEX);;
+        IndexType indexType = ((IndexQueryOperator) initializedOperator).getIndexType();
+        switch (indexType) {
+            case KvIndex:
+                KvMatchIndexQueryOperator indexQuery = (KvMatchIndexQueryOperator) initializedOperator;
                 Path path = parsePath(astNode.getChild(1));
-                indexQuery.setPath(path);
-                path = parsePath(astNode.getChild(2));
                 indexQuery.setPatternPath(path);
                 long startTime;
                 long endTime;
-                if (astNode.getChild(3).getType() == TSParser.TOK_DATETIME) {
-                    startTime = Long.valueOf(parseTokenTime(astNode.getChild(3)));
+                if (astNode.getChild(2).getType() == TSParser.TOK_DATETIME) {
+                    startTime = Long.valueOf(parseTokenTime(astNode.getChild(2)));
                 } else {
-                    startTime = Long.valueOf(astNode.getChild(3).getText());
+                    startTime = Long.valueOf(astNode.getChild(2).getText());
                 }
-                if (astNode.getChild(4).getType() == TSParser.TOK_DATETIME) {
-                    endTime = Long.valueOf(parseTokenTime(astNode.getChild(4)));
+                if (astNode.getChild(3).getType() == TSParser.TOK_DATETIME) {
+                    endTime = Long.valueOf(parseTokenTime(astNode.getChild(3)));
                 } else {
-                    endTime = Long.valueOf(astNode.getChild(4).getText());
+                    endTime = Long.valueOf(astNode.getChild(3).getText());
                 }
 
                 if (startTime > endTime || startTime <= 0) {
@@ -1073,11 +1072,11 @@ public class LogicalGenerator {
                 }
                 indexQuery.setStartTime(startTime);
                 indexQuery.setEndTime(endTime);
-                double epsilon = Float.valueOf(astNode.getChild(5).getText());
+                double epsilon = Float.valueOf(astNode.getChild(4).getText());
                 indexQuery.setEpsilon(epsilon);
-                if (astNode.getChildCount() > 6) {
-                    double alpha = Float.valueOf(astNode.getChild(6).getText());
-                    double beta = Float.valueOf(astNode.getChild(7).getText());
+                if (astNode.getChildCount() > 5) {
+                    double alpha = Float.valueOf(astNode.getChild(5).getText());
+                    double beta = Float.valueOf(astNode.getChild(6).getText());
                     indexQuery.setAlpha(alpha);
                     indexQuery.setBeta(beta);
                 }
@@ -1085,7 +1084,7 @@ public class LogicalGenerator {
                 break;
             default:
                 throw new LogicalOperatorException(String.format(
-                        "Not support the index query %s, only support subsequence_matching(subm).", indexQueryName));
+                        "Not support the index query %s, only support subsequence_matching(subm).", indexType));
         }
     }
 
