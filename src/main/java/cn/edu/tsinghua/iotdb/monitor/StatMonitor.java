@@ -7,7 +7,6 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.service.Monitor;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,8 +29,8 @@ public class StatMonitor {
 
     private long runningTimeMillis = System.currentTimeMillis();
     private final int backLoopPeriod;
-    private final int  StatMonitorRetainInterval;
-
+    private final int StatMonitorDetectFreq;
+    private final int StatMonitorRetainInterval;
 
     /**
      * key: is the store path like FileNodeProcessor.root_stats_xxx.xxx, or simple name like:FileNodeManager.
@@ -53,6 +51,7 @@ public class StatMonitor {
         MManager mManager = MManager.getInstance();
         statisticMap = new HashMap<>();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+        StatMonitorDetectFreq = config.StatMonitorDetectFreq;
         StatMonitorRetainInterval = config.StatMonitorRetainInterval;
         backLoopPeriod = config.backLoopPeriod;
         try {
@@ -256,18 +255,22 @@ public class StatMonitor {
         public void run() {
             long currentTimeMillis = System.currentTimeMillis();
             long hour = (currentTimeMillis - runningTimeMillis)/3600000;
-            if (hour - StatMonitorRetainInterval >= 0) {
+            if (hour - StatMonitorDetectFreq >= 0) {
                 runningTimeMillis = currentTimeMillis;
                 // delete time-series data
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 try {
                     for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
                         for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
-                            fManager.delete(entry.getKey(), statParamName, currentTimeMillis, TSDataType.INT64);
+                            fManager.delete(entry.getKey(),
+                                    statParamName,
+                                    currentTimeMillis - StatMonitorRetainInterval * 3600000,
+                                    TSDataType.INT64
+                            );
                         }
                     }
                 }catch (FileNodeManagerException e) {
-                    LOGGER.error("Delete Statistics information on time error when time interval = StatMonitorRetainInterval, ", e);
+                    LOGGER.error("Delete Statistics information on time error when time interval = StatMonitorDetectFreq, ", e);
                     e.printStackTrace();
                 }
             }

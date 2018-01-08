@@ -184,6 +184,14 @@ public class TsfileDBConfig {
 	 * Set whether to enable statistics service
 	 */
 	public boolean enableStatMonitor = true;
+
+	/**
+	 * Set the time interval the monitor performs delete detection,
+	 * The units is hours, default is 1 hours, every 3 hours stat monitor
+	 * perform delete operation
+	 */
+	public int StatMonitorDetectFreq = 1;
+
 	/**
 	 * Set the maximum time the monitor statistics information keep,
 	 * The units is hours, default is 3 hours
