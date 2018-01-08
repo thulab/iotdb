@@ -80,8 +80,8 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * Stat information
 	 */
-	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
-			+ MonitorConstants.fileNodeManagerPath;
+	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
+			+ MonitorConstants.MONITOR_PATH_SEPERATOR + MonitorConstants.fileNodeManagerPath;
 
 	// There is no need to add concurrently
 	private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
@@ -103,7 +103,8 @@ public class FileNodeManager implements IStatistic {
 	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
-		for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants.values()) {
+		for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants
+				.values()) {
 			list.add(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
 		}
 		return list;
@@ -129,7 +130,8 @@ public class FileNodeManager implements IStatistic {
 			{
 				for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants
 						.values()) {
-					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(), MonitorConstants.DataType);
+					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(),
+							MonitorConstants.DataType);
 				}
 			}
 		};
@@ -170,7 +172,7 @@ public class FileNodeManager implements IStatistic {
 		this.backUpOverflowedFileNodeName = new HashSet<>();
 		this.overflowedFileNodeName = new HashSet<>();
 
-		for(String key:statParamsHashMap.keySet()){
+		for (String key : statParamsHashMap.keySet()) {
 			statParamsHashMap.put(key, new AtomicLong());
 		}
 	}
@@ -374,8 +376,9 @@ public class FileNodeManager implements IStatistic {
 					throw new FileNodeManagerException(e);
 				}
 				// Write data
+				boolean shouldClose = false;
 				try {
-					bufferWriteProcessor.write(tsRecord);
+					shouldClose = bufferWriteProcessor.write(tsRecord);
 				} catch (BufferWriteProcessorException e) {
 					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
 							.incrementAndGet();
@@ -386,7 +389,15 @@ public class FileNodeManager implements IStatistic {
 				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
 				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
 				insertType = 2;
+				if (shouldClose) {
+					fileNodeProcessor.closeBufferWrite();
+				}
 			}
+		} catch (FileNodeProcessorException e) {
+			LOGGER.error(
+					String.format("close the buffer write processor %s error.", fileNodeProcessor.getProcessorName()),
+					e);
+			e.printStackTrace();
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
