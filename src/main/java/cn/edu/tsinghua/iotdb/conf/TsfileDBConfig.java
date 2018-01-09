@@ -176,7 +176,7 @@ public class TsfileDBConfig {
 	public long smallFlushInterval = 60 * 1000;
 
 	/**
-	 * The statMonitor write statistics info to IoTDB every backLoopPeriodSec secs
+	 * The statMonitor writes statistics info to IoTDB every backLoopPeriodSec secs
 	  * the period is 5s by default
 	 */
 	public int backLoopPeriodSec = 5;
@@ -188,14 +188,12 @@ public class TsfileDBConfig {
 	public boolean enableStatMonitor = true;
 
 	/**
-	 * Set the time interval the monitor performs delete detection,default is 600s,
-	 * the stat monitor perform delete operation every statMonitorDetectFreqSec seconds.
+	 * Set the time interval the StatMonitor performs delete detection,default is 600s,
 	 */
 	public int statMonitorDetectFreqSec = 60 * 10;
 
 	/**
-	 * Set the maximum time the monitor statistics information keeps in IoTDB,
-	 * its default value is 600s
+	 * Set the maximum time to keep monitor statistics information IoTDB, default value is 600s
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 

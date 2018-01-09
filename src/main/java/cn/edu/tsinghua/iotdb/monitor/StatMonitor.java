@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +36,7 @@ public class StatMonitor {
 
     /**
      * key: is the statistics store path
-     * Value: Value is an interface that implements statistics function
+     * Value: is an interface that implements statistics function
      */
     private HashMap<String, IStatistic> statisticMap;
     private ScheduledExecutorService service;
