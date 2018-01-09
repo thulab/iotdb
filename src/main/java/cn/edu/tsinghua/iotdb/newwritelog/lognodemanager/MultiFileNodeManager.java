@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
         nodeMap = new HashMap<>();
     }
 
-    public MultiFileNodeManager getInstance() {
+    static public MultiFileNodeManager getInstance() {
         return InstanceHolder.instance;
     }
 
@@ -48,6 +49,17 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
             } catch (RecoverException e) {
                 logger.error("{} failed to recover because {}", node.toString(), e.getMessage());
                 throw e;
+            }
+        }
+    }
+
+    @Override
+    public void close() {
+        for(WriteLogNode node : nodeMap.values()) {
+            try {
+                node.close();
+            } catch (IOException e) {
+                logger.error("{} failed to close because {}", node.toString(), e.getMessage());
             }
         }
     }

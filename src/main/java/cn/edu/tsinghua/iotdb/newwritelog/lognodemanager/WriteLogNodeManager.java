@@ -24,4 +24,9 @@ public interface WriteLogNodeManager {
      * Make all node of this manager start recovery.
      */
     void recover() throws RecoverException;
+
+    /**
+     * Close all nodes.
+     */
+    void close();
 }

@@ -11,7 +11,8 @@ import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -77,6 +78,8 @@ public class BufferWriteProcessor extends Processor {
 	private Action filenodeFlushAction = null;
 
 	private long memUsed = 0;
+
+    private WriteLogNode logNode;
 
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters)
 			throws BufferWriteProcessorException {
@@ -147,7 +150,13 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
+
+		logNode = MultiFileNodeManager.getInstance().getNode(getProcessorName() + "-bufferwrite", restoreFileName, processorStoreFileName);
 	}
+
+    public WriteLogNode getLogNode() {
+        return logNode;
+    }
 
 	/**
 	 * <p>
@@ -641,7 +650,7 @@ public class BufferWriteProcessor extends Processor {
 
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					// For WAL
-					WriteLogManager.getInstance().startBufferWriteFlush(getProcessorName());
+					logNode.notifyStartFlush();
 				}
 
 				// flush bufferwrite data
@@ -651,7 +660,7 @@ public class BufferWriteProcessor extends Processor {
 						writeStoreToDisk();
 						filenodeFlushAction.act();
 						if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-							WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
+							logNode.notifyEndFlush(null);
 						}
 					} catch (IOException e) {
 						LOGGER.error("Flush row group to store failed, processor:{}.", getProcessorName());
@@ -682,7 +691,7 @@ public class BufferWriteProcessor extends Processor {
 							writeStoreToDisk();
 							filenodeFlushAction.act();
 							if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-								WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
+								logNode.notifyEndFlush(null);
 							}
 						} catch (IOException e) {
 							/*

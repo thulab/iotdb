@@ -8,6 +8,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.WriteLogNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import org.apache.thrift.TException;
@@ -62,7 +65,6 @@ import cn.edu.tsinghua.iotdb.qp.executor.OverflowQPExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
@@ -75,7 +77,7 @@ import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.INDEXQUERY;
 
 public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
-	private WriteLogManager writeLogManager;
+	private WriteLogNodeManager writeLogManager;
 	private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
 	// Record the username for every rpc connection. Username.get() is null if
 	// login is failed.
@@ -89,7 +91,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 	public TSServiceImpl() throws IOException {
 		if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-			writeLogManager = WriteLogManager.getInstance();
+			writeLogManager = MultiFileNodeManager.getInstance();
 		}
 	}
 
