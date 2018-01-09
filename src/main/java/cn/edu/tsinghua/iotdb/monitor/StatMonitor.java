@@ -29,12 +29,12 @@ public class StatMonitor {
 
     private long runningTimeMillis = System.currentTimeMillis();
     private final int backLoopPeriod;
-    private final int StatMonitorDetectFreq;
-    private final int StatMonitorRetainInterval;
+    private final int statMonitorDetectFreqSec;
+    private final int statMonitorRetainIntervalSec;
 
     /**
-     * key: is the store path like FileNodeProcessor.root_stats_xxx.xxx, or simple name like:FileNodeManager.
-     * value: And value is an interface that implements statistics function
+     * key: is the statistics store path
+     * Value: Value is an interface that implements statistics function
      */
     private HashMap<String, IStatistic> statisticMap;
     private ScheduledExecutorService service;
@@ -51,9 +51,9 @@ public class StatMonitor {
         MManager mManager = MManager.getInstance();
         statisticMap = new HashMap<>();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        StatMonitorDetectFreq = config.StatMonitorDetectFreq;
-        StatMonitorRetainInterval = config.StatMonitorRetainInterval;
-        backLoopPeriod = config.backLoopPeriod;
+        statMonitorDetectFreqSec = config.statMonitorDetectFreqSec;
+        statMonitorRetainIntervalSec = config.statMonitorRetainIntervalSec;
+        backLoopPeriod = config.backLoopPeriodSec;
         try {
             String prefix = MonitorConstants.statStorageGroupPrefix;
 
@@ -254,8 +254,8 @@ public class StatMonitor {
     class statBackLoop implements Runnable {
         public void run() {
             long currentTimeMillis = System.currentTimeMillis();
-            long hour = (currentTimeMillis - runningTimeMillis)/3600000;
-            if (hour - StatMonitorDetectFreq >= 0) {
+            long seconds = (currentTimeMillis - runningTimeMillis)/1000;
+            if (seconds - statMonitorDetectFreqSec >= 0) {
                 runningTimeMillis = currentTimeMillis;
                 // delete time-series data
                 FileNodeManager fManager = FileNodeManager.getInstance();
@@ -264,13 +264,13 @@ public class StatMonitor {
                         for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
                             fManager.delete(entry.getKey(),
                                     statParamName,
-                                    currentTimeMillis - StatMonitorRetainInterval * 3600000,
+                                    currentTimeMillis - statMonitorRetainIntervalSec * 3600000,
                                     TSDataType.INT64
                             );
                         }
                     }
                 }catch (FileNodeManagerException e) {
-                    LOGGER.error("Delete Statistics information on time error when time interval = StatMonitorDetectFreq, ", e);
+                    LOGGER.error("Error when delete Statistics information periodically, ", e);
                     e.printStackTrace();
                 }
             }

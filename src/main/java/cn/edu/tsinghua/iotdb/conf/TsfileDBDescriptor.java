@@ -68,9 +68,16 @@ public class TsfileDBDescriptor {
 		try {
 			properties.load(inputStream);
 			conf.enableStatMonitor = Boolean.parseBoolean(properties.getProperty("enable_stat_monitor", conf.enableStatMonitor + ""));
-			conf.backLoopPeriod = Integer.parseInt(properties.getProperty("back_loop_period", conf.backLoopPeriod + ""));
-			conf.StatMonitorDetectFreq = Integer.parseInt(properties.getProperty("stat_monitor_detect_freq", conf.StatMonitorDetectFreq + ""));
-			conf.StatMonitorRetainInterval = Integer.parseInt(properties.getProperty("stat_monitor_retain_interval", conf.StatMonitorRetainInterval + ""));
+			conf.backLoopPeriodSec = Integer.parseInt(properties.getProperty("back_loop_period_sec", conf.backLoopPeriodSec + ""));
+			int statMonitorDetectFreqSec = Integer.parseInt(properties.getProperty("stat_monitor_detect_freq_sec", conf.statMonitorDetectFreqSec + ""));
+			int statMonitorRetainIntervalSec = Integer.parseInt(properties.getProperty("stat_monitor_retain_interval_sec", conf.statMonitorRetainIntervalSec + ""));
+			// the conf value must > default value, or may cause system unstable
+			if (conf.statMonitorDetectFreqSec < statMonitorDetectFreqSec) {
+				conf.statMonitorDetectFreqSec = statMonitorDetectFreqSec;
+			}
+			if (conf.statMonitorRetainIntervalSec < statMonitorRetainIntervalSec) {
+				conf.statMonitorRetainIntervalSec = statMonitorRetainIntervalSec;
+			}
 
 			conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",conf.rpcPort+""));
 			

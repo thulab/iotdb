@@ -271,6 +271,12 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
+	/**
+	 * insert TsRecord to Storage Group
+	 * @param tsRecord: input Data
+	 * @param isMonitor: if true the insertion is done by StatMonitor. The Stat Info will not be record
+	 * @throws FileNodeManagerException
+	 */
 	public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
