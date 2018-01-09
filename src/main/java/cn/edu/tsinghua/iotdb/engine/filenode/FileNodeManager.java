@@ -599,6 +599,23 @@ public class FileNodeManager implements IStatistic {
 			fileNodeProcessor.readUnlock();
 		}
 	}
+	/**
+	 * append one specified tsfile to the storage group
+	 * @param fileNode the path of storage group
+	 * @param appendFile the appended tsfile information
+	 * @throws FileNodeManagerException 
+	 */
+	public void appendFileToFileNode(String fileNode,IntervalFileNode appendFile) throws FileNodeManagerException{
+		FileNodeProcessor fileNodeProcessor = getProcessor(fileNode, true);
+		fileNodeProcessor.writeLock();
+		try{
+			fileNodeProcessor.
+			
+		}finally {
+			fileNodeProcessor.writeUnlock();
+		}
+		
+	}
 
 	public void endQuery(String deltaObjectId, int token) throws FileNodeManagerException {
 
