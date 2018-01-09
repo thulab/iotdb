@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
@@ -44,6 +43,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * @author liukun
+ *
+ */
 public class BufferWriteProcessor extends Processor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
@@ -439,51 +442,54 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	/**
-	 * Write a data point
-	 *
+	 * write one data point
+	 * 
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param timestamp
 	 * @param dataType
 	 * @param value
+	 * @return true -the size of tsfile or the size of metadata reach to the
+	 *         threshold. false -the size of tsfile or the size of metadata
+	 *         doesn't reach to the threshold.
 	 * @throws BufferWriteProcessorException
-	 * @throws IOException
 	 */
-	public void write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
+	public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
 			throws BufferWriteProcessorException {
 		TSRecord record = new TSRecord(timestamp, deltaObjectId);
 		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, value);
 		record.addTuple(dataPoint);
-		write(record);
+		return write(record);
 	}
 
 	/**
-	 * Write a tsRecord
-	 *
+	 * write one tsrecord to the buffer of tsfile
+	 * 
 	 * @param tsRecord
+	 * @return true -the size of tsfile or the size of metadata reach to the
+	 *         threshold. false -the size of tsfile or the size of metadata
+	 *         doesn't reach to the threshold.
 	 * @throws BufferWriteProcessorException
 	 */
-	public void write(TSRecord tsRecord) throws BufferWriteProcessorException {
+	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
 
 		try {
 			long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
 			BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newMemUsage);
 			switch (level) {
-				case SAFE:
-					recordWriter.write(tsRecord);
-					memUsed += newMemUsage;
-					break;
-				case WARNING:
-					LOGGER.debug("Memory usage will exceed warning threshold, current : {}." ,
-							MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-					recordWriter.write(tsRecord);
-					memUsed += newMemUsage;
-					break;
-				case DANGEROUS:
-				default:
-					LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
-							MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-					throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
+			case SAFE:
+				memUsed += newMemUsage;
+				return recordWriter.write(tsRecord);
+			case WARNING:
+				LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
+						MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
+				memUsed += newMemUsage;
+				return recordWriter.write(tsRecord);
+			case DANGEROUS:
+			default:
+				LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
+						MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
+				throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
 			}
 		} catch (IOException | WriteProcessException e) {
 			LOGGER.error("Write TSRecord error, the TSRecord is {}, the bufferwrite is {}.", tsRecord,
@@ -529,10 +535,10 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	@Override
-	public void flush() throws IOException{
+	public void flush() throws IOException {
 		recordWriter.flushRowGroup(false);
 	}
-	
+
 	@Override
 	public void close() throws BufferWriteProcessorException {
 		isFlushingSync = true;
@@ -554,7 +560,7 @@ public class BufferWriteProcessor extends Processor {
 			isFlushingSync = false;
 		}
 	}
-	
+
 	@Override
 	public long memoryUsage(){
 		return recordWriter.getMemoryUsage();
@@ -584,19 +590,10 @@ public class BufferWriteProcessor extends Processor {
 			super(ioFileWriter, schema, conf);
 		}
 
-		/**
-		 * insert a list of data value in form of TimePair.
-		 *
-		 * @param record
-		 *            - TSRecord to be written
-		 * @throws Exception
-		 * @throws WriteProcessException
-		 * @throws IOException
-		 */
 		@Override
-		public void write(TSRecord record) throws IOException, WriteProcessException {
+		public boolean write(TSRecord record) throws IOException, WriteProcessException {
 			try {
-				super.write(record);
+				return super.write(record);
 			} catch (IOException | WriteProcessException e) {
 				LOGGER.error("Write TSRecord error, TSRecord is {}.", record);
 				throw e;
@@ -604,7 +601,8 @@ public class BufferWriteProcessor extends Processor {
 		}
 
 		@Override
-		protected void flushRowGroup(boolean isFillRowGroup) throws IOException {
+		protected boolean flushRowGroup(boolean isFillRowGroup) throws IOException {
+
 			// calculate the time interval between last flush and this flush
 			if (lastFlushTime > 0) {
 				long thisFlushTime = System.currentTimeMillis();
@@ -629,6 +627,9 @@ public class BufferWriteProcessor extends Processor {
 						}
 					}
 				}
+				if (checkSize()) {
+					return true;
+				}
 				long oldMemUsage = memUsed;
 				memUsed = 0;
 				// update the lastUpdatetime
@@ -643,7 +644,6 @@ public class BufferWriteProcessor extends Processor {
 					// For WAL
 					WriteLogManager.getInstance().startBufferWriteFlush(getProcessorName());
 				}
-
 				// flush bufferwrite data
 				if (isFlushingSync) {
 					try {
@@ -716,11 +716,12 @@ public class BufferWriteProcessor extends Processor {
 							convertBufferLock.writeLock().unlock();
 						}
 						BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
-						checkSize();
+						// checkSize();
 					};
 					FlushManager.getInstance().submit(flushThread);
 				}
 			}
+			return false;
 		}
 
 		private void asyncFlushRowGroupToStore() throws IOException {
@@ -789,34 +790,36 @@ public class BufferWriteProcessor extends Processor {
 
 	/**
 	 * @return The file size of the TsFile corresponding to this processor.
+	 * @throws IOException
 	 */
-	public long getFileSize() {
-		// TODO : save this variable to avoid object creation?
-		File file = new File(bufferwriteOutputFilePath);
-		return file.length();
+	public long getFileSize() throws IOException {
+		return bufferIOWriter.getPos();
 	}
 
 	/**
-	 * Close current TsFile and open a new one for future writes.
-	 * Block new writes and wait until current writes finish.
+	 * Close current TsFile and open a new one for future writes. Block new
+	 * writes and wait until current writes finish.
 	 */
 	public void rollToNewFile() {
 		// TODO : [MemControl] implement this
 	}
 
 	/**
-	 * Check if this TsFile has too big metadata or file.
-	 * If true, close current file and open a new one.
+	 * Check if this TsFile has too big metadata or file. If true, close current
+	 * file and open a new one.
+	 * 
+	 * @throws IOException
 	 */
-	private void checkSize() {
+	private boolean checkSize() throws IOException {
 		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 		long metaSize = getMetaSize();
 		long fileSize = getFileSize();
-		if(metaSize >= config.bufferwriteMetaSizeThreshold ||
-				fileSize >= config.bufferwriteFileSizeThreshold) {
-			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}",
-					this.fileName, MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
+		if (metaSize >= config.bufferwriteMetaSizeThreshold || fileSize >= config.bufferwriteFileSizeThreshold) {
+			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}", this.fileName,
+					MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
 			rollToNewFile();
+			return true;
 		}
+		return false;
 	}
- }
+}

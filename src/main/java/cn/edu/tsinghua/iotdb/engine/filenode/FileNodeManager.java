@@ -165,7 +165,6 @@ public class FileNodeManager implements IStatistic {
 		return FileNodeManagerHolder.INSTANCE;
 	}
 
-	
 	/**
 	 * This function is just for unit test
 	 */
@@ -377,8 +376,9 @@ public class FileNodeManager implements IStatistic {
 					throw new FileNodeManagerException(e);
 				}
 				// Write data
+				boolean shouldClose = false;
 				try {
-					bufferWriteProcessor.write(tsRecord);
+					shouldClose = bufferWriteProcessor.write(tsRecord);
 				} catch (BufferWriteProcessorException e) {
 					statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
 							.incrementAndGet();
@@ -389,7 +389,15 @@ public class FileNodeManager implements IStatistic {
 				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
 				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
 				insertType = 2;
+				if (shouldClose) {
+					fileNodeProcessor.closeBufferWrite();
+				}
 			}
+		} catch (FileNodeProcessorException e) {
+			LOGGER.error(
+					String.format("close the buffer write processor %s error.", fileNodeProcessor.getProcessorName()),
+					e);
+			e.printStackTrace();
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
@@ -602,22 +610,31 @@ public class FileNodeManager implements IStatistic {
 			fileNodeProcessor.readUnlock();
 		}
 	}
+
 	/**
-	 * append one specified tsfile to the storage group
-	 * @param fileNode the path of storage group
-	 * @param appendFile the appended tsfile information
-	 * @throws FileNodeManagerException 
+	 * Append one specified tsfile to the storage group.
+	 * <b>This method is only provided for transmission module</b>
+	 * 
+	 * @param fileNode
+	 *            the path of storage group
+	 * @param appendFile
+	 *            the appended tsfile information
+	 * @throws FileNodeManagerException
 	 */
-	public void appendFileToFileNode(String fileNode,IntervalFileNode appendFile) throws FileNodeManagerException{
+	public void appendFileToFileNode(String fileNode, IntervalFileNode appendFile) throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(fileNode, true);
 		fileNodeProcessor.writeLock();
-		try{
-			fileNodeProcessor.
-			
-		}finally {
+		try {
+			fileNodeProcessor.closeBufferWrite();
+			// append file to storage group.
+			fileNodeProcessor.appendFile(appendFile);
+		} catch (FileNodeProcessorException e) {
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
-		
+
 	}
 
 	public void endQuery(String deltaObjectId, int token) throws FileNodeManagerException {
