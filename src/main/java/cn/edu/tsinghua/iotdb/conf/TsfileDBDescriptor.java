@@ -77,7 +77,7 @@ public class TsfileDBDescriptor {
 				conf.statMonitorDetectFreqSec = statMonitorDetectFreqSec;
 			}
 			if (conf.statMonitorRetainIntervalSec < statMonitorRetainIntervalSec) {
-				LOGGER.info("The stat_monitor_detect_freq_sec value is smaller than default, use default value");
+				LOGGER.info("The stat_monitor_retain_interval_sec value is smaller than default, use default value");
 				conf.statMonitorRetainIntervalSec = statMonitorRetainIntervalSec;
 			}
 

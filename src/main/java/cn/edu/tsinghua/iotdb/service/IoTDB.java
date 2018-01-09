@@ -86,7 +86,6 @@ public class IoTDB implements IoTDBMBean {
 		}
 
 		initFileNodeManager();
-        enableStatMonitor();
 		systemDataRecovery();
 
 		maybeInitJmx();
@@ -94,6 +93,8 @@ public class IoTDB implements IoTDBMBean {
 		registMonitor();
 		registIoTDBServer();
 		startCloseAndMergeServer();
+		// StatMonitor should be start in the end
+		enableStatMonitor();
 	}
 
 	private void maybeInitJmx() {

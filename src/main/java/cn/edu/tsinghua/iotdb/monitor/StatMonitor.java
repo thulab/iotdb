@@ -9,15 +9,20 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.awt.image.ImageWatched;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -113,6 +118,24 @@ public class StatMonitor {
     }
 
     public void activate() {
+        // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
+        QueryDataSet queryDataSet = new QueryDataSet();
+        if (queryDataSet.hasNextRecord()) {
+            queryDataSet.next();
+            RowRecord rowRecord = queryDataSet.getCurrentRecord();
+            LinkedHashMap<String, DynamicOneColumnData> linkedHashMap = queryDataSet.mapRet;
+            FileNodeManager fManager = FileNodeManager.getInstance();
+            HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
+            for (Map.Entry<String, DynamicOneColumnData> entry : linkedHashMap.entrySet()) {
+                String[] statMeasurements = entry.getKey().split("\\.");
+                String statMeasurement = statMeasurements[statMeasurements.length-1];
+                if (statParamsHashMap.containsKey(statMeasurement)) {
+                    DynamicOneColumnData dynamicOneColumnData = entry.getValue();
+                    long lastValue = dynamicOneColumnData.getLong(dynamicOneColumnData.valueLength-1);
+                    statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
+                }
+            }
+        }
         service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, "StatMonitorService");
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
