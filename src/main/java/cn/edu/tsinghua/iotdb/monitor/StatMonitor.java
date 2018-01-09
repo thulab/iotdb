@@ -117,7 +117,7 @@ public class StatMonitor {
         }
     }
 
-    public void activate() {
+    public void recovery() {
         // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
         QueryDataSet queryDataSet = new QueryDataSet();
         if (queryDataSet.hasNextRecord()) {
@@ -136,6 +136,10 @@ public class StatMonitor {
                 }
             }
         }
+    }
+
+    public void activate() {
+
         service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, "StatMonitorService");
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
@@ -289,7 +293,7 @@ public class StatMonitor {
                         for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
                             fManager.delete(entry.getKey(),
                                     statParamName,
-                                    currentTimeMillis - statMonitorRetainIntervalSec * 3600000,
+                                    currentTimeMillis - statMonitorRetainIntervalSec * 1000,
                                     TSDataType.INT64
                             );
                         }

@@ -272,16 +272,18 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	/**
-	 * insert TsRecord to Storage Group
+	 * insert TsRecord into storage group
 	 * @param tsRecord: input Data
-	 * @param isMonitor: if true the insertion is done by StatMonitor. The Stat Info will not be record
+	 * @param isMonitor: if true the insertion is done by StatMonitor then the Stat Info will not be recorded.
+	 *                 else the statParamsHashMap will be updated
+	 * @return an int value represents the insert type
 	 * @throws FileNodeManagerException
 	 */
 	public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
 		long timestamp = tsRecord.time;
 		String deltaObjectId = tsRecord.deltaObjectId;
 
-		if (isMonitor) {
+		if (!isMonitor) {
 			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
 					.addAndGet(tsRecord.dataPointList.size());
 		}
@@ -305,7 +307,7 @@ public class FileNodeManager implements IStatistic {
 							String.format("Get the overflow processor failed, the filenode is {}, insert time is {}",
 									filenodeName, timestamp),
 							e);
-					if (isMonitor) {
+					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
 					throw new FileNodeManagerException(e);
@@ -319,7 +321,7 @@ public class FileNodeManager implements IStatistic {
 					}
 				} catch (IOException | PathErrorException e) {
 					LOGGER.error("Error in write WAL.", e);
-					if (isMonitor) {
+					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
 					throw new FileNodeManagerException(e);
@@ -331,7 +333,7 @@ public class FileNodeManager implements IStatistic {
 								dataPoint.getType(), dataPoint.getValue().toString());
 					} catch (ProcessorException e) {
 						LOGGER.error("Insert into overflow error, the reason is {}", e.getMessage());
-						if (isMonitor) {
+						if (!isMonitor) {
 							updateStatHashMapWhenFail(tsRecord);
 						}
 						throw new FileNodeManagerException(e);
@@ -349,7 +351,7 @@ public class FileNodeManager implements IStatistic {
 				} catch (FileNodeProcessorException e) {
 					LOGGER.error("Get the bufferwrite processor failed, the filenode is {}, insert time is {}",
 							filenodeName, timestamp);
-					if (isMonitor) {
+					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
 					throw new FileNodeManagerException(e);
@@ -361,7 +363,7 @@ public class FileNodeManager implements IStatistic {
 					try {
 						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteRelativePath);
 					} catch (Exception e) {
-						if (isMonitor) {
+						if (!isMonitor) {
 							updateStatHashMapWhenFail(tsRecord);
 						}
 						throw new FileNodeManagerException(e);
@@ -376,7 +378,7 @@ public class FileNodeManager implements IStatistic {
 					}
 				} catch (IOException | PathErrorException e) {
 					LOGGER.error("Error in write WAL.", e);
-					if (isMonitor) {
+					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
 					throw new FileNodeManagerException(e);
@@ -385,7 +387,7 @@ public class FileNodeManager implements IStatistic {
 				try {
 					bufferWriteProcessor.write(tsRecord);
 				} catch (BufferWriteProcessorException e) {
-					if (isMonitor) {
+					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
 					throw new FileNodeManagerException(e);
@@ -398,7 +400,7 @@ public class FileNodeManager implements IStatistic {
 			fileNodeProcessor.writeUnlock();
 		}
 		//Modify the insert
-		if (isMonitor) {
+		if (!isMonitor) {
 			fileNodeProcessor.getStatParamsHashMap()
 					.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_POINTS_SUCCESS.name())
 					.addAndGet(tsRecord.dataPointList.size());
