@@ -461,4 +461,8 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         cleanFlag();
         logger.info("Log node {} cleanup ended.", identifier);
     }
+
+    public String toString() {
+        return "Log node " + identifier;
+    }
 }
