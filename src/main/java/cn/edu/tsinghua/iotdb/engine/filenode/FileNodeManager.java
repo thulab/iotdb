@@ -165,7 +165,6 @@ public class FileNodeManager implements IStatistic {
 		return FileNodeManagerHolder.INSTANCE;
 	}
 
-	
 	/**
 	 * This function is just for unit test
 	 */
@@ -1006,11 +1005,12 @@ public class FileNodeManager implements IStatistic {
 
 	private void flushAll() throws IOException {
 		for (FileNodeProcessor processor : processorMap.values()) {
-			processor.tryLock(true);
-			try {
-				processor.flush();
-			} finally {
-				processor.unlock(true);
+			if (processor.tryLock(true)) {
+				try {
+					processor.flush();
+				} finally {
+					processor.unlock(true);
+				}
 			}
 		}
 	}
