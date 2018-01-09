@@ -75,7 +75,7 @@ public class RecordReader {
     public SingleSeriesFilterExpression valueFilter;
 
     //////////// Old data, useless
-    public List<Object> overflowInfo = new ArrayList<>();
+//    public List<Object> overflowInfo = new ArrayList<>();
 
     /** bufferWritePageList + lastPageInMemory + overflow **/
     public InsertDynamicData insertMemoryData;
@@ -96,21 +96,11 @@ public class RecordReader {
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
 
-        // TODO these codes could be removed
-        for (int i = 0;i < 3;i++) {
-            if (overflowInfo.get(i) == null) {
-                this.overflowInfo.add(new DynamicOneColumnData(dataType, true));
-            } else {
-                this.overflowInfo.add(overflowInfo.get(i));
-            }
-        }
-        this.overflowInfo.add(overflowInfo.get(3));
-
-        // overflow data will not be null
-        this.overflowInsertData = (DynamicOneColumnData) this.overflowInfo.get(0);
-        this.overflowUpdateTrue = (DynamicOneColumnData) this.overflowInfo.get(1);
-        this.overflowUpdateFalse = (DynamicOneColumnData) this.overflowInfo.get(2);
-        this.overflowTimeFilter = (SingleSeriesFilterExpression) this.overflowInfo.get(3);
+        // to make sure that overflow data will not be null
+        this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
+        this.overflowUpdateTrue = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowUpdateFalse = overflowInfo.get(2) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(2);
+        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(3);
         this.overflowUpdateTrueOperation = new UpdateOperation(dataType, overflowUpdateTrue);
         this.overflowUpdateFalseOperation = new UpdateOperation(dataType, overflowUpdateFalse);
     }
@@ -134,21 +124,11 @@ public class RecordReader {
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
 
-        // TODO these codes could be removed
-        for (int i = 0;i < 3;i++) {
-            if (overflowInfo.get(i) == null) {
-                this.overflowInfo.add(new DynamicOneColumnData(dataType, true));
-            } else {
-                this.overflowInfo.add(overflowInfo.get(i));
-            }
-        }
-        this.overflowInfo.add(overflowInfo.get(3));
-
-        // overflow data will not be null
-        this.overflowInsertData = (DynamicOneColumnData) this.overflowInfo.get(0);
-        this.overflowUpdateTrue = (DynamicOneColumnData) this.overflowInfo.get(1);
-        this.overflowUpdateFalse = (DynamicOneColumnData) this.overflowInfo.get(2);
-        this.overflowTimeFilter = (SingleSeriesFilterExpression) this.overflowInfo.get(3);
+        // to make sure that overflow data will not be null
+        this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
+        this.overflowUpdateTrue = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowUpdateFalse = overflowInfo.get(2) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(2);
+        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(3);
         this.overflowUpdateTrueOperation = new UpdateOperation(dataType, overflowUpdateTrue);
         this.overflowUpdateFalseOperation = new UpdateOperation(dataType, overflowUpdateFalse);
     }

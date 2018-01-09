@@ -605,9 +605,9 @@ public class KvMatchIndex  implements IoTIndex {
             bufferWriteBeginTime = recordReader.lastPageInMemory.getTime(0);
         }
 
-        DynamicOneColumnData insert = (DynamicOneColumnData) recordReader.overflowInfo.get(0);
-        DynamicOneColumnData update = (DynamicOneColumnData) recordReader.overflowInfo.get(1);
-        SingleSeriesFilterExpression deleteFilter = (SingleSeriesFilterExpression) recordReader.overflowInfo.get(3);
+        DynamicOneColumnData insert = recordReader.overflowInsertData;
+        DynamicOneColumnData update = recordReader.overflowUpdateTrue;
+        SingleSeriesFilterExpression deleteFilter = recordReader.overflowTimeFilter;
         long maxDeleteTime = 0;
         if (deleteFilter != null) {
             LongInterval interval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(deleteFilter);
