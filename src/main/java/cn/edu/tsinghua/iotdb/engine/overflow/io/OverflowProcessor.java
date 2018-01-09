@@ -559,8 +559,7 @@ public class OverflowProcessor extends Processor {
 	
 	@Override
 	public long memoryUsage(){
-		
-		return  ofSupport.calculateMemSize();
+		return  ofSupport.getMemoryUsage();
 	}
 
 	public void switchWorkingToMerge() throws OverflowProcessorException {

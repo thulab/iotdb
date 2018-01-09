@@ -557,7 +557,7 @@ public class BufferWriteProcessor extends Processor {
 	
 	@Override
 	public long memoryUsage(){
-		return recordWriter.calculateMemSizeForAllGroup();
+		return recordWriter.getMemoryUsage();
 	}
 
 	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs)
@@ -768,10 +768,6 @@ public class BufferWriteProcessor extends Processor {
 			flushingRowGroupSet = null;
 			flushingRowGroupWriters = null;
 			flushingRecordCount = -1;
-		}
-		
-		public long calculateMemSizeForAllGroup(){
-			return super.calculateMemSizeForAllGroup();
 		}
 	}
 

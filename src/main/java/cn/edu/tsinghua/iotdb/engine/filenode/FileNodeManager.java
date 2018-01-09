@@ -80,8 +80,8 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * Stat information
 	 */
-	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
-			+ MonitorConstants.fileNodeManagerPath;
+	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
+			+ MonitorConstants.MONITOR_PATH_SEPERATOR + MonitorConstants.fileNodeManagerPath;
 
 	// There is no need to add concurrently
 	private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
@@ -103,7 +103,8 @@ public class FileNodeManager implements IStatistic {
 	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
-		for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants.values()) {
+		for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants
+				.values()) {
 			list.add(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
 		}
 		return list;
@@ -129,7 +130,8 @@ public class FileNodeManager implements IStatistic {
 			{
 				for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants
 						.values()) {
-					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(), MonitorConstants.DataType);
+					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(),
+							MonitorConstants.DataType);
 				}
 			}
 		};
@@ -163,6 +165,7 @@ public class FileNodeManager implements IStatistic {
 		return FileNodeManagerHolder.INSTANCE;
 	}
 
+	
 	/**
 	 * This function is just for unit test
 	 */
@@ -170,7 +173,7 @@ public class FileNodeManager implements IStatistic {
 		this.backUpOverflowedFileNodeName = new HashSet<>();
 		this.overflowedFileNodeName = new HashSet<>();
 
-		for(String key:statParamsHashMap.keySet()){
+		for (String key : statParamsHashMap.keySet()) {
 			statParamsHashMap.put(key, new AtomicLong());
 		}
 	}
@@ -1041,11 +1044,13 @@ public class FileNodeManager implements IStatistic {
 		int flushNum = (int) (tempProcessors.size() * percentage) > 1 ? (int) (tempProcessors.size() * percentage) : 1;
 		for (int i = 0; i < flushNum && i < tempProcessors.size(); i++) {
 			FileNodeProcessor processor = tempProcessors.get(i);
-			processor.writeLock();
-			try {
-				processor.flush();
-			} finally {
-				processor.writeUnlock();
+			if (processor.memoryUsage() > 64 * 1024 * 1024L) {
+				processor.writeLock();
+				try {
+					processor.flush();
+				} finally {
+					processor.writeUnlock();
+				}
 			}
 		}
 	}
