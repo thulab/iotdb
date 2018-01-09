@@ -165,6 +165,7 @@ public class FileNodeManager implements IStatistic {
 		return FileNodeManagerHolder.INSTANCE;
 	}
 
+	
 	/**
 	 * This function is just for unit test
 	 */
