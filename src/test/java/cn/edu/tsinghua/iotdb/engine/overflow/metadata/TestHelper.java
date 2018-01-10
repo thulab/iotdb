@@ -231,6 +231,7 @@ public class TestHelper {
 		  digest.addStatistics("min", ByteBuffer.wrap("12".getBytes()));
 		  digest.addStatistics("sum", ByteBuffer.wrap("123456789".getBytes()));
 		  digest.addStatistics("first", ByteBuffer.wrap("1".getBytes()));
+		  digest.addStatistics("last", ByteBuffer.wrap("1234".getBytes()));
 		  return digest;
 	  }
 	  
@@ -242,6 +243,7 @@ public class TestHelper {
 		  digest.getStatistics().put("min", ByteBuffer.wrap("12".getBytes()));
 		  digest.getStatistics().put("sum", ByteBuffer.wrap("123456789".getBytes()));
 		  digest.getStatistics().put("first", ByteBuffer.wrap("1".getBytes()));
+		  digest.getStatistics().put("last", ByteBuffer.wrap("1234".getBytes()));
 		  return digest;
 	  }
 
