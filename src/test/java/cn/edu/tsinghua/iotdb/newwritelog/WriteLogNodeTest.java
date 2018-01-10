@@ -27,9 +27,9 @@ import static junit.framework.TestCase.assertTrue;
 
 public class WriteLogNodeTest {
 
-    TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
-    boolean enableWal;
+    private boolean enableWal;
 
     @Before
     public void setUp() throws Exception {
@@ -142,4 +142,38 @@ public class WriteLogNodeTest {
         tempRestore.delete();
         tempProcessorStore.delete();
     }
+
+    @Test
+    public void testSyncThreshold() throws IOException {
+        // this test check that if more logs than threshold are written, a sync will be triggered.
+        int flushWalThreshold = config.flushWalThreshold;
+        config.flushWalThreshold = 3;
+        File tempRestore = new File("testtemp", "restore");
+        File tempProcessorStore = new File("testtemp", "processorStore");
+        tempRestore.getParentFile().mkdirs();
+        tempRestore.createNewFile();
+        tempProcessorStore.createNewFile();
+
+        WriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+
+        InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", "str", "false"));
+        UpdatePlan updatePlan = new UpdatePlan(0, 100, "2.0", new Path("root.logTestDevice.s1"));
+        DeletePlan deletePlan = new DeletePlan(50,  new Path("root.logTestDevice.s1"));
+
+        logNode.write(bwInsertPlan);
+        logNode.write(updatePlan);
+
+        File walFile = new File(config.walFolder + File.separator + "TestLogNode" + File.separator + "wal");
+        assertTrue(!walFile.exists());
+
+        logNode.write(deletePlan);
+        assertTrue(walFile.exists());
+
+        logNode.close();
+        tempRestore.delete();
+        tempProcessorStore.delete();
+        config.flushWalThreshold = flushWalThreshold;
+    }
+
 }

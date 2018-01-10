@@ -20,13 +20,13 @@ import java.util.List;
 
 import static cn.edu.tsinghua.iotdb.newwritelog.RecoverStage.*;
 
-public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
+public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     private static final Logger logger = LoggerFactory.getLogger(ExclusiveLogRecoverPerformer.class);
 
-    private static final String RECOVER_FLAG_NAME = "recover-flag";
+    public static final String RECOVER_FLAG_NAME = "recover-flag";
 
-    private static final String RECOVER_SUFFIX = "-recover";
+    public static final String RECOVER_SUFFIX = "-recover";
 
     private ExclusiveWriteLogNode writeLogNode;
 
@@ -40,7 +40,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
 
     private LogReplayer replayer = new ConcretLogReplayer();
 
-    private FileNodeRecoverPerformer fileNodeRecoverPerformer;
+    private RecoverPerformer fileNodeRecoverPerformer;
 
     public ExclusiveLogRecoverPerformer(String restoreFilePath, String processorStoreFilePath, ExclusiveWriteLogNode logNode) {
         this.restoreFilePath = restoreFilePath;
@@ -49,17 +49,32 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
         this.fileNodeRecoverPerformer = new FileNodeRecoverPerformer(writeLogNode.getIdentifier());
     }
 
-    @Override
-    public void recover() throws RecoverException {
-       currStage = determineStage();
-       recoverAtStage(currStage);
+    public void setFileNodeRecoverPerformer(RecoverPerformer fileNodeRecoverPerformer) {
+        this.fileNodeRecoverPerformer = fileNodeRecoverPerformer;
     }
 
-    private RecoverStage determineStage() {
+    public void setReplayer(LogReplayer replayer) {
+        this.replayer = replayer;
+    }
+
+    @Override
+    public void recover() throws RecoverException {
+        try {
+            writeLogNode.close();
+        } catch (IOException e) {
+            logger.error("Cannot close write log {} node before recover!", writeLogNode.getIdentifier());
+            throw new RecoverException(String.format("Cannot close write log %s node before recover!", writeLogNode.getIdentifier()));
+        }
+        currStage = determineStage();
+       if(currStage != null)
+           recoverAtStage(currStage);
+    }
+
+    private RecoverStage determineStage() throws RecoverException {
         File logDir = new File(writeLogNode.getLogDirectory());
         if(!logDir.exists()) {
             logger.error("Log node {} directory does not exist, recover failed", writeLogNode.getLogDirectory());
-            return null;
+            throw new RecoverException("No directory for log node " + writeLogNode.getIdentifier());
         }
         // search for the flag file
         File[] files = logDir.listFiles((dir, name) -> name.contains(RECOVER_FLAG_NAME));
@@ -80,8 +95,8 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
         // the flag name is like "recover-flag-{flagType}"
         String[] parts = flagName.split("-");
         if(parts.length != 3) {
-            logger.error("Log node {} invalid recover flag name {}", writeLogNode.getLogDirectory(), flagName);
-            return null;
+            logger.error("Log node {} invalid recover flag name {}", writeLogNode.getIdentifier(), flagName);
+            throw new RecoverException("Illegal recover flag " + flagName);
         }
         String stageName = parts[2];
         // if a flag of stage X is found, that means X had finished, so start from next stage
@@ -90,8 +105,8 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
         else if(stageName.equals(replayLog.toString()))
             return RecoverStage.cleanup;
         else {
-            logger.error("Log node {} invalid recover flag name {}", writeLogNode.getLogDirectory(), flagName);
-            return null;
+            logger.error("Log node {} invalid recover flag name {}", writeLogNode.getIdentifier(), flagName);
+            throw new RecoverException("Illegal recover flag " + flagName);
         }
     }
 
@@ -114,7 +129,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
                 logger.error("Invalid stage {}", stage);
         }
     }
-    
+
     private void setFlag(RecoverStage stage) {
         if(recoveryFlagPath == null) {
             recoveryFlagPath = writeLogNode.getLogDirectory() + File.separator + RECOVER_FLAG_NAME + "-" + stage.name();
@@ -178,7 +193,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
         try {
             FileUtils.fileCopy(recoverRestoreFile, new File(restoreFilePath));
         } catch (Exception e) {
-            logger.error("Log node {} cannot recover restore file", writeLogNode.getLogDirectory());
+            logger.error("Log node {} cannot recover restore file because {}", writeLogNode.getLogDirectory(), e.getMessage());
             throw new RecoverException("Cannot recover restore file, recovery aborted.");
         }
 
@@ -187,7 +202,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerfromer {
         try {
             FileUtils.fileCopy(recoverProcessorStoreFile, new File(processorStoreFilePath) );
         } catch (Exception e) {
-            logger.error("Log node {} cannot recover processor file", writeLogNode.getLogDirectory());
+            logger.error("Log node {} cannot recover processor file, because{}", writeLogNode.getLogDirectory(), e.getMessage());
             throw new RecoverException("Cannot recover processor file, recovery aborted.");
         }
 

@@ -4,14 +4,10 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.newwritelog.LogPosition;
-import cn.edu.tsinghua.iotdb.newwritelog.RecoverStage;
 import cn.edu.tsinghua.iotdb.newwritelog.recover.ExclusiveLogRecoverPerformer;
-import cn.edu.tsinghua.iotdb.newwritelog.recover.RecoverPerfromer;
-import cn.edu.tsinghua.iotdb.newwritelog.replay.ConcretLogReplayer;
+import cn.edu.tsinghua.iotdb.newwritelog.recover.RecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.iotdb.utils.FileUtils;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +15,6 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import static cn.edu.tsinghua.iotdb.newwritelog.RecoverStage.*;
 
 /**
  * This WriteLogNode is used to manage write ahead logs of a single FileNode.
@@ -42,24 +36,22 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
 
     private RandomAccessFile currentFile;
 
-    private ConcretLogReplayer replayer = new ConcretLogReplayer();
-
-    private RecoverPerfromer recoverPerfromer;
+    private RecoverPerformer recoverPerformer;
 
     private List<byte[]> logCache = new ArrayList<>();
 
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
-    public ExclusiveWriteLogNode(String identifier, String restoreFilePath, String processorStoreFilePath) throws IOException {
+    public ExclusiveWriteLogNode(String identifier, String restoreFilePath, String processorStoreFilePath) {
         this.identifier = identifier;
         this.logDirectory = config.walFolder + File.separator + this.identifier;
         new File(logDirectory).mkdirs();
 
-        recoverPerfromer = new ExclusiveLogRecoverPerformer(restoreFilePath, processorStoreFilePath, this);
+        recoverPerformer = new ExclusiveLogRecoverPerformer(restoreFilePath, processorStoreFilePath, this);
     }
 
-    public void setReplayer(ConcretLogReplayer replayer) {
-        this.replayer = replayer;
+    public void setRecoverPerformer(RecoverPerformer recoverPerformer) {
+        this.recoverPerformer = recoverPerformer;
     }
 
     /*
@@ -71,7 +63,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         byte[] logBytes = PhysicalPlanLogTransfer.operatorToLog(plan);
         logCache.add(logBytes);
 
-        if(logCache.size() > config.flushWalThreshold) {
+        if(logCache.size() >= config.flushWalThreshold) {
             sync();
         }
         unlockForWrite();
@@ -80,7 +72,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
 
     @Override
     public void recover() throws RecoverException {
-        recoverPerfromer.recover();
+        recoverPerformer.recover();
     }
 
     @Override
@@ -88,6 +80,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         sync();
         try {
             this.currentFile.close();
+            this.currentFile = null;
             logger.info("Log node {} closed successfully", identifier);
         } catch (IOException e) {
             logger.error("Cannot close log node {} because {}", identifier, e.getMessage());
@@ -180,7 +173,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
             logger.error("Log node {} sync failed because {}.", identifier, e.getMessage());
         }
         logCache.clear();
-        logger.info("log node {} ends flush.", identifier);
+        logger.info("log node {} ends sync.", identifier);
         unlockForSync();
     }
 

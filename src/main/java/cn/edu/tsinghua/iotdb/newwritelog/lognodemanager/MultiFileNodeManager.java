@@ -19,7 +19,7 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
     private static final Logger logger = LoggerFactory.getLogger(MultiFileNodeManager.class);
     private Map<String, WriteLogNode> nodeMap;
 
-    private ScheduledExecutorService syncThread;
+    private Thread syncThread;
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     private static class InstanceHolder {
@@ -27,17 +27,31 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
     }
 
     private MultiFileNodeManager() {
-        nodeMap = new HashMap<>();
-        syncThread = Executors.newScheduledThreadPool(1);
-        syncThread.scheduleAtFixedRate(() -> {
-            for(WriteLogNode node : nodeMap.values()) {
+        nodeMap = new ConcurrentHashMap<>();
+        syncThread = new Thread(() -> {
+            while(true) {
+                if(Thread.interrupted()){
+                    logger.info("WAL sync thread exits.");
+                    break;
+                }
+
+                for(WriteLogNode node : nodeMap.values()) {
+                    try {
+                        node.forceSync();
+                    } catch (IOException e) {
+                        logger.error("Cannot sync {}, because {}", node.toString(), e.toString());
+                    }
+                }
+
                 try {
-                    node.forceSync();
-                } catch (IOException e) {
-                    logger.error("Cannot sync {}, because {}", node.toString(), e.toString());
+                    Thread.sleep(config.flushWalPeriodInMs);
+                } catch (InterruptedException e) {
+                    logger.info("WAL sync thread exits.");
+                    break;
                 }
             }
-        }, 0, config.flushWalPeriodInMs, TimeUnit.MILLISECONDS);
+        }, "IoTDB-MultiFileNodeManager-Sync-Thread");
+        syncThread.start();
     }
 
     static public MultiFileNodeManager getInstance() {
@@ -71,7 +85,7 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
 
     @Override
     public void close() {
-        syncThread.shutdownNow();
+        syncThread.interrupt();
         for(WriteLogNode node : nodeMap.values()) {
             try {
                 node.close();
@@ -79,5 +93,6 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
                 logger.error("{} failed to close because {}", node.toString(), e.getMessage());
             }
         }
+        nodeMap.clear();
     }
 }

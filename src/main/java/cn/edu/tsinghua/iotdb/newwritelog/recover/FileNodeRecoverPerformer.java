@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.newwritelog.recover;
 
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 
-public class FileNodeRecoverPerformer implements RecoverPerfromer {
+public class FileNodeRecoverPerformer implements RecoverPerformer {
 
     /**
      * If the storage group is set at "root.a.b", then the identifier for a bufferwrite processor will be "root.a.b-bufferwrite",
