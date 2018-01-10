@@ -80,6 +80,7 @@ public class BufferWriteProcessor extends Processor {
 	private long memUsed = 0;
 
     private WriteLogNode logNode;
+    private String processorStoreFileName;
 
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters)
 			throws BufferWriteProcessorException {
@@ -151,7 +152,12 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
-		logNode = MultiFileNodeManager.getInstance().getNode(getProcessorName() + "-bufferwrite", restoreFileName, processorStoreFileName);
+		try {
+			logNode = MultiFileNodeManager.getInstance().getNode(getProcessorName() + "-bufferwrite", restoreFileName, processorStoreFileName);
+		} catch (IOException e) {
+			LOGGER.error("Cannot create wal node for bufferwrite processor {}",processorName);
+			throw new BufferWriteProcessorException(e);
+		}
 	}
 
     public WriteLogNode getLogNode() {

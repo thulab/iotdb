@@ -96,6 +96,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         sync();
         try {
             this.currentFile.close();
+            logger.info("Log node {} closed successfully", identifier);
         } catch (IOException e) {
             logger.error("Cannot close log node {} because {}", identifier, e.getMessage());
         }

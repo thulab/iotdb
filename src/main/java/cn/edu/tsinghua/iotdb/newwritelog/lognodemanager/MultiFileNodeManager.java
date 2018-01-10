@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.newwritelog.lognodemanager;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.ExclusiveWriteLogNode;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
@@ -10,11 +12,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class MultiFileNodeManager implements WriteLogNodeManager {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiFileNodeManager.class);
     private Map<String, WriteLogNode> nodeMap;
+
+    private ScheduledExecutorService syncThread;
+    private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     private static class InstanceHolder {
         private static MultiFileNodeManager instance = new MultiFileNodeManager();
@@ -22,6 +28,16 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
 
     private MultiFileNodeManager() {
         nodeMap = new HashMap<>();
+        syncThread = Executors.newScheduledThreadPool(1);
+        syncThread.scheduleAtFixedRate(() -> {
+            for(WriteLogNode node : nodeMap.values()) {
+                try {
+                    node.forceSync();
+                } catch (IOException e) {
+                    logger.error("Cannot sync {}, because {}", node.toString(), e.toString());
+                }
+            }
+        }, 0, config.flushWalPeriodInMs, TimeUnit.MILLISECONDS);
     }
 
     static public MultiFileNodeManager getInstance() {
@@ -55,6 +71,7 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
 
     @Override
     public void close() {
+        syncThread.shutdownNow();
         for(WriteLogNode node : nodeMap.values()) {
             try {
                 node.close();

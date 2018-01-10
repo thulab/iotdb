@@ -37,6 +37,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import sun.rmi.runtime.Log;
 
 public class OverflowProcessor extends Processor {
 
@@ -67,6 +68,7 @@ public class OverflowProcessor extends Processor {
 	private long lastFlushTime = -1;
 
 	private WriteLogNode logNode;
+	private String overflowProcessorStoreFilePath;
 
 	public OverflowProcessor(String processorName, Map<String, Object> parameters) throws OverflowProcessorException {
 		super(processorName);
@@ -139,7 +141,12 @@ public class OverflowProcessor extends Processor {
 		filenodeManagerFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION);
 
 		// TODO : WAL : add over flowProcessorStoreFilePath
-		logNode = MultiFileNodeManager.getInstance().getNode(getProcessorName() + "-overflow", overflowRestoreFilePath, overflowProcessorStoreFilePath);
+		try {
+			logNode = MultiFileNodeManager.getInstance().getNode(getProcessorName() + "-overflow", overflowRestoreFilePath, overflowProcessorStoreFilePath);
+		} catch (IOException e) {
+			LOGGER.error("Cannot create wal node for overflow processor {}", processorName);
+			throw new OverflowProcessorException(e);
+		}
 	}
 
 	public WriteLogNode getLogNode() {
