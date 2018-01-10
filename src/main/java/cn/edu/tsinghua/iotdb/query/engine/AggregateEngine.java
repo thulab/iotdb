@@ -1,13 +1,9 @@
 package cn.edu.tsinghua.iotdb.query.engine;
 
-import java.io.IOException;
-import java.util.*;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -20,17 +16,23 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.*;
+
+import java.io.IOException;
+import java.util.*;
+
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.noFilterOrOnlyHasTimeFilter;
 
 public class AggregateEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(AggregateEngine.class);
 
     /** aggregation batch calculation size **/
-    public static int aggregateFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
+    private int aggregateFetchSize =
+            TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /** cross read query fetch size **/
-    public static int crossQueryFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
+    private int crossQueryFetchSize =
+            TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /**
      * <p>Public invoking method of multiple aggregation.
@@ -41,7 +43,7 @@ public class AggregateEngine {
      * @throws IOException        read TsFile error
      * @throws PathErrorException path resolving error
      */
-    public static void multiAggregate(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
+    public void multiAggregate(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
             throws IOException, PathErrorException, ProcessorException {
         if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
             if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
@@ -54,7 +56,7 @@ public class AggregateEngine {
         }
     }
 
-    private static void multiAggregateWithFilter(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
+    private void multiAggregateWithFilter(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
             throws IOException, PathErrorException, ProcessorException {
 
         // stores the query QueryDataSet of each FilterStructure in filterStructures
@@ -138,8 +140,9 @@ public class AggregateEngine {
                         } else {
                             long[] newTimeStamps = fsDataSets.get(i).crossQueryTimeGenerator.generateTimes();
                             if (newTimeStamps.length > 0) {
+                                priorityQueue.add(newTimeStamps[0]);
                                 fsTimeList.set(i, newTimeStamps);
-                                fsTimeIndexList.set(i, 0);
+                                fsTimeIndexList.set(i, 1);
                             } else {
                                 fsHasUnReadDataList.set(i, false);
                             }
@@ -214,7 +217,7 @@ public class AggregateEngine {
      * @throws ProcessorException
      * @throws IOException
      */
-    private static void multiAggregateWithoutFilter(List<Pair<Path, AggregateFunction>> aggres, SingleSeriesFilterExpression queryTimeFilter)
+    private void multiAggregateWithoutFilter(List<Pair<Path, AggregateFunction>> aggres, SingleSeriesFilterExpression queryTimeFilter)
             throws PathErrorException, ProcessorException, IOException {
 
         int aggreNumber = 0;
@@ -253,7 +256,7 @@ public class AggregateEngine {
      * <code>RecordReaderCache</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCache</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    private static DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter, SingleSeriesFilterExpression freqFilter,
+    private DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter, SingleSeriesFilterExpression freqFilter,
                                                                     DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 

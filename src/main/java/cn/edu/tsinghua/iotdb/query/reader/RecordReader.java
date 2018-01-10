@@ -1,32 +1,30 @@
 package cn.edu.tsinghua.iotdb.query.reader;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
+import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.List;
 
 import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.copy;
-import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
+import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.and;
 
 /**
  * A <code>RecordReader</code> contains all the data variables which is needed in read process.

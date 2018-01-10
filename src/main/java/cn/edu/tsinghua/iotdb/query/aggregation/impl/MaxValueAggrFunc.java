@@ -36,7 +36,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
         }
 
         Digest pageDigest = pageHeader.data_page_header.getDigest();
-        DigestForFilter digest = new StrDigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
+        DigestForFilter digest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
         Comparable<?> maxv = digest.getMaxValue();
         updateMaxValue(maxv);

@@ -218,15 +218,27 @@ public class InsertDynamicData {
                     pageIndex ++;
             }
 
+//<<<<<<< HEAD
             if (pageIndex >= pageList.size()) {
                 return false;
             }
+//=======
+//                // construct value filter digest
+//                DigestForFilter valueDigest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
+//                        pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
+//                // construct time filter digest
+//                long mint = pageHeader.data_page_header.min_timestamp;
+//                long maxt = pageHeader.data_page_header.max_timestamp;
+//                DigestForFilter timeDigest = new DigestForFilter(mint, maxt);
+//                LOG.debug("Page min time:{}, max time:{}, min value:{}, max value:{}", String.valueOf(mint),
+//                        String.valueOf(maxt), pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE), pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE));
+//>>>>>>> master
 
             // construct time and value digest
             pageReader = new PageReader(pageList.get(pageIndex), compressionTypeName);
             PageHeader pageHeader = pageReader.getNextPageHeader();
             Digest pageDigest = pageHeader.data_page_header.getDigest();
-            DigestForFilter valueDigest = new StrDigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
+            DigestForFilter valueDigest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
                     pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
             long mint = pageHeader.data_page_header.min_timestamp;
             long maxt = pageHeader.data_page_header.max_timestamp;

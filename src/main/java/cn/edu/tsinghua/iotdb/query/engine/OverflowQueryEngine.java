@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggreFuncFactory;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.dataset.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
@@ -27,14 +26,13 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.*;
-import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.and;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+
+import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.noFilterOrOnlyHasTimeFilter;
 
 
 public class OverflowQueryEngine {
@@ -109,7 +107,8 @@ public class OverflowQueryEngine {
             aggregations.add(new Pair<>(pair.left, aggregateFunction));
         }
 
-        AggregateEngine.multiAggregate(aggregations, filterStructures);
+        AggregateEngine aggregateEngine = new AggregateEngine();
+        aggregateEngine.multiAggregate(aggregations, filterStructures);
         QueryDataSet ansQueryDataSet = new QueryDataSet();
         for (Pair<Path, AggregateFunction> pair : aggregations) {
             AggregateFunction aggregateFunction = pair.right;
