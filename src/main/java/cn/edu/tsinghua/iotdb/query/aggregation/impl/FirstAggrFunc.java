@@ -17,8 +17,6 @@ import java.util.List;
 
 public class FirstAggrFunc extends AggregateFunction{
 
-    private static Logger logger = LoggerFactory.getLogger(FirstAggrFunc.class);
-
     public FirstAggrFunc(TSDataType dataType) {
         super(AggregationConstant.FIRST, dataType);
     }

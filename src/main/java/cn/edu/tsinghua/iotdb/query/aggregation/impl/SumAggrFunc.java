@@ -33,7 +33,7 @@ public class SumAggrFunc extends AggregateFunction {
             resultData.putTime(0);
         ByteBuffer sumValStr = pageHeader.data_page_header.digest.getStatistics().get(AggregationConstant.SUM);
         if(sumValStr == null)
-            throw new ProcessorException("PageHeader contains no SUM value");
+            throw new ProcessorException("In aggregation SUM : PageHeader contains no SUM value");
         double pageSum;
         pageSum = BytesUtils.bytesToDouble(sumValStr.array());
         if(pageHeader.data_page_header.num_rows > 0)

@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.List;
 
 public class LastAggrFunc extends AggregateFunction {
-    private Logger logger = LoggerFactory.getLogger(LastAggrFunc.class);
 
     private boolean hasSetValue = false;
 
@@ -81,7 +80,7 @@ public class LastAggrFunc extends AggregateFunction {
 
     @Override
     public boolean calcAggregationUsingTimestamps(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex)
-            throws IOException, ProcessorException {
+            throws IOException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
         }

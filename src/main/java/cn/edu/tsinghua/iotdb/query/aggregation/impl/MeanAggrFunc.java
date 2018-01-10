@@ -17,8 +17,6 @@ import java.util.List;
 
 public class MeanAggrFunc extends AggregateFunction{
 
-    private static Logger logger = LoggerFactory.getLogger(MeanAggrFunc.class);
-
     private double sum = 0.0;
     private int cnt = 0;
 
@@ -39,7 +37,7 @@ public class MeanAggrFunc extends AggregateFunction{
             resultData.putTime(0);
         ByteBuffer sumVal = pageHeader.data_page_header.digest.getStatistics().get(AggregationConstant.SUM);
         if (sumVal == null)
-            throw new ProcessorException("PageHeader contains no SUM value");
+            throw new ProcessorException("In aggregation MEAN : PageHeader contains no SUM value.");
         double pageSum;
         pageSum = BytesUtils.bytesToDouble(sumVal.array());
         int pageCnt = pageHeader.data_page_header.num_rows;
@@ -153,7 +151,6 @@ public class MeanAggrFunc extends AggregateFunction{
      * @throws ProcessorException
      */
     private void updateMean(DynamicOneColumnData data) throws ProcessorException {
-        logger.debug("Receiving a page of {}, size is {}", data.dataType, data.timeLength);
         switch (data.dataType) {
             case INT32:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
@@ -192,7 +189,6 @@ public class MeanAggrFunc extends AggregateFunction{
     }
 
     private void updateMean(InsertDynamicData data) throws ProcessorException {
-        logger.debug("Receiving a page of {}, size is {}", data.getDataType(), data.timeLength);
         switch (data.getDataType()) {
             case INT32:
                 try {
