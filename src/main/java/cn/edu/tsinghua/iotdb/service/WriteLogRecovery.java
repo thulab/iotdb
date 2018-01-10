@@ -43,7 +43,9 @@ class WriteLogRecovery {
             tsRecord.addTuple(dataPoint);
         }
         String fileName = MManager.getInstance().getFileNameByPath(deltaObject);
-        //Restore the statistics info need to set isMonitor true
+        // When Wal restores the statistics info, need to set isMonitor true for the insert method to stop
+        // collecting statistics data of storage group whose name is  "root.stats". Because system will not
+        // Record statistics data for "root.stats" storage group
         if (MonitorConstants.statStorageGroupPrefix.equals(fileName)) {
             FileNodeManager.getInstance().insert(tsRecord, true);
         } else {

@@ -75,13 +75,13 @@ public class TsfileDBDescriptor {
 			if (conf.statMonitorDetectFreqSec < statMonitorDetectFreqSec) {
 				conf.statMonitorDetectFreqSec = statMonitorDetectFreqSec;
 			} else {
-				LOGGER.info("If the stat_monitor_detect_freq_sec value is smaller than default, use default value");
+				LOGGER.info("The stat_monitor_detect_freq_sec value is smaller than default, use default value");
 			}
 
 			if (conf.statMonitorRetainIntervalSec < statMonitorRetainIntervalSec) {
 				conf.statMonitorRetainIntervalSec = statMonitorRetainIntervalSec;
 			}else {
-				LOGGER.info("If the stat_monitor_retain_interval_sec value is smaller than default, use default value");
+				LOGGER.info("The stat_monitor_retain_interval_sec value is smaller than default, use default value");
 			}
 
 			conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",conf.rpcPort+""));
