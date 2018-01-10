@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.engine.groupby;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
@@ -37,11 +38,11 @@ public class GroupByEngineWithFilter {
 
     /** aggregateFetchSize is set to calculate the result of timestamps, when the size of common timestamps is
      * up to aggregateFetchSize, the aggregation calculation process will begin**/
-    private int aggregateFetchSize = 100000;
+    private int aggregateFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /** crossQueryFetchSize is sed to read one column data, this variable is mainly used to debug to verify
      * the rightness of iterative readOneColumnWithoutFilter **/
-    private int crossQueryFetchSize = 100000;
+    private int crossQueryFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /** all the group by Path ans its AggregateFunction **/
     private List<Pair<Path, AggregateFunction>> aggregations;

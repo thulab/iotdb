@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.engine;
 import java.io.IOException;
 import java.util.*;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
@@ -26,10 +27,10 @@ public class AggregateEngine {
     private static final Logger logger = LoggerFactory.getLogger(AggregateEngine.class);
 
     /** aggregation batch calculation size **/
-    public static int aggregateFetchSize = 50000;
+    public static int aggregateFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /** cross read query fetch size **/
-    public static int crossQueryFetchSize = 50000;
+    public static int crossQueryFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /**
      * <p>Public invoking method of multiple aggregation.

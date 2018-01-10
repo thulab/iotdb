@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.engine.groupby;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
@@ -25,13 +26,13 @@ import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.aggregationKey;
 /**
  * Group by aggregation implementation without <code>FilterStructure</code>.
  */
-public class GroupByEngineNoFilter {
+public class  GroupByEngineNoFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(GroupByEngineNoFilter.class);
 
     /** queryFetchSize is sed to read one column data, this variable is mainly used to debug to verify
      * the rightness of iterative readOneColumnWithoutFilter **/
-    private int queryFetchSize = 100000;
+    private int queryFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
     /** all the group by Path ans its AggregateFunction **/
     private List<Pair<Path, AggregateFunction>> aggregations;
