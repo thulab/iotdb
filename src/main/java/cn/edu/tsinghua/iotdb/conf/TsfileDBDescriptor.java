@@ -73,12 +73,15 @@ public class TsfileDBDescriptor {
 			int statMonitorRetainIntervalSec = Integer.parseInt(properties.getProperty("stat_monitor_retain_interval_sec", conf.statMonitorRetainIntervalSec + ""));
 			// the conf value must > default value, or may cause system unstable
 			if (conf.statMonitorDetectFreqSec < statMonitorDetectFreqSec) {
-				LOGGER.info("The stat_monitor_detect_freq_sec value is smaller than default, use default value");
 				conf.statMonitorDetectFreqSec = statMonitorDetectFreqSec;
+			} else {
+				LOGGER.info("If the stat_monitor_detect_freq_sec value is smaller than default, use default value");
 			}
+
 			if (conf.statMonitorRetainIntervalSec < statMonitorRetainIntervalSec) {
-				LOGGER.info("The stat_monitor_retain_interval_sec value is smaller than default, use default value");
 				conf.statMonitorRetainIntervalSec = statMonitorRetainIntervalSec;
+			}else {
+				LOGGER.info("If the stat_monitor_retain_interval_sec value is smaller than default, use default value");
 			}
 
 			conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",conf.rpcPort+""));
