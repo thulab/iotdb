@@ -7,6 +7,9 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
@@ -99,6 +102,27 @@ public class StatMonitor {
             }
         } catch (Exception e){
             LOGGER.error("MManager setStorageLevelToMTree False, Because {}", e);
+        }
+    }
+
+    public void recovery() {
+        // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
+        QueryDataSet queryDataSet = new QueryDataSet();
+        if (queryDataSet.hasNextRecord()) {
+            queryDataSet.next();
+            RowRecord rowRecord = queryDataSet.getCurrentRecord();
+            LinkedHashMap<String, DynamicOneColumnData> linkedHashMap = queryDataSet.mapRet;
+            FileNodeManager fManager = FileNodeManager.getInstance();
+            HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
+            for (Map.Entry<String, DynamicOneColumnData> entry : linkedHashMap.entrySet()) {
+                String[] statMeasurements = entry.getKey().split("\\.");
+                String statMeasurement = statMeasurements[statMeasurements.length-1];
+                if (statParamsHashMap.containsKey(statMeasurement)) {
+                    DynamicOneColumnData dynamicOneColumnData = entry.getValue();
+                    long lastValue = dynamicOneColumnData.getLong(dynamicOneColumnData.valueLength-1);
+                    statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
+                }
+            }
         }
     }
 
