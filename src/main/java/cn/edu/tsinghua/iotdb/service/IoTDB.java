@@ -87,7 +87,7 @@ public class IoTDB implements IoTDBMBean {
 
 		initFileNodeManager();
 
-		// When register statMonitor, we should start recover some statistics with latest values stored
+		// When registering statMonitor, we should start recovering some statistics with latest values stored
 		// Warn: registMonitor() method should be called before systemDataRecovery()
 		registStatMonitor();
 		systemDataRecovery();
@@ -97,7 +97,7 @@ public class IoTDB implements IoTDBMBean {
 		registMonitor();
 		registIoTDBServer();
 		startCloseAndMergeServer();
-		// StatMonitor should be start lastly
+		// StatMonitor should start at the end
 		enableStatMonitor();
 	}
 
