@@ -160,18 +160,42 @@ public class TsfileDBConfig {
 	public long overflowFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
 
 
-	/*
-	 * The statMonitor's BackLoop period, 5s is enough
+	/**
+	 * When set to false, MemMonitorThread and MemStatisticThread will not be created.
 	 */
-	public int backLoopPeriod = 5;
+	public boolean enableMemMonitor = true;
 
 	/**
-	 * Set whether to enable statistics service
+	 * When set to true, small flush will be triggered periodically even if memory threshold is not exceeded.
+	 */
+	public boolean enableSmallFlush = false;
+
+	/**
+	 * The interval of small flush in ms.
+	 */
+	public long smallFlushInterval = 60 * 1000;
+
+	/**
+	 * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec secs.
+	 * Default value is 5s.
+	 */
+	public int backLoopPeriodSec = 5;
+
+	/**
+	 * Set true to enable statistics monitor service,
+     * false to disable statistics service
 	 */
 	public boolean enableStatMonitor = true;
+
 	/**
-	 * the maximum number of writing instances existing in same time.
+	 * Set the time interval when StatMonitor performs delete detection, default value is 600s,
 	 */
+	public int statMonitorDetectFreqSec = 60 * 10;
+
+	/**
+	 * Set the maximum time to keep monitor statistics information in IoTDB, default value is 600s
+	 */
+	public int statMonitorRetainIntervalSec = 60 * 10;
 
 
 	public TsfileDBConfig() {}

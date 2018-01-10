@@ -1,12 +1,9 @@
 package cn.edu.tsinghua.iotdb.qp.executor;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -260,7 +257,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			TSRecord tsRecord = new TSRecord(timestamp, deltaObjectId);
 			DataPoint dataPoint = DataPoint.getDataPoint(type, measurementId, value);
 			tsRecord.addTuple(dataPoint);
-			return fileNodeManager.insert(tsRecord);
+			return fileNodeManager.insert(tsRecord, false);
 
 		} catch (PathErrorException e) {
 			throw new ProcessorException("Error in insert: " + e.getMessage());
@@ -289,7 +286,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementList.get(i), value);
 				tsRecord.addTuple(dataPoint);
 			}
-			return fileNodeManager.insert(tsRecord);
+			return fileNodeManager.insert(tsRecord, false);
 
 		} catch (PathErrorException | FileNodeManagerException e) {
 			throw new ProcessorException(e.getMessage());
@@ -444,13 +441,23 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			case DELETE_PATH:
 				if (deletePathList != null && !deletePathList.isEmpty()) {
 					Set<String> pathSet = new HashSet<>();
+					//Attention: Monitor storage group path is not allowed to be deleted
 					for (Path p : deletePathList) {
 						ArrayList<String> subPaths = mManager.getPaths(p.getFullPath());
 						if (subPaths.isEmpty()) {
 							throw new ProcessorException(
 									String.format("There are no timeseries in the prefix of %s path", p.getFullPath()));
 						}
-						pathSet.addAll(subPaths);
+						ArrayList<String> newSubPaths = new ArrayList<>();
+						for (String eachSubPath : subPaths) {
+							String filenodeName = mManager.getFileNameByPath(eachSubPath);
+
+							if (MonitorConstants.statStorageGroupPrefix.equals(filenodeName)) {
+								continue;
+							}
+							newSubPaths.add(eachSubPath);
+						}
+						pathSet.addAll(newSubPaths);
 					}
 					for (String p : pathSet) {
 						if (!mManager.pathExist(p)) {
