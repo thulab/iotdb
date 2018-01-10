@@ -1027,7 +1027,8 @@ public class FileNodeManager implements IStatistic {
 		int flushNum = (int) (tempProcessors.size() * percentage) > 1 ? (int) (tempProcessors.size() * percentage) : 1;
 		for (int i = 0; i < flushNum && i < tempProcessors.size(); i++) {
 			FileNodeProcessor processor = tempProcessors.get(i);
-			if (processor.memoryUsage() > 64 * 1024 * 1024L) {
+			// 64M
+			if (processor.memoryUsage() > TsFileConf.groupSizeInByte/2) {
 				processor.writeLock();
 				try {
 					processor.flush();
