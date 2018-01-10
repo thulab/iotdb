@@ -647,7 +647,7 @@ public class BufferWriteProcessor extends Processor {
 				if (isFlushingSync) {
 					try {
 						LOGGER.info("{} bufferwrite start to flush synchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getId());
+								Thread.currentThread().getName());
 						super.flushRowGroup(false);
 						writeStoreToDisk();
 						filenodeFlushAction.act();
@@ -655,7 +655,7 @@ public class BufferWriteProcessor extends Processor {
 							WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
 						}
 						LOGGER.info("{} bufferwrite end to flush synchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getId());
+								Thread.currentThread().getName());
 					} catch (IOException e) {
 						LOGGER.error("Flush row group to store failed, processor:{}.", getProcessorName());
 						throw e;
@@ -679,7 +679,7 @@ public class BufferWriteProcessor extends Processor {
 					Runnable flushThread;
 					flushThread = () -> {
 						LOGGER.info("{} bufferwrite start to flush asynchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getId());
+								Thread.currentThread().getName());
 						try {
 							asyncFlushRowGroupToStore();
 							writeStoreToDisk();
@@ -693,7 +693,7 @@ public class BufferWriteProcessor extends Processor {
 							 * exception
 							 */
 							LOGGER.error(String.format("%s asynchronous flush error, sleep this thread-%s.",
-									getProcessorName(), Thread.currentThread().getId()), e);
+									getProcessorName(), Thread.currentThread().getName()), e);
 							// TODO
 						} catch (BufferWriteProcessorException e) {
 							LOGGER.error("Write bufferwrite information to disk failed.", e);
@@ -713,7 +713,7 @@ public class BufferWriteProcessor extends Processor {
 								flushState.setUnFlushing();
 								flushState.notify();
 								LOGGER.info("{} bufferwrite end to flush asynchronously,-Thread id {}.",
-										getProcessorName(), Thread.currentThread().getId());
+										getProcessorName(), Thread.currentThread().getName());
 							}
 						} finally {
 							convertBufferLock.writeLock().unlock();

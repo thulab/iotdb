@@ -446,7 +446,7 @@ public class OverflowProcessor extends Processor {
 				// just close overflow processor will call this function by
 				// using true parameter
 				LOGGER.info("{} overflow start to flush synchronously,-Thread id {}.", getProcessorName(),
-						Thread.currentThread().getId());
+						Thread.currentThread().getName());
 				flushState.setFlushing();
 				try {
 					// flush overflow rowgroup data
@@ -484,7 +484,7 @@ public class OverflowProcessor extends Processor {
 				Runnable AsynflushThread = () -> {
 					try {
 						LOGGER.info("{} overflow start to flush asynchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getId());
+								Thread.currentThread().getName());
 						// flush overflow rowgroup data
 						ofSupport.flushRowGroupToStore(getProcessorName());
 						// store the rowgorup metadata to file
