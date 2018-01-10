@@ -134,7 +134,6 @@ public class AggregationLargeDataTest {
             minMaxTimeAggreWithSingleFilterTest();
             minValueAggreWithSingleFilterTest();
             maxValueAggreWithSingleFilterTest();
-
             lastAggreWithMultiFilterTest();
             countAggreWithMultiFilterTest();
             minTimeAggreWithMultiFilterTest();
