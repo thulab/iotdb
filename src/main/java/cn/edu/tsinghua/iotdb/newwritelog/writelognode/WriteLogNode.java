@@ -43,4 +43,16 @@ public interface WriteLogNode {
      * When the flush of a FlieNode ends, this method must be called to check if log file needs cleaning.
      */
     void notifyEndFlush(List<LogPosition> logPositions);
+
+    /**
+     *
+     * @return the identifier of this log node.
+     */
+    String getIdentifier();
+
+    /**
+     *
+     * @return the directory where wal file is placed.
+     */
+    String getLogDirectory();
 }
