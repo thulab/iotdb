@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,6 @@ import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -317,11 +317,15 @@ public class FileNodeManager implements IStatistic {
 				// write wal
 				try {
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						if (!WriteLogManager.isRecovering) {
-							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.OVERFLOW);
+						List<String> measurementList = new ArrayList<>();
+						List<String> insertValues = new ArrayList<>();
+						for (DataPoint dp : tsRecord.dataPointList) {
+							measurementList.add(dp.getMeasurementId());
+							insertValues.add(dp.getValue().toString());
 						}
+						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time, measurementList, insertValues));
 					}
-				} catch (IOException | PathErrorException e) {
+				} catch (IOException e) {
 					LOGGER.error("Error in write WAL.", e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
@@ -374,11 +378,15 @@ public class FileNodeManager implements IStatistic {
 				// write wal
 				try {
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						if (!WriteLogManager.isRecovering) {
-							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.BUFFERWRITER);
+						List<String> measurementList = new ArrayList<>();
+						List<String> insertValues = new ArrayList<>();
+						for (DataPoint dp : tsRecord.dataPointList) {
+							measurementList.add(dp.getMeasurementId());
+							insertValues.add(dp.getValue().toString());
 						}
+						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time, measurementList, insertValues));
 					}
-				} catch (IOException | PathErrorException e) {
+				} catch (IOException e) {
 					LOGGER.error("Error in write WAL.", e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
@@ -436,18 +444,6 @@ public class FileNodeManager implements IStatistic {
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		try {
-			// write wal
-			try {
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-					if (!WriteLogManager.isRecovering) {
-						WriteLogManager.getInstance().write(fileNodeProcessor.getProcessorName(),
-								new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
-					}
-				}
-			} catch (IOException | PathErrorException e) {
-				LOGGER.error("Error in write WAL.", e);
-				throw new FileNodeManagerException(e);
-			}
 
 			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 			if (startTime > lastUpdateTime) {
@@ -473,6 +469,17 @@ public class FileNodeManager implements IStatistic {
 						e);
 				throw new FileNodeManagerException(e);
 			}
+
+			// write wal
+			try {
+				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+					overflowProcessor.getLogNode().write(new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
+				}
+			} catch (IOException e) {
+				LOGGER.error("Error in write WAL.", e);
+				throw new FileNodeManagerException(e);
+			}
+
 			try {
 				overflowProcessor.update(deltaObjectId, measurementId, startTime, endTime, type, v);
 			} catch (OverflowProcessorException e) {
@@ -493,18 +500,6 @@ public class FileNodeManager implements IStatistic {
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		try {
-			// write wal
-			try {
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-					if (!WriteLogManager.isRecovering) {
-						WriteLogManager.getInstance().write(fileNodeProcessor.getProcessorName(),
-								new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
-					}
-				}
-			} catch (IOException | PathErrorException e) {
-				LOGGER.error("Error in write WAL,", e);
-				throw new FileNodeManagerException(e);
-			}
 
 			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 			// no tsfile data, the delete operation is invalid
@@ -529,6 +524,17 @@ public class FileNodeManager implements IStatistic {
 							e);
 					throw new FileNodeManagerException(e);
 				}
+
+				// write wal
+				try {
+					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+						overflowProcessor.getLogNode().write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
+					}
+				} catch (IOException e) {
+					LOGGER.error("Error in write WAL,", e);
+					throw new FileNodeManagerException(e);
+				}
+
 				try {
 					overflowProcessor.delete(deltaObjectId, measurementId, timestamp, type);
 				} catch (OverflowProcessorException e) {
@@ -659,7 +665,7 @@ public class FileNodeManager implements IStatistic {
 	 * 
 	 * @param namespacePath
 	 * @return
-	 * @throws LRUManagerException
+	 * @throws FileNodeManagerException
 	 */
 	private boolean closeOneProcessor(String namespacePath) throws FileNodeManagerException {
 		if (processorMap.containsKey(namespacePath)) {

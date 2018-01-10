@@ -53,7 +53,7 @@ public class ConcretLogReplayer implements LogReplayer {
             DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementList.get(i), value);
             tsRecord.addTuple(dataPoint);
         }
-        FileNodeManager.getInstance().insert(tsRecord);
+        FileNodeManager.getInstance().insert(tsRecord,true);
     }
 
     private void update(UpdatePlan updatePlan) throws FileNodeManagerException, PathErrorException {
