@@ -64,29 +64,25 @@ public class RecordReader {
     public DynamicOneColumnData overflowUpdateTrue;
     private UpdateOperation overflowUpdateTrueOperation;
 
-    /** 5. overflow update data **/
+    /** 6. overflow update data **/
     public DynamicOneColumnData overflowUpdateFalse;
     private UpdateOperation overflowUpdateFalseOperation;
 
-    /** 6. series time filter, this filter is the filter **/
+    /** 7. series time filter, this filter is the filter **/
     public SingleSeriesFilterExpression overflowTimeFilter;
 
-    /** 7. series value filter **/
+    /** 8. series value filter **/
     public SingleSeriesFilterExpression valueFilter;
-
-    //////////// Old data, useless
-//    public List<Object> overflowInfo = new ArrayList<>();
 
     /** bufferWritePageList + lastPageInMemory + overflow **/
     public InsertDynamicData insertMemoryData;
 
     /**
      * @param filePathList bufferwrite file has been serialized completely
-     * @throws IOException file error
      */
     public RecordReader(List<String> filePathList, String deltaObjectID, String measurementID, int lockToken,
                         DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
-                        List<Object> overflowInfo) throws IOException, PathErrorException {
+                        List<Object> overflowInfo) throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList);
         this.deltaObjectID = deltaObjectID;
         this.measurementID = measurementID;
@@ -109,12 +105,11 @@ public class RecordReader {
      * @param filePathList       bufferwrite file has been serialized completely
      * @param unsealedFilePath   unsealed file reader
      * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
-     * @throws IOException file error
      */
     public RecordReader(List<String> filePathList, String unsealedFilePath,
                         List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectID, String measurementID, int lockToken,
                         DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
-                        List<Object> overflowInfo) throws IOException, PathErrorException {
+                        List<Object> overflowInfo) throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
         this.deltaObjectID = deltaObjectID;
         this.measurementID = measurementID;

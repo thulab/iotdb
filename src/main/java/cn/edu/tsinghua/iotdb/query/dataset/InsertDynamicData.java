@@ -181,7 +181,7 @@ public class InsertDynamicData {
         }
     }
 
-    public void removeCurrentValue() throws IOException {
+    public void removeCurrentValue() {
         hasNext = false;
     }
 
