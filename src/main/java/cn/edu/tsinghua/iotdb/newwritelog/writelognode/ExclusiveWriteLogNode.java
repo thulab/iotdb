@@ -173,7 +173,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
             logger.error("Log node {} sync failed because {}.", identifier, e.getMessage());
         }
         logCache.clear();
-        logger.info("log node {} ends sync.", identifier);
+        logger.info("Log node {} ends sync.", identifier);
         unlockForSync();
     }
 

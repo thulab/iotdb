@@ -37,7 +37,7 @@ public class TsfileDBConfig {
 	 * milliseconds) It is possible to lose at most flush_wal_period_in_ms ms
 	 * operations
 	 */
-	public long flushWalPeriodInMs = 10;
+	public long flushWalPeriodInMs = 10000;
 	/**
 	 * Data directory
 	 */

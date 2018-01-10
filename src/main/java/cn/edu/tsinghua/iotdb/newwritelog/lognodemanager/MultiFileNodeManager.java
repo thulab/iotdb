@@ -26,15 +26,15 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
         private static MultiFileNodeManager instance = new MultiFileNodeManager();
     }
 
-    private MultiFileNodeManager() {
-        nodeMap = new ConcurrentHashMap<>();
-        syncThread = new Thread(() -> {
+    private final Runnable syncTask = new Runnable() {
+        @Override
+        public void run() {
             while(true) {
                 if(Thread.interrupted()){
                     logger.info("WAL sync thread exits.");
                     break;
                 }
-
+                logger.info("Timed sync starts");
                 for(WriteLogNode node : nodeMap.values()) {
                     try {
                         node.forceSync();
@@ -42,7 +42,7 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
                         logger.error("Cannot sync {}, because {}", node.toString(), e.toString());
                     }
                 }
-
+                logger.info("Timed sync finished");
                 try {
                     Thread.sleep(config.flushWalPeriodInMs);
                 } catch (InterruptedException e) {
@@ -50,11 +50,22 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
                     break;
                 }
             }
-        }, "IoTDB-MultiFileNodeManager-Sync-Thread");
+        }
+    };
+
+    private MultiFileNodeManager() {
+        nodeMap = new ConcurrentHashMap<>();
+        syncThread = new Thread(syncTask, "IoTDB-MultiFileNodeManager-Sync-Thread");
         syncThread.start();
     }
 
     static public MultiFileNodeManager getInstance() {
+        if(!InstanceHolder.instance.syncThread.isAlive()) {
+            synchronized (logger) {
+                InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, "IoTDB-MultiFileNodeManager-Sync-Thread");
+                InstanceHolder.instance.syncThread.start();
+            }
+        }
         return InstanceHolder.instance;
     }
 
@@ -86,6 +97,11 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
     @Override
     public void close() {
         syncThread.interrupt();
+        logger.info("Waiting for syc thread to stop");
+        while(syncThread.isAlive()) {
+            // wait
+        }
+        logger.info("{} nodes to be closed", nodeMap.size());
         for(WriteLogNode node : nodeMap.values()) {
             try {
                 node.close();
@@ -95,4 +111,5 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
         }
         nodeMap.clear();
     }
+
 }

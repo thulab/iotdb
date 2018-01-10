@@ -42,7 +42,7 @@ public class WriteLogNodeManagerTest {
     public void autoSyncTest() throws IOException, InterruptedException {
         // this test check that nodes in a manager will sync periodically.
         int flushWalPeriod = config.flushWalThreshold;
-        config.flushWalPeriodInMs = 2000;
+        config.flushWalPeriodInMs = 10000;
         File tempRestore = File.createTempFile("managerTest", "restore");
         File tempProcessorStore = File.createTempFile("managerTest", "processorStore");
 
