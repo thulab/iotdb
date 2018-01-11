@@ -36,7 +36,6 @@ public class ReaderManager {
     /**
      *
      * @param sealedFilePathList fileInputStreamList
-     * @throws IOException TsFile read error
      */
     ReaderManager(List<String> sealedFilePathList) {
         this.sealedFilePathList = sealedFilePathList;
@@ -49,7 +48,6 @@ public class ReaderManager {
      * @param sealedFilePathList file node list
      * @param unsealedFilePath fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
-     * @throws IOException TsFile read error
      */
     ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
         this.sealedFilePathList = sealedFilePathList;
@@ -121,5 +119,7 @@ public class ReaderManager {
                 reader.close();
             }
         }
+
+        
     }
 }
