@@ -83,7 +83,7 @@ public class FileNodeManagerTest {
 		tsconfig.duplicateIncompletedPage = cachePageData;
 	}
 
-	//@Test
+	// @Test
 	public void testBufferwriteAndAddMetadata() {
 		createBufferwriteInMemory(new Pair<Long, Long>(1000L, 1001L), measurementId);
 		fManager = FileNodeManager.getInstance();
@@ -333,7 +333,7 @@ public class FileNodeManagerTest {
 		fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
 				file2.getAbsolutePath());
 		newFileNodes.add(fileNode);
-		FileNodeProcessorStore fileNodeProcessorStore = new FileNodeProcessorStore(lastUpdateTimeMap,
+		FileNodeProcessorStore fileNodeProcessorStore = new FileNodeProcessorStore(false, lastUpdateTimeMap,
 				emptyIntervalFileNode, newFileNodes, FileNodeProcessorStatus.NONE, 0);
 		File fileNodeDir = PathUtils.getFileNodeDir(deltaObjectId);
 		if (!fileNodeDir.exists()) {
@@ -384,12 +384,11 @@ public class FileNodeManagerTest {
 		String file3Name = "file3";
 		File file3 = new File(dir, file3Name);
 		file0.mkdir();
-		fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
-				file3Name);
+		fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE, file3Name);
 		newFileNodes.clear();
 		newFileNodes.add(fileNode);
-		fileNodeProcessorStore = new FileNodeProcessorStore(lastUpdateTimeMap, emptyIntervalFileNode, newFileNodes,
-				FileNodeProcessorStatus.WAITING, 0);
+		fileNodeProcessorStore = new FileNodeProcessorStore(true, lastUpdateTimeMap, emptyIntervalFileNode,
+				newFileNodes, FileNodeProcessorStatus.WAITING, 0);
 		try {
 			serializeUtil.serialize(fileNodeProcessorStore, fileNodeStatusPath);
 		} catch (IOException e) {
@@ -478,7 +477,7 @@ public class FileNodeManagerTest {
 		lastUpdateTimeMap.put(deltaObjectId, 1000L);
 		IntervalFileNode emptyIntervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, null);
 		List<IntervalFileNode> newFileNodes = queryStructure.getBufferwriteDataInFiles();
-		FileNodeProcessorStore fileNodeProcessorStore = new FileNodeProcessorStore(lastUpdateTimeMap,
+		FileNodeProcessorStore fileNodeProcessorStore = new FileNodeProcessorStore(false,lastUpdateTimeMap,
 				emptyIntervalFileNode, newFileNodes, FileNodeProcessorStatus.MERGING_WRITE, 0);
 		try {
 			serializeUtil.serialize(fileNodeProcessorStore, fileNodeStatusPath);

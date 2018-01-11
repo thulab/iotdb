@@ -26,8 +26,10 @@ import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
+import cn.edu.tsinghua.iotdb.engine.flushthread.MergePool;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -61,7 +63,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
-public class FileNodeProcessor extends Processor implements IStatistic{
+public class FileNodeProcessor extends Processor implements IStatistic {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -72,6 +74,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	 * Used to keep the oldest timestamp for each deltaObjectId. The key is
 	 * deltaObjectId.
 	 */
+	private volatile boolean isOverflowed;
 	private Map<String, Long> lastUpdateTimeMap;
 	private Map<String, List<IntervalFileNode>> InvertedindexOfFiles;
 	private IntervalFileNode emptyIntervalFileNode;
@@ -100,10 +103,10 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	private final String statStorageDeltaName;
 
-	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>(){
+	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
 		{
-			for (MonitorConstants.FileNodeProcessorStatConstants statConstant:
-					MonitorConstants.FileNodeProcessorStatConstants.values()){
+			for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
+					.values()) {
 				put(statConstant.name(), new AtomicLong(0));
 			}
 		}
@@ -113,23 +116,25 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		return statParamsHashMap;
 	}
 
-
 	@Override
 	public void registStatMetadata() {
-		HashMap<String, String> hashMap = new HashMap<String, String> (){{
-			for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
-					MonitorConstants.FileNodeProcessorStatConstants.values()) {
-				put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(), MonitorConstants.DataType);
+		HashMap<String, String> hashMap = new HashMap<String, String>() {
+			{
+				for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
+						.values()) {
+					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(),
+							MonitorConstants.DataType);
+				}
 			}
-		}};
+		};
 		StatMonitor.getInstance().registStatStorageGroup(hashMap);
 	}
 
 	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
-		for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
-				MonitorConstants.FileNodeProcessorStatConstants.values()) {
+		for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
+				.values()) {
 			list.add(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
 		}
 		return list;
@@ -141,11 +146,13 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
 		TSRecord tsRecord = new TSRecord(curTime, statStorageDeltaName);
 		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
-		tsRecord.dataPointList = new ArrayList<DataPoint>() {{
-			for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
-				add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
+		tsRecord.dataPointList = new ArrayList<DataPoint>() {
+			{
+				for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
+					add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
+				}
 			}
-		}};
+		};
 		tsRecordHashMap.put(statStorageDeltaName, tsRecord);
 		return tsRecordHashMap;
 	}
@@ -177,8 +184,9 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 		@Override
 		public void act() throws Exception {
-			
-			// update the lastUpdatetime, newIntervalList and Notice: thread safe
+
+			// update the lastUpdatetime, newIntervalList and Notice: thread
+			// safe
 			synchronized (fileNodeProcessorStore) {
 				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
 				addLastTimeToIntervalFile();
@@ -228,6 +236,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			// update the new IntervalFileNode List and emptyIntervalFile.
 			// Notice: thread safe
 			synchronized (fileNodeProcessorStore) {
+				fileNodeProcessorStore.setOverflowed(isOverflowed);
 				fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
 				fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 			}
@@ -235,12 +244,13 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	};
 
 	public void clearFileNode() {
+		isOverflowed = false;
 		emptyIntervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, null);
 		newFileNodes = new ArrayList<>();
 		isMerging = FileNodeProcessorStatus.NONE;
 		numOfMergeFile = 0;
 		fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
-		fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
+		fileNodeProcessorStore.setFileNodeProcessorStatus(isMerging);
 		fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 		fileNodeProcessorStore.setNumOfMergeFile(numOfMergeFile);
 		fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
@@ -249,10 +259,8 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	public FileNodeProcessor(String fileNodeDirPath, String processorName, Map<String, Object> parameters)
 			throws FileNodeProcessorException {
 		super(processorName);
-		statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
-				+ MonitorConstants.MONITOR_PATH_SEPERATOR
-				+ MonitorConstants.fileNodePath
-				+ MonitorConstants.MONITOR_PATH_SEPERATOR
+		statStorageDeltaName = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
+				+ MonitorConstants.fileNodePath + MonitorConstants.MONITOR_PATH_SEPERATOR
 				+ processorName.replaceAll("\\.", "_");
 
 		this.parameters = parameters;
@@ -277,7 +285,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		lastUpdateTimeMap = fileNodeProcessorStore.getLastUpdateTimeMap();
 		emptyIntervalFileNode = fileNodeProcessorStore.getEmptyIntervalFileNode();
 		newFileNodes = fileNodeProcessorStore.getNewFileNodes();
-		isMerging = fileNodeProcessorStore.getFileNodeProcessorState();
+		isMerging = fileNodeProcessorStore.getFileNodeProcessorStatus();
 		numOfMergeFile = fileNodeProcessorStore.getNumOfMergeFile();
 		InvertedindexOfFiles = new HashMap<>();
 		// status is not NONE, or the last intervalFile is not closed
@@ -288,14 +296,11 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			// add file into the index of file
 			addALLFileIntoIndex(newFileNodes);
 		}
-		//RegistStatService
+		// RegistStatService
 		if (TsFileDBConf.enableStatMonitor) {
 			StatMonitor statMonitor = StatMonitor.getInstance();
 			registStatMetadata();
-			statMonitor.registStatistics(
-					statStorageDeltaName,
-					this
-			);
+			statMonitor.registStatistics(statStorageDeltaName, this);
 		}
 	}
 
@@ -317,6 +322,20 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 	public boolean shouldRecovery() {
 		return shouldRecovery;
+	}
+
+	/**
+	 * if overflow insert, update and delete write into this filenode processor,
+	 * <code>isOverflowed</code> to true,
+	 */
+	public void setOverflowed(boolean isOverflowed) {
+		if (!this.isOverflowed == isOverflowed) {
+			this.isOverflowed = isOverflowed;
+		}
+	}
+
+	public boolean isOverflowed() {
+		return isOverflowed;
 	}
 
 	public FileNodeProcessorStatus getFileNodeProcessorStatus() {
@@ -676,10 +695,77 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		return dataFileInfos;
 	}
 
-	public void merge() throws FileNodeProcessorException {
+	/**
+	 * submit the merge task to the <code>MergePool</code>
+	 */
+	public void submitToMerge() {
+		Runnable MergeThread;
+		MergeThread = () -> {
+			try {
+				//
+				// write lock
+				//
+				writeLock();
+				merge();
+			} catch (FileNodeProcessorException e) {
+				e.printStackTrace();
+				LOGGER.error("Merge the filenode processor {} error, the reason is {}", getProcessorName(),
+						e.getMessage());
+				throw new ErrorDebugException(e);
 
+			}
+		};
+		LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
+		MergePool.getInstance().submit(MergeThread);
+	}
+
+	/**
+	 * Prepare for merge, close the bufferwrite and overflow
+	 */
+	private void prepareForMerge() {
+		LOGGER.info("Get the FileNodeProcessor: the filenode is {}, merge.", getProcessorName());
+		try {
+			if (hasBufferwriteProcessor()) {
+				while (!getBufferWriteProcessor().canBeClosed()) {
+
+				}
+				LOGGER.info("{} prepare for merge, close the bufferwrite processor", getProcessorName());
+				getBufferWriteProcessor().close();
+				setBufferwriteProcessroToClosed();
+			}
+			Map<String, Object> parameters = new HashMap<>();
+			// try to get overflow processor
+			getOverflowProcessor(getProcessorName(), parameters);
+			// must close the overflow processor
+			while (!getOverflowProcessor().canBeClosed()) {
+
+			}
+			LOGGER.info("{} prepare for merge, close the overflow processor", getProcessorName());
+			getOverflowProcessor().close();
+		} catch (FileNodeProcessorException | BufferWriteProcessorException | OverflowProcessorException e) {
+			e.printStackTrace();
+			LOGGER.error("Merge the filenode processor {} error, the reason is {}", getProcessorName(), e.getMessage());
+			writeUnlock();
+			throw new ErrorDebugException(e);
+		}
+	}
+
+	/**
+	 * Merge this storage group, merge the tsfile data with overflow data.
+	 * 
+	 * @throws FileNodeProcessorException
+	 */
+	public void merge() throws FileNodeProcessorException {
+		//
+		// close bufferwrite and overflow, prepare for merge
+		//
+		prepareForMerge();
 		LOGGER.debug("begin to merge: the filenode is {}, the thread id is {}", getProcessorName(),
 				Thread.currentThread().getId());
+		//
+		// change status from overflowed to no overflowed
+		//
+		setOverflowed(false);
 		//
 		// change status from work to merge
 		//
@@ -723,7 +809,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 
 		addALLFileIntoIndex(newFileNodes);
 		synchronized (fileNodeProcessorStore) {
-			fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
+			fileNodeProcessorStore.setFileNodeProcessorStatus(isMerging);
 			fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 			fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
 			// flush this filenode information
@@ -993,7 +1079,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			}
 
 			synchronized (fileNodeProcessorStore) {
-				fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
+				fileNodeProcessorStore.setFileNodeProcessorStatus(isMerging);
 				fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
 				fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 				try {
@@ -1072,7 +1158,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 				// write status to file
 				isMerging = FileNodeProcessorStatus.NONE;
 				synchronized (fileNodeProcessorStore) {
-					fileNodeProcessorStore.setFileNodeProcessorState(isMerging);
+					fileNodeProcessorStore.setFileNodeProcessorStatus(isMerging);
 					fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 					fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
 					writeStoreToDisk(fileNodeProcessorStore);
@@ -1261,20 +1347,20 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 		}
 		return false;
 	}
-	
+
 	@Override
-	public void flush() throws IOException{
-		if(bufferWriteProcessor!=null){
+	public void flush() throws IOException {
+		if (bufferWriteProcessor != null) {
 			bufferWriteProcessor.flush();
 		}
-		if(overflowProcessor!=null){
+		if (overflowProcessor != null) {
 			overflowProcessor.flush();
 		}
 	}
 
 	@Override
 	public void close() throws FileNodeProcessorException {
-		LOGGER.debug("Deregister the filenode processor: {}",getProcessorName());
+		LOGGER.debug("Deregister the filenode processor: {}", getProcessorName());
 		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
@@ -1340,14 +1426,14 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			}
 		}
 	}
-	
+
 	@Override
-	public long memoryUsage(){
+	public long memoryUsage() {
 		long memSize = 0;
-		if(bufferWriteProcessor!=null){
+		if (bufferWriteProcessor != null) {
 			memSize += bufferWriteProcessor.memoryUsage();
 		}
-		if(overflowProcessor!=null){
+		if (overflowProcessor != null) {
 			memSize += overflowProcessor.memoryUsage();
 		}
 		return memSize;
@@ -1359,7 +1445,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				serializeUtil.serialize(fileNodeProcessorStore, fileNodeRestoreFilePath);
-				LOGGER.info("Filenode {} Write restore information to the restore file",getProcessorName());
+				LOGGER.info("Filenode {} Write restore information to the restore file", getProcessorName());
 			} catch (IOException e) {
 				throw new FileNodeProcessorException(e);
 			}
@@ -1373,7 +1459,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				fileNodeProcessorStore = serializeUtil.deserialize(fileNodeRestoreFilePath)
-						.orElse(new FileNodeProcessorStore(new HashMap<>(),
+						.orElse(new FileNodeProcessorStore(false, new HashMap<>(),
 								new IntervalFileNode(OverflowChangeType.NO_CHANGE, null),
 								new ArrayList<IntervalFileNode>(), FileNodeProcessorStatus.NONE, 0));
 			} catch (IOException e) {
