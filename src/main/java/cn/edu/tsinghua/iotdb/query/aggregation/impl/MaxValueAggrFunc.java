@@ -36,7 +36,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
         }
 
         Digest pageDigest = pageHeader.data_page_header.getDigest();
-        DigestForFilter digest = new StrDigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
+        DigestForFilter digest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
         Comparable<?> maxv = digest.getMaxValue();
         updateMaxValue(maxv);
@@ -66,9 +66,9 @@ public class MaxValueAggrFunc extends AggregateFunction {
             resultData.putTime(0);
         }
 
-        Object max_value = insertMemoryData.calcAggregation(AggregationConstant.MAX_VALUE);
-        if (max_value != null) {
-            updateMaxValue((Comparable<?>)max_value);
+        while (insertMemoryData.hasInsertData()) {
+            updateMaxValue((Comparable<?>) insertMemoryData.getCurrentObjectValue());
+            insertMemoryData.removeCurrentValue();
         }
     }
 

@@ -1372,7 +1372,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				serializeUtil.serialize(fileNodeProcessorStore, fileNodeRestoreFilePath);
-				LOGGER.info("Write restore information to the restore file");
+				LOGGER.info("Filenode {} Write restore information to the restore file",getProcessorName());
 			} catch (IOException e) {
 				throw new FileNodeProcessorException(e);
 			}
