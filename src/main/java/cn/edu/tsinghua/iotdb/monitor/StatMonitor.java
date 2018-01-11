@@ -139,7 +139,7 @@ public class StatMonitor {
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
                 for (Map.Entry<String, DynamicOneColumnData> entry : linkedHashMap.entrySet()) {
-                    String[] statMeasurements = entry.getKey().split("\\.");
+                    String[] statMeasurements = entry.getKey().substring(5, entry.getKey().length() - 1).split("\\.");
                     String statMeasurement = statMeasurements[statMeasurements.length-1];
                     if (statParamsHashMap.containsKey(statMeasurement)) {
                         DynamicOneColumnData dynamicOneColumnData = entry.getValue();
