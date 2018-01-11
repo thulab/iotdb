@@ -40,9 +40,9 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
 
     private RecoverPerformer recoverPerformer;
 
-    private List<byte[]> logCache = new ArrayList<>();
-
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+
+    private List<byte[]> logCache = new ArrayList<>(config.flushWalThreshold);
 
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -85,7 +85,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         try {
             this.currentFile.close();
             this.currentFile = null;
-            logger.info("Log node {} closed successfully", identifier);
+            logger.debug("Log node {} closed successfully", identifier);
         } catch (IOException e) {
             logger.error("Cannot close log node {} because {}", identifier, e.getMessage());
         }
@@ -106,7 +106,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         if(!oldLogFile.renameTo(new File(logDirectory + File.separator + WAL_FILE_NAME + OLD_SUFFIX)))
             logger.error("Log node {} renaming log file failed!", identifier);
         else
-            logger.info("Log node {} renamed log file", identifier);
+            logger.debug("Log node {} renamed log file", identifier);
         try {
             this.currentFile = new RandomAccessFile(this.logDirectory + File.separator + WAL_FILE_NAME,"rw");
         } catch (FileNotFoundException e) {
@@ -158,7 +158,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
                 throw e;
             }
         }
-        logger.info("Log node {} starts sync, {} logs to be synced", identifier, logCache.size());
+        logger.debug("Log node {} starts sync, {} logs to be synced", identifier, logCache.size());
         try {
             currentFile.seek(currentFile.length());
             int totalSize = 0;
@@ -175,7 +175,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
             logger.error("Log node {} sync failed because {}.", identifier, e.getMessage());
         }
         logCache.clear();
-        logger.info("Log node {} ends sync.", identifier);
+        logger.debug("Log node {} ends sync.", identifier);
         unlockForSync();
     }
 

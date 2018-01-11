@@ -80,6 +80,7 @@ public class RecoverTest {
 
         logNode.write(bwInsertPlan);
         logNode.write(updatePlan);
+        logNode.notifyStartFlush();
         logNode.write(deletePlan);
         logNode.forceSync();
 
@@ -95,6 +96,8 @@ public class RecoverTest {
 
         logNode.recover();
         assertTrue(fileNodeRecoverPerformer.called);
+        // ensure all logs are replayed
+        assertEquals(plansToCheck.size(), dummyLogReplayer.currPos);
         // the file node should already be closed (to flush)
         try {
             assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
@@ -122,7 +125,7 @@ public class RecoverTest {
     class DummyLogReplayer implements LogReplayer {
 
         public List<PhysicalPlan> plansToCheck;
-        int currPos = 0;
+        public int currPos = 0;
 
         @Override
         public void replay(PhysicalPlan plan) throws ProcessorException {
@@ -183,6 +186,8 @@ public class RecoverTest {
 
         logNode.recover();
         assertTrue(fileNodeRecoverPerformer.called);
+        // ensure all logs are replayed
+        assertEquals(plansToCheck.size(), dummyLogReplayer.currPos);
         // the file node should already be closed (to flush)
         try {
             assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));

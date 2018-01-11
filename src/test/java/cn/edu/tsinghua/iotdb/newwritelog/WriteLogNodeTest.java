@@ -54,7 +54,7 @@ public class WriteLogNodeTest {
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        WriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));
@@ -67,7 +67,7 @@ public class WriteLogNodeTest {
 
         logNode.forceSync();
 
-        File walFile = new File(config.walFolder + File.separator + "TestLogNode" + File.separator + "wal");
+        File walFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal");
         assertTrue(walFile.exists());
 
         RandomAccessFile raf = new RandomAccessFile(walFile, "r");
@@ -112,7 +112,7 @@ public class WriteLogNodeTest {
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        WriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));
@@ -125,11 +125,11 @@ public class WriteLogNodeTest {
 
         logNode.forceSync();
 
-        File walFile = new File(config.walFolder + File.separator + "TestLogNode" + File.separator + "wal");
+        File walFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal");
         assertTrue(walFile.exists());
 
         logNode.notifyStartFlush();
-        File oldWalFile = new File(config.walFolder + File.separator + "TestLogNode" + File.separator + "wal-old");
+        File oldWalFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal-old");
         assertTrue(oldWalFile.exists());
         assertTrue(oldWalFile.length() > 0);
 
@@ -154,7 +154,7 @@ public class WriteLogNodeTest {
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        WriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));
@@ -164,7 +164,7 @@ public class WriteLogNodeTest {
         logNode.write(bwInsertPlan);
         logNode.write(updatePlan);
 
-        File walFile = new File(config.walFolder + File.separator + "TestLogNode" + File.separator + "wal");
+        File walFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal");
         assertTrue(!walFile.exists());
 
         logNode.write(deletePlan);

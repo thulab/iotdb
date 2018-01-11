@@ -47,7 +47,7 @@ public class WriteLogNodeManagerTest {
         File tempProcessorStore = File.createTempFile("managerTest", "processorStore");
 
         WriteLogNodeManager manager = MultiFileNodeManager.getInstance();
-        WriteLogNode logNode = manager.getNode("mangerTest", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = manager.getNode("root.managerTest", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));

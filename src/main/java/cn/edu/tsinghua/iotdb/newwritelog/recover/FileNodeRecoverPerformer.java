@@ -18,7 +18,7 @@ public class FileNodeRecoverPerformer implements RecoverPerformer {
     @Override
     public void recover() throws RecoverException {
         // TODO : make a filenode recover
-        // FileNodeManager.getInstance().
+        // FileNodeManager.getInstance().recoverFileNode(getFileNodeName());.
     }
 
     public String getFileNodeName() {
