@@ -120,6 +120,11 @@ public class ReaderManager {
             }
         }
 
-        
+        if (fileReaderMap.get() != null) {
+            for (Map.Entry<String, TsRandomAccessLocalFileReader> entry : fileReaderMap.get().entrySet()) {
+                TsRandomAccessLocalFileReader reader = entry.getValue();
+                reader.close();
+            }
+        }
     }
 }
