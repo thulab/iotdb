@@ -17,6 +17,7 @@ public class QueryJob {
     private String clientId;
 
     private QueryExpression queryExpression;
+    private QueryJobType type;
 
     public QueryJob(long jobId) {
         this.jobId = jobId;
@@ -99,5 +100,13 @@ public class QueryJob {
 
     public String toString() {
         return String.valueOf(jobId);
+    }
+
+    public QueryJobType getType() {
+        return type;
+    }
+
+    public void setType(QueryJobType type) {
+        this.type = type;
     }
 }
