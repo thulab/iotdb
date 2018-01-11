@@ -1,5 +1,8 @@
 package cn.edu.tsinghua.iotdb.newwritelog.recover;
 
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.newwritelog.RecoverStage;
 import cn.edu.tsinghua.iotdb.newwritelog.replay.ConcretLogReplayer;
@@ -292,7 +295,15 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         // TODO : do we need to proceed if there are failed logs ?
         if(failedCnt > 0)
             throw new RecoverException("There are " + failedCnt + " logs failed to recover, see logs above for details");
-        // TODO : ask FileNode to perform a synchronized flush
+        try {
+            if(!FileNodeManager.getInstance().closeOneFileNode(writeLogNode.getFileNodeName())){
+                logger.error("Log node {} cannot perform flush after replaying logs for unknown reason", writeLogNode.getIdentifier());
+                throw new RecoverException("Cannot flush fileNode for unknown reason");
+            }
+        } catch (FileNodeManagerException e) {
+            logger.error("Log node {} cannot perform flush after replaying logs! Because {}",writeLogNode.getIdentifier(), e.getMessage());
+            throw new RecoverException(e);
+        }
         currStage = cleanup;
         setFlag(replayLog);
         logger.info("Log node {} replay ended.", writeLogNode.getLogDirectory());

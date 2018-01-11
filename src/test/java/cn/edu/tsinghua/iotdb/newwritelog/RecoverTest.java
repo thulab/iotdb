@@ -2,7 +2,11 @@ package cn.edu.tsinghua.iotdb.newwritelog;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.newwritelog.recover.ExclusiveLogRecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.recover.RecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.replay.LogReplayer;
@@ -28,6 +32,7 @@ import static cn.edu.tsinghua.iotdb.newwritelog.RecoverStage.backup;
 import static cn.edu.tsinghua.iotdb.newwritelog.RecoverStage.replayLog;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class RecoverTest {
 
@@ -57,7 +62,11 @@ public class RecoverTest {
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        ExclusiveWriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        try {
+            MManager.getInstance().setStorageLevelToMTree("root.testLogNode");
+        } catch (PathErrorException ignored) {
+        }
+        ExclusiveWriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));
@@ -86,6 +95,12 @@ public class RecoverTest {
 
         logNode.recover();
         assertTrue(fileNodeRecoverPerformer.called);
+        // the file node should already be closed (to flush)
+        try {
+            assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
+        } catch (FileNodeManagerException e) {
+            fail(e.getMessage());
+        }
         // the log diretory should be empty now
         File logDir = new File(logNode.getLogDirectory());
         File[] files = logDir.listFiles();
@@ -131,7 +146,11 @@ public class RecoverTest {
         tempRestoreRecovery.createNewFile();
         tempProcessorStoreRecovery.createNewFile();
 
-        ExclusiveWriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        try {
+            MManager.getInstance().setStorageLevelToMTree("root.testLogNode");
+        } catch (PathErrorException ignored) {
+        }
+        ExclusiveWriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
 
         // set flag
         File flagFile = new File(logNode.getLogDirectory() + File.separator + ExclusiveLogRecoverPerformer.RECOVER_FLAG_NAME + "-" + backup.name());
@@ -164,6 +183,12 @@ public class RecoverTest {
 
         logNode.recover();
         assertTrue(fileNodeRecoverPerformer.called);
+        // the file node should already be closed (to flush)
+        try {
+            assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
+        } catch (FileNodeManagerException e) {
+            fail(e.getMessage());
+        }
         // the log diretory should be empty now
         File logDir = new File(logNode.getLogDirectory());
         File[] files = logDir.listFiles();
@@ -190,7 +215,11 @@ public class RecoverTest {
         tempRestoreRecovery.createNewFile();
         tempProcessorStoreRecovery.createNewFile();
 
-        ExclusiveWriteLogNode logNode = new ExclusiveWriteLogNode("TestLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        try {
+            MManager.getInstance().setStorageLevelToMTree("root.testLogNode");
+        } catch (PathErrorException ignored) {
+        }
+        ExclusiveWriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
 
         // set flag
         File flagFile = new File(logNode.getLogDirectory() + File.separator + ExclusiveLogRecoverPerformer.RECOVER_FLAG_NAME + "-" + replayLog.name());
@@ -222,6 +251,12 @@ public class RecoverTest {
 
         logNode.recover();
         assertTrue(!fileNodeRecoverPerformer.called);
+        // the file node should already be closed (to flush)
+        try {
+            assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
+        } catch (FileNodeManagerException e) {
+            fail(e.getMessage());
+        }
         // the log diretory should be empty now
         File logDir = new File(logNode.getLogDirectory());
         File[] files = logDir.listFiles();

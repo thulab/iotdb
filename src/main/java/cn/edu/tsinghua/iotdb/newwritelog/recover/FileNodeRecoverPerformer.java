@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.newwritelog.recover;
 
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 
 public class FileNodeRecoverPerformer implements RecoverPerformer {
@@ -16,6 +17,11 @@ public class FileNodeRecoverPerformer implements RecoverPerformer {
 
     @Override
     public void recover() throws RecoverException {
-        // TODO : implement this
+        // TODO : make a filenode recover
+        // FileNodeManager.getInstance().
+    }
+
+    public String getFileNodeName() {
+        return identifier.split("-")[0];
     }
 }

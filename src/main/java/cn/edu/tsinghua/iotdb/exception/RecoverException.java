@@ -10,4 +10,8 @@ public class RecoverException extends Exception{
     public RecoverException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public RecoverException(Throwable e) {
+        super(e);
+    }
 }

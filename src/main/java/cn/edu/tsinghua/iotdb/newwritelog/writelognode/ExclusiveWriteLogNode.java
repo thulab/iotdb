@@ -15,6 +15,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * This WriteLogNode is used to manage write ahead logs of a single FileNode.
@@ -41,6 +43,8 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
     private List<byte[]> logCache = new ArrayList<>();
 
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public ExclusiveWriteLogNode(String identifier, String restoreFilePath, String processorStoreFilePath) {
         this.identifier = identifier;
@@ -129,21 +133,19 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
     }
 
     private void lockForWrite(){
-        // meaningless in current implementation
+        lock.writeLock().lock();
     }
 
     private void lockForSync() {
-        // TODO : ask for a lock method
-        // FileNodeManager.getInstance().writeLock(identifier);
+       lock.writeLock().lock();
     }
 
     private void unlockForWrite() {
-        // meaningless in current implementation
+        lock.writeLock().unlock();
     }
 
     private void unlockForSync() {
-        // TODO : ask for an unlock method
-        // FileNodeManager.getInstance().writeUnlock(identifier);
+       lock.writeLock().unlock();
     }
 
     private void sync() throws FileNotFoundException {
@@ -191,5 +193,9 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
 
     public String toString() {
         return "Log node " + identifier;
+    }
+
+    public String getFileNodeName() {
+        return identifier.split("-")[0];
     }
 }
