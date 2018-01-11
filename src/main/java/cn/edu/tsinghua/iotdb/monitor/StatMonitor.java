@@ -27,7 +27,6 @@ import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * @author liliang
@@ -133,7 +132,6 @@ public class StatMonitor {
             ReadLockManager.getInstance().unlockForOneRequest();
             if (queryDataSet.hasNextRecord()) {
                 queryDataSet.next();
-                RowRecord rowRecord = queryDataSet.getCurrentRecord();
                 LinkedHashMap<String, DynamicOneColumnData> linkedHashMap = queryDataSet.mapRet;
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
