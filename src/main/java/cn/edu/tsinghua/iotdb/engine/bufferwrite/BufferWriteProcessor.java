@@ -616,6 +616,7 @@ public class BufferWriteProcessor extends Processor {
 						thisDateTime, flushTimeInterval);
 			}
 			lastFlushTime = System.currentTimeMillis();
+			boolean outOfSize = false;
 			if (recordCount > 0) {
 				synchronized (flushState) {
 					// This thread wait until the subThread flush finished
@@ -628,9 +629,7 @@ public class BufferWriteProcessor extends Processor {
 						}
 					}
 				}
-				if (checkSize()) {
-					return true;
-				}
+				outOfSize = checkSize();
 				long oldMemUsage = memUsed;
 				memUsed = 0;
 				// update the lastUpdatetime
@@ -726,7 +725,7 @@ public class BufferWriteProcessor extends Processor {
 					FlushManager.getInstance().submit(flushThread);
 				}
 			}
-			return false;
+			return outOfSize;
 		}
 
 		private void asyncFlushRowGroupToStore() throws IOException {
