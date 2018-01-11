@@ -116,13 +116,18 @@ public class StatMonitor {
         }
     }
 
+
     public void recovery() {
         // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
         QueryDataSet queryDataSet = new QueryDataSet();
         if (queryDataSet.hasNextRecord()) {
             queryDataSet.next();
             RowRecord rowRecord = queryDataSet.getCurrentRecord();
+<<<<<<< HEAD
             LinkedH¡ashMap<String, DynamicOneColumnData> linkedHashMap = queryDataSet.mapRet;
+=======
+            LinkedHashMap<String, DynamicOneColumnData> linkedHashMap = queryDataSet.mapRet;
+>>>>>>> 4aa5218b98d000c0c1f36701d2179a899ee81412
             FileNodeManager fManager = FileNodeManager.getInstance();
             HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
             for (Map.Entry<String, DynamicOneColumnData> entry : linkedHashMap.entrySet()) {
