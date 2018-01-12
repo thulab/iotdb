@@ -587,7 +587,7 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	public void mergeAll() throws FileNodeManagerException {
+	public synchronized void mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
 			LOGGER.info("start to merge all overflowed filenode");
@@ -799,7 +799,7 @@ public class FileNodeManager implements IStatistic {
 	 * @return true - close successfully false - can't close because of merge
 	 * @throws FileNodeManagerException
 	 */
-	public boolean closeAll() throws FileNodeManagerException {
+	public synchronized boolean closeAll() throws FileNodeManagerException {
 		LOGGER.info("start closing file node manager");
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;

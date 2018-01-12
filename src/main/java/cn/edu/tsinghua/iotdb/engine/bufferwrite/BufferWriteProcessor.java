@@ -108,7 +108,7 @@ public class BufferWriteProcessor extends Processor {
 		File dataDir = new File(dataDirPath);
 		if (!dataDir.exists()) {
 			dataDir.mkdirs();
-			LOGGER.info("The bufferwrite processor data dir doesn't exists, and mkdir the dir {}.", dataDirPath);
+			LOGGER.debug("The bufferwrite processor data dir doesn't exists, and mkdir the dir {}.", dataDirPath);
 		}
 		File outputFile = new File(dataDir, fileName);
 		File restoreFile = new File(dataDir, restoreFileName);
@@ -316,7 +316,7 @@ public class BufferWriteProcessor extends Processor {
 			// number
 			byte[] lastPositionBytes = BytesUtils.longToBytes(lastPosition);
 			out.write(lastPositionBytes);
-			LOGGER.info("Bufferwrite {} write restore information to the restore file.", getProcessorName());
+			LOGGER.debug("bufferwrite {} write restore information to the restore file.", getProcessorName());
 		} catch (IOException e) {
 			LOGGER.error("Serialize the TSFileMetaData error.");
 			throw new BufferWriteProcessorException(e);

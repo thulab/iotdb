@@ -1426,7 +1426,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				while (!bufferWriteProcessor.canBeClosed()) {
 					try {
 						LOGGER.info("The bufferwrite {} can't be closed, wait 100ms",
-								overflowProcessor.getProcessorName());
+								bufferWriteProcessor.getProcessorName());
 						TimeUnit.MICROSECONDS.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -1457,7 +1457,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						}
 					}
 				}
-
 			} catch (BufferWriteProcessorException | PathErrorException | IndexManagerException e) {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
@@ -1523,7 +1522,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				serializeUtil.serialize(fileNodeProcessorStore, fileNodeRestoreFilePath);
-				LOGGER.info("Filenode {} Write restore information to the restore file", getProcessorName());
+				LOGGER.debug("filenode {} write restore information to the restore file", getProcessorName());
 			} catch (IOException e) {
 				throw new FileNodeProcessorException(e);
 			}
