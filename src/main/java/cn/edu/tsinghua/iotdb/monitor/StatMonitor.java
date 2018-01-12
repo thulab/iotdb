@@ -10,6 +10,7 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
+import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -125,7 +126,7 @@ public class StatMonitor {
         List<String> stringList = FileNodeManager.getInstance().getAllPathForStatistic();
         for (String string : stringList) {
             Path path = new Path(string);
-            pairList.add(new Pair<>(path, "last"));
+            pairList.add(new Pair<>(path, StatisticConstant.LAST));
         }
         try {
             QueryDataSet queryDataSet;
@@ -137,7 +138,7 @@ public class StatMonitor {
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
                 for (Map.Entry<String, DynamicOneColumnData> entry : linkedHashMap.entrySet()) {
-                    String[] statMeasurements = entry.getKey().substring(5, entry.getKey().length() - 1).split("\\.");
+                    String[] statMeasurements = entry.getKey().substring(StatisticConstant.LAST.length()+1, entry.getKey().length() - 1).split("\\.");
                     String statMeasurement = statMeasurements[statMeasurements.length-1];
                     if (statParamsHashMap.containsKey(statMeasurement)) {
                         DynamicOneColumnData dynamicOneColumnData = entry.getValue();
