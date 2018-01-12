@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.flushthread;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -92,8 +93,8 @@ public class MergePool {
 		}
 	}
 
-	public void submit(Runnable task) {
-		pool.execute(task);
+	public Future<?> submit(Runnable task) {
+		return pool.submit(task);
 	}
 
 	public int getActiveCnt() {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -700,7 +701,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	/**
 	 * submit the merge task to the <code>MergePool</code>
 	 */
-	public void submitToMerge() {
+	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {
 			long thisMergeTime = System.currentTimeMillis();
 			long flushTimeInterval = thisMergeTime - lastMergeTime;
@@ -722,10 +723,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					DateTime endDateTime = new DateTime(mergeEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
-					DateTime timeIntervalDataTime = new DateTime(mergeEndTime - mergeStartTime,
-							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					long intervalTime = mergeEndTime-mergeStartTime;
 					LOGGER.info("{} merge start time is {}, end time is {}, cost time is {}.", getProcessorName(),
-							startDateTime, endDateTime, timeIntervalDataTime);
+							startDateTime, endDateTime, intervalTime);
 				} catch (FileNodeProcessorException e) {
 					e.printStackTrace();
 					LOGGER.error("Merge the filenode processor {} error, the reason is {}", getProcessorName(),
@@ -735,11 +735,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				}
 			};
 			LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
-			MergePool.getInstance().submit(MergeThread);
+			return MergePool.getInstance().submit(MergeThread);
 		} else {
 			LOGGER.warn("Submit the merge task fail, because last merge task has not end, the merge file node is {}",
 					getProcessorName());
 		}
+		return null;
 	}
 
 	/**
@@ -1359,6 +1360,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							} finally {
 								oldMultiPassLock.writeLock().unlock();
 							}
+						} else {
+							LOGGER.info("The filenode {} can't be closed, because can't get oldMultiPassLock {}",
+									getProcessorName(), oldMultiPassLock);
+							return false;
 						}
 					} else {
 						return true;
@@ -1366,9 +1371,16 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				} finally {
 					newMultiPassLock.writeLock().unlock();
 				}
+			} else {
+				LOGGER.info("The filenode {} can't be closed, because can't get newMultiPassLock {}",
+						getProcessorName(), newMultiPassLock);
+				return false;
 			}
+		} else {
+			LOGGER.info("The filenode {} can't be closed, because the filenode status is {}", getProcessorName(),
+					isMerging);
+			return false;
 		}
-		return false;
 	}
 
 	@Override

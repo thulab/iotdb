@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -584,21 +585,44 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	public synchronized void mergeAll() throws FileNodeManagerException {
-		List<String> allFileNodeNames;
-		try {
-			allFileNodeNames = MManager.getInstance().getAllFileNames();
-		} catch (PathErrorException e) {
-			LOGGER.error("Get all storage group path error,", e);
-			e.printStackTrace();
-			throw new FileNodeManagerException(e);
-		}
-		for (String fileNodeName : allFileNodeNames) {
-			FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
+		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
+			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
+			LOGGER.info("start to merge all overflowed filenode");
+			List<String> allFileNodeNames;
 			try {
-				fileNodeProcessor.submitToMerge();
-			} finally {
-				fileNodeProcessor.writeUnlock();
+				allFileNodeNames = MManager.getInstance().getAllFileNames();
+			} catch (PathErrorException e) {
+				LOGGER.error("get all storage group path error,", e);
+				e.printStackTrace();
+				throw new FileNodeManagerException(e);
 			}
+			List<Future<?>> futureTasks = new ArrayList<>();
+			for (String fileNodeName : allFileNodeNames) {
+				FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
+				try {
+					Future<?> task = fileNodeProcessor.submitToMerge();
+					if (task != null) {
+						LOGGER.info("submit the filenode {} to the merge pool", fileNodeName);
+						futureTasks.add(task);
+					}
+				} finally {
+					fileNodeProcessor.writeUnlock();
+				}
+			}
+			for (Future<?> task : futureTasks) {
+				while (!task.isDone()) {
+					try {
+						LOGGER.info("waiting for the end of merge, waiting 2000ms");
+						TimeUnit.SECONDS.sleep(2);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			fileNodeManagerStatus = FileNodeManagerStatus.NONE;
+		} else {
+			LOGGER.warn("start to merge all overflowed filenode fail, because of the filenode manager status is {}",
+					fileNodeManagerStatus);
 		}
 	}
 

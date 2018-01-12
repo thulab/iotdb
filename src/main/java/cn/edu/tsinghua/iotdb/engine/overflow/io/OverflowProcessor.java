@@ -315,7 +315,7 @@ public class OverflowProcessor extends Processor {
 			throws OverflowProcessorException {
 		if (ofSupport.insert(deltaObjectId, measurementId, timestamp, type, v)) {
 			++recordCount;
-			// checkMemorySize();
+			checkMemorySize();
 		} else {
 			LOGGER.error("The insert overflow record data type {} is not consistent with the data type in the metadata",
 					type);
