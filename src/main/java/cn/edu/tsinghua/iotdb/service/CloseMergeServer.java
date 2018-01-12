@@ -114,6 +114,7 @@ public class CloseMergeServer {
 			DateTime endDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info("start the merge action regularly, last time is {}, this time is {}.", startDateTime,
 					endDateTime);
+			mergeAllLastTime = System.currentTimeMillis();
 			try {
 				FileNodeManager.getInstance().mergeAll();
 			} catch (FileNodeManagerException e) {
@@ -131,7 +132,13 @@ public class CloseMergeServer {
 
 		@Override
 		public void run() {
-			LOGGER.info("start the close action regularly");
+			long thisCloseTime = System.currentTimeMillis();
+			DateTime startDateTime = new DateTime(closeAllLastTime,
+					TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime endDateTime = new DateTime(thisCloseTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			LOGGER.info("start the close action regularly, last time is {}, this time is {}.", startDateTime,
+					endDateTime);
+			closeAllLastTime = System.currentTimeMillis();
 			try {
 				FileNodeManager.getInstance().closeAll();
 			} catch (FileNodeManagerException e) {
