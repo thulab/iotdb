@@ -700,6 +700,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * submit the merge task to the <code>MergePool</code>
+	 * 
+	 * @return null -can't submit the merge job, because this filenode is not
+	 *         overflowed or merging. Future<?> -submit the merge job
+	 *         successfully.
 	 */
 	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {
@@ -1391,16 +1395,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 	}
 
-	@Override
-	public void close() throws FileNodeProcessorException {
-		LOGGER.debug("Deregister the filenode processor: {}", getProcessorName());
-		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
-		// close bufferwrite
-		synchronized (fileNodeProcessorStore) {
-			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
-			writeStoreToDisk(fileNodeProcessorStore);
-		}
-
+	/**
+	 * Close the bufferwrite processor
+	 * 
+	 * @throws FileNodeProcessorException
+	 */
+	public void closeBufferWrite() throws FileNodeProcessorException {
 		if (bufferWriteProcessor != null) {
 			try {
 				while (!bufferWriteProcessor.canBeClosed()) {
@@ -1441,6 +1441,14 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				throw new FileNodeProcessorException(e);
 			}
 		}
+	}
+
+	/**
+	 * Close the overflow processor
+	 * 
+	 * @throws FileNodeProcessorException
+	 */
+	public void closeOverflow() throws FileNodeProcessorException {
 		// close overflow
 		if (overflowProcessor != null) {
 			try {
@@ -1458,6 +1466,19 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				throw new FileNodeProcessorException(e);
 			}
 		}
+	}
+
+	@Override
+	public void close() throws FileNodeProcessorException {
+		LOGGER.debug("Deregister the filenode processor: {}", getProcessorName());
+		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
+		// close bufferwrite
+		synchronized (fileNodeProcessorStore) {
+			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
+			writeStoreToDisk(fileNodeProcessorStore);
+		}
+		closeBufferWrite();
+		closeOverflow();
 	}
 
 	@Override

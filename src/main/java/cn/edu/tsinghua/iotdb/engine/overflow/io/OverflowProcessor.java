@@ -8,12 +8,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +17,23 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
+import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFFileMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TSFileMetaDataConverter;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TimePair;
-import cn.edu.tsinghua.iotdb.engine.utils.FlushState;
+import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class OverflowProcessor extends Processor {
 
@@ -51,7 +50,7 @@ public class OverflowProcessor extends Processor {
 	private final int memoryBlockSize = TSFileDescriptor.getInstance().getConfig().groupSizeInByte;
 
 	private volatile boolean isMerging = false;
-	private volatile FlushState flushState = new FlushState();
+	private volatile FlushStatus flushStatus = new FlushStatus();
 
 	private static final String storeFileName = ".overflow";
 	private static final String restoreFileName = ".restore";
@@ -418,10 +417,10 @@ public class OverflowProcessor extends Processor {
 		lastFlushTime = System.currentTimeMillis();
 		boolean outOfSize = false;
 		if (recordCount > 0) {
-			synchronized (flushState) {
-				while (flushState.isFlushing()) {
+			synchronized (flushStatus) {
+				while (flushStatus.isFlushing()) {
 					try {
-						flushState.wait();
+						flushStatus.wait();
 					} catch (InterruptedException e) {
 						LOGGER.error("Waiting the flushstate error in flush row group to store.", e);
 						// continue to wait
@@ -456,7 +455,7 @@ public class OverflowProcessor extends Processor {
 				// using true parameter
 				LOGGER.info("{} overflow start to flush synchronously,-Thread id {}.", getProcessorName(),
 						Thread.currentThread().getName());
-				flushState.setFlushing();
+				flushStatus.setFlushing();
 				try {
 					// flush overflow rowgroup data
 					ofSupport.flushRowGroupToStore(getProcessorName());
@@ -477,15 +476,15 @@ public class OverflowProcessor extends Processor {
 					LOGGER.error("filenodeFlushAction action failed");
 					throw new OverflowProcessorException(e);
 				} finally {
-					synchronized (flushState) {
-						flushState.setUnFlushing();
-						flushState.notify();
+					synchronized (flushStatus) {
+						flushStatus.setUnFlushing();
+						flushStatus.notify();
 					}
 				}
 				BasicMemController.getInstance().reportFree(this, oldMemUsage);
 			} else {
 				// flush overflow row group asynchronously
-				flushState.setFlushing();
+				flushStatus.setFlushing();
 				Runnable AsynflushThread = () -> {
 					try {
 						LOGGER.info("{} overflow start to flush asynchronously,-Thread id {}.", getProcessorName(),
@@ -508,9 +507,9 @@ public class OverflowProcessor extends Processor {
 					} catch (Exception e) {
 						LOGGER.error("FilenodeFlushAction action failed.", e);
 					} finally {
-						synchronized (flushState) {
-							flushState.setUnFlushing();
-							flushState.notify();
+						synchronized (flushStatus) {
+							flushStatus.setUnFlushing();
+							flushStatus.notify();
 						}
 						BasicMemController.getInstance().reportFree(this, oldMemUsage);
 					}
@@ -527,7 +526,7 @@ public class OverflowProcessor extends Processor {
 
 	@Override
 	public boolean canBeClosed() {
-		return !isMerging && !flushState.isFlushing();
+		return !isMerging && !flushStatus.isFlushing();
 	}
 
 	@Override
@@ -569,10 +568,10 @@ public class OverflowProcessor extends Processor {
 	}
 
 	public void switchWorkingToMerge() throws OverflowProcessorException {
-		synchronized (flushState) {
-			while (flushState.isFlushing()) {
+		synchronized (flushStatus) {
+			while (flushStatus.isFlushing()) {
 				try {
-					flushState.wait();
+					flushStatus.wait();
 				} catch (InterruptedException e) {
 					LOGGER.error("Waiting the flushstate error in switch overflow to merge.", e);
 				}

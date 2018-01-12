@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,7 +125,7 @@ public class BufferwriteFileSizeControlTest {
             processor.write(nsp, "s1", i * i, TSDataType.INT64, i + "");
             processor.write(nsp2, "s1", i * i, TSDataType.INT64, i + "");
             if(i % 100000 == 0)
-                System.out.println(i + "," + MemUtils.bytesCntToStr(processor.getFileSize()));
+				System.out.println(i + "," + MemUtils.bytesCntToStr(processor.getFileSize()));
         }
         // wait to flush end
         try {
