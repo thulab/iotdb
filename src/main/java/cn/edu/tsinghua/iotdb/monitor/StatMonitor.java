@@ -116,7 +116,6 @@ public class StatMonitor {
 
     public void recovery() {
         // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
-
     }
 
     public void activate() {
