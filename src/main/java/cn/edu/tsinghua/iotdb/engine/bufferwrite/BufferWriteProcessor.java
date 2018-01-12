@@ -45,7 +45,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author liukun
- *
  */
 public class BufferWriteProcessor extends Processor {
 
