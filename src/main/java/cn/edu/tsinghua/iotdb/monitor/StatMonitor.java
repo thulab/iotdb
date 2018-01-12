@@ -59,7 +59,6 @@ public class StatMonitor {
         if (config.enableStatMonitor){
             try {
                 String prefix = MonitorConstants.statStorageGroupPrefix;
-
                 if (!mManager.pathExist(prefix)) {
                     mManager.setStorageLevelToMTree(prefix);
                 }
