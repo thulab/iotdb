@@ -56,14 +56,16 @@ public class StatMonitor {
         statMonitorDetectFreqSec = config.statMonitorDetectFreqSec;
         statMonitorRetainIntervalSec = config.statMonitorRetainIntervalSec;
         backLoopPeriod = config.backLoopPeriodSec;
-        try {
-            String prefix = MonitorConstants.statStorageGroupPrefix;
+        if (config.enableStatMonitor){
+            try {
+                String prefix = MonitorConstants.statStorageGroupPrefix;
 
-            if (!mManager.pathExist(prefix)) {
-                mManager.setStorageLevelToMTree(prefix);
+                if (!mManager.pathExist(prefix)) {
+                    mManager.setStorageLevelToMTree(prefix);
+                }
+            } catch (PathErrorException|IOException e) {
+                LOGGER.error("MManager setStorageLevelToMTree False.", e);
             }
-        } catch (Exception e) {
-            LOGGER.error("MManager setStorageLevelToMTree False.", e);
         }
     }
 
