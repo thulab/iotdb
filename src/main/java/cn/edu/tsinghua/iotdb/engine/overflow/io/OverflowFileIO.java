@@ -85,8 +85,9 @@ public class OverflowFileIO {
 			raf.seek(lastOffset - FOOTER_LENGTH);
 			ofFileMetaDataLength = raf.readInt();
 
-			LOGGER.info("The last overflow footer metadata length is :{}.", ofFileMetaDataLength);
-			LOGGER.info("The begin offset of the last overflow footer metadata is :{}.",
+			LOGGER.debug("Read the overflow file, the last overflow block footer metadata size is :{}.",
+					ofFileMetaDataLength);
+			LOGGER.debug("The begin offset of the last overflow block footer metadata is :{}.",
 					lastOffset - FOOTER_LENGTH - ofFileMetaDataLength);
 			raf.seek(lastOffset - FOOTER_LENGTH - ofFileMetaDataLength);
 			byte[] buf = new byte[ofFileMetaDataLength];
@@ -133,10 +134,10 @@ public class OverflowFileIO {
 			raf.seek(lastOffset - FOOTER_LENGTH);
 			ofFileMetaDataLength = raf.readInt();
 
-			LOGGER.info("The last overflow footer metadata length is :{}.", ofFileMetaDataLength);
-			LOGGER.info("The begin offset of the last overflow footer metadata is :{}.",
+			LOGGER.debug("Read the overflow file, the last overflow block footer metadata size is :{}.",
+					ofFileMetaDataLength);
+			LOGGER.debug("The begin offset of the last overflow block footer metadata is :{}.",
 					lastOffset - FOOTER_LENGTH - ofFileMetaDataLength);
-			raf.seek(lastOffset - FOOTER_LENGTH - ofFileMetaDataLength);
 			byte[] buf = new byte[ofFileMetaDataLength];
 			raf.read(buf, 0, buf.length);
 
