@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.service;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,8 @@ public class CloseMergeServer {
 	private static final long closePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForFlush;
 
 	private volatile boolean isStart = false;
+	private long closeAllLastTime;
+	private long mergeAllLastTime;
 
 	private static CloseMergeServer SERVER = new CloseMergeServer();
 
@@ -52,6 +55,8 @@ public class CloseMergeServer {
 			LOGGER.info("start the close and merge server");
 			closeAndMergeDaemon.start();
 			isStart = true;
+			closeAllLastTime = System.currentTimeMillis();
+			mergeAllLastTime = System.currentTimeMillis();
 		} else {
 			LOGGER.warn("the close and merge daemon has been already running");
 		}
@@ -103,7 +108,12 @@ public class CloseMergeServer {
 
 		@Override
 		public void run() {
-			LOGGER.info("start the merge action regularly");
+			long thisMergeTime = System.currentTimeMillis();
+			DateTime startDateTime = new DateTime(mergeAllLastTime,
+					TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime endDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			LOGGER.info("start the merge action regularly, last time is {}, this time is {}.", startDateTime,
+					endDateTime);
 			try {
 				FileNodeManager.getInstance().mergeAll();
 			} catch (FileNodeManagerException e) {

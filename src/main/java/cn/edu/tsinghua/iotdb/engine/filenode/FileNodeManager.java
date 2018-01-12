@@ -294,7 +294,7 @@ public class FileNodeManager implements IStatistic {
 					fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
 					fileNodeProcessor.setOverflowed(true);
 					if (shouldMerge) {
-						LOGGER.info("The overflow file or metadata reach to the threshold, merge the filenode {}",
+						LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode {}",
 								filenodeName);
 						fileNodeProcessor.submitToMerge();
 					}
@@ -433,7 +433,7 @@ public class FileNodeManager implements IStatistic {
 				fileNodeProcessor.changeTypeToChanged(deltaObjectId, startTime, endTime);
 				fileNodeProcessor.setOverflowed(true);
 				if (shouldMerge) {
-					LOGGER.info("The overflow file or metadata reach to the threshold, merge the filenode {}",
+					LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode {}",
 							filenodeName);
 					fileNodeProcessor.submitToMerge();
 				}
@@ -490,7 +490,7 @@ public class FileNodeManager implements IStatistic {
 					fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
 					fileNodeProcessor.setOverflowed(true);
 					if (shouldMerge) {
-						LOGGER.info("The overflow file or metadata reach to the threshold, merge the filenode {}",
+						LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode {}",
 								filenodeName);
 						fileNodeProcessor.submitToMerge();
 					}
@@ -587,7 +587,7 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	public synchronized void mergeAll() throws FileNodeManagerException {
+	public void mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
 			LOGGER.info("start to merge all overflowed filenode");
@@ -613,10 +613,12 @@ public class FileNodeManager implements IStatistic {
 				}
 			}
 			for (Future<?> task : futureTasks) {
+				int time = 2;
 				while (!task.isDone()) {
 					try {
-						LOGGER.info("waiting for the end of merge, waiting 2000ms");
-						TimeUnit.SECONDS.sleep(2);
+						LOGGER.info("waiting for the end of merge, waiting {}s", time);
+						TimeUnit.SECONDS.sleep(time);
+						time = time * 2;
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -654,6 +656,7 @@ public class FileNodeManager implements IStatistic {
 				// wait until the processor can be closed
 				while (!processor.canBeClosed()) {
 					try {
+						LOGGER.info("The filenode {} can't be closed, wait 100ms", processor.getProcessorName());
 						TimeUnit.MILLISECONDS.sleep(100);
 					} catch (InterruptedException e) {
 						LOGGER.warn("Interrupted when waitting to close one processor.");
@@ -796,7 +799,7 @@ public class FileNodeManager implements IStatistic {
 	 * @return true - close successfully false - can't close because of merge
 	 * @throws FileNodeManagerException
 	 */
-	public synchronized boolean closeAll() throws FileNodeManagerException {
+	public boolean closeAll() throws FileNodeManagerException {
 		LOGGER.info("start closing file node manager");
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;

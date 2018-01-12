@@ -535,7 +535,7 @@ public class BufferWriteProcessor extends Processor {
 	public boolean canBeClosed() {
 		LOGGER.info("Check bufferwrite {} can be closed or not.", getProcessorName());
 		if (flushStatus.isFlushing()) {
-			LOGGER.info("The bufferwrite {} can't be closed.", getProcessorName());
+			LOGGER.info("The bufferwrite {} can't be closed, because last flush has not finished", getProcessorName());
 			return false;
 		} else {
 			LOGGER.info("The bufferwrite {} can be closed.", getProcessorName());

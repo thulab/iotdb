@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -709,11 +710,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {
 			long thisMergeTime = System.currentTimeMillis();
-			long flushTimeInterval = thisMergeTime - lastMergeTime;
+			long mergeTimeInterval = thisMergeTime - lastMergeTime;
 			DateTime lastDateTime = new DateTime(lastMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info("{} last merge time is {}, this merge time is {}, merge time interval is {}",
-					getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval);
+					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval);
 		}
 		lastMergeTime = System.currentTimeMillis();
 		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
@@ -747,7 +748,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						getProcessorName());
 			} else {
 				LOGGER.warn(
-						"failed to submit the merge task, because last merge task has not end, the merge file node is {}",
+						"failed to submit the merge task, because last merge task has not end, the merge filenode is {}",
 						getProcessorName());
 			}
 		}
@@ -758,26 +759,24 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * Prepare for merge, close the bufferwrite and overflow
 	 */
 	private void prepareForMerge() {
-		LOGGER.info("Get the FileNodeProcessor: the filenode is {}, merge.", getProcessorName());
 		try {
-			if (hasBufferwriteProcessor()) {
-				while (!getBufferWriteProcessor().canBeClosed()) {
-
-				}
-				LOGGER.info("{} prepare for merge, close the bufferwrite processor", getProcessorName());
-				getBufferWriteProcessor().close();
-				setBufferwriteProcessroToClosed();
-			}
+			LOGGER.info("{} prepare for merge, close the bufferwrite processor", getProcessorName());
+			closeBufferWrite();
 			Map<String, Object> parameters = new HashMap<>();
 			// try to get overflow processor
 			getOverflowProcessor(getProcessorName(), parameters);
 			// must close the overflow processor
 			while (!getOverflowProcessor().canBeClosed()) {
-
+				try {
+					LOGGER.info("Prepare for merge, the overflow {} can't be closed, wait 100ms,");
+					TimeUnit.MICROSECONDS.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 			LOGGER.info("{} prepare for merge, close the overflow processor", getProcessorName());
 			getOverflowProcessor().close();
-		} catch (FileNodeProcessorException | BufferWriteProcessorException | OverflowProcessorException e) {
+		} catch (FileNodeProcessorException | OverflowProcessorException e) {
 			e.printStackTrace();
 			LOGGER.error("Merge the filenode processor {} error, the reason is {}", getProcessorName(), e.getMessage());
 			writeUnlock();
@@ -794,9 +793,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		//
 		// close bufferwrite and overflow, prepare for merge
 		//
+		LOGGER.info("begin to merge: the filenode is {}.", getProcessorName());
 		prepareForMerge();
-		LOGGER.debug("Begin to merge: the filenode is {}, the thread id is {}", getProcessorName(),
-				Thread.currentThread().getName());
 		//
 		// change status from overflowed to no overflowed
 		//
@@ -884,7 +882,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		writeUnlock();
 
 		// query buffer data and overflow data, and merge them
+		int numOfMergeFiles = 0;
+		int allNeedMergeFiles = backupIntervalFiles.size();
 		for (IntervalFileNode backupIntervalFile : backupIntervalFiles) {
+			numOfMergeFiles++;
 			if (backupIntervalFile.overflowChangeType == OverflowChangeType.CHANGED) {
 				// query data and merge
 				try {
@@ -892,7 +893,19 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						throw new FileNodeProcessorException(
 								"Merge: the size of startTimeMap is not equal to the size of startTimeMap");
 					}
+					LOGGER.info("Merge tsfile and overflow file, the process is {}%",
+							(int) ((numOfMergeFiles / (float) allNeedMergeFiles) * 100));
+					long startTime = System.currentTimeMillis();
 					queryAndWriteDataForMerge(backupIntervalFile);
+					long endTime = System.currentTimeMillis();
+					long timeConsume = endTime - startTime;
+					DateTime startDateTime = new DateTime(startTime,
+							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					DateTime endDateTime = new DateTime(endTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					LOGGER.info(
+							"FileNode {} merge the {}/{} tsfile, start time is {}, end time is {}, time consume is {}ms.",
+							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, startDateTime, endDateTime,
+							timeConsume);
 				} catch (IOException | WriteProcessException e) {
 					LOGGER.error("Merge: query and write data error.");
 					throw new FileNodeProcessorException(e);
@@ -1411,11 +1424,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (bufferWriteProcessor != null) {
 			try {
 				while (!bufferWriteProcessor.canBeClosed()) {
-					// try {
-					// TimeUnit.MICROSECONDS.sleep(1000);
-					// } catch (InterruptedException e) {
-					// e.printStackTrace();
-					// }
+					try {
+						LOGGER.info("The bufferwrite {} can't be closed, wait 100ms",
+								overflowProcessor.getProcessorName());
+						TimeUnit.MICROSECONDS.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 				bufferWriteProcessor.close();
 				bufferWriteProcessor = null;
@@ -1460,11 +1475,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (overflowProcessor != null) {
 			try {
 				while (!overflowProcessor.canBeClosed()) {
-					// try {
-					// TimeUnit.MICROSECONDS.sleep(1000);
-					// } catch (InterruptedException e) {
-					// e.printStackTrace();
-					// }
+					try {
+						LOGGER.info("The overflow {} can't be closed, wait 100ms",
+								overflowProcessor.getProcessorName());
+						TimeUnit.MICROSECONDS.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 				overflowProcessor.close();
 				overflowProcessor = null;
