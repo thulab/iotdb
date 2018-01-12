@@ -173,7 +173,7 @@ public class FileNodeManager implements IStatistic {
 			Map<String, Object> parameters = new HashMap<>();
 			return new FileNodeProcessor(baseDir, filenodeName, parameters);
 		} catch (FileNodeProcessorException e) {
-			LOGGER.error(String.format("Can't construct the FileNodeProcessor, the filenode is %s", filenodeName), e);
+			LOGGER.error("Can't construct the FileNodeProcessor, the filenode is %s", filenodeName, e);
 			throw new FileNodeManagerException(e);
 		}
 	}
@@ -266,10 +266,8 @@ public class FileNodeManager implements IStatistic {
 				try {
 					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error(
-							String.format("Get the overflow processor failed, the filenode is {}, insert time is {}",
-									filenodeName, timestamp),
-							e);
+					LOGGER.error("Get the overflow processor failed, the filenode is {}, insert time is {}",
+							filenodeName, timestamp, e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
@@ -415,10 +413,8 @@ public class FileNodeManager implements IStatistic {
 			try {
 				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error(
-						String.format("Get the overflow processor failed, the filenode is {}, update time is {} to {}",
-								filenodeName, startTime, endTime),
-						e);
+				LOGGER.error("Get the overflow processor failed, the filenode is {}, update time is {} to {}",
+						filenodeName, startTime, endTime, e);
 				throw new FileNodeManagerException(e);
 			}
 			try {
@@ -475,10 +471,8 @@ public class FileNodeManager implements IStatistic {
 				try {
 					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error(
-							String.format("Get the overflow processor failed, the filenode is {}, delete time is {}",
-									filenodeName, timestamp),
-							e);
+					LOGGER.error("Get the overflow processor failed, the filenode is {}, delete time is {}",
+							filenodeName, timestamp, e);
 					throw new FileNodeManagerException(e);
 				}
 				try {
@@ -530,8 +524,8 @@ public class FileNodeManager implements IStatistic {
 				try {
 					fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName(), parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error(String.format("Get the overflow processor failed, the filenode is {}",
-							fileNodeProcessor.getProcessorName()), e);
+					LOGGER.error("Get the overflow processor failed, the filenode is {}",
+							fileNodeProcessor.getProcessorName(), e);
 					throw new FileNodeManagerException(e);
 				}
 			}
@@ -539,8 +533,8 @@ public class FileNodeManager implements IStatistic {
 				queryStructure = fileNodeProcessor.query(deltaObjectId, measurementId, timeFilter, freqFilter,
 						valueFilter);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error(String.format("Query error: the deltaObjectId {}, the measurementId {}", deltaObjectId,
-						measurementId), e);
+				LOGGER.error("Query error: the deltaObjectId {}, the measurementId {}", deltaObjectId, measurementId,
+						e);
 				throw new FileNodeManagerException(e);
 			}
 			// return query structure

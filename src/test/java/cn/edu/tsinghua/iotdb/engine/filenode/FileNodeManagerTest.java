@@ -569,10 +569,10 @@ public class FileNodeManagerTest {
 			assertEquals(pairList.size(), bufferwriteFiles.size());
 			IntervalFileNode temp = bufferwriteFiles.get(0);
 			// range 1: 2-208
-			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
-			assertEquals(100, temp.getStartTime(deltaObjectId));
+			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
+			assertEquals(2, temp.getStartTime(deltaObjectId));
 			assertEquals(-1, temp.getStartTime(deltaObjectId2));
-			assertEquals(200, temp.getEndTime(deltaObjectId));
+			assertEquals(208, temp.getEndTime(deltaObjectId));
 			// range 2: 202-400
 			temp = bufferwriteFiles.get(1);
 			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
@@ -589,10 +589,10 @@ public class FileNodeManagerTest {
 			assertEquals(700, temp.getStartTime(deltaObjectId));
 			assertEquals(800, temp.getEndTime(deltaObjectId));
 			List<Object> overflowData = queryResult.getAllOverflowData();
-			assertEquals(true, overflowData.get(0) != null);
-			assertEquals(true, overflowData.get(1) != null);
-			assertEquals(true, overflowData.get(2) != null);
-			assertEquals(true, overflowData.get(3) != null);
+			assertEquals(false, overflowData.get(0) != null);
+			assertEquals(false, overflowData.get(1) != null);
+			assertEquals(false, overflowData.get(2) != null);
+			assertEquals(false, overflowData.get(3) != null);
 
 			// wait to merge over
 			waitToSleep(2000);

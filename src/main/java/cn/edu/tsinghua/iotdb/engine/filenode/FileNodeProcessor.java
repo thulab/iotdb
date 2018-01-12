@@ -723,7 +723,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					DateTime endDateTime = new DateTime(mergeEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
-					long intervalTime = mergeEndTime-mergeStartTime;
+					long intervalTime = mergeEndTime - mergeStartTime;
 					LOGGER.info("{} merge start time is {}, end time is {}, cost time is {}.", getProcessorName(),
 							startDateTime, endDateTime, intervalTime);
 				} catch (FileNodeProcessorException e) {
@@ -1263,9 +1263,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					try {
 						recordWriter.write(filledRecord);
 					} catch (WriteProcessException e) {
-						LOGGER.error(
-								String.format("Merge query: write one record error, the tsrecord is {}", filledRecord),
-								e);
+						LOGGER.error("Merge query: write one record error, the tsrecord is {}", filledRecord, e);
 					}
 				}
 				startTimeMap.put(deltaObjectId, startTime);

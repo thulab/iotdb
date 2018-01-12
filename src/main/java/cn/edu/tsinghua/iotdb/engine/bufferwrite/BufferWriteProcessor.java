@@ -796,7 +796,7 @@ public class BufferWriteProcessor extends Processor {
 	public long getFileSize() {
 		// TODO : save this variable to avoid object creation?
 		File file = new File(bufferwriteOutputFilePath);
-		return file.length();
+		return file.length() + memoryUsage();
 	}
 
 	/**
