@@ -24,7 +24,7 @@ public class MergePool {
 	private MergePool() {
 		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 		this.threadCnt = config.concurrentFlushThread;
-		pool = IoTDBThreadPoolFactory.newFixedThreadPool(threadCnt, "Merge2");
+		pool = IoTDBThreadPoolFactory.newFixedThreadPool(threadCnt, "Merge");
 	}
 
 	static public MergePool getInstance() {

@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -84,10 +85,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	// this is used when work->merge operation
 	private int numOfMergeFile = 0;
 	private FileNodeProcessorStore fileNodeProcessorStore = null;
-
+	// file path
 	private static final String restoreFile = ".restore";
 	private String fileNodeRestoreFilePath = null;
 	private String baseDirPath;
+	// last merge time
+	private long lastMergeTime = -1;
 
 	private BufferWriteProcessor bufferWriteProcessor = null;
 	private OverflowProcessor overflowProcessor = null;
@@ -96,11 +99,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	private Set<Integer> newMultiPassTokenSet = new HashSet<>();
 	private ReadWriteLock oldMultiPassLock = null;
 	private ReadWriteLock newMultiPassLock = new ReentrantReadWriteLock(false);
-
+	// system recovery
 	private boolean shouldRecovery = false;
-
+	// statistic monitor parameters
 	private Map<String, Object> parameters = null;
-
 	private final String statStorageDeltaName;
 
 	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
@@ -699,24 +701,45 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * submit the merge task to the <code>MergePool</code>
 	 */
 	public void submitToMerge() {
-		Runnable MergeThread;
-		MergeThread = () -> {
-			try {
-				//
-				// write lock
-				//
-				writeLock();
-				merge();
-			} catch (FileNodeProcessorException e) {
-				e.printStackTrace();
-				LOGGER.error("Merge the filenode processor {} error, the reason is {}", getProcessorName(),
-						e.getMessage());
-				throw new ErrorDebugException(e);
+		if (lastMergeTime > 0) {
+			long thisMergeTime = System.currentTimeMillis();
+			long flushTimeInterval = thisMergeTime - lastMergeTime;
+			DateTime lastDateTime = new DateTime(lastMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime thisDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			LOGGER.info("{} last merge time is {}, this merge time is {}, merge time interval is {}",
+					getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval);
+		}
+		lastMergeTime = System.currentTimeMillis();
+		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
+			Runnable MergeThread;
+			MergeThread = () -> {
+				try {
+					long mergeStartTime = System.currentTimeMillis();
+					writeLock();
+					merge();
+					long mergeEndTime = System.currentTimeMillis();
+					DateTime startDateTime = new DateTime(mergeStartTime,
+							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					DateTime endDateTime = new DateTime(mergeEndTime,
+							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					DateTime timeIntervalDataTime = new DateTime(mergeEndTime - mergeStartTime,
+							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					LOGGER.info("{} merge start time is {}, end time is {}, cost time is {}.", getProcessorName(),
+							startDateTime, endDateTime, timeIntervalDataTime);
+				} catch (FileNodeProcessorException e) {
+					e.printStackTrace();
+					LOGGER.error("Merge the filenode processor {} error, the reason is {}", getProcessorName(),
+							e.getMessage());
+					throw new ErrorDebugException(e);
 
-			}
-		};
-		LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
-		MergePool.getInstance().submit(MergeThread);
+				}
+			};
+			LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
+			MergePool.getInstance().submit(MergeThread);
+		} else {
+			LOGGER.warn("Submit the merge task fail, because last merge task has not end, the merge file node is {}",
+					getProcessorName());
+		}
 	}
 
 	/**
@@ -760,8 +783,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		// close bufferwrite and overflow, prepare for merge
 		//
 		prepareForMerge();
-		LOGGER.debug("begin to merge: the filenode is {}, the thread id is {}", getProcessorName(),
-				Thread.currentThread().getId());
+		LOGGER.debug("Begin to merge: the filenode is {}, the thread id is {}", getProcessorName(),
+				Thread.currentThread().getName());
 		//
 		// change status from overflowed to no overflowed
 		//

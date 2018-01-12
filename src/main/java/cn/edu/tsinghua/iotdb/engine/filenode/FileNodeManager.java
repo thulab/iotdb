@@ -3,20 +3,14 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.Comparator;
-
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -27,14 +21,11 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
@@ -47,14 +38,12 @@ import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
-import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class FileNodeManager implements IStatistic {
@@ -62,7 +51,6 @@ public class FileNodeManager implements IStatistic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
 	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
-	private static final String restoreFileName = "fileNodeManager.restore";
 	private final String baseDir;
 	/**
 	 * This map is used to manage all filenode processor,<br>
@@ -595,16 +583,22 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	public synchronized boolean mergeAll() throws FileNodeManagerException {
-
-		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
-			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
-			ExecutorService singleMergingService = Executors.newSingleThreadExecutor();
-			MergeAllProcessors mergeAllProcessors = new MergeAllProcessors();
-			singleMergingService.execute(mergeAllProcessors);
-			return true;
-		} else {
-			return false;
+	public synchronized void mergeAll() throws FileNodeManagerException {
+		List<String> allFileNodeNames;
+		try {
+			allFileNodeNames = MManager.getInstance().getAllFileNames();
+		} catch (PathErrorException e) {
+			LOGGER.error("Get all storage group path error,", e);
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		}
+		for (String fileNodeName : allFileNodeNames) {
+			FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
+			try {
+				fileNodeProcessor.submitToMerge();
+			} finally {
+				fileNodeProcessor.writeUnlock();
+			}
 		}
 	}
 
@@ -801,82 +795,6 @@ public class FileNodeManager implements IStatistic {
 		} else {
 			LOGGER.info("failed to shutdown file node manager because of merge operation");
 			return false;
-		}
-	}
-
-	/**
-	 * Read information about the nameSpacePath of overflow set from recovery
-	 * file
-	 * 
-	 * @return
-	 */
-	private Set<String> readOverflowSetFromDisk() {
-		SerializeUtil<Set<String>> serializeUtil = new SerializeUtil<>();
-		Set<String> overflowSet = null;
-		File fileNodeManagerStoreFile = new File(baseDir, restoreFileName);
-		try {
-			overflowSet = serializeUtil.deserialize(fileNodeManagerStoreFile.getPath()).orElse(new HashSet<>());
-		} catch (IOException e) {
-			LOGGER.error(
-					"Deserizlize the overflow nameSpaceSet error, and delete the filenode manager restore file, the restore file path is {}",
-					fileNodeManagerStoreFile);
-			// delete restore file
-			if (fileNodeManagerStoreFile.exists()) {
-				fileNodeManagerStoreFile.delete();
-			}
-		}
-		return overflowSet;
-	}
-
-	private class MergeAllProcessors implements Runnable {
-
-		@Override
-		public void run() {
-			ExecutorService mergeExecutorPool = IoTDBThreadPoolFactory
-					.newFixedThreadPool(TsFileDBConf.mergeConcurrentThreads, "Merge1");
-			for (FileNodeProcessor fileNodeProcessor : processorMap.values()) {
-				if (fileNodeProcessor.isOverflowed()) {
-					MergeOneProcessor mergeOneProcessorThread = new MergeOneProcessor(
-							fileNodeProcessor.getProcessorName());
-					mergeExecutorPool.execute(mergeOneProcessorThread);
-				}
-			}
-			mergeExecutorPool.shutdown();
-			while (!mergeExecutorPool.isTerminated()) {
-				LOGGER.info("Not merge finished, wait 2000ms");
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					LOGGER.error("Interruption error when merge, the reason is {}", e.getMessage());
-				}
-			}
-			fileNodeManagerStatus = FileNodeManagerStatus.NONE;
-		}
-	}
-
-	private class MergeOneProcessor implements Runnable {
-
-		private String fileNodeNamespacePath;
-
-		public MergeOneProcessor(String fileNodeNamespacePath) {
-			this.fileNodeNamespacePath = fileNodeNamespacePath;
-		}
-
-		@Override
-		public void run() {
-			FileNodeProcessor fileNodeProcessor = null;
-			try {
-				fileNodeProcessor = getProcessor(fileNodeNamespacePath, true);
-				fileNodeProcessor.merge();
-			} catch (FileNodeProcessorException e) {
-				LOGGER.error("Merge the filenode processor {} error, the reason is {}",
-						fileNodeProcessor.getProcessorName(), e.getMessage());
-				throw new ErrorDebugException(e);
-			} catch (FileNodeManagerException e) {
-				LOGGER.error("Merge the filenode processor {} error, the reason is {}", fileNodeNamespacePath,
-						e.getMessage());
-				e.printStackTrace();
-			}
 		}
 	}
 
