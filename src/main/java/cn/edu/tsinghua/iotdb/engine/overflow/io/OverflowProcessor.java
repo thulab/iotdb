@@ -486,6 +486,7 @@ public class OverflowProcessor extends Processor {
 				// flush overflow row group asynchronously
 				flushStatus.setFlushing();
 				Runnable AsynflushThread = () -> {
+					long flushStartTime = System.currentTimeMillis();
 					try {
 						LOGGER.info("{} overflow start to flush asynchronously,-Thread id {}.", getProcessorName(),
 								Thread.currentThread().getName());
@@ -513,8 +514,18 @@ public class OverflowProcessor extends Processor {
 						}
 						BasicMemController.getInstance().reportFree(this, oldMemUsage);
 					}
+					long flushEndTime = System.currentTimeMillis();
+					long timeInterval = flushEndTime - flushStartTime;
+					DateTime startDateTime = new DateTime(flushStartTime,
+							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					DateTime endDateTime = new DateTime(flushEndTime,
+							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+					LOGGER.info("{} overflow flush start time is {}, flush end time is {}, cost time is {}",
+							getProcessorName(), startDateTime, endDateTime, timeInterval);
+
 				};
 				FlushManager.getInstance().submit(AsynflushThread);
+
 			}
 		}
 		return outOfSize;
@@ -542,6 +553,7 @@ public class OverflowProcessor extends Processor {
 	@Override
 	public void close() throws OverflowProcessorException {
 		LOGGER.info("Start to close overflow processor, the overflow is {}", getProcessorName());
+		long closeStartTime = System.currentTimeMillis();
 		try {
 			flushRowGroupToStore(true);
 		} catch (OverflowProcessorException e) {
@@ -560,6 +572,12 @@ public class OverflowProcessor extends Processor {
 		} else {
 			LOGGER.warn("Close the overflow processor, but no overflow metadata was flush");
 		}
+		long closeEndTime = System.currentTimeMillis();
+		long timeInterval = closeEndTime - closeStartTime;
+		DateTime startDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+		DateTime endDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+		LOGGER.info("Close overflow {}, close start time is {}, close end time is{}, cost time is {}",
+				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}
 
 	@Override
@@ -651,7 +669,7 @@ public class OverflowProcessor extends Processor {
 	public long getFileSize() {
 		// TODO : save this variable to avoid object creation?
 		File file = new File(overflowOutputFilePath);
-		return file.length()+memoryUsage();
+		return file.length() + memoryUsage();
 	}
 
 	/**

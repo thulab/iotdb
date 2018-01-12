@@ -367,7 +367,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			} catch (BufferWriteProcessorException e) {
 				// unlock
 				writeUnlock();
-				LOGGER.error("Restore the bufferwrite failed");
+				LOGGER.error("failed to recovery the bufferwrite");
 				throw new FileNodeProcessorException(e);
 			}
 		}
@@ -379,7 +379,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		} catch (OverflowProcessorException e) {
 			// unlock
 			writeUnlock();
-			LOGGER.error("Restore the overflow failed.");
+			LOGGER.error("failed to recovery the overflow.");
 			throw new FileNodeProcessorException(e);
 		}
 
@@ -396,12 +396,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					e.printStackTrace();
 					writeUnlock();
 					throw new FileNodeProcessorException(
-							"Close the bufferwrite processor failed, the reason is " + e.getMessage());
+							"failed to close the bufferwrite processor, the reason is " + e.getMessage());
 				} catch (OverflowProcessorException e) {
 					e.printStackTrace();
 					writeUnlock();
 					throw new FileNodeProcessorException(
-							"Close the overflow processor failed, the reason is " + e.getMessage());
+							"failed close the overflow processor, the reason is " + e.getMessage());
 				}
 				bufferWriteProcessor = null;
 			}
@@ -431,7 +431,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						insertTime + FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis(),
 						parameters);
 			} catch (BufferWriteProcessorException e) {
-				LOGGER.error("Get the bufferwrite processor instance failed, the bufferwrite processor is {}.",
+				LOGGER.error("failed to get the bufferwrite processor instance, the bufferwrite processor is {}.",
 						processorName);
 				throw new FileNodeProcessorException(e);
 			}
@@ -457,7 +457,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			try {
 				overflowProcessor = new OverflowProcessor(processorName, parameters);
 			} catch (OverflowProcessorException e) {
-				LOGGER.error("Get the overflow processor instance failed, the overflow processor is {}, reason is {}",
+				LOGGER.error(
+						"failed to get the overflow processor instance, the overflow processor is {}, reason is {}",
 						processorName, e);
 				throw new FileNodeProcessorException(e);
 			}
@@ -728,7 +729,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					DateTime endDateTime = new DateTime(mergeEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					long intervalTime = mergeEndTime - mergeStartTime;
-					LOGGER.info("{} merge start time is {}, end time is {}, cost time is {}.", getProcessorName(),
+					LOGGER.info("{} merge start time is {}, end time is {}, cost time is {}ms.", getProcessorName(),
 							startDateTime, endDateTime, intervalTime);
 				} catch (FileNodeProcessorException e) {
 					e.printStackTrace();
@@ -741,8 +742,14 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
 			return MergePool.getInstance().submit(MergeThread);
 		} else {
-			LOGGER.warn("Submit the merge task fail, because last merge task has not end, the merge file node is {}",
-					getProcessorName());
+			if (isOverflowed) {
+				LOGGER.info("failed to submit the merge task, because this filenode {} is not overflowed.",
+						getProcessorName());
+			} else {
+				LOGGER.warn(
+						"failed to submit the merge task, because last merge task has not end, the merge file node is {}",
+						getProcessorName());
+			}
 		}
 		return null;
 	}
@@ -1113,7 +1120,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				try {
 					writeStoreToDisk(fileNodeProcessorStore);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Merge: write filenode information to revocery file failed, the filenode is {}.",
+					LOGGER.error("Merge: failed to write filenode information to revocery file, the filenode is {}.",
 							getProcessorName());
 					throw new FileNodeProcessorException(
 							"Merge: write filenode information to revocery file failed, the filenode is "
@@ -1192,7 +1199,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					writeStoreToDisk(fileNodeProcessorStore);
 				}
 			} catch (ProcessorException e) {
-				LOGGER.error("Merge: switch wait to work failed.");
+				LOGGER.error("Merge: fail to switch wait to work.");
 				throw new FileNodeProcessorException(e);
 			} finally {
 				writeUnlock();

@@ -68,7 +68,8 @@ public class BufferWriteProcessor extends Processor {
 
 	private boolean isFlushingSync = false;
 	private volatile FlushStatus flushStatus = new FlushStatus();
-	private ReadWriteLock convertBufferLock = new ReentrantReadWriteLock(false);
+
+	private ReadWriteLock flushSwitchLock = new ReentrantReadWriteLock(false);
 
 	private FileSchema fileSchema;
 	private BufferWriteIOWriter bufferIOWriter;
@@ -520,12 +521,12 @@ public class BufferWriteProcessor extends Processor {
 				}
 			}
 		}
-		convertBufferLock.readLock().lock();
+		flushSwitchLock.readLock().lock();
 		try {
 			memData = recordWriter.getDataInMemory(deltaObjectId, measurementId);
 			list = bufferIOWriter.getCurrentRowGroupMetaList(deltaObjectId);
 		} finally {
-			convertBufferLock.readLock().unlock();
+			flushSwitchLock.readLock().unlock();
 		}
 		return new Pair<>(memData, list);
 	}
@@ -551,6 +552,7 @@ public class BufferWriteProcessor extends Processor {
 	public void close() throws BufferWriteProcessorException {
 		isFlushingSync = true;
 		try {
+			long closeStartTime = System.currentTimeMillis();
 			recordWriter.close();
 			// update the intervalfile for interval list
 			bufferwriteCloseAction.act();
@@ -558,6 +560,13 @@ public class BufferWriteProcessor extends Processor {
 			filenodeFlushAction.act();
 			// delete the restore for this bufferwrite processor
 			deleteRestoreFile();
+			long closeEndTime = System.currentTimeMillis();
+			long closeInterval = closeEndTime - closeStartTime;
+			DateTime startDateTime = new DateTime(closeStartTime,
+					TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime endDateTime = new DateTime(closeEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			LOGGER.info("Close bufferwrite {}, start time is {}, end time is {}, cost time is {}ms", getProcessorName(),
+					startDateTime, endDateTime, closeInterval);
 		} catch (IOException e) {
 			LOGGER.error("Close the bufferwrite processor error, the bufferwrite is {}.", getProcessorName());
 			throw new BufferWriteProcessorException(e);
@@ -620,7 +629,7 @@ public class BufferWriteProcessor extends Processor {
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
 				DateTime thisDateTime = new DateTime(thisFlushTime,
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
+				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}ms", lastDateTime,
 						thisDateTime, flushTimeInterval);
 			}
 			lastFlushTime = System.currentTimeMillis();
@@ -679,7 +688,6 @@ public class BufferWriteProcessor extends Processor {
 						throw new IOException(e);
 					}
 					BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
-					checkSize();
 				} else {
 					flushStatus.setFlushing();
 					switchIndexFromWorkToFlush();
@@ -687,6 +695,7 @@ public class BufferWriteProcessor extends Processor {
 
 					Runnable flushThread;
 					flushThread = () -> {
+						long flushStartTime = System.currentTimeMillis();
 						LOGGER.info("{} bufferwrite start to flush asynchronously,-Thread id {}.", getProcessorName(),
 								Thread.currentThread().getName());
 						try {
@@ -715,7 +724,7 @@ public class BufferWriteProcessor extends Processor {
 							// TODO
 						}
 						switchRecordWriterFromFlushToWork();
-						convertBufferLock.writeLock().lock();
+						flushSwitchLock.writeLock().lock();
 						try {
 							synchronized (flushStatus) {
 								switchIndexFromFlushToWork();
@@ -725,10 +734,19 @@ public class BufferWriteProcessor extends Processor {
 										getProcessorName(), Thread.currentThread().getName());
 							}
 						} finally {
-							convertBufferLock.writeLock().unlock();
+							flushSwitchLock.writeLock().unlock();
 						}
 						BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
-						// checkSize();
+						long flushEndTime = System.currentTimeMillis();
+						long flushInterval = flushEndTime - flushStartTime;
+						DateTime startDateTime = new DateTime(flushStartTime,
+								TsfileDBDescriptor.getInstance().getConfig().timeZone);
+						DateTime endDateTime = new DateTime(flushEndTime,
+								TsfileDBDescriptor.getInstance().getConfig().timeZone);
+						LOGGER.info(
+								"{} bufferwrite flush start time is {}, flush end time is {}, flush time cost is {}ms",
+								getProcessorName(), startDateTime, endDateTime, flushInterval);
+
 					};
 					FlushManager.getInstance().submit(flushThread);
 				}
