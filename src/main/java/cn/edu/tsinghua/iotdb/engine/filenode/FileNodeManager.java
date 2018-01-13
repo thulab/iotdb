@@ -590,12 +590,12 @@ public class FileNodeManager implements IStatistic {
 	public synchronized void mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
-			LOGGER.info("start to merge all overflowed filenode");
+			LOGGER.info("Start to merge all overflowed filenode");
 			List<String> allFileNodeNames;
 			try {
 				allFileNodeNames = MManager.getInstance().getAllFileNames();
 			} catch (PathErrorException e) {
-				LOGGER.error("get all storage group path error,", e);
+				LOGGER.error("Get all storage group path error,", e);
 				e.printStackTrace();
 				throw new FileNodeManagerException(e);
 			}
@@ -605,20 +605,28 @@ public class FileNodeManager implements IStatistic {
 				try {
 					Future<?> task = fileNodeProcessor.submitToMerge();
 					if (task != null) {
-						LOGGER.info("submit the filenode {} to the merge pool", fileNodeName);
+						LOGGER.info("Submit the filenode {} to the merge pool", fileNodeName);
 						futureTasks.add(task);
 					}
 				} finally {
 					fileNodeProcessor.writeUnlock();
 				}
 			}
+			long totalTime = 0;
 			for (Future<?> task : futureTasks) {
 				int time = 2;
 				while (!task.isDone()) {
 					try {
-						LOGGER.info("waiting for the end of merge, waiting {}s", time);
+						LOGGER.info(
+								"Waiting for the end of merge, already waiting for {}s, continue to wait anothor {}s",
+								totalTime, time);
 						TimeUnit.SECONDS.sleep(time);
-						time = time * 2;
+						totalTime += time;
+						if (time < 32) {
+							time = time * 2;
+						} else {
+							time = 60;
+						}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -770,7 +778,7 @@ public class FileNodeManager implements IStatistic {
 				try {
 					if (processor.canBeClosed()) {
 						try {
-							LOGGER.info("Close the processor, the nameSpacePath is {}", nsPath);
+							LOGGER.info("Close the filenode, the nameSpacePath is {}", nsPath);
 							processor.close();
 							processorMap.remove(nsPath);
 						} catch (ProcessorException e) {
@@ -800,7 +808,7 @@ public class FileNodeManager implements IStatistic {
 	 * @throws FileNodeManagerException
 	 */
 	public synchronized boolean closeAll() throws FileNodeManagerException {
-		LOGGER.info("start closing file node manager");
+		LOGGER.info("start closing all filenode");
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
