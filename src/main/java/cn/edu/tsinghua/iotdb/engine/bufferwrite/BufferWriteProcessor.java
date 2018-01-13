@@ -629,8 +629,8 @@ public class BufferWriteProcessor extends Processor {
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
 				DateTime thisDateTime = new DateTime(thisFlushTime,
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}ms", lastDateTime,
-						thisDateTime, flushTimeInterval);
+				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}s", lastDateTime,
+						thisDateTime, flushTimeInterval/1000);
 			}
 			lastFlushTime = System.currentTimeMillis();
 			boolean outOfSize = false;

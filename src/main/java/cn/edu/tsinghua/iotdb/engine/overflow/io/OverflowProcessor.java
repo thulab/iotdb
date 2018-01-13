@@ -411,8 +411,8 @@ public class OverflowProcessor extends Processor {
 			long thisFLushTime = System.currentTimeMillis();
 			DateTime lastDateTime = new DateTime(lastFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisFLushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
-					thisDateTime, thisFLushTime - lastFlushTime);
+			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}s", lastDateTime,
+					thisDateTime, (thisFLushTime - lastFlushTime)/1000);
 		}
 		lastFlushTime = System.currentTimeMillis();
 		boolean outOfSize = false;

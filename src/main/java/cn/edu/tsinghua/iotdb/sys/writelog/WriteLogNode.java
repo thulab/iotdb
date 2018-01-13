@@ -192,8 +192,8 @@ public class WriteLogNode {
             DateTime endDateTime = new DateTime(endTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
             LOG.info("Write ahead log {} compact process end, the end time is {}",fileNodePrefix,endDateTime);
-			LOG.info("Write ahead log {} compact process, the start time is {}, the end time is {}, time consume is {}",
-					fileNodePrefix, startDateTime, endDateTime, endTime - startTime);
+			LOG.info("Write ahead log {} compact process, the start time is {}, the end time is {}, time consume is {}s",
+					fileNodePrefix, startDateTime, endDateTime, (endTime - startTime)/1000);
         }
     }
 
