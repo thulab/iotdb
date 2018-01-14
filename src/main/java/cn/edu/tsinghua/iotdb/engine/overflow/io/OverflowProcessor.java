@@ -412,7 +412,7 @@ public class OverflowProcessor extends Processor {
 			DateTime lastDateTime = new DateTime(lastFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisFLushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}s", lastDateTime,
-					thisDateTime, (thisFLushTime - lastFlushTime)/1000);
+					thisDateTime, (thisFLushTime - lastFlushTime) / 1000);
 		}
 		lastFlushTime = System.currentTimeMillis();
 		boolean outOfSize = false;
@@ -453,8 +453,7 @@ public class OverflowProcessor extends Processor {
 				// flush overflow row group synchronously
 				// just close overflow processor will call this function by
 				// using true parameter
-				LOGGER.info("{} overflow start to flush synchronously,-Thread id {}.", getProcessorName(),
-						Thread.currentThread().getName());
+				LOGGER.info("{} overflow start to flush synchronously.", getProcessorName());
 				flushStatus.setFlushing();
 				try {
 					// flush overflow rowgroup data
@@ -520,7 +519,7 @@ public class OverflowProcessor extends Processor {
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					DateTime endDateTime = new DateTime(flushEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
-					LOGGER.info("{} overflow flush start time is {}, flush end time is {}, cost time is {}",
+					LOGGER.info("{} overflow flush start time is {}, flush end time is {}, cost time is {}ms",
 							getProcessorName(), startDateTime, endDateTime, timeInterval);
 
 				};
@@ -552,7 +551,7 @@ public class OverflowProcessor extends Processor {
 
 	@Override
 	public void close() throws OverflowProcessorException {
-		LOGGER.info("Start to close overflow processor, the overflow is {}", getProcessorName());
+		LOGGER.info("Start to close overflow processor {}.", getProcessorName());
 		long closeStartTime = System.currentTimeMillis();
 		try {
 			flushRowGroupToStore(true);
@@ -576,7 +575,7 @@ public class OverflowProcessor extends Processor {
 		long timeInterval = closeEndTime - closeStartTime;
 		DateTime startDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 		DateTime endDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-		LOGGER.info("Close overflow {}, close start time is {}, close end time is{}, cost time is {}ms",
+		LOGGER.info("Close overflow {}, close start time is {}, close end time is {}, cost time is {}ms",
 				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}
 
