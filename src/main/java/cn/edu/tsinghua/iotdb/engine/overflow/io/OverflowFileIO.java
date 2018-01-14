@@ -139,8 +139,8 @@ public class OverflowFileIO {
 			LOGGER.debug("The begin offset of the last overflow block footer metadata is :{}.",
 					lastOffset - FOOTER_LENGTH - ofFileMetaDataLength);
 			byte[] buf = new byte[ofFileMetaDataLength];
+			raf.seek(lastOffset - FOOTER_LENGTH - ofFileMetaDataLength);
 			raf.read(buf, 0, buf.length);
-
 			ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 			OFFileMetadata ofFileMetadata = new TSFileMetaDataConverter()
 					.toOFFileMetadata(OverflowReadWriteThriftFormatUtils.readOFFileMetaData(bais));
