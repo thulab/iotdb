@@ -119,14 +119,15 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			fileSchema = constructFileSchema(processorName);
 		} catch (PathErrorException | WriteProcessException e) {
-			LOGGER.error("Get the FileSchema error, the bufferwrite is {}.", processorName);
+			LOGGER.error("Get the FileSchema error, the bufferwrite processor is {}.", processorName, e);
 			throw new BufferWriteProcessorException(e);
 		}
-		//
-		// There is one damaged file, and the restoreFile exist
-		//
-		if (outputFile.exists() && restoreFile.exists()) {
 
+		if (outputFile.exists() && restoreFile.exists()) {
+			//
+			// There is one damaged file, and the restoreFile exist
+			//
+			LOGGER.info("Recorvery the bufferwrite processor {}.", processorName);
 			bufferwriteRecovery();
 
 		} else {
@@ -136,14 +137,14 @@ public class BufferWriteProcessor extends Processor {
 				outputWriter = new TsRandomAccessFileWriter(outputFile);
 			} catch (IOException e) {
 				LOGGER.error("Construct the TSRandomAccessFileWriter error, the absolutePath is {}.",
-						outputFile.getPath());
+						outputFile.getPath(), e);
 				throw new BufferWriteProcessorException(e);
 			}
 
 			try {
 				bufferIOWriter = new BufferWriteIOWriter(outputWriter);
 			} catch (IOException e) {
-				LOGGER.error("Get the BufferWriteIOWriter error, the bufferwrite is {}.", processorName);
+				LOGGER.error("Get the BufferWriteIOWriter error, the bufferwrite is {}.", processorName, e);
 				throw new BufferWriteProcessorException(e);
 			}
 
@@ -176,23 +177,24 @@ public class BufferWriteProcessor extends Processor {
 
 		Pair<Long, List<RowGroupMetaData>> pair;
 		try {
-			pair = ReadStoreFromDisk();
+			pair = readStoreFromDisk();
 		} catch (IOException e) {
 			LOGGER.error("Read bufferwrite {} restore file failed.", getProcessorName());
 			throw new BufferWriteProcessorException(e);
 		}
 		ITsRandomAccessFileWriter output;
-		long lastPosition = pair.left;
+		long lastFlushPosition = pair.left;
 		File lastBufferWriteFile = new File(bufferwriteOutputFilePath);
-		if (lastBufferWriteFile.length() != lastPosition) {
-			LOGGER.warn("The length of the last bufferwrite file is {}, the lastPosion is {}.",
-					lastBufferWriteFile.length(), lastPosition);
+		if (lastBufferWriteFile.length() != lastFlushPosition) {
+			LOGGER.warn(
+					"The last bufferwrite file is damaged, the length of the last bufferwrite file is {}, the end of last successful flush is {}.",
+					lastBufferWriteFile.length(), lastFlushPosition);
 			try {
-				cutOffFile(lastPosition);
+				cutOffFile(lastFlushPosition);
 			} catch (IOException e) {
 				LOGGER.error(
-						"Cut off damaged file error. the damaged file path is {}, the length is {}, the cut off length is {}.",
-						bufferwriteOutputFilePath, lastBufferWriteFile.length(), lastPosition);
+						"Cut off damaged file error, the damaged file path is {}, the length is {}, the cut off length is {}.",
+						bufferwriteOutputFilePath, lastBufferWriteFile.length(), lastFlushPosition, e);
 				throw new BufferWriteProcessorException(e);
 			}
 		}
@@ -207,14 +209,17 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			// Notice: the parameter of lastPosition is not used beacuse of the
 			// API of kr
-			bufferIOWriter = new BufferWriteIOWriter(output, lastPosition, pair.right);
+			bufferIOWriter = new BufferWriteIOWriter(output, lastFlushPosition, pair.right);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the bufferwrite io when recovery, the bufferwrite is {}.", getProcessorName());
+			LOGGER.error("Can't get the BufferWriteIOWriter while recovery the bufferwrite processor is {}.",
+					getProcessorName(), e);
 			throw new BufferWriteProcessorException(e);
 		}
 		try {
 			recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, fileSchema);
 		} catch (WriteProcessException e) {
+			LOGGER.error("Can't get the BufferWriteRecordWriter while recovery the bufferwrite processor is {}",
+					getProcessorName(), e);
 			throw new BufferWriteProcessorException(e);
 		}
 		isNewProcessor = false;
@@ -282,7 +287,8 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			lastPosition = bufferIOWriter.getPos();
 		} catch (IOException e) {
-			LOGGER.error("Can't get the bufferwrite io position.");
+			LOGGER.error("Can't get the bufferwrite io position, the buffewrite processor is {}", getProcessorName(),
+					e);
 			throw new BufferWriteProcessorException(e);
 		}
 		List<RowGroupMetaData> rowGroupMetaDatas = bufferIOWriter.getRowGroups();
@@ -298,7 +304,8 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			out = new RandomAccessFile(bufferwriteRestoreFilePath, "rw");
 		} catch (FileNotFoundException e) {
-			LOGGER.error("The restore file can't be created, the file path is {}.", bufferwriteRestoreFilePath);
+			LOGGER.error("The restore file {} can't be created, the bufferwrite processor is {}",
+					bufferwriteRestoreFilePath, getProcessorName(), e);
 			throw new BufferWriteProcessorException(e);
 		}
 		try {
@@ -316,9 +323,7 @@ public class BufferWriteProcessor extends Processor {
 			// number
 			byte[] lastPositionBytes = BytesUtils.longToBytes(lastPosition);
 			out.write(lastPositionBytes);
-			LOGGER.debug("bufferwrite {} write restore information to the restore file.", getProcessorName());
 		} catch (IOException e) {
-			LOGGER.error("Serialize the TSFileMetaData error.");
 			throw new BufferWriteProcessorException(e);
 		} finally {
 			if (out != null) {
@@ -345,14 +350,14 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	/**
-	 * The left of the pair is the last position. The right of the pair is the
-	 * rowGroupMetadata.
+	 * The left of the pair is the last successful flush position. The right of
+	 * the pair is the rowGroupMetadata.
 	 *
 	 * @return - the left is the end position of the last rowgroup flushed, the
 	 *         right is all the rowgroup meatdata flushed
 	 * @throws IOException
 	 */
-	private Pair<Long, List<RowGroupMetaData>> ReadStoreFromDisk() throws IOException {
+	private Pair<Long, List<RowGroupMetaData>> readStoreFromDisk() throws IOException {
 		byte[] lastPostionBytes = new byte[TSFILEPOINTBYTESIZE];
 		List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
 		RandomAccessFile randomAccessFile = null;
@@ -403,7 +408,8 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			fileSchema = getFileSchemaFromColumnSchema(columnSchemaList, processorName);
 		} catch (WriteProcessException e) {
-			LOGGER.error("Get the FileSchema error, the list of ColumnSchema is {}.", columnSchemaList);
+			LOGGER.error("Get the FileSchema error, the bufferwrite write processor is {}", columnSchemaList,
+					getProcessorName(), e);
 			throw e;
 		}
 		return fileSchema;
@@ -453,7 +459,7 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	/**
-	 * write one data point
+	 * write one data point to the bufferwrite
 	 * 
 	 * @param deltaObjectId
 	 * @param measurementId
@@ -473,7 +479,7 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	/**
-	 * write one tsrecord to the buffer of tsfile
+	 * write one tsrecord to the buffewrite
 	 * 
 	 * @param tsRecord
 	 * @return true -the size of tsfile or metadata reaches the threshold. false
@@ -507,11 +513,20 @@ public class BufferWriteProcessor extends Processor {
 		}
 	}
 
-	public Pair<List<Object>, List<RowGroupMetaData>> getIndexAndRowGroupList(String deltaObjectId,
-			String measurementId) {
+	/**
+	 * Query the data in bufferwrite.
+	 * 
+	 * @param deltaObjectId
+	 * @param measurementId
+	 * @return left is the data which is not packaged into the RowGroup, right
+	 *         is the metadata for the data which has been already packaged into
+	 *         RowGroup.
+	 */
+	public Pair<List<Object>, List<RowGroupMetaData>> queryBufferwriteData(String deltaObjectId, String measurementId) {
 		List<Object> memData = null;
 		List<RowGroupMetaData> list = null;
-		// wait until flush over
+		// Wait until flush over. So the bufferwrite flush will block the data
+		// query for bufferwrite.
 		synchronized (flushStatus) {
 			while (flushStatus.isFlushing()) {
 				try {
@@ -533,14 +548,18 @@ public class BufferWriteProcessor extends Processor {
 
 	@Override
 	public boolean canBeClosed() {
-		LOGGER.info("Check bufferwrite {} can be closed or not.", getProcessorName());
-		if (flushStatus.isFlushing()) {
-			LOGGER.info("The bufferwrite {} can't be closed, because last flush has not finished", getProcessorName());
-			return false;
-		} else {
-			LOGGER.info("The bufferwrite {} can be closed.", getProcessorName());
-			return true;
+		LOGGER.info("Check bufferwrite processor {} can be closed.", getProcessorName());
+		synchronized (flushStatus) {
+			while (flushStatus.isFlushing()) {
+				LOGGER.info("The bufferite processor {} is flushing, waiting for the flush end.", getProcessorName());
+				try {
+					flushStatus.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
+		return true;
 	}
 
 	@Override
@@ -565,8 +584,8 @@ public class BufferWriteProcessor extends Processor {
 			DateTime startDateTime = new DateTime(closeStartTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(closeEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("Close bufferwrite {}, start time is {}, end time is {}, cost time is {}ms", getProcessorName(),
-					startDateTime, endDateTime, closeInterval);
+			LOGGER.info("Close bufferwrite processor {}, start time is {}, end time is {}, time consume is {}ms",
+					getProcessorName(), startDateTime, endDateTime, closeInterval);
 		} catch (IOException e) {
 			LOGGER.error("Close the bufferwrite processor error, the bufferwrite is {}.", getProcessorName());
 			throw new BufferWriteProcessorException(e);
@@ -580,7 +599,6 @@ public class BufferWriteProcessor extends Processor {
 
 	@Override
 	public long memoryUsage() {
-
 		return recordWriter.getMemoryUsage();
 	}
 
@@ -629,8 +647,9 @@ public class BufferWriteProcessor extends Processor {
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
 				DateTime thisDateTime = new DateTime(thisFlushTime,
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}s", lastDateTime,
-						thisDateTime, flushTimeInterval/1000);
+				LOGGER.info(
+						"The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
+						lastDateTime, thisDateTime, flushTimeInterval / 1000);
 			}
 			lastFlushTime = System.currentTimeMillis();
 			boolean outOfSize = false;
@@ -641,7 +660,8 @@ public class BufferWriteProcessor extends Processor {
 						try {
 							flushStatus.wait();
 						} catch (InterruptedException e) {
-							LOGGER.error("Interrupt error when waitting to flush, the processor:{}.",
+							LOGGER.error(
+									"Interrupt error when waitting for the flushing, the bufferwrite processor is {}.",
 									getProcessorName(), e);
 						}
 					}
@@ -664,27 +684,26 @@ public class BufferWriteProcessor extends Processor {
 				// flush bufferwrite data
 				if (isFlushingSync) {
 					try {
-						LOGGER.info("{} bufferwrite start to flush synchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getName());
+						LOGGER.info("The bufferwrite processor {} start to flush synchronously.", getProcessorName());
 						super.flushRowGroup(false);
 						writeStoreToDisk();
 						filenodeFlushAction.act();
 						if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 							WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
 						}
-						LOGGER.info("{} bufferwrite end to flush synchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getName());
+						LOGGER.info("The bufferwrite processor {} end to flush synchronously.", getProcessorName());
 					} catch (IOException e) {
-						LOGGER.error("Flush row group to store failed, processor:{}.", getProcessorName());
+						LOGGER.error("The bufferwrite processor {} flush synchronously error", getProcessorName(), e);
 						throw e;
 					} catch (BufferWriteProcessorException e) {
 						// write restore error
-						LOGGER.error("Write bufferwrite information to disk failed.");
+						LOGGER.error("Write bufferwrite processor {} information to disk error.", getProcessorName(),
+								e);
 						throw new IOException(e);
 					} catch (Exception e) {
-						// action error
-						LOGGER.error("Flush bufferwrite row group failed, when call the action function.");
-						// handle
+						LOGGER.error(
+								"The bufferwrite processor {} flush synchronously error, when call the filenodeFlushAction.",
+								getProcessorName(), e);
 						throw new IOException(e);
 					}
 					BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
@@ -696,8 +715,7 @@ public class BufferWriteProcessor extends Processor {
 					Runnable flushThread;
 					flushThread = () -> {
 						long flushStartTime = System.currentTimeMillis();
-						LOGGER.info("{} bufferwrite start to flush asynchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getName());
+						LOGGER.info("The bufferwrite processor {} start to flush asynchronously.", getProcessorName());
 						try {
 							asyncFlushRowGroupToStore();
 							writeStoreToDisk();
@@ -706,22 +724,16 @@ public class BufferWriteProcessor extends Processor {
 								WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
 							}
 						} catch (IOException e) {
-							/*
-							 * There should be added system log by CGF and throw
-							 * exception
-							 */
-							LOGGER.error(String.format("%s asynchronous flush error, sleep this thread-%s.",
-									getProcessorName(), Thread.currentThread().getName()), e);
-							// TODO
+							// wal exception
+							LOGGER.error("The bufferwrite processor {} flush asynchronously error.", getProcessorName(),
+									e);
 						} catch (BufferWriteProcessorException e) {
-							LOGGER.error("Write bufferwrite information to disk failed.", e);
-							// how to handle this error
-							// TODO
+							LOGGER.error("Write bufferwrite processor {} information to disk error.",
+									getProcessorName(), e);
 						} catch (Exception e) {
-							// action error
-							LOGGER.error("Flush bufferwrite row group failed, when call the action function.", e);
-							// how to handle this error
-							// TODO
+							LOGGER.error(
+									"The bufferwrite processor {} flush asynchronously error, when call the filenodeFlushAction.",
+									getProcessorName(), e);
 						}
 						switchRecordWriterFromFlushToWork();
 						flushSwitchLock.writeLock().lock();
@@ -730,8 +742,8 @@ public class BufferWriteProcessor extends Processor {
 								switchIndexFromFlushToWork();
 								flushStatus.setUnFlushing();
 								flushStatus.notify();
-								LOGGER.info("{} bufferwrite end to flush asynchronously,-Thread id {}.",
-										getProcessorName(), Thread.currentThread().getName());
+								LOGGER.info("The bufferwrite processor {} end to flush ssynchronously.",
+										getProcessorName());
 							}
 						} finally {
 							flushSwitchLock.writeLock().unlock();
@@ -744,7 +756,7 @@ public class BufferWriteProcessor extends Processor {
 						DateTime endDateTime = new DateTime(flushEndTime,
 								TsfileDBDescriptor.getInstance().getConfig().timeZone);
 						LOGGER.info(
-								"{} bufferwrite flush start time is {}, flush end time is {}, flush time cost is {}ms",
+								"The bufferwrite processor {} flush start time is {}, flush end time is {}, flush time consume is {}ms",
 								getProcessorName(), startDateTime, endDateTime, flushInterval);
 
 					};
@@ -774,10 +786,10 @@ public class BufferWriteProcessor extends Processor {
 				// remove the feature: fill the row group
 				// fillInRowGroupSize(actualTotalRowGroupSize);
 				LOGGER.info(
-						"{} asynchronous flush total row group size:{}, actual:{}, less:{}, time consume:{} ms, flush rate:{} bytes/ms",
+						"The bufferwrite processor {} asynchronous flush. Total row group size:{}, actual:{}, less:{}, time consume:{} ms, flush rate:{} bytes/s",
 						getProcessorName(), primaryRowGroupSize, actualTotalRowGroupSize,
 						primaryRowGroupSize - actualTotalRowGroupSize, timeInterval,
-						actualTotalRowGroupSize / timeInterval);
+						actualTotalRowGroupSize / timeInterval * 1000);
 			}
 		}
 
@@ -847,8 +859,10 @@ public class BufferWriteProcessor extends Processor {
 		long metaSize = getMetaSize();
 		long fileSize = getFileSize();
 		if (metaSize >= config.bufferwriteMetaSizeThreshold || fileSize >= config.bufferwriteFileSizeThreshold) {
-			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}", this.fileName,
-					MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
+			LOGGER.info(
+					"The bufferwrite processor {}, the file {} size reaches threshold, closing. meta size is {}, file size is {}",
+					getProcessorName(), this.fileName, MemUtils.bytesCntToStr(metaSize),
+					MemUtils.bytesCntToStr(fileSize));
 			rollToNewFile();
 			return true;
 		}
