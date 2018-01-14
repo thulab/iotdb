@@ -12,12 +12,12 @@ import java.util.PriorityQueue;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public class SeriesMergeSortReader implements SeriesReader {
+public class SeriesPriorityMergeSortReader implements SeriesReader {
 
     private List<PrioritySeriesReader> seriesReaderList;
     private PriorityQueue<Element> heap;
 
-    public SeriesMergeSortReader(PrioritySeriesReader... seriesReaders) throws IOException {
+    public SeriesPriorityMergeSortReader(PrioritySeriesReader... seriesReaders) throws IOException {
         seriesReaderList = new ArrayList<>();
         for (int i = 0; i < seriesReaders.length; i++) {
             seriesReaderList.add(seriesReaders[i]);
@@ -25,7 +25,7 @@ public class SeriesMergeSortReader implements SeriesReader {
         init();
     }
 
-    public SeriesMergeSortReader(List<PrioritySeriesReader> seriesReaderList) throws IOException {
+    public SeriesPriorityMergeSortReader(List<PrioritySeriesReader> seriesReaderList) throws IOException {
         this.seriesReaderList = seriesReaderList;
         init();
     }
