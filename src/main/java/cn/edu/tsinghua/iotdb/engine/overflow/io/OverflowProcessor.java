@@ -86,26 +86,26 @@ public class OverflowProcessor extends Processor {
 		long lastOverflowFilePostion = overflowStoreStruct.lastOverflowFilePosition;
 		long lastOverflowRowGroupPosition = overflowStoreStruct.lastOverflowRowGroupPosition;
 		OFFileMetadata ofFileMetadata = null;
-		LOGGER.info("The overflow processor lastOverflowFilePostion is {}, lastOverflowRowGroupPosition is {}",
-				lastOverflowFilePostion, lastOverflowRowGroupPosition);
+		LOGGER.info("The overflow processor {} lastOverflowFilePostion is {}, lastOverflowRowGroupPosition is {}",
+				getProcessorName(), lastOverflowFilePostion, lastOverflowRowGroupPosition);
 
 		OverflowReadWriter raf;
 		try {
 			raf = new OverflowReadWriter(overflowOutputFilePath);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the overflowReadWrite, the overflow is {}", processorName);
+			LOGGER.error("Can't get the overflowReadWrite, the overflow processor is {}", processorName, e);
 			throw new OverflowProcessorException(e);
 		}
 		long lastUpdateOffset = 0;
 		if (lastOverflowFilePostion == -1) {
 			LOGGER.warn(
-					"The overflow processor will recovery from rowgroup medata, the lastOverflowRowGroupPosition is {}",
-					lastOverflowRowGroupPosition);
+					"The overflow processor {} will recovery from rowgroup medata, the lastOverflowRowGroupPosition is {}",
+					getProcessorName(), lastOverflowRowGroupPosition);
 			lastUpdateOffset = lastOverflowRowGroupPosition;
 			ofFileMetadata = overflowStoreStruct.ofFileMetadata;
 		} else {
-			LOGGER.info("The overflow processor will recovery from file medata, the lastOverflowFilePostion is {}",
-					lastOverflowFilePostion);
+			LOGGER.info("The overflow processor {} will recovery from file medata, the lastOverflowFilePostion is {}",
+					getProcessorName(), lastOverflowFilePostion);
 			lastUpdateOffset = lastOverflowFilePostion;
 			ofFileMetadata = null;
 		}
@@ -114,7 +114,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			overflowFileIO = new OverflowFileIO(raf, overflowOutputFilePath, lastUpdateOffset);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the overflowFileIO, the overflow is {}", processorName);
+			LOGGER.error("Can't get the overflowFileIO, the overflow processor is {}", processorName, e);
 			throw new OverflowProcessorException(e);
 		}
 		// create overflow supoort
@@ -160,8 +160,7 @@ public class OverflowProcessor extends Processor {
 				}
 
 			} catch (IOException e) {
-				LOGGER.error("Flush the information for the overflow processor error, the overflow is {}",
-						getProcessorName());
+				LOGGER.error("The overflow processor {} flush the restore information error.", getProcessorName(), e);
 				throw new OverflowProcessorException(e);
 			} finally {
 				if (fileOutputStream != null) {
@@ -192,7 +191,8 @@ public class OverflowProcessor extends Processor {
 			try {
 				fileInputStream = new FileInputStream(overflowRestoreFile);
 			} catch (FileNotFoundException e) {
-				LOGGER.error("The overflow restore file is not found, the file path is {}", overflowRetoreFilePath);
+				LOGGER.error("The overflow processor {} restore file is not found, the file path is {}",
+						getProcessorName(), overflowRetoreFilePath, e);
 				throw new OverflowProcessorException(e);
 			}
 			int off = 0;
@@ -316,8 +316,9 @@ public class OverflowProcessor extends Processor {
 			++recordCount;
 			checkMemorySize();
 		} else {
-			LOGGER.error("The insert overflow record data type {} is not consistent with the data type in the metadata",
-					type);
+			LOGGER.error(
+					"The overflow processor {} insert overflow record data [deltaObjectId:{},measurementId:{}] type {} is not consistent with the data type in the metadata",
+					getProcessorName(), deltaObjectId, measurementId, type);
 			throw new OverflowProcessorException(
 					"The insert overflow record data type is error, insert type is " + type);
 		}
@@ -343,8 +344,9 @@ public class OverflowProcessor extends Processor {
 			++recordCount;
 			return checkMemorySize();
 		} else {
-			LOGGER.error("The update overflow record data type {} is not consistent with the type in the metadata",
-					type);
+			LOGGER.error(
+					"The overflow processor {} update overflow record data [deltaObjectId:{},measurementId:{}] type {} is not consistent with the data type in the metadata",
+					getProcessorName(), deltaObjectId, measurementId, type);
 			throw new OverflowProcessorException(
 					"The update overflow record data type is error, update type is " + type);
 		}
@@ -369,8 +371,9 @@ public class OverflowProcessor extends Processor {
 			++recordCount;
 			return checkMemorySize();
 		} else {
-			LOGGER.error("The delete overflow record data type {} is not consistent with the type in the metadata",
-					type);
+			LOGGER.error(
+					"The overflow processor {} delete overflow record data [deltaObjectId:{},measurementId:{}] type {} is not consistent with the data type in the metadata",
+					getProcessorName(), deltaObjectId, measurementId, type);
 			throw new OverflowProcessorException(
 					"The delete overflow record data type is error, delete type is " + type);
 		}
@@ -411,8 +414,9 @@ public class OverflowProcessor extends Processor {
 			long thisFLushTime = System.currentTimeMillis();
 			DateTime lastDateTime = new DateTime(lastFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisFLushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}s", lastDateTime,
-					thisDateTime, (thisFLushTime - lastFlushTime) / 1000);
+			LOGGER.info(
+					"The overflow processor {} last flush time is {}, this flush time is {}, flush time interval is {}s",
+					getProcessorName(), lastDateTime, thisDateTime, (thisFLushTime - lastFlushTime) / 1000);
 		}
 		lastFlushTime = System.currentTimeMillis();
 		boolean outOfSize = false;
@@ -453,7 +457,7 @@ public class OverflowProcessor extends Processor {
 				// flush overflow row group synchronously
 				// just close overflow processor will call this function by
 				// using true parameter
-				LOGGER.info("{} overflow start to flush synchronously.", getProcessorName());
+				LOGGER.info("The overflow processor {} start to flush synchronously.", getProcessorName());
 				flushStatus.setFlushing();
 				try {
 					// flush overflow rowgroup data
@@ -466,13 +470,15 @@ public class OverflowProcessor extends Processor {
 						WriteLogManager.getInstance().endOverflowFlush(getProcessorName());
 					}
 				} catch (IOException e) {
-					LOGGER.error("Flush overflow rowGroup to file failed synchronously");
+					LOGGER.error("The overflow processor {} flush overflow rowGroup to file error.", getProcessorName(),
+							e);
 					throw new OverflowProcessorException(e);
 				} catch (OverflowProcessorException e) {
-					LOGGER.error("Flush overflow rowgroup restore failed.", e);
-					System.exit(0);
+					LOGGER.error("The overflow processor {} flush overflow rowgroup restore information file error.",
+							getProcessorName(), e);
+					throw new OverflowProcessorException(e);
 				} catch (Exception e) {
-					LOGGER.error("filenodeFlushAction action failed");
+					LOGGER.error("The overflow processor {} filenodeFlushAction action error.", getProcessorName(), e);
 					throw new OverflowProcessorException(e);
 				} finally {
 					synchronized (flushStatus) {
@@ -480,6 +486,7 @@ public class OverflowProcessor extends Processor {
 						flushStatus.notify();
 					}
 				}
+				LOGGER.info("The overflow processor {} end to flush synchronously.", getProcessorName());
 				BasicMemController.getInstance().reportFree(this, oldMemUsage);
 			} else {
 				// flush overflow row group asynchronously
@@ -487,8 +494,7 @@ public class OverflowProcessor extends Processor {
 				Runnable AsynflushThread = () -> {
 					long flushStartTime = System.currentTimeMillis();
 					try {
-						LOGGER.info("{} overflow start to flush asynchronously,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getName());
+						LOGGER.info("The overflow processor {} start to flush asynchronously.", getProcessorName());
 						// flush overflow rowgroup data
 						ofSupport.flushRowGroupToStore(getProcessorName());
 						// store the rowgorup metadata to file
@@ -513,18 +519,19 @@ public class OverflowProcessor extends Processor {
 						}
 						BasicMemController.getInstance().reportFree(this, oldMemUsage);
 					}
+					LOGGER.info("The overflow processor {} end to flush asynchronously.", getProcessorName());
 					long flushEndTime = System.currentTimeMillis();
 					long timeInterval = flushEndTime - flushStartTime;
 					DateTime startDateTime = new DateTime(flushStartTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					DateTime endDateTime = new DateTime(flushEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
-					LOGGER.info("{} overflow flush start time is {}, flush end time is {}, cost time is {}ms",
+					LOGGER.info(
+							"The overflow processor {} flush start time is {}, flush end time is {}, time consume is {}ms",
 							getProcessorName(), startDateTime, endDateTime, timeInterval);
 
 				};
 				FlushManager.getInstance().submit(AsynflushThread);
-
 			}
 		}
 		return outOfSize;
@@ -551,31 +558,32 @@ public class OverflowProcessor extends Processor {
 
 	@Override
 	public void close() throws OverflowProcessorException {
-		LOGGER.info("Start to close overflow processor {}.", getProcessorName());
+		LOGGER.info("The overflow processor {} start to close.", getProcessorName());
 		long closeStartTime = System.currentTimeMillis();
 		try {
 			flushRowGroupToStore(true);
 		} catch (OverflowProcessorException e) {
-			LOGGER.error("Close the overflow processor error, the overflow is {}", getProcessorName());
+			LOGGER.error("The overflow processor {} flush rowgroup error.", getProcessorName(), e);
 			throw new OverflowProcessorException(e);
 		}
 		long lastUpdateOffset = -1L;
 		try {
 			lastUpdateOffset = ofSupport.endFile();
 		} catch (IOException e) {
-			LOGGER.error("Get the last update time failed, the overflow is {}", getProcessorName());
+			LOGGER.error("The overflow processor {} get the tail position of file error.", getProcessorName(), e);
 			throw new OverflowProcessorException(e);
 		}
 		if (lastUpdateOffset != -1) {
 			writeStoreToDisk(lastUpdateOffset, true);
 		} else {
-			LOGGER.warn("Close the overflow processor, but no overflow metadata was flush");
+			LOGGER.warn("The overflow processor {} close the overflow processor, but no overflow metadata was flush");
 		}
+		LOGGER.info("The overflow processor {} end to close.", getProcessorName());
 		long closeEndTime = System.currentTimeMillis();
 		long timeInterval = closeEndTime - closeStartTime;
 		DateTime startDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 		DateTime endDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-		LOGGER.info("Close overflow processor {}, close start time is {}, close end time is {}, cost time is {}ms",
+		LOGGER.info("The overfow processor {} close start time is {}, close end time is {}, cost time is {}ms",
 				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}
 
