@@ -44,7 +44,7 @@ class WriteLogRecovery {
         }
         String fileName = MManager.getInstance().getFileNameByPath(deltaObject);
         // When Wal restores the statistics info, need to set isMonitor true for the insert method to stop
-        // collecting statistics data of
+        // collecting statistics data of FileNodeManager
         FileNodeManager.getInstance().insert(tsRecord, true);
     }
 
