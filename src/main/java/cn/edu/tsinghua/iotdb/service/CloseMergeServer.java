@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -26,11 +27,11 @@ public class CloseMergeServer {
 	private CloseServerThread closeServer = new CloseServerThread();
 	private ScheduledExecutorService service;
 	private CloseAndMergeDaemon closeAndMergeDaemon = new CloseAndMergeDaemon();
-
-	private static final long mergeDelay = TsfileDBDescriptor.getInstance().getConfig().periodTimeForMerge;
-	private static final long closeDelay = TsfileDBDescriptor.getInstance().getConfig().periodTimeForFlush;
-	private static final long mergePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForMerge;
-	private static final long closePeriod = TsfileDBDescriptor.getInstance().getConfig().periodTimeForFlush;
+	private static TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig(); 
+	private static final long mergeDelay = dbConfig.periodTimeForMerge;
+	private static final long closeDelay = dbConfig.periodTimeForFlush;
+	private static final long mergePeriod = dbConfig.periodTimeForMerge;
+	private static final long closePeriod = dbConfig.periodTimeForFlush;
 
 	private volatile boolean isStart = false;
 	private long closeAllLastTime;
@@ -50,31 +51,35 @@ public class CloseMergeServer {
 	}
 
 	public void startServer() {
-
-		if (!isStart) {
-			LOGGER.info("Start the close and merge server");
-			closeAndMergeDaemon.start();
-			isStart = true;
-			closeAllLastTime = System.currentTimeMillis();
-			mergeAllLastTime = System.currentTimeMillis();
+		if (dbConfig.enableTimingCloseAndMerge) {
+			if (!isStart) {
+				LOGGER.info("Start the close and merge server");
+				closeAndMergeDaemon.start();
+				isStart = true;
+				closeAllLastTime = System.currentTimeMillis();
+				mergeAllLastTime = System.currentTimeMillis();
+			} else {
+				LOGGER.warn("The close and merge daemon has been already running");
+			}
 		} else {
-			LOGGER.warn("The close and merge daemon has been already running");
+			LOGGER.info("The close and merge can't be started, it is disable.");
 		}
 	}
 
 	public void closeServer() {
-
-		if (isStart) {
-			LOGGER.info("Prepare to shutdown the close and merge server");
-			isStart = false;
-			synchronized (service) {
-				service.shutdown();
-				service.notify();
+		if (dbConfig.enableTimingCloseAndMerge) {
+			if (isStart) {
+				LOGGER.info("Prepare to shutdown the close and merge server");
+				isStart = false;
+				synchronized (service) {
+					service.shutdown();
+					service.notify();
+				}
+				SERVER = null;
+				LOGGER.info("Shutdown close and merge server successfully");
+			} else {
+				LOGGER.warn("The close and merge daemon is not running now");
 			}
-			SERVER = null;
-			LOGGER.info("Shutdown close and merge server successfully");
-		} else {
-			LOGGER.warn("The close and merge daemon is not running now");
 		}
 	}
 

@@ -108,7 +108,13 @@ public class TsfileDBConfig {
 	 * second.
 	 */
 	public long periodTimeForMerge = 7200;
-
+	
+	/**
+	 * When set to true, start timing flush and merge service. False, stop timing flush and merge service.
+	 * Default is false.
+	 */
+	public boolean enableTimingCloseAndMerge = true;
+	
 	/**
 	 * How many thread can concurrently flush. When <= 0, use CPU core number.
 	 */
