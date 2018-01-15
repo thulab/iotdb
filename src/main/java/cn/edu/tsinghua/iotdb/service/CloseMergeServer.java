@@ -120,7 +120,7 @@ public class CloseMergeServer {
 				FileNodeManager.getInstance().mergeAll();
 			} catch (FileNodeManagerException e) {
 				e.printStackTrace();
-				LOGGER.error("merge all error, the reason is {}", e.getMessage());
+				LOGGER.error("Merge all error.", e);
 			}
 		}
 	}
@@ -145,7 +145,7 @@ public class CloseMergeServer {
 				FileNodeManager.getInstance().closeAll();
 			} catch (FileNodeManagerException e) {
 				e.printStackTrace();
-				LOGGER.error("close all error, the reason is {}", e.getMessage());
+				LOGGER.error("close all error.", e);
 			}
 		}
 	}
