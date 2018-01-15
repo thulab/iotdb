@@ -294,7 +294,8 @@ public class FileNodeManager implements IStatistic {
 					fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
 					fileNodeProcessor.setOverflowed(true);
 					if (shouldMerge) {
-						LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode {}",
+						LOGGER.info(
+								"The overflow file or metadata reaches the threshold, merge the filenode processor {}",
 								filenodeName);
 						fileNodeProcessor.submitToMerge();
 					}
@@ -433,7 +434,7 @@ public class FileNodeManager implements IStatistic {
 				fileNodeProcessor.changeTypeToChanged(deltaObjectId, startTime, endTime);
 				fileNodeProcessor.setOverflowed(true);
 				if (shouldMerge) {
-					LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode {}",
+					LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode processor {}",
 							filenodeName);
 					fileNodeProcessor.submitToMerge();
 				}
@@ -490,7 +491,8 @@ public class FileNodeManager implements IStatistic {
 					fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
 					fileNodeProcessor.setOverflowed(true);
 					if (shouldMerge) {
-						LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode {}",
+						LOGGER.info(
+								"The overflow file or metadata reaches the threshold, merge the filenode processor {}",
 								filenodeName);
 						fileNodeProcessor.submitToMerge();
 					}
