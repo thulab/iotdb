@@ -1498,7 +1498,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	
 	public void delete() throws ProcessorException{
 		// remove the monitor
-		LOGGER.debug("Deregister the filenode processor: {}", getProcessorName());
+		LOGGER.info("Deregister the filenode processor: {} from monitor.", getProcessorName());
 		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);

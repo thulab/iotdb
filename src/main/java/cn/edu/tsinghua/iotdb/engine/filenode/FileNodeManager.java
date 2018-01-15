@@ -642,63 +642,88 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	/**
-	 * close one processor
+	 * try to close the filenode processor. The name of filenode processor is
+	 * processorName
 	 * 
 	 * @param namespacePath
-	 * @throws LRUManagerException
+	 * @throws FileNodeManagerException
 	 */
-	private void closeOneProcessor(String namespacePath) throws FileNodeManagerException {
-		if (processorMap.containsKey(namespacePath)) {
-			Processor processor = processorMap.get(namespacePath);
-			try {
-				processor.writeLock();
-				// wait until the processor can be closed
-				while (!processor.canBeClosed()) {
-					try {
-						LOGGER.info("The filenode {} can't be closed, wait 100ms", processor.getProcessorName());
-						TimeUnit.MILLISECONDS.sleep(100);
-					} catch (InterruptedException e) {
-						LOGGER.warn("Interrupted when waitting to close one processor.");
+	private boolean closeOneProcessor(String processorName) throws FileNodeManagerException {
+		if (processorMap.containsKey(processorName)) {
+			Processor processor = processorMap.get(processorName);
+			if (processor.tryWriteLock()) {
+				try {
+					if (processor.canBeClosed()) {
+						processor.close();
+						return true;
+					} else {
+						return false;
 					}
+				} catch (ProcessorException e) {
+					LOGGER.error("Close the filenode processor {} error.", processorName, e);
+					throw new FileNodeManagerException(e);
+				} finally {
+					processor.writeUnlock();
 				}
-				processor.close();
-			} catch (ProcessorException e) {
-				LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}.", namespacePath);
-				throw new FileNodeManagerException(e);
-			} finally {
-				processor.writeUnlock();
+			} else {
+				return false;
 			}
+		} else {
+			return true;
 		}
 	}
 
-	public synchronized boolean deleteOneFileNode(String namespacePath) throws FileNodeManagerException {
-
+	public synchronized boolean deleteOneFileNode(String processorName) throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
-				FileNodeProcessor fileNodeProcessor = getProcessor(namespacePath, true);
-				try {
-					fileNodeProcessor.clearFileNode();
-					closeOneProcessor(namespacePath);
-					processorMap.remove(namespacePath);
-					// delete filenode/bufferwrite/overflow dir
-					String fileNodePath = TsFileDBConf.fileNodeDir;
-					fileNodePath = standardizeDir(fileNodePath) + namespacePath;
-					FileUtils.deleteDirectory(new File(fileNodePath));
+				if (processorMap.contains(processorName)) {
+					LOGGER.info("Forced to delete the filenode processor {}", processorName);
+					FileNodeProcessor processor = processorMap.get(processorName);
+					while (true) {
+						if (processor.tryWriteLock()) {
+							try {
+								if (processor.canBeClosed()) {
+									LOGGER.info("Delete the filenode processor {}.", processorName);
+									processor.delete();
+									processorMap.remove(processorName);
+									break;
+								} else {
+									LOGGER.info(
+											"Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
+								}
+							} catch (ProcessorException e) {
+								LOGGER.error("Delete the filenode processor {} error.", processorName, e);
+								throw new FileNodeManagerException(e);
+							} finally {
+								processor.writeUnlock();
+							}
+						} else {
+							LOGGER.info(
+									"Can't delete the filenode processor {}, because can't get the write lock. Wait 100ms to retry");
+						}
+						try {
+							TimeUnit.MILLISECONDS.sleep(100);
+						} catch (InterruptedException e) {
 
-					String bufferwritePath = TsFileDBConf.bufferWriteDir;
-					bufferwritePath = standardizeDir(bufferwritePath) + namespacePath;
-					FileUtils.deleteDirectory(new File(bufferwritePath));
-
-					String overflowPath = TsFileDBConf.overflowDataDir;
-					overflowPath = standardizeDir(overflowPath) + namespacePath;
-					FileUtils.deleteDirectory(new File(overflowPath));
-					return true;
-				} catch (IOException e) {
-					throw new FileNodeManagerException(e);
-				} finally {
-					fileNodeProcessor.writeUnlock();
+						}
+					}
 				}
+				String fileNodePath = TsFileDBConf.fileNodeDir;
+				fileNodePath = standardizeDir(fileNodePath) + processorName;
+				FileUtils.deleteDirectory(new File(fileNodePath));
+
+				String bufferwritePath = TsFileDBConf.bufferWriteDir;
+				bufferwritePath = standardizeDir(bufferwritePath) + processorName;
+				FileUtils.deleteDirectory(new File(bufferwritePath));
+
+				String overflowPath = TsFileDBConf.overflowDataDir;
+				overflowPath = standardizeDir(overflowPath) + processorName;
+				FileUtils.deleteDirectory(new File(overflowPath));
+				return true;
+			} catch (IOException e) {
+				LOGGER.error("Delete the filenode processor {} error.", processorName, e);
+				throw new FileNodeManagerException(e);
 			} finally {
 				fileNodeManagerStatus = FileNodeManagerStatus.NONE;
 			}
@@ -741,23 +766,28 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	public synchronized boolean closeOneFileNode(String namespacePath) throws FileNodeManagerException {
-
+	/**
+	 * Forced to close the filenode processor.
+	 * 
+	 * @param processorName
+	 * @throws FileNodeManagerException
+	 */
+	public synchronized void closeOneFileNode(String processorName) throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
-				FileNodeProcessor fileNodeProcessor = getProcessor(namespacePath, true);
-				try {
-					closeOneProcessor(namespacePath);
-					return true;
-				} finally {
-					fileNodeProcessor.writeUnlock();
+				LOGGER.info("Forced to close the filenode processor {}.", processorName);
+				while (!closeOneProcessor(processorName)) {
+					try {
+						LOGGER.info("Can't force to close the filenode processor {}, wait 100ms to retry");
+						TimeUnit.MILLISECONDS.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			} finally {
 				fileNodeManagerStatus = FileNodeManagerStatus.NONE;
 			}
-		} else {
-			return false;
 		}
 	}
 
@@ -769,11 +799,13 @@ public class FileNodeManager implements IStatistic {
 	 */
 	private void close(String processorName) throws FileNodeManagerException {
 		if (processorMap.containsKey(processorName)) {
+			LOGGER.info("Try to close the filenode processor {}.", processorName);
 			FileNodeProcessor processor = processorMap.get(processorName);
 			if (processor.tryWriteLock()) {
 				try {
 					if (processor.canBeClosed()) {
 						try {
+							LOGGER.info("Close the filenode processor {}.", processorName);
 							processor.close();
 						} catch (ProcessorException e) {
 							LOGGER.error("Close the filenode processor {} error.", processorName, e);
@@ -803,11 +835,13 @@ public class FileNodeManager implements IStatistic {
 	private void delete(String processorName, Iterator<Entry<String, FileNodeProcessor>> processorIterator)
 			throws FileNodeManagerException {
 		if (processorMap.containsKey(processorName)) {
+			LOGGER.info("Try to delete the filenode processor {}.", processorName);
 			FileNodeProcessor processor = processorMap.get(processorName);
 			if (processor.tryWriteLock()) {
 				try {
 					if (processor.canBeClosed()) {
 						try {
+							LOGGER.info("Delete the filenode processor {}.", processorName);
 							processor.delete();
 							processorIterator.remove();
 						} catch (ProcessorException e) {
