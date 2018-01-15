@@ -274,6 +274,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			List<Integer> result = new ArrayList<>();
 			boolean isAllSuccessful = true;
 			String batchErrorMessage = "";
+			
 			for (String statement : statements) {
 				try {
 					PhysicalPlan physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
