@@ -163,7 +163,7 @@ public class TsfileDBConfig {
 	/**
 	 * When set to false, MemMonitorThread and MemStatisticThread will not be created.
 	 */
-	public boolean enableMemMonitor = true;
+	public boolean enableMemMonitor = false;
 
 	/**
 	 * When set to true, small flush will be triggered periodically even if memory threshold is not exceeded.
