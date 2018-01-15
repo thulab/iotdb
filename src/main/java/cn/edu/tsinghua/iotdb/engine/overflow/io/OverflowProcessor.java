@@ -119,7 +119,7 @@ public class OverflowProcessor extends Processor {
 		}
 		// create overflow supoort
 		try {
-			this.ofSupport = new OverflowSupport(overflowFileIO, ofFileMetadata);
+			this.ofSupport = new OverflowSupport(overflowFileIO, ofFileMetadata, getProcessorName());
 		} catch (IOException e) {
 			LOGGER.error("Can't get the overflowSupport, the overflow is {}", processorName);
 			throw new OverflowProcessorException(e);
