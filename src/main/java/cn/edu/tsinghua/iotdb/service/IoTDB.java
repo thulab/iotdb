@@ -201,7 +201,7 @@ public class IoTDB implements IoTDBMBean {
 			statMonitor.close();
 		}
 
-		FileNodeManager.getInstance().closeAll();
+		FileNodeManager.getInstance().deleteAll();
 
 		WriteLogManager.getInstance().close();
 
