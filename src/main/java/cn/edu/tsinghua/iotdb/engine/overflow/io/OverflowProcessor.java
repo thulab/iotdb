@@ -576,7 +576,7 @@ public class OverflowProcessor extends Processor {
 		if (lastUpdateOffset != -1) {
 			writeStoreToDisk(lastUpdateOffset, true);
 		} else {
-			LOGGER.warn("The overflow processor {} close the overflow processor, but no overflow metadata was flush");
+			LOGGER.warn("The overflow processor {} close the overflow processor, but no overflow metadata was flush",getProcessorName());
 		}
 		LOGGER.info("The overflow processor {} end to close.", getProcessorName());
 		long closeEndTime = System.currentTimeMillis();

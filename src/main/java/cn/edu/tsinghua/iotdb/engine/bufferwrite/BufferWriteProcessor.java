@@ -584,8 +584,9 @@ public class BufferWriteProcessor extends Processor {
 			DateTime startDateTime = new DateTime(closeStartTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(closeEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("Close bufferwrite processor {}, start time is {}, end time is {}, time consume is {}ms",
-					getProcessorName(), startDateTime, endDateTime, closeInterval);
+			LOGGER.info(
+					"Close bufferwrite processor {}, the file name is {}, start time is {}, end time is {}, time consume is {}ms",
+					getProcessorName(), fileName, startDateTime, endDateTime, closeInterval);
 		} catch (IOException e) {
 			LOGGER.error("Close the bufferwrite processor error, the bufferwrite is {}.", getProcessorName());
 			throw new BufferWriteProcessorException(e);

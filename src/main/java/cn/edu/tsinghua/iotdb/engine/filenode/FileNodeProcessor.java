@@ -753,8 +753,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.info("The filenode processor {} prepare for merge, close the bufferwrite processor",
 					getProcessorName());
 			closeBufferWrite();
-			LOGGER.info("The filenode processor {} prepare for merge, close the overflow processor",
-					getProcessorName());
 			Map<String, Object> parameters = new HashMap<>();
 			// try to get overflow processor
 			getOverflowProcessor(getProcessorName(), parameters);

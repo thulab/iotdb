@@ -780,7 +780,6 @@ public class FileNodeManager implements IStatistic {
 				try {
 					if (processor.canBeClosed()) {
 						try {
-							LOGGER.info("Close the filenode, the nameSpacePath is {}", nsPath);
 							processor.close();
 							processorMap.remove(nsPath);
 						} catch (ProcessorException e) {
