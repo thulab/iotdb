@@ -1332,13 +1332,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 		}
 	}
-
 	/**
 	 * Close the overflow processor
-	 * 
 	 * @throws FileNodeProcessorException
 	 */
-	public void closeOverflow() throws FileNodeProcessorException {
+	public void closeOverflow() throws FileNodeProcessorException{
 		// close overflow
 		if (overflowProcessor != null) {
 			try {
@@ -1360,7 +1358,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	@Override
 	public void close() throws FileNodeProcessorException {
-		LOGGER.debug("Deregister the filenode processor: {}", getProcessorName());
+		LOGGER.debug("Deregister the filenode processor: {}",getProcessorName());
 		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
 		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
@@ -1370,7 +1368,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		closeBufferWrite();
 		closeOverflow();
 	}
-
+	
 	@Override
 	public long memoryUsage() {
 		long memSize = 0;
@@ -1389,7 +1387,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 			try {
 				serializeUtil.serialize(fileNodeProcessorStore, fileNodeRestoreFilePath);
-				LOGGER.info("Write restore information to the restore file");
+				LOGGER.info("Filenode {} Write restore information to the restore file",getProcessorName());
 			} catch (IOException e) {
 				throw new FileNodeProcessorException(e);
 			}

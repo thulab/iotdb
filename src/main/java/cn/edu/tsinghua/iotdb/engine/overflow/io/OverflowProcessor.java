@@ -406,8 +406,8 @@ public class OverflowProcessor extends Processor {
 			DateTime thisDateTime = new DateTime(thisFLushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
 					thisDateTime, thisFLushTime - lastFlushTime);
-			lastFlushTime = thisFLushTime;
 		}
+		lastFlushTime = System.currentTimeMillis();
 		if (recordCount > 0) {
 			synchronized (flushState) {
 				while (flushState.isFlushing()) {
@@ -445,10 +445,12 @@ public class OverflowProcessor extends Processor {
 				// flush overflow row group synchronously
 				// just close overflow processor will call this function by
 				// using true parameter
+				LOGGER.info("{} overflow start to flush synchronously,-Thread id {}.", getProcessorName(),
+						Thread.currentThread().getName());
 				flushState.setFlushing();
 				try {
 					// flush overflow rowgroup data
-					ofSupport.flushRowGroupToStore();
+					ofSupport.flushRowGroupToStore(getProcessorName());
 					// store the rowgroup metadata to file
 					writeStoreToDisk(-1, false);
 					// call filenode function to update intervalFile list
@@ -481,8 +483,10 @@ public class OverflowProcessor extends Processor {
 				flushState.setFlushing();
 				Runnable AsynflushThread = () -> {
 					try {
+						LOGGER.info("{} overflow start to flush asynchronously,-Thread id {}.", getProcessorName(),
+								Thread.currentThread().getName());
 						// flush overflow rowgroup data
-						ofSupport.flushRowGroupToStore();
+						ofSupport.flushRowGroupToStore(getProcessorName());
 						// store the rowgorup metadata to file
 						writeStoreToDisk(-1, false);
 						// call filenode function to update intervalFile
@@ -500,7 +504,7 @@ public class OverflowProcessor extends Processor {
 						LOGGER.error("Flush overflow rowgroup restore failed.", e);
 						System.exit(0);
 					} catch (Exception e) {
-						LOGGER.error("filenodeFlushAction action failed.", e);
+						LOGGER.error("FilenodeFlushAction action failed.", e);
 					} finally {
 						synchronized (flushState) {
 							flushState.setUnFlushing();

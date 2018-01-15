@@ -24,7 +24,11 @@ public class ReaderManager {
     /** unsealed file, at most one **/
     private String unSealedFilePath = null;
 
+    /** RowGroupMetadata for unsealed file path **/
     private List<RowGroupMetaData> unSealedRowGroupMetadataList = null;
+
+    /** map to store opened file stream **/
+    private ThreadLocal<Map<String, TsRandomAccessLocalFileReader>> fileReaderMap = new ThreadLocal<>();
 
     /** key: deltaObjectUID **/
     private Map<String, List<RowGroupReader>> rowGroupReaderMap = new LinkedHashMap<>();
@@ -32,10 +36,10 @@ public class ReaderManager {
     /**
      *
      * @param sealedFilePathList fileInputStreamList
-     * @throws IOException TsFile read error
      */
-    ReaderManager(List<String> sealedFilePathList) throws IOException {
+    ReaderManager(List<String> sealedFilePathList) {
         this.sealedFilePathList = sealedFilePathList;
+        fileReaderMap.set(new HashMap<>());
         //this.rowGroupReaderMap = new HashMap<>();
     }
 
@@ -44,12 +48,12 @@ public class ReaderManager {
      * @param sealedFilePathList file node list
      * @param unsealedFilePath fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
-     * @throws IOException TsFile read error
      */
-    ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) throws IOException {
+    ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
         this.sealedFilePathList = sealedFilePathList;
         this.unSealedFilePath = unsealedFilePath;
         this.unSealedRowGroupMetadataList = rowGroupMetadataList;
+        fileReaderMap.set(new HashMap<>());
     }
 
     List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
@@ -60,10 +64,17 @@ public class ReaderManager {
 
             // to examine whether sealed file has data
             for (String path : sealedFilePathList) {
+                TsRandomAccessLocalFileReader fileReader;
+                if (!fileReaderMap.get().containsKey(path)) {
+                    fileReader = new TsRandomAccessLocalFileReader(path);
+                    fileReaderMap.get().put(path, fileReader);
+                } else {
+                    fileReader = fileReaderMap.get().get(path);
+                }
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
                 if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
 
-                    // to filter some file whose (startTime, endTime) is not satisfied with the timeFilter
+                    // to filter some file whose (startTime, endTime) is not satisfied with the overflowTimeFilter
                     IntervalTimeVisitor metaFilter = new IntervalTimeVisitor();
                     if (timeFilter != null && !metaFilter.satisfy(timeFilter, tsFileMetaData.getDeltaObject(deltaObjectUID).startTime,
                             tsFileMetaData.getDeltaObject(deltaObjectUID).endTime))
@@ -73,17 +84,25 @@ public class ReaderManager {
                     for (RowGroupMetaData meta : tsRowGroupBlockMetaData.getRowGroups()) {
                         //TODO parallelism could be used to speed up
 
-                        RowGroupReader reader = new RowGroupReader(meta, new TsRandomAccessLocalFileReader(path));
+                        RowGroupReader reader = new RowGroupReader(meta, fileReader);
                         rowGroupReaderList.add(reader);
                     }
                 }
             }
 
             if (unSealedFilePath != null) {
+                TsRandomAccessLocalFileReader fileReader;
+                if (!fileReaderMap.get().containsKey(unSealedFilePath)) {
+                    fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);
+                    fileReaderMap.get().put(unSealedFilePath, fileReader);
+                } else {
+                    fileReader = fileReaderMap.get().get(unSealedFilePath);
+                }
+                // TsRandomAccessLocalFileReader fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);
                 for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
                     //TODO parallelism could be used to speed up
 
-                    RowGroupReader reader = new RowGroupReader(meta, new TsRandomAccessLocalFileReader(unSealedFilePath));
+                    RowGroupReader reader = new RowGroupReader(meta, fileReader);
                     rowGroupReaderList.add(reader);
                 }
             }
@@ -97,6 +116,13 @@ public class ReaderManager {
         for (Map.Entry<String, List<RowGroupReader>> entry : rowGroupReaderMap.entrySet()) {
             List<RowGroupReader> rowGroupReaderList = entry.getValue();
             for (RowGroupReader reader : rowGroupReaderList) {
+                reader.close();
+            }
+        }
+
+        if (fileReaderMap.get() != null) {
+            for (Map.Entry<String, TsRandomAccessLocalFileReader> entry : fileReaderMap.get().entrySet()) {
+                TsRandomAccessLocalFileReader reader = entry.getValue();
                 reader.close();
             }
         }

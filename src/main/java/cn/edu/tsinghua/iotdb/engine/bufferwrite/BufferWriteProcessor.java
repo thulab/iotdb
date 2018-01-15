@@ -45,7 +45,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author liukun
+<<<<<<< HEAD
  *
+=======
+>>>>>>> origin/master
  */
 public class BufferWriteProcessor extends Processor {
 
@@ -167,7 +170,7 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			pair = ReadStoreFromDisk();
 		} catch (IOException e) {
-			LOGGER.error("Read bufferwrite restore file failed.");
+			LOGGER.error("Read bufferwrite {} restore file failed.", getProcessorName());
 			throw new BufferWriteProcessorException(e);
 		}
 		ITsRandomAccessFileWriter output;
@@ -305,7 +308,7 @@ public class BufferWriteProcessor extends Processor {
 			// number
 			byte[] lastPositionBytes = BytesUtils.longToBytes(lastPosition);
 			out.write(lastPositionBytes);
-			LOGGER.info("Write restore information to the restore file.");
+			LOGGER.info("Bufferwrite {} write restore information to the restore file.", getProcessorName());
 		} catch (IOException e) {
 			LOGGER.error("Serialize the TSFileMetaData error.");
 			throw new BufferWriteProcessorException(e);
@@ -449,9 +452,14 @@ public class BufferWriteProcessor extends Processor {
 	 * @param timestamp
 	 * @param dataType
 	 * @param value
+<<<<<<< HEAD
 	 * @return true -the size of tsfile or the size of metadata reach to the
 	 *         threshold. false -the size of tsfile or the size of metadata
 	 *         doesn't reach to the threshold.
+=======
+	 * @return true -the size of tsfile or metadata reaches to the threshold.
+	 *         false -otherwise
+>>>>>>> origin/master
 	 * @throws BufferWriteProcessorException
 	 */
 	public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
@@ -466,9 +474,14 @@ public class BufferWriteProcessor extends Processor {
 	 * write one tsrecord to the buffer of tsfile
 	 * 
 	 * @param tsRecord
+<<<<<<< HEAD
 	 * @return true -the size of tsfile or the size of metadata reach to the
 	 *         threshold. false -the size of tsfile or the size of metadata
 	 *         doesn't reach to the threshold.
+=======
+	 * @return true -the size of tsfile or metadata reaches the threshold. false
+	 *         -otherwise
+>>>>>>> origin/master
 	 * @throws BufferWriteProcessorException
 	 */
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
@@ -562,7 +575,8 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	@Override
-	public long memoryUsage(){
+	public long memoryUsage() {
+
 		return recordWriter.getMemoryUsage();
 	}
 
@@ -613,8 +627,9 @@ public class BufferWriteProcessor extends Processor {
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
 				LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
 						thisDateTime, flushTimeInterval);
-				lastFlushTime = thisFlushTime;
 			}
+			lastFlushTime = System.currentTimeMillis();
+			boolean outOfSize = false;
 			if (recordCount > 0) {
 				synchronized (flushState) {
 					// This thread wait until the subThread flush finished
@@ -627,9 +642,7 @@ public class BufferWriteProcessor extends Processor {
 						}
 					}
 				}
-				if (checkSize()) {
-					return true;
-				}
+				outOfSize = checkSize();
 				long oldMemUsage = memUsed;
 				memUsed = 0;
 				// update the lastUpdatetime
@@ -647,12 +660,16 @@ public class BufferWriteProcessor extends Processor {
 				// flush bufferwrite data
 				if (isFlushingSync) {
 					try {
+						LOGGER.info("{} bufferwrite start to flush synchronously,-Thread id {}.", getProcessorName(),
+								Thread.currentThread().getName());
 						super.flushRowGroup(false);
 						writeStoreToDisk();
 						filenodeFlushAction.act();
 						if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 							WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
 						}
+						LOGGER.info("{} bufferwrite end to flush synchronously,-Thread id {}.", getProcessorName(),
+								Thread.currentThread().getName());
 					} catch (IOException e) {
 						LOGGER.error("Flush row group to store failed, processor:{}.", getProcessorName());
 						throw e;
@@ -675,8 +692,8 @@ public class BufferWriteProcessor extends Processor {
 
 					Runnable flushThread;
 					flushThread = () -> {
-						LOGGER.info("{} synchronous flush start,-Thread id {}.", getProcessorName(),
-								Thread.currentThread().getId());
+						LOGGER.info("{} bufferwrite start to flush asynchronously,-Thread id {}.", getProcessorName(),
+								Thread.currentThread().getName());
 						try {
 							asyncFlushRowGroupToStore();
 							writeStoreToDisk();
@@ -689,8 +706,8 @@ public class BufferWriteProcessor extends Processor {
 							 * There should be added system log by CGF and throw
 							 * exception
 							 */
-							LOGGER.error(String.format("%s Asynchronous flush error, sleep this thread-%s.",
-									getProcessorName(), Thread.currentThread().getId()), e);
+							LOGGER.error(String.format("%s asynchronous flush error, sleep this thread-%s.",
+									getProcessorName(), Thread.currentThread().getName()), e);
 							// TODO
 						} catch (BufferWriteProcessorException e) {
 							LOGGER.error("Write bufferwrite information to disk failed.", e);
@@ -707,10 +724,10 @@ public class BufferWriteProcessor extends Processor {
 						try {
 							synchronized (flushState) {
 								switchIndexFromFlushToWork();
-								LOGGER.info("{} synchronous flush end,-Thread is {}.", getProcessorName(),
-										Thread.currentThread().getId());
 								flushState.setUnFlushing();
 								flushState.notify();
+								LOGGER.info("{} bufferwrite end to flush asynchronously,-Thread id {}.",
+										getProcessorName(), Thread.currentThread().getName());
 							}
 						} finally {
 							convertBufferLock.writeLock().unlock();
@@ -721,7 +738,7 @@ public class BufferWriteProcessor extends Processor {
 					FlushManager.getInstance().submit(flushThread);
 				}
 			}
-			return false;
+			return outOfSize;
 		}
 
 		private void asyncFlushRowGroupToStore() throws IOException {
