@@ -469,7 +469,8 @@ public class FileNodeManager implements IStatistic {
 			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 			// no tsfile data, the delete operation is invalid
 			if (lastUpdateTime == -1) {
-				LOGGER.warn("The last update time is -1, delete overflow is invalid");
+				LOGGER.warn("The last update time is -1, delete overflow is invalid, the filenode processor is {}",
+						fileNodeProcessor.getProcessorName());
 			} else {
 				if (timestamp > lastUpdateTime) {
 					timestamp = lastUpdateTime;
@@ -481,7 +482,7 @@ public class FileNodeManager implements IStatistic {
 				try {
 					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Get the overflow processor failed, the filenode is {}, delete time is {}",
+					LOGGER.error("Get the overflow processor failed, the filenode processor is {}, delete time is {}",
 							filenodeName, timestamp, e);
 					throw new FileNodeManagerException(e);
 				}
@@ -677,7 +678,7 @@ public class FileNodeManager implements IStatistic {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
-				if (processorMap.contains(processorName)) {
+				if (processorMap.containsKey(processorName)) {
 					LOGGER.info("Forced to delete the filenode processor {}", processorName);
 					FileNodeProcessor processor = processorMap.get(processorName);
 					while (true) {
