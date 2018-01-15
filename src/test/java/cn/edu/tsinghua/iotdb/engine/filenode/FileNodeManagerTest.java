@@ -194,7 +194,7 @@ public class FileNodeManagerTest {
 				assertEquals(overflowInsert1[i], insertData.getTime(i));
 				assertEquals(overflowInsert1[i], insertData.getInt(i));
 			}
-			assertEquals(false, fManager.closeAll());
+			assertEquals(false, fManager.deleteAll());
 			fManager.endQuery(deltaObjectId, token);
 			fManager.closeAll();
 		} catch (FileNodeManagerException e) {
@@ -774,7 +774,7 @@ public class FileNodeManagerTest {
 			fail(e1.getMessage());
 		}
 		try {
-			assertEquals(true, fileNodeManager.closeAll());
+			assertEquals(true, fileNodeManager.deleteAll());
 		} catch (FileNodeManagerException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -816,7 +816,7 @@ public class FileNodeManagerTest {
 		}
 		try {
 			// close
-			if (fManager.closeAll()) {
+			if (fManager.deleteAll()) {
 
 			} else {
 				fail("Can't close the filenode manager");

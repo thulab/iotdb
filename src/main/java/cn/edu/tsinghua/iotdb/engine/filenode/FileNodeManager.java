@@ -641,24 +641,13 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	public void clearOneFileNode(String filenodeName) throws FileNodeManagerException {
-
-		FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
-		try {
-			fileNodeProcessor.clearFileNode();
-		} finally {
-			fileNodeProcessor.writeUnlock();
-		}
-	}
-
 	/**
 	 * close one processor
 	 * 
 	 * @param namespacePath
-	 * @return
 	 * @throws LRUManagerException
 	 */
-	private boolean closeOneProcessor(String namespacePath) throws FileNodeManagerException {
+	private void closeOneProcessor(String namespacePath) throws FileNodeManagerException {
 		if (processorMap.containsKey(namespacePath)) {
 			Processor processor = processorMap.get(namespacePath);
 			try {
@@ -673,7 +662,6 @@ public class FileNodeManager implements IStatistic {
 					}
 				}
 				processor.close();
-				processorMap.remove(namespacePath);
 			} catch (ProcessorException e) {
 				LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}.", namespacePath);
 				throw new FileNodeManagerException(e);
@@ -681,7 +669,6 @@ public class FileNodeManager implements IStatistic {
 				processor.writeUnlock();
 			}
 		}
-		return true;
 	}
 
 	public synchronized boolean deleteOneFileNode(String namespacePath) throws FileNodeManagerException {
@@ -691,7 +678,9 @@ public class FileNodeManager implements IStatistic {
 			try {
 				FileNodeProcessor fileNodeProcessor = getProcessor(namespacePath, true);
 				try {
+					fileNodeProcessor.clearFileNode();
 					closeOneProcessor(namespacePath);
+					processorMap.remove(namespacePath);
 					// delete filenode/bufferwrite/overflow dir
 					String fileNodePath = TsFileDBConf.fileNodeDir;
 					fileNodePath = standardizeDir(fileNodePath) + namespacePath;
@@ -772,33 +761,97 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	private void close(String nsPath, Iterator<Entry<String, FileNodeProcessor>> processorIterator)
-			throws FileNodeManagerException {
-		if (processorMap.containsKey(nsPath)) {
-			Processor processor = processorMap.get(nsPath);
+	/**
+	 * try to close the filenode processor.
+	 * 
+	 * @param processorName
+	 * @throws FileNodeManagerException
+	 */
+	private void close(String processorName) throws FileNodeManagerException {
+		if (processorMap.containsKey(processorName)) {
+			FileNodeProcessor processor = processorMap.get(processorName);
 			if (processor.tryWriteLock()) {
 				try {
 					if (processor.canBeClosed()) {
 						try {
 							processor.close();
-							processorMap.remove(nsPath);
 						} catch (ProcessorException e) {
-							LOGGER.error("Close processor error when close one processor, the nameSpacePath is {}",
-									nsPath);
+							LOGGER.error("Close the filenode processor {} error.", processorName, e);
 							throw new FileNodeManagerException(e);
 						}
 					} else {
-						LOGGER.warn("The processor can't be closed, the nameSpacePath is {}", nsPath);
+						LOGGER.warn("The filenode processor {} can't be closed.", processorName);
 					}
 				} finally {
 					processor.writeUnlock();
 				}
 			} else {
-				LOGGER.warn("Can't get the write lock the processor and close the processor, the nameSpacePath is {}",
-						nsPath);
+				LOGGER.warn("Can't get the write lock of the filenode processor {}.", processorName);
 			}
 		} else {
-			LOGGER.warn("The processorMap does't contains the nameSpacePath {}", nsPath);
+			LOGGER.warn("The processorMap does't contain the filenode processor {}.", processorName);
+		}
+	}
+
+	/**
+	 * try to delete the filenode processor.
+	 * 
+	 * @param processorName
+	 * @param processorIterator
+	 * @throws FileNodeManagerException
+	 */
+	private void delete(String processorName, Iterator<Entry<String, FileNodeProcessor>> processorIterator)
+			throws FileNodeManagerException {
+		if (processorMap.containsKey(processorName)) {
+			FileNodeProcessor processor = processorMap.get(processorName);
+			if (processor.tryWriteLock()) {
+				try {
+					if (processor.canBeClosed()) {
+						try {
+							processor.delete();
+							processorIterator.remove();
+						} catch (ProcessorException e) {
+							LOGGER.error("Delete the filenode processor {} error.", processorName, e);
+							throw new FileNodeManagerException(e);
+						}
+					} else {
+						LOGGER.warn("The filenode processor {} can't be deleted.", processorName);
+					}
+				} finally {
+					processor.writeUnlock();
+				}
+			} else {
+				LOGGER.warn("Can't get the write lock of the filenode processor {}.", processorName);
+			}
+		} else {
+			LOGGER.warn("The processorMap does't contains the filenode processor {}.", processorName);
+		}
+	}
+
+	public synchronized boolean deleteAll() throws FileNodeManagerException {
+		LOGGER.info("Start deleting all filenode");
+		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
+			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
+			try {
+				Iterator<Entry<String, FileNodeProcessor>> processorIterator = processorMap.entrySet().iterator();
+				while (processorIterator.hasNext()) {
+					Entry<String, FileNodeProcessor> processorEntry = processorIterator.next();
+					try {
+						delete(processorEntry.getKey(), processorIterator);
+					} catch (FileNodeManagerException e) {
+						throw e;
+					}
+				}
+				return processorMap.isEmpty();
+			} catch (FileNodeManagerException e) {
+				throw new FileNodeManagerException(e);
+			} finally {
+				LOGGER.info("Delete all filenode processor successfully");
+				fileNodeManagerStatus = FileNodeManagerStatus.NONE;
+			}
+		} else {
+			LOGGER.info("Failed to delete all filenode processor because of merge operation");
+			return false;
 		}
 	}
 
@@ -808,8 +861,8 @@ public class FileNodeManager implements IStatistic {
 	 * @return true - close successfully false - can't close because of merge
 	 * @throws FileNodeManagerException
 	 */
-	public synchronized boolean closeAll() throws FileNodeManagerException {
-		LOGGER.info("start closing all filenode");
+	public synchronized void closeAll() throws FileNodeManagerException {
+		LOGGER.info("Start closing all filenode processor");
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
@@ -817,23 +870,19 @@ public class FileNodeManager implements IStatistic {
 				while (processorIterator.hasNext()) {
 					Entry<String, FileNodeProcessor> processorEntry = processorIterator.next();
 					try {
-						close(processorEntry.getKey(), processorIterator);
+						close(processorEntry.getKey());
 					} catch (FileNodeManagerException e) {
-						LOGGER.error("Close processor error when close all processors, the nameSpacePath is {}",
-								processorEntry.getKey());
 						throw e;
 					}
 				}
-				return processorMap.isEmpty();
 			} catch (FileNodeManagerException e) {
 				throw new FileNodeManagerException(e);
 			} finally {
-				LOGGER.info("shutdown file node manager successfully");
+				LOGGER.info("Close all filenode processor successfully");
 				fileNodeManagerStatus = FileNodeManagerStatus.NONE;
 			}
 		} else {
-			LOGGER.info("failed to shutdown file node manager because of merge operation");
-			return false;
+			LOGGER.info("Failed to close all filenode processor because of merge operation");
 		}
 	}
 

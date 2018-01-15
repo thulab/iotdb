@@ -1488,9 +1488,18 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	@Override
 	public void close() throws FileNodeProcessorException {
+		synchronized (fileNodeProcessorStore) {
+			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
+			writeStoreToDisk(fileNodeProcessorStore);
+		}
+		closeBufferWrite();
+		closeOverflow();
+	}
+	
+	public void delete() throws ProcessorException{
+		// remove the monitor
 		LOGGER.debug("Deregister the filenode processor: {}", getProcessorName());
 		StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
-		// close bufferwrite
 		synchronized (fileNodeProcessorStore) {
 			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
 			writeStoreToDisk(fileNodeProcessorStore);
