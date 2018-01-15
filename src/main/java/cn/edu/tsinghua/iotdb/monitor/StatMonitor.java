@@ -24,7 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -62,14 +66,15 @@ public class StatMonitor {
         statMonitorDetectFreqSec = config.statMonitorDetectFreqSec;
         statMonitorRetainIntervalSec = config.statMonitorRetainIntervalSec;
         backLoopPeriod = config.backLoopPeriodSec;
-        try {
-            String prefix = MonitorConstants.statStorageGroupPrefix;
-
-            if (!mManager.pathExist(prefix)) {
-                mManager.setStorageLevelToMTree(prefix);
+        if (config.enableStatMonitor){
+            try {
+                String prefix = MonitorConstants.statStorageGroupPrefix;
+                if (!mManager.pathExist(prefix)) {
+                    mManager.setStorageLevelToMTree(prefix);
+                }
+            } catch (PathErrorException|IOException e) {
+                LOGGER.error("MManager setStorageLevelToMTree False.", e);
             }
-        } catch (Exception e) {
-            LOGGER.error("MManager setStorageLevelToMTree False.", e);
         }
     }
 
@@ -118,7 +123,6 @@ public class StatMonitor {
         }
     }
 
-
     public void recovery() {
         // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
         OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
@@ -138,17 +142,21 @@ public class StatMonitor {
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
                 for (Map.Entry<String, DynamicOneColumnData> entry : linkedHashMap.entrySet()) {
-                    String[] statMeasurements = entry.getKey().substring(StatisticConstant.LAST.length()+1, entry.getKey().length() - 1).split("\\.");
-                    String statMeasurement = statMeasurements[statMeasurements.length-1];
+                    String[] statMeasurements = entry.getKey().substring(StatisticConstant.LAST.length() + 1, entry.getKey().length() - 1).split("\\.");
+                    String statMeasurement = statMeasurements[statMeasurements.length - 1];
                     if (statParamsHashMap.containsKey(statMeasurement)) {
                         DynamicOneColumnData dynamicOneColumnData = entry.getValue();
-                        long lastValue = dynamicOneColumnData.getLong(dynamicOneColumnData.valueLength-1);
+                        long lastValue = dynamicOneColumnData.getLong(dynamicOneColumnData.valueLength - 1);
                         statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
                     }
                 }
             }
-        } catch (ProcessorException|IOException|PathErrorException e) {
-            LOGGER.error("Error occurs when recovering statistics of FileNodeManager,",e);
+        } catch (ProcessorException e) {
+            LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
+        } catch (PathErrorException e) {
+            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path not exist,", e);
+        } catch (IOException e) {
+            LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
         }
     }
 
