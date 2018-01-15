@@ -52,29 +52,29 @@ public class CloseMergeServer {
 	public void startServer() {
 
 		if (!isStart) {
-			LOGGER.info("start the close and merge server");
+			LOGGER.info("Start the close and merge server");
 			closeAndMergeDaemon.start();
 			isStart = true;
 			closeAllLastTime = System.currentTimeMillis();
 			mergeAllLastTime = System.currentTimeMillis();
 		} else {
-			LOGGER.warn("the close and merge daemon has been already running");
+			LOGGER.warn("The close and merge daemon has been already running");
 		}
 	}
 
 	public void closeServer() {
 
 		if (isStart) {
-			LOGGER.info("prepare to shutdown the close and merge server");
+			LOGGER.info("Prepare to shutdown the close and merge server");
 			isStart = false;
 			synchronized (service) {
 				service.shutdown();
 				service.notify();
 			}
 			SERVER = null;
-			LOGGER.info("shutdown close and merge server successfully");
+			LOGGER.info("Shutdown close and merge server successfully");
 		} else {
-			LOGGER.warn("the close and merge daemon is not running now");
+			LOGGER.warn("The close and merge daemon is not running now");
 		}
 	}
 
@@ -112,8 +112,9 @@ public class CloseMergeServer {
 			DateTime startDateTime = new DateTime(mergeAllLastTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("start the merge action regularly, last time is {}, this time is {}.", startDateTime,
-					endDateTime);
+			long timeInterval = thisMergeTime - mergeAllLastTime;
+			LOGGER.info("Start the merge action regularly, last time is {}, this time is {}, time interval is {}s.",
+					startDateTime, endDateTime, timeInterval / 1000);
 			mergeAllLastTime = System.currentTimeMillis();
 			try {
 				FileNodeManager.getInstance().mergeAll();
@@ -136,8 +137,9 @@ public class CloseMergeServer {
 			DateTime startDateTime = new DateTime(closeAllLastTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(thisCloseTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("start the close action regularly, last time is {}, this time is {}.", startDateTime,
-					endDateTime);
+			long timeInterval = thisCloseTime - closeAllLastTime;
+			LOGGER.info("Start the close action regularly, last time is {}, this time is {}, time interval is {}s.",
+					startDateTime, endDateTime, timeInterval / 1000);
 			closeAllLastTime = System.currentTimeMillis();
 			try {
 				FileNodeManager.getInstance().closeAll();
