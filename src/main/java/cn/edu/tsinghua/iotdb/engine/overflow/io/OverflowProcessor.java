@@ -534,6 +534,10 @@ public class OverflowProcessor extends Processor {
 				FlushManager.getInstance().submit(AsynflushThread);
 			}
 		}
+		if (outOfSize) {
+			LOGGER.warn("The overflow processor {}, the sise of file or metadata {} reaches the threshold.",
+					getProcessorName(), fileName);
+		}
 		return outOfSize;
 	}
 
@@ -694,7 +698,9 @@ public class OverflowProcessor extends Processor {
 		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 		long metaSize = getMetaSize();
 		long fileSize = getFileSize();
-		if (metaSize >= config.bufferwriteMetaSizeThreshold || fileSize >= config.bufferwriteFileSizeThreshold) {
+		LOGGER.info("The overflow processor {}, the size of metadata reaches {}, the size of file reaches {}.",
+				getProcessorName(), MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
+		if (metaSize >= config.overflowMetaSizeThreshold || fileSize >= config.overflowFileSizeThreshold) {
 			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}", this.fileName,
 					MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
 			rollToNewFile();
