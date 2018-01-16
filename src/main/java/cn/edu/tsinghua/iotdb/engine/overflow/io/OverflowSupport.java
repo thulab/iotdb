@@ -330,8 +330,7 @@ public class OverflowSupport {
 			timeInterval = 1;
 		}
 		long flushSize = fileWriter.getPos() - lastPos;
-		LOGGER.info(
-				"Overflow support {} flush overflow rowgroup, actual:{} bytes, time consume:{} ms, flush rate:{} bytes/ms",
+		LOGGER.info("Overflow support {} flushes overflow rowgroup, actual:{} bytes, time consumption:{} ms, flush rate:{} bytes/ms",
 				processorName, flushSize, timeInterval, flushSize / timeInterval);
 	}
 

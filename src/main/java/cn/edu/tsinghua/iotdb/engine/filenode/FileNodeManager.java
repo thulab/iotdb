@@ -173,7 +173,7 @@ public class FileNodeManager implements IStatistic {
 			Map<String, Object> parameters = new HashMap<>();
 			return new FileNodeProcessor(baseDir, filenodeName, parameters);
 		} catch (FileNodeProcessorException e) {
-			LOGGER.error("Can't construct the FileNodeProcessor, the filenode is %s", filenodeName, e);
+			LOGGER.error("Can't construct the FileNodeProcessor, the filenode is {}", filenodeName, e);
 			throw new FileNodeManagerException(e);
 		}
 	}
@@ -235,12 +235,9 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * insert TsRecord into storage group
 	 * 
-	 * @param tsRecord:
-	 *            input Data
-	 * @param isMonitor:
-	 *            if true the insertion is done by StatMonitor then the Stat
-	 *            Info will not be recorded. else the statParamsHashMap will be
-	 *            updated
+	 * @param tsRecord: input Data
+	 * @param isMonitor: if true, the insertion is done by StatMonitor adn the Stat Info will not be recorded. 
+	 *                   if false, the statParamsHashMap will be updated.
 	 * @return an int value represents the insert type
 	 * @throws FileNodeManagerException
 	 */
@@ -637,7 +634,7 @@ public class FileNodeManager implements IStatistic {
 			}
 			fileNodeManagerStatus = FileNodeManagerStatus.NONE;
 		} else {
-			LOGGER.warn("start to merge all overflowed filenode fail, because of the filenode manager status is {}",
+			LOGGER.warn("Failed to merge all overflowed filenode, because filenode manager status is {}",
 					fileNodeManagerStatus);
 		}
 	}
@@ -690,8 +687,7 @@ public class FileNodeManager implements IStatistic {
 									processorMap.remove(processorName);
 									break;
 								} else {
-									LOGGER.info(
-											"Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
+									LOGGER.info("Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
 								}
 							} catch (ProcessorException e) {
 								LOGGER.error("Delete the filenode processor {} error.", processorName, e);
@@ -700,8 +696,7 @@ public class FileNodeManager implements IStatistic {
 								processor.writeUnlock();
 							}
 						} else {
-							LOGGER.info(
-									"Can't delete the filenode processor {}, because can't get the write lock. Wait 100ms to retry");
+							LOGGER.info("Can't delete the filenode processor {}, because it can't get the write lock. Wait 100ms to retry");
 						}
 						try {
 							TimeUnit.MILLISECONDS.sleep(100);
@@ -893,7 +888,7 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * Try to close All
 	 * 
-	 * @return true - close successfully false - can't close because of merge
+	 * @return true - close successfully false - can't close because of merge operation
 	 * @throws FileNodeManagerException
 	 */
 	public synchronized void closeAll() throws FileNodeManagerException {

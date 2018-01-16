@@ -167,7 +167,7 @@ public class TsfileDBConfig {
 
 
 	/**
-	 * When set to false, MemMonitorThread and MemStatisticThread will not be created.
+	 * If set false, MemMonitorThread and MemStatisticThread will not be created.
 	 */
 	public boolean enableMemMonitor = false;
 

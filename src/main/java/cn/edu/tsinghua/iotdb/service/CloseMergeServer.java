@@ -14,7 +14,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 
 /**
- * This is one server for close and merge regularly
+ * A service that triggers close and merge operation regularly
  * 
  * @author liukun
  *
@@ -59,10 +59,10 @@ public class CloseMergeServer {
 				closeAllLastTime = System.currentTimeMillis();
 				mergeAllLastTime = System.currentTimeMillis();
 			} else {
-				LOGGER.warn("The close and merge daemon has been already running");
+				LOGGER.warn("The close and merge server has been already running");
 			}
 		} else {
-			LOGGER.info("The close and merge can't be started, it is disable.");
+			LOGGER.info("The close and merge server can't be started, it is disabled by configuration.");
 		}
 	}
 
@@ -78,7 +78,7 @@ public class CloseMergeServer {
 				SERVER = null;
 				LOGGER.info("Shutdown close and merge server successfully");
 			} else {
-				LOGGER.warn("The close and merge daemon is not running now");
+				LOGGER.warn("The close and merge server is not running now");
 			}
 		}
 	}
@@ -114,8 +114,7 @@ public class CloseMergeServer {
 		@Override
 		public void run() {
 			long thisMergeTime = System.currentTimeMillis();
-			DateTime startDateTime = new DateTime(mergeAllLastTime,
-					TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime startDateTime = new DateTime(mergeAllLastTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			long timeInterval = thisMergeTime - mergeAllLastTime;
 			LOGGER.info("Start the merge action regularly, last time is {}, this time is {}, time interval is {}s.",
@@ -139,8 +138,7 @@ public class CloseMergeServer {
 		@Override
 		public void run() {
 			long thisCloseTime = System.currentTimeMillis();
-			DateTime startDateTime = new DateTime(closeAllLastTime,
-					TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime startDateTime = new DateTime(closeAllLastTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(thisCloseTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			long timeInterval = thisCloseTime - closeAllLastTime;
 			LOGGER.info("Start the close action regularly, last time is {}, this time is {}, time interval is {}s.",

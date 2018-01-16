@@ -44,8 +44,6 @@ public class OverflowSupportTest {
 	private OverflowFileIO ofio = null;
 	private OverflowReadWriter ofrw = null;
 	private OverflowSupport ofsupport = null;
-	// private TsfileDBConfig tsFileDBConfig =
-	// TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {

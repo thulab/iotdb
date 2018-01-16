@@ -38,7 +38,7 @@ public class MergePool {
 	 */
 	public void reopen() throws ProcessorException {
 		if (!pool.isTerminated())
-			throw new ProcessorException("Pool is not terminated!");
+			throw new ProcessorException("Merge pool is not terminated!");
 		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 		pool = Executors.newFixedThreadPool(config.concurrentFlushThread);
 	}
@@ -63,7 +63,7 @@ public class MergePool {
 				if (!pool.awaitTermination(timeOut, TimeUnit.MILLISECONDS))
 					throw new ProcessorException("Merge thread pool doesn't exit after " + EXIT_WAIT_TIME + " ms");
 			} catch (InterruptedException e) {
-				throw new ProcessorException("Interrupted while waiting merge thread pool to exit. " + e.getMessage());
+				throw new ProcessorException("Interrupted while waiting merge thread pool to exit. Because " + e.getMessage());
 			}
 		}
 	}
@@ -88,7 +88,7 @@ public class MergePool {
 				if (!pool.awaitTermination(timeOut, TimeUnit.MILLISECONDS))
 					throw new ProcessorException("Merge thread pool doesn't exit after " + EXIT_WAIT_TIME + " ms");
 			} catch (InterruptedException e) {
-				throw new ProcessorException("Interrupted while waiting merge thread pool to exit. " + e.getMessage());
+				throw new ProcessorException("Interrupted while waiting merge thread pool to exit. Because" + e.getMessage());
 			}
 		}
 	}

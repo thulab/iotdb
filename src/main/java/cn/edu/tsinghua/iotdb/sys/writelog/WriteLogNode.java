@@ -165,7 +165,7 @@ public class WriteLogNode {
         	long startTime = System.currentTimeMillis();
         	DateTime startDateTime = new DateTime(startTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
-            LOG.info("Write ahead log {} compact process begin, the time is {}",fileNodePrefix,startDateTime);
+            LOG.info("Write ahead log {} compact process begins, start time is {}",fileNodePrefix,startDateTime);
             LocalFileLogWriter writerV2 = new LocalFileLogWriter(backFilePath);
             LocalFileLogReader oldReader = new LocalFileLogReader(filePath);
             writerV2.write(oldReader.getFileCompactData());
@@ -191,8 +191,8 @@ public class WriteLogNode {
             long endTime = System.currentTimeMillis();
             DateTime endDateTime = new DateTime(endTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
-            LOG.info("Write ahead log {} compact process end, the end time is {}",fileNodePrefix,endDateTime);
-			LOG.info("Write ahead log {} compact process, the start time is {}, the end time is {}, time consume is {}s",
+            LOG.info("Write ahead log {} compact process ends, end time is {}", fileNodePrefix, endDateTime);
+            LOG.info("Write ahead log {} compact process, start time is {}, end time is {}, time consume is {}s",
 					fileNodePrefix, startDateTime, endDateTime, (endTime - startTime)/1000);
         }
     }
