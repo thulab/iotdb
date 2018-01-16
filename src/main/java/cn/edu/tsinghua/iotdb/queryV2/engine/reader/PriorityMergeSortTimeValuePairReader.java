@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader.Priority;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,29 +12,29 @@ import java.util.PriorityQueue;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public class SeriesPriorityMergeSortReader implements SeriesReader {
+public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader {
 
-    private List<PrioritySeriesReader> seriesReaderList;
+    private List<PriorityTimeValuePairReader> readerList;
     private PriorityQueue<Element> heap;
 
-    public SeriesPriorityMergeSortReader(PrioritySeriesReader... seriesReaders) throws IOException {
-        seriesReaderList = new ArrayList<>();
-        for (int i = 0; i < seriesReaders.length; i++) {
-            seriesReaderList.add(seriesReaders[i]);
+    public PriorityMergeSortTimeValuePairReader(PriorityTimeValuePairReader... readers) throws IOException {
+        readerList = new ArrayList<>();
+        for (int i = 0; i < readers.length; i++) {
+            readerList.add(readers[i]);
         }
         init();
     }
 
-    public SeriesPriorityMergeSortReader(List<PrioritySeriesReader> seriesReaderList) throws IOException {
-        this.seriesReaderList = seriesReaderList;
+    public PriorityMergeSortTimeValuePairReader(List<PriorityTimeValuePairReader> readerList) throws IOException {
+        this.readerList = readerList;
         init();
     }
 
     private void init() throws IOException {
         heap = new PriorityQueue<>();
-        for (int i = 0; i < seriesReaderList.size(); i++) {
-            if (seriesReaderList.get(i).hasNext()) {
-                heap.add(new Element(i, seriesReaderList.get(i).next(), seriesReaderList.get(i).getPriority()));
+        for (int i = 0; i < readerList.size(); i++) {
+            if (readerList.get(i).hasNext()) {
+                heap.add(new Element(i, readerList.get(i).next(), readerList.get(i).getPriority()));
             }
         }
     }
@@ -54,9 +54,9 @@ public class SeriesPriorityMergeSortReader implements SeriesReader {
     private void updateHeap(Element top) throws IOException {
         while (heap.size() > 0 && heap.peek().timeValuePair.getTimestamp() == top.timeValuePair.getTimestamp()) {
             Element e = heap.poll();
-            PrioritySeriesReader prioritySeriesReader = seriesReaderList.get(e.index);
-            if (prioritySeriesReader.hasNext()) {
-                heap.add(new Element(e.index, prioritySeriesReader.next(), prioritySeriesReader.getPriority()));
+            PriorityTimeValuePairReader priorityTimeValuePairReader = readerList.get(e.index);
+            if (priorityTimeValuePairReader.hasNext()) {
+                heap.add(new Element(e.index, priorityTimeValuePairReader.next(), priorityTimeValuePairReader.getPriority()));
             }
         }
     }

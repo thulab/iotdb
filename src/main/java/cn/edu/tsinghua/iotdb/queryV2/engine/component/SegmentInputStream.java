@@ -31,7 +31,10 @@ public class SegmentInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        checkPosition();
+        if (position >= offset + size) {
+            return -1;
+        }
+        randomAccessFile.seek(position);
         int b = randomAccessFile.read();
         position += 1;
         return b;
