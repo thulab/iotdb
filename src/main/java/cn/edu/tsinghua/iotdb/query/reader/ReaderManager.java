@@ -107,13 +107,8 @@ public class ReaderManager {
             logger.error("can not close file for one ReaderManager");
             e.printStackTrace();
         }
-        // Map<String, List<RowGroupReader>> rowGroupReaderMap
-        rowGroupReaderMap.clear();
     }
 
-    /**
-     * clear the RowGroupReader map.
-     */
     public void clearReaderMaps() {
         rowGroupReaderMap.clear();
     }
