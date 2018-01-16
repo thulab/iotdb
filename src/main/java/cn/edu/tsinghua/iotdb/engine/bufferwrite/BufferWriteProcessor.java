@@ -45,10 +45,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author liukun
-<<<<<<< HEAD
- *
-=======
->>>>>>> origin/master
  */
 public class BufferWriteProcessor extends Processor {
 
@@ -452,14 +448,8 @@ public class BufferWriteProcessor extends Processor {
 	 * @param timestamp
 	 * @param dataType
 	 * @param value
-<<<<<<< HEAD
-	 * @return true -the size of tsfile or the size of metadata reach to the
-	 *         threshold. false -the size of tsfile or the size of metadata
-	 *         doesn't reach to the threshold.
-=======
-	 * @return true -the size of tsfile or metadata reaches to the threshold.
-	 *         false -otherwise
->>>>>>> origin/master
+	 * @return true - the size of tsfile or metadata reaches the threshold.
+	 *         false - otherwise
 	 * @throws BufferWriteProcessorException
 	 */
 	public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
@@ -474,14 +464,8 @@ public class BufferWriteProcessor extends Processor {
 	 * write one tsrecord to the buffer of tsfile
 	 * 
 	 * @param tsRecord
-<<<<<<< HEAD
-	 * @return true -the size of tsfile or the size of metadata reach to the
-	 *         threshold. false -the size of tsfile or the size of metadata
-	 *         doesn't reach to the threshold.
-=======
-	 * @return true -the size of tsfile or metadata reaches the threshold. false
-	 *         -otherwise
->>>>>>> origin/master
+	 * @return true - the size of tsfile or metadata reaches the threshold.
+	 *         false - otherwise
 	 * @throws BufferWriteProcessorException
 	 */
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
