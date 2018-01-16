@@ -137,6 +137,9 @@ public class StatMonitor {
             queryDataSet = overflowQueryEngine.aggregate(pairList, null);
             ReadLockManager.getInstance().unlockForOneRequest();
             if (queryDataSet.hasNextRecord()) {
+            	if(queryDataSet.getCurrentRecord()==null){
+            		return;
+            	}
                 queryDataSet.next();
                 LinkedHashMap<String, DynamicOneColumnData> linkedHashMap = queryDataSet.mapRet;
                 FileNodeManager fManager = FileNodeManager.getInstance();
