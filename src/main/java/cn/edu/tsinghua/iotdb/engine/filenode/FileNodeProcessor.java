@@ -1393,13 +1393,14 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	@Override
-	public void flush() throws IOException {
+	public boolean flush() throws IOException {
 		if (bufferWriteProcessor != null) {
 			bufferWriteProcessor.flush();
 		}
 		if (overflowProcessor != null) {
-			overflowProcessor.flush();
+			return overflowProcessor.flush();
 		}
+		return false;
 	}
 
 	/**

@@ -964,7 +964,10 @@ public class FileNodeManager implements IStatistic {
 		for (FileNodeProcessor processor : processorMap.values()) {
 			if (processor.tryLock(true)) {
 				try {
-					processor.flush();
+					boolean isMerge = processor.flush();
+					if(isMerge){
+						processor.submitToMerge();
+					}
 				} finally {
 					processor.unlock(true);
 				}
@@ -988,7 +991,10 @@ public class FileNodeManager implements IStatistic {
 			if (processor.memoryUsage() > TsFileConf.groupSizeInByte / 2) {
 				processor.writeLock();
 				try {
-					processor.flush();
+					boolean isMerge = processor.flush();
+					if(isMerge){
+						processor.submitToMerge();
+					}
 				} finally {
 					processor.writeUnlock();
 				}

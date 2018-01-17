@@ -155,7 +155,7 @@ public abstract class Processor {
 	 */
 	public abstract boolean canBeClosed();
 	
-	public abstract void flush() throws IOException;
+	public abstract boolean flush() throws IOException;
 
 	/**
 	 * Close the processor.<br>

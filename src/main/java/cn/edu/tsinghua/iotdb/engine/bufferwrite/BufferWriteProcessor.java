@@ -563,8 +563,8 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	@Override
-	public void flush() throws IOException {
-		recordWriter.flushRowGroup(false);
+	public boolean flush() throws IOException {
+		return recordWriter.flushRowGroup(false);
 	}
 
 	@Override
