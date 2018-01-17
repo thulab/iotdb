@@ -24,7 +24,7 @@ public class MergePool {
 
 	private MergePool() {
 		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-		this.threadCnt = config.concurrentFlushThread;
+		this.threadCnt = config.mergeConcurrentThreads;
 		pool = IoTDBThreadPoolFactory.newFixedThreadPool(threadCnt, "Merge");
 	}
 
@@ -40,7 +40,7 @@ public class MergePool {
 		if (!pool.isTerminated())
 			throw new ProcessorException("Merge pool is not terminated!");
 		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-		pool = Executors.newFixedThreadPool(config.concurrentFlushThread);
+		pool = Executors.newFixedThreadPool(config.mergeConcurrentThreads);
 	}
 
 	/**

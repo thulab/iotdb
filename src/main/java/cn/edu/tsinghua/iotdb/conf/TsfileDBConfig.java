@@ -78,7 +78,8 @@ public class TsfileDBConfig {
 	public String indexFileDir = "index";
 
 	/**
-	 * The maximum concurrent thread number for merging overflow
+	 * The maximum concurrent thread number for merging overflow.
+	 * When the value<=0 or > CPU core number, use the CPU core number.
 	 */
 	public int mergeConcurrentThreads = Runtime.getRuntime().availableProcessors();
 
@@ -121,7 +122,7 @@ public class TsfileDBConfig {
 	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
-
+	
 	/**
 	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
 	 */
