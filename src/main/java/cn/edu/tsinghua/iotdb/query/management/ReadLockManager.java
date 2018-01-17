@@ -73,7 +73,7 @@ public class ReadLockManager {
             unlockForQuery(key, locks.get(key));
         }
         locksMap.remove();
-        recordReaderCache.clear();
+
 
         if (groupByCalcTime != null && groupByCalcTime.get() != null) {
             groupByCalcTime.remove();
@@ -85,7 +85,8 @@ public class ReadLockManager {
             groupByEngineWithFilterLocal.remove();
         }
 
-        FileReaderMap.close();
+        recordReaderCache.clear();
+        FileReaderMap.getInstance().close();
     }
 
     private void unlockForQuery(String deltaObjectUID, int token) throws ProcessorException {

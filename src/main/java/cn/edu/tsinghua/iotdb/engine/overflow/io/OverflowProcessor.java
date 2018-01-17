@@ -485,6 +485,7 @@ public class OverflowProcessor extends Processor {
 							"The overflow processor {} encountered an error when flushing overflow row group restore information to file.",
 							getProcessorName(), e);
 					throw new OverflowProcessorException(e);
+
 				} catch (Exception e) {
 					LOGGER.error("The overflow processor {} filenodeFlushAction action error.", getProcessorName(), e);
 					throw new OverflowProcessorException(e);
@@ -514,12 +515,12 @@ public class OverflowProcessor extends Processor {
 							WriteLogManager.getInstance().endOverflowFlush(getProcessorName());
 						}
 					} catch (IOException e) {
-						LOGGER.error("Flush overflow rowgroup to file error in asynchronously.", e);
+						LOGGER.error("Flush overflow rowgroup to file error in asynchronously. Thread {} exits.",Thread.currentThread().getName() , e);
 					} catch (OverflowProcessorException e) {
-						LOGGER.error("Flush overflow rowgroup restore failed.", e);
-						System.exit(0);
+						LOGGER.error("Flush overflow rowgroup restore failed. Thread {} exits.", Thread.currentThread().getName(), e);
+//						System.exit(0);
 					} catch (Exception e) {
-						LOGGER.error("FilenodeFlushAction action failed.", e);
+						LOGGER.error("FilenodeFlushAction action failed. Thread {} exits.", Thread.currentThread().getName(), e);
 					} finally {
 						synchronized (flushStatus) {
 							flushStatus.setUnFlushing();
