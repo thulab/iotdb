@@ -243,24 +243,6 @@ public class OverflowProcessor extends Processor {
 	}
 
 	/**
-	 * insert a list of data value in form of TimePair.
-	 *
-	 * @param deltaObjectId
-	 *            - deltaObjectId to be insert
-	 * @param measurementId
-	 *            - measurementId to be insert
-	 * @param dataPoints
-	 *            - data points to be insert
-	 * @throws ProcessorException
-	 */
-	public void insert(String deltaObjectId, String measurementId, TSDataType type, List<TimePair> dataPoints)
-			throws OverflowProcessorException {
-		for (TimePair timePair : dataPoints) {
-			insert(deltaObjectId, measurementId, timePair.s, type, timePair.v);
-		}
-	}
-
-	/**
 	 * insert a point of data value
 	 * 
 	 * @param deltaObjectId
@@ -316,7 +298,7 @@ public class OverflowProcessor extends Processor {
 			throws OverflowProcessorException {
 		if (ofSupport.insert(deltaObjectId, measurementId, timestamp, type, v)) {
 			++recordCount;
-			checkMemorySize();
+			//checkMemorySize();
 		} else {
 			LOGGER.error(
 					"The overflow processor {} inserts overflow record data [deltaObjectId:{},measurementId:{}]. "
