@@ -889,20 +889,22 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 								"Merge: the size of startTimeMap is not equal to the size of startTimeMap");
 					}
 					LOGGER.info(
-							"The filenode processor {} begins merging the {}/{} tsfile with overflow file, the process is {}%",
+							"The filenode processor {} begins merging the {}/{} tsfile[{}] with overflow file, the process is {}%",
 							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
+							backupIntervalFile.getRelativePath(),
 							(int) (((numOfMergeFiles - 1) / (float) allNeedMergeFiles) * 100));
 					long startTime = System.currentTimeMillis();
-					queryAndWriteDataForMerge(backupIntervalFile);
+					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
 					long endTime = System.currentTimeMillis();
 					long timeConsume = endTime - startTime;
 					DateTime startDateTime = new DateTime(startTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					DateTime endDateTime = new DateTime(endTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					LOGGER.info(
-							"The fileNode processor {} has merged the {}/{} tsfile over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
-							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, startDateTime, endDateTime,
-							timeConsume, (int) (numOfMergeFiles) / (float) allNeedMergeFiles * 100);
+							"The fileNode processor {} has merged the {}/{} tsfile[{}->{}] over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
+							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
+							backupIntervalFile.getRelativePath(), newFile, startDateTime, endDateTime, timeConsume,
+							(int) (numOfMergeFiles) / (float) allNeedMergeFiles * 100);
 				} catch (IOException | WriteProcessException e) {
 					LOGGER.error("Merge: query and write data error.");
 					throw new FileNodeProcessorException(e);
@@ -1220,7 +1222,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	}
 
-	private void queryAndWriteDataForMerge(IntervalFileNode backupIntervalFile)
+	private String queryAndWriteDataForMerge(IntervalFileNode backupIntervalFile)
 			throws IOException, WriteProcessException, FileNodeProcessorException {
 
 		Map<String, Long> startTimeMap = new HashMap<>();
@@ -1294,6 +1296,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		backupIntervalFile.overflowChangeType = OverflowChangeType.NO_CHANGE;
 		backupIntervalFile.setStartTimeMap(startTimeMap);
 		backupIntervalFile.setEndTimeMap(endTimeMap);
+		return fileName;
 	}
 
 	private String constructOutputFilePath(String processorName, String fileName) {
