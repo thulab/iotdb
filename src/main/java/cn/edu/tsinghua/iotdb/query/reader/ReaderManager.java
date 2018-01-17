@@ -10,10 +10,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import org.apache.derby.iapi.sql.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +102,7 @@ public class ReaderManager {
         try {
             FileReaderMap.getInstance().close();
         } catch (IOException e) {
-            logger.error("can not close file for one ReaderManager");
+            logger.error("Can not close file for one ReaderManager", e);
             e.printStackTrace();
         }
     }
