@@ -67,7 +67,7 @@ public class PreviousFill extends IFill {
 
         recordReader.buildInsertMemoryData(fillTimeFilter, null);
 
-        recordReader.getPreviousFillResult(result, deltaObjectId, measurementId, fillTimeFilter, beforeTime, queryTime);
+        recordReader.getPreviousFillResult(result, fillTimeFilter, beforeTime, queryTime);
 
         return result;
     }

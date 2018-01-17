@@ -215,10 +215,10 @@ public class  GroupByEngineNoFilter {
         if (res == null) {
             recordReader.buildInsertMemoryData(queryTimeFilter, null);
 
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID, queryTimeFilter, null, null, queryFetchSize);
+            res = recordReader.queryOneSeries(queryTimeFilter, null, null, queryFetchSize);
         } else {
             res.clearData();
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID, queryTimeFilter, null, res, queryFetchSize);
+            res = recordReader.queryOneSeries(queryTimeFilter, null, res, queryFetchSize);
         }
 
         return res;

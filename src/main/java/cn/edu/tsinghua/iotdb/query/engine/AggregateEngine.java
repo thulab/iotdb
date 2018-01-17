@@ -182,8 +182,7 @@ public class AggregateEngine {
                 if (recordReader.insertMemoryData == null) {
                     recordReader.buildInsertMemoryData(null, null);
 
-                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID,
-                            aggregateFunction, null,  aggregateTimestamps);
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, null,  aggregateTimestamps);
 
                     boolean hasUnReadDataFlag = aggrPair.right;
                     aggregationHasUnReadDataMap.put(aggregationPathOrdinal, hasUnReadDataFlag);
@@ -192,8 +191,7 @@ public class AggregateEngine {
                     }
 
                 } else {
-                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(deltaObjectUID, measurementUID,
-                            aggregateFunction, null, aggregateTimestamps);
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, null, aggregateTimestamps);
                     boolean hasUnReadDataFlag = aggrPair.right;
                     aggregationHasUnReadDataMap.put(aggregationPathOrdinal, hasUnReadDataFlag);
                     if (hasUnReadDataFlag) {
@@ -235,7 +233,7 @@ public class AggregateEngine {
             if (recordReader.insertMemoryData == null) {
                 recordReader.buildInsertMemoryData(queryTimeFilter, null);
 
-                recordReader.aggregate(deltaObjectUID, measurementUID, aggregateFunction, queryTimeFilter,  null);
+                recordReader.aggregate(aggregateFunction, queryTimeFilter,  null);
 
             } else {
                 DynamicOneColumnData aggData = aggregateFunction.resultData;
@@ -272,9 +270,9 @@ public class AggregateEngine {
         if (res == null) {
             recordReader.buildInsertMemoryData(null, queryValueFilter);
 
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, null, fetchSize);
+            res = recordReader.queryOneSeries(null, queryValueFilter, null, fetchSize);
         } else {
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, res, fetchSize);
+            res = recordReader.queryOneSeries(null, queryValueFilter, res, fetchSize);
         }
 
         return res;

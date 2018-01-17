@@ -28,14 +28,14 @@ import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.
 
 /**
  * A <code>RecordReader</code> contains all the data variables which is needed in read process.
- * Note that : it only contains the data of a (deltaObjectID, measurementID).
+ * Note that : it only contains the data of a (deltaObjectId, measurementId).
  *
  */
 public class RecordReader {
 
     static final Logger logger = LoggerFactory.getLogger(RecordReader.class);
 
-    private String deltaObjectID, measurementID;
+    private String deltaObjectId, measurementId;
 
     /** for read lock **/
     private int lockToken;
@@ -46,7 +46,7 @@ public class RecordReader {
     /** compression type in this series **/
     public CompressionTypeName compressionTypeName;
 
-    /** 1. TsFile ReaderManager for current (deltaObjectID, measurementID) **/
+    /** 1. TsFile ReaderManager for current (deltaObjectId, measurementId) **/
     public ReaderManager tsFileReaderManager;
 
     /** 2. bufferwrite data, the unsealed page **/
@@ -75,20 +75,25 @@ public class RecordReader {
     /** bufferWritePageList + lastPageInMemory + overflow **/
     public InsertDynamicData insertMemoryData;
 
+    // ====================================================================
+    // unseqTsfile implementation
+
+
+
     /**
      * @param filePathList bufferwrite file has been serialized completely
      */
-    public RecordReader(List<String> filePathList, String deltaObjectID, String measurementID, int lockToken,
+    public RecordReader(List<String> filePathList, String deltaObjectId, String measurementId, int lockToken,
                         DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
                         List<Object> overflowInfo) throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList);
-        this.deltaObjectID = deltaObjectID;
-        this.measurementID = measurementID;
+        this.deltaObjectId = deltaObjectId;
+        this.measurementId = measurementId;
         this.lockToken = lockToken;
         this.lastPageInMemory = lastPageInMemory;
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
-        this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
+        this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
         // to make sure that overflow data will not be null
         this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
@@ -105,17 +110,17 @@ public class RecordReader {
      * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
      */
     public RecordReader(List<String> filePathList, String unsealedFilePath,
-                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectID, String measurementID, int lockToken,
+                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectId, String measurementId, int lockToken,
                         DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
                         List<Object> overflowInfo) throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
-        this.deltaObjectID = deltaObjectID;
-        this.measurementID = measurementID;
+        this.deltaObjectId = deltaObjectId;
+        this.measurementId = measurementId;
         this.lockToken = lockToken;
         this.lastPageInMemory = lastPageInMemory;
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
-        this.dataType = MManager.getInstance().getSeriesType(deltaObjectID + "." + measurementID);
+        this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
         // to make sure that overflow data will not be null
         this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
@@ -142,8 +147,7 @@ public class RecordReader {
      *
      * @throws IOException
      */
-    public DynamicOneColumnData queryOneSeries(String deltaObjectId, String measurementId,
-                                               SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
+    public DynamicOneColumnData queryOneSeries(SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
                                                DynamicOneColumnData res, int fetchSize) throws IOException {
 
         SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, queryTimeFilter);
@@ -184,122 +188,23 @@ public class RecordReader {
     }
 
     /**
-     * Aggregation calculate function of <code>RecordReader</code> without filter.
-     *
-     * @param deltaObjectId deltaObjectId of <code>Path</code>
-     * @param measurementId measurementId of <code>Path</code>
-     * @param aggregateFunction aggregation function
-     * @param queryTimeFilter time filter
-     * @param valueFilter value filter
-     * @return aggregation result
-     * @throws ProcessorException aggregation invoking exception
-     * @throws IOException TsFile read exception
-     */
-    public AggregateFunction aggregate(String deltaObjectId, String measurementId, AggregateFunction aggregateFunction,
-                                       SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression valueFilter
-    ) throws ProcessorException, IOException {
-
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(queryTimeFilter, overflowTimeFilter);
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
-
-        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                ValueReaderProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdateTrue, overflowUpdateFalse, mergeTimeFilter, valueFilter);
-            }
-        }
-
-        // consider left insert values
-        // all timestamp of these values are greater than timestamp in List<RowGroupReader>
-        if (insertMemoryData != null && insertMemoryData.hasInsertData()) {
-            aggregateFunction.calculateValueFromLeftMemoryData(insertMemoryData);
-        }
-
-        return aggregateFunction;
-    }
-
-    /**
-     * <p>
-     * Calculate the aggregate result using the given timestamps.
-     * Return a pair of AggregationResult and Boolean, AggregationResult represents the aggregation result,
-     * Boolean represents that whether there still has unread data.
-     *
-     * @param deltaObjectId deltaObjectId deltaObjectId of <code>Path</code>
-     * @param measurementId measurementId of <code>Path</code>
-     * @param aggregateFunction aggregation function
-     * @param queryTimeFilter time filter
-     * @param timestamps timestamps calculated by the cross filter
-     * @return aggregation result and whether still has unread data
-     * @throws ProcessorException aggregation invoking exception
-     * @throws IOException TsFile read exception
-     */
-    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(
-            String deltaObjectId, String measurementId, AggregateFunction aggregateFunction,
-            SingleSeriesFilterExpression queryTimeFilter, List<Long> timestamps)
-            throws ProcessorException, IOException {
-
-        boolean stillHasUnReadData;
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
-
-        int commonTimestampsIndex = 0;
-
-        int rowGroupIndex = aggregateFunction.resultData.rowGroupIndex;
-
-        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-
-                // TODO commonTimestampsIndex could be saved as a parameter
-
-                commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdateTrue, overflowUpdateFalse, overflowTimeFilter, timestamps);
-
-                // all value of commonTimestampsIndex has been used,
-                // the next batch of commonTimestamps should be loaded
-                if (commonTimestampsIndex >= timestamps.size()) {
-                    return new Pair<>(aggregateFunction, true);
-                }
-            }
-        }
-
-        // calculate aggregation using unsealed file data and memory data
-        if (insertMemoryData.hasInsertData()) {
-            stillHasUnReadData = aggregateFunction.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
-        } else {
-            if (commonTimestampsIndex < timestamps.size()) {
-                stillHasUnReadData = false;
-            } else {
-                stillHasUnReadData = true;
-            }
-        }
-
-        return new Pair<>(aggregateFunction, stillHasUnReadData);
-    }
-
-    /**
      *  <p> This function is used for cross series query.
      *  Notice that: query using timestamps, query time filter and value filter is not needed,
      *  but overflow time filter, insert data and overflow update true data is needed.
      *
-     * @param deltaObjectId
-     * @param measurementId
      * @param commonTimestamps
      * @return cross query result
      * @throws IOException file read error
      */
-    public DynamicOneColumnData queryUsingTimestamps(String deltaObjectId, String measurementId, long[] commonTimestamps)
-            throws IOException, PathErrorException {
+    public DynamicOneColumnData queryUsingTimestamps(long[] commonTimestamps)
+            throws IOException {
 
         SingleValueVisitor filterVerifier = null;
         if (this.overflowTimeFilter != null) {
             filterVerifier = new SingleValueVisitor(this.overflowTimeFilter);
         }
 
-        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(deltaObjectId, measurementId, overflowTimeFilter, commonTimestamps);
+        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(overflowTimeFilter, commonTimestamps);
         if (originalQueryData == null) {
             originalQueryData = new DynamicOneColumnData(dataType, true);
         }
@@ -346,8 +251,98 @@ public class RecordReader {
         return queryResult;
     }
 
-    private DynamicOneColumnData queryOriginalDataUsingTimestamps(String deltaObjectId, String measurementId,
-                                                                  SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps) throws IOException{
+    /**
+     * Aggregation calculate function of <code>RecordReader</code> without filter.
+     *
+     * @param aggregateFunction aggregation function
+     * @param queryTimeFilter time filter
+     * @param valueFilter value filter
+     * @return aggregation result
+     * @throws ProcessorException aggregation invoking exception
+     * @throws IOException TsFile read exception
+     */
+    public AggregateFunction aggregate(AggregateFunction aggregateFunction,
+                                       SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression valueFilter
+    ) throws ProcessorException, IOException {
+
+        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(queryTimeFilter, overflowTimeFilter);
+
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
+
+        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                ValueReaderProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
+                        aggregateFunction, insertMemoryData, overflowUpdateTrue, overflowUpdateFalse, mergeTimeFilter, valueFilter);
+            }
+        }
+
+        // consider left insert values
+        // all timestamp of these values are greater than timestamp in List<RowGroupReader>
+        if (insertMemoryData != null && insertMemoryData.hasInsertData()) {
+            aggregateFunction.calculateValueFromLeftMemoryData(insertMemoryData);
+        }
+
+        return aggregateFunction;
+    }
+
+    /**
+     * <p>
+     * Calculate the aggregate result using the given timestamps.
+     * Return a pair of AggregationResult and Boolean, AggregationResult represents the aggregation result,
+     * Boolean represents that whether there still has unread data.
+     *
+     * @param aggregateFunction aggregation function
+     * @param queryTimeFilter time filter
+     * @param timestamps timestamps calculated by the cross filter
+     * @return aggregation result and whether still has unread data
+     * @throws ProcessorException aggregation invoking exception
+     * @throws IOException TsFile read exception
+     */
+    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(AggregateFunction aggregateFunction, SingleSeriesFilterExpression queryTimeFilter,
+                                                                     List<Long> timestamps) throws ProcessorException, IOException {
+        boolean stillHasUnReadData;
+
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
+
+        int commonTimestampsIndex = 0;
+
+        int rowGroupIndex = aggregateFunction.resultData.rowGroupIndex;
+
+        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+
+                // TODO commonTimestampsIndex could be saved as a parameter
+
+                commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
+                        aggregateFunction, insertMemoryData, overflowUpdateTrue, overflowUpdateFalse, overflowTimeFilter, timestamps);
+
+                // all value of commonTimestampsIndex has been used,
+                // the next batch of commonTimestamps should be loaded
+                if (commonTimestampsIndex >= timestamps.size()) {
+                    return new Pair<>(aggregateFunction, true);
+                }
+            }
+        }
+
+        // calculate aggregation using unsealed file data and memory data
+        if (insertMemoryData.hasInsertData()) {
+            stillHasUnReadData = aggregateFunction.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
+        } else {
+            if (commonTimestampsIndex < timestamps.size()) {
+                stillHasUnReadData = false;
+            } else {
+                stillHasUnReadData = true;
+            }
+        }
+
+        return new Pair<>(aggregateFunction, stillHasUnReadData);
+    }
+
+    private DynamicOneColumnData queryOriginalDataUsingTimestamps(SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps)
+            throws IOException{
 
         DynamicOneColumnData res = null;
 
@@ -458,15 +453,13 @@ public class RecordReader {
     /**
      * Get the time which is smaller than queryTime and is biggest and its value.
      *
-     * @param deltaObjectId
-     * @param measurementId
      * @param beforeTime
      * @param queryTime
      * @param result
      * @throws IOException
      */
-    public void getPreviousFillResult(DynamicOneColumnData result, String deltaObjectId, String measurementId,
-                                      SingleSeriesFilterExpression fillTimeFilter, long beforeTime, long queryTime) throws IOException {
+    public void getPreviousFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter, long beforeTime, long queryTime)
+            throws IOException {
 
         SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, fillTimeFilter);
 
@@ -496,15 +489,13 @@ public class RecordReader {
     /**
      * Get the time which is smaller than queryTime and is biggest and its value.
      *
-     * @param deltaObjectId
-     * @param measurementId
      * @param beforeTime
      * @param queryTime
      * @param result
      * @throws IOException
      */
-    public void getLinearFillResult(DynamicOneColumnData result, String deltaObjectId, String measurementId,
-                                      SingleSeriesFilterExpression fillTimeFilter, long beforeTime, long queryTime, long afterTime) throws IOException {
+    public void getLinearFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter,
+                                    long beforeTime, long queryTime, long afterTime) throws IOException {
 
         SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, fillTimeFilter);
 
@@ -592,11 +583,14 @@ public class RecordReader {
         }
     }
 
-    public void closeFileStream() throws IOException {
+    public void closeFileStream() {
         tsFileReaderManager.closeFileStream();
     }
 
-    public void clearReaderMaps() throws IOException {
+    public void clearReaderMaps() {
         tsFileReaderManager.clearReaderMaps();
     }
+
+    // ====================================================================
+    // unseqTsfile implementation
 }

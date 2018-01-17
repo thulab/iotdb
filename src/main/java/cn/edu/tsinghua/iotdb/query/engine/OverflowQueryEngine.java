@@ -131,9 +131,6 @@ public class OverflowQueryEngine {
      * @param intervals
      * @param fetchSize
      * @return QueryDataSet
-     * @throws ProcessorException
-     * @throws PathErrorException
-     * @throws IOException
      */
     public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize) {
@@ -295,9 +292,9 @@ public class OverflowQueryEngine {
 
         if (res == null) {
             recordReader.buildInsertMemoryData(null, null);
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID, null, null, null, fetchSize);
+            res = recordReader.queryOneSeries(null, null, null, fetchSize);
         } else {
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID, null, null, res, fetchSize);
+            res = recordReader.queryOneSeries(null, null, res, fetchSize);
         }
 
         return res;
@@ -347,9 +344,9 @@ public class OverflowQueryEngine {
 
         if (res == null) {
             recordReader.buildInsertMemoryData(queryTimeFilter, queryValueFilter);
-            res = recordReader.queryOneSeries(deltaObjectId, measurementId, queryTimeFilter, queryValueFilter, null, fetchSize);
+            res = recordReader.queryOneSeries(queryTimeFilter, queryValueFilter, null, fetchSize);
         } else {
-            res = recordReader.queryOneSeries(deltaObjectId, measurementId, queryTimeFilter, queryValueFilter, res, fetchSize);
+            res = recordReader.queryOneSeries(queryTimeFilter, queryValueFilter, res, fetchSize);
         }
 
         return res;
@@ -399,10 +396,10 @@ public class OverflowQueryEngine {
 
             if (recordReader.insertMemoryData == null) {
                 recordReader.buildInsertMemoryData(queryTimeFilter, null);
-                DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(deltaObjectId, measurementId, timestamps);
+                DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(timestamps);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
-                DynamicOneColumnData queryAnswer = recordReader.queryUsingTimestamps(deltaObjectId, measurementId, timestamps);
+                DynamicOneColumnData queryAnswer = recordReader.queryUsingTimestamps(timestamps);
                 ret.mapRet.put(queryKey, queryAnswer);
             }
         }
@@ -434,9 +431,9 @@ public class OverflowQueryEngine {
 
         if (res == null) {
             recordReader.buildInsertMemoryData(null, queryValueFilter);
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, null, fetchSize);
+            res = recordReader.queryOneSeries(null, queryValueFilter, null, fetchSize);
         } else {
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, res, fetchSize);
+            res = recordReader.queryOneSeries( null, queryValueFilter, res, fetchSize);
         }
 
         return res;
@@ -445,4 +442,9 @@ public class OverflowQueryEngine {
     private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
         return MManager.getInstance().getSeriesType(path.getFullPath());
     }
+
+
+
+    // ====================================================================
+    // unseqTsfile implementation
 }

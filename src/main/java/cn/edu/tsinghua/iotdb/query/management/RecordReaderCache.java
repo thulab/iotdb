@@ -33,14 +33,9 @@ public class RecordReaderCache {
         return cache.get().remove(getKey(deltaObjectUID, measurementID));
     }
 
-    public void clear() throws ProcessorException {
+    public void clear() {
         for (RecordReader reader : cache.get().values()) {
-            try {
-                reader.clearReaderMaps();
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new ProcessorException(e);
-            }
+            reader.clearReaderMaps();
         }
         cache.remove();
     }
