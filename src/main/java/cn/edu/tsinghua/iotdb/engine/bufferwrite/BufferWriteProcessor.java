@@ -461,7 +461,7 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	/**
-	 * write one tsrecord to the buffer of tsfile
+	 * write one tsRecord to the buffer of tsfile
 	 * 
 	 * @param tsRecord
 	 * @return true - the size of tsfile or metadata reaches the threshold.
