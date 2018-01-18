@@ -139,7 +139,7 @@ public class OverflowProcessor extends Processor {
 		filenodeManagerBackUpAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION);
 		filenodeManagerFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION);
 
-		// TODO : WAL : add over flowProcessorStoreFilePath
+		// TODO : WAL : add overflowProcessorStoreFilePath
 		try {
 			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + "-overflow", overflowRestoreFilePath, overflowProcessorStoreFilePath);
 		} catch (IOException e) {

@@ -163,6 +163,11 @@ public class FileNodeManager implements IStatistic {
 		}
 	};
 
+	public void recoverFileNode(String fileNodeName) {
+		// TODO : implement this
+		throw new UnsupportedOperationException("Method unimplemented");
+	}
+
 	private static class FileNodeManagerHolder {
 		private static FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.fileNodeDir);
 	}
