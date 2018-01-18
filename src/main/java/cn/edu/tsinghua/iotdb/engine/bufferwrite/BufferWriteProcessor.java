@@ -10,7 +10,7 @@ import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -155,7 +155,7 @@ public class BufferWriteProcessor extends Processor {
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
 		try {
-			logNode = MultiFileNodeManager.getInstance().getNode(getProcessorName() + "-bufferwrite", restoreFileName, processorStoreFileName);
+			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + "-bufferwrite", restoreFileName, processorStoreFileName);
 		} catch (IOException e) {
 			LOGGER.error("Cannot create wal node for bufferwrite processor {}",processorName);
 			throw new BufferWriteProcessorException(e);

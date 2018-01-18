@@ -8,22 +8,20 @@ import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
-public class MultiFileNodeManager implements WriteLogNodeManager {
+public class MultiFileLogNodeManager implements WriteLogNodeManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiFileNodeManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiFileLogNodeManager.class);
     private Map<String, WriteLogNode> nodeMap;
 
     private Thread syncThread;
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     private static class InstanceHolder {
-        private static MultiFileNodeManager instance = new MultiFileNodeManager();
+        private static MultiFileLogNodeManager instance = new MultiFileLogNodeManager();
     }
 
     private final Runnable syncTask = new Runnable() {
@@ -53,16 +51,16 @@ public class MultiFileNodeManager implements WriteLogNodeManager {
         }
     };
 
-    private MultiFileNodeManager() {
+    private MultiFileLogNodeManager() {
         nodeMap = new ConcurrentHashMap<>();
-        syncThread = new Thread(syncTask, "IoTDB-MultiFileNodeManager-Sync-Thread");
+        syncThread = new Thread(syncTask, "IoTDB-MultiFileLogNodeManager-Sync-Thread");
         syncThread.start();
     }
 
-    static public MultiFileNodeManager getInstance() {
+    static public MultiFileLogNodeManager getInstance() {
         if(!InstanceHolder.instance.syncThread.isAlive()) {
             synchronized (logger) {
-                InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, "IoTDB-MultiFileNodeManager-Sync-Thread");
+                InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, "IoTDB-MultiFileLogNodeManager-Sync-Thread");
                 InstanceHolder.instance.syncThread.start();
             }
         }

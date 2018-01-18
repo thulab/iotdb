@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.newwritelog;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.WriteLogNodeManager;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
@@ -46,7 +46,7 @@ public class WriteLogNodeManagerTest {
         File tempRestore = File.createTempFile("managerTest", "restore");
         File tempProcessorStore = File.createTempFile("managerTest", "processorStore");
 
-        WriteLogNodeManager manager = MultiFileNodeManager.getInstance();
+        WriteLogNodeManager manager = MultiFileLogNodeManager.getInstance();
         WriteLogNode logNode = manager.getNode("root.managerTest", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),

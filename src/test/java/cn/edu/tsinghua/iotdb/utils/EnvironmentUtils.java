@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class EnvironmentUtils {
 		StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
-		MultiFileNodeManager.getInstance().close();
+		MultiFileLogNodeManager.getInstance().close();
 		// clean cache
 		TsFileMetaDataCache.getInstance().clear();
 		RowGroupBlockMetaDataCache.getInstance().clear();

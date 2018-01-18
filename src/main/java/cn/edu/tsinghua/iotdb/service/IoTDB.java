@@ -1,37 +1,26 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.sql.SQLException;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
+import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.WriteLogNodeManager;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
-import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.StartupException;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
-import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import javax.management.*;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.sql.SQLException;
 
 public class IoTDB implements IoTDBMBean {
 
@@ -74,11 +63,13 @@ public class IoTDB implements IoTDBMBean {
 			e.printStackTrace();
 		} catch (PathErrorException e) {
 			e.printStackTrace();
+		} catch (RecoverException e) {
+			e.printStackTrace();
 		}
 	}
 
 	private void setUp() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException,
-			NotCompliantMBeanException, TTransportException, IOException, FileNodeManagerException, PathErrorException {
+			NotCompliantMBeanException, TTransportException, IOException, FileNodeManagerException, PathErrorException, RecoverException {
 		setUncaughtExceptionHandler();
 		try {
 			initDBDao();
@@ -161,34 +152,15 @@ public class IoTDB implements IoTDBMBean {
 	 *
 	 * @throws IOException
 	 */
-	private void systemDataRecovery() throws IOException, FileNodeManagerException, PathErrorException {
+	private void systemDataRecovery() throws IOException, FileNodeManagerException, PathErrorException, RecoverException {
 		LOGGER.info("{}: start checking write log...", TsFileDBConstant.GLOBAL_DB_NAME);
 		// QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
-		WriteLogManager writeLogManager = WriteLogManager.getInstance();
-		writeLogManager.recovery();
-		long cnt = 0L;
-		PhysicalPlan plan;
-		WriteLogManager.isRecovering = true;
-		while ((plan = writeLogManager.getPhysicalPlan()) != null) {
-			try {
-				if (plan instanceof InsertPlan) {
-					InsertPlan insertPlan = (InsertPlan) plan;
-					WriteLogRecovery.multiInsert(insertPlan);
-				} else if (plan instanceof UpdatePlan) {
-					UpdatePlan updatePlan = (UpdatePlan) plan;
-					WriteLogRecovery.update(updatePlan);
-				} else if (plan instanceof DeletePlan) {
-					DeletePlan deletePlan = (DeletePlan) plan;
-					WriteLogRecovery.delete(deletePlan);
-				}
-				cnt++;
-			} catch (ProcessorException e) {
-				e.printStackTrace();
-				throw new IOException("Error in recovery from write log");
-			}
-		}
-		WriteLogManager.isRecovering = false;
-		LOGGER.info("{}: Done. Recover operation count {}", TsFileDBConstant.GLOBAL_DB_NAME, cnt);
+		WriteLogNodeManager writeLogManager = MultiFileLogNodeManager.getInstance();
+		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		boolean enableWal = config.enableWal;
+		config.enableWal = false;
+		writeLogManager.recover();
+		config.enableWal = enableWal;
 	}
 
 	@Override
@@ -205,7 +177,7 @@ public class IoTDB implements IoTDBMBean {
 
 		FileNodeManager.getInstance().closeAll();
 
-		WriteLogManager.getInstance().close();
+		MultiFileLogNodeManager.getInstance().close();
 
 		if (jdbcMBean != null) {
 			jdbcMBean.stopServer();
