@@ -87,7 +87,7 @@ public class LinearFill extends IFill{
         recordReader.buildInsertMemoryData(fillTimeFilter, null);
 
         // updateFalse is useless because there is no value filter
-        recordReader.getLinearFillResult(result, deltaObjectId, measurementId, fillTimeFilter, beforeTime, queryTime, afterTime);
+        recordReader.getLinearFillResult(result, fillTimeFilter, beforeTime, queryTime, afterTime);
 
         return result;
     }

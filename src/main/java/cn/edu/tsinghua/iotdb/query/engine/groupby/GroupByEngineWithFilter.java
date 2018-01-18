@@ -374,10 +374,10 @@ public class GroupByEngineWithFilter {
             if (recordReader.insertMemoryData == null) {
                 recordReader.buildInsertMemoryData(null, null);
 
-                data = recordReader.queryUsingTimestamps(deltaObjectId, measurementId, aggregateTimestamps.stream().mapToLong(i->i).toArray());
+                data = recordReader.queryUsingTimestamps(aggregateTimestamps.stream().mapToLong(i->i).toArray());
                 queryPathResult.put(aggregationKey, data);
             } else {
-                data = recordReader.queryUsingTimestamps(deltaObjectId, measurementId, aggregateTimestamps.stream().mapToLong(i->i).toArray());
+                data = recordReader.queryUsingTimestamps(aggregateTimestamps.stream().mapToLong(i->i).toArray());
                 queryPathResult.put(aggregationKey, data);
             }
         }
@@ -407,9 +407,9 @@ public class GroupByEngineWithFilter {
 
         if (res == null) {
             recordReader.buildInsertMemoryData(null, queryValueFilter);
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, null, fetchSize);
+            res = recordReader.queryOneSeries(null, queryValueFilter, null, fetchSize);
         } else {
-            res = recordReader.queryOneSeries(deltaObjectUID, measurementUID, null, queryValueFilter, res, fetchSize);
+            res = recordReader.queryOneSeries(null, queryValueFilter, res, fetchSize);
         }
 
         return res;

@@ -12,11 +12,14 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is an adapter between <code>RecordReader</code> and <code>RowGroupReader</code> .
  */
 public class ReaderManager {
+    private static final Logger logger = LoggerFactory.getLogger(ReaderManager.class);
 
     /** file has been serialized, sealed **/
     private List<String> sealedFilePathList;
@@ -27,20 +30,15 @@ public class ReaderManager {
     /** RowGroupMetadata for unsealed file path **/
     private List<RowGroupMetaData> unSealedRowGroupMetadataList = null;
 
-    /** map to store opened file stream **/
-    private ThreadLocal<Map<String, TsRandomAccessLocalFileReader>> fileReaderMap = new ThreadLocal<>();
-
     /** key: deltaObjectUID **/
     private Map<String, List<RowGroupReader>> rowGroupReaderMap = new LinkedHashMap<>();
 
     /**
      *
      * @param sealedFilePathList fileInputStreamList
-     * @throws IOException TsFile read error
      */
     ReaderManager(List<String> sealedFilePathList) {
         this.sealedFilePathList = sealedFilePathList;
-        fileReaderMap.set(new HashMap<>());
         //this.rowGroupReaderMap = new HashMap<>();
     }
 
@@ -49,13 +47,11 @@ public class ReaderManager {
      * @param sealedFilePathList file node list
      * @param unsealedFilePath fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
-     * @throws IOException TsFile read error
      */
     ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
         this.sealedFilePathList = sealedFilePathList;
         this.unSealedFilePath = unsealedFilePath;
         this.unSealedRowGroupMetadataList = rowGroupMetadataList;
-        fileReaderMap.set(new HashMap<>());
     }
 
     List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
@@ -66,13 +62,7 @@ public class ReaderManager {
 
             // to examine whether sealed file has data
             for (String path : sealedFilePathList) {
-                TsRandomAccessLocalFileReader fileReader;
-                if (!fileReaderMap.get().containsKey(path)) {
-                    fileReader = new TsRandomAccessLocalFileReader(path);
-                    fileReaderMap.get().put(path, fileReader);
-                } else {
-                    fileReader = fileReaderMap.get().get(path);
-                }
+                TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(path);
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
                 if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
 
@@ -93,13 +83,7 @@ public class ReaderManager {
             }
 
             if (unSealedFilePath != null) {
-                TsRandomAccessLocalFileReader fileReader;
-                if (!fileReaderMap.get().containsKey(unSealedFilePath)) {
-                    fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);
-                    fileReaderMap.get().put(unSealedFilePath, fileReader);
-                } else {
-                    fileReader = fileReaderMap.get().get(unSealedFilePath);
-                }
+                TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(unSealedFilePath);
                 // TsRandomAccessLocalFileReader fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);
                 for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
                     //TODO parallelism could be used to speed up
@@ -114,12 +98,16 @@ public class ReaderManager {
         }
     }
 
-    public void close() throws IOException {
-        for (Map.Entry<String, List<RowGroupReader>> entry : rowGroupReaderMap.entrySet()) {
-            List<RowGroupReader> rowGroupReaderList = entry.getValue();
-            for (RowGroupReader reader : rowGroupReaderList) {
-                reader.close();
-            }
+    public void closeFileStream() {
+        try {
+            FileReaderMap.getInstance().close();
+        } catch (IOException e) {
+            logger.error("Can not close file for one ReaderManager", e);
+            e.printStackTrace();
         }
+    }
+
+    public void clearReaderMaps() {
+        rowGroupReaderMap.clear();
     }
 }

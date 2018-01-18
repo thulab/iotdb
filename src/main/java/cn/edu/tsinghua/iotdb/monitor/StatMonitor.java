@@ -7,8 +7,17 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
+import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
+import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
+import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
@@ -18,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,14 +66,15 @@ public class StatMonitor {
         statMonitorDetectFreqSec = config.statMonitorDetectFreqSec;
         statMonitorRetainIntervalSec = config.statMonitorRetainIntervalSec;
         backLoopPeriod = config.backLoopPeriodSec;
-        try {
-            String prefix = MonitorConstants.statStorageGroupPrefix;
-
-            if (!mManager.pathExist(prefix)) {
-                mManager.setStorageLevelToMTree(prefix);
+        if (config.enableStatMonitor){
+            try {
+                String prefix = MonitorConstants.statStorageGroupPrefix;
+                if (!mManager.pathExist(prefix)) {
+                    mManager.setStorageLevelToMTree(prefix);
+                }
+            } catch (PathErrorException|IOException e) {
+                LOGGER.error("MManager setStorageLevelToMTree False.", e);
             }
-        } catch (Exception e) {
-            LOGGER.error("MManager setStorageLevelToMTree False.", e);
         }
     }
 
@@ -113,8 +124,42 @@ public class StatMonitor {
     }
 
     public void recovery() {
-        // TODO: restore the FildeNode Manager TOTAL_POINTS statistics info
+        // restore the FildeNode Manager TOTAL_POINTS statistics info
+        OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
+        List<Pair<Path, String>> pairList = new ArrayList<>();
+        List<String> stringList = FileNodeManager.getInstance().getAllPathForStatistic();
+        for (String string : stringList) {
+            Path path = new Path(string);
+            pairList.add(new Pair<>(path, StatisticConstant.LAST));
+        }
+        try {
+            QueryDataSet queryDataSet;
+            queryDataSet = overflowQueryEngine.aggregate(pairList, null);
+            ReadLockManager.getInstance().unlockForOneRequest();
+            RowRecord rowRecord = queryDataSet.getNextRecord();
 
+            if (rowRecord!=null) {
+                FileNodeManager fManager = FileNodeManager.getInstance();
+                HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
+                List<Field> list = rowRecord.fields;
+                for (Field field: list) {
+                    String statMeasurement = field.measurementId.substring(0,field.measurementId.length() - 1);
+                    if (statParamsHashMap.containsKey(statMeasurement)) {
+                        if (field.isNull()) {
+                            continue;
+                        }
+                        long lastValue = field.getLongV();
+                        statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
+                    }
+                }
+            }
+        } catch (ProcessorException e) {
+            LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
+        } catch (PathErrorException e) {
+            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path not exist,", e);
+        } catch (IOException e) {
+            LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
+        }
     }
 
     public void activate() {
