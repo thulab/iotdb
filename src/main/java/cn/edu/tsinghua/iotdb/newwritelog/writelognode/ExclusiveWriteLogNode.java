@@ -64,13 +64,16 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
     @Override
     public LogPosition write(PhysicalPlan plan) throws IOException {
         lockForWrite();
-        byte[] logBytes = PhysicalPlanLogTransfer.operatorToLog(plan);
-        logCache.add(logBytes);
+        try {
+            byte[] logBytes = PhysicalPlanLogTransfer.operatorToLog(plan);
+            logCache.add(logBytes);
 
-        if(logCache.size() >= config.flushWalThreshold) {
-            sync();
+            if (logCache.size() >= config.flushWalThreshold) {
+                sync();
+            }
+        } finally {
+            unlockForWrite();
         }
-        unlockForWrite();
         return null;
     }
 
@@ -150,33 +153,39 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
 
     private void sync() throws FileNotFoundException {
         lockForSync();
-        if(this.currentFile == null) {
-            try {
-                this.currentFile = new RandomAccessFile(this.logDirectory + File.separator + WAL_FILE_NAME,"rw");
-            } catch (FileNotFoundException e) {
-                logger.error("Unable to create write log node : {}", e.getMessage());
-                throw e;
-            }
-        }
-        logger.debug("Log node {} starts sync, {} logs to be synced", identifier, logCache.size());
         try {
-            currentFile.seek(currentFile.length());
-            int totalSize = 0;
-            for(byte[] bytes : logCache) {
-                totalSize += 4 + bytes.length;
+            logger.debug("Log node {} starts sync, {} logs to be synced", identifier, logCache.size());
+            if(logCache.size() == 0) {
+                return;
             }
-            ByteBuffer buffer = ByteBuffer.allocate(totalSize);
-            for(byte[] bytes : logCache) {
-                buffer.putInt(bytes.length);
-                buffer.put(bytes);
+            if(this.currentFile == null) {
+                try {
+                    this.currentFile = new RandomAccessFile(this.logDirectory + File.separator + WAL_FILE_NAME,"rw");
+                } catch (FileNotFoundException e) {
+                    logger.error("Unable to create write log node : {}", e.getMessage());
+                    throw e;
+                }
             }
-            currentFile.write(buffer.array());
-        } catch (IOException e) {
-            logger.error("Log node {} sync failed because {}.", identifier, e.getMessage());
+            try {
+                currentFile.seek(currentFile.length());
+                int totalSize = 0;
+                for(byte[] bytes : logCache) {
+                    totalSize += 4 + bytes.length;
+                }
+                ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+                for(byte[] bytes : logCache) {
+                    buffer.putInt(bytes.length);
+                    buffer.put(bytes);
+                }
+                currentFile.write(buffer.array());
+            } catch (IOException e) {
+                logger.error("Log node {} sync failed because {}.", identifier, e.getMessage());
+            }
+            logCache.clear();
+            logger.debug("Log node {} ends sync.", identifier);
+        } finally {
+            unlockForSync();
         }
-        logCache.clear();
-        logger.debug("Log node {} ends sync.", identifier);
-        unlockForSync();
     }
 
     private void discard() {
