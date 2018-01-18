@@ -19,7 +19,7 @@ public class OverflowSeriesChunkLoader {
     private static final Logger logger = LoggerFactory.getLogger(OverflowSeriesChunkLoader.class);
     private OverflowFileStreamManager overflowFileStreamManager;
 
-    private OverflowSeriesChunkLoader() {
+    public OverflowSeriesChunkLoader() {
         overflowFileStreamManager = OverflowFileStreamManager.getInstance();
     }
 

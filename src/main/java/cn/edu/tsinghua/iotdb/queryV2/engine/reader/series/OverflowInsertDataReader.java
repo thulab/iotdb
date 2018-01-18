@@ -8,7 +8,11 @@ import java.io.IOException;
 
 /**
  * A SeriesReader implement which used for read insert data of one series in Overflow.
- * This class contains a unique jobId which used identify different
+ * This class contains a unique jobId which used identify different OverflowInsertDataReader.
+ * <p>
+ * IMPORTANT: Remember invoke {@code close()} to close the file stream(s) opened.
+ * <p/>
+ *
  * Created by zhangjinrui on 2018/1/18.
  */
 public class OverflowInsertDataReader implements SeriesReader{
