@@ -59,12 +59,8 @@ public class RecordReader {
     public DynamicOneColumnData overflowInsertData;
 
     /** 5. overflow update data **/
-    public DynamicOneColumnData overflowUpdateTrue;
-    private UpdateOperation overflowUpdateTrueOperation;
-
-    /** 6. overflow update data **/
-    public DynamicOneColumnData overflowUpdateFalse;
-    private UpdateOperation overflowUpdateFalseOperation;
+    public DynamicOneColumnData overflowUpdate;
+    private UpdateOperation overflowUpdateOperation;
 
     /** 7. series time filter, this filter is the filter **/
     public SingleSeriesFilterExpression overflowTimeFilter;
@@ -97,11 +93,9 @@ public class RecordReader {
 
         // to make sure that overflow data will not be null
         this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
-        this.overflowUpdateTrue = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
-        this.overflowUpdateFalse = overflowInfo.get(2) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(2);
-        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(3);
-        this.overflowUpdateTrueOperation = new UpdateOperation(dataType, overflowUpdateTrue);
-        this.overflowUpdateFalseOperation = new UpdateOperation(dataType, overflowUpdateFalse);
+        this.overflowUpdate = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(2);
+        this.overflowUpdateOperation = new UpdateOperation(dataType, overflowUpdate);
     }
 
     /**
@@ -124,21 +118,18 @@ public class RecordReader {
 
         // to make sure that overflow data will not be null
         this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
-        this.overflowUpdateTrue = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
-        this.overflowUpdateFalse = overflowInfo.get(2) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(2);
-        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(3);
-        this.overflowUpdateTrueOperation = new UpdateOperation(dataType, overflowUpdateTrue);
-        this.overflowUpdateFalseOperation = new UpdateOperation(dataType, overflowUpdateFalse);
+        this.overflowUpdate = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
+        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(2);
+        this.overflowUpdateOperation = new UpdateOperation(dataType, overflowUpdate);
     }
 
     public void buildInsertMemoryData(SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter) {
 
-        DynamicOneColumnData overflowUpdateTrueCopy = copy(overflowUpdateTrue);
-        DynamicOneColumnData overflowUpdateFalseCopy = copy(overflowUpdateFalse);
+        DynamicOneColumnData overflowUpdateCopy = copy(overflowUpdate);
 
         insertMemoryData = new InsertDynamicData(dataType, compressionTypeName,
                 bufferWritePageList, lastPageInMemory,
-                overflowInsertData, overflowUpdateTrueCopy, overflowUpdateFalseCopy,
+                overflowInsertData, overflowUpdateCopy,
                 mergeTimeFilter(overflowTimeFilter, queryTimeFilter), queryValueFilter);
     }
 
@@ -163,7 +154,7 @@ public class RecordReader {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 res = ValueReaderProcessor.getValuesWithOverFlow(rowGroupReader.getValueReaders().get(measurementId),
-                        overflowUpdateTrue, overflowUpdateFalse, insertMemoryData, mergeTimeFilter, queryValueFilter, res, fetchSize);
+                        overflowUpdateOperation, insertMemoryData, mergeTimeFilter, queryValueFilter, res, fetchSize);
                 if (res.valueLength >= fetchSize) {
                     return res;
                 }
@@ -192,19 +183,18 @@ public class RecordReader {
      *  Notice that: query using timestamps, query time filter and value filter is not needed,
      *  but overflow time filter, insert data and overflow update true data is needed.
      *
-     * @param commonTimestamps
+     * @param commonTimestamps common timestamps calculated by filter
      * @return cross query result
      * @throws IOException file read error
      */
-    public DynamicOneColumnData queryUsingTimestamps(long[] commonTimestamps)
-            throws IOException {
+    public DynamicOneColumnData queryUsingTimestamps(long[] commonTimestamps) throws IOException {
 
         SingleValueVisitor filterVerifier = null;
         if (this.overflowTimeFilter != null) {
             filterVerifier = new SingleValueVisitor(this.overflowTimeFilter);
         }
 
-        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(overflowTimeFilter, commonTimestamps);
+        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(commonTimestamps);
         if (originalQueryData == null) {
             originalQueryData = new DynamicOneColumnData(dataType, true);
         }
@@ -251,6 +241,27 @@ public class RecordReader {
         return queryResult;
     }
 
+    private DynamicOneColumnData queryOriginalDataUsingTimestamps(long[] timestamps) throws IOException{
+
+        DynamicOneColumnData res = null;
+
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
+        for (int i = 0; i < rowGroupReaderList.size(); i++) {
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
+            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
+                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                if (res == null) {
+                    res = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
+                } else {
+                    DynamicOneColumnData tmpRes = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
+                    res.mergeRecord(tmpRes);
+                }
+            }
+        }
+
+        return res;
+    }
+
     /**
      * Aggregation calculate function of <code>RecordReader</code> without filter.
      *
@@ -273,7 +284,7 @@ public class RecordReader {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 ValueReaderProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdateTrue, overflowUpdateFalse, mergeTimeFilter, valueFilter);
+                        aggregateFunction, insertMemoryData, overflowUpdateOperation, mergeTimeFilter, valueFilter);
             }
         }
 
@@ -317,7 +328,7 @@ public class RecordReader {
                 // TODO commonTimestampsIndex could be saved as a parameter
 
                 commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdateTrue, overflowUpdateFalse, overflowTimeFilter, timestamps);
+                        aggregateFunction, insertMemoryData, overflowUpdate, overflowUpdate, overflowTimeFilter, timestamps);
 
                 // all value of commonTimestampsIndex has been used,
                 // the next batch of commonTimestamps should be loaded
@@ -339,27 +350,6 @@ public class RecordReader {
         }
 
         return new Pair<>(aggregateFunction, stillHasUnReadData);
-    }
-
-    private DynamicOneColumnData queryOriginalDataUsingTimestamps(SingleSeriesFilterExpression overflowTimeFilter, long[] timestamps)
-            throws IOException{
-
-        DynamicOneColumnData res = null;
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
-        for (int i = 0; i < rowGroupReaderList.size(); i++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                if (res == null) {
-                    res = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-                } else {
-                    DynamicOneColumnData tmpRes = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-                    res.mergeRecord(tmpRes);
-                }
-            }
-        }
-        return res;
     }
 
     private void putMemoryDataToResult(DynamicOneColumnData res, InsertDynamicData insertMemoryData) {
@@ -392,55 +382,53 @@ public class RecordReader {
     private void putFileDataToResult(DynamicOneColumnData queryResult, DynamicOneColumnData originalQueryData, int dataIdx) {
         long time = originalQueryData.getTime(dataIdx);
 
-        while(overflowUpdateTrueOperation.hasNext() && overflowUpdateTrueOperation.getUpdateEndTime() < time)
-            overflowUpdateTrueOperation.next();
-        while(overflowUpdateFalseOperation.hasNext() && overflowUpdateFalseOperation.getUpdateEndTime() < time)
-            overflowUpdateFalseOperation.next();
+        while(overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < time)
+            overflowUpdateOperation.next();
 
-        if (overflowUpdateFalseOperation.verify(time)) {
+        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
             return;
         }
 
         queryResult.putTime(time);
         switch (dataType) {
             case BOOLEAN:
-                if (overflowUpdateTrueOperation.verify(time)) {
-                    queryResult.putBoolean(overflowUpdateTrueOperation.getBoolean());
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    queryResult.putBoolean(overflowUpdateOperation.getBoolean());
                     return;
                 }
                 queryResult.putBoolean(originalQueryData.getBoolean(dataIdx));
                 break;
             case INT32:
-                if (overflowUpdateTrueOperation.verify(time)) {
-                    queryResult.putInt(overflowUpdateTrueOperation.getInt());
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    queryResult.putInt(overflowUpdateOperation.getInt());
                     return;
                 }
                 queryResult.putInt(originalQueryData.getInt(dataIdx));
                 break;
             case INT64:
-                if (overflowUpdateTrueOperation.verify(time)) {
-                    queryResult.putLong(overflowUpdateTrueOperation.getLong());
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    queryResult.putLong(overflowUpdateOperation.getLong());
                     return;
                 }
                 queryResult.putLong(originalQueryData.getLong(dataIdx));
                 break;
             case FLOAT:
-                if (overflowUpdateTrueOperation.verify(time)) {
-                    queryResult.putFloat(overflowUpdateTrueOperation.getFloat());
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    queryResult.putFloat(overflowUpdateOperation.getFloat());
                     return;
                 }
                 queryResult.putFloat(originalQueryData.getFloat(dataIdx));
                 break;
             case DOUBLE:
-                if (overflowUpdateTrueOperation.verify(time)) {
-                    queryResult.putDouble(overflowUpdateTrueOperation.getDouble());
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    queryResult.putDouble(overflowUpdateOperation.getDouble());
                     return;
                 }
                 queryResult.putDouble(originalQueryData.getDouble(dataIdx));
                 break;
             case TEXT:
-                if (overflowUpdateTrueOperation.verify(time)) {
-                    queryResult.putBinary(overflowUpdateTrueOperation.getText());
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    queryResult.putBinary(overflowUpdateOperation.getText());
                     return;
                 }
                 queryResult.putBinary(originalQueryData.getBinary(dataIdx));
@@ -470,7 +458,7 @@ public class RecordReader {
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 // get fill result in ValueReader
                 if (FillProcessor.getPreviousFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId),
-                        beforeTime, queryTime, mergeTimeFilter, overflowUpdateTrue)) {
+                        beforeTime, queryTime, mergeTimeFilter, overflowUpdate)) {
                     break;
                 }
             }
@@ -507,7 +495,7 @@ public class RecordReader {
 
                 // has get fill result in ValueReader
                 if (FillProcessor.getLinearFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime, afterTime,
-                        mergeTimeFilter, overflowUpdateTrue)) {
+                        mergeTimeFilter, overflowUpdate)) {
                     break;
                 }
             }

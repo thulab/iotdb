@@ -606,7 +606,7 @@ public class KvMatchIndex  implements IoTIndex {
         }
 
         DynamicOneColumnData insert = recordReader.overflowInsertData;
-        DynamicOneColumnData update = recordReader.overflowUpdateTrue;
+        DynamicOneColumnData update = recordReader.overflowUpdate;
         SingleSeriesFilterExpression deleteFilter = recordReader.overflowTimeFilter;
         long maxDeleteTime = 0;
         if (deleteFilter != null) {

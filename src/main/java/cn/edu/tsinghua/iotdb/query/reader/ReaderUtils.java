@@ -74,427 +74,265 @@ public class ReaderUtils {
     /**
      * <p> Read one page data,
      * this page data may be changed by overflow operation, so the overflow parameter is required.
+     * This method is only used for aggregation function.
      *
      * @param dataType the <code>DataType</code> of the read page
-     * @param pageTimeValues the decompressed timestamps of this page
+     * @param pageTimestamps the decompressed timestamps of this page
      * @param decoder the <code>Decoder</code> of current page
      * @param page Page data
      * @param res same as result data, we need pass it many times
      * @param timeFilter time filter
      * @param valueFilter value filter
      * @param insertMemoryData the memory data(bufferwrite along with overflow)
-     * @param update update operation array, update[0] means updateTrue data, update[1] means updateFalse data
      * @return DynamicOneColumnData of the read result
      * @throws IOException TsFile read error
-     * @param idx the read index of timeValues
      */
-    public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimeValues,
+    public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimestamps,
                                                    Decoder decoder, InputStream page, DynamicOneColumnData res,
                                                    SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
-                                                   InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] idx) throws IOException {
-        // This method is only used for aggregation function.
-
-        // calculate current mode
-        int mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-
-        try {
-            SingleValueVisitor<?> timeVisitor = null;
-            if (timeFilter != null) {
-                timeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
-            }
-            SingleValueVisitor<?> valueVisitor = null;
-            if (valueFilter != null) {
-                valueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
-            }
-
-            int timeIdx = 0;
-            switch (dataType) {
-                case INT32:
-                    while (decoder.hasNext(page)) {
-                        // put insert points that less than or equals to current Timestamp in page.
-                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getCurrentMinTime());
-                            res.putInt(insertMemoryData.getCurrentIntValue());
-                            res.insertTrueIndex++;
-
-                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
-                                insertMemoryData.removeCurrentValue();
-                                timeIdx++;
-                                decoder.readInt(page);
-                                if (!decoder.hasNext(page)) {
-                                    break;
-                                }
-                            } else {
-                                insertMemoryData.removeCurrentValue();
-                            }
-                        }
-
-                        if (!decoder.hasNext(page)) {
-                            break;
-                        }
-                        int v = decoder.readInt(page);
-                        if (mode == -1) {
-                            if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putInt(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 0) {
-                            if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // update the value
-                                if (timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) {
-                                    res.putInt(update[0].getInt(idx[0] / 2));
-                                    res.putTime(pageTimeValues[timeIdx]);
-                                }
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putInt(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 1) {
-                            if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
-                                // do nothing
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putInt(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }
-
-                        // Set the interval to next position that current time
-                        // in page maybe be included.
-                        while (mode != -1 && timeIdx < pageTimeValues.length
-                                && pageTimeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                            idx[mode] += 2;
-                            mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-                        }
-                    }
-                    break;
-                case BOOLEAN:
-                    while (decoder.hasNext(page)) {
-                        // put insert points
-                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getCurrentMinTime());
-                            res.putBoolean(insertMemoryData.getCurrentBooleanValue());
-                            res.insertTrueIndex++;
-                            // if equal, take value from insertTrue and skip one
-                            // value from page
-                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
-                                insertMemoryData.removeCurrentValue();
-                                timeIdx++;
-                                decoder.readBoolean(page);
-                                if (!decoder.hasNext(page)) {
-                                    break;
-                                }
-                            } else {
-                                insertMemoryData.removeCurrentValue();
-                            }
-                        }
-
-                        if (mode == -1) {
-                            boolean v = decoder.readBoolean(page);
-                            if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBoolean(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }else if (mode == 0) {
-                            boolean v = decoder.readBoolean(page);
-                            if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // update the value
-                                if (timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) {
-                                    res.putBoolean(update[0].getBoolean(idx[0] / 2));
-                                    res.putTime(pageTimeValues[timeIdx]);
-                                }
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBoolean(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }else if (mode == 1) {
-                            boolean v = decoder.readBoolean(page);
-                            if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
-                                // do nothing
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBoolean(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }
-
-                        while (mode != -1 && timeIdx < pageTimeValues.length
-                                && pageTimeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                            idx[mode] += 2;
-                            mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-                        }
-                    }
-                    break;
-                case INT64:
-                    while (decoder.hasNext(page)) {
-                        // put insert points
-                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getCurrentMinTime());
-                            res.putLong(insertMemoryData.getCurrentLongValue());
-                            res.insertTrueIndex++;
-                            // if equal, take value from insertTrue and skip one value from page
-                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
-                                insertMemoryData.removeCurrentValue();
-                                timeIdx++;
-                                decoder.readLong(page);
-                                if (!decoder.hasNext(page)) {
-                                    break;
-                                }
-                            } else {
-                                insertMemoryData.removeCurrentValue();
-                            }
-                        }
-                        if (!decoder.hasNext(page)) {
-                            break;
-                        }
-                        long v = decoder.readLong(page);
-                        if (mode == -1) {
-                            if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putLong(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 0) {
-                            if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // TODO update the value, need to discuss the logic with gf?
-                                if (timeFilter == null
-                                        || timeVisitor.verify(pageTimeValues[timeIdx])) {
-                                    res.putLong(update[0].getLong(idx[0] / 2));
-                                    res.putTime(pageTimeValues[timeIdx]);
-                                }
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putLong(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 1) {
-                            if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
-                                // do nothing
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putLong(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }
-
-                        while (mode != -1 && timeIdx < pageTimeValues.length
-                                && pageTimeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                            idx[mode] += 2;
-                            mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-                        }
-                    }
-                    break;
-                case FLOAT:
-                    while (decoder.hasNext(page)) {
-                        // put insert points
-                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getCurrentMinTime());
-                            res.putFloat(insertMemoryData.getCurrentFloatValue());
-                            res.insertTrueIndex++;
-                            // if equal, take value from insertTrue and skip one
-                            // value from page
-                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
-                                insertMemoryData.removeCurrentValue();
-                                timeIdx++;
-                                decoder.readFloat(page);
-                                if (!decoder.hasNext(page)) {
-                                    break;
-                                }
-                            } else {
-                                insertMemoryData.removeCurrentValue();
-                            }
-                        }
-                        if (!decoder.hasNext(page)) {
-                            break;
-                        }
-                        float v = decoder.readFloat(page);
-                        if (mode == -1) {
-                            if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putFloat(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 0) {
-                            if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // update the value
-                                if (timeFilter == null
-                                        || timeVisitor.verify(pageTimeValues[timeIdx])) {
-                                    res.putFloat(update[0].getFloat(idx[0] / 2));
-                                    res.putTime(pageTimeValues[timeIdx]);
-                                }
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putFloat(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 1) {
-                            if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
-                                // do nothing
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putFloat(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }
-
-                        while (mode != -1 && timeIdx < pageTimeValues.length
-                                && pageTimeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                            idx[mode] += 2;
-                            mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-                        }
-                    }
-                    break;
-                case DOUBLE:
-                    while (decoder.hasNext(page)) {
-                        // put insert points
-                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getCurrentMinTime());
-                            res.putDouble(insertMemoryData.getCurrentDoubleValue());
-                            res.insertTrueIndex++;
-                            // if equal, take value from insertTrue and skip one
-                            // value from page
-                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
-                                insertMemoryData.removeCurrentValue();
-                                timeIdx++;
-                                decoder.readDouble(page);
-                                if (!decoder.hasNext(page)) {
-                                    break;
-                                }
-                            } else {
-                                insertMemoryData.removeCurrentValue();
-                            }
-                        }
-                        if (!decoder.hasNext(page)) {
-                            break;
-                        }
-                        double v = decoder.readDouble(page);
-                        if (mode == -1) {
-                            if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putDouble(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 0) {
-                            if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // update the value
-                                if (timeFilter == null
-                                        || timeVisitor.verify(pageTimeValues[timeIdx])) {
-                                    res.putDouble(update[0].getDouble(idx[0] / 2));
-                                    res.putTime(pageTimeValues[timeIdx]);
-                                }
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putDouble(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 1) {
-                            if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
-                                // do nothing
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.verify(v))) {
-                                res.putDouble(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }
-
-                        while (mode != -1 && timeIdx < pageTimeValues.length
-                                && pageTimeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                            idx[mode] += 2;
-                            mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-                        }
-                    }
-                    break;
-                case TEXT:
-                    while (decoder.hasNext(page)) {
-                        // put insert points
-                        while (insertMemoryData.hasInsertData() && timeIdx < pageTimeValues.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeValues[timeIdx]) {
-                            res.putTime(insertMemoryData.getCurrentMinTime());
-                            res.putBinary(insertMemoryData.getCurrentBinaryValue());
-
-                            // if equal, take value from insertTrue and skip one value from page
-                            if (insertMemoryData.getCurrentMinTime() == pageTimeValues[timeIdx]) {
-                                insertMemoryData.removeCurrentValue();
-                                timeIdx++;
-                                decoder.readBinary(page);
-                                if (!decoder.hasNext(page)) {
-                                    break;
-                                }
-                            } else {
-                                insertMemoryData.removeCurrentValue();
-                            }
-                        }
-                        if (!decoder.hasNext(page)) {
-                            break;
-                        }
-                        Binary v = decoder.readBinary(page);
-                        if (mode == -1) {
-                            if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBinary(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 0) {
-                            if (update[0].getTime(idx[0]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[0].getTime(idx[0] + 1)) {
-                                // update the value
-                                if (timeFilter == null
-                                        || timeVisitor.verify(pageTimeValues[timeIdx])) {
-                                    res.putBinary(update[0].getBinary(idx[0] / 2));
-                                    res.putTime(pageTimeValues[timeIdx]);
-                                }
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBinary(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        } else if (mode == 1) {
-                            if (update[1].getTime(idx[1]) <= pageTimeValues[timeIdx]
-                                    && pageTimeValues[timeIdx] <= update[1].getTime(idx[1] + 1)) {
-                                // do nothing
-                                logger.error("never reach here");
-                            } else if ((timeFilter == null || timeVisitor.verify(pageTimeValues[timeIdx])) && (valueFilter == null || valueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBinary(v);
-                                res.putTime(pageTimeValues[timeIdx]);
-                            }
-                            timeIdx++;
-                        }
-
-                        while (mode != -1 && timeIdx < pageTimeValues.length
-                                && pageTimeValues[timeIdx] > update[mode].getTime(idx[mode] + 1)) {
-                            idx[mode] += 2;
-                            mode = getNextMode(idx[0], idx[1], update[0], update[1]);
-                        }
-                    }
-                    break;
-                default:
-                    throw new IOException("Data type not support : " + dataType);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+                                                   InsertDynamicData insertMemoryData, UpdateOperation updateOperation) throws IOException {
+        SingleValueVisitor<?> singleTimeVisitor = null;
+        if (timeFilter != null) {
+            singleTimeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
         }
-        // Don't forget to update the curIdx in updateTrue and updateFalse
-        update[0].curIdx = idx[0];
-        update[1].curIdx = idx[1];
+        SingleValueVisitor<?> singleValueVisitor = null;
+        if (valueFilter != null) {
+            singleValueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
+        }
+
+        int timeIdx = 0;
+        switch (dataType) {
+            case INT32:
+                int[] pageIntValues = new int[pageTimestamps.length];
+                int cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageIntValues[cnt++] = decoder.readInt(page);
+                }
+
+                // TODO there may return many results
+                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                    while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        res.putInt(insertMemoryData.getCurrentIntValue());
+
+                        if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
+                            insertMemoryData.removeCurrentValue();
+                            timeIdx++;
+                        } else {
+                            insertMemoryData.removeCurrentValue();
+                        }
+                    }
+                    if (timeIdx >= pageTimestamps.length)
+                        break;
+
+                    if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                        continue;
+                    }
+                    if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                            (valueFilter == null || singleValueVisitor.verify(pageIntValues[timeIdx]))) {
+                        res.putTime(pageTimestamps[timeIdx]);
+                        if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                            res.putInt(updateOperation.getInt());
+                        } else {
+                            res.putInt(pageIntValues[timeIdx]);
+                        }
+                    }
+                }
+                break;
+            case BOOLEAN:
+                boolean[] pageBooleanValues = new boolean[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageBooleanValues[cnt++] = decoder.readBoolean(page);
+                }
+
+                // TODO there may return many results
+                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                    while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        res.putBoolean(insertMemoryData.getCurrentBooleanValue());
+
+                        if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
+                            insertMemoryData.removeCurrentValue();
+                            timeIdx++;
+                        } else {
+                            insertMemoryData.removeCurrentValue();
+                        }
+                    }
+                    if (timeIdx >= pageTimestamps.length)
+                        break;
+
+                    if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                        continue;
+                    }
+                    if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                            (valueFilter == null || singleValueVisitor.satisfyObject(pageBooleanValues[timeIdx], valueFilter))) {
+                        res.putTime(pageTimestamps[timeIdx]);
+                        if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                            res.putBoolean(updateOperation.getBoolean());
+                        } else {
+                            res.putBoolean(pageBooleanValues[timeIdx]);
+                        }
+                    }
+                }
+                break;
+            case INT64:
+                long[] pageLongValues = new long[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageLongValues[cnt++] = decoder.readLong(page);
+                }
+
+                // TODO there may return many results
+                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                    while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        res.putLong(insertMemoryData.getCurrentLongValue());
+
+                        if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
+                            insertMemoryData.removeCurrentValue();
+                            timeIdx++;
+                        } else {
+                            insertMemoryData.removeCurrentValue();
+                        }
+                    }
+                    if (timeIdx >= pageTimestamps.length)
+                        break;
+
+                    if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                        continue;
+                    }
+                    if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                            (valueFilter == null || singleValueVisitor.verify(pageLongValues[timeIdx]))) {
+                        res.putTime(pageTimestamps[timeIdx]);
+                        if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                            res.putLong(updateOperation.getLong());
+                        } else {
+                            res.putLong(pageLongValues[timeIdx]);
+                        }
+                    }
+                }
+                break;
+            case FLOAT:
+                float[] pageFloatValues = new float[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageFloatValues[cnt++] = decoder.readFloat(page);
+                }
+
+                // TODO there may return many results
+                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                    while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        res.putFloat(insertMemoryData.getCurrentFloatValue());
+
+                        if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
+                            insertMemoryData.removeCurrentValue();
+                            timeIdx++;
+                        } else {
+                            insertMemoryData.removeCurrentValue();
+                        }
+                    }
+                    if (timeIdx >= pageTimestamps.length)
+                        break;
+
+                    if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                        continue;
+                    }
+                    if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                            (valueFilter == null || singleValueVisitor.verify(pageFloatValues[timeIdx]))) {
+                        res.putTime(pageTimestamps[timeIdx]);
+                        if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                            res.putFloat(updateOperation.getFloat());
+                        } else {
+                            res.putFloat(pageFloatValues[timeIdx]);
+                        }
+                    }
+                }
+                break;
+            case DOUBLE:
+                double[] pageDoubleValues = new double[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageDoubleValues[cnt++] = decoder.readDouble(page);
+                }
+
+                // TODO there may return many results
+                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                    while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        res.putDouble(insertMemoryData.getCurrentDoubleValue());
+
+                        if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
+                            insertMemoryData.removeCurrentValue();
+                            timeIdx++;
+                        } else {
+                            insertMemoryData.removeCurrentValue();
+                        }
+                    }
+                    if (timeIdx >= pageTimestamps.length)
+                        break;
+
+                    if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                        continue;
+                    }
+                    if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                            (valueFilter == null || singleValueVisitor.verify(pageDoubleValues[timeIdx]))) {
+                        res.putTime(pageTimestamps[timeIdx]);
+                        if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                            res.putDouble(updateOperation.getDouble());
+                        } else {
+                            res.putDouble(pageDoubleValues[timeIdx]);
+                        }
+                    }
+                }
+                break;
+            case TEXT:
+                Binary[] pageTextValues = new Binary[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageTextValues[cnt++] = decoder.readBinary(page);
+                }
+
+                // TODO there may return many results
+                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                    while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
+                        res.putTime(insertMemoryData.getCurrentMinTime());
+                        res.putBinary(insertMemoryData.getCurrentBinaryValue());
+
+                        if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
+                            insertMemoryData.removeCurrentValue();
+                            timeIdx++;
+                        } else {
+                            insertMemoryData.removeCurrentValue();
+                        }
+                    }
+                    if (timeIdx >= pageTimestamps.length)
+                        break;
+
+                    if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                        continue;
+                    }
+                    if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                            (valueFilter == null || singleValueVisitor.satisfyObject(pageTextValues[timeIdx], valueFilter))) {
+                        res.putTime(pageTimestamps[timeIdx]);
+                        if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                            res.putBinary(updateOperation.getText());
+                        } else {
+                            res.putBinary(pageTextValues[timeIdx]);
+                        }
+                    }
+                }
+                break;
+            default:
+                throw new IOException("Data type not support : " + dataType);
+        }
         return res;
     }
 
@@ -517,7 +355,6 @@ public class ReaderUtils {
      *                  updateTrue, while update[1] represents updateFalse
      * @return left represents the data of DataPage which satisfies the restrict condition,
      *         right represents the read time index of commonTimestamps
-     * @throws IOException TsFile read error
      */
     public static Pair<DynamicOneColumnData, Integer> readOnePage(TSDataType dataType, long[] pageTimeStamps,
                 Decoder decoder, InputStream page,

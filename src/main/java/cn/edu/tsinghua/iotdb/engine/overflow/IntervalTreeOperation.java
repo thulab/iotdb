@@ -947,32 +947,18 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                 } else if (L > 0 && R > 0) { // UPDATE
                     switch (crossRelation) {
                         case LCOVERSR:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(L, R, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(L, R, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(L, R, dataType, updateAdopt, overflowData, i);
                             break;
                         case RCOVERSL:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
+
                             break;
                         case LFIRSTCROSS:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(exist.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(exist.s, filterTimePair.e, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(exist.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
+
                             break;
                         case RFIRSTCROSS:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(filterTimePair.s, exist.e, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(filterTimePair.s, exist.e, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(filterTimePair.s, exist.e, dataType, updateAdopt, overflowData, i);
                             break;
                     }
                 } else {    // DELETE
@@ -984,7 +970,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
 
         ans.add(insertAdopt);
         ans.add(updateAdopt);
-        ans.add(updateNotAdopt);
         GtEq<Long> deleteFilter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
                 "Any", "Any", FilterSeriesType.TIME_FILTER), deleteMaxLength, false);
         And and = (And) FilterFactory.and(timeFilter, deleteFilter);
