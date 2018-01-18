@@ -19,7 +19,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
 import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
@@ -38,7 +38,7 @@ public class IoTDB implements IoTDBMBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
 	private MBeanServer mbs;
-	private DBDao dBdao;
+	private DBDaoService dBdao;
 	private static JDBCServerMBean jdbcMBean;
 	private MonitorMBean monitorMBean;
 	private final String IOTDB_PACKAGE = "cn.edu.tsinghua.iotdb.service";
@@ -143,7 +143,7 @@ public class IoTDB implements IoTDBMBean {
 	}
 
 	private void initDBDao() throws ClassNotFoundException, SQLException, DBDaoInitException {
-		dBdao = new DBDao();
+		dBdao = new DBDaoService();
 		dBdao.open();
 	}
 

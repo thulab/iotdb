@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.auth.dao.AuthDao;
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserDao;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
@@ -23,7 +23,7 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class AuthTest {
 
-	private DBDao dbDao = null;
+	private DBDaoService dbDao = null;
 	private Statement statement = null;
 	private AuthDao authDao = null;
 	// prepare the data
@@ -34,11 +34,11 @@ public class AuthTest {
 
 	@Before
 	public void setUp() throws Exception {
-		dbDao = new DBDao();
+		dbDao = new DBDaoService();
 		authDao = new AuthDao();
 		dbDao.open();
 		EnvironmentUtils.envSetUp();
-		statement = DBDao.getStatement();
+		statement = DBDaoService.getStatement();
 
 		// init data
 		user1 = new User("user1", "user1");

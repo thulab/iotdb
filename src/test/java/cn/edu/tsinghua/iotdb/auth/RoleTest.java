@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -17,17 +17,17 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 public class RoleTest {
 
 	private Statement statement = null;
-	private DBDao dbdao = null;
+	private DBDaoService dbdao = null;
 	private RoleDao roleDao = null;
 	private Role role = null;
 	private String roleName = "role";
 
 	@Before
 	public void setUp() throws Exception {
-		dbdao = new DBDao();
+		dbdao = new DBDaoService();
 		dbdao.open();
 		EnvironmentUtils.envSetUp();
-		statement = DBDao.getStatement();
+		statement = DBDaoService.getStatement();
 		roleDao = new RoleDao();
 	}
 

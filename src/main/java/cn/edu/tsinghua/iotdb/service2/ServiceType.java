@@ -1,13 +1,14 @@
 package cn.edu.tsinghua.iotdb.service2;
 
 public enum ServiceType {
-	DBDAO_SERVICE("",""),
-	FILE_NODE_SERVICE("",""),
+	DBDAO_SERVICE("DB Dao",""),
+	FILE_NODE_SERVICE("File Node Service",""),
 	JMX_SERVICE("JMX Service","JMX Service"),
 	JDBC_SERVICE("JDBC Service","JDBCService"),
-	STAT_MONITOR_SERVICE("",""),
-	WAL_SERVICE("",""),
-	CLOSE_MERGE_SERVICE("",""),
+	MONITOR_SERVICE("Monitor Service","Monitor"),
+	STAT_MONITOR_SERVICE("Statistics Service",""),
+	WAL_SERVICE("WAL Service",""),
+	CLOSE_MERGE_SERVICE("Close&Merge Service",""),
 	JVM_MEM_CONTROL_SERVICE("","");
 	
 	private String name;  

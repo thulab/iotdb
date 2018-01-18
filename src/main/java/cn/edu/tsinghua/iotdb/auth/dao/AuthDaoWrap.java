@@ -19,7 +19,7 @@ import cn.edu.tsinghua.iotdb.auth.model.UserRoleRel;
 public class AuthDaoWrap {
 
     // Must init the DBdao before use this class
-    private Statement statement = DBDao.getStatement();
+    private Statement statement = DBDaoService.getStatement();
 
 
     public boolean addUser(User user) {
@@ -339,6 +339,6 @@ public class AuthDaoWrap {
      * just for unit test
      */
     public void reset(){
-    	statement = DBDao.getStatement();
+    	statement = DBDaoService.getStatement();
     }
 }

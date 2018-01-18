@@ -46,6 +46,8 @@ import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
+import cn.edu.tsinghua.iotdb.service2.IService;
+import cn.edu.tsinghua.iotdb.service2.ServiceType;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -57,7 +59,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
-public class FileNodeManager implements IStatistic {
+public class FileNodeManager implements IStatistic, IService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -1058,5 +1060,23 @@ public class FileNodeManager implements IStatistic {
 				}
 			}
 		}
+	}
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void stop() {
+		try {
+			closeAll();
+		} catch (FileNodeManagerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	@Override
+	public ServiceType getID() {
+		return ServiceType.FILE_NODE_SERVICE;
 	}
 }

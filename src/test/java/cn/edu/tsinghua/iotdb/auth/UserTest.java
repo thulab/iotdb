@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.auth.dao.UserDao;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -18,7 +18,7 @@ public class UserTest {
 
 	private Statement statement = null;
 	private UserDao userDao = null;
-	private DBDao dBdao = null;
+	private DBDaoService dBdao = null;
 
 	private String userName = "testuser";
 	private String passWord = "password";
@@ -30,10 +30,10 @@ public class UserTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		dBdao = new DBDao();
+		dBdao = new DBDaoService();
 		dBdao.open();
 		EnvironmentUtils.envSetUp();
-		statement = DBDao.getStatement();
+		statement = DBDaoService.getStatement();
 		userDao = new UserDao();
 
 	}

@@ -16,12 +16,14 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 //import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
+import cn.edu.tsinghua.iotdb.service2.IService;
+import cn.edu.tsinghua.iotdb.service2.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WriteLogManager {
+public class WriteLogManager implements IService{
     private static final Logger LOGGER = LoggerFactory.getLogger(WriteLogManager.class);
     // to determine whether system is in recovering process
     public static boolean isRecovering = false;
@@ -176,4 +178,26 @@ public class WriteLogManager {
             // e.printStackTrace();
         }
     }
+
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stop() {
+		try {
+			close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public ServiceType getID() {
+		// TODO Auto-generated method stub
+		return ServiceType.WAL_SERVICE;
+	}
 }

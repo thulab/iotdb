@@ -10,17 +10,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class AuthorizerTest {
 
-	private DBDao dbdao = null;
+	private DBDaoService dbdao = null;
 
 	@Before
 	public void setUp() throws Exception {
-		dbdao = new DBDao();
+		dbdao = new DBDaoService();
 		dbdao.open();
 		EnvironmentUtils.envSetUp();
 	}

@@ -9,6 +9,8 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
+import cn.edu.tsinghua.iotdb.service2.IService;
+import cn.edu.tsinghua.iotdb.service2.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -36,7 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author liliang
  */
-public class StatMonitor {
+public class StatMonitor implements IService{
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
 
     private long runningTimeMillis = System.currentTimeMillis();
@@ -332,4 +334,23 @@ public class StatMonitor {
             numBackLoop.incrementAndGet();
         }
     }
+
+	@Override
+	public void start() {
+		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
+			activate();
+		}
+	}
+
+	@Override
+	public void stop() {
+		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
+			close();
+		}
+	}
+
+	@Override
+	public ServiceType getID() {
+		return ServiceType.STAT_MONITOR_SERVICE;
+	}
 }

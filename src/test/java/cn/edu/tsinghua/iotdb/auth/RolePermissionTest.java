@@ -10,7 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.dao.RolePermissionDao;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
@@ -20,7 +20,7 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class RolePermissionTest {
 
-	private DBDao dbDao = null;
+	private DBDaoService dbDao = null;
 	private RoleDao roleDao = null;
 	private RolePermissionDao rolePermissionDao = null;
 	private Statement statement;
@@ -33,14 +33,14 @@ public class RolePermissionTest {
 
 	@Before
 	public void setUp() throws Exception {
-		dbDao = new DBDao();
+		dbDao = new DBDaoService();
 		roleDao = new RoleDao();
 		rolePermissionDao = new RolePermissionDao();
 		permissionId = Permission.CREATE;
 
 		dbDao.open();
 		EnvironmentUtils.envSetUp();
-		statement = DBDao.getStatement();
+		statement = DBDaoService.getStatement();
 
 		// if role not exist, create role
 		if (roleDao.getRole(statement, role.getRoleName()) == null) {

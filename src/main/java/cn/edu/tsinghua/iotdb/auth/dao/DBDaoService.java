@@ -18,14 +18,16 @@ import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthRuntimeException;
 import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.service2.IService;
+import cn.edu.tsinghua.iotdb.service2.ServiceType;
 
 /**
  * @author liukun
  *
  */
-public class DBDao {
+public class DBDaoService implements IService{
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DBDao.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBDaoService.class);
 
 	private String derbyEmbeddedDriver = "org.apache.derby.jdbc.EmbeddedDriver";
 	private String protocal = "jdbc:derby:";
@@ -37,7 +39,7 @@ public class DBDao {
 	private static Statement statement = null;
 	private PreparedStatement preparedStatement = null;
 
-	private DBDao(String dBName) {
+	private DBDaoService(String dBName) {
 		String derbyDirPath = TsfileDBDescriptor.getInstance().getConfig().derbyHome;
 		if (derbyDirPath.length() > 0 && derbyDirPath.charAt(derbyDirPath.length() - 1) != File.separatorChar) {
 			derbyDirPath = derbyDirPath + File.separatorChar;
@@ -46,7 +48,7 @@ public class DBDao {
 		this.DBLocalPath = path;
 	}
 
-	public DBDao() {
+	public DBDaoService() {
 		this("EmbeddedDB");
 	}
 
@@ -204,6 +206,25 @@ public class DBDao {
 
 	public static Connection getConnection() {
 		return connection;
+	}
+
+	@Override
+	public void start() {
+		try {
+			open();
+		} catch (ClassNotFoundException | SQLException | DBDaoInitException e) {
+			LOGGER.error("Failed to start {} because of {}", this.getID().getName(), e.getMessage());
+		}
+	}
+
+	@Override
+	public void stop() {
+		close();
+	}
+
+	@Override
+	public ServiceType getID() {
+		return ServiceType.DBDAO_SERVICE;
 	}
 
 }
