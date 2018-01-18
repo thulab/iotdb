@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class ConcurrentRandomAccessFileTest {
 
-    private static final String PATH = "src/test/resources/concurrentFile.io";
+    private static final String PATH = "concurrentFile.io";
 
     @Before
     public void before() throws IOException {
