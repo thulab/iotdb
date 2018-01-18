@@ -117,14 +117,16 @@ public class PerformanceTest {
             logNode.write(updatePlan);
             logNode.write(deletePlan);
         }
-        logNode.forceSync();
-        long time = System.currentTimeMillis();
-        logNode.recover();
-        System.out.println(3000000 + " logs use " + (System.currentTimeMillis() - time) + "ms when recovering " );
-
-        logNode.close();
-        tempRestore.delete();
-        tempProcessorStore.delete();
+        try {
+            logNode.forceSync();
+            long time = System.currentTimeMillis();
+            logNode.recover();
+            System.out.println(3000000 + " logs use " + (System.currentTimeMillis() - time) + "ms when recovering " );
+        } finally {
+            logNode.close();
+            tempRestore.delete();
+            tempProcessorStore.delete();
+        }
     }
 
     @Test

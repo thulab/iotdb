@@ -32,7 +32,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
                     logger.info("WAL sync thread exits.");
                     break;
                 }
-                logger.info("Timed sync starts");
+                logger.info("Timed sync starts, {} nodes to be flushed", nodeMap.size());
                 for(WriteLogNode node : nodeMap.values()) {
                     try {
                         node.forceSync();
@@ -94,8 +94,9 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
 
     @Override
     public void close() {
+        logger.info("LogNodeManager starts closing..");
         syncThread.interrupt();
-        logger.info("Waiting for syc thread to stop");
+        logger.info("Waiting for sync thread to stop");
         while(syncThread.isAlive()) {
             // wait
         }
@@ -108,6 +109,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
             }
         }
         nodeMap.clear();
+        logger.info("LogNodeManager closed.");
     }
 
 }

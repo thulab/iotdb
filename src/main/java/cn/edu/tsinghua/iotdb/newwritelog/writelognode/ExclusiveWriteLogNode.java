@@ -112,11 +112,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
             logger.error("Log node {} renaming log file failed!", identifier);
         else
             logger.debug("Log node {} renamed log file", identifier);
-        try {
-            this.currentFile = new RandomAccessFile(this.logDirectory + File.separator + WAL_FILE_NAME,"rw");
-        } catch (FileNotFoundException e) {
-            logger.error("Log node {} cannot open new file", identifier);
-        }
+        this.currentFile = null;
     }
 
     /*
@@ -195,7 +191,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         if(!oldLogFile.exists()) {
             logger.error("Old log file of {} does not exist", identifier);
         } else {
-            if(oldLogFile.delete())
+            if(!oldLogFile.delete())
                 logger.error("Old log file of {} cannot be deleted", identifier);
             else
                 logger.info("Log node {} cleaned old file", identifier);

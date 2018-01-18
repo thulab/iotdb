@@ -135,7 +135,6 @@ public class WriteLogNodeTest {
 
         logNode.notifyEndFlush(null);
         assertTrue(!oldWalFile.exists());
-        assertTrue(walFile.exists());
         assertEquals(0, walFile.length());
 
         logNode.close();
