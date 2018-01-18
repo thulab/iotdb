@@ -932,32 +932,16 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                 if (L > 0 && R < 0) {    // INSERT
                     switch (crossRelation) {
                         case LCOVERSR:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(L, R, dataType, insertAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(L, -R, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(L, R, dataType, insertAdopt, overflowData, i);
                             break;
                         case RCOVERSL:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, insertAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(L, -R, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, insertAdopt, overflowData, i);
                             break;
                         case LFIRSTCROSS:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(exist.s, filterTimePair.e, dataType, insertAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(L, -R, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(exist.s, filterTimePair.e, dataType, insertAdopt, overflowData, i);
                             break;
                         case RFIRSTCROSS:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(filterTimePair.s, exist.e, dataType, insertAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(L, -R, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(filterTimePair.s, exist.e, dataType, insertAdopt, overflowData, i);
                             break;
                     }
                 } else if (L > 0 && R > 0) { // UPDATE
