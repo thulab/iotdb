@@ -197,10 +197,14 @@ public class InsertDynamicData {
         if (hasNext)
             return true;
 
-        if (overflowInsertData.hasNext() && examineOverflowInsert()) {
-            hasNext = true;
-            overflowInsertData.next();
-            return true;
+        while (overflowInsertData.hasNext()) {
+            if (examineOverflowInsert()) {
+                overflowInsertData.next();
+                hasNext = true;
+                return true;
+            } else {
+                overflowInsertData.next();
+            }
         }
 
         return false;
@@ -277,6 +281,8 @@ public class InsertDynamicData {
                     if (examineOverflowInsert()) {
                         overflowInsertData.next();
                         return true;
+                    } else {
+                        overflowInsertData.next();
                     }
                 } else {
                     // overflow insert time equals to page time
@@ -284,6 +290,9 @@ public class InsertDynamicData {
                         overflowInsertData.next();
                         pageTimeIndex ++;
                         return true;
+                    } else {
+                        overflowInsertData.next();
+                        pageTimeIndex ++;
                     }
                 }
             }
@@ -321,7 +330,7 @@ public class InsertDynamicData {
         // we must consider the overflow insert value is updated by update operation.
         // updateOverflowInsertValue();
 
-        long time = overflowInsertData.getInsertTime();;
+        long time = overflowInsertData.getInsertTime();
 
         switch (dataType) {
             case INT32:
@@ -535,7 +544,6 @@ public class InsertDynamicData {
                     } else {
                         overflowInsertData.next();
                     }
-
                 } else {
                     // overflow insert time equals to page time
                     if (examineOverflowInsert()) {
@@ -543,6 +551,7 @@ public class InsertDynamicData {
                         lastPageData.next();
                         return true;
                     } else {
+                        lastPageData.next();
                         overflowInsertData.next();
                     }
                 }

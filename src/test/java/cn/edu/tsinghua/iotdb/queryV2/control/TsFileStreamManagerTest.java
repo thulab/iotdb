@@ -19,7 +19,7 @@ import java.io.IOException;
  */
 public class TsFileStreamManagerTest {
 
-    private static final String PATH = "src/test/resources/fileStreamManagerTestFile";
+    private static final String PATH = "fileStreamManagerTestFile";
     private TsFileStreamManager fileStreamManager;
 
     @Before
