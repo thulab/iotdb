@@ -423,8 +423,8 @@ public class OverflowProcessor extends Processor {
 			DateTime thisDateTime = new DateTime(thisFLushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info("Last flush time is {}, this flush time is {}, flush time interval is {}", lastDateTime,
 					thisDateTime, thisFLushTime - lastFlushTime);
-			lastFlushTime = thisFLushTime;
 		}
+		lastFlushTime = System.currentTimeMillis();
 		if (recordCount > 0) {
 			synchronized (flushState) {
 				while (flushState.isFlushing()) {
@@ -483,7 +483,8 @@ public class OverflowProcessor extends Processor {
 					throw new OverflowProcessorException(e);
 				} catch (OverflowProcessorException e) {
 					LOGGER.error("Flush overflow rowgroup restore failed.", e);
-					System.exit(0);
+					throw new OverflowProcessorException(e);
+//					System.exit(0);
 				} catch (Exception e) {
 					LOGGER.error("filenodeFlushAction action failed");
 					throw new OverflowProcessorException(e);
@@ -516,12 +517,12 @@ public class OverflowProcessor extends Processor {
 							logNode.notifyEndFlush(null);
 						}
 					} catch (IOException e) {
-						LOGGER.error("Flush overflow rowgroup to file error in asynchronously.", e);
+						LOGGER.error("Flush overflow rowgroup to file error in asynchronously. Thread {} exits.",Thread.currentThread().getName() , e);
 					} catch (OverflowProcessorException e) {
-						LOGGER.error("Flush overflow rowgroup restore failed.", e);
-						System.exit(0);
+						LOGGER.error("Flush overflow rowgroup restore failed. Thread {} exits.", Thread.currentThread().getName(), e);
+//						System.exit(0);
 					} catch (Exception e) {
-						LOGGER.error("FilenodeFlushAction action failed.", e);
+						LOGGER.error("FilenodeFlushAction action failed. Thread {} exits.", Thread.currentThread().getName(), e);
 					} finally {
 						synchronized (flushState) {
 							flushState.setUnFlushing();

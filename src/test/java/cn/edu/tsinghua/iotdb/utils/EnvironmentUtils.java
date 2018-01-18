@@ -31,13 +31,14 @@ public class EnvironmentUtils {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentUtils.class);
 
 	private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+	private static TSFileConfig tsfileConfig = TSFileDescriptor.getInstance().getConfig();
 
 	public static void cleanEnv() throws IOException {
 		// tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager
 		try {
 			if (!FileNodeManager.getInstance().closeAll()) {
-				LOGGER.error("Can't close the filenode manager");
+				LOGGER.error("Can't close the filenode manager in EnvironmentUtils");
 				System.exit(1);
 			}
 		} catch (FileNodeManagerException e) {
@@ -110,6 +111,7 @@ public class EnvironmentUtils {
 	}
 
 	public static void envSetUp() {
+		tsfileConfig.duplicateIncompletedPage = true;
 		// disable the memory control
 		config.enableMemMonitor = false;
 		// disable the system monitor
