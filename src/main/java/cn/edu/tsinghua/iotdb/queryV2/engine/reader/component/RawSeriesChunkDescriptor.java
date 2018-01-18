@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2.engine.component;
+package cn.edu.tsinghua.iotdb.queryV2.engine.reader.component;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;

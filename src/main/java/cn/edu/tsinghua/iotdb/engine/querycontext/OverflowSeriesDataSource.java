@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 
 import java.util.List;
@@ -8,9 +9,14 @@ import java.util.List;
  * Created by zhangjinrui on 2018/1/18.
  */
 public class OverflowSeriesDataSource {
+    private Path seriesPath;
     private List<OverflowInsertFile> overflowInsertFileList;
     private SeriesChunk memSeriesChunk;
     private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
+
+    public OverflowSeriesDataSource(Path seriesPath) {
+        this.seriesPath = seriesPath;
+    }
 
     public List<OverflowInsertFile> getOverflowInsertFileList() {
         return overflowInsertFileList;

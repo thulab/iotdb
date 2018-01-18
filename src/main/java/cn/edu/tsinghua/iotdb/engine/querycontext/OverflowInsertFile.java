@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class OverflowInsertFile {
     private String path;  //Full path of current OverflowInsertFile
-    private List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas; //All Metadata of SeriesChunks in current OverflowInsertFile
+    private List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas; //seriesChunkMetadata of selected series
 
     public String getPath() {
         return path;

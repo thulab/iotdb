@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2.engine.component;
+package cn.edu.tsinghua.iotdb.queryV2.engine.reader.component;
 
 import java.io.IOException;
 import java.io.InputStream;
