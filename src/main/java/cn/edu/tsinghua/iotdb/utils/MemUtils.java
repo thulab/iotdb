@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.utils;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -78,12 +78,12 @@ public class MemUtils {
     }
 
     public static String bytesCntToStr(long cnt) {
-        long GBs = cnt / TsFileDBConstant.GB;
-        cnt = cnt % TsFileDBConstant.GB;
-        long MBs = cnt / TsFileDBConstant.MB;
-        cnt = cnt % TsFileDBConstant.MB;
-        long KBs = cnt / TsFileDBConstant.KB;
-        cnt = cnt % TsFileDBConstant.KB;
+        long GBs = cnt / IoTDBConstant.GB;
+        cnt = cnt % IoTDBConstant.GB;
+        long MBs = cnt / IoTDBConstant.MB;
+        cnt = cnt % IoTDBConstant.MB;
+        long KBs = cnt / IoTDBConstant.KB;
+        cnt = cnt % IoTDBConstant.KB;
         return GBs + " GB " + MBs + " MB " + KBs + " KB " + cnt + " B";
     }
 }

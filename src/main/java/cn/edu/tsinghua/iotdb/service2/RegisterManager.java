@@ -3,21 +3,33 @@ package cn.edu.tsinghua.iotdb.service2;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RegisterManager {
-	private List<ISubDaemon> subDaemons;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RegisterManager.class);
+	private List<IService> iServices;
 	public RegisterManager(){
-		subDaemons = new ArrayList<>();
+		iServices = new ArrayList<>();
 	}
 	
-	public void register(ISubDaemon subDaemon){
-		subDaemons.add(subDaemon);
-		subDaemon.start();
+	public void register(IService service){
+		for(IService s: iServices){
+			if(s.getID() == service.getID()){
+				LOGGER.info("{} has already been registed. skip", service.getID().getName());
+				return;
+			}
+		}
+		iServices.add(service);
+		service.start();
+		LOGGER.info("{} has been registed.", service.getID().getName());
 	}
 	
 	public void deregisterAll(){
-		for(ISubDaemon subDaemon: subDaemons){
-			subDaemon.stop();
+		for(IService service: iServices){
+			service.stop();
 		}
-		subDaemons.clear();
+		iServices.clear();
+		LOGGER.info("deregister all service.");
 	}
 }

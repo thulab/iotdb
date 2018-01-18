@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -29,6 +29,7 @@ import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
+import cn.edu.tsinghua.iotdb.service2.JMXService;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -63,13 +64,13 @@ public class IoTDB implements IoTDBMBean {
 		try {
 			checks.verify();
 		} catch (StartupException e) {
-			LOGGER.error("{}: failed to start because of some check fail. {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: failed to start because of some check fail. {}", IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return;
 		}
 		try {
 			setUp();
 		} catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | TTransportException | IOException e) {
-			LOGGER.error("{}: failed to start because: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: failed to start because: {}", IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
 		} catch (FileNodeManagerException e) {
 			e.printStackTrace();
 		} catch (PathErrorException e) {
@@ -83,7 +84,7 @@ public class IoTDB implements IoTDBMBean {
 		try {
 			initDBDao();
 		} catch (ClassNotFoundException | SQLException | DBDaoInitException e) {
-			LOGGER.error("Fail to start {}!", TsFileDBConstant.GLOBAL_DB_NAME);
+			LOGGER.error("Fail to start {}!", IoTDBConstant.GLOBAL_DB_NAME);
 			return;
 		}
 
@@ -104,7 +105,7 @@ public class IoTDB implements IoTDBMBean {
 	}
 
 	private void maybeInitJmx() {
-		JMXServer.getInstance().start();
+		JMXService.getInstance().start();
 	}
 
 	private void registJDBCServer() throws TTransportException, MalformedObjectNameException,
@@ -162,7 +163,7 @@ public class IoTDB implements IoTDBMBean {
 	 * @throws IOException
 	 */
 	private void systemDataRecovery() throws IOException, FileNodeManagerException, PathErrorException {
-		LOGGER.info("{}: start checking write log...", TsFileDBConstant.GLOBAL_DB_NAME);
+		LOGGER.info("{}: start checking write log...", IoTDBConstant.GLOBAL_DB_NAME);
 		// QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
 		WriteLogManager writeLogManager = WriteLogManager.getInstance();
 		writeLogManager.recovery();
@@ -188,7 +189,7 @@ public class IoTDB implements IoTDBMBean {
 			}
 		}
 		WriteLogManager.isRecovering = false;
-		LOGGER.info("{}: Done. Recover operation count {}", TsFileDBConstant.GLOBAL_DB_NAME, cnt);
+		LOGGER.info("{}: Done. Recover operation count {}", IoTDBConstant.GLOBAL_DB_NAME, cnt);
 	}
 
 	@Override
@@ -211,7 +212,7 @@ public class IoTDB implements IoTDBMBean {
 			jdbcMBean.stopServer();
 		}
 
-		JMXServer.getInstance().stop();
+		JMXService.getInstance().stop();
 
 		try {
 			ObjectName montiorBeanName = new ObjectName(IOTDB_PACKAGE, JMX_TYPE, MONITOR_STR);

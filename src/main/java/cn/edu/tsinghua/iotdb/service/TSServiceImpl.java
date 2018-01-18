@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthorityChecker;
 import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
@@ -76,7 +76,7 @@ import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.INDEXQUERY;
 
 public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
-	private WriteLogManager writeLogManager;
+//	private WriteLogManager writeLogManager;
 	private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
 	// Record the username for every rpc connection. Username.get() is null if
 	// login is failed.
@@ -89,14 +89,14 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
 
 	public TSServiceImpl() throws IOException {
-		if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-			writeLogManager = WriteLogManager.getInstance();
-		}
+//		if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+//			writeLogManager = WriteLogManager.getInstance();
+//		}
 	}
 
 	@Override
 	public TSOpenSessionResp openSession(TSOpenSessionReq req) throws TException {
-		LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
+		LOGGER.info("{}: receive open session request from username {}",IoTDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
 		boolean status;
 		try {
@@ -118,7 +118,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		TSOpenSessionResp resp = new TSOpenSessionResp(ts_status, TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1);
 		resp.setSessionHandle(new TS_SessionHandle(new TSHandleIdentifier(ByteBuffer.wrap(req.getUsername().getBytes()),
 				ByteBuffer.wrap((req.getPassword().getBytes())))));
-		LOGGER.info("{}: Login status: {}. User : {}",TsFileDBConstant.GLOBAL_DB_NAME, ts_status.getErrorMessage(), req.getUsername());
+		LOGGER.info("{}: Login status: {}. User : {}",IoTDBConstant.GLOBAL_DB_NAME, ts_status.getErrorMessage(), req.getUsername());
 
 		return resp;
 	}
@@ -130,7 +130,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 	@Override
 	public TSCloseSessionResp closeSession(TSCloseSessionReq req) throws TException {
-		LOGGER.info("{}: receive close session",TsFileDBConstant.GLOBAL_DB_NAME);
+		LOGGER.info("{}: receive close session",IoTDBConstant.GLOBAL_DB_NAME);
 		TS_Status ts_status;
 		if (username.get() == null) {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
@@ -155,7 +155,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 	@Override
 	public TSCloseOperationResp closeOperation(TSCloseOperationReq req) throws TException {
-		LOGGER.info("{}: receive close operation",TsFileDBConstant.GLOBAL_DB_NAME);
+		LOGGER.info("{}: receive close operation",IoTDBConstant.GLOBAL_DB_NAME);
 		try {
 			ReadLockManager.getInstance().unlockForOneRequest();
 			clearAllStatusForCurrentRequest();
@@ -178,7 +178,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public TSFetchMetadataResp fetchMetadata(TSFetchMetadataReq req) throws TException {
 		TS_Status status;
 		if (!checkLogin()) {
-			LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
+			LOGGER.info("{}: Not login.",IoTDBConstant.GLOBAL_DB_NAME);
 			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			status.setErrorMessage("Not login");
 			return new TSFetchMetadataResp(status);
@@ -267,7 +267,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public TSExecuteBatchStatementResp executeBatchStatement(TSExecuteBatchStatementReq req) throws TException {
 		try {
 			if (!checkLogin()) {
-				LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
+				LOGGER.info("{}: Not login.",IoTDBConstant.GLOBAL_DB_NAME);
 				return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login", null);
 			}
 			List<String> statements = req.getStatements();
@@ -305,7 +305,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, batchErrorMessage, result);
 			}
 		} catch (Exception e) {
-			LOGGER.error("{}: error occurs when executing statements",TsFileDBConstant.GLOBAL_DB_NAME, e);
+			LOGGER.error("{}: error occurs when executing statements",IoTDBConstant.GLOBAL_DB_NAME, e);
 			return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage(), null);
 		}
 	}
@@ -314,7 +314,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public TSExecuteStatementResp executeStatement(TSExecuteStatementReq req) throws TException {
 		try {
 			if (!checkLogin()) {
-				LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
+				LOGGER.info("{}: Not login.",IoTDBConstant.GLOBAL_DB_NAME);
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login");
 			}
 			String statement = req.getStatement();
@@ -352,7 +352,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 		try {
 			if (!checkLogin()) {
-				LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
+				LOGGER.info("{}: Not login.",IoTDBConstant.GLOBAL_DB_NAME);
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login");
 			}
 
@@ -425,7 +425,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			recordANewQuery(statement, plan);
 			return resp;
 		} catch (Exception e) {
-			LOGGER.error("{}: Internal server error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: Internal server error: {}",IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 	}
@@ -471,7 +471,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			return resp;
 		} catch (Exception e) {
 			//e.printStackTrace();
-			LOGGER.error("{}: Internal server error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: Internal server error: {}",IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return getTSFetchResultsResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 
@@ -488,7 +488,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		} catch (ProcessorException e) {
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		} catch (Exception e) {
-			LOGGER.error("{}: server Internal Error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: server Internal Error: {}",IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
 		}
 	}

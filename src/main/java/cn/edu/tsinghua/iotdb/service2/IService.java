@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.service2;
 
-public interface ISubDaemon {
+public interface IService {
 	void start();
 	void stop();
-	String getID();
+	ServiceType getID();
 }

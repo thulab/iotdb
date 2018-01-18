@@ -13,10 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService.Processor;
+import cn.edu.tsinghua.iotdb.service2.JDBCServiceEventHandler;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 
 /**
@@ -53,22 +54,22 @@ public class JDBCServer implements JDBCServerMBean {
     @Override
     public synchronized void startServer() {
         if (isStart) {
-            LOGGER.info("{}: jdbc server has been already running now", TsFileDBConstant.GLOBAL_DB_NAME);
+            LOGGER.info("{}: jdbc server has been already running now", IoTDBConstant.GLOBAL_DB_NAME);
             return;
         }
-        LOGGER.info("{}: start jdbc server...",TsFileDBConstant.GLOBAL_DB_NAME);
+        LOGGER.info("{}: start jdbc server...",IoTDBConstant.GLOBAL_DB_NAME);
 
         try {
             jdbcServerThread = new Thread(new JDBCServerThread());
             jdbcServerThread.setName("JDBC-Server");
         } catch (IOException e) {
-            LOGGER.error("{}: failed to start jdbc server. {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+            LOGGER.error("{}: failed to start jdbc server. {}",IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
             return;
         }
         jdbcServerThread.start();
 
         LOGGER.info("{}: start jdbc server successfully, listening on port {}",
-        		TsFileDBConstant.GLOBAL_DB_NAME, TsfileDBDescriptor.getInstance().getConfig().rpcPort);
+        		IoTDBConstant.GLOBAL_DB_NAME, TsfileDBDescriptor.getInstance().getConfig().rpcPort);
         isStart = true;
     }
 
@@ -81,13 +82,13 @@ public class JDBCServer implements JDBCServerMBean {
     @Override
     public synchronized void stopServer() {
         if (!isStart) {
-            LOGGER.info("{}: jdbc server isn't running now",TsFileDBConstant.GLOBAL_DB_NAME);
+            LOGGER.info("{}: jdbc server isn't running now",IoTDBConstant.GLOBAL_DB_NAME);
             return;
 
         }
-        LOGGER.info("{}: closing jdbc server...", TsFileDBConstant.GLOBAL_DB_NAME);
+        LOGGER.info("{}: closing jdbc server...", IoTDBConstant.GLOBAL_DB_NAME);
         close();
-        LOGGER.info("{}: close jdbc server successfully", TsFileDBConstant.GLOBAL_DB_NAME);
+        LOGGER.info("{}: close jdbc server successfully", IoTDBConstant.GLOBAL_DB_NAME);
     }
 
     private synchronized void close() {
@@ -120,15 +121,15 @@ public class JDBCServer implements JDBCServerMBean {
                 poolArgs.processor(processor);
                 poolArgs.protocolFactory(protocolFactory);
                 poolServer = new TThreadPoolServer(poolArgs);
-                poolServer.setServerEventHandler(new JDBCServerEventHandler(impl));
+                poolServer.setServerEventHandler(new JDBCServiceEventHandler(impl));
                 poolServer.serve();
             } catch (TTransportException e) {
-                LOGGER.error("{}: failed to start jdbc server, because ",TsFileDBConstant.GLOBAL_DB_NAME, e);
+                LOGGER.error("{}: failed to start jdbc server, because ",IoTDBConstant.GLOBAL_DB_NAME, e);
             } catch (Exception e) {
-                LOGGER.error("{}: jdbc server exit, because ",TsFileDBConstant.GLOBAL_DB_NAME, e);
+                LOGGER.error("{}: jdbc server exit, because ",IoTDBConstant.GLOBAL_DB_NAME, e);
             } finally {
                 close();
-                LOGGER.info("{}: close TThreadPoolServer and TServerSocket for jdbc server",TsFileDBConstant.GLOBAL_DB_NAME);
+                LOGGER.info("{}: close TThreadPoolServer and TServerSocket for jdbc server",IoTDBConstant.GLOBAL_DB_NAME);
             }
         }
     }
