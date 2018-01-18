@@ -23,8 +23,8 @@ public class CloseMergeServer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CloseMergeServer.class);
 
-	private MergeServerThread mergeServer = new MergeServerThread();
-	private CloseServerThread closeServer = new CloseServerThread();
+	private MergeServerThread mergeService = new MergeServerThread();
+	private CloseServerThread closeService = new CloseServerThread();
 	private ScheduledExecutorService service;
 	private CloseAndMergeDaemon closeAndMergeDaemon = new CloseAndMergeDaemon();
 	private static TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig(); 
@@ -91,8 +91,8 @@ public class CloseMergeServer {
 
 		@Override
 		public void run() {
-			service.scheduleWithFixedDelay(mergeServer, mergeDelay, mergePeriod, TimeUnit.SECONDS);
-			service.scheduleWithFixedDelay(closeServer, closeDelay, closePeriod, TimeUnit.SECONDS);
+			service.scheduleWithFixedDelay(mergeService, mergeDelay, mergePeriod, TimeUnit.SECONDS);
+			service.scheduleWithFixedDelay(closeService, closeDelay, closePeriod, TimeUnit.SECONDS);
 			while (!service.isShutdown()) {
 				synchronized (service) {
 					try {

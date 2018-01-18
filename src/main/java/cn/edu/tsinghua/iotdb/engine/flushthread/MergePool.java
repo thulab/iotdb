@@ -48,8 +48,8 @@ public class MergePool {
 	 * end.
 	 * 
 	 * @param block
-	 *            if set to true, this method will wait for timeOut
-	 *            milliseconds.
+	 *            if set block to true, this method will wait for timeOut
+	 *            milliseconds to close the merge pool. false, return directly.
 	 * @param timeOut
 	 *            block time out in milliseconds.
 	 * @throws ProcessorException
@@ -74,7 +74,7 @@ public class MergePool {
 	 * 
 	 * @param block
 	 *            if set to true, this method will wait for timeOut
-	 *            milliseconds.
+	 *            milliseconds. false, return directly.
 	 * @param timeOut
 	 *            block time out in milliseconds.
 	 * @throws ProcessorException

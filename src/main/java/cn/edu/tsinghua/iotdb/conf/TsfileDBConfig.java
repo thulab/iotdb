@@ -112,7 +112,7 @@ public class TsfileDBConfig {
 	
 	/**
 	 * When set to true, start timing flush and merge service. False, stop timing flush and merge service.
-	 * Default is false.
+	 * Default is true.
 	 */
 	public boolean enableTimingCloseAndMerge = true;
 	

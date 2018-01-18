@@ -161,7 +161,8 @@ public class OverflowProcessor extends Processor {
 				}
 
 			} catch (IOException e) {
-				LOGGER.error("The overflow processor {} flush the restore information error.", getProcessorName(), e);
+				LOGGER.error("The overflow processor {} failed to flush the restore information.", getProcessorName(),
+						e);
 				throw new OverflowProcessorException(e);
 			} finally {
 				if (fileOutputStream != null) {
@@ -298,7 +299,7 @@ public class OverflowProcessor extends Processor {
 			throws OverflowProcessorException {
 		if (ofSupport.insert(deltaObjectId, measurementId, timestamp, type, v)) {
 			++recordCount;
-			//checkMemorySize();
+			// checkMemorySize();
 		} else {
 			LOGGER.error(
 					"The overflow processor {} inserts overflow record data [deltaObjectId:{},measurementId:{}]. "
@@ -497,12 +498,15 @@ public class OverflowProcessor extends Processor {
 							WriteLogManager.getInstance().endOverflowFlush(getProcessorName());
 						}
 					} catch (IOException e) {
-						LOGGER.error("Flush overflow rowgroup to file error in asynchronously. Thread {} exits.",Thread.currentThread().getName() , e);
+						LOGGER.error("Flush overflow rowgroup to file error in asynchronously. Thread {} exits.",
+								Thread.currentThread().getName(), e);
 					} catch (OverflowProcessorException e) {
-						LOGGER.error("Flush overflow rowgroup restore failed. Thread {} exits.", Thread.currentThread().getName(), e);
-//						System.exit(0);
+						LOGGER.error("Flush overflow rowgroup restore failed. Thread {} exits.",
+								Thread.currentThread().getName(), e);
+						// System.exit(0);
 					} catch (Exception e) {
-						LOGGER.error("FilenodeFlushAction action failed. Thread {} exits.", Thread.currentThread().getName(), e);
+						LOGGER.error("FilenodeFlushAction action failed. Thread {} exits.",
+								Thread.currentThread().getName(), e);
 					} finally {
 						synchronized (flushStatus) {
 							flushStatus.setUnFlushing();
@@ -696,8 +700,11 @@ public class OverflowProcessor extends Processor {
 		LOGGER.info("The overflow processor {}, the size of metadata reaches {}, the size of file reaches {}.",
 				getProcessorName(), MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
 		if (metaSize >= config.overflowMetaSizeThreshold || fileSize >= config.overflowFileSizeThreshold) {
-			LOGGER.info("{} size reaches threshold, closing. meta size is {}, file size is {}", this.fileName,
-					MemUtils.bytesCntToStr(metaSize), MemUtils.bytesCntToStr(fileSize));
+			LOGGER.info(
+					"The overflow processor {}, size({}) of the file {} reaches threshold {}, size({}) of metadata reaches threshold {}.",
+					getProcessorName(), MemUtils.bytesCntToStr(fileSize), this.fileName,
+					MemUtils.bytesCntToStr(config.overflowMetaSizeThreshold), MemUtils.bytesCntToStr(metaSize),
+					MemUtils.bytesCntToStr(config.overflowMetaSizeThreshold));
 			rollToNewFile();
 			return true;
 		} else {

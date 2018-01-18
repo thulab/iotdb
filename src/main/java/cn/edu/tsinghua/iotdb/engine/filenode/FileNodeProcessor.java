@@ -189,8 +189,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		@Override
 		public void act() throws Exception {
 
-			// update the lastUpdatetime, newIntervalList and Notice: thread
-			// safe
 			synchronized (fileNodeProcessorStore) {
 				fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
 				addLastTimeToIntervalFile();
@@ -332,7 +330,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * if overflow insert, update and delete write into this filenode processor,
-	 * <code>isOverflowed</code> to true,
+	 * set <code>isOverflowed</code> to true,
 	 */
 	public void setOverflowed(boolean isOverflowed) {
 		if (!(this.isOverflowed == isOverflowed)) {
@@ -506,7 +504,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public void changeTypeToChanged(String deltaObjectId, long timestamp) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
 			LOGGER.warn(
-					"The filenode processor is {}, no any interval file to be changed overflow type: deltaObjectId {}, time {}.",
+					"Didn't find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{},time:{}]",
 					getProcessorName(), deltaObjectId, timestamp);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -530,7 +528,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public void changeTypeToChanged(String deltaObjectId, long startTime, long endTime) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
 			LOGGER.warn(
-					"The filenode processor is {}, no any interval node to be changed overflow type: deltaObjectId {}, start time {}, end time {}.",
+					"Didn't find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
 					getProcessorName(), deltaObjectId, startTime, endTime);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -555,8 +553,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 */
 	public void changeTypeToChangedForDelete(String deltaObjectId, long timestamp) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
-			LOGGER.warn("No any interval node to be changed overflow type: deltaObject {}, time {}", deltaObjectId,
-					timestamp);
+			LOGGER.warn(
+					"Didn't find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, delete time:{}]",
+					getProcessorName(), deltaObjectId, timestamp);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
 			emptyIntervalFileNode.changeTypeToChanged(isMerging);
@@ -720,7 +719,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					DateTime endDateTime = new DateTime(mergeEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					long intervalTime = mergeEndTime - mergeStartTime;
-					LOGGER.info("The filenode {} merge start time is {}, end time is {}, time consume is {}ms.",
+					LOGGER.info(
+							"The filenode processor {} merge start time is {}, merge end time is {}, merge consumes {}ms.",
 							getProcessorName(), startDateTime, endDateTime, intervalTime);
 				} catch (FileNodeProcessorException e) {
 					e.printStackTrace();
@@ -842,7 +842,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			try {
 				writeStoreToDisk(fileNodeProcessorStore);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("The filenode processor {} write restore information error when merging.",
+				LOGGER.error("The filenode processor {} write restore information error, when merging.",
 						getProcessorName(), e);
 				writeUnlock();
 				throw new FileNodeProcessorException(e);
@@ -1282,7 +1282,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					try {
 						recordWriter.write(filledRecord);
 					} catch (WriteProcessException e) {
-						LOGGER.error("Merge query: write one record error, the tsrecord is {}", filledRecord, e);
+						LOGGER.error("Failed to write one record, the record is {}", filledRecord, e);
 					}
 				}
 				startTimeMap.put(deltaObjectId, startTime);

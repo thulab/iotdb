@@ -789,7 +789,7 @@ public class BufferWriteProcessor extends Processor {
 				// remove the feature: fill the row group
 				// fillInRowGroupSize(actualTotalRowGroupSize);
 				LOGGER.info(
-						"The bufferwrite processor {} asynchronous flush. Total row group size:{}, actual:{}, less:{}, time consumption:{} ms, flush rate:{} bytes/s",
+						"The bufferwrite processor {} flush asynchronously. Total row group size:{}, actual:{}, less:{}, time consumption:{} ms, flush rate:{} bytes/s",
 						getProcessorName(), primaryRowGroupSize, actualTotalRowGroupSize,
 						primaryRowGroupSize - actualTotalRowGroupSize, timeInterval,
 						actualTotalRowGroupSize / timeInterval * 1000);
@@ -863,9 +863,11 @@ public class BufferWriteProcessor extends Processor {
 		long fileSize = getFileSize();
 		if (metaSize >= config.bufferwriteMetaSizeThreshold || fileSize >= config.bufferwriteFileSizeThreshold) {
 			LOGGER.info(
-					"The bufferwrite processor {}, the file {} size reaches threshold, closing. meta size is {}, file size is {}",
-					getProcessorName(), this.fileName, MemUtils.bytesCntToStr(metaSize),
-					MemUtils.bytesCntToStr(fileSize));
+					"The bufferwrite processor {}, size({}) of the file {} reaches threshold {}, size({}) of metadata reaches threshold {}.",
+					getProcessorName(), MemUtils.bytesCntToStr(fileSize), this.fileName,
+					MemUtils.bytesCntToStr(config.bufferwriteFileSizeThreshold), MemUtils.bytesCntToStr(metaSize),
+					MemUtils.bytesCntToStr(config.bufferwriteFileSizeThreshold));
+
 			rollToNewFile();
 			return true;
 		}
