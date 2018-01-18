@@ -130,6 +130,8 @@ public class TsfileDBDescriptor {
 			conf.enableSmallFlush = Boolean.parseBoolean(properties.getProperty("enable_small_flush", conf.enableSmallFlush + "").trim());
 			conf.smallFlushInterval = Long.parseLong(properties.getProperty("small_flush_interval", conf.smallFlushInterval + "").trim());
 
+			conf.maxLogEntrySize = Integer.parseInt(properties.getProperty("max_log_entry_size", conf.maxLogEntrySize + "").trim());
+
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {
 				conf.timeZone = DateTimeZone.forID(tmpTimeZone.trim());

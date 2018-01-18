@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

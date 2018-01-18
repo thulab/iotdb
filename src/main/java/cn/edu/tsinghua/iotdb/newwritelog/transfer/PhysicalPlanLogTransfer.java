@@ -1,12 +1,14 @@
 package cn.edu.tsinghua.iotdb.newwritelog.transfer;
 
+import cn.edu.tsinghua.iotdb.exception.WALOverSizedException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 
 public class PhysicalPlanLogTransfer {
 
-    public static byte[] operatorToLog(PhysicalPlan plan) {
+    public static byte[] operatorToLog(PhysicalPlan plan) throws WALOverSizedException {
         Codec<PhysicalPlan> codec = null;
         switch (plan.getOperatorType()) {
             case INSERT:
@@ -33,7 +35,11 @@ public class PhysicalPlanLogTransfer {
             default:
                 throw new UnsupportedOperationException("SystemLogOperator given is not supported. " + plan.getOperatorType());
         }
-        return codec.encode(plan);
+        try {
+            return codec.encode(plan);
+        } catch (BufferOverflowException e) {
+            throw new WALOverSizedException("Plan " + plan.toString() + " is too big to write to WAL");
+        }
     }
 
     public static PhysicalPlan logToOperator(byte[] opInBytes) throws IOException {

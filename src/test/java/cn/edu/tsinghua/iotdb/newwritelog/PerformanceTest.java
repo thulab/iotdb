@@ -8,12 +8,15 @@ import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.ExclusiveWriteLogNode;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
+import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
@@ -122,5 +125,36 @@ public class PerformanceTest {
         logNode.close();
         tempRestore.delete();
         tempProcessorStore.delete();
+    }
+
+    @Test
+    public void encodeDecodeTest() throws IOException {
+        long time = System.currentTimeMillis();
+        byte[] bytes3 = null;
+        byte[] bytes2 = null;
+        byte[] bytes1 = null;
+
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", "str", "false"));
+        UpdatePlan updatePlan = new UpdatePlan(0, 100, "2.0", new Path("root.logTestDevice.s1"));
+        for (int i = 0; i < 20; i++) {
+            updatePlan.addInterval(new Pair<Long, Long>(200l, 300l));
+        }
+
+        DeletePlan deletePlan = new DeletePlan(50, new Path("root.logTestDevice.s1"));
+        for (int i = 0; i < 1000000; i++) {
+            bytes1 = PhysicalPlanLogTransfer.operatorToLog(bwInsertPlan);
+           bytes2 = PhysicalPlanLogTransfer.operatorToLog(updatePlan);
+            bytes3 = PhysicalPlanLogTransfer.operatorToLog(deletePlan);
+        }
+        System.out.println("3000000 logs encoding use " + (System.currentTimeMillis() - time) + "ms");
+
+        time = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            bwInsertPlan = (InsertPlan) PhysicalPlanLogTransfer.logToOperator(bytes1);
+            updatePlan = (UpdatePlan) PhysicalPlanLogTransfer.logToOperator(bytes2);
+            deletePlan = (DeletePlan) PhysicalPlanLogTransfer.logToOperator(bytes3);
+        }
+        System.out.println("3000000 logs decoding use " + (System.currentTimeMillis() - time) + "ms");
     }
 }

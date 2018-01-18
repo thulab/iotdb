@@ -197,6 +197,10 @@ public class TsfileDBConfig {
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
+	/**
+	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
+	 */
+	public int maxLogEntrySize = 4 * 1024 * 1024;
 
 	public TsfileDBConfig() {}
 

@@ -1,16 +1,18 @@
 package cn.edu.tsinghua.iotdb.newwritelog.transfer;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,6 +25,8 @@ public enum PhysicalPlanCodec {
     MULTIINSERTPLAN(SystemLogOperator.INSERT, codecInstances.multiInsertPlanCodec),
     UPDATEPLAN(SystemLogOperator.UPDATE, codecInstances.updatePlanCodec),
     DELETEPLAN(SystemLogOperator.DELETE, codecInstances.deletePlanCodec);
+
+    private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     public final int planCode;
     public final Codec<?> codec;
@@ -50,45 +54,35 @@ public enum PhysicalPlanCodec {
 
     static class codecInstances {
 
-        // **** writeTo method can avoid bytes allocation
         static final Codec<DeletePlan> deletePlanCodec = new Codec<DeletePlan>() {
+            ThreadLocal<ByteBuffer> localBuffer = new ThreadLocal<>();
 
             @Override
             public byte[] encode(DeletePlan t) {
+                if (localBuffer.get() == null)
+                    localBuffer.set(ByteBuffer.allocate(config.maxLogEntrySize));
+
                 int type = SystemLogOperator.DELETE;
-                byte[] timeBytes = BytesUtils.longToBytes(t.getDeleteTime());
-
+                ByteBuffer buffer = localBuffer.get();
+                buffer.clear();
+                buffer.put((byte) type);
+                buffer.putLong(t.getDeleteTime());
                 byte[] pathBytes = BytesUtils.StringToBytes(t.getPaths().get(0).getFullPath());
-                byte[] pathBytesLength = ReadWriteStreamUtils.getUnsignedVarInt(pathBytes.length);
+                buffer.putInt(pathBytes.length);
+                buffer.put(pathBytes);
 
-                int totalLength = 1 + timeBytes.length + pathBytes.length + pathBytesLength.length;
-
-                byte[] res = new byte[totalLength];
-                int pos = 0;
-                res[0] = (byte) type;
-                pos += 1;
-                System.arraycopy(timeBytes, 0, res, pos, timeBytes.length);
-                pos += timeBytes.length;
-
-                System.arraycopy(pathBytesLength, 0, res, pos, pathBytesLength.length);
-                pos += pathBytesLength.length;
-                System.arraycopy(pathBytes, 0, res, pos, pathBytes.length);
-                pos += pathBytes.length;
-
-                return res;
+                return Arrays.copyOfRange(buffer.array(), 0, buffer.position());
             }
 
             @Override
             public DeletePlan decode(byte[] bytes) throws IOException {
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-                int type = bais.read();
-                byte[] timeBytes = new byte[8];
-                bais.read(timeBytes, 0, 8);
-                long time = BytesUtils.bytesToLong(timeBytes);
+                ByteBuffer buffer = ByteBuffer.wrap(bytes);
+                int type = buffer.get();
+                long time = buffer.getLong();
 
-                int pathLength = ReadWriteStreamUtils.readUnsignedVarInt(bais);
+                int pathLength = buffer.getInt();
                 byte[] pathBytes = new byte[pathLength];
-                bais.read(pathBytes, 0, pathLength);
+                buffer.get(pathBytes, 0, pathLength);
                 String path = BytesUtils.bytesToString(pathBytes);
 
                 return new DeletePlan(time, new Path(path));
@@ -96,85 +90,55 @@ public enum PhysicalPlanCodec {
         };
 
         static final Codec<UpdatePlan> updatePlanCodec = new Codec<UpdatePlan>() {
+            ThreadLocal<ByteBuffer> localBuffer = new ThreadLocal<>();
 
             @Override
             public byte[] encode(UpdatePlan updatePlan) {
                 int type = SystemLogOperator.UPDATE;
+                if (localBuffer.get() == null)
+                    localBuffer.set(ByteBuffer.allocate(config.maxLogEntrySize));
 
-                List<byte[]> startTimeList = new ArrayList<>();
-                List<byte[]> endTimeList = new ArrayList<>();
-                for (Pair<Long,Long> pair : updatePlan.getIntervals()) {
-                    startTimeList.add(BytesUtils.longToBytes(pair.left));
-                    endTimeList.add(BytesUtils.longToBytes(pair.right));
+                ByteBuffer buffer = localBuffer.get();
+                buffer.clear();
+                buffer.put((byte) type);
+                buffer.putInt(updatePlan.getIntervals().size());
+                for (Pair<Long, Long> pair : updatePlan.getIntervals()) {
+                    buffer.putLong(pair.left);
+                    buffer.putLong(pair.right);
                 }
-                byte[] timeListBytes = new byte[startTimeList.size()*2*8];
-                int pos = 0;
-                for (int i = 0;i < startTimeList.size();i++) {
-                    System.arraycopy(startTimeList.get(i), 0, timeListBytes, pos, startTimeList.get(i).length);
-                    pos += startTimeList.get(i).length;
-                    System.arraycopy(endTimeList.get(i), 0, timeListBytes, pos, endTimeList.get(i).length);
-                    pos += endTimeList.get(i).length;
-                }
-                byte[] timeListBytesLengthBytes = ReadWriteStreamUtils.getUnsignedVarInt(startTimeList.size());
 
                 byte[] valueBytes = BytesUtils.StringToBytes(updatePlan.getValue());
-                byte[] valueBytesLength = ReadWriteStreamUtils.getUnsignedVarInt(valueBytes.length);
+                buffer.putInt(valueBytes.length);
+                buffer.put(valueBytes);
 
                 byte[] pathBytes = BytesUtils.StringToBytes(updatePlan.getPath().getFullPath());
-                byte[] pathBytesLength = ReadWriteStreamUtils.getUnsignedVarInt(pathBytes.length);
+                buffer.putInt(pathBytes.length);
+                buffer.put(pathBytes);
 
-                int totalLength = 1 + timeListBytesLengthBytes.length + timeListBytes.length + valueBytes.length +
-                        valueBytesLength.length + valueBytes.length + pathBytes.length + pathBytesLength.length;
-
-                byte[] res = new byte[totalLength];
-                pos = 0;
-                res[0] = (byte) type;
-                pos += 1;
-
-                System.arraycopy(timeListBytesLengthBytes, 0, res, pos, timeListBytesLengthBytes.length);
-                pos += timeListBytesLengthBytes.length;
-                System.arraycopy(timeListBytes, 0, res, pos, timeListBytes.length);
-                pos += timeListBytes.length;
-
-                System.arraycopy(valueBytesLength, 0, res, pos, valueBytesLength.length);
-                pos += valueBytesLength.length;
-                System.arraycopy(valueBytes, 0, res, pos, valueBytes.length);
-                pos += valueBytes.length;
-
-                System.arraycopy(pathBytesLength, 0, res, pos, pathBytesLength.length);
-                pos += pathBytesLength.length;
-                System.arraycopy(pathBytes, 0, res, pos, pathBytes.length);
-                pos += pathBytes.length;
-
-                return res;
+                return Arrays.copyOfRange(buffer.array(), 0, buffer.position());
             }
 
             @Override
             public UpdatePlan decode(byte[] bytes) throws IOException {
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                ByteBuffer buffer = ByteBuffer.wrap(bytes);
+                int type = buffer.get();
 
-                int type = bais.read();
-
-                List<Pair<Long,Long>> timeArrayList = new ArrayList<>();
-                int timeListBytesLength = ReadWriteStreamUtils.readUnsignedVarInt(bais);
-                for (int i = 0;i < timeListBytesLength;i++) {
-                    byte[] startTimeBytes = new byte[8];
-                    bais.read(startTimeBytes, 0, 8);
-                    long startTime = BytesUtils.bytesToLong(startTimeBytes);
-                    byte[] endTimeBytes = new byte[8];
-                    bais.read(endTimeBytes, 0, 8);
-                    long endTime = BytesUtils.bytesToLong(endTimeBytes);
+                List<Pair<Long, Long>> timeArrayList = new ArrayList<>();
+                int timeListBytesLength = buffer.getInt();
+                for (int i = 0; i < timeListBytesLength; i++) {
+                    long startTime = buffer.getLong();
+                    long endTime = buffer.getLong();
                     timeArrayList.add(new Pair<>(startTime, endTime));
                 }
 
-                int valueLength = ReadWriteStreamUtils.readUnsignedVarInt(bais);
+                int valueLength = buffer.getInt();
                 byte[] valueBytes = new byte[valueLength];
-                bais.read(valueBytes, 0, valueLength);
+                buffer.get(valueBytes);
                 String value = BytesUtils.bytesToString(valueBytes);
 
-                int pathLength = ReadWriteStreamUtils.readUnsignedVarInt(bais);
+                int pathLength = buffer.getInt();
                 byte[] pathBytes = new byte[pathLength];
-                bais.read(pathBytes, 0, pathLength);
+                buffer.get(pathBytes);
                 String path = BytesUtils.bytesToString(pathBytes);
 
                 return new UpdatePlan(timeArrayList, value, new Path(path));
@@ -182,132 +146,76 @@ public enum PhysicalPlanCodec {
         };
 
         static final Codec<InsertPlan> multiInsertPlanCodec = new Codec<InsertPlan>() {
-            @Override
-            public byte[] encode(InsertPlan t) {
-                int type = SystemLogOperator.INSERT;
-                int insertType = t.getInsertType();
-                byte[] timeBytes = BytesUtils.longToBytes(t.getTime());
-                byte[] deltaObjectBytes = BytesUtils.StringToBytes(t.getDeltaObject());
-                byte[] deltaObjectLengthBytes = ReadWriteStreamUtils.getUnsignedVarInt(deltaObjectBytes.length);
+            ThreadLocal<ByteBuffer> localBuffer = new ThreadLocal<>();
 
-                int allLen = 0, mLen = 0, pos = 0;
-                List<byte[]> measurementBytesList = new ArrayList<>();
-                List<String> measurementList = t.getMeasurements();
+            @Override
+            public byte[] encode(InsertPlan plan) {
+                int type = SystemLogOperator.INSERT;
+                if (localBuffer.get() == null)
+                    localBuffer.set(ByteBuffer.allocate(config.maxLogEntrySize));
+                ByteBuffer buffer = localBuffer.get();
+                buffer.clear();
+                buffer.put((byte) type);
+                buffer.put((byte) plan.getInsertType());
+                buffer.putLong(plan.getTime());
+
+                byte[] deltaObjectBytes = BytesUtils.StringToBytes(plan.getDeltaObject());
+                buffer.putInt(deltaObjectBytes.length);
+                buffer.put(deltaObjectBytes);
+
+                List<String> measurementList = plan.getMeasurements();
+                buffer.putInt(measurementList.size());
                 for (String m : measurementList) {
                     byte[] mBytes = BytesUtils.StringToBytes(m);
-                    byte[] lenBytes = ReadWriteStreamUtils.getUnsignedVarInt(mBytes.length);
-                    allLen += lenBytes.length;
-                    allLen += mBytes.length;
-                    byte[] tmpBytes = new byte[lenBytes.length + mBytes.length];
-                    pos = 0;
-                    System.arraycopy(lenBytes, 0, tmpBytes, pos, lenBytes.length);
-                    pos += lenBytes.length;
-                    System.arraycopy(mBytes, 0, tmpBytes, pos, mBytes.length);
-                    pos += mBytes.length;
-                    measurementBytesList.add(tmpBytes);
+                    buffer.putInt(mBytes.length);
+                    buffer.put(mBytes);
                 }
-                pos = 0;
-                byte[] mmAllBytes = new byte[allLen];
-                for (byte[] x : measurementBytesList) {
-                    System.arraycopy(x, 0, mmAllBytes, pos, x.length);
-                    pos += x.length;
-                }
-                byte[] preMmBytes = ReadWriteStreamUtils.getUnsignedVarInt(mmAllBytes.length);
 
-                allLen = 0;
-                List<byte[]> valueBytesList = new ArrayList<>();
-                List<String> valueList = t.getValues();
+                List<String> valueList = plan.getValues();
+                buffer.putInt(valueList.size());
                 for (String m : valueList) {
                     byte[] vBytes = BytesUtils.StringToBytes(m);
-                    byte[] lenBytes = ReadWriteStreamUtils.getUnsignedVarInt(vBytes.length);
-                    allLen += lenBytes.length;
-                    allLen += vBytes.length;
-                    byte[] tmpBytes = new byte[lenBytes.length + vBytes.length];
-                    pos = 0;
-                    System.arraycopy(lenBytes, 0, tmpBytes, pos, lenBytes.length);
-                    pos += lenBytes.length;
-                    System.arraycopy(vBytes, 0, tmpBytes, pos, vBytes.length);
-                    pos += vBytes.length;
-                    valueBytesList.add(tmpBytes);
+                    buffer.putInt(vBytes.length);
+                    buffer.put(vBytes);
                 }
-                pos = 0;
-                byte[] valueAllBytes = new byte[allLen];
-                for (byte[] x : valueBytesList) {
-                    System.arraycopy(x, 0, valueAllBytes, pos, x.length);
-                    pos += x.length;
-                }
-                byte[] preValueBytes = ReadWriteStreamUtils.getUnsignedVarInt(valueAllBytes.length);
 
-                int totalLength = 1 + 1 + timeBytes.length + deltaObjectLengthBytes.length + deltaObjectBytes.length
-                        + preMmBytes.length + mmAllBytes.length + preValueBytes.length + valueAllBytes.length;
-
-                byte[] res = new byte[totalLength];
-                pos = 0;
-                res[0] = (byte) type;
-                res[1] = (byte) insertType;
-                pos += 2;
-
-                System.arraycopy(timeBytes, 0, res, pos, timeBytes.length);
-                pos += timeBytes.length;
-
-                System.arraycopy(deltaObjectLengthBytes, 0, res, pos, deltaObjectLengthBytes.length);
-                pos += deltaObjectLengthBytes.length;
-                System.arraycopy(deltaObjectBytes, 0, res, pos, deltaObjectBytes.length);
-                pos += deltaObjectBytes.length;
-
-                System.arraycopy(preMmBytes, 0, res, pos, preMmBytes.length);
-                pos += preMmBytes.length;
-                System.arraycopy(mmAllBytes, 0, res, pos, mmAllBytes.length);
-                pos += mmAllBytes.length;
-
-                System.arraycopy(preValueBytes, 0, res, pos, preValueBytes.length);
-                pos += preValueBytes.length;
-                System.arraycopy(valueAllBytes, 0, res, pos, valueAllBytes.length);
-                pos += valueAllBytes.length;
-
-                return res;
+                return Arrays.copyOfRange(buffer.array(), 0, buffer.position());
             }
 
             @Override
             public InsertPlan decode(byte[] bytes) throws IOException {
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
-                int type = bais.read();
-                int insertType = bais.read();
-                byte[] timeBytes = new byte[8];
-                bais.read(timeBytes, 0, 8);
-                long time = BytesUtils.bytesToLong(timeBytes);
+                int type = buffer.get();
+                int insertType = buffer.get();
+                long time = buffer.getLong();
 
-                int deltaObjectLen = ReadWriteStreamUtils.readUnsignedVarInt(bais);
-                byte[] deltaObjectBytes = new byte[deltaObjectLen];
-                bais.read(deltaObjectBytes, 0, deltaObjectLen);
-                String deltaObject = BytesUtils.bytesToString(deltaObjectBytes);
+                int deltaObjLen = buffer.getInt();
+                byte[] deltaObjBytes = new byte[deltaObjLen];
+                buffer.get(deltaObjBytes);
+                String deltaObject = BytesUtils.bytesToString(deltaObjBytes);
 
-                int mmListLength = ReadWriteStreamUtils.readUnsignedVarInt(bais);
-                byte[] mmListBytes = new byte[mmListLength];
-                bais.read(mmListBytes, 0, mmListLength);
+                int mmListLength = buffer.getInt();
                 List<String> measurementsList = new ArrayList<>();
-                ByteArrayInputStream mmBais = new ByteArrayInputStream(mmListBytes);
-                while (mmBais.available() > 0) {
-                    int mmLen = ReadWriteStreamUtils.readUnsignedVarInt(mmBais);
+                for(int i = 0; i < mmListLength; i++) {
+                    int mmLen = buffer.getInt();
                     byte[] mmBytes = new byte[mmLen];
-                    mmBais.read(mmBytes, 0, mmLen);
+                    buffer.get(mmBytes);
                     measurementsList.add(BytesUtils.bytesToString(mmBytes));
                 }
 
-                int valueListLength = ReadWriteStreamUtils.readUnsignedVarInt(bais);
-                byte[] valueListBytes = new byte[valueListLength];
-                bais.read(valueListBytes, 0, valueListLength);
+                int valueListLength = buffer.getInt();
+
                 List<String> valuesList = new ArrayList<>();
-                ByteArrayInputStream valueBais = new ByteArrayInputStream(valueListBytes);
-                while (valueBais.available() > 0) {
-                    int valueLen = ReadWriteStreamUtils.readUnsignedVarInt(valueBais);
+                for(int i = 0; i < valueListLength; i++) {
+                    int valueLen = buffer.getInt();
                     byte[] valueBytes = new byte[valueLen];
-                    valueBais.read(valueBytes, 0, valueLen);
+                    buffer.get(valueBytes);
                     valuesList.add(BytesUtils.bytesToString(valueBytes));
                 }
 
                 InsertPlan ans = new InsertPlan(deltaObject, time, measurementsList, valuesList);
+                ans.setInsertType(insertType);
                 return ans;
             }
         };
