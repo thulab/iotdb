@@ -146,7 +146,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
         @Override
         public void run() {
             try {
-        		serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().rpcPort);
+                serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().rpcPort);
                 poolArgs = new TThreadPoolServer.Args(serverTransport);
                 poolArgs.executorService = IoTDBThreadPoolFactory.createJDBCClientThreadPool(poolArgs, "JDBC-Client");
                 poolArgs.processor(processor);

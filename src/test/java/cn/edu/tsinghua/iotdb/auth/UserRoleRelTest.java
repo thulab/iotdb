@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.RoleDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserRoleRelDao;
@@ -20,7 +20,7 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class UserRoleRelTest {
 
-	private DBDaoService dbdao = null;
+	private DBDao dbdao = null;
 	private UserRoleRelDao userRoleRelDao = null;
 	private UserDao userDao = null;
 	private RoleDao roleDao = null;
@@ -34,10 +34,10 @@ public class UserRoleRelTest {
 	@Before
 	public void setUp() throws Exception {
 
-		dbdao = new DBDaoService();
+		dbdao = new DBDao();
 		dbdao.open();
 		EnvironmentUtils.envSetUp();
-		statement = DBDaoService.getStatement();
+		statement = DBDao.getStatement();
 		userDao = new UserDao();
 		roleDao = new RoleDao();
 		userRoleRelDao = new UserRoleRelDao();

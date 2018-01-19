@@ -25,9 +25,9 @@ import cn.edu.tsinghua.iotdb.service.ServiceType;
  * @author liukun
  *
  */
-public class DBDaoService implements IService{
+public class DBDao implements IService{
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DBDaoService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBDao.class);
 
 	private String derbyEmbeddedDriver = "org.apache.derby.jdbc.EmbeddedDriver";
 	private String protocal = "jdbc:derby:";
@@ -39,7 +39,7 @@ public class DBDaoService implements IService{
 	private static Statement statement = null;
 	private PreparedStatement preparedStatement = null;
 
-	private DBDaoService(String dBName) {
+	private DBDao(String dBName) {
 		String derbyDirPath = TsfileDBDescriptor.getInstance().getConfig().derbyHome;
 		if (derbyDirPath.length() > 0 && derbyDirPath.charAt(derbyDirPath.length() - 1) != File.separatorChar) {
 			derbyDirPath = derbyDirPath + File.separatorChar;
@@ -48,7 +48,7 @@ public class DBDaoService implements IService{
 		this.DBLocalPath = path;
 	}
 
-	public DBDaoService() {
+	public DBDao() {
 		this("EmbeddedDB");
 	}
 

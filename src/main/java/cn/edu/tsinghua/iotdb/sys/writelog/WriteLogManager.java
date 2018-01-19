@@ -190,8 +190,7 @@ public class WriteLogManager implements IService{
 		try {
 			close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Failed to close wal manager because ", e);
 		}
 	}
 

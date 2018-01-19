@@ -8,7 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
+import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserDao;
 import cn.edu.tsinghua.iotdb.auth.dao.UserPermissionDao;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
@@ -18,7 +18,7 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class UserPemissionTest {
 
-	private DBDaoService DBdao = null;
+	private DBDao DBdao = null;
 	private UserDao userDao = null;
 	private UserPermissionDao UserPermissionDao = null;
 	private Statement statement = null;
@@ -32,10 +32,10 @@ public class UserPemissionTest {
 	@Before
 	public void setUp() throws Exception {
 		permission = Permission.CREATE;
-		DBdao = new DBDaoService();
+		DBdao = new DBDao();
 		DBdao.open();
 		EnvironmentUtils.envSetUp();
-		statement = DBDaoService.getStatement();
+		statement = DBDao.getStatement();
 		userDao = new UserDao();
 		UserPermissionDao = new UserPermissionDao();
 

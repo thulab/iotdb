@@ -1071,8 +1071,7 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			closeAll();
 		} catch (FileNodeManagerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Failed to close file node manager because ",e);
 		}
 	}
 	@Override
