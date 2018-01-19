@@ -27,31 +27,6 @@ public class ReaderUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ReaderUtils.class);
 
-    /**
-     * -1: no updateTrue data, no updateFalse data.
-     * 0: updateTrue data is first.
-     * 1: updateFalse data is first.
-     *
-     * @param updateTrueIdx  index of updateTrue DynamicOneColumn
-     * @param updateFalseIdx index of updateFalse DynamicOneColumn
-     * @param updateTrue     updateTrue DynamicOneColumn
-     * @param updateFalse    updateFalse DynamicOneColumn
-     * @return the mode
-     */
-    public static int getNextMode(int updateTrueIdx, int updateFalseIdx, DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse) {
-        if (updateTrueIdx > updateTrue.timeLength - 2 && updateFalseIdx > updateFalse.timeLength - 2) {
-            return -1;
-        } else if (updateTrueIdx <= updateTrue.timeLength - 2 && updateFalseIdx > updateFalse.timeLength - 2) {
-            return 0;
-        } else if (updateTrueIdx > updateTrue.timeLength - 2 && updateFalseIdx <= updateFalse.timeLength - 2) {
-            return 1;
-        } else {
-            long t0 = updateTrue.getTime(updateTrueIdx);
-            long t1 = updateFalse.getTime(updateFalseIdx);
-            return t0 < t1 ? 0 : 1;
-        }
-    }
-
     public static SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SingleSeriesFilterExpression filter) {
         if (filter == null) {
             return new SingleValueVisitor<>();

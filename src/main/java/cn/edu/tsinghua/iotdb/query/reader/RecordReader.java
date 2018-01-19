@@ -35,13 +35,10 @@ public class RecordReader {
 
     static final Logger logger = LoggerFactory.getLogger(RecordReader.class);
 
-    private String deltaObjectId, measurementId;
-
-    /** for read lock **/
-    private int lockToken;
+    protected String deltaObjectId, measurementId;
 
     /** data type **/
-    private TSDataType dataType;
+    protected TSDataType dataType;
 
     /** compression type in this series **/
     public CompressionTypeName compressionTypeName;
@@ -60,12 +57,12 @@ public class RecordReader {
 
     /** 5. overflow update data **/
     public DynamicOneColumnData overflowUpdate;
-    private UpdateOperation overflowUpdateOperation;
+    protected UpdateOperation overflowUpdateOperation;
 
-    /** 7. series time filter, this filter is the filter **/
+    /** 6. series time filter, this filter is the filter **/
     public SingleSeriesFilterExpression overflowTimeFilter;
 
-    /** 8. series value filter **/
+    /** 7. series value filter **/
     public SingleSeriesFilterExpression valueFilter;
 
     /** bufferWritePageList + lastPageInMemory + overflow **/
@@ -75,17 +72,15 @@ public class RecordReader {
     // unseqTsfile implementation
 
 
-
     /**
      * @param filePathList bufferwrite file has been serialized completely
      */
-    public RecordReader(List<String> filePathList, String deltaObjectId, String measurementId, int lockToken,
+    public RecordReader(List<String> filePathList, String deltaObjectId, String measurementId,
                         DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
                         List<Object> overflowInfo) throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList);
         this.deltaObjectId = deltaObjectId;
         this.measurementId = measurementId;
-        this.lockToken = lockToken;
         this.lastPageInMemory = lastPageInMemory;
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
@@ -104,13 +99,12 @@ public class RecordReader {
      * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
      */
     public RecordReader(List<String> filePathList, String unsealedFilePath,
-                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectId, String measurementId, int lockToken,
+                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectId, String measurementId,
                         DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
                         List<Object> overflowInfo) throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
         this.deltaObjectId = deltaObjectId;
         this.measurementId = measurementId;
-        this.lockToken = lockToken;
         this.lastPageInMemory = lastPageInMemory;
         this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
@@ -133,432 +127,7 @@ public class RecordReader {
                 mergeTimeFilter(overflowTimeFilter, queryTimeFilter), queryValueFilter);
     }
 
-    /**
-     * Read one series with overflow and bufferwrite, no filter.
-     *
-     * @throws IOException
-     */
-    public DynamicOneColumnData queryOneSeries(SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
-                                               DynamicOneColumnData res, int fetchSize) throws IOException {
-
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, queryTimeFilter);
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
-        int rowGroupIndex = 0;
-        if (res != null) {
-            rowGroupIndex = res.getRowGroupIndex();
-        }
-
-        // iterative res, res may be expand
-        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                res = ValueReaderProcessor.getValuesWithOverFlow(rowGroupReader.getValueReaders().get(measurementId),
-                        overflowUpdateOperation, insertMemoryData, mergeTimeFilter, queryValueFilter, res, fetchSize);
-                if (res.valueLength >= fetchSize) {
-                    return res;
-                }
-            }
-        }
-
-        if (res == null) {
-            res = new DynamicOneColumnData(dataType, true);
-        }
-
-        while (insertMemoryData.hasInsertData()) {
-            putMemoryDataToResult(res, insertMemoryData);
-            insertMemoryData.removeCurrentValue();
-
-            // when the length reach to fetchSize, stop put values and return false
-            if (res.valueLength >= fetchSize) {
-                return res;
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     *  <p> This function is used for cross series query.
-     *  Notice that: query using timestamps, query time filter and value filter is not needed,
-     *  but overflow time filter, insert data and overflow update true data is needed.
-     *
-     * @param commonTimestamps common timestamps calculated by filter
-     * @return cross query result
-     * @throws IOException file read error
-     */
-    public DynamicOneColumnData queryUsingTimestamps(long[] commonTimestamps) throws IOException {
-
-        SingleValueVisitor filterVerifier = null;
-        if (this.overflowTimeFilter != null) {
-            filterVerifier = new SingleValueVisitor(this.overflowTimeFilter);
-        }
-
-        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(commonTimestamps);
-        if (originalQueryData == null) {
-            originalQueryData = new DynamicOneColumnData(dataType, true);
-        }
-        DynamicOneColumnData queryResult = new DynamicOneColumnData(dataType, true);
-
-        int oldDataIdx = 0;
-        for (long commonTime : commonTimestamps) {
-
-            // the time in originalQueryData must in commonTimestamps
-            if (oldDataIdx < originalQueryData.timeLength && originalQueryData.getTime(oldDataIdx) == commonTime) {
-                boolean isOldDataAdoptedFlag = true;
-                while (insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= commonTime) {
-                    if (insertMemoryData.getCurrentMinTime() < commonTime) {
-                        insertMemoryData.removeCurrentValue();
-                    } else if (insertMemoryData.getCurrentMinTime() == commonTime) {
-                        putMemoryDataToResult(queryResult, insertMemoryData);
-                        insertMemoryData.removeCurrentValue();
-                        oldDataIdx++;
-                        isOldDataAdoptedFlag = false;
-                        break;
-                    }
-                }
-
-                if (!isOldDataAdoptedFlag) {
-                    continue;
-                }
-
-                if (overflowTimeFilter == null || filterVerifier.verify(commonTime)) {
-                    putFileDataToResult(queryResult, originalQueryData, oldDataIdx);
-                }
-
-                oldDataIdx++;
-            }
-
-            // consider memory data
-            while (insertMemoryData.hasInsertData() && insertMemoryData.getCurrentMinTime() <= commonTime) {
-                if (commonTime == insertMemoryData.getCurrentMinTime()) {
-                    putMemoryDataToResult(queryResult, insertMemoryData);
-                }
-                insertMemoryData.removeCurrentValue();
-            }
-        }
-
-        return queryResult;
-    }
-
-    private DynamicOneColumnData queryOriginalDataUsingTimestamps(long[] timestamps) throws IOException{
-
-        DynamicOneColumnData res = null;
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
-        for (int i = 0; i < rowGroupReaderList.size(); i++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                if (res == null) {
-                    res = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-                } else {
-                    DynamicOneColumnData tmpRes = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-                    res.mergeRecord(tmpRes);
-                }
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * Aggregation calculate function of <code>RecordReader</code> without filter.
-     *
-     * @param aggregateFunction aggregation function
-     * @param queryTimeFilter time filter
-     * @param valueFilter value filter
-     * @return aggregation result
-     * @throws ProcessorException aggregation invoking exception
-     * @throws IOException TsFile read exception
-     */
-    public AggregateFunction aggregate(AggregateFunction aggregateFunction,
-                                       SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression valueFilter
-    ) throws ProcessorException, IOException {
-
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(queryTimeFilter, overflowTimeFilter);
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
-
-        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                ValueReaderProcessor.aggregate(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdateOperation, mergeTimeFilter, valueFilter);
-            }
-        }
-
-        // consider left insert values
-        // all timestamp of these values are greater than timestamp in List<RowGroupReader>
-        if (insertMemoryData != null && insertMemoryData.hasInsertData()) {
-            aggregateFunction.calculateValueFromLeftMemoryData(insertMemoryData);
-        }
-
-        return aggregateFunction;
-    }
-
-    /**
-     * <p>
-     * Calculate the aggregate result using the given timestamps.
-     * Return a pair of AggregationResult and Boolean, AggregationResult represents the aggregation result,
-     * Boolean represents that whether there still has unread data.
-     *
-     * @param aggregateFunction aggregation function
-     * @param queryTimeFilter time filter
-     * @param timestamps timestamps calculated by the cross filter
-     * @return aggregation result and whether still has unread data
-     * @throws ProcessorException aggregation invoking exception
-     * @throws IOException TsFile read exception
-     */
-    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(AggregateFunction aggregateFunction, SingleSeriesFilterExpression queryTimeFilter,
-                                                                     List<Long> timestamps) throws ProcessorException, IOException {
-        boolean stillHasUnReadData;
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, overflowTimeFilter);
-
-        int commonTimestampsIndex = 0;
-
-        int rowGroupIndex = aggregateFunction.resultData.rowGroupIndex;
-
-        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-
-                // TODO commonTimestampsIndex could be saved as a parameter
-
-                commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdateOperation, overflowTimeFilter, timestamps);
-
-                // all value of commonTimestampsIndex has been used,
-                // the next batch of commonTimestamps should be loaded
-                if (commonTimestampsIndex >= timestamps.size()) {
-                    return new Pair<>(aggregateFunction, true);
-                }
-            }
-        }
-
-        // calculate aggregation using unsealed file data and memory data
-        if (insertMemoryData.hasInsertData()) {
-            stillHasUnReadData = aggregateFunction.calcAggregationUsingTimestamps(insertMemoryData, timestamps, commonTimestampsIndex);
-        } else {
-            if (commonTimestampsIndex < timestamps.size()) {
-                stillHasUnReadData = false;
-            } else {
-                stillHasUnReadData = true;
-            }
-        }
-
-        return new Pair<>(aggregateFunction, stillHasUnReadData);
-    }
-
-    private void putMemoryDataToResult(DynamicOneColumnData res, InsertDynamicData insertMemoryData) {
-        res.putTime(insertMemoryData.getCurrentMinTime());
-
-        switch (insertMemoryData.getDataType()) {
-            case BOOLEAN:
-                res.putBoolean(insertMemoryData.getCurrentBooleanValue());
-                break;
-            case INT32:
-                res.putInt(insertMemoryData.getCurrentIntValue());
-                break;
-            case INT64:
-                res.putLong(insertMemoryData.getCurrentLongValue());
-                break;
-            case FLOAT:
-                res.putFloat(insertMemoryData.getCurrentFloatValue());
-                break;
-            case DOUBLE:
-                res.putDouble(insertMemoryData.getCurrentDoubleValue());
-                break;
-            case TEXT:
-                res.putBinary(insertMemoryData.getCurrentBinaryValue());
-                break;
-            default:
-                throw new UnSupportedDataTypeException("UnuSupported DataType : " + insertMemoryData.getDataType());
-        }
-    }
-
-    private void putFileDataToResult(DynamicOneColumnData queryResult, DynamicOneColumnData originalQueryData, int dataIdx) {
-        long time = originalQueryData.getTime(dataIdx);
-
-        while(overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < time)
-            overflowUpdateOperation.next();
-
-        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
-            return;
-        }
-
-        queryResult.putTime(time);
-        switch (dataType) {
-            case BOOLEAN:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    queryResult.putBoolean(overflowUpdateOperation.getBoolean());
-                    return;
-                }
-                queryResult.putBoolean(originalQueryData.getBoolean(dataIdx));
-                break;
-            case INT32:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    queryResult.putInt(overflowUpdateOperation.getInt());
-                    return;
-                }
-                queryResult.putInt(originalQueryData.getInt(dataIdx));
-                break;
-            case INT64:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    queryResult.putLong(overflowUpdateOperation.getLong());
-                    return;
-                }
-                queryResult.putLong(originalQueryData.getLong(dataIdx));
-                break;
-            case FLOAT:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    queryResult.putFloat(overflowUpdateOperation.getFloat());
-                    return;
-                }
-                queryResult.putFloat(originalQueryData.getFloat(dataIdx));
-                break;
-            case DOUBLE:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    queryResult.putDouble(overflowUpdateOperation.getDouble());
-                    return;
-                }
-                queryResult.putDouble(originalQueryData.getDouble(dataIdx));
-                break;
-            case TEXT:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    queryResult.putBinary(overflowUpdateOperation.getText());
-                    return;
-                }
-                queryResult.putBinary(originalQueryData.getBinary(dataIdx));
-                break;
-            default:
-                throw new UnSupportedDataTypeException("UnuSupported DataType : " + insertMemoryData.getDataType());
-        }
-    }
-
-    /**
-     * Get the time which is smaller than queryTime and is biggest and its value.
-     *
-     * @param beforeTime
-     * @param queryTime
-     * @param result
-     * @throws IOException
-     */
-    public void getPreviousFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter, long beforeTime, long queryTime)
-            throws IOException {
-
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, fillTimeFilter);
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
-
-        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                // get fill result in ValueReader
-                if (FillProcessor.getPreviousFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId),
-                        beforeTime, queryTime, mergeTimeFilter, overflowUpdate)) {
-                    break;
-                }
-            }
-        }
-
-        // get fill result in InsertMemoryData
-        FillProcessor.getPreviousFillResultInMemory(result, insertMemoryData, beforeTime, queryTime);
-
-        if (result.valueLength == 0) {
-            result.putEmptyTime(queryTime);
-        } else {
-            result.setTime(0, queryTime);
-        }
-    }
-
-    /**
-     * Get the time which is smaller than queryTime and is biggest and its value.
-     *
-     * @param beforeTime
-     * @param queryTime
-     * @param result
-     * @throws IOException
-     */
-    public void getLinearFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter,
-                                    long beforeTime, long queryTime, long afterTime) throws IOException {
-
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, fillTimeFilter);
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
-
-        for (RowGroupReader rowGroupReader : rowGroupReaderList) {
-            if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
-                    rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-
-                // has get fill result in ValueReader
-                if (FillProcessor.getLinearFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime, afterTime,
-                        mergeTimeFilter, overflowUpdate)) {
-                    break;
-                }
-            }
-        }
-
-        // get fill result in InsertMemoryData
-        FillProcessor.getLinearFillResultInMemory(result, insertMemoryData, beforeTime, queryTime, afterTime);
-
-        if (result.timeLength == 0) {
-            result.putEmptyTime(queryTime);
-        } else if (result.valueLength == 1) {
-            // only has previous or after time
-            if (result.getTime(0) != queryTime) {
-                result.timeLength = result.valueLength = 0;
-                result.putEmptyTime(queryTime);
-            }
-        } else {
-            // startTime and endTime will not be equals to queryTime
-            long startTime = result.getTime(0);
-            long endTime = result.getTime(1);
-
-            switch (result.dataType) {
-                case INT32:
-                    int startIntValue = result.getInt(0);
-                    int endIntValue = result.getInt(1);
-                    result.timeLength = result.valueLength = 1;
-                    result.setTime(0, queryTime);
-                    int fillIntValue = startIntValue + (int)((double)(endIntValue-startIntValue)/(double)(endTime-startTime)*(double)(queryTime-startTime));
-                    result.setInt(0, fillIntValue);
-                    break;
-                case INT64:
-                    long startLongValue = result.getLong(0);
-                    long endLongValue = result.getLong(1);
-                    result.timeLength = result.valueLength = 1;
-                    result.setTime(0, queryTime);
-                    long fillLongValue = startLongValue + (long)((double)(endLongValue-startLongValue)/(double)(endTime-startTime)*(double)(queryTime-startTime));
-                    result.setLong(0, fillLongValue);
-                    break;
-                case FLOAT:
-                    float startFloatValue = result.getFloat(0);
-                    float endFloatValue = result.getFloat(1);
-                    result.timeLength = result.valueLength = 1;
-                    result.setTime(0, queryTime);
-                    float fillFloatValue = startFloatValue + (float)((endFloatValue-startFloatValue)/(endTime-startTime)*(queryTime-startTime));
-                    result.setFloat(0, fillFloatValue);
-                    break;
-                case DOUBLE:
-                    double startDoubleValue = result.getDouble(0);
-                    double endDoubleValue = result.getDouble(1);
-                    result.timeLength = result.valueLength = 1;
-                    result.setTime(0, queryTime);
-                    double fillDoubleValue = startDoubleValue + (double)((endDoubleValue-startDoubleValue)/(endTime-startTime)*(queryTime-startTime));
-                    result.setDouble(0, fillDoubleValue);
-                    break;
-                default:
-                    throw new UnSupportedFillTypeException("Unsupported linear fill data type : " + result.dataType);
-
-            }
-
-        }
-    }
-
-    private SingleSeriesFilterExpression mergeTimeFilter(SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression queryTimeFilter) {
+    protected SingleSeriesFilterExpression mergeTimeFilter(SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression queryTimeFilter) {
 
         if (overflowTimeFilter == null && queryTimeFilter == null) {
             return null;
