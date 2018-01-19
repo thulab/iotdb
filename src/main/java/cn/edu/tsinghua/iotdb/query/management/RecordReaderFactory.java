@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +70,7 @@ public class RecordReaderFactory {
     }
 
     private RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
-                                                QueryStructure queryStructure, int token) throws ProcessorException, PathErrorException {
+                                                QueryStructure queryStructure, int token) throws PathErrorException {
         RecordReader recordReader;
 
         List<IntervalFileNode> fileNodes = queryStructure.getBufferwriteDataInFiles();
@@ -122,7 +121,7 @@ public class RecordReaderFactory {
     }
 
     // TODO this method is only used in test case and KV-match index
-    public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException, ProcessorException {
+    public void removeRecordReader(String deltaObjectId, String measurementId) {
         if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
             // close the RecordReader read stream.
             readLockManager.recordReaderCache.get(deltaObjectId, measurementId).closeFileStream();

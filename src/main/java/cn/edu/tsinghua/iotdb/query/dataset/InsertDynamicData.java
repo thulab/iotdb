@@ -68,10 +68,7 @@ public class InsertDynamicData {
     private InsertOperation overflowInsertData;
 
     /** overflow update data which is satisfied with filter, this variable is not null **/
-    private UpdateOperation overflowUpdateTrue;
-
-    /** overflow update data which is not satisfied with filter, this variable is not null**/
-    private UpdateOperation overflowUpdateFalse;
+    private UpdateOperation overflowUpdateOperation;
 
     /** time decoder **/
     private Decoder timeDecoder = new DeltaBinaryDecoder.LongDeltaDecoder();
@@ -110,7 +107,7 @@ public class InsertDynamicData {
 
     public InsertDynamicData(TSDataType dataType, CompressionTypeName compressionName,
                              List<ByteArrayInputStream> pageList, DynamicOneColumnData lastPageData,
-                             DynamicOneColumnData overflowInsertData, DynamicOneColumnData overflowUpdateTrue, DynamicOneColumnData overflowUpdateFalse,
+                             DynamicOneColumnData overflowInsertData, DynamicOneColumnData overflowUpdateOperation,
                              SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter) {
         this.dataType = dataType;
         this.compressionTypeName = compressionName;
@@ -119,8 +116,7 @@ public class InsertDynamicData {
         this.lastPageData = new InsertOperation(dataType, lastPageData);
 
         this.overflowInsertData = new InsertOperation(dataType, overflowInsertData);
-        this.overflowUpdateTrue = new UpdateOperation(dataType, overflowUpdateTrue);
-        this.overflowUpdateFalse = new UpdateOperation(dataType, overflowUpdateFalse);
+        this.overflowUpdateOperation = new UpdateOperation(dataType, overflowUpdateOperation, valueFilter);
 
         this.timeFilter = timeFilter;
         this.valueFilter = valueFilter;
@@ -214,10 +210,11 @@ public class InsertDynamicData {
         while (pageIndex < pageList.size()) {
             if (pageTimes != null) {
                 boolean getNext = getSatisfiedTimeAndValue();
-                if (getNext)
+                if (getNext) {
                     return true;
-                else
-                    pageIndex ++;
+                } else {
+                    pageReaderReset();
+                }
             }
 
             if (pageIndex >= pageList.size()) {
@@ -238,12 +235,8 @@ public class InsertDynamicData {
                     pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
                     pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE));
 
-            while (overflowUpdateTrue.hasNext() && overflowUpdateTrue.getUpdateStartTime() < mint) {
-                overflowUpdateTrue.next();
-            }
-
-            while (overflowUpdateFalse.hasNext() && overflowUpdateFalse.getUpdateStartTime() < mint) {
-                overflowUpdateFalse.next();
+            while (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < mint) {
+                overflowUpdateOperation.next();
             }
 
             // not satisfied with time filter.
@@ -251,18 +244,14 @@ public class InsertDynamicData {
                 pageReaderReset();
                 continue;
             } else {
-                if (!overflowUpdateTrue.hasNext() && !overflowUpdateFalse.hasNext() && !digestVisitor.satisfy(valueDigest, valueFilter)) {
-                    // no overflowUpdateTrue and overflowUpdateFalse, not satisfied with value filter
-                    pageReaderReset();
-                    continue;
-                } else if (overflowUpdateTrue.hasNext() && overflowUpdateTrue.getUpdateEndTime() > maxt && !digestVisitor.satisfy(valueDigest, valueFilter)) {
-                    // has overflowUpdateTrue, overflowUpdateTrue not update this page and not satisfied with value filter
-                    pageReaderReset();
-                    continue;
-                } else if (overflowUpdateFalse.hasNext() && overflowUpdateFalse.getUpdateStartTime() >= mint && overflowUpdateFalse.getUpdateEndTime() <= maxt) {
-                    // has overflowUpdateFalse and overflowUpdateFalse update this page all
-                    pageReaderReset();
-                    continue;
+                if (!digestVisitor.satisfy(valueDigest, valueFilter)) {
+                    if (!overflowUpdateOperation.hasNext()
+                            || (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateStartTime() > maxt)
+                            || (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateStartTime() >= mint
+                                    && overflowUpdateOperation.getUpdateEndTime() <= maxt && !overflowUpdateOperation.verifyValue())) {
+                        pageReaderReset();
+                        continue;
+                    }
                 }
             }
 
@@ -273,6 +262,10 @@ public class InsertDynamicData {
     }
 
     private boolean getSatisfiedTimeAndValue() {
+        if (pageTimeIndex >= pageTimes.length) {
+            return false;
+        }
+
         while (pageTimeIndex < pageTimes.length) {
 
             // get all the overflow insert time which is less than page time
@@ -322,18 +315,24 @@ public class InsertDynamicData {
         //In current overflow implementation version, overflow insert data must be satisfied with time filter.
         //data may be inserted after deleting.
 
-        //if (overflowTimeFilter != null && singleTimeVisitor.verify(overflowInsertData.getInsertTime()))
+        //if (overflowTimeFilter != null && singleTimeVisitor.verifyTime(overflowInsertData.getInsertTime()))
         //    return false;
-
-        // TODO
-        // Notice that : in later overflow batch read version (insert and update operation are different apart),
-        // we must consider the overflow insert value is updated by update operation.
-        // updateOverflowInsertValue();
 
         long time = overflowInsertData.getInsertTime();
 
+        // this examination is important
+        // after this examination, the update value must be satisfied with the value filter
+        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
+            return false;
+        }
+
         switch (dataType) {
             case INT32:
+                if (overflowUpdateOperation.verifyTime(time)){
+                    currentSatisfiedTime = time;
+                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
+                    return true;
+                }
                 if (singleValueVisitor.satisfyObject(overflowInsertData.getInt(), valueFilter)) {
                     currentSatisfiedTime = time;
                     curSatisfiedIntValue = overflowInsertData.getInt();
@@ -341,6 +340,11 @@ public class InsertDynamicData {
                 }
                 return false;
             case INT64:
+                if (overflowUpdateOperation.verifyTime(time)){
+                    currentSatisfiedTime = time;
+                    curSatisfiedLongValue = overflowUpdateOperation.getLong();
+                    return true;
+                }
                 if (singleValueVisitor.satisfyObject(overflowInsertData.getLong(), valueFilter)) {
                     currentSatisfiedTime = time;
                     curSatisfiedLongValue = overflowInsertData.getLong();
@@ -348,6 +352,11 @@ public class InsertDynamicData {
                 }
                 return false;
             case FLOAT:
+                if (overflowUpdateOperation.verifyTime(time)){
+                    currentSatisfiedTime = time;
+                    curSatisfiedFloatValue = overflowUpdateOperation.getFloat();
+                    return true;
+                }
                 if (singleValueVisitor.satisfyObject(overflowInsertData.getFloat(), valueFilter)) {
                     currentSatisfiedTime = time;
                     curSatisfiedFloatValue = overflowInsertData.getFloat();
@@ -355,6 +364,11 @@ public class InsertDynamicData {
                 }
                 return false;
             case DOUBLE:
+                if (overflowUpdateOperation.verifyTime(time)){
+                    currentSatisfiedTime = time;
+                    curSatisfiedDoubleValue = overflowUpdateOperation.getDouble();
+                    return true;
+                }
                 if (singleValueVisitor.satisfyObject(overflowInsertData.getDouble(), valueFilter)) {
                     currentSatisfiedTime = time;
                     curSatisfiedDoubleValue = overflowInsertData.getDouble();
@@ -362,6 +376,11 @@ public class InsertDynamicData {
                 }
                 return false;
             case TEXT:
+                if (overflowUpdateOperation.verifyTime(time)){
+                    currentSatisfiedTime = time;
+                    curSatisfiedBinaryValue = overflowUpdateOperation.getText();
+                    return true;
+                }
                 if (singleValueVisitor.satisfyObject(overflowInsertData.getText(), valueFilter)) {
                     currentSatisfiedTime = time;
                     curSatisfiedBinaryValue = overflowInsertData.getText();
@@ -369,6 +388,11 @@ public class InsertDynamicData {
                 }
                 return false;
             case BOOLEAN:
+                if (overflowUpdateOperation.verifyTime(time)){
+                    currentSatisfiedTime = time;
+                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
+                    return true;
+                }
                 if (singleValueVisitor.satisfyObject(overflowInsertData.getBoolean(), valueFilter)) {
                     currentSatisfiedTime = time;
                     curSatisfiedBooleanValue = overflowInsertData.getBoolean();
@@ -385,21 +409,20 @@ public class InsertDynamicData {
         if (timeFilter != null && !singleTimeVisitor.verify(time))
             return false;
 
-        // TODO
-        // Notice that, in later version, there will only exist one update operation
-        while (overflowUpdateTrue.hasNext() && overflowUpdateTrue.getUpdateEndTime() < time)
-            overflowUpdateTrue.next();
-        while (overflowUpdateFalse.hasNext() && overflowUpdateFalse.getUpdateEndTime() < time)
-            overflowUpdateFalse.next();
+        while (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < time)
+            overflowUpdateOperation.next();
 
+        // this examination is important
+        // after this examination, the update value must be satisfied with the value filter
+        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
+            return false;
+        }
 
         switch (dataType) {
             case INT32:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)) {
                     currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowUpdateTrue.getInt();
-                    return true;
-                } else if (overflowUpdateFalse.verify(time)){
+                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
                     return false;
                 }
                 if (singleValueVisitor.satisfyObject(pageIntValues[pageTimeIndex], valueFilter)) {
@@ -409,12 +432,10 @@ public class InsertDynamicData {
                 }
                 return false;
             case INT64:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)) {
                     currentSatisfiedTime = time;
-                    curSatisfiedLongValue = overflowUpdateTrue.getLong();
+                    curSatisfiedLongValue = overflowUpdateOperation.getLong();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(pageLongValues[pageTimeIndex], valueFilter)) {
                     currentSatisfiedTime = time;
@@ -423,12 +444,10 @@ public class InsertDynamicData {
                 }
                 return false;
             case FLOAT:
-                if (overflowUpdateTrue.verify(time)){
-                    currentSatisfiedTime = pageTimes[pageTimeIndex];
-                    curSatisfiedFloatValue = overflowUpdateTrue.getFloat();
+                if (overflowUpdateOperation.verifyTime(time)) {
+                    currentSatisfiedTime = time;
+                    curSatisfiedFloatValue = overflowUpdateOperation.getFloat();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(pageFloatValues[pageTimeIndex], valueFilter)) {
                     currentSatisfiedTime = time;
@@ -437,12 +456,10 @@ public class InsertDynamicData {
                 }
                 return false;
             case DOUBLE:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)) {
                     currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = overflowUpdateTrue.getDouble();
+                    curSatisfiedDoubleValue = overflowUpdateOperation.getDouble();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(pageDoubleValues[pageTimeIndex], valueFilter)) {
                     currentSatisfiedTime = time;
@@ -451,12 +468,10 @@ public class InsertDynamicData {
                 }
                 return false;
             case TEXT:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)) {
                     currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = overflowUpdateTrue.getText();
+                    curSatisfiedBinaryValue = overflowUpdateOperation.getText();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(pageBinaryValues[pageTimeIndex], valueFilter)) {
                     currentSatisfiedTime = time;
@@ -465,12 +480,10 @@ public class InsertDynamicData {
                 }
                 return false;
             case BOOLEAN:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)) {
                     currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = overflowUpdateTrue.getBoolean();
+                    curSatisfiedBooleanValue = overflowUpdateOperation.getBoolean();
                     return true;
-                } else if (overflowUpdateFalse.verify(time)){
-                    return false;
                 }
                 if (singleValueVisitor.satisfyObject(pageBooleanValues[pageTimeIndex], valueFilter)) {
                     currentSatisfiedTime = time;
@@ -576,22 +589,20 @@ public class InsertDynamicData {
         if (timeFilter != null && !singleTimeVisitor.verify(time))
             return false;
 
-        // TODO
-        // Notice that, in later version, there will only exist one update operation
-        while (overflowUpdateTrue.hasNext() && overflowUpdateTrue.getUpdateEndTime() < time)
-            overflowUpdateTrue.next();
-        while (overflowUpdateFalse.hasNext() && overflowUpdateFalse.getUpdateEndTime() < time)
-            overflowUpdateFalse.next();
+        while (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < time)
+            overflowUpdateOperation.next();
 
-        if (overflowUpdateFalse.verify(time)) {
+        // this examination is important
+        // after this examination, the update value must be satisfied with the value filter
+        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
             return false;
         }
 
         switch (dataType) {
             case INT32:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)){
                     currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowUpdateTrue.getInt();
+                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
                     return true;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getInt(), valueFilter)) {
@@ -601,9 +612,9 @@ public class InsertDynamicData {
                 }
                 return false;
             case INT64:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)){
                     currentSatisfiedTime = time;
-                    curSatisfiedLongValue = overflowUpdateTrue.getLong();
+                    curSatisfiedLongValue = overflowUpdateOperation.getLong();
                     return true;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getLong(), valueFilter)) {
@@ -613,9 +624,9 @@ public class InsertDynamicData {
                 }
                 return false;
             case FLOAT:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)){
                     currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = overflowUpdateTrue.getFloat();
+                    curSatisfiedFloatValue = overflowUpdateOperation.getFloat();
                     return true;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getFloat(), valueFilter)) {
@@ -625,9 +636,9 @@ public class InsertDynamicData {
                 }
                 return false;
             case DOUBLE:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)){
                     currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = overflowUpdateTrue.getDouble();
+                    curSatisfiedDoubleValue = overflowUpdateOperation.getDouble();
                     return true;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getDouble(), valueFilter)) {
@@ -637,9 +648,9 @@ public class InsertDynamicData {
                 }
                 return false;
             case TEXT:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)){
                     currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = overflowUpdateTrue.getText();
+                    curSatisfiedBinaryValue = overflowUpdateOperation.getText();
                     return true;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getText(), valueFilter)) {
@@ -649,9 +660,9 @@ public class InsertDynamicData {
                 }
                 return false;
             case BOOLEAN:
-                if (overflowUpdateTrue.verify(time)){
+                if (overflowUpdateOperation.verifyTime(time)){
                     currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = overflowUpdateTrue.getBoolean();
+                    curSatisfiedBooleanValue = overflowUpdateOperation.getBoolean();
                     return true;
                 }
                 if (singleValueVisitor.satisfyObject(lastPageData.getBoolean(), valueFilter)) {
@@ -668,6 +679,7 @@ public class InsertDynamicData {
     private void pageReaderReset() {
         pageIndex++;
         pageReader = null;
+        pageTimes = null;
         currentSatisfiedTime = -1;
     }
 
