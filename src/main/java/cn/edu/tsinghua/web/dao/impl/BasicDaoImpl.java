@@ -43,7 +43,9 @@ public class BasicDaoImpl implements BasicDao {
                 ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
                 List<String> columnsName = new ArrayList<>();
                 while(resultSet.next()){
-                    columnsName.add(resultSet.getString(0).substring(5));
+                		String timeseries = resultSet.getString(1).substring(5);
+                		System.out.println(timeseries);
+                    columnsName.add(timeseries);
                     //System.out.println(String.format("column %s", resultSet.getString(0)));
                 }
                 return columnsName;
