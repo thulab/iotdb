@@ -175,8 +175,14 @@ public class ValueReaderProcessor {
                         }
                         break;
                     case BOOLEAN:
+                        boolean[] pageBooleanValues = new boolean[pageTimestamps.length];
+                        cnt = 0;
                         while (valueReader.decoder.hasNext(page)) {
-                            // put insert points that less than or equals to current timestamp in page.
+                            pageBooleanValues[cnt++] = valueReader.decoder.readBoolean(page);
+                        }
+
+                        // TODO there may return many results
+                        for (; timeIdx < pageTimestamps.length; timeIdx ++) {
                             while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
                                     && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                                 res.putTime(insertMemoryData.getCurrentMinTime());
@@ -186,163 +192,186 @@ public class ValueReaderProcessor {
                                 if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
                                     insertMemoryData.removeCurrentValue();
                                     timeIdx++;
-                                    valueReader.decoder.readBoolean(page);
-                                    if (!valueReader.decoder.hasNext(page)) {
-                                        break;
-                                    }
                                 } else {
                                     insertMemoryData.removeCurrentValue();
                                 }
                             }
-                            if (!valueReader.decoder.hasNext(page)) {
+                            if (timeIdx >= pageTimestamps.length)
                                 break;
+
+                            if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                                continue;
                             }
-                            boolean v = valueReader.decoder.readBoolean(page);
                             if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                                    (valueFilter == null || singleValueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBoolean(v);
+                                    (valueFilter == null || singleValueVisitor.satisfyObject(pageBooleanValues[timeIdx], valueFilter))) {
                                 res.putTime(pageTimestamps[timeIdx]);
+                                if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                                    res.putBoolean(updateOperation.getBoolean());
+                                } else {
+                                    res.putBoolean(pageBooleanValues[timeIdx]);
+                                }
                                 resCount++;
                             }
-                            timeIdx++;
                         }
-
                         break;
                     case INT64:
+                        long[] pageLongValues = new long[pageTimestamps.length];
+                        cnt = 0;
                         while (valueReader.decoder.hasNext(page)) {
-                            // put insert points that less than or equals to current timestamp in page.
+                            pageLongValues[cnt++] = valueReader.decoder.readLong(page);
+                        }
+
+                        // TODO there may return many results
+                        for (; timeIdx < pageTimestamps.length; timeIdx ++) {
                             while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
                                     && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                                 res.putTime(insertMemoryData.getCurrentMinTime());
                                 res.putLong(insertMemoryData.getCurrentLongValue());
-                                resCount++;
+                                resCount ++;
 
                                 if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
                                     insertMemoryData.removeCurrentValue();
                                     timeIdx++;
-                                    valueReader.decoder.readLong(page);
-                                    if (!valueReader.decoder.hasNext(page)) {
-                                        break;
-                                    }
                                 } else {
                                     insertMemoryData.removeCurrentValue();
                                 }
                             }
-
-                            if (!valueReader.decoder.hasNext(page)) {
+                            if (timeIdx >= pageTimestamps.length)
                                 break;
+
+                            if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                                continue;
                             }
-                            long v = valueReader.decoder.readLong(page);
                             if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                                    (valueFilter == null || singleValueVisitor.verify(v))) {
-                                res.putLong(v);
+                                    (valueFilter == null || singleValueVisitor.verify(pageLongValues[timeIdx]))) {
                                 res.putTime(pageTimestamps[timeIdx]);
-                                resCount++;
+                                if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                                    res.putLong(updateOperation.getLong());
+                                } else {
+                                    res.putLong(pageLongValues[timeIdx]);
+                                }
+                                resCount ++;
                             }
-                            timeIdx++;
                         }
                         break;
                     case FLOAT:
+                        float[] pageFloatValues = new float[pageTimestamps.length];
+                        cnt = 0;
                         while (valueReader.decoder.hasNext(page)) {
-                            // put insert points that less than or equals to current timestamp in page.
+                            pageFloatValues[cnt++] = valueReader.decoder.readFloat(page);
+                        }
+
+                        // TODO there may return many results
+                        for (; timeIdx < pageTimestamps.length; timeIdx ++) {
                             while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
                                     && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                                 res.putTime(insertMemoryData.getCurrentMinTime());
                                 res.putFloat(insertMemoryData.getCurrentFloatValue());
-                                resCount++;
+                                resCount ++;
 
                                 if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
                                     insertMemoryData.removeCurrentValue();
                                     timeIdx++;
-                                    valueReader.decoder.readFloat(page);
-                                    if (!valueReader.decoder.hasNext(page)) {
-                                        break;
-                                    }
                                 } else {
                                     insertMemoryData.removeCurrentValue();
                                 }
                             }
-
-                            if (!valueReader.decoder.hasNext(page)) {
+                            if (timeIdx >= pageTimestamps.length)
                                 break;
+
+                            if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                                continue;
                             }
-                            float v = valueReader.decoder.readFloat(page);
                             if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                                    (valueFilter == null || singleValueVisitor.verify(v))) {
-                                res.putFloat(v);
+                                    (valueFilter == null || singleValueVisitor.verify(pageFloatValues[timeIdx]))) {
                                 res.putTime(pageTimestamps[timeIdx]);
-                                resCount++;
+                                if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                                    res.putFloat(updateOperation.getFloat());
+                                } else {
+                                    res.putFloat(pageFloatValues[timeIdx]);
+                                }
+                                resCount ++;
                             }
-                            timeIdx++;
                         }
                         break;
                     case DOUBLE:
+                        double[] pageDoubleValues = new double[pageTimestamps.length];
+                        cnt = 0;
                         while (valueReader.decoder.hasNext(page)) {
-                            // put insert points that less than or equals to current timestamp in page.
+                            pageDoubleValues[cnt++] = valueReader.decoder.readDouble(page);
+                        }
+
+                        // TODO there may return many results
+                        for (; timeIdx < pageTimestamps.length; timeIdx ++) {
                             while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
                                     && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                                 res.putTime(insertMemoryData.getCurrentMinTime());
                                 res.putDouble(insertMemoryData.getCurrentDoubleValue());
-                                resCount++;
+                                resCount ++;
 
                                 if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
                                     insertMemoryData.removeCurrentValue();
                                     timeIdx++;
-                                    valueReader.decoder.readDouble(page);
-                                    if (!valueReader.decoder.hasNext(page)) {
-                                        break;
-                                    }
                                 } else {
                                     insertMemoryData.removeCurrentValue();
                                 }
                             }
-
-                            if (!valueReader.decoder.hasNext(page)) {
+                            if (timeIdx >= pageTimestamps.length)
                                 break;
-                            }
-                            double v = valueReader.decoder.readDouble(page);
-                            if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                                    (valueFilter == null || singleValueVisitor.verify(v))) {
-                                res.putDouble(v);
-                                res.putTime(pageTimestamps[timeIdx]);
-                                resCount++;
-                            }
-                            timeIdx++;
 
+                            if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                                continue;
+                            }
+                            if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
+                                    (valueFilter == null || singleValueVisitor.verify(pageDoubleValues[timeIdx]))) {
+                                res.putTime(pageTimestamps[timeIdx]);
+                                if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                                    res.putDouble(updateOperation.getDouble());
+                                } else {
+                                    res.putDouble(pageDoubleValues[timeIdx]);
+                                }
+                                resCount ++;
+                            }
                         }
                         break;
                     case TEXT:
+                        Binary[] pageTextValues = new Binary[pageTimestamps.length];
+                        cnt = 0;
                         while (valueReader.decoder.hasNext(page)) {
-                            // put insert points
+                            pageTextValues[cnt++] = valueReader.decoder.readBinary(page);
+                        }
+
+                        // TODO there may return many results
+                        for (; timeIdx < pageTimestamps.length; timeIdx ++) {
                             while (insertMemoryData.hasInsertData() && timeIdx < pageTimestamps.length
                                     && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                                 res.putTime(insertMemoryData.getCurrentMinTime());
                                 res.putBinary(insertMemoryData.getCurrentBinaryValue());
-                                resCount++;
+                                resCount ++;
 
                                 if (insertMemoryData.getCurrentMinTime() == pageTimestamps[timeIdx]) {
                                     insertMemoryData.removeCurrentValue();
                                     timeIdx++;
-                                    valueReader.decoder.readBinary(page);
-                                    if (!valueReader.decoder.hasNext(page)) {
-                                        break;
-                                    }
                                 } else {
                                     insertMemoryData.removeCurrentValue();
                                 }
                             }
-
-                            if (!valueReader.decoder.hasNext(page)) {
+                            if (timeIdx >= pageTimestamps.length)
                                 break;
+
+                            if (updateOperation.verifyTime(pageTimestamps[timeIdx]) && !updateOperation.verifyValue()) {
+                                continue;
                             }
-                            Binary v = valueReader.decoder.readBinary(page);
                             if ((timeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                                    (valueFilter == null || singleValueVisitor.satisfyObject(v, valueFilter))) {
-                                res.putBinary(v);
+                                    (valueFilter == null || singleValueVisitor.satisfyObject(pageTextValues[timeIdx], valueFilter))) {
                                 res.putTime(pageTimestamps[timeIdx]);
-                                resCount++;
+                                if (updateOperation.verifyTime(pageTimestamps[timeIdx])) {
+                                    res.putBinary(updateOperation.getText());
+                                } else {
+                                    res.putBinary(pageTextValues[timeIdx]);
+                                }
+                                resCount ++;
                             }
-                            timeIdx++;
                         }
                         break;
                     default:
@@ -443,14 +472,11 @@ public class ValueReaderProcessor {
     }
 
     /**
-     * <p>
-     * An aggregation method implementation for the ValueReader aspect.
+     * <p> An aggregation method implementation for the ValueReader aspect.
      * The aggregation will be calculated using the calculated common timestamps.
      *
      * @param aggregateFunction aggregation function
      * @param insertMemoryData bufferwrite memory insert data with overflow operation
-     * @param updateTrue overflow update operation which satisfy the filter
-     * @param updateFalse overflow update operation which doesn't satisfy the filter
      * @param overflowTimeFilter time filter
      * @param aggregationTimestamps the timestamps which aggregation must satisfy
      * @return an int value, represents the read time index of timestamps
@@ -458,16 +484,11 @@ public class ValueReaderProcessor {
      * @throws ProcessorException get read info error
      */
     static int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction aggregateFunction, InsertDynamicData insertMemoryData,
-                                        DynamicOneColumnData updateTrue, DynamicOneColumnData updateFalse,
+                                        UpdateOperation updateOperation,
                                         SingleSeriesFilterExpression overflowTimeFilter, List<Long> aggregationTimestamps)
             throws IOException, ProcessorException {
 
         TSDataType dataType = valueReader.dataType;
-
-        DynamicOneColumnData[] update = new DynamicOneColumnData[2];
-        update[0] = updateTrue;
-        update[1] = updateFalse;
-        int[] updateIdx = new int[]{updateTrue.curIdx, updateFalse.curIdx};
 
         // the used count of aggregationTimestamps,
         // if all the time of aggregationTimestamps has been read, timestampsUsedIndex >= aggregationTimestamps.size()
@@ -484,27 +505,24 @@ public class ValueReaderProcessor {
         DigestForFilter digestFF = new DigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 digest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
         LOG.debug("calculate aggregation using given common timestamps, series Digest min and max is: "
-                + digestFF.getMinValue() + " --- " + digestFF.getMaxValue()
-        + "min, max time is : " + valueReader.getStartTime() + "--" + valueReader.getEndTime());
+                + digestFF.getMinValue() + " --- " + digestFF.getMaxValue() + " min, max time is : "
+                + valueReader.getStartTime() + "--" + valueReader.getEndTime());
 
         DigestVisitor digestVisitor = new DigestVisitor();
         ByteArrayInputStream bis = valueReader.initBAISForOnePage(lastAggregationResult.pageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
-        int pageCount = 0;
 
         // still has unread data
         while ((lastAggregationResult.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
-            pageCount++;
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
-            Digest pageDigest = pageHeader.data_page_header.getDigest();
-            long mint = pageHeader.data_page_header.min_timestamp;
-            long maxt = pageHeader.data_page_header.max_timestamp;
-            DigestForFilter timeDigestFF = new DigestForFilter(mint, maxt);
+            long pageMinTime = pageHeader.data_page_header.min_timestamp;
+            long pageMaxTime = pageHeader.data_page_header.max_timestamp;
+            DigestForFilter timeDigestFF = new DigestForFilter(pageMinTime, pageMaxTime);
 
             // the min value of common timestamps is greater than max time in this series
-            if (aggregationTimestamps.get(timestampsUsedIndex) > maxt) {
+            if (aggregationTimestamps.get(timestampsUsedIndex) > pageMaxTime) {
                 pageReader.skipCurrentPage();
                 lastAggregationResult.pageOffset += lastAvailable - bis.available();
                 continue;
@@ -517,18 +535,13 @@ public class ValueReaderProcessor {
                 continue;
             }
 
-            // get the InputStream for this page
             InputStream page = pageReader.getNextPage();
-
-            // get all time values in this page
-            long[] pageTimeValues = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
-
-            // set Decoder for current page
+            long[] pageTimestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
             valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), valueReader.getDataType()));
 
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePage(
-                    dataType, pageTimeValues, valueReader.decoder, page,
-                    overflowTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, update, updateIdx);
+                    dataType, pageTimestamps, valueReader.decoder, page,
+                    overflowTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, updateOperation);
 
             if (pageData.left != null && pageData.left.valueLength > 0)
                 aggregateFunction.calculateValueFromDataPage(pageData.left);
@@ -538,15 +551,13 @@ public class ValueReaderProcessor {
                 break;
 
             // update lastAggregationResult's pageOffset to the start of next page.
+            // notice that : when the aggregationTimestamps is used all, but there still have unused page data,
+            // in the next read batch process, the current page will be loaded
             lastAggregationResult.pageOffset += lastAvailable - bis.available();
         }
 
         if (timestampsUsedIndex < aggregationTimestamps.size())
             lastAggregationResult.plusRowGroupIndexAndInitPageOffset();
-
-        // record the current updateTrue, updateFalse index for overflow info
-        updateTrue.curIdx = updateIdx[0];
-        updateFalse.curIdx = updateIdx[1];
 
         return timestampsUsedIndex;
     }

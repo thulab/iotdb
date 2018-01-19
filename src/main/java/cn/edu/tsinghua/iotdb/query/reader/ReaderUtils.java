@@ -342,956 +342,460 @@ public class ReaderUtils {
      * This method is only used for aggregation function.
      *
      * @param dataType DataPage data type
-     * @param pageTimeStamps the timestamps of current DataPage
+     * @param pageTimestamps the timestamps of current DataPage
      * @param decoder the decoder of DataPage
      * @param page the DataPage need to be aggregated
      * @param timeFilter time filter
      * @param commonTimestamps the timestamps which aggregation must satisfy
      * @param commonTimestampsIndex the read time index of timestamps which aggregation must satisfy
      * @param insertMemoryData bufferwrite memory insert data with overflow operation
-     * @param update an array of overflow update info, update[0] represents updateTrue,
-     *               while update[1] represents updateFalse
-     * @param updateIdx an array of the index of overflow update info, update[0] represents the index of
-     *                  updateTrue, while update[1] represents updateFalse
      * @return left represents the data of DataPage which satisfies the restrict condition,
      *         right represents the read time index of commonTimestamps
      */
-    public static Pair<DynamicOneColumnData, Integer> readOnePage(TSDataType dataType, long[] pageTimeStamps,
+    public static Pair<DynamicOneColumnData, Integer> readOnePage(TSDataType dataType, long[] pageTimestamps,
                 Decoder decoder, InputStream page,
                 SingleSeriesFilterExpression timeFilter, List<Long> commonTimestamps, int commonTimestampsIndex,
-                InsertDynamicData insertMemoryData, DynamicOneColumnData[] update, int[] updateIdx) {
+                InsertDynamicData insertMemoryData, UpdateOperation updateOperation) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check
 
-        DynamicOneColumnData aggregatePathQueryResult = new DynamicOneColumnData(dataType, true);
+        DynamicOneColumnData aggregateResult = new DynamicOneColumnData(dataType, true);
         int pageTimeIndex = 0;
 
-        // calculate current mode
-        int mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-
-        try {
-            SingleValueVisitor<?> timeVisitor = null;
-            if (timeFilter != null) {
-                timeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
-            }
-
-            switch (dataType) {
-                case INT32:
-                    int intValue;
-                    while (decoder.hasNext(page)) {
-                        long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-
-                        while (insertMemoryData.hasInsertData() && pageTimeIndex < pageTimeStamps.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeStamps[pageTimeIndex]) {
-
-                            if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
-                                aggregatePathQueryResult.putTime(insertMemoryData.getCurrentMinTime());
-                                aggregatePathQueryResult.putInt(insertMemoryData.getCurrentIntValue());
-                                aggregatePathQueryResult.insertTrueIndex++;
-
-                                // both insertMemory value and page value should be removed
-                                if (insertMemoryData.getCurrentMinTime() == pageTimeStamps[pageTimeIndex]) {
-                                    insertMemoryData.removeCurrentValue();
-                                    pageTimeIndex++;
-                                    intValue = decoder.readInt(page);
-                                } else {
-                                    insertMemoryData.removeCurrentValue();
-                                }
-
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-
-                            } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp){
-                                insertMemoryData.removeCurrentValue();
-                            } else {
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!decoder.hasNext(page) || pageTimeIndex >= pageTimeStamps.length) {
-                            break;
-                        }
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-
-                        // compare with commonTimestamps firstly
-                        // then compare with time filter
-                        // lastly compare with update operation
-
-                        // no updateTrue, no updateFalse
-                        if (mode == -1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                if ((timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex]))) {
-                                    aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                    intValue = decoder.readInt(page);
-                                    aggregatePathQueryResult.putInt(intValue);
-                                    aggregatePathQueryResult.insertTrueIndex++;
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    intValue = decoder.readInt(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                intValue = decoder.readInt(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 0) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                intValue = decoder.readInt(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    // if updateTrue changes the original value
-                                    if (update[0].getTime(updateIdx[0]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putInt(update[0].getInt(updateIdx[0] / 2));
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putInt(intValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    intValue = decoder.readInt(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                intValue = decoder.readInt(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                intValue = decoder.readInt(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        logger.error("never reach here");
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putInt(intValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                }
-
-                                commonTimestampsIndex += 1;
-                                pageTimeIndex += 1;
-
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                intValue = decoder.readInt(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        }
-
-                        // set the update array to next position that current time
-                        while (mode != -1 && pageTimeIndex < pageTimeStamps.length
-                                && pageTimeStamps[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
-                            updateIdx[mode] += 2;
-                            mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-                        }
-
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-                    }
-
-                    // still has page data, no common timestamps
-                    if (decoder.hasNext(page) && commonTimestampsIndex >= commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    // still has common timestamps, no page data
-                    if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    break;
-                case BOOLEAN:
-                    boolean booleanValue;
-                    while (decoder.hasNext(page)) {
-                        long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-
-                        while (insertMemoryData.hasInsertData() && pageTimeIndex < pageTimeStamps.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeStamps[pageTimeIndex]) {
-
-                            if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
-                                aggregatePathQueryResult.putTime(insertMemoryData.getCurrentMinTime());
-                                aggregatePathQueryResult.putBoolean(insertMemoryData.getCurrentBooleanValue());
-                                aggregatePathQueryResult.insertTrueIndex++;
-
-                                // both insertMemory value and page value should be removed
-                                if (insertMemoryData.getCurrentMinTime() == pageTimeStamps[pageTimeIndex]) {
-                                    insertMemoryData.removeCurrentValue();
-                                    pageTimeIndex++;
-                                    booleanValue = decoder.readBoolean(page);
-                                } else {
-                                    insertMemoryData.removeCurrentValue();
-                                }
-
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-
-                            } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp){
-                                insertMemoryData.removeCurrentValue();
-                            } else {
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!decoder.hasNext(page) || pageTimeIndex >= pageTimeStamps.length) {
-                            break;
-                        }
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-
-                        // compare with commonTimestamps firstly
-                        // then compare with time filter
-                        // lastly compare with update operation
-
-                        // no updateTrue, no updateFalse
-                        if (mode == -1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                if ((timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex]))) {
-                                    aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                    booleanValue = decoder.readBoolean(page);
-                                    aggregatePathQueryResult.putBoolean(booleanValue);
-                                    aggregatePathQueryResult.insertTrueIndex++;
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    booleanValue = decoder.readBoolean(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                booleanValue = decoder.readBoolean(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 0) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                booleanValue = decoder.readBoolean(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    // if updateTrue changes the original value
-                                    if (update[0].getTime(updateIdx[0]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putBoolean(update[0].getBoolean(updateIdx[0] / 2));
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putBoolean(booleanValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    booleanValue = decoder.readBoolean(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                booleanValue = decoder.readBoolean(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                booleanValue = decoder.readBoolean(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        logger.error("never reach here");
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putBoolean(booleanValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                }
-
-                                commonTimestampsIndex += 1;
-                                pageTimeIndex += 1;
-
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                booleanValue = decoder.readBoolean(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        }
-
-                        // set the update array to next position that current time
-                        while (mode != -1 && pageTimeIndex < pageTimeStamps.length
-                                && pageTimeStamps[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
-                            updateIdx[mode] += 2;
-                            mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-                        }
-
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-                    }
-
-                    // still has page data, no common timestamps
-                    if (decoder.hasNext(page) && commonTimestampsIndex >= commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    // still has common timestamps, no page data
-                    if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    break;
-                case INT64:
-                    long longValue;
-                    while (decoder.hasNext(page)) {
-                        long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-
-                        while (insertMemoryData.hasInsertData() && pageTimeIndex < pageTimeStamps.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeStamps[pageTimeIndex]) {
-
-                            if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
-                                aggregatePathQueryResult.putTime(insertMemoryData.getCurrentMinTime());
-                                aggregatePathQueryResult.putLong(insertMemoryData.getCurrentLongValue());
-                                aggregatePathQueryResult.insertTrueIndex++;
-
-                                // both insertMemory value and page value should be removed
-                                if (insertMemoryData.getCurrentMinTime() == pageTimeStamps[pageTimeIndex]) {
-                                    insertMemoryData.removeCurrentValue();
-                                    pageTimeIndex++;
-                                    longValue = decoder.readLong(page);
-                                } else {
-                                    insertMemoryData.removeCurrentValue();
-                                }
-
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-
-                            } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp){
-                                insertMemoryData.removeCurrentValue();
-                            } else {
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!decoder.hasNext(page) || pageTimeIndex >= pageTimeStamps.length) {
-                            break;
-                        }
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-
-                        // compare with commonTimestamps firstly
-                        // then compare with time filter
-                        // lastly compare with update operation
-
-                        // no updateTrue, no updateFalse
-                        if (mode == -1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                if ((timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex]))) {
-                                    aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                    longValue = decoder.readLong(page);
-                                    aggregatePathQueryResult.putLong(longValue);
-                                    aggregatePathQueryResult.insertTrueIndex++;
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    longValue = decoder.readLong(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                longValue = decoder.readLong(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 0) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                longValue = decoder.readLong(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    // if updateTrue changes the original value
-                                    if (update[0].getTime(updateIdx[0]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putLong(update[0].getLong(updateIdx[0] / 2));
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putLong(longValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    longValue = decoder.readLong(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                longValue = decoder.readLong(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                longValue = decoder.readLong(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        logger.error("never reach here");
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putLong(longValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                }
-
-                                commonTimestampsIndex += 1;
-                                pageTimeIndex += 1;
-
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                longValue = decoder.readLong(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        }
-
-                        // set the update array to next position that current time
-                        while (mode != -1 && pageTimeIndex < pageTimeStamps.length
-                                && pageTimeStamps[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
-                            updateIdx[mode] += 2;
-                            mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-                        }
-
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-                    }
-
-                    // still has page data, no common timestamps
-                    if (decoder.hasNext(page) && commonTimestampsIndex >= commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    // still has common timestamps, no page data
-                    if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    break;
-                case FLOAT:
-                    float floatValue;
-                    while (decoder.hasNext(page)) {
-                        long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-
-                        while (insertMemoryData.hasInsertData() && pageTimeIndex < pageTimeStamps.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeStamps[pageTimeIndex]) {
-
-                            if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
-                                aggregatePathQueryResult.putTime(insertMemoryData.getCurrentMinTime());
-                                aggregatePathQueryResult.putFloat(insertMemoryData.getCurrentFloatValue());
-                                aggregatePathQueryResult.insertTrueIndex++;
-
-                                // both insertMemory value and page value should be removed
-                                if (insertMemoryData.getCurrentMinTime() == pageTimeStamps[pageTimeIndex]) {
-                                    insertMemoryData.removeCurrentValue();
-                                    pageTimeIndex++;
-                                    floatValue = decoder.readFloat(page);
-                                } else {
-                                    insertMemoryData.removeCurrentValue();
-                                }
-
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-
-                            } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp){
-                                insertMemoryData.removeCurrentValue();
-                            } else {
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!decoder.hasNext(page) || pageTimeIndex >= pageTimeStamps.length) {
-                            break;
-                        }
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-
-                        // compare with commonTimestamps firstly
-                        // then compare with time filter
-                        // lastly compare with update operation
-
-                        // no updateTrue, no updateFalse
-                        if (mode == -1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                if ((timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex]))) {
-                                    aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                    floatValue = decoder.readFloat(page);
-                                    aggregatePathQueryResult.putFloat(floatValue);
-                                    aggregatePathQueryResult.insertTrueIndex++;
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    floatValue = decoder.readFloat(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                floatValue = decoder.readFloat(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 0) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                floatValue = decoder.readFloat(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    // if updateTrue changes the original value
-                                    if (update[0].getTime(updateIdx[0]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putFloat(update[0].getFloat(updateIdx[0] / 2));
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putFloat(floatValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    floatValue = decoder.readFloat(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                floatValue = decoder.readFloat(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                floatValue = decoder.readFloat(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        logger.error("never reach here");
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putFloat(floatValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                }
-
-                                commonTimestampsIndex += 1;
-                                pageTimeIndex += 1;
-
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                floatValue = decoder.readFloat(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        }
-
-                        // set the update array to next position that current time
-                        while (mode != -1 && pageTimeIndex < pageTimeStamps.length
-                                && pageTimeStamps[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
-                            updateIdx[mode] += 2;
-                            mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-                        }
-
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-                    }
-
-                    // still has page data, no common timestamps
-                    if (decoder.hasNext(page) && commonTimestampsIndex >= commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    // still has common timestamps, no page data
-                    if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    break;
-                case DOUBLE:
-                    double doubleValue;
-                    while (decoder.hasNext(page)) {
-                        long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-
-                        while (insertMemoryData.hasInsertData() && pageTimeIndex < pageTimeStamps.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeStamps[pageTimeIndex]) {
-
-                            if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
-                                aggregatePathQueryResult.putTime(insertMemoryData.getCurrentMinTime());
-                                aggregatePathQueryResult.putDouble(insertMemoryData.getCurrentDoubleValue());
-                                aggregatePathQueryResult.insertTrueIndex++;
-
-                                // both insertMemory value and page value should be removed
-                                if (insertMemoryData.getCurrentMinTime() == pageTimeStamps[pageTimeIndex]) {
-                                    insertMemoryData.removeCurrentValue();
-                                    pageTimeIndex++;
-                                    doubleValue = decoder.readDouble(page);
-                                } else {
-                                    insertMemoryData.removeCurrentValue();
-                                }
-
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-
-                            } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp){
-                                insertMemoryData.removeCurrentValue();
-                            } else {
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!decoder.hasNext(page) || pageTimeIndex >= pageTimeStamps.length) {
-                            break;
-                        }
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-
-                        // compare with commonTimestamps firstly
-                        // then compare with time filter
-                        // lastly compare with update operation
-
-                        // no updateTrue, no updateFalse
-                        if (mode == -1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                if ((timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex]))) {
-                                    aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                    doubleValue = decoder.readDouble(page);
-                                    aggregatePathQueryResult.putDouble(doubleValue);
-                                    aggregatePathQueryResult.insertTrueIndex++;
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    doubleValue = decoder.readDouble(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                doubleValue = decoder.readDouble(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 0) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                doubleValue = decoder.readDouble(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    // if updateTrue changes the original value
-                                    if (update[0].getTime(updateIdx[0]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putDouble(update[0].getDouble(updateIdx[0] / 2));
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putDouble(doubleValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    doubleValue = decoder.readDouble(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                doubleValue = decoder.readDouble(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                doubleValue = decoder.readDouble(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        logger.error("never reach here");
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putDouble(doubleValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                }
-
-                                commonTimestampsIndex += 1;
-                                pageTimeIndex += 1;
-
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                doubleValue = decoder.readDouble(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        }
-
-                        // set the update array to next position that current time
-                        while (mode != -1 && pageTimeIndex < pageTimeStamps.length
-                                && pageTimeStamps[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
-                            updateIdx[mode] += 2;
-                            mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-                        }
-
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-                    }
-
-                    // still has page data, no common timestamps
-                    if (decoder.hasNext(page) && commonTimestampsIndex >= commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    // still has common timestamps, no page data
-                    if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    break;
-                case TEXT:
-                    Binary binaryValue;
-                    while (decoder.hasNext(page)) {
-                        long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-
-                        while (insertMemoryData.hasInsertData() && pageTimeIndex < pageTimeStamps.length
-                                && insertMemoryData.getCurrentMinTime() <= pageTimeStamps[pageTimeIndex]) {
-
-                            if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
-                                aggregatePathQueryResult.putTime(insertMemoryData.getCurrentMinTime());
-                                aggregatePathQueryResult.putBinary(insertMemoryData.getCurrentBinaryValue());
-                                aggregatePathQueryResult.insertTrueIndex++;
-
-                                // both insertMemory value and page value should be removed
-                                if (insertMemoryData.getCurrentMinTime() == pageTimeStamps[pageTimeIndex]) {
-                                    insertMemoryData.removeCurrentValue();
-                                    pageTimeIndex++;
-                                    binaryValue = decoder.readBinary(page);
-                                } else {
-                                    insertMemoryData.removeCurrentValue();
-                                }
-
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-
-                            } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp){
-                                insertMemoryData.removeCurrentValue();
-                            } else {
-                                commonTimestampsIndex += 1;
-                                if (commonTimestampsIndex < commonTimestamps.size()) {
-                                    commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!decoder.hasNext(page) || pageTimeIndex >= pageTimeStamps.length) {
-                            break;
-                        }
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-
-                        // compare with commonTimestamps firstly
-                        // then compare with time filter
-                        // lastly compare with update operation
-
-                        // no updateTrue, no updateFalse
-                        if (mode == -1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                if ((timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex]))) {
-                                    aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                    binaryValue = decoder.readBinary(page);
-                                    aggregatePathQueryResult.putBinary(binaryValue);
-                                    aggregatePathQueryResult.insertTrueIndex++;
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    binaryValue = decoder.readBinary(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                binaryValue = decoder.readBinary(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 0) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                binaryValue = decoder.readBinary(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    // if updateTrue changes the original value
-                                    if (update[0].getTime(updateIdx[0]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[0].getTime(updateIdx[0] + 1)) {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putBinary(update[0].getBinary(updateIdx[0] / 2));
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putBinary(binaryValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                } else {
-                                    binaryValue = decoder.readBinary(page);
-                                    commonTimestampsIndex += 1;
-                                    pageTimeIndex += 1;
-                                }
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                binaryValue = decoder.readBinary(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        } else if (mode == 1) {
-                            if (pageTimeStamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
-                                binaryValue = decoder.readBinary(page);
-
-                                if (timeFilter == null || timeVisitor.verify(pageTimeStamps[pageTimeIndex])) {
-                                    if (update[1].getTime(updateIdx[1]) <= pageTimeStamps[pageTimeIndex]
-                                            && pageTimeStamps[pageTimeIndex] <= update[1].getTime(updateIdx[1] + 1)) {
-                                        logger.error("never reach here");
-                                    } else {
-                                        aggregatePathQueryResult.putTime(pageTimeStamps[pageTimeIndex]);
-                                        aggregatePathQueryResult.putBinary(binaryValue);
-                                        aggregatePathQueryResult.insertTrueIndex++;
-                                    }
-                                }
-
-                                commonTimestampsIndex += 1;
-                                pageTimeIndex += 1;
-
-                            } else if (pageTimeStamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
-                                binaryValue = decoder.readBinary(page);
-                                pageTimeIndex += 1;
-                            } else {
-                                commonTimestampsIndex += 1;
-                            }
-                        }
-
-                        // set the update array to next position that current time
-                        while (mode != -1 && pageTimeIndex < pageTimeStamps.length
-                                && pageTimeStamps[pageTimeIndex] > update[mode].getTime(updateIdx[mode] + 1)) {
-                            updateIdx[mode] += 2;
-                            mode = getNextMode(updateIdx[0], updateIdx[1], update[0], update[1]);
-                        }
-
-                        if (commonTimestampsIndex >= commonTimestamps.size()) {
-                            break;
-                        }
-                    }
-
-                    // still has page data, no common timestamps
-                    if (decoder.hasNext(page) && commonTimestampsIndex >= commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    // still has common timestamps, no page data
-                    if (!decoder.hasNext(page) && commonTimestampsIndex < commonTimestamps.size()) {
-                        return new Pair<>(aggregatePathQueryResult, commonTimestampsIndex);
-                    }
-
-                    break;
-                default:
-                    throw new IOException("Data type not support : " + dataType);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        SingleValueVisitor<?> timeVisitor = null;
+        if (timeFilter != null) {
+            timeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
         }
 
-        // update the curIdx in updateTrue and updateFalse
-        update[0].curIdx = updateIdx[0];
-        update[1].curIdx = updateIdx[1];
-        return new Pair<>(aggregatePathQueryResult, 0);
+        switch (dataType) {
+            case INT32:
+                int[] pageIntValues = new int[pageTimestamps.length];
+                int cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageIntValues[cnt++] = decoder.readInt(page);
+                }
+
+                while (pageTimeIndex < pageTimestamps.length && commonTimestampsIndex < commonTimestamps.size()) {
+                    long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+
+                    while (pageTimeIndex < pageTimestamps.length && insertMemoryData.hasInsertData()
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[pageTimeIndex]) {
+                        if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
+                            aggregateResult.putTime(insertMemoryData.getCurrentMinTime());
+                            aggregateResult.putInt(insertMemoryData.getCurrentIntValue());
+
+                            if (insertMemoryData.getCurrentMinTime() == pageTimestamps[pageTimeIndex]) {
+                                insertMemoryData.removeCurrentValue();
+                                pageTimeIndex++;
+                            } else {
+                                insertMemoryData.removeCurrentValue();
+                            }
+
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+
+                        } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp) {
+                            insertMemoryData.removeCurrentValue();
+                        } else {
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pageTimeIndex >= pageTimestamps.length || commonTimestampsIndex >= commonTimestamps.size()) {
+                        break;
+                    }
+
+                    if (pageTimestamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
+                        if (timeFilter == null || timeVisitor.verify(pageTimestamps[pageTimeIndex])) {
+                            if (updateOperation.verifyTime(pageTimestamps[pageTimeIndex])) {
+                                if (updateOperation.verifyValue()) {
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putInt(updateOperation.getInt());
+                                }
+                            } else {
+                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                aggregateResult.putInt(pageIntValues[pageTimeIndex]);
+                            }
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        } else {
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        }
+                    } else if (pageTimestamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
+                        pageTimeIndex += 1;
+                    } else {
+                        commonTimestampsIndex += 1;
+                    }
+                }
+
+                return new Pair<>(aggregateResult, commonTimestampsIndex);
+            case BOOLEAN:
+                boolean[] pageBooleanValues = new boolean[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageBooleanValues[cnt++] = decoder.readBoolean(page);
+                }
+
+                while (pageTimeIndex < pageTimestamps.length && commonTimestampsIndex < commonTimestamps.size()) {
+                    long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+
+                    while (pageTimeIndex < pageTimestamps.length && insertMemoryData.hasInsertData()
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[pageTimeIndex]) {
+                        if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
+                            aggregateResult.putTime(insertMemoryData.getCurrentMinTime());
+                            aggregateResult.putBoolean(insertMemoryData.getCurrentBooleanValue());
+
+                            if (insertMemoryData.getCurrentMinTime() == pageTimestamps[pageTimeIndex]) {
+                                insertMemoryData.removeCurrentValue();
+                                pageTimeIndex++;
+                            } else {
+                                insertMemoryData.removeCurrentValue();
+                            }
+
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+
+                        } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp) {
+                            insertMemoryData.removeCurrentValue();
+                        } else {
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pageTimeIndex >= pageTimestamps.length || commonTimestampsIndex >= commonTimestamps.size()) {
+                        break;
+                    }
+
+                    if (pageTimestamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
+                        if (timeFilter == null || timeVisitor.verify(pageTimestamps[pageTimeIndex])) {
+                            if (updateOperation.verifyTime(pageTimestamps[pageTimeIndex])) {
+                                if (updateOperation.verifyValue()) {
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putBoolean(updateOperation.getBoolean());
+                                }
+                            } else {
+                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                aggregateResult.putBoolean(pageBooleanValues[pageTimeIndex]);
+                            }
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        } else {
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        }
+                    } else if (pageTimestamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
+                        pageTimeIndex += 1;
+                    } else {
+                        commonTimestampsIndex += 1;
+                    }
+                }
+
+                return new Pair<>(aggregateResult, commonTimestampsIndex);
+            case INT64:
+                long[] pageLongValues = new long[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageLongValues[cnt++] = decoder.readLong(page);
+                }
+
+                while (pageTimeIndex < pageTimestamps.length && commonTimestampsIndex < commonTimestamps.size()) {
+                    long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+
+                    while (pageTimeIndex < pageTimestamps.length && insertMemoryData.hasInsertData()
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[pageTimeIndex]) {
+                        if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
+                            aggregateResult.putTime(insertMemoryData.getCurrentMinTime());
+                            aggregateResult.putLong(insertMemoryData.getCurrentLongValue());
+
+                            if (insertMemoryData.getCurrentMinTime() == pageTimestamps[pageTimeIndex]) {
+                                insertMemoryData.removeCurrentValue();
+                                pageTimeIndex++;
+                            } else {
+                                insertMemoryData.removeCurrentValue();
+                            }
+
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+
+                        } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp) {
+                            insertMemoryData.removeCurrentValue();
+                        } else {
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pageTimeIndex >= pageTimestamps.length || commonTimestampsIndex >= commonTimestamps.size()) {
+                        break;
+                    }
+
+                    if (pageTimestamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
+                        if (timeFilter == null || timeVisitor.verify(pageTimestamps[pageTimeIndex])) {
+                            if (updateOperation.verifyTime(pageTimestamps[pageTimeIndex])) {
+                                if (updateOperation.verifyValue()) {
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putLong(updateOperation.getLong());
+                                }
+                            } else {
+                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                aggregateResult.putLong(pageLongValues[pageTimeIndex]);
+                            }
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        } else {
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        }
+                    } else if (pageTimestamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
+                        pageTimeIndex += 1;
+                    } else {
+                        commonTimestampsIndex += 1;
+                    }
+                }
+
+                return new Pair<>(aggregateResult, commonTimestampsIndex);
+            case FLOAT:
+                float[] pageFloatValues = new float[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageFloatValues[cnt++] = decoder.readFloat(page);
+                }
+
+                while (pageTimeIndex < pageTimestamps.length && commonTimestampsIndex < commonTimestamps.size()) {
+                    long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+
+                    while (pageTimeIndex < pageTimestamps.length && insertMemoryData.hasInsertData()
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[pageTimeIndex]) {
+                        if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
+                            aggregateResult.putTime(insertMemoryData.getCurrentMinTime());
+                            aggregateResult.putFloat(insertMemoryData.getCurrentFloatValue());
+
+                            if (insertMemoryData.getCurrentMinTime() == pageTimestamps[pageTimeIndex]) {
+                                insertMemoryData.removeCurrentValue();
+                                pageTimeIndex++;
+                            } else {
+                                insertMemoryData.removeCurrentValue();
+                            }
+
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+
+                        } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp) {
+                            insertMemoryData.removeCurrentValue();
+                        } else {
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pageTimeIndex >= pageTimestamps.length || commonTimestampsIndex >= commonTimestamps.size()) {
+                        break;
+                    }
+
+                    if (pageTimestamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
+                        if (timeFilter == null || timeVisitor.verify(pageTimestamps[pageTimeIndex])) {
+                            if (updateOperation.verifyTime(pageTimestamps[pageTimeIndex])) {
+                                if (updateOperation.verifyValue()) {
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putFloat(updateOperation.getFloat());
+                                }
+                            } else {
+                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                aggregateResult.putFloat(pageFloatValues[pageTimeIndex]);
+                            }
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        } else {
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        }
+                    } else if (pageTimestamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
+                        pageTimeIndex += 1;
+                    } else {
+                        commonTimestampsIndex += 1;
+                    }
+                }
+
+                return new Pair<>(aggregateResult, commonTimestampsIndex);
+            case DOUBLE:
+                double[] pageDoubleValues = new double[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageDoubleValues[cnt++] = decoder.readDouble(page);
+                }
+
+                while (pageTimeIndex < pageTimestamps.length && commonTimestampsIndex < commonTimestamps.size()) {
+                    long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+
+                    while (pageTimeIndex < pageTimestamps.length && insertMemoryData.hasInsertData()
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[pageTimeIndex]) {
+                        if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
+                            aggregateResult.putTime(insertMemoryData.getCurrentMinTime());
+                            aggregateResult.putDouble(insertMemoryData.getCurrentDoubleValue());
+
+                            if (insertMemoryData.getCurrentMinTime() == pageTimestamps[pageTimeIndex]) {
+                                insertMemoryData.removeCurrentValue();
+                                pageTimeIndex++;
+                            } else {
+                                insertMemoryData.removeCurrentValue();
+                            }
+
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+
+                        } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp) {
+                            insertMemoryData.removeCurrentValue();
+                        } else {
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pageTimeIndex >= pageTimestamps.length || commonTimestampsIndex >= commonTimestamps.size()) {
+                        break;
+                    }
+
+                    if (pageTimestamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
+                        if (timeFilter == null || timeVisitor.verify(pageTimestamps[pageTimeIndex])) {
+                            if (updateOperation.verifyTime(pageTimestamps[pageTimeIndex])) {
+                                if (updateOperation.verifyValue()) {
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putDouble(updateOperation.getDouble());
+                                }
+                            } else {
+                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                aggregateResult.putDouble(pageDoubleValues[pageTimeIndex]);
+                            }
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        } else {
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        }
+                    } else if (pageTimestamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
+                        pageTimeIndex += 1;
+                    } else {
+                        commonTimestampsIndex += 1;
+                    }
+                }
+
+                return new Pair<>(aggregateResult, commonTimestampsIndex);
+            case TEXT:
+                Binary[] pageTextValues = new Binary[pageTimestamps.length];
+                cnt = 0;
+                while (decoder.hasNext(page)) {
+                    pageTextValues[cnt++] = decoder.readBinary(page);
+                }
+
+                while (pageTimeIndex < pageTimestamps.length && commonTimestampsIndex < commonTimestamps.size()) {
+                    long commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+
+                    while (pageTimeIndex < pageTimestamps.length && insertMemoryData.hasInsertData()
+                            && insertMemoryData.getCurrentMinTime() <= pageTimestamps[pageTimeIndex]) {
+                        if (insertMemoryData.getCurrentMinTime() == commonTimestamp) {
+                            aggregateResult.putTime(insertMemoryData.getCurrentMinTime());
+                            aggregateResult.putBinary(insertMemoryData.getCurrentBinaryValue());
+
+                            if (insertMemoryData.getCurrentMinTime() == pageTimestamps[pageTimeIndex]) {
+                                insertMemoryData.removeCurrentValue();
+                                pageTimeIndex++;
+                            } else {
+                                insertMemoryData.removeCurrentValue();
+                            }
+
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+
+                        } else if (insertMemoryData.getCurrentMinTime() < commonTimestamp) {
+                            insertMemoryData.removeCurrentValue();
+                        } else {
+                            commonTimestampsIndex += 1;
+                            if (commonTimestampsIndex < commonTimestamps.size()) {
+                                commonTimestamp = commonTimestamps.get(commonTimestampsIndex);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pageTimeIndex >= pageTimestamps.length || commonTimestampsIndex >= commonTimestamps.size()) {
+                        break;
+                    }
+
+                    if (pageTimestamps[pageTimeIndex] == commonTimestamps.get(commonTimestampsIndex)) {
+                        if (timeFilter == null || timeVisitor.verify(pageTimestamps[pageTimeIndex])) {
+                            if (updateOperation.verifyTime(pageTimestamps[pageTimeIndex])) {
+                                if (updateOperation.verifyValue()) {
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putBinary(updateOperation.getText());
+                                }
+                            } else {
+                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                aggregateResult.putBinary(pageTextValues[pageTimeIndex]);
+                            }
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        } else {
+                            commonTimestampsIndex += 1;
+                            pageTimeIndex += 1;
+                        }
+                    } else if (pageTimestamps[pageTimeIndex] < commonTimestamps.get(commonTimestampsIndex)) {
+                        pageTimeIndex += 1;
+                    } else {
+                        commonTimestampsIndex += 1;
+                    }
+                }
+
+                return new Pair<>(aggregateResult, commonTimestampsIndex);
+            default:
+                throw new IOException("Data type not support : " + dataType);
+        }
     }
 }

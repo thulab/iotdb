@@ -239,7 +239,7 @@ public class LargeDataTest {
                 long time = Long.valueOf(resultSet.getString(TIMESTAMP_STR));
                 String value = resultSet.getString(d0s1);
                 if (time > 23000 && time < 100100) {
-                    System.out.println("~~~~" + time + "," + value);
+                    //System.out.println("~~~~" + time + "," + value);
                     assertEquals("11111111", value);
                 }
                 //String ans = resultSet.getString(d0s1);
