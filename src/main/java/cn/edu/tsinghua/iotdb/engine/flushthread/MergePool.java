@@ -13,8 +13,6 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
 public class MergePool {
 
-	private static final int EXIT_WAIT_TIME = 60 * 1000;
-
 	private ExecutorService pool;
 	private int threadCnt;
 
@@ -53,7 +51,7 @@ public class MergePool {
 	 * @param timeOut
 	 *            block time out in milliseconds.
 	 * @throws ProcessorException
-	 *             if timeOut is reached or being interrupted while waiting to
+	 *             if timeOut reach or interrupted while waiting to
 	 *             exit.
 	 */
 	public void forceClose(boolean block, long timeOut) throws ProcessorException {
@@ -61,9 +59,10 @@ public class MergePool {
 		if (block) {
 			try {
 				if (!pool.awaitTermination(timeOut, TimeUnit.MILLISECONDS))
-					throw new ProcessorException("Merge thread pool doesn't exit after " + EXIT_WAIT_TIME + " ms");
+					throw new ProcessorException("Merge thread pool doesn't exit after " + timeOut + " ms");
 			} catch (InterruptedException e) {
-				throw new ProcessorException("Interrupted while waiting merge thread pool to exit. Because " + e.getMessage());
+				throw new ProcessorException(
+						"Interrupted while waiting merge thread pool to exit. Because " + e.getMessage());
 			}
 		}
 	}
@@ -74,7 +73,7 @@ public class MergePool {
 	 * 
 	 * @param block
 	 *            if set to true, this method will wait for timeOut
-	 *            milliseconds. false, return directly.
+	 *            milliseconds. false, return directly. False, return directly.
 	 * @param timeOut
 	 *            block time out in milliseconds.
 	 * @throws ProcessorException
@@ -86,9 +85,10 @@ public class MergePool {
 		if (block) {
 			try {
 				if (!pool.awaitTermination(timeOut, TimeUnit.MILLISECONDS))
-					throw new ProcessorException("Merge thread pool doesn't exit after " + EXIT_WAIT_TIME + " ms");
+					throw new ProcessorException("Merge thread pool doesn't exit after " + timeOut + " ms");
 			} catch (InterruptedException e) {
-				throw new ProcessorException("Interrupted while waiting merge thread pool to exit. Because" + e.getMessage());
+				throw new ProcessorException(
+						"Interrupted while waiting merge thread pool to exit. Because" + e.getMessage());
 			}
 		}
 	}

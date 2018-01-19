@@ -614,6 +614,7 @@ public class FileNodeManager implements IStatistic {
 			}
 			long totalTime = 0;
 			for (Future<?> task : futureTasks) {
+				// loop waiting for merge to end, the longest waiting time is 60s.
 				int time = 2;
 				while (!task.isDone()) {
 					try {
