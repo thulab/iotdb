@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.query;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
-import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -43,7 +43,7 @@ public class NoOverflowReadTest {
             "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
     };
 
-    private IoTDB deamon;
+    private IoTDB2 deamon;
 
     TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
     private int maxNumberOfPointsInPage;
@@ -53,7 +53,7 @@ public class NoOverflowReadTest {
     @Before
     public void setUp() throws Exception {
         EnvironmentUtils.closeStatMonitor();
-        deamon = IoTDB.getInstance();
+        deamon = IoTDB2.getInstance();
         deamon.active();
         EnvironmentUtils.envSetUp();
     }

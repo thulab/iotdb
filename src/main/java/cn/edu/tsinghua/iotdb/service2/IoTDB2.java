@@ -9,6 +9,7 @@ import cn.edu.tsinghua.iotdb.auth.dao.DBDaoService;
 import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
@@ -59,9 +60,7 @@ public class IoTDB2 implements IoTDB2MBean{
 		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
 			StatMonitor.getInstance().recovery();
 		}
-		
-		
-		
+
 		registerManager.register(FileNodeManager.getInstance());
 		registerManager.register(WriteLogManager.getInstance());
 		IService DBDaoService = new DBDaoService();
@@ -69,9 +68,9 @@ public class IoTDB2 implements IoTDB2MBean{
 		registerManager.register(JMXService.getInstance());
 		registerManager.register(JDBCService.getInstance());
 		registerManager.register(Monitor.INSTANCE);
-		
 		registerManager.register(CloseMergeService.getInstance());
 		registerManager.register(StatMonitor.getInstance());
+		registerManager.register(BasicMemController.getInstance());
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
 	}

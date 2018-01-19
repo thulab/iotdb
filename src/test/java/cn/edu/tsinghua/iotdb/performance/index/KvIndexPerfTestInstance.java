@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileSQLException;
-import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.apache.commons.io.FileUtils;
@@ -22,7 +22,7 @@ import java.util.Random;
 
 //unused
 public class KvIndexPerfTestInstance {
-    private static IoTDB deamon;
+    private static IoTDB2 deamon;
     //We insert all data into one path and create index.
     private static String path;
     //Another path to cut off testing path
@@ -74,7 +74,7 @@ public class KvIndexPerfTestInstance {
 
         resultFile = "result.out";
         EnvironmentUtils.closeStatMonitor();
-        deamon = IoTDB.getInstance();
+        deamon = IoTDB2.getInstance();
         deamon.active();
 
         File ff = new File(config.bufferWriteDir);

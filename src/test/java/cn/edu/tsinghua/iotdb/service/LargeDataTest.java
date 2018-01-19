@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -46,7 +47,7 @@ public class LargeDataTest {
             "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
     };
 
-    private IoTDB deamon;
+    private IoTDB2 deamon;
 
     private boolean testFlag = TestUtils.testFlag;
     TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
@@ -70,7 +71,7 @@ public class LargeDataTest {
             tsFileConfig.pageSizeInByte = 1024 * 1024 * 15;
             tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
 
-            deamon = IoTDB.getInstance();
+            deamon = IoTDB2.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }

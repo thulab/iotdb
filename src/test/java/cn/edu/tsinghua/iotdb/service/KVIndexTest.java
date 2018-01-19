@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileSQLException;
 import cn.edu.tsinghua.iotdb.qp.physical.index.KvMatchIndexQueryPlan;
+import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -109,7 +110,7 @@ public class KVIndexTest {
 
     };
 
-    private IoTDB deamon;
+    private IoTDB2 deamon;
 
     private boolean testFlag = TestUtils.testFlag;
 
@@ -121,7 +122,7 @@ public class KVIndexTest {
             TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
             maxOpenFolderPre = config.maxOpenFolder;
             config.maxOpenFolder = 1;
-            deamon = IoTDB.getInstance();
+            deamon = IoTDB2.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }

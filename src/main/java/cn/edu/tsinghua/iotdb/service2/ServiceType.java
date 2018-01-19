@@ -9,7 +9,7 @@ public enum ServiceType {
 	STAT_MONITOR_SERVICE("Statistics Service",""),
 	WAL_SERVICE("WAL Service",""),
 	CLOSE_MERGE_SERVICE("Close&Merge Service",""),
-	JVM_MEM_CONTROL_SERVICE("","");
+	JVM_MEM_CONTROL_SERVICE("Memory Controller","");
 	
 	private String name;  
 	private String jmxName;

@@ -33,13 +33,14 @@ public class CloseMergeService implements IService{
 
 	private volatile boolean isStart = false;
 
-	private static class CloseMergeServiceHolder {  
-        private static final CloseMergeService INSTANCE = new CloseMergeService();  
-    }
-	
-    public static final CloseMergeService getInstance() {
-        return CloseMergeServiceHolder.INSTANCE;
-    }
+	private static CloseMergeService SERVER = new CloseMergeService();
+
+	public synchronized static CloseMergeService getInstance() {
+		if (SERVER == null) {
+			SERVER = new CloseMergeService();
+		}
+		return SERVER;
+	}
 
 	private CloseMergeService() {
 		service = IoTDBThreadPoolFactory.newScheduledThreadPool(2, "CloseAndMerge");
@@ -65,7 +66,7 @@ public class CloseMergeService implements IService{
 				service.shutdown();
 				service.notify();
 			}
-//			SERVER = null;
+			SERVER = null;
 			LOGGER.info("shutdown close and merge server successfully");
 		} else {
 			LOGGER.warn("the close and merge daemon is not running now");

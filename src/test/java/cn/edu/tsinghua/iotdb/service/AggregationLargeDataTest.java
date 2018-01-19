@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
+import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class AggregationLargeDataTest {
@@ -93,7 +94,7 @@ public class AggregationLargeDataTest {
             "insert into root.vehicle.d0(timestamp,s3) values(2000-01-01T08:00:00+08:00, 'good')"
     };
 
-    private IoTDB deamon;
+    private IoTDB2 deamon;
 
     private boolean testFlag = TestUtils.testFlag;
 
@@ -102,7 +103,7 @@ public class AggregationLargeDataTest {
         if (testFlag) {
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
-            deamon = IoTDB.getInstance();
+            deamon = IoTDB2.getInstance();
             deamon.stop();
             deamon.active();
             EnvironmentUtils.envSetUp();

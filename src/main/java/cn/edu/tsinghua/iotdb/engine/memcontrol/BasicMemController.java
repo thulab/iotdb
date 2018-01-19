@@ -39,7 +39,7 @@ public abstract class BasicMemController implements IService{
 
     @Override
     public ServiceType getID() {
-        return null;
+        return ServiceType.JVM_MEM_CONTROL_SERVICE;
     }
 
     public enum CONTROLLER_TYPE {

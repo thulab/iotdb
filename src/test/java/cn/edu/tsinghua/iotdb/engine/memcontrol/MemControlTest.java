@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -27,6 +27,7 @@ import java.sql.Statement;
 
 import static junit.framework.TestCase.assertEquals;
 
+@Deprecated
 public class MemControlTest {
     private final String FOLDER_HEADER = "src/test/resources";
     private static final String TIMESTAMP_STR = "Time";
@@ -56,7 +57,7 @@ public class MemControlTest {
     };
 
     TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-    private IoTDB deamon;
+    private IoTDB2 deamon;
 
     private boolean testFlag = false;
     private boolean exceptionCaught = false;
@@ -67,8 +68,8 @@ public class MemControlTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-            deamon = IoTDB.getInstance();
-            EnvironmentUtils.envSetUp();
+            deamon = IoTDB2.getInstance();
+            
 
             config.memThresholdWarning = 3 * IoTDBConstant.MB;
             config.memThresholdDangerous = 5 * IoTDBConstant.MB;
@@ -78,6 +79,7 @@ public class MemControlTest {
             BasicMemController.getInstance().setWarningThreshold(config.memThresholdWarning);
 
             deamon.active();
+            EnvironmentUtils.envSetUp();
             insertSQL();
         }
     }
