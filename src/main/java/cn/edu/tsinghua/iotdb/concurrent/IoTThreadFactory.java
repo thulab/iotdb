@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.utils;
+package cn.edu.tsinghua.iotdb.concurrent;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

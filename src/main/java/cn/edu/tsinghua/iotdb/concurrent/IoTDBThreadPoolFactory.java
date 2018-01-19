@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.utils;
+package cn.edu.tsinghua.iotdb.concurrent;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
