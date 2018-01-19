@@ -10,7 +10,7 @@ import java.io.IOException;
  * Created by zhangjinrui on 2018/1/15.
  */
 @Ignore
-public class TestFileWriter {
+public class SimpleFileWriter {
 
     public static void writeFile(String path, byte[] bytes) throws IOException {
         File file = new File(path);

@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.control;
 
-import cn.edu.tsinghua.iotdb.queryV2.TestFileWriter;
+import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.QueryJob;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.TsFileStreamManager;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -24,7 +23,7 @@ public class TsFileStreamManagerTest {
 
     @Before
     public void before() throws IOException {
-        TestFileWriter.writeFile(10000, PATH);
+        SimpleFileWriter.writeFile(10000, PATH);
         fileStreamManager = TsFileStreamManager.getInstance();
     }
 
