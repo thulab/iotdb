@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service2;
+package cn.edu.tsinghua.iotdb.service;
 
 import java.util.ArrayList;
 import java.util.List;

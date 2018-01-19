@@ -18,8 +18,8 @@ import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthRuntimeException;
 import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.service2.IService;
-import cn.edu.tsinghua.iotdb.service2.ServiceType;
+import cn.edu.tsinghua.iotdb.service.IService;
+import cn.edu.tsinghua.iotdb.service.ServiceType;
 
 /**
  * @author liukun

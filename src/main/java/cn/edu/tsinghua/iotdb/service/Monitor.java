@@ -2,18 +2,21 @@ package cn.edu.tsinghua.iotdb.service;
 
 import java.io.File;
 
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.apache.commons.io.FileUtils;
 
-public class Monitor implements MonitorMBean{
+public class Monitor implements MonitorMBean, IService{
 	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-	
+	public static final Monitor INSTANCE = new Monitor();
+    private final String MBEAN_NAME = String.format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE, IoTDBConstant.JMX_TYPE, getID().getJmxName());
+
 	@Override
 	public long getDataSizeInByte() {
 		try {
 			return FileUtils.sizeOfDirectory(new File(config.dataDir));
-		} catch (Exception e) {
+		} catch (Exception e) {			
 			return -1;
 		}
 	}
@@ -59,6 +62,21 @@ public class Monitor implements MonitorMBean{
 	@Override
 	public long getClosePeriodInSecond() {
 		return config.periodTimeForFlush;
+	}
+
+	@Override
+	public void start() {
+		JMXService.registerMBean(INSTANCE, MBEAN_NAME);
+	}
+
+	@Override
+	public void stop() {
+		JMXService.deregisterMBean(MBEAN_NAME);
+	}
+
+	@Override
+	public ServiceType getID() {
+		return ServiceType.MONITOR_SERVICE;
 	}
 
 }

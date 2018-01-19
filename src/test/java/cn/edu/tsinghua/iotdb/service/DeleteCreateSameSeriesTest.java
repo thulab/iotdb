@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.service2.IoTDB2;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class DeleteCreateSameSeriesTest {
@@ -63,7 +62,7 @@ public class DeleteCreateSameSeriesTest {
             "merge"
     };
 
-    private IoTDB2 deamon;
+    private IoTDB deamon;
 
     private boolean testFlag = TestUtils.testFlag;
 
@@ -72,7 +71,7 @@ public class DeleteCreateSameSeriesTest {
         if (testFlag) {
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
-            deamon = IoTDB2.getInstance();
+            deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
         }

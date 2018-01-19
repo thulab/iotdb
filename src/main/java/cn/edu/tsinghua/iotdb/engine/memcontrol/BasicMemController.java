@@ -2,8 +2,9 @@ package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.service2.IService;
-import cn.edu.tsinghua.iotdb.service2.ServiceType;
+import cn.edu.tsinghua.iotdb.service.IService;
+import cn.edu.tsinghua.iotdb.service.ServiceType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

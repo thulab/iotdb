@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service2;
+package cn.edu.tsinghua.iotdb.service;
 
 import java.io.IOException;
 
@@ -16,7 +16,6 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService.Processor;
-import cn.edu.tsinghua.iotdb.service.TSServiceImpl;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 
 /**

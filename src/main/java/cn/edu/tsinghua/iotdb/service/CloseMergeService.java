@@ -17,9 +17,9 @@ import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
  * @author liukun
  *
  */
-public class CloseMergeServer {
+public class CloseMergeService implements IService{
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CloseMergeServer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CloseMergeService.class);
 
 	private MergeServerThread mergeServer = new MergeServerThread();
 	private CloseServerThread closeServer = new CloseServerThread();
@@ -33,16 +33,16 @@ public class CloseMergeServer {
 
 	private volatile boolean isStart = false;
 
-	private static CloseMergeServer SERVER = new CloseMergeServer();
+	private static CloseMergeService SERVER = new CloseMergeService();
 
-	public synchronized static CloseMergeServer getInstance() {
+	public synchronized static CloseMergeService getInstance() {
 		if (SERVER == null) {
-			SERVER = new CloseMergeServer();
+			SERVER = new CloseMergeService();
 		}
 		return SERVER;
 	}
 
-	private CloseMergeServer() {
+	private CloseMergeService() {
 		service = IoTDBThreadPoolFactory.newScheduledThreadPool(2, "CloseAndMerge");
 	}
 
@@ -129,5 +129,20 @@ public class CloseMergeServer {
 				LOGGER.error("close all error, the reason is {}", e.getMessage());
 			}
 		}
+	}
+
+	@Override
+	public void start() {
+		startServer();
+	}
+
+	@Override
+	public void stop() {
+		closeServer();
+	}
+
+	@Override
+	public ServiceType getID() {
+		return ServiceType.CLOSE_MERGE_SERVICE;
 	}
 }

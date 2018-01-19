@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service2;
+package cn.edu.tsinghua.iotdb.service;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
@@ -7,8 +7,6 @@ import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.service.TSServiceImpl;
 
 public class JDBCServiceEventHandler implements TServerEventHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(JDBCServiceEventHandler.class);

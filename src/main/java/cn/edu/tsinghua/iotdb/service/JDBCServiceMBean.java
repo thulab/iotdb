@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service2;
+package cn.edu.tsinghua.iotdb.service;
 
 public interface JDBCServiceMBean {
 	String getJDBCServiceStatus();

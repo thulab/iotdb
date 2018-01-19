@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.service2.IoTDB2;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -57,7 +57,7 @@ public class MemControlTest {
     };
 
     TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-    private IoTDB2 deamon;
+    private IoTDB deamon;
 
     private boolean testFlag = false;
     private boolean exceptionCaught = false;
@@ -68,7 +68,7 @@ public class MemControlTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-            deamon = IoTDB2.getInstance();
+            deamon = IoTDB.getInstance();
             
 
             config.memThresholdWarning = 3 * IoTDBConstant.MB;
