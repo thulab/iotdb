@@ -24,4 +24,9 @@ public class SequentialSeriesReaderImpl implements SeriesReader {
     public void skipCurrentTimeValuePair() throws IOException {
 
     }
+
+    @Override
+    public void close() throws IOException {
+
+    }
 }

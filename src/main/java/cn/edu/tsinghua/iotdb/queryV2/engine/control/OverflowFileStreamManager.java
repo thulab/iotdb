@@ -23,7 +23,7 @@ public class OverflowFileStreamManager {
         if (!fileStreamStore.containsKey(jobId)) {
             fileStreamStore.put(jobId, new HashMap<>());
         }
-        if (fileStreamStore.get(jobId).containsKey(path)) {
+        if (!fileStreamStore.get(jobId).containsKey(path)) {
             fileStreamStore.get(jobId).put(path, new RandomAccessFile(path, "r"));
         }
         return fileStreamStore.get(jobId).get(path);
