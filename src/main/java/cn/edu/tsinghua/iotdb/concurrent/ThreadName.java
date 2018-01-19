@@ -6,7 +6,7 @@ public enum ThreadName {
     
 	private String name;
     
-    public ThreadName(String name){
+    private ThreadName(String name){
     	this.name = name;
     }
     
