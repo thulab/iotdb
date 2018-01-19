@@ -328,7 +328,7 @@ public class RecordReader {
                 // TODO commonTimestampsIndex could be saved as a parameter
 
                 commonTimestampsIndex = ValueReaderProcessor.aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, insertMemoryData, overflowUpdate, overflowUpdate, overflowTimeFilter, timestamps);
+                        aggregateFunction, insertMemoryData, overflowUpdateOperation, overflowTimeFilter, timestamps);
 
                 // all value of commonTimestampsIndex has been used,
                 // the next batch of commonTimestamps should be loaded

@@ -815,43 +815,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     /**
-     * To determine whether a time pair is satisfy the demand of the SingleSeriesFilterExpression.
-     *
-     * @param valueFilter - value filter
-     * @param data        - DynamicOneColumnData
-     * @param i           - index
-     * @return - boolean
-     */
-    private boolean isIntervalSatisfy(SingleSeriesFilterExpression valueFilter, DynamicOneColumnData data, int i) {
-        if (valueFilter == null) {
-            return true;
-        }
-
-        switch (valueFilter.getFilterSeries().getSeriesDataType()) {
-            case INT32:
-                SingleValueVisitor<?> visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getInt(i));
-            case INT64:
-                visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getLong(i));
-            case FLOAT:
-                visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getFloat(i));
-            case DOUBLE:
-                visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getDouble(i));
-            case BOOLEAN:
-                return SingleValueVisitorFactory.getSingleValueVisitor(TSDataType.BOOLEAN).satisfyObject(data.getBoolean(i), valueFilter);
-            case TEXT:
-                return SingleValueVisitorFactory.getSingleValueVisitor(TSDataType.TEXT).satisfyObject(data.getBinary(i), valueFilter);
-            default:
-                LOG.error("Unsupported TSFile data type.");
-                throw new UnSupportedDataTypeException("Unsupported TSFile data type.");
-
-        }
-    }
-
-    /**
      * put data from DynamicOneColumnData[data] to DynamicOneColumnData[ope]
      * <p>
      * value in ope must > 0
