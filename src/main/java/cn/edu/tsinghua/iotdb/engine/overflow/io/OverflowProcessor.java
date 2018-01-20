@@ -133,9 +133,8 @@ public class OverflowProcessor extends Processor {
 	/**
 	 * This is used to store information about overflow file.<br>
 	 * 
-	 * @param lastOverflowFilePostion
-	 *            -1 represent flush overflow row group - other represent close
-	 *            overflow file
+	 * @param lastOverflowFilePostion -1 - represents flush overflow row group.
+	 *                                other - represents close overflow file
 	 * @throws OverflowProcessorException
 	 */
 	private void writeStoreToDisk(long lastOverflowFilePostion, boolean isClose) throws OverflowProcessorException {
@@ -262,8 +261,8 @@ public class OverflowProcessor extends Processor {
 	 * write a TsRecord to overflow
 	 * 
 	 * @param record
-	 * @return true - if size of overflow file or metadata reaches the
-	 *         threshold. false - otherwise
+	 * @return true - if size of overflow file or metadata reaches the threshold. 
+	 *         false - otherwise
 	 * @throws OverflowProcessorException
 	 */
 	public boolean insert(TSRecord record) throws OverflowProcessorException {
@@ -306,7 +305,7 @@ public class OverflowProcessor extends Processor {
 							+ "However, its data type {} is not consistent with the data type in the metadata",
 					getProcessorName(), deltaObjectId, measurementId, type);
 			throw new OverflowProcessorException(
-					"The insert overflow record data type is error, insert type is " + type);
+					"The data type of insert overflow record is wrong, insert type is " + type);
 		}
 	}
 
@@ -321,8 +320,8 @@ public class OverflowProcessor extends Processor {
 	 * @param endTime
 	 * @param type
 	 * @param v
-	 * @return true - if size of overflow file or metadata reaches the
-	 *         threshold. false - otherwise
+	 * @return true - if size of overflow file or metadata reaches the threshold. 
+	 *         false - otherwise
 	 * @throws OverflowProcessorException
 	 */
 	public boolean update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
@@ -336,7 +335,7 @@ public class OverflowProcessor extends Processor {
 							+ "However, its data type {} is not consistent with the data type in the metadata",
 					getProcessorName(), deltaObjectId, measurementId, type);
 			throw new OverflowProcessorException(
-					"The update overflow record data type is error, update type is " + type);
+					"The data type of update overflow record is wrong, update type is " + type);
 		}
 
 	}
@@ -349,8 +348,8 @@ public class OverflowProcessor extends Processor {
 	 * @param measurementId
 	 * @param timestamp
 	 * @param type
-	 * @return true - if size of overflow file or metadata reaches the
-	 *         threshold. false - otherwise
+	 * @return true - if size of overflow file or metadata reaches the threshold. 
+	 *         false - otherwise
 	 * @throws OverflowProcessorException
 	 */
 	public boolean delete(String deltaObjectId, String measurementId, long timestamp, TSDataType type)
@@ -364,7 +363,7 @@ public class OverflowProcessor extends Processor {
 							+ "However, its data type {} is not consistent with the data type in the metadata",
 					getProcessorName(), deltaObjectId, measurementId, type);
 			throw new OverflowProcessorException(
-					"The delete overflow record data type is error, delete type is " + type);
+					"The data type of delete overflow record is wrong, delete type is " + type);
 		}
 	}
 
@@ -522,7 +521,7 @@ public class OverflowProcessor extends Processor {
 					DateTime endDateTime = new DateTime(flushEndTime,
 							TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					LOGGER.info(
-							"The overflow processor {} flush start time is {}, flush end time is {}, time consume is {}ms",
+							"The overflow processor {} flush start time is {}, flush end time is {}, time consumption is {}ms",
 							getProcessorName(), startDateTime, endDateTime, timeInterval);
 
 				};
@@ -577,10 +576,10 @@ public class OverflowProcessor extends Processor {
 		if (lastUpdateOffset != -1) {
 			writeStoreToDisk(lastUpdateOffset, true);
 		} else {
-			LOGGER.warn("The overflow processor {} closes the overflow processor, but no overflow metadata was flush",
+			LOGGER.warn("The overflow processor {} closes the overflow processor, but no overflow metadata was flushed",
 					getProcessorName());
 		}
-		LOGGER.info("The overflow processor {} end to close.", getProcessorName());
+		LOGGER.info("The overflow processor {} ends close operation.", getProcessorName());
 		long closeEndTime = System.currentTimeMillis();
 		long timeInterval = closeEndTime - closeStartTime;
 		DateTime startDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
@@ -608,7 +607,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			ofSupport.switchWorkToMerge();
 		} catch (IOException e) {
-			LOGGER.error("SwitchFileIOToMerge failed.");
+			LOGGER.error("Failed to switch from working to merge.", e);
 			throw new OverflowProcessorException(e);
 		}
 	}
@@ -617,7 +616,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			ofSupport.switchMergeToWork();
 		} catch (IOException e) {
-			LOGGER.error("Switch overflow from merge to working error");
+			LOGGER.error("Failed to switch overflow from merge to working.", e);
 			throw new OverflowProcessorException(e);
 		} finally {
 			isMerging = false;

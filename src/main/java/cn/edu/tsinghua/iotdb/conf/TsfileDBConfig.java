@@ -111,13 +111,13 @@ public class TsfileDBConfig {
 	public long periodTimeForMerge = 7200;
 	
 	/**
-	 * When set to true, start timing flush and merge service. False, stop timing flush and merge service.
+	 * When set true, start timing flush and merge service. False, stop timing flush and merge service.
 	 * Default is true.
 	 */
 	public boolean enableTimingCloseAndMerge = true;
 	
 	/**
-	 * How many thread can concurrently flush. When <= 0, use CPU core number.
+	 * How many threads can concurrently flush. When <= 0, use CPU core number.
 	 */
 	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
@@ -170,7 +170,7 @@ public class TsfileDBConfig {
 	/**
 	 * If set false, MemMonitorThread and MemStatisticThread will not be created.
 	 */
-	public boolean enableMemMonitor = true;
+	public boolean enableMemMonitor = false;
 
 	/**
 	 * When set to true, small flush will be triggered periodically even if memory threshold is not exceeded.

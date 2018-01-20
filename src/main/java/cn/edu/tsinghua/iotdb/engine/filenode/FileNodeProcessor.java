@@ -527,8 +527,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 */
 	public void changeTypeToChanged(String deltaObjectId, long startTime, long endTime) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
-			LOGGER.warn(
-					"Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
+			LOGGER.warn("Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
 					getProcessorName(), deltaObjectId, startTime, endTime);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -692,9 +691,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	/**
 	 * submit the merge task to the <code>MergePool</code>
 	 * 
-	 * @return null -can't submit the merge task, because this filenode is not
-	 *         overflowed or it is merging now. Future<?> - submit the merge
-	 *         task successfully.
+	 * @return null -can't submit the merge task, because this filenode is not overflowed or it is merging now. 
+	 *         Future<?> - submit the merge task successfully.
 	 */
 	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {
@@ -842,7 +840,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			try {
 				writeStoreToDisk(fileNodeProcessorStore);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("The filenode processor {} write restore information error, when merging.",
+				LOGGER.error("The filenode processor {} writes restore information error when merging.",
 						getProcessorName(), e);
 				writeUnlock();
 				throw new FileNodeProcessorException(e);
@@ -1124,7 +1122,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					writeStoreToDisk(fileNodeProcessorStore);
 				} catch (FileNodeProcessorException e) {
 					LOGGER.error("Merge: failed to write filenode information to revocery file, the filenode is {}.",
-							getProcessorName());
+							getProcessorName(), e);
 					throw new FileNodeProcessorException(
 							"Merge: write filenode information to revocery file failed, the filenode is "
 									+ getProcessorName());

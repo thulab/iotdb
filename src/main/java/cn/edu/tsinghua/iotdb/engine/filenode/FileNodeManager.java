@@ -87,7 +87,7 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	/**
-	 * @return the key represent the params' name, values is AtomicLong type
+	 * @return the key represents the params' name, values is AtomicLong type
 	 */
 	public HashMap<String, AtomicLong> getStatParamsHashMap() {
 		return statParamsHashMap;
@@ -235,12 +235,9 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * insert TsRecord into storage group
 	 * 
-	 * @param tsRecord:
-	 *            input Data
-	 * @param isMonitor:
-	 *            if true, the insertion is done by StatMonitor and the
-	 *            statistic Info will not be recorded. if false, the
-	 *            statParamsHashMap will be updated.
+	 * @param tsRecord: input Data
+	 * @param isMonitor: if true, the insertion is done by StatMonitor and thestatistic Info will not be recorded. 
+	 *                   if false, the statParamsHashMap will be updated.
 	 * @return an int value represents the insert type
 	 * @throws FileNodeManagerException
 	 */
@@ -368,7 +365,7 @@ public class FileNodeManager implements IStatistic {
 			}
 		} catch (FileNodeProcessorException e) {
 			LOGGER.error(
-					String.format("close the buffer write processor %s error.", fileNodeProcessor.getProcessorName()),
+					String.format("Encounter an error when closing the buffer write processor %s.", fileNodeProcessor.getProcessorName()),
 					e);
 			e.printStackTrace();
 		} finally {
@@ -557,14 +554,9 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	/**
-	 * 
-	 * @param path
-	 *            : the column path
-	 * @param startTime
-	 *            : the startTime of index
-	 * @param endTime
-	 *            : the endTime of index
-	 *
+	 * @param path : the column path
+	 * @param startTime : the startTime of index
+	 * @param endTime : the endTime of index
 	 * @throws FileNodeManagerException
 	 */
 	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
@@ -617,8 +609,7 @@ public class FileNodeManager implements IStatistic {
 			}
 			long totalTime = 0;
 			for (Future<?> task : futureTasks) {
-				// loop waiting for merge to end, the longest waiting time is
-				// 60s.
+				// loop waiting for merge to end, the longest waiting time is 60s.
 				int time = 2;
 				while (!task.isDone()) {
 					try {
@@ -692,8 +683,7 @@ public class FileNodeManager implements IStatistic {
 									processorMap.remove(processorName);
 									break;
 								} else {
-									LOGGER.info(
-											"Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
+									LOGGER.info("Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
 								}
 							} catch (ProcessorException e) {
 								LOGGER.error("Delete the filenode processor {} error.", processorName, e);
@@ -770,7 +760,7 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	/**
-	 * Forced to close the filenode processor.
+	 * Force to close the filenode processor.
 	 * 
 	 * @param processorName
 	 * @throws FileNodeManagerException
@@ -779,7 +769,7 @@ public class FileNodeManager implements IStatistic {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
-				LOGGER.info("Forced to close the filenode processor {}.", processorName);
+				LOGGER.info("Force to close the filenode processor {}.", processorName);
 				while (!closeOneProcessor(processorName)) {
 					try {
 						LOGGER.info("Can't force to close the filenode processor {}, wait 100ms to retry");
@@ -824,7 +814,7 @@ public class FileNodeManager implements IStatistic {
 				LOGGER.warn("Can't get the write lock of the filenode processor {}.", processorName);
 			}
 		} else {
-			LOGGER.warn("The processorMap does't contain the filenode processor {}.", processorName);
+			LOGGER.warn("The processorMap doesn't contain the filenode processor {}.", processorName);
 		}
 	}
 
@@ -861,7 +851,7 @@ public class FileNodeManager implements IStatistic {
 				LOGGER.warn("Can't get the write lock of the filenode processor {}.", processorName);
 			}
 		} else {
-			LOGGER.warn("The processorMap does't contains the filenode processor {}.", processorName);
+			LOGGER.warn("The processorMap doesn't contain the filenode processor {}.", processorName);
 		}
 	}
 
@@ -895,7 +885,7 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * Try to close All
 	 * 
-	 * @return true - close successfully false - can't close because of merge
+	 * @return true - close successfully. false - can't close because of merge
 	 *         operation
 	 * @throws FileNodeManagerException
 	 */
@@ -940,7 +930,7 @@ public class FileNodeManager implements IStatistic {
 			try {
 				flushTop(0.1f);
 			} catch (IOException e) {
-				LOGGER.error("force flush memory data error", e.getMessage());
+				LOGGER.error("force flush memory data error: {}", e.getMessage());
 				e.printStackTrace();
 			}
 			break;
@@ -949,7 +939,7 @@ public class FileNodeManager implements IStatistic {
 			try {
 				flushAll();
 			} catch (IOException e) {
-				LOGGER.error("force flush memory data error:{}", e.getMessage());
+				LOGGER.error("force flush memory data error: {}", e.getMessage());
 				e.printStackTrace();
 			}
 			break;
