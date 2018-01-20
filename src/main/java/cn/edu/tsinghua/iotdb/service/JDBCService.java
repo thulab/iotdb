@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
+import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -88,7 +89,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
 
         try {
         	jdbcServiceThread = new Thread(new JDBCServiceThread());
-        	jdbcServiceThread.setName(this.getID().getName());
+        	jdbcServiceThread.setName(ThreadName.JDBC_SERVICE.getName());
         } catch (IOException e) {
             LOGGER.error("{}: failed to start {} because of {}",
             		IoTDBConstant.GLOBAL_DB_NAME, 
@@ -148,7 +149,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
             try {
                 serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().rpcPort);
                 poolArgs = new TThreadPoolServer.Args(serverTransport);
-                poolArgs.executorService = IoTDBThreadPoolFactory.createJDBCClientThreadPool(poolArgs, "JDBC-Client");
+                poolArgs.executorService = IoTDBThreadPoolFactory.createJDBCClientThreadPool(poolArgs, ThreadName.JDBC_CLIENT.getName());
                 poolArgs.processor(processor);
                 poolArgs.protocolFactory(protocolFactory);
                 poolServer = new TThreadPoolServer(poolArgs);

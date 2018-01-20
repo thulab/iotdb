@@ -462,7 +462,7 @@ public class FileNodeManager implements IStatistic, IService {
 
 			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 			if (startTime > lastUpdateTime) {
-				LOGGER.warn("The update range is error, startTime {} is great than lastUpdateTime {}", startTime,
+				LOGGER.warn("The update range is error, startTime {} is greater than lastUpdateTime {}", startTime,
 						lastUpdateTime);
 				return;
 			}

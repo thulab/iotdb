@@ -12,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
+import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -43,7 +44,7 @@ public class WriteLogManager implements IService{
         if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
             logNodeMaps = new ConcurrentHashMap<>();
             // system log timing merge task
-            timingService = IoTDBThreadPoolFactory.newScheduledThreadPool(1,"WALFlush");
+            timingService = IoTDBThreadPoolFactory.newScheduledThreadPool(1, ThreadName.WAL_FLUSH.getName());
             long delay = 0;
             long interval = TsfileDBDescriptor.getInstance().getConfig().flushWalPeriodInMs;
             timingService.scheduleAtFixedRate(new LogMergeTimingTask(), delay, interval, TimeUnit.SECONDS);

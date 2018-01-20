@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.monitor;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
+import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
@@ -75,7 +76,7 @@ public class StatMonitor implements IService{
                     mManager.setStorageLevelToMTree(prefix);
                 }
             } catch (PathErrorException|IOException e) {
-                LOGGER.error("MManager setStorageLevelToMTree False.", e);
+                LOGGER.error("MManager cannot set storage level to MTree.", e);
             }
         }
     }
@@ -87,7 +88,7 @@ public class StatMonitor implements IService{
     /**
      * @param hashMap       key is statParams name, values is AtomicLong type
      * @param statGroupDeltaName is the deltaObject path of this module
-     * @param curTime       TODO need to be fixed may contains overflow
+     * @param curTime       TODO need to be fixed because it may contain overflow
      * @return TSRecord contains the DataPoints of a statGroupDeltaName
      */
     public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap, String statGroupDeltaName, long curTime) {
@@ -121,7 +122,7 @@ public class StatMonitor implements IService{
                 mManager.setStorageLevelToMTree(prefix);
             }
         } catch (Exception e){
-            LOGGER.error("MManager setStorageLevelToMTree False, Because {}", e);
+            LOGGER.error("MManager cannot set storage level to MTree, because ", e);
         }
     }
 
@@ -158,7 +159,7 @@ public class StatMonitor implements IService{
         } catch (ProcessorException e) {
             LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
         } catch (PathErrorException e) {
-            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path not exist,", e);
+            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path does not exist,", e);
         } catch (IOException e) {
             LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
         }
@@ -166,7 +167,7 @@ public class StatMonitor implements IService{
 
     public void activate() {
 
-        service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, "StatMonitorService");
+        service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, ThreadName.STAT_MONITOR.getName());
         service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
         );
@@ -192,7 +193,7 @@ public class StatMonitor implements IService{
         try {
             for (Map.Entry<String, String> entry : hashMap.entrySet()) {
                 if (entry.getKey() == null) {
-                    LOGGER.error("Registering MetaData, {} is null",  entry.getKey());
+                    LOGGER.error("Registering metadata but {} is null",  entry.getKey());
                 }
 
                 if (!mManager.pathExist(entry.getKey())) {
@@ -206,7 +207,7 @@ public class StatMonitor implements IService{
     }
 
     public void deregistStatistics(String path) {
-        LOGGER.debug("Dereegister {} to StatMonitor for stopping statistics service", path);
+        LOGGER.debug("Deregister {} in StatMonitor for stopping statistics service", path);
         synchronized (statisticMap) {
             if (statisticMap.containsKey(path)) {
             	statisticMap.put(path, null);
@@ -283,7 +284,7 @@ public class StatMonitor implements IService{
                 count += pointNum;
             } catch (FileNodeManagerException e) {
                 numInsertError.incrementAndGet();
-                LOGGER.error("Inserting Stat Points error.",  e);
+                LOGGER.error("Inserting stat points error.",  e);
             }
         }
     }
@@ -325,7 +326,7 @@ public class StatMonitor implements IService{
                         }
                     }
                 }catch (FileNodeManagerException e) {
-                    LOGGER.error("Error when delete Statistics information periodically, ", e);
+                    LOGGER.error("Error occurred when deleting statistics information periodically, because", e);
                     e.printStackTrace();
                 }
             }
