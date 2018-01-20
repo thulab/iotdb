@@ -3,15 +3,30 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
+/**
+ * This class is used to store and query all overflow data in memory.<br>
+ * This just represent someone storage group.<br>
+ * 
+ * @author liukun
+ *
+ */
 public class OverflowSupport {
 
+	/**
+	 * store update and delete data
+	 */
 	private Map<String, Map<String, OverflowSeriesImpl>> indexTrees;
-	// private MemTable memtable;
+
+	/**
+	 * store insert data
+	 */
+	private IMemTable memTable;
 
 	public OverflowSupport() {
 		indexTrees = new HashMap<>();
@@ -44,11 +59,11 @@ public class OverflowSupport {
 		indexTrees.get(deltaObjectId).get(measurementId).delete(timestamp);
 	}
 
-	public void queryOverflowInsert() {
-		
+	public void queryOverflowInsertInMemory() {
+
 	}
 
-	public DynamicOneColumnData queryOverflowUpdate(String deltaObjectId, String measurementId,
+	public DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
 			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
 			SingleSeriesFilterExpression valueFilter, TSDataType dataType, DynamicOneColumnData data) {
 		if (indexTrees.containsKey(deltaObjectId)) {
@@ -76,7 +91,7 @@ public class OverflowSupport {
 
 	}
 
-	public long getMemUsage() {
+	public long getSize() {
 		// memtable+overflowTreesMap
 		return 0;
 	}

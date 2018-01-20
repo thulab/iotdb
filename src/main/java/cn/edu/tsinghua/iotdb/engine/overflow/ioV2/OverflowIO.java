@@ -27,17 +27,22 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 
-public class OverflowIO {
+public class OverflowIO extends TsFileIOWriter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowIO.class);
-	private OverflowReadWriter IO;
+	private OverflowReadWriter overflowReadWriter;
 
-	public OverflowIO(String filePath, long lastUpdatePosition) throws IOException {
+	public OverflowIO(String filePath, long lastUpdatePosition, boolean isInsert) throws IOException {
+		super();
 		OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
-		IO = new OverflowReadWriter(filePath);
+		overflowReadWriter = new OverflowReadWriter(filePath);
+		if (isInsert) {
+			super.setIOWriter(overflowReadWriter);
+		}
 	}
 
-	private TimeSeriesChunkMetaData startTimeSeriesChunkMetaData(OverflowSeriesImpl index) throws IOException {
+	private TimeSeriesChunkMetaData startTimeSeries(OverflowSeriesImpl index) throws IOException {
 		LOGGER.debug(
 				"Start overflow series chunk meatadata: measurementId: {}, valueCount: {}, compressionName: {}, TSdatatype: {}.",
 				index.getMeasurementId(), index.getValueCount(), CompressionTypeName.UNCOMPRESSED, index.getDataType());
@@ -93,17 +98,21 @@ public class OverflowIO {
 	 */
 	public TimeSeriesChunkMetaData flush(OverflowSeriesImpl index) throws IOException {
 		long beginPos = this.getPos();
-		TimeSeriesChunkMetaData currentSeries = startTimeSeriesChunkMetaData(index);
+		TimeSeriesChunkMetaData currentSeries = startTimeSeries(index);
 
 		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 		index.getOverflowIndex().toBytes(byteStream);
-		byteStream.writeTo(IO.getOutputStream());
+		byteStream.writeTo(overflowReadWriter);
 		// TODO: use buff
 		// flush();
 		int size = (int) (this.getPos() - beginPos);
 		currentSeries.setTotalByteSize(size);
 		endSeries(size, currentSeries);
 		return currentSeries;
+	}
+
+	public void clearRowGroupMetadatas() {
+		super.rowGroupMetaDatas.clear();
 	}
 
 	public List<OFRowGroupListMetadata> flush(Map<String, Map<String, OverflowSeriesImpl>> overflowTrees)
@@ -131,19 +140,27 @@ public class OverflowIO {
 	}
 
 	public void toTail() throws IOException {
-		IO.toTail();
+		overflowReadWriter.toTail();
 	}
 
 	public long getPos() throws IOException {
-		return IO.getPos();
+		return overflowReadWriter.getPos();
 	}
 
 	public void close() throws IOException {
-		IO.close();
+		overflowReadWriter.close();
 	}
 
 	public void flush() throws IOException {
-		IO.flush();
+		overflowReadWriter.flush();
+	}
+
+	public OverflowReadWriter getReader() {
+		return overflowReadWriter;
+	}
+
+	public OverflowReadWriter getWriter() {
+		return overflowReadWriter;
 	}
 
 	static class OverflowReadWriter extends OutputStream
@@ -231,6 +248,9 @@ public class OverflowIO {
 			File tempFile = new File(tempFilePath);
 			File normalFile = new File(filePath);
 			if (normalFile.exists() && normalFile.length() > 0) {
+				if (normalFile.length() == lastUpdatePosition) {
+					return;
+				}
 				raf = new RandomAccessFile(normalFile, R_MODE);
 				if (tempFile.exists()) {
 					tempFile.delete();

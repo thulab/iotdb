@@ -2,6 +2,8 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -24,7 +26,6 @@ public class OverflowProcessor {
 
 	private OverflowSupport workSupport;
 	private OverflowSupport flushSupport;
-	private OverflowSupport mergeSupport;
 
 	private FlushState flushStatus;
 	private boolean isMerge;
@@ -32,7 +33,7 @@ public class OverflowProcessor {
 	private ReentrantLock queryFlushLock = new ReentrantLock();
 	private final TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig();
 
-	public OverflowProcessor() {
+	public OverflowProcessor(String processorName, Map<String, Object> parameters) {
 		// check merge or work status
 	}
 
@@ -86,10 +87,10 @@ public class OverflowProcessor {
 	private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
 			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
 			SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
-		DynamicOneColumnData columnData = workSupport.queryOverflowUpdate(deltaObjectId, measurementId, timeFilter,
-				freqFilter, valueFilter, dataType, null);
+		DynamicOneColumnData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId,
+				timeFilter, freqFilter, valueFilter, dataType, null);
 		if (flushStatus.isFlushing()) {
-			columnData = flushSupport.queryOverflowUpdate(deltaObjectId, measurementId, timeFilter, freqFilter,
+			columnData = flushSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, timeFilter, freqFilter,
 					valueFilter, dataType, columnData);
 		}
 		return columnData;
@@ -179,19 +180,34 @@ public class OverflowProcessor {
 	}
 
 	private void switchWorkToFlush() {
-
+		queryFlushLock.lock();
+		try {
+			flushSupport = workSupport;
+			flushSupport = new OverflowSupport();
+		} finally {
+			queryFlushLock.unlock();
+		}
 	}
 
 	private void switchFlushToWork() {
-
+		queryFlushLock.lock();
+		try {
+			flushSupport = null;
+		} finally {
+			queryFlushLock.unlock();
+		}
 	}
 
 	public void switchWorkToMerge() {
-
+		mergeResource = workResource;
+		// TODO: NEW ONE workResource
+		isMerge = true;
 	}
 
-	public void switchMergeToWork() {
-
+	public void switchMergeToWork() throws IOException {
+		mergeResource.close();
+		mergeResource = null;
+		isMerge = false;
 	}
 
 	public boolean isMerge() {
@@ -204,11 +220,28 @@ public class OverflowProcessor {
 		}
 	}
 
-	private void flush(boolean synchronization) {
+	private Future<?> flush(boolean synchronization) {
+		// statistic information for flush
 
+		// value count
+
+		// while check flush
+
+		// prepare for flushing
+
+		// check synchronization
+		if (synchronization) {
+
+		} else {
+
+		}
+		return null;
+		// return release the lock
 	}
 
 	public void flush() {
+
+		// TODO: USE FUTURE TO CONTROL SYNCHRONIZATION OR ASYNCHRONIZATION
 		// flush interval
 
 		//

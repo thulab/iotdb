@@ -9,6 +9,9 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 /**
+ * This class is only used to store and query overflow overflowIndex
+ * {@code IIntervalTreeOperator} data in memory.
+ * 
  * @author liukun
  */
 public class OverflowSeriesImpl {
@@ -46,7 +49,7 @@ public class OverflowSeriesImpl {
 		return overflowIndex.queryMemory(timeFilter, valueFilter, freqFilter, data);
 	}
 
-	public long getMemUsage() {
+	public long getSize() {
 		return overflowIndex.calcMemSize();
 	}
 

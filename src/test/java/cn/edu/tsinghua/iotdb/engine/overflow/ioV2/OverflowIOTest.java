@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -35,7 +36,7 @@ public class OverflowIOTest {
 
 	@Before
 	public void setUp() throws Exception {
-		io = new OverflowIO(overflowFilePath, 0);
+		io = new OverflowIO(overflowFilePath, 0, false);
 		reader = new TsRandomAccessLocalFileReader(overflowFilePath);
 	}
 
@@ -99,7 +100,7 @@ public class OverflowIOTest {
 	@Test
 	public void testflushIndexTrees() throws IOException {
 		OverflowSupport support = new OverflowSupport();
-		produceData(support);
+		OverflowTestUtils.produceData(support);
 		List<OFRowGroupListMetadata> rowGroupListMetadatas = io.flush(support.getOverflowSeriesMap());
 		assertEquals(2, rowGroupListMetadatas.size());
 		OFRowGroupListMetadata d1 = null;
@@ -174,24 +175,18 @@ public class OverflowIOTest {
 		assertEquals(0, d2s2.getFloat(0), error);
 	}
 
-	private void produceData(OverflowSupport support) {
-		assertEquals(true, support.isEmptyOfOverflowSeriesMap());
-		assertEquals(true, support.isEmptyOfMemTable());
-		// d1 s1
-		support.update(deltaObjectId1, measurementId1, 2, 10, dataType1, BytesUtils.intToBytes(10));
-		support.update(deltaObjectId1, measurementId1, 20, 30, dataType1, BytesUtils.intToBytes(20));
-		// time :[2,10] [20,30] value: int [10,10] int[20,20]
-		// d1 s2
-		support.delete(deltaObjectId1, measurementId2, 10, dataType1);
-		support.update(deltaObjectId1, measurementId2, 20, 30, dataType1, BytesUtils.intToBytes(20));
-		// time: [0,-10] [20,30] value[20,20]
-		// d2 s1
-		support.update(deltaObjectId2, measurementId1, 10, 20, dataType2, BytesUtils.floatToBytes(10.5f));
-		support.update(deltaObjectId2, measurementId1, 15, 40, dataType2, BytesUtils.floatToBytes(20.5f));
-		// time: [5,9] [10,40] value [10.5,10.5] [20.5,20.5]
-		// d2 s2
-		support.update(deltaObjectId2, measurementId2, 2, 10, dataType2, BytesUtils.floatToBytes(5.5f));
-		support.delete(deltaObjectId2, measurementId2, 20, dataType2);
+	@Test
+	public void testFileCutoff() throws IOException {
+		File file = new File("testoverflowfile");
+		FileOutputStream fileOutputStream = new FileOutputStream(file);
+		byte[] bytes = new byte[20];
+		fileOutputStream.write(bytes);
+		fileOutputStream.close();
+		assertEquals(20, file.length());
+		OverflowIO overflowIO = new OverflowIO(file.getPath(), 0, false);
+		assertEquals(0, file.length());
+		overflowIO.close();
+		file.delete();
 	}
 
 }
