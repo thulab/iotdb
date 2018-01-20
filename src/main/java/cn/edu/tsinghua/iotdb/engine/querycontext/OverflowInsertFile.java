@@ -11,6 +11,15 @@ public class OverflowInsertFile {
     private String path;  //Full path of current OverflowInsertFile
     private List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas; //seriesChunkMetadata of selected series
 
+    public OverflowInsertFile() {
+
+    }
+
+    public OverflowInsertFile(String path, List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas) {
+        this.path = path;
+        this.timeSeriesChunkMetaDatas = timeSeriesChunkMetaDatas;
+    }
+
     public String getPath() {
         return path;
     }

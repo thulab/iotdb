@@ -25,4 +25,9 @@ public class SeriesInOneGroupReaderImpl implements SeriesReader {
     public void skipCurrentTimeValuePair() throws IOException {
 
     }
+
+    @Override
+    public void close() throws IOException {
+
+    }
 }

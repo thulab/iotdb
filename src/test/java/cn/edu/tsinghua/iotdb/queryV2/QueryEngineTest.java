@@ -93,7 +93,7 @@ public class QueryEngineTest {
 
     @Test
     public void testTerminateQueryJob() throws InterruptedException {
-        initQueryEngine(3);
+        initQueryEngine(6);
         QueryJob queryJob = new QueryJob(1001L);
         QueryJobFuture queryJobFuture = queryEngine.submit(queryJob);
         queryJobFuture.terminateCurrentJob();

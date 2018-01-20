@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 
 import java.io.IOException;
@@ -65,6 +66,13 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
     public void skipCurrentTimeValuePair() throws IOException {
         if (hasNext()) {
             next();
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        for (TimeValuePairReader timeValuePairReader : readerList) {
+            timeValuePairReader.close();
         }
     }
 

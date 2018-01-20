@@ -78,5 +78,10 @@ public class SeriesMergeSortReaderTest {
         public void skipCurrentTimeValuePair() throws IOException {
             next();
         }
+
+        @Override
+        public void close() throws IOException {
+
+        }
     }
 }

@@ -34,6 +34,11 @@ public class PriorityTimeValuePairReader implements TimeValuePairReader {
         seriesReader.next();
     }
 
+    @Override
+    public void close() throws IOException {
+        seriesReader.close();
+    }
+
     public Priority getPriority() {
         return priority;
     }
