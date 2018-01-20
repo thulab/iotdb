@@ -235,9 +235,12 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * insert TsRecord into storage group
 	 * 
-	 * @param tsRecord: input Data
-	 * @param isMonitor: if true, the insertion is done by StatMonitor adn the Stat Info will not be recorded. 
-	 *                   if false, the statParamsHashMap will be updated.
+	 * @param tsRecord:
+	 *            input Data
+	 * @param isMonitor:
+	 *            if true, the insertion is done by StatMonitor and the
+	 *            statistic Info will not be recorded. if false, the
+	 *            statParamsHashMap will be updated.
 	 * @return an int value represents the insert type
 	 * @throws FileNodeManagerException
 	 */
@@ -263,7 +266,7 @@ public class FileNodeManager implements IStatistic {
 				try {
 					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Get the overflow processor failed, the filenode is {}, insert time is {}",
+					LOGGER.error("Failed to get overflow processor, the filenode is {}, insert time is {}",
 							filenodeName, timestamp, e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
@@ -420,7 +423,7 @@ public class FileNodeManager implements IStatistic {
 			try {
 				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("Get the overflow processor failed, the filenode is {}, update time is {} to {}",
+				LOGGER.error("Failed to get overflow processor, the filenode is {}, update time is {} to {}",
 						filenodeName, startTime, endTime, e);
 				throw new FileNodeManagerException(e);
 			}
@@ -479,7 +482,7 @@ public class FileNodeManager implements IStatistic {
 				try {
 					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Get the overflow processor failed, the filenode processor is {}, delete time is {}",
+					LOGGER.error("Failed to get overflow processor, the filenode processor is {}, delete time is {}",
 							filenodeName, timestamp, e);
 					throw new FileNodeManagerException(e);
 				}
@@ -533,7 +536,7 @@ public class FileNodeManager implements IStatistic {
 				try {
 					fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName(), parameters);
 				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Get the overflow processor failed, the filenode is {}",
+					LOGGER.error("Failed to get overflow processor, the filenode is {}",
 							fileNodeProcessor.getProcessorName(), e);
 					throw new FileNodeManagerException(e);
 				}
@@ -614,7 +617,8 @@ public class FileNodeManager implements IStatistic {
 			}
 			long totalTime = 0;
 			for (Future<?> task : futureTasks) {
-				// loop waiting for merge to end, the longest waiting time is 60s.
+				// loop waiting for merge to end, the longest waiting time is
+				// 60s.
 				int time = 2;
 				while (!task.isDone()) {
 					try {
@@ -688,7 +692,8 @@ public class FileNodeManager implements IStatistic {
 									processorMap.remove(processorName);
 									break;
 								} else {
-									LOGGER.info("Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
+									LOGGER.info(
+											"Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
 								}
 							} catch (ProcessorException e) {
 								LOGGER.error("Delete the filenode processor {} error.", processorName, e);
@@ -697,7 +702,8 @@ public class FileNodeManager implements IStatistic {
 								processor.writeUnlock();
 							}
 						} else {
-							LOGGER.info("Can't delete the filenode processor {}, because it can't get the write lock. Wait 100ms to retry");
+							LOGGER.info(
+									"Can't delete the filenode processor {}, because it can't get the write lock. Wait 100ms to retry");
 						}
 						try {
 							TimeUnit.MILLISECONDS.sleep(100);
@@ -889,7 +895,8 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * Try to close All
 	 * 
-	 * @return true - close successfully false - can't close because of merge operation
+	 * @return true - close successfully false - can't close because of merge
+	 *         operation
 	 * @throws FileNodeManagerException
 	 */
 	public synchronized void closeAll() throws FileNodeManagerException {
@@ -966,7 +973,7 @@ public class FileNodeManager implements IStatistic {
 			if (processor.tryLock(true)) {
 				try {
 					boolean isMerge = processor.flush();
-					if(isMerge){
+					if (isMerge) {
 						processor.submitToMerge();
 					}
 				} finally {
@@ -993,7 +1000,7 @@ public class FileNodeManager implements IStatistic {
 				processor.writeLock();
 				try {
 					boolean isMerge = processor.flush();
-					if(isMerge){
+					if (isMerge) {
 						processor.submitToMerge();
 					}
 				} finally {

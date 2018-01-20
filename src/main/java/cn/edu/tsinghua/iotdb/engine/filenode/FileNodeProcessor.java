@@ -333,7 +333,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * set <code>isOverflowed</code> to true,
 	 */
 	public void setOverflowed(boolean isOverflowed) {
-		if (!(this.isOverflowed == isOverflowed)) {
+		if (this.isOverflowed != isOverflowed) {
 			this.isOverflowed = isOverflowed;
 		}
 	}
@@ -504,7 +504,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public void changeTypeToChanged(String deltaObjectId, long timestamp) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
 			LOGGER.warn(
-					"Didn't find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{},time:{}]",
+					"Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{},time:{}]",
 					getProcessorName(), deltaObjectId, timestamp);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -528,7 +528,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public void changeTypeToChanged(String deltaObjectId, long startTime, long endTime) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
 			LOGGER.warn(
-					"Didn't find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
+					"Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
 					getProcessorName(), deltaObjectId, startTime, endTime);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -554,7 +554,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public void changeTypeToChangedForDelete(String deltaObjectId, long timestamp) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
 			LOGGER.warn(
-					"Didn't find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, delete time:{}]",
+					"Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, delete time:{}]",
 					getProcessorName(), deltaObjectId, timestamp);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -785,7 +785,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		//
 		// close bufferwrite and overflow, prepare for merge
 		//
-		LOGGER.info("The filenode processor {} begin to merge.", getProcessorName());
+		LOGGER.info("The filenode processor {} begins to merge.", getProcessorName());
 		prepareForMerge();
 		//
 		// change status from overflowed to no overflowed
@@ -884,10 +884,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			if (backupIntervalFile.overflowChangeType == OverflowChangeType.CHANGED) {
 				// query data and merge
 				try {
-					if (backupIntervalFile.getStartTimeMap().size() != backupIntervalFile.getEndTimeMap().size()) {
-						throw new FileNodeProcessorException(
-								"Merge: the size of startTimeMap is not equal to the size of startTimeMap");
-					}
 					LOGGER.info(
 							"The filenode processor {} begins merging the {}/{} tsfile[{}] with overflow file, the process is {}%",
 							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
