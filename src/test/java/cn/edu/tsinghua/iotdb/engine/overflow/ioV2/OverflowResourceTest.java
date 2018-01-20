@@ -38,12 +38,13 @@ public class OverflowResourceTest {
 	@After
 	public void tearDown() throws Exception {
 		work.close();
+		support.clear();
 		EnvironmentUtils.cleanDir(filePath);
 	}
 
 	@Test
 	public void testOverflowUpdate() throws IOException {
-		OverflowTestUtils.produceData(support);
+		OverflowTestUtils.produceUpdateData(support);
 		work.flush(null, support.getOverflowSeriesMap());
 		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
 				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
@@ -58,15 +59,35 @@ public class OverflowResourceTest {
 		work.close();
 		// append file
 		long originlength = updateFile.length();
-		FileOutputStream fileOutputStream = new FileOutputStream(updateFile,true);
+		FileOutputStream fileOutputStream = new FileOutputStream(updateFile, true);
 		fileOutputStream.write(new byte[20]);
 		fileOutputStream.close();
-		assertEquals(originlength+20, updateFile.length());
+		assertEquals(originlength + 20, updateFile.length());
 		work = new OverflowResource(filePath, dataPath);
 		assertEquals(originlength, updateFile.length());
 	}
-	
-	public void testOverflowInsert(){
-		
+
+	public void testOverflowInsert() throws IOException {
+		OverflowTestUtils.produceInsertData(support);
+		work.flush(support.getMemTabale(), null);
+		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1,
+				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
+		assertEquals(0, chunkMetaDatas.size());
+		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+				OverflowTestUtils.dataType1);
+		assertEquals(1, chunkMetaDatas.size());
+		TimeSeriesChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
+		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
+		// close
+		work.close();
+		// append file
+		long originlength = insertFile.length();
+		FileOutputStream fileOutputStream = new FileOutputStream(insertFile, true);
+		fileOutputStream.write(new byte[20]);
+		fileOutputStream.close();
+		assertEquals(originlength + 20, insertFile.length());
+		work = new OverflowResource(filePath, dataPath);
+		assertEquals(originlength, updateFile.length());
 	}
 }

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class OverflowTestUtils {
 	public static String deltaObjectId1 = "d1";
@@ -13,7 +15,7 @@ public class OverflowTestUtils {
 	public static TSDataType dataType1 = TSDataType.INT32;
 	public static TSDataType dataType2 = TSDataType.FLOAT;
 
-	public static void produceData(OverflowSupport support) {
+	public static void produceUpdateData(OverflowSupport support) {
 		assertEquals(true, support.isEmptyOfOverflowSeriesMap());
 		assertEquals(true, support.isEmptyOfMemTable());
 		// d1 s1
@@ -31,5 +33,21 @@ public class OverflowTestUtils {
 		// d2 s2
 		support.update(deltaObjectId2, measurementId2, 2, 10, dataType2, BytesUtils.floatToBytes(5.5f));
 		support.delete(deltaObjectId2, measurementId2, 20, dataType2);
+	}
+
+	public static void produceInsertData(OverflowSupport support) {
+		support.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(1), 1));
+		support.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(3), 3));
+		support.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(2), 2));
+
+		support.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 1));
+		support.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 2));
+		support.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(10.5f), 2));
+	}
+	
+	private static TSRecord getData(String d, String m, TSDataType type, String value, long time) {
+		TSRecord record = new TSRecord(time, d);
+		record.addTuple(DataPoint.getDataPoint(type, m, value));
+		return record;
 	}
 }

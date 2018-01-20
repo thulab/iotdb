@@ -4,9 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries;
+import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries.UpdateTimeValuePair;
+import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 /**
@@ -30,12 +34,14 @@ public class OverflowSupport {
 
 	public OverflowSupport() {
 		indexTrees = new HashMap<>();
-		// init memtable
+		memTable = new TreeSetMemTable();
 	}
 
 	public void insert(TSRecord tsRecord) {
-		// insert into memtable
-
+		for (DataPoint dataPoint : tsRecord.dataPointList) {
+			memTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+					dataPoint.getValue().toString());
+		}
 	}
 
 	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType dataType,
@@ -59,8 +65,9 @@ public class OverflowSupport {
 		indexTrees.get(deltaObjectId).get(measurementId).delete(timestamp);
 	}
 
-	public void queryOverflowInsertInMemory() {
-
+	public Iterable<TreeSetMemSeries.UpdateTimeValuePair> queryOverflowInsertInMemory(String deltaObjectId,
+			String measurementId, TSDataType dataType) {
+		return (Iterable<UpdateTimeValuePair>) memTable.query(deltaObjectId, measurementId, dataType);
 	}
 
 	public DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
@@ -84,22 +91,21 @@ public class OverflowSupport {
 	}
 
 	public boolean isEmptyOfMemTable() {
-		return true;
+		return memTable.isEmpty();
 	}
 
-	public void getMemTabale() {
-
+	public IMemTable getMemTabale() {
+		return memTable;
 	}
 
 	public long getSize() {
 		// memtable+overflowTreesMap
+		// TODO: calculate the size of this overflow support
 		return 0;
 	}
 
 	public void clear() {
-		// clear overflows
 		indexTrees.clear();
-		// clear memtable
-
+		memTable.clear();
 	}
 }

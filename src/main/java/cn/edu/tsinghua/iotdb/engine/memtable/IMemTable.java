@@ -29,9 +29,13 @@ public interface IMemTable {
 
     int size();
 
-    Iterable<?> query(String deltaObject, String measurement);
+    Iterable<?> query(String deltaObject, String measurement,TSDataType dataType);
 
     void resetMemSeries(String deltaObject, String measurement);
+    
+    void clear();
+    
+    boolean isEmpty();
 
 }
 
