@@ -182,16 +182,6 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
-		if (!insertMetadatas.containsKey(deltaObjectId)) {
-			insertMetadatas.put(deltaObjectId, new HashMap<>());
-		}
-		if (!insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-			insertMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
-		}
-		insertMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
-	}
-
 	public List<TimeSeriesChunkMetaData> getUpdateDeleteMetadatas(String deltaObjectId, String measurementId,
 			TSDataType dataType) {
 		List<TimeSeriesChunkMetaData> chunkMetaDatas = new ArrayList<>();
@@ -209,17 +199,6 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	public void addUpdateDeletetMetadata(String deltaObjectId, String measurementId,
-			TimeSeriesChunkMetaData chunkMetaData) {
-		if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
-			updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
-		}
-		if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-			updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
-		}
-		updateDeleteMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
-	}
-
 	public void flush(IMemTable memTable, Map<String, Map<String, OverflowSeriesImpl>> overflowTrees)
 			throws IOException {
 		flush(memTable);
@@ -228,7 +207,7 @@ public class OverflowResource {
 	}
 
 	public void flush(IMemTable memTable) throws IOException {
-		if (memTable != null) {
+		if (memTable != null && !memTable.isEmpty()) {
 			// memtable
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
@@ -249,27 +228,30 @@ public class OverflowResource {
 	}
 
 	public void flush(Map<String, Map<String, OverflowSeriesImpl>> overflowTrees) throws IOException {
-		updateDeleteIO.toTail();
-		long lastPosition = updateDeleteIO.getPos();
-		List<OFRowGroupListMetadata> ofRowGroupListMetadatas = updateDeleteIO.flush(overflowTrees);
-		OFFileMetadata ofFileMetadata = new OFFileMetadata(lastPosition, ofRowGroupListMetadatas);
-		TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
-		long start = updateDeleteIO.getPos();
-		OverflowReadWriteThriftFormatUtils.writeOFFileMetaData(
-				metadataConverter.toThriftOFFileMetadata(0, ofFileMetadata), updateDeleteIO.getWriter());
-		long end = updateDeleteIO.getPos();
-		updateDeleteIO.getWriter().write(BytesUtils.intToBytes((int) (end - start)));
-		for (OFRowGroupListMetadata ofRowGroupListMetadata : ofRowGroupListMetadatas) {
-			String deltaObjectId = ofRowGroupListMetadata.getDeltaObjectId();
-			if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
-				updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
-			}
-			for (OFSeriesListMetadata ofSeriesListMetadata : ofRowGroupListMetadata.getSeriesLists()) {
-				String measurementId = ofSeriesListMetadata.getMeasurementId();
-				if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-					updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+		if (overflowTrees != null && !overflowTrees.isEmpty()) {
+			updateDeleteIO.toTail();
+			long lastPosition = updateDeleteIO.getPos();
+			List<OFRowGroupListMetadata> ofRowGroupListMetadatas = updateDeleteIO.flush(overflowTrees);
+			OFFileMetadata ofFileMetadata = new OFFileMetadata(lastPosition, ofRowGroupListMetadatas);
+			TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
+			long start = updateDeleteIO.getPos();
+			OverflowReadWriteThriftFormatUtils.writeOFFileMetaData(
+					metadataConverter.toThriftOFFileMetadata(0, ofFileMetadata), updateDeleteIO.getWriter());
+			long end = updateDeleteIO.getPos();
+			updateDeleteIO.getWriter().write(BytesUtils.intToBytes((int) (end - start)));
+			for (OFRowGroupListMetadata ofRowGroupListMetadata : ofRowGroupListMetadatas) {
+				String deltaObjectId = ofRowGroupListMetadata.getDeltaObjectId();
+				if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
+					updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
 				}
-				updateDeleteMetadatas.get(deltaObjectId).get(measurementId).addAll(ofSeriesListMetadata.getMetaDatas());
+				for (OFSeriesListMetadata ofSeriesListMetadata : ofRowGroupListMetadata.getSeriesLists()) {
+					String measurementId = ofSeriesListMetadata.getMeasurementId();
+					if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
+						updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+					}
+					updateDeleteMetadatas.get(deltaObjectId).get(measurementId)
+							.addAll(ofSeriesListMetadata.getMetaDatas());
+				}
 			}
 		}
 	}
@@ -282,19 +264,32 @@ public class OverflowResource {
 		return updateDeleteFilePath;
 	}
 
-	public OverflowIO getInsertIO() {
-		return insertIO;
-	}
-
-	public OverflowIO getUpdateDeleteIO() {
-		return updateDeleteIO;
-	}
-
 	public void close() throws IOException {
 		insertMetadatas.clear();
 		updateDeleteMetadatas.clear();
 		insertIO.close();
 		updateDeleteIO.close();
+	}
+
+	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
+		if (!insertMetadatas.containsKey(deltaObjectId)) {
+			insertMetadatas.put(deltaObjectId, new HashMap<>());
+		}
+		if (!insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
+			insertMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+		}
+		insertMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
+	}
+
+	public void addUpdateDeletetMetadata(String deltaObjectId, String measurementId,
+			TimeSeriesChunkMetaData chunkMetaData) {
+		if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
+			updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
+		}
+		if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
+			updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+		}
+		updateDeleteMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
 	}
 
 }

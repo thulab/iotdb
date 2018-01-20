@@ -100,7 +100,7 @@ public class OverflowIOTest {
 	@Test
 	public void testflushIndexTrees() throws IOException {
 		OverflowSupport support = new OverflowSupport();
-		OverflowTestUtils.produceData(support);
+		OverflowTestUtils.produceUpdateData(support);
 		List<OFRowGroupListMetadata> rowGroupListMetadatas = io.flush(support.getOverflowSeriesMap());
 		assertEquals(2, rowGroupListMetadatas.size());
 		OFRowGroupListMetadata d1 = null;
@@ -174,7 +174,7 @@ public class OverflowIOTest {
 
 		assertEquals(0, d2s2.getFloat(0), error);
 	}
-
+	
 	@Test
 	public void testFileCutoff() throws IOException {
 		File file = new File("testoverflowfile");

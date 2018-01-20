@@ -37,7 +37,7 @@ public class TreeSetMemSeries implements IMemSeries{
     }
 
     private void checkDataType(TSDataType dataType){
-        assert dataType != this.dataType;
+        assert dataType == this.dataType;
     }
 
     @Override
@@ -127,7 +127,7 @@ public class TreeSetMemSeries implements IMemSeries{
         return treeSet.size();
     }
 
-    class UpdateTimeValuePair extends TimeValuePair implements Comparable{
+    public class UpdateTimeValuePair extends TimeValuePair implements Comparable{
 
         public UpdateTimeValuePair(long timestamp, TsPrimitiveType value) {
             super(timestamp, value);
