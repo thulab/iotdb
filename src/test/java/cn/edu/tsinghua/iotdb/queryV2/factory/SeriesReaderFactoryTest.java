@@ -31,7 +31,7 @@ public class SeriesReaderFactoryTest {
 
     @Test
     public void testJobId() throws InterruptedException {
-        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(new Path("d1.s1"));
+        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(new Path("d1.s1"), dataType, overflowInsertFileList, rawSeriesChunk, updateDeleteInfoOfOneSeries);
         overflowSeriesDataSource.setOverflowInsertFileList(new ArrayList<>());
 
         int count = 10;
@@ -87,7 +87,7 @@ public class SeriesReaderFactoryTest {
         List<OverflowInsertFile> overflowInsertFiles = new ArrayList<>();
         overflowInsertFiles.add(overflowInsertFile);
 
-        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(new Path("d1.s1"));
+        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(new Path("d1.s1"), dataType, overflowInsertFileList, rawSeriesChunk, updateDeleteInfoOfOneSeries);
         overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFiles);
 
         SeriesReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);

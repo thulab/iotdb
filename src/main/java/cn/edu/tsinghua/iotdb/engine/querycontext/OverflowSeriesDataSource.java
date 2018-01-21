@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 
 import java.util.List;
 
@@ -10,12 +10,17 @@ import java.util.List;
  */
 public class OverflowSeriesDataSource {
     private Path seriesPath;
+    private TSDataType dataType;
     private List<OverflowInsertFile> overflowInsertFileList;
-    private SeriesChunk memSeriesChunk;
+    private RawSeriesChunk rawSeriesChunk;
     private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
-    public OverflowSeriesDataSource(Path seriesPath) {
+    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawSeriesChunk, UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
         this.seriesPath = seriesPath;
+        this.dataType = dataType;
+        this.overflowInsertFileList = overflowInsertFileList;
+        this.rawSeriesChunk = rawSeriesChunk;
+        this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
     }
 
     public List<OverflowInsertFile> getOverflowInsertFileList() {
@@ -26,19 +31,35 @@ public class OverflowSeriesDataSource {
         this.overflowInsertFileList = overflowInsertFileList;
     }
 
-    public SeriesChunk getMemSeriesChunk() {
-        return memSeriesChunk;
-    }
-
-    public void setMemSeriesChunk(SeriesChunk memSeriesChunk) {
-        this.memSeriesChunk = memSeriesChunk;
-    }
-
     public UpdateDeleteInfoOfOneSeries getUpdateDeleteInfoOfOneSeries() {
         return updateDeleteInfoOfOneSeries;
     }
 
     public void setUpdateDeleteInfoOfOneSeries(UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
         this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
+    }
+
+    public RawSeriesChunk getRawSeriesChunk() {
+        return rawSeriesChunk;
+    }
+
+    public void setRawSeriesChunk(RawSeriesChunk rawSeriesChunk) {
+        this.rawSeriesChunk = rawSeriesChunk;
+    }
+
+    public Path getSeriesPath() {
+        return seriesPath;
+    }
+
+    public void setSeriesPath(Path seriesPath) {
+        this.seriesPath = seriesPath;
+    }
+
+    public TSDataType getDataType() {
+        return dataType;
+    }
+
+    public boolean hasRawSeriesChunk() {
+        return rawSeriesChunk != null;
     }
 }
