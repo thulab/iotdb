@@ -44,10 +44,50 @@ public class OverflowTestUtils {
 		support.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 2));
 		support.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(10.5f), 2));
 	}
-	
+
 	private static TSRecord getData(String d, String m, TSDataType type, String value, long time) {
 		TSRecord record = new TSRecord(time, d);
 		record.addTuple(DataPoint.getDataPoint(type, m, value));
 		return record;
 	}
+
+	public static void produceUpdateData(OverflowProcessor processor) {
+		// d1 s1
+		processor.update(deltaObjectId1, measurementId1, 2, 10, dataType1, BytesUtils.intToBytes(10));
+		processor.update(deltaObjectId1, measurementId1, 20, 30, dataType1, BytesUtils.intToBytes(20));
+		// time :[2,10] [20,30] value: int [10,10] int[20,20]
+		// d1 s2
+		processor.delete(deltaObjectId1, measurementId2, 10, dataType1);
+		processor.update(deltaObjectId1, measurementId2, 20, 30, dataType1, BytesUtils.intToBytes(20));
+		// time: [0,-10] [20,30] value[20,20]
+		// d2 s1
+		processor.update(deltaObjectId2, measurementId1, 10, 20, dataType2, BytesUtils.floatToBytes(10.5f));
+		processor.update(deltaObjectId2, measurementId1, 15, 40, dataType2, BytesUtils.floatToBytes(20.5f));
+		// time: [5,9] [10,40] value [10.5,10.5] [20.5,20.5]
+		// d2 s2
+		processor.update(deltaObjectId2, measurementId2, 2, 10, dataType2, BytesUtils.floatToBytes(5.5f));
+		processor.delete(deltaObjectId2, measurementId2, 20, dataType2);
+	}
+
+	public static void produceInsertData(OverflowProcessor processor) {
+
+		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(1), 1));
+		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(3), 3));
+		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(2), 2));
+
+		processor.insert(getData(deltaObjectId1, measurementId2, dataType1, String.valueOf(1), 1));
+		processor.insert(getData(deltaObjectId1, measurementId2, dataType1, String.valueOf(3), 3));
+		processor.insert(getData(deltaObjectId1, measurementId2, dataType1, String.valueOf(2), 2));
+		
+		
+		processor.insert(getData(deltaObjectId2, measurementId1, dataType2, String.valueOf(5.5f), 1));
+		processor.insert(getData(deltaObjectId2, measurementId1, dataType2, String.valueOf(5.5f), 2));
+		processor.insert(getData(deltaObjectId2, measurementId1, dataType2, String.valueOf(10.5f), 2));
+		
+		processor.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 1));
+		processor.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 2));
+		processor.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(10.5f), 2));
+
+	}
+
 }

@@ -133,8 +133,9 @@ public class OverflowProcessor extends Processor {
 	/**
 	 * This is used to store information about overflow file.<br>
 	 * 
-	 * @param lastOverflowFilePostion -1 - represents flush overflow row group.
-	 *                                other - represents close overflow file
+	 * @param lastOverflowFilePostion
+	 *            -1 - represents flush overflow row group. other - represents
+	 *            close overflow file
 	 * @throws OverflowProcessorException
 	 */
 	private void writeStoreToDisk(long lastOverflowFilePostion, boolean isClose) throws OverflowProcessorException {
@@ -261,8 +262,8 @@ public class OverflowProcessor extends Processor {
 	 * write a TsRecord to overflow
 	 * 
 	 * @param record
-	 * @return true - if size of overflow file or metadata reaches the threshold. 
-	 *         false - otherwise
+	 * @return true - if size of overflow file or metadata reaches the
+	 *         threshold. false - otherwise
 	 * @throws OverflowProcessorException
 	 */
 	public boolean insert(TSRecord record) throws OverflowProcessorException {
@@ -320,8 +321,8 @@ public class OverflowProcessor extends Processor {
 	 * @param endTime
 	 * @param type
 	 * @param v
-	 * @return true - if size of overflow file or metadata reaches the threshold. 
-	 *         false - otherwise
+	 * @return true - if size of overflow file or metadata reaches the
+	 *         threshold. false - otherwise
 	 * @throws OverflowProcessorException
 	 */
 	public boolean update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
@@ -348,8 +349,8 @@ public class OverflowProcessor extends Processor {
 	 * @param measurementId
 	 * @param timestamp
 	 * @param type
-	 * @return true - if size of overflow file or metadata reaches the threshold. 
-	 *         false - otherwise
+	 * @return true - if size of overflow file or metadata reaches the
+	 *         threshold. false - otherwise
 	 * @throws OverflowProcessorException
 	 */
 	public boolean delete(String deltaObjectId, String measurementId, long timestamp, TSDataType type)
@@ -446,6 +447,7 @@ public class OverflowProcessor extends Processor {
 				// just close overflow processor will call this function by
 				// using true parameter
 				LOGGER.info("The overflow processor {} starts flushing synchronously.", getProcessorName());
+				long flushStartTime = System.currentTimeMillis();
 				flushStatus.setFlushing();
 				try {
 					// flush overflow rowgroup data
@@ -477,7 +479,16 @@ public class OverflowProcessor extends Processor {
 						flushStatus.notify();
 					}
 				}
-				LOGGER.info("The overflow processor {} starts flushing asynchronously.", getProcessorName());
+				LOGGER.info("The overflow processor {} ends flushing asynchronously.", getProcessorName());
+				long flushEndTime = System.currentTimeMillis();
+				long timeInterval = flushEndTime - flushStartTime;
+				DateTime startDateTime = new DateTime(flushStartTime,
+						TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				DateTime endDateTime = new DateTime(flushEndTime,
+						TsfileDBDescriptor.getInstance().getConfig().timeZone);
+				LOGGER.info(
+						"The overflow processor {} flush start time is {}, flush end time is {}, time consumption is {}ms",
+						getProcessorName(), startDateTime, endDateTime, timeInterval);
 				BasicMemController.getInstance().reportFree(this, oldMemUsage);
 			} else {
 				// flush overflow row group asynchronously

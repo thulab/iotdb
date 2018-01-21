@@ -23,7 +23,7 @@ public class TreeSetMemTable implements IMemTable{
 
     @Override
     public boolean checkPath(String deltaObject, String measurement) {
-        return !memTableMap.containsKey(deltaObject) &&
+        return memTableMap.containsKey(deltaObject) &&
                 memTableMap.get(deltaObject).containsKey(measurement);
 
     }

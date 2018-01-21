@@ -58,22 +58,6 @@ public class OverflowProcessorTest {
 		}
 	};
 
-	private Action filenodemanagerbackupaction = new Action() {
-
-		@Override
-		public void act() throws Exception {
-			System.out.println("filenode manager backup action");
-		}
-	};
-
-	private Action filenodemanagerflushaction = new Action() {
-
-		@Override
-		public void act() throws Exception {
-			System.out.println("filenode manager flush action");
-		}
-	};
-
 	@Before
 	public void setUp() throws Exception {
 		parameters = new HashMap<String, Object>();
