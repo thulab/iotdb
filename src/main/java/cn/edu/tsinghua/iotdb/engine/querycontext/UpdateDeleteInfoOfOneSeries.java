@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperationReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -15,7 +15,7 @@ public class UpdateDeleteInfoOfOneSeries {
     private List<OverflowUpdateDeleteFile> overflowUpdateFileList;
     private DynamicOneColumnData overflowUpdateInMem;
 
-    public OverflowUpdateOperationReader getOverflowUpdateOperationReader() {
+    public OverflowOperationReader getOverflowUpdateOperationReader() {
         //TODO: CGF
         return null;
     }

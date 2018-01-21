@@ -15,6 +15,10 @@ public class OverflowSeriesDataSource {
     private RawSeriesChunk rawSeriesChunk;
     private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
+    public OverflowSeriesDataSource(Path seriesPath) {
+        this.seriesPath = seriesPath;
+    }
+
     public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawSeriesChunk, UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
         this.seriesPath = seriesPath;
         this.dataType = dataType;

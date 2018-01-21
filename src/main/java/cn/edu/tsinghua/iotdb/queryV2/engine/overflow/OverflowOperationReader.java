@@ -5,11 +5,11 @@ import java.io.IOException;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public interface OverflowUpdateOperationReader {
+public interface OverflowOperationReader {
 
     boolean hasNext();
 
-    OverflowUpdateOperation next();
+    OverflowOperation next();
 
     void close() throws IOException;
 }

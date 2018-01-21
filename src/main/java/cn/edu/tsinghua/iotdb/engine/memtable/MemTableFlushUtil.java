@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.page.IPageWriter;
@@ -26,7 +27,7 @@ public class MemTableFlushUtil {
 				IPageWriter pageWriter = new PageWriterImpl(desc);
 				SeriesWriterImpl seriesWriter = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,
 						pageSizeThreshold);
-				for (TreeSetMemSeries.TimeValuePairInMemTable tvPair : series.query()) {
+				for (TimeValuePair tvPair : series.query()) {
 					recordCount++;
 					switch (desc.getType()) {
 					case BOOLEAN:

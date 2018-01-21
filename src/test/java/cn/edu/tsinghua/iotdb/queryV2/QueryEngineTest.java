@@ -93,10 +93,13 @@ public class QueryEngineTest {
 
     @Test
     public void testTerminateQueryJob() throws InterruptedException {
-        initQueryEngine(6);
+        initQueryEngine(3);
         QueryJob queryJob = new QueryJob(1001L);
         QueryJobFuture queryJobFuture = queryEngine.submit(queryJob);
         queryJobFuture.terminateCurrentJob();
-        Assert.assertEquals(QueryJobStatus.TERMINATED, queryJob.getStatus());
+        QueryJobStatus status = queryJob.getStatus();
+        if (status != QueryJobStatus.FINISHED && status != QueryJobStatus.TERMINATED) {
+            Assert.fail();
+        }
     }
 }

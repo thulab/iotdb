@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperation;
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithUpdateOpReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
@@ -62,12 +62,12 @@ public class SeriesWithUpdateOpReaderTest {
     }
 
     private void testRead(SeriesReader seriesReader, OverflowUpdateOperation[] updateOperations) throws IOException {
-        FakedOverflowUpdateOperationReader updateOpReader = new FakedOverflowUpdateOperationReader(updateOperations);
+        FakedOverflowOperationReader updateOpReader = new FakedOverflowOperationReader(updateOperations);
         SeriesWithUpdateOpReader seriesWithUpdateOpReader = new SeriesWithUpdateOpReader(seriesReader, updateOpReader);
         check(updateOpReader, seriesWithUpdateOpReader);
     }
 
-    private void check(FakedOverflowUpdateOperationReader opReader, SeriesWithUpdateOpReader seriesWithUpdateOpReader) throws IOException {
+    private void check(FakedOverflowOperationReader opReader, SeriesWithUpdateOpReader seriesWithUpdateOpReader) throws IOException {
         opReader.reset();
         List<OverflowUpdateOperation> overflowUpdateOperations = new ArrayList<>();
         while (opReader.hasNext()) {
@@ -96,12 +96,12 @@ public class SeriesWithUpdateOpReaderTest {
         return false;
     }
 
-    public static class FakedOverflowUpdateOperationReader implements OverflowUpdateOperationReader {
+    public static class FakedOverflowOperationReader implements OverflowOperationReader {
 
         private OverflowUpdateOperation[] updataOps;
         private int index = 0;
 
-        public FakedOverflowUpdateOperationReader(OverflowUpdateOperation[] updataOps) {
+        public FakedOverflowOperationReader(OverflowUpdateOperation[] updataOps) {
             this.updataOps = updataOps;
         }
 

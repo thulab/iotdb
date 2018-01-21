@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.List;
 
-public class OverflowUpdateOperationReaderImpl implements OverflowUpdateOperationReader{
+public class OverflowUpdateOperationReaderImpl implements OverflowOperationReader {
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowUpdateOperationReaderImpl.class);
     //private List<OverflowUpdateOperation> updateOperations;
     private int index = 0;
