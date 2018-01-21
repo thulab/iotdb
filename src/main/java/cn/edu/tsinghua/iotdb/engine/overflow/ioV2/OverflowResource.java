@@ -31,6 +31,7 @@ import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 
 public class OverflowResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);
+	private String parentPath;
 	private String insertFilePath;
 	private String updateDeleteFilePath;
 	private String positionFilePath;
@@ -269,6 +270,17 @@ public class OverflowResource {
 		updateDeleteMetadatas.clear();
 		insertIO.close();
 		updateDeleteIO.close();
+		deleteDir(parentPath);
+	}
+
+	private void deleteDir(String path) {
+		File file = new File(path);
+		if (file.isDirectory()) {
+			for (String subPath : file.list()) {
+				deleteDir(subPath);
+			}
+		}
+		file.delete();
 	}
 
 	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
