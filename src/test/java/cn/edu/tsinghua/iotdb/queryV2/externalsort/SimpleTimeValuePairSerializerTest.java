@@ -1,7 +1,13 @@
 package cn.edu.tsinghua.iotdb.queryV2.externalsort;
 
+import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePairDeserializer;
+import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePairSerializer;
+import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.FixLengthTimeValuePairDeserializer;
+import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.FixLengthTimeValuePairSerializer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.SimpleTimeValuePairDeserializer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.SimpleTimeValuePairSerializer;
+import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import org.junit.Assert;
@@ -15,31 +21,51 @@ import java.io.IOException;
  */
 public class SimpleTimeValuePairSerializerTest {
 
+    private enum Type {
+        SIMPLE, FIX_LENGTH
+    }
+
     @Test
-    public void test() throws IOException, ClassNotFoundException {
+    public void testSIMPLE() throws IOException, ClassNotFoundException {
         String rootPath = "d1";
         String filePath = rootPath + "/d2/d3/tmpFile1";
         int count = 10000;
-        testReadWrite(count, rootPath, filePath);
+        testReadWrite(genTimeValuePairs(1000), count, rootPath, filePath, Type.SIMPLE);
     }
 
     @Test
-    public void testWithoutParentFolder() throws IOException, ClassNotFoundException {
+    public void testFIX_LENGTH() throws IOException, ClassNotFoundException {
         String rootPath = "tmpFile2";
         String filePath = rootPath;
-        int count = 1000000;
-        testReadWrite(count, rootPath, filePath);
+        int count = 10000;
+        testReadWrite(genTimeValuePairs(10000, TSDataType.BOOLEAN), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(10000, TSDataType.INT32), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(10000, TSDataType.INT64), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(10000, TSDataType.FLOAT), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(10000, TSDataType.DOUBLE), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(10000, TSDataType.TEXT), count, rootPath, filePath, Type.FIX_LENGTH);
     }
 
-    private void testReadWrite(int count, String rootPath, String filePath) throws IOException, ClassNotFoundException {
-        TimeValuePair[] timeValuePairs = genTimeValuePairs(count);
-        SimpleTimeValuePairSerializer serializer = new SimpleTimeValuePairSerializer(filePath);
+    private void testReadWrite(TimeValuePair[] timeValuePairs, int count, String rootPath, String filePath, Type type) throws IOException, ClassNotFoundException {
+        TimeValuePairSerializer serializer = null;
+        if (type == Type.SIMPLE) {
+            serializer = new SimpleTimeValuePairSerializer(filePath);
+        } else if (type == Type.FIX_LENGTH) {
+            serializer = new FixLengthTimeValuePairSerializer(filePath);
+        }
+
         for (TimeValuePair timeValuePair : timeValuePairs) {
             serializer.write(timeValuePair);
         }
         serializer.close();
 
-        SimpleTimeValuePairDeserializer deserializer = new SimpleTimeValuePairDeserializer(filePath);
+        TimeValuePairDeserializer deserializer = null;
+        if (type == Type.SIMPLE) {
+            deserializer = new SimpleTimeValuePairDeserializer(filePath);
+        } else if (type == Type.FIX_LENGTH) {
+            deserializer = new FixLengthTimeValuePairDeserializer(filePath);
+        }
+
         int idx = 0;
         while (deserializer.hasNext()) {
             TimeValuePair timeValuePair = deserializer.next();
@@ -48,10 +74,23 @@ public class SimpleTimeValuePairSerializerTest {
             idx++;
         }
         Assert.assertEquals(count, idx);
+        deserializer.close();
         deleteFileRecursively(new File(rootPath));
     }
 
+    @Test
+    public void readFile() throws IOException {
+        String filePath = "externalSortTestTmp/1_20400";
+        SimpleTimeValuePairDeserializer deserializer = new SimpleTimeValuePairDeserializer(filePath);
+        while (deserializer.hasNext()) {
+            deserializer.next();
+        }
+    }
+
     private void deleteFileRecursively(File file) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
         if (file.isDirectory()) {
             for (File f : file.listFiles()) {
                 deleteFileRecursively(f);
@@ -65,6 +104,33 @@ public class SimpleTimeValuePairSerializerTest {
         TimeValuePair[] timeValuePairs = new TimeValuePair[count];
         for (int i = 0; i < count; i++) {
             timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsInt(i));
+        }
+        return timeValuePairs;
+    }
+
+    private TimeValuePair[] genTimeValuePairs(int count, TSDataType dataType) {
+        TimeValuePair[] timeValuePairs = new TimeValuePair[count];
+        for (int i = 0; i < count; i++) {
+            switch (dataType) {
+                case BOOLEAN:
+                    timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsBoolean(i % 2 == 0 ? true : false));
+                    break;
+                case INT32:
+                    timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsInt(i));
+                    break;
+                case INT64:
+                    timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsLong(i));
+                    break;
+                case FLOAT:
+                    timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsFloat(i + 0.1f));
+                    break;
+                case DOUBLE:
+                    timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsDouble(i + 0.12));
+                    break;
+                case TEXT:
+                    timeValuePairs[i] = new TimeValuePair(i, new TsPrimitiveType.TsBinary(new Binary(String.valueOf(i))));
+                    break;
+            }
         }
         return timeValuePairs;
     }

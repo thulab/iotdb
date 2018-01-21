@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class OverflowTestUtils {
 	public static String deltaObjectId1 = "d1";
@@ -14,6 +17,15 @@ public class OverflowTestUtils {
 	public static String measurementId2 = "s2";
 	public static TSDataType dataType1 = TSDataType.INT32;
 	public static TSDataType dataType2 = TSDataType.FLOAT;
+	private static FileSchema fileSchema = new FileSchema();
+	static {
+		fileSchema.registerMeasurement(new MeasurementDescriptor(measurementId1, dataType1, TSEncoding.PLAIN));
+		fileSchema.registerMeasurement(new MeasurementDescriptor(measurementId2, dataType2, TSEncoding.PLAIN));
+	}
+
+	public static FileSchema getFileSchema() {
+		return fileSchema;
+	}
 
 	public static void produceUpdateData(OverflowSupport support) {
 		assertEquals(true, support.isEmptyOfOverflowSeriesMap());
@@ -75,19 +87,23 @@ public class OverflowTestUtils {
 		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(3), 3));
 		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(2), 2));
 
-		processor.insert(getData(deltaObjectId1, measurementId2, dataType1, String.valueOf(1), 1));
-		processor.insert(getData(deltaObjectId1, measurementId2, dataType1, String.valueOf(3), 3));
-		processor.insert(getData(deltaObjectId1, measurementId2, dataType1, String.valueOf(2), 2));
-		
-		
-		processor.insert(getData(deltaObjectId2, measurementId1, dataType2, String.valueOf(5.5f), 1));
-		processor.insert(getData(deltaObjectId2, measurementId1, dataType2, String.valueOf(5.5f), 2));
-		processor.insert(getData(deltaObjectId2, measurementId1, dataType2, String.valueOf(10.5f), 2));
-		
+		// processor.insert(getData(deltaObjectId1, measurementId2, dataType1,
+		// String.valueOf(1), 1));
+		// processor.insert(getData(deltaObjectId1, measurementId2, dataType1,
+		// String.valueOf(3), 3));
+		// processor.insert(getData(deltaObjectId1, measurementId2, dataType1,
+		// String.valueOf(2), 2));
+
+		// processor.insert(getData(deltaObjectId2, measurementId1, dataType2,
+		// String.valueOf(5.5f), 1));
+		// processor.insert(getData(deltaObjectId2, measurementId1, dataType2,
+		// String.valueOf(5.5f), 2));
+		// processor.insert(getData(deltaObjectId2, measurementId1, dataType2,
+		// String.valueOf(10.5f), 2));
+
 		processor.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 1));
 		processor.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(5.5f), 2));
 		processor.insert(getData(deltaObjectId2, measurementId2, dataType2, String.valueOf(10.5f), 2));
-
 	}
 
 }

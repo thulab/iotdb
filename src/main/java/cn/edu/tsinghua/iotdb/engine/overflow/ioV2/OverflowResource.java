@@ -28,10 +28,12 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class OverflowResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);
 	private String parentPath;
+	private String dataPath;
 	private String insertFilePath;
 	private String updateDeleteFilePath;
 	private String positionFilePath;
@@ -51,6 +53,7 @@ public class OverflowResource {
 		this.insertMetadatas = new HashMap<>();
 		this.updateDeleteMetadatas = new HashMap<>();
 		this.parentPath = parentPath;
+		this.dataPath = dataPath;
 		File dataFile = new File(new File(parentPath), dataPath);
 		if (!dataFile.exists()) {
 			dataFile.mkdirs();
@@ -201,23 +204,29 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	public void flush(IMemTable memTable, Map<String, Map<String, OverflowSeriesImpl>> overflowTrees)
-			throws IOException {
-		flush(memTable);
+	public void flush(FileSchema fileSchema, IMemTable memTable,
+			Map<String, Map<String, OverflowSeriesImpl>> overflowTrees) throws IOException {
+		flush(fileSchema, memTable);
 		flush(overflowTrees);
 		writePositionInfo(insertIO.getPos(), updateDeleteIO.getPos());
 	}
 
-	public void flush(IMemTable memTable) throws IOException {
+	public void flush(FileSchema fileSchema, IMemTable memTable) throws IOException {
 		if (memTable != null && !memTable.isEmpty()) {
 			// memtable
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
 			// TODO fileschemaa
-			MemTableFlushUtil.flushMemTable(null, insertIO, memTable, 1000);
+			// TODO page size
+			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable, 1024 * 1024);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
+			for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
+				for (TimeSeriesChunkMetaData seriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
+					addInsertMetadata(rowGroupMetaData.getDeltaObjectID(),
+							seriesChunkMetaData.getProperties().getMeasurementUID(), seriesChunkMetaData);
+				}
+			}
 			if (!rowGroupMetaDatas.isEmpty()) {
-				insertIO.clearRowGroupMetadatas();
 				insertIO.getWriter().write(BytesUtils.longToBytes(lastPosition));
 				TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData(rowGroupMetaDatas);
 				long start = insertIO.getPos();
@@ -225,6 +234,7 @@ public class OverflowResource {
 						insertIO.getWriter());
 				long end = insertIO.getPos();
 				insertIO.getWriter().write(BytesUtils.intToBytes((int) (end - start)));
+				insertIO.clearRowGroupMetadatas();
 			}
 		}
 	}
@@ -271,17 +281,13 @@ public class OverflowResource {
 		updateDeleteMetadatas.clear();
 		insertIO.close();
 		updateDeleteIO.close();
-		deleteDir(parentPath);
 	}
 
-	private void deleteDir(String path) {
-		File file = new File(path);
-		if (file.isDirectory()) {
-			for (String subPath : file.list()) {
-				deleteDir(subPath);
-			}
-		}
-		file.delete();
+	public void deleteResource(){
+		new File(insertFilePath).delete();
+		new File(updateDeleteFilePath).delete();
+		new File(positionFilePath).delete();
+		new File(parentPath,dataPath).delete();
 	}
 
 	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {

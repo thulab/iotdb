@@ -30,7 +30,7 @@ public class SimpleTimeValuePairSerializer implements TimeValuePairSerializer {
 
     @Override
     public void write(TimeValuePair timeValuePair) throws IOException {
-        objectOutputStream.writeObject(timeValuePair);
+        objectOutputStream.writeUnshared(timeValuePair);
     }
 
     @Override
