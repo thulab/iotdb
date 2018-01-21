@@ -40,7 +40,7 @@ public class SimpleExternalSortEngine implements ExternalSortJobEngine {
     @Override
     public ExternalSortJob createJob(List<PriorityTimeValuePairReader> readers) {
         long jodId = scheduler.genJobId();
-        List<ExternalSortJobPart> ret = new LinkedList<>();
+        List<ExternalSortJobPart> ret = new ArrayList<>();
         List<ExternalSortJobPart> tmpPartList = new ArrayList<>();
         for (PriorityTimeValuePairReader reader : readers) {
             ret.add(new SingleSourceExternalSortJobPart(reader));
