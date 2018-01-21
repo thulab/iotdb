@@ -5,31 +5,13 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public class OverflowUpdateOperation {
-    private long leftBound;
-    private long rightBound;
+public class OverflowUpdateOperation extends OverflowOperation {
+
     private TsPrimitiveType value;
 
     public OverflowUpdateOperation(long leftBound, long rightBound, TsPrimitiveType value) {
-        this.leftBound = leftBound;
-        this.rightBound = rightBound;
+        super(leftBound, rightBound);
         this.value = value;
-    }
-
-    public long getLeftBound() {
-        return leftBound;
-    }
-
-    public void setLeftBound(long leftBound) {
-        this.leftBound = leftBound;
-    }
-
-    public long getRightBound() {
-        return rightBound;
-    }
-
-    public void setRightBound(long rightBound) {
-        this.rightBound = rightBound;
     }
 
     public TsPrimitiveType getValue() {
@@ -38,5 +20,10 @@ public class OverflowUpdateOperation {
 
     public void setValue(TsPrimitiveType value) {
         this.value = value;
+    }
+
+    @Override
+    public OperationType getType() {
+        return OperationType.UPDATE;
     }
 }

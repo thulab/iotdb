@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperation;
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperationReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
@@ -15,16 +15,16 @@ import java.io.IOException;
 public class SeriesWithUpdateOpReader implements SeriesReader {
 
     private TimeValuePairReader seriesReader;
-    private OverflowUpdateOperationReader overflowUpdateOperationReader;
-    private OverflowUpdateOperation overflowUpdateOperation;
+    private OverflowOperationReader overflowOperationReader;
+    private OverflowOperation overflowUpdateOperation;
     private boolean hasOverflowUpdateOperation;
 
     public SeriesWithUpdateOpReader(TimeValuePairReader seriesReader,
-                                    OverflowUpdateOperationReader overflowUpdateOperationReader) throws IOException {
+                                    OverflowOperationReader overflowOperationReader) throws IOException {
         this.seriesReader = seriesReader;
-        this.overflowUpdateOperationReader = overflowUpdateOperationReader;
-        if (overflowUpdateOperationReader.hasNext()) {
-            overflowUpdateOperation = overflowUpdateOperationReader.next();
+        this.overflowOperationReader = overflowOperationReader;
+        if (overflowOperationReader.hasNext()) {
+            overflowUpdateOperation = overflowOperationReader.next();
             hasOverflowUpdateOperation = true;
         }
     }
@@ -40,8 +40,8 @@ public class SeriesWithUpdateOpReader implements SeriesReader {
         if (hasOverflowUpdateOperation) {
             long timestamp = timeValuePair.getTimestamp();
             while (overflowUpdateOperation.getRightBound() < timestamp) {
-                if (overflowUpdateOperationReader.hasNext()) {
-                    overflowUpdateOperation = overflowUpdateOperationReader.next();
+                if (overflowOperationReader.hasNext()) {
+                    overflowUpdateOperation = overflowOperationReader.next();
                     hasOverflowUpdateOperation = true;
                 } else {
                     hasOverflowUpdateOperation = false;

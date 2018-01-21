@@ -7,6 +7,9 @@ import cn.edu.tsinghua.iotdb.engine.overflow.utils.MergeStatus;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowOpType;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TimePair;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedOverflowOpTypeException;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowDeleteOperation;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperation;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
@@ -20,6 +23,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -821,99 +825,54 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
         return ans;
     }
 
-    /**
-     * put data from DynamicOneColumnData[data] to DynamicOneColumnData[ope]
-     * <p>
-     * value in ope must > 0
-     */
-    private void putDynamicValue(long s, long e, TSDataType dataType, DynamicOneColumnData ope
-            , DynamicOneColumnData data, int i) {
-
-        switch (dataType) {
-            case INT32:
-                ope.putInt(data.getInt(i));
-                break;
-            case INT64:
-                ope.putLong(data.getLong(i));
-                break;
-            case FLOAT:
-                ope.putFloat(data.getFloat(i));
-                break;
-            case DOUBLE:
-                ope.putDouble(data.getDouble(i));
-                break;
-            case BOOLEAN:
-                ope.putBoolean(data.getBoolean(i));
-                break;
-            case TEXT:
-                ope.putBinary(data.getBinary(i));
-                break;
-            default:
-                LOG.error("Unsupported tsfile data type.");
-                throw new UnSupportedDataTypeException("Unsupported tsfile data type.");
-        }
-
-    }
-
     /**c
      * Given time filter, value filter and frequency filter,
      * return the correspond data which meet all the filters expression. </br>
      * List<Object> stores three DynamicOneColumnData structures, insertAdopt, updateAdopt
      * and updateNotAdopt.
      *
-     * @param timeFilter   - time filter specified by user
-     * @param valueFilter  - value filter specified by user
      * @param overflowData - overflow data
-     * @return - List<Object>
+     * @return - List<OverflowOperation>
      */
     @Override
-    public Pair<DynamicOneColumnData, SingleSeriesFilterExpression> getDynamicList(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData overflowData) {
+    public List<OverflowOperation> getDynamicList(DynamicOneColumnData overflowData) {
 
-        long deleteMaxLength = -1;
-
-        if (timeFilter == null) {
-            timeFilter = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), 0L, true);
-        }
-        List<Object> ans = new ArrayList<>();
-        DynamicOneColumnData updateAdopt = new DynamicOneColumnData(dataType, true);
-        LongInterval filterInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(timeFilter);
+        List<OverflowOperation> overflowOperations = new ArrayList<>();
 
         for (int i = 0; i < overflowData.valueLength; i++) {
             long L = overflowData.getTime(i * 2);
             long R = overflowData.getTime(i * 2 + 1);
-            for (int j = 0; j < filterInterval.count; j += 2) {
-                TimePair exist = constructTimePair(L, R, MergeStatus.MERGING);
-                TimePair filterTimePair = constructTimePair(
-                        filterInterval.flag[j] ? filterInterval.v[j] : filterInterval.v[j]+1,
-                        filterInterval.flag[j+1] ? filterInterval.v[j + 1] : filterInterval.v[j + 1] - 1, MergeStatus.MERGING);
-                CrossRelation crossRelation = IntervalRelation.getRelation(filterTimePair, exist);
-                if (L > 0 && R > 0) { // UPDATE
-                    switch (crossRelation) {
-                        case LCOVERSR:
-                            putDynamicValue(L, R, dataType, updateAdopt, overflowData, i);
-                            break;
-                        case RCOVERSL:
-                            putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
 
-                            break;
-                        case LFIRSTCROSS:
-                            putDynamicValue(exist.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
-
-                            break;
-                        case RFIRSTCROSS:
-                            putDynamicValue(filterTimePair.s, exist.e, dataType, updateAdopt, overflowData, i);
-                            break;
-                    }
-                } else {    // DELETE
-                    // LOG.info("getDynamicList max length:{} delete length:{}", deleteMaxLength, endTime);
-                    deleteMaxLength = Math.max(deleteMaxLength, -R);
+            if (L > 0 && R > 0) { // UPDATE
+                switch (dataType) {
+                    case INT32:
+                        overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsInt(overflowData.getInt(i))));
+                        break;
+                    case INT64:
+                        overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsLong(overflowData.getLong(i))));
+                        break;
+                    case FLOAT:
+                        overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsFloat(overflowData.getFloat(i))));
+                        break;
+                    case DOUBLE:
+                        overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsDouble(overflowData.getDouble(i))));
+                        break;
+                    case BOOLEAN:
+                        overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsBoolean(overflowData.getBoolean(i))));
+                        break;
+                    case TEXT:
+                        overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsBinary(overflowData.getBinary(i))));
+                        break;
+                    default:
+                        LOG.error("Unsupported tsfile data type.");
+                        throw new UnSupportedDataTypeException("Unsupported tsfile data type.");
                 }
+            } else if (L <= 0 && R <= 0) {    // DELETE
+                overflowOperations.add(new OverflowDeleteOperation(-L, -R));
             }
         }
 
-        GtEq<Long> deleteFilter = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), deleteMaxLength, false);
-        And and = (And) FilterFactory.and(timeFilter, deleteFilter);
-        return new Pair<>(updateAdopt, and);
+        return overflowOperations;
     }
 
     /**
