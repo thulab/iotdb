@@ -7,6 +7,7 @@ import java.util.List;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 
 /**
@@ -74,12 +75,15 @@ public class BufferWriteIOWriter extends TsFileIOWriter {
 		return ret;
 	}
 
-	public List<TimeSeriesChunkMetaData> getCurrentTimeSeriesMetadataList(String deltaObjectId, String measurementId) {
+	public List<TimeSeriesChunkMetaData> getCurrentTimeSeriesMetadataList(String deltaObjectId, String measurementId,
+			TSDataType dataType) {
 		List<TimeSeriesChunkMetaData> chunkMetaDatas = new ArrayList<>();
 		for (RowGroupMetaData rowGroupMetaData : backUpList) {
 			if (rowGroupMetaData.getDeltaObjectID().equals(deltaObjectId)) {
 				for (TimeSeriesChunkMetaData chunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
-					if (chunkMetaData.getProperties().getMeasurementUID().equals(measurementId)) {
+					// filter data-type and measurementId
+					if (chunkMetaData.getProperties().getMeasurementUID().equals(measurementId)
+							&& chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
 					}
 				}

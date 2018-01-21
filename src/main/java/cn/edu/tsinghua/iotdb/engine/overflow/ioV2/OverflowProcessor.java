@@ -492,11 +492,9 @@ public class OverflowProcessor extends Processor {
 			// switch from work to flush
 			flushStatus.setFlushing();
 			switchWorkToFlush();
-
 			if (synchronization) {
 				flushOperation("synchronously");
 			} else {
-				flushStatus.setFlushing();
 				FlushManager.getInstance().submit(new Runnable() {
 					public void run() {
 						flushOperation("asynchronously");

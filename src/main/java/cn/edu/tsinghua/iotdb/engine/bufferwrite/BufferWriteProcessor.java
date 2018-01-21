@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.joda.time.DateTime;
@@ -27,6 +30,11 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
+import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
+import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
@@ -40,16 +48,19 @@ import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.IRowGroupWriter;
 
 /**
@@ -63,14 +74,14 @@ public class BufferWriteProcessor extends Processor {
 	private static final int TSMETADATABYTESIZE = 4;
 	private static final int TSFILEPOINTBYTESIZE = 8;
 
-	private boolean isFlushingSync = false;
 	private volatile FlushStatus flushStatus = new FlushStatus();
+	private ReentrantLock flushQueryLock = new ReentrantLock();
 
-	private ReadWriteLock flushSwitchLock = new ReentrantReadWriteLock(false);
+	private IMemTable workMemTable;
+	private IMemTable flushMemTable;
 
 	private FileSchema fileSchema;
 	private BufferWriteIOWriter bufferIOWriter;
-	private BufferWriteRecordWriter recordWriter;
 	private int lastRowgroupSize = 0;
 
 	// this just the bufferwrite file name
@@ -87,7 +98,9 @@ public class BufferWriteProcessor extends Processor {
 	private Action bufferwriteCloseAction = null;
 	private Action filenodeFlushAction = null;
 
-	private long memUsed = 0;
+	private long lastFlushTime = -1;
+	private long valueCount = 0;
+	private boolean isFlush;
 
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters,
 			FileSchema fileSchema) throws BufferWriteProcessorException {
@@ -139,12 +152,6 @@ public class BufferWriteProcessor extends Processor {
 				LOGGER.error("Get the BufferWriteIOWriter error, the bufferwrite is {}.", processorName, e);
 				throw new BufferWriteProcessorException(e);
 			}
-
-			try {
-				recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, fileSchema);
-			} catch (WriteProcessException e) {
-				throw new BufferWriteProcessorException(e);
-			}
 			isNewProcessor = true;
 			// write restore file
 			writeStoreToDisk();
@@ -154,6 +161,7 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
+		workMemTable = new TreeSetMemTable();
 	}
 
 	/**
@@ -204,13 +212,6 @@ public class BufferWriteProcessor extends Processor {
 			bufferIOWriter = new BufferWriteIOWriter(output, lastFlushPosition, pair.right);
 		} catch (IOException e) {
 			LOGGER.error("Can't get the BufferWriteIOWriter while recoverying, the bufferwrite processor is {}.",
-					getProcessorName(), e);
-			throw new BufferWriteProcessorException(e);
-		}
-		try {
-			recordWriter = new BufferWriteRecordWriter(TsFileConf, bufferIOWriter, fileSchema);
-		} catch (WriteProcessException e) {
-			LOGGER.error("Can't get the BufferWriteRecordWriter while recoverying, the bufferwrite processor is {}",
 					getProcessorName(), e);
 			throw new BufferWriteProcessorException(e);
 		}
@@ -441,75 +442,223 @@ public class BufferWriteProcessor extends Processor {
 		TSRecord record = new TSRecord(timestamp, deltaObjectId);
 		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, value);
 		record.addTuple(dataPoint);
+		valueCount++;
 		return write(record);
 	}
 
-	/**
-	 * write one TsRecord to the buffewrite
-	 * 
-	 * @param tsRecord
-	 * @return true -the size of tsfile or metadata reaches the threshold. false
-	 *         -otherwise
-	 * @throws BufferWriteProcessorException
-	 */
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
+		long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
+		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newMemUsage);
+		switch (level) {
+		case SAFE:
+			// memUsed += newMemUsage;
+			// memtable
 
-		try {
-			long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
-			BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newMemUsage);
-			switch (level) {
-			case SAFE:
-				memUsed += newMemUsage;
-				return recordWriter.write(tsRecord);
-			case WARNING:
-				LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
-						MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-				memUsed += newMemUsage;
-				return recordWriter.write(tsRecord);
-			case DANGEROUS:
-			default:
-				LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
-						MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-				throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
+			for (DataPoint dataPoint : tsRecord.dataPointList) {
+				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
+						tsRecord.time, dataPoint.getValue().toString());
 			}
-		} catch (IOException | WriteProcessException e) {
-			LOGGER.error("Write TSRecord error, the TSRecord is {}, the bufferwrite is {}.", tsRecord,
-					getProcessorName());
-			throw new BufferWriteProcessorException(e);
+			valueCount++;
+			return false;
+		case WARNING:
+			LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
+					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
+			// memUsed += newMemUsage;
+			// memtable
+			for (DataPoint dataPoint : tsRecord.dataPointList) {
+				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
+						tsRecord.time, dataPoint.getValue().toString());
+			}
+			valueCount++;
+			return false;
+		case DANGEROUS:
+		default:
+			LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
+					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
+			throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
 		}
 	}
 
-	/**
-	 * Query the data in bufferwrite.
-	 * 
-	 * @param deltaObjectId
-	 * @param measurementId
-	 * @return left is the data which is not packaged into the RowGroup, right
-	 *         is the metadata for the data which has been already packaged into
-	 *         RowGroup.
-	 */
+	@Deprecated
 	public Pair<List<Object>, List<RowGroupMetaData>> queryBufferwriteData(String deltaObjectId, String measurementId) {
-		List<Object> memData = null;
-		List<RowGroupMetaData> list = null;
-		// Wait until flush over. So the bufferwrite flush will block the data
-		// query for bufferwrite.
-		synchronized (flushStatus) {
-			while (flushStatus.isFlushing()) {
-				try {
-					flushStatus.wait();
-				} catch (InterruptedException e) {
-					LOGGER.error("Interrupted from waitting to flush.");
+		flushQueryLock.lock();
+		try {
+			List<Object> memData = new ArrayList<>();
+			List<RowGroupMetaData> list = new ArrayList<>();
+			return new Pair<>(memData, list);
+		} finally {
+			flushQueryLock.unlock();
+		}
+	}
+
+	public Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> queryBufferwriteData(String deltaObjectId,
+			String measurementId, TSDataType dataType) {
+		flushQueryLock.lock();
+		try {
+			TreeSet<TimeValuePair> result = new TreeSet<>();
+			Iterable<TimeValuePair> workIterable = workMemTable.query(deltaObjectId, measurementId, dataType);
+			for (TimeValuePair timeValuePair : workIterable) {
+				if (!result.contains(timeValuePair)) {
+					result.add(timeValuePair);
 				}
 			}
-		}
-		flushSwitchLock.readLock().lock();
-		try {
-			memData = recordWriter.getDataInMemory(deltaObjectId, measurementId);
-			list = bufferIOWriter.getCurrentRowGroupMetaList(deltaObjectId);
+			if (isFlush) {
+				Iterable<TimeValuePair> flushIterable = flushMemTable.query(deltaObjectId, measurementId, dataType);
+				for (TimeValuePair timeValuePair : flushIterable) {
+					if (!result.contains(timeValuePair)) {
+						result.add(timeValuePair);
+					}
+				}
+			}
+			RawSeriesChunk rawSeriesChunk = null;
+			if (result.isEmpty()) {
+				rawSeriesChunk = new SeriesInMemTable(true);
+			} else {
+				rawSeriesChunk = new SeriesInMemTable(result.last().getTimestamp(), result.first().getTimestamp(),
+						result.last().getValue(), result.first().getValue(), dataType, result);
+			}
+			return new Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>>(rawSeriesChunk,
+					bufferIOWriter.getCurrentTimeSeriesMetadataList(deltaObjectId, measurementId, dataType));
 		} finally {
-			flushSwitchLock.readLock().unlock();
+			flushQueryLock.unlock();
 		}
-		return new Pair<>(memData, list);
+	}
+
+	private void switchWorkToFlush() {
+		flushQueryLock.lock();
+		try {
+			if (flushMemTable == null) {
+				flushMemTable = workMemTable;
+				workMemTable = new TreeSetMemTable();
+				isFlush = true;
+			}
+		} finally {
+			flushQueryLock.unlock();
+		}
+	}
+
+	private void switchFlushToWork() {
+		flushQueryLock.lock();
+		try {
+			flushMemTable.clear();
+			flushMemTable = null;
+			isFlush = false;
+			bufferIOWriter.addNewRowGroupMetaDataToBackUp();
+		} finally {
+			flushQueryLock.unlock();
+		}
+	}
+
+	private void flushOperation(String flushFunction) {
+		long flushStartTime = System.currentTimeMillis();
+		LOGGER.info("The bufferwrite processor {} starts flushing {}.", getProcessorName(), flushFunction);
+		try {
+			long startFlushDataTime = System.currentTimeMillis();
+			long startPos = bufferIOWriter.getPos();
+			// TODO : FLUSH DATA
+			// TODO : DATA PAGE
+			MemTableFlushUtil.flushMemTable(fileSchema, bufferIOWriter, flushMemTable, 1024 * 1024);
+			long flushDataSize = bufferIOWriter.getPos() - startPos;
+			long timeInterval = System.currentTimeMillis() - startFlushDataTime;
+			if (timeInterval == 0) {
+				timeInterval = 1;
+			}
+			LOGGER.info(
+					"The bufferwrite processor {} flush asynchronously, actual:{}, time consumption:{} ms, flush rate:{} bytes/s",
+					getProcessorName(), flushDataSize, timeInterval, flushDataSize / timeInterval * 1000);
+			// write restore information
+			writeStoreToDisk();
+			filenodeFlushAction.act();
+			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+				WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
+			}
+		} catch (IOException e) {
+			LOGGER.error("The bufferwrite processor {} failed to flush {}.", getProcessorName(), flushFunction, e);
+		} catch (Exception e) {
+			LOGGER.error("The bufferwrite processor {} failed to flush {}, when calling the filenodeFlushAction.",
+					getProcessorName(), flushFunction, e);
+		} finally {
+			synchronized (flushStatus) {
+				flushStatus.setUnFlushing();
+				switchFlushToWork();
+				flushStatus.notify();
+				LOGGER.info("The bufferwrite processor {} ends flushing {}.", getProcessorName(), flushFunction);
+			}
+		}
+		// BasicMemController.getInstance().reportFree(BufferWriteProcessor.this,
+		// oldMemUsage);
+		long flushEndTime = System.currentTimeMillis();
+		long flushInterval = flushEndTime - flushStartTime;
+		DateTime startDateTime = new DateTime(flushStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+		DateTime endDateTime = new DateTime(flushEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+		LOGGER.info(
+				"The bufferwrite processor {} flush {}, start time is {}, flush end time is {}, flush time consumption is {}ms",
+				getProcessorName(), flushFunction, startDateTime, endDateTime, flushInterval);
+	}
+
+	private Future<?> flush(boolean synchronization) throws IOException {
+		// statistic information for flush
+		if (lastFlushTime > 0) {
+			long thisFlushTime = System.currentTimeMillis();
+			long flushTimeInterval = thisFlushTime - lastFlushTime;
+			DateTime lastDateTime = new DateTime(lastFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			DateTime thisDateTime = new DateTime(thisFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			LOGGER.info(
+					"The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
+					getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval / 1000);
+		}
+		lastFlushTime = System.currentTimeMillis();
+		// check value count
+		if (valueCount > 0) {
+			// waiting for the end of last flush operation.
+			synchronized (flushStatus) {
+				while (flushStatus.isFlushing()) {
+					try {
+						flushStatus.wait();
+					} catch (InterruptedException e) {
+						LOGGER.error(
+								"Encounter an interrupt error when waitting for the flushing, the bufferwrite processor is {}.",
+								getProcessorName(), e);
+					}
+				}
+			}
+			// update the lastUpdatetime, prepare for flush
+			try {
+				bufferwriteFlushAction.act();
+			} catch (Exception e) {
+				LOGGER.error("Failed to flush bufferwrite row group when calling the action function.");
+				throw new IOException(e);
+			}
+			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+				WriteLogManager.getInstance().startBufferWriteFlush(getProcessorName());
+			}
+			valueCount = 0;
+			flushStatus.setFlushing();
+			switchWorkToFlush();
+			// switch
+			if (synchronization) {
+				flushOperation("synchronously");
+			} else {
+				FlushManager.getInstance().submit(new Runnable() {
+					public void run() {
+						flushOperation("asynchronously");
+					}
+				});
+			}
+		}
+		return null;
+	}
+
+	public boolean isFlush() {
+		synchronized (flushStatus) {
+			return flushStatus.isFlushing();
+		}
+	}
+
+	@Override
+	public boolean flush() throws IOException {
+		flush(false);
+		return false;
 	}
 
 	@Override
@@ -529,16 +678,13 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	@Override
-	public boolean flush() throws IOException {
-		return recordWriter.flushRowGroup(false);
-	}
-
-	@Override
 	public void close() throws BufferWriteProcessorException {
-		isFlushingSync = true;
 		try {
 			long closeStartTime = System.currentTimeMillis();
-			recordWriter.close();
+			// flush data
+			flush(true);
+			// end file
+			bufferIOWriter.endFile(fileSchema);
 			// update the intervalfile for interval list
 			bufferwriteCloseAction.act();
 			// flush the changed information for filenode
@@ -551,7 +697,7 @@ public class BufferWriteProcessor extends Processor {
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(closeEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info(
-					"Close bufferwrite processor {}, the file name is {}, start time is {}, end time is {}, time consume is {}ms",
+					"Close bufferwrite processor {}, the file name is {}, start time is {}, end time is {}, time consumption is {}ms",
 					getProcessorName(), fileName, startDateTime, endDateTime, closeInterval);
 		} catch (IOException e) {
 			LOGGER.error("Close the bufferwrite processor error, the bufferwrite is {}.", getProcessorName(), e);
@@ -559,236 +705,19 @@ public class BufferWriteProcessor extends Processor {
 		} catch (Exception e) {
 			LOGGER.error("Failed to close the bufferwrite processor when calling the action function.", e);
 			throw new BufferWriteProcessorException(e);
-		} finally {
-			isFlushingSync = false;
 		}
 	}
 
 	@Override
 	public long memoryUsage() {
-		return recordWriter.getMemoryUsage();
+		return 0;
 	}
 
-	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs)
-			throws IOException {
+	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs) {
 		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
 				TSEncoding.valueOf(encoding));
 		JSONObject measurement = constrcutMeasurement(col);
-		try {
-			recordWriter.addMeasurementByJson(measurement);
-		} catch (WriteProcessException e) {
-			throw new IOException(e);
-		}
-	}
-
-	private class BufferWriteRecordWriter extends TsFileWriter {
-
-		private Map<String, IRowGroupWriter> flushingRowGroupWriters;
-		private Set<String> flushingRowGroupSet;
-		private long flushingRecordCount;
-		private long lastFlushTime = -1;
-
-		BufferWriteRecordWriter(TSFileConfig conf, BufferWriteIOWriter ioFileWriter, FileSchema schema)
-				throws WriteProcessException {
-			super(ioFileWriter, schema, conf);
-		}
-
-		@Override
-		public boolean write(TSRecord record) throws IOException, WriteProcessException {
-			try {
-				return super.write(record);
-			} catch (IOException | WriteProcessException e) {
-				LOGGER.error("Write TSRecord error, TSRecord is {}.", record, e);
-				throw e;
-			}
-		}
-
-		@Override
-		protected boolean flushRowGroup(boolean isFillRowGroup) throws IOException {
-
-			// calculate the time interval between last flush and this flush
-			if (lastFlushTime > 0) {
-				long thisFlushTime = System.currentTimeMillis();
-				long flushTimeInterval = thisFlushTime - lastFlushTime;
-				DateTime lastDateTime = new DateTime(lastFlushTime,
-						TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				DateTime thisDateTime = new DateTime(thisFlushTime,
-						TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				LOGGER.info(
-						"The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
-						getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval / 1000);
-			}
-			lastFlushTime = System.currentTimeMillis();
-			boolean outOfSize = false;
-			if (recordCount > 0) {
-				synchronized (flushStatus) {
-					// This thread wait until the subThread flush finished
-					while (flushStatus.isFlushing()) {
-						try {
-							flushStatus.wait();
-						} catch (InterruptedException e) {
-							LOGGER.error(
-									"Encounter an interrupt error when waitting for the flushing, the bufferwrite processor is {}.",
-									getProcessorName(), e);
-						}
-					}
-				}
-				outOfSize = checkSize();
-				long oldMemUsage = memUsed;
-				memUsed = 0;
-				// update the lastUpdatetime
-				try {
-					bufferwriteFlushAction.act();
-				} catch (Exception e) {
-					LOGGER.error("Failed to flush bufferwrite row group when calling the action function.");
-					throw new IOException(e);
-				}
-
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-					// For WAL
-					WriteLogManager.getInstance().startBufferWriteFlush(getProcessorName());
-				}
-				// flush bufferwrite data
-				if (isFlushingSync) {
-					try {
-						LOGGER.info("The bufferwrite processor {} starts flushing synchronously.", getProcessorName());
-						super.flushRowGroup(false);
-						writeStoreToDisk();
-						filenodeFlushAction.act();
-						if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-							WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
-						}
-						LOGGER.info("The bufferwrite processor {} ends flushing synchronously.", getProcessorName());
-					} catch (IOException e) {
-						LOGGER.error("The bufferwrite processor {} encountered an error when flushing synchronously.",
-								getProcessorName(), e);
-						throw e;
-					} catch (BufferWriteProcessorException e) {
-						// write restore error
-						LOGGER.error("When writing bufferwrite processor {} information to disk, an error occurred.",
-								getProcessorName(), e);
-						throw new IOException(e);
-					} catch (Exception e) {
-						LOGGER.error(
-								"The bufferwrite processor {} failed to flush synchronously, when calling the filenodeFlushAction.",
-								getProcessorName(), e);
-						throw new IOException(e);
-					}
-					BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
-				} else {
-					flushStatus.setFlushing();
-					switchIndexFromWorkToFlush();
-					switchRecordWriterFromWorkToFlush();
-
-					Runnable flushThread;
-					flushThread = () -> {
-						long flushStartTime = System.currentTimeMillis();
-						LOGGER.info("The bufferwrite processor {} starts flushing asynchronously.", getProcessorName());
-						try {
-							asyncFlushRowGroupToStore();
-							writeStoreToDisk();
-							filenodeFlushAction.act();
-							if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-								WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
-							}
-						} catch (IOException e) {
-							// wal exception
-							LOGGER.error("The bufferwrite processor {} failed to flush asynchronously.",
-									getProcessorName(), e);
-						} catch (BufferWriteProcessorException e) {
-							LOGGER.error(
-									"When writing bufferwrite processor {} information to disk, an error occurred.",
-									getProcessorName(), e);
-						} catch (Exception e) {
-							LOGGER.error(
-									"The bufferwrite processor {} failed to flush asynchronously, when calling the filenodeFlushAction.",
-									getProcessorName(), e);
-						}
-						switchRecordWriterFromFlushToWork();
-						flushSwitchLock.writeLock().lock();
-						try {
-							synchronized (flushStatus) {
-								switchIndexFromFlushToWork();
-								flushStatus.setUnFlushing();
-								flushStatus.notify();
-								LOGGER.info("The bufferwrite processor {} ends flushing ssynchronously.",
-										getProcessorName());
-							}
-						} finally {
-							flushSwitchLock.writeLock().unlock();
-						}
-						BasicMemController.getInstance().reportFree(BufferWriteProcessor.this, oldMemUsage);
-						long flushEndTime = System.currentTimeMillis();
-						long flushInterval = flushEndTime - flushStartTime;
-						DateTime startDateTime = new DateTime(flushStartTime,
-								TsfileDBDescriptor.getInstance().getConfig().timeZone);
-						DateTime endDateTime = new DateTime(flushEndTime,
-								TsfileDBDescriptor.getInstance().getConfig().timeZone);
-						LOGGER.info(
-								"The bufferwrite processor {} flush start time is {}, flush end time is {}, flush time consumption is {}ms",
-								getProcessorName(), startDateTime, endDateTime, flushInterval);
-
-					};
-					FlushManager.getInstance().submit(flushThread);
-				}
-			}
-			return outOfSize;
-		}
-
-		private void asyncFlushRowGroupToStore() throws IOException {
-
-			if (flushingRecordCount > 0) {
-				long startFlushTime = System.currentTimeMillis();
-				long totalMemStart = deltaFileWriter.getPos();
-				for (String deltaObjectId : flushingRowGroupSet) {
-					long rowGroupStart = deltaFileWriter.getPos();
-					deltaFileWriter.startRowGroup(flushingRecordCount, deltaObjectId);
-					IRowGroupWriter groupWriter = flushingRowGroupWriters.get(deltaObjectId);
-					groupWriter.flushToFileWriter(deltaFileWriter);
-					deltaFileWriter.endRowGroup(deltaFileWriter.getPos() - rowGroupStart);
-				}
-				long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
-				long timeInterval = System.currentTimeMillis() - startFlushTime;
-				if (timeInterval == 0) {
-					timeInterval = 1;
-				}
-				// remove the feature: fill the row group
-				// fillInRowGroupSize(actualTotalRowGroupSize);
-				LOGGER.info(
-						"The bufferwrite processor {} flush asynchronously. Total row group size:{}, actual:{}, less:{}, time consumption:{} ms, flush rate:{} bytes/s",
-						getProcessorName(), primaryRowGroupSize, actualTotalRowGroupSize,
-						primaryRowGroupSize - actualTotalRowGroupSize, timeInterval,
-						actualTotalRowGroupSize / timeInterval * 1000);
-			}
-		}
-
-		private void switchRecordWriterFromWorkToFlush() {
-
-			flushingRowGroupWriters = groupWriters;
-			flushingRowGroupSet = new HashSet<>();
-			for (String DeltaObjectId : schema.getDeltaObjectAppearedSet()) {
-				flushingRowGroupSet.add(DeltaObjectId);
-			}
-			flushingRecordCount = recordCount;
-			// reset
-			groupWriters = new HashMap<String, IRowGroupWriter>();
-			schema.getDeltaObjectAppearedSet().clear();
-			recordCount = 0;
-		}
-
-		private void switchRecordWriterFromFlushToWork() {
-			flushingRowGroupSet = null;
-			flushingRowGroupWriters = null;
-			flushingRecordCount = -1;
-		}
-	}
-
-	private void switchIndexFromWorkToFlush() {
-
-	}
-
-	private void switchIndexFromFlushToWork() {
-		bufferIOWriter.addNewRowGroupMetaDataToBackUp();
+		fileSchema.registerMeasurement(JsonConverter.convertJsonToMeasureMentDescriptor(measurement));
 	}
 
 	/**

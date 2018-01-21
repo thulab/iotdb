@@ -235,9 +235,12 @@ public class FileNodeManager implements IStatistic {
 	/**
 	 * insert TsRecord into storage group
 	 * 
-	 * @param tsRecord: input Data
-	 * @param isMonitor: if true, the insertion is done by StatMonitor and thestatistic Info will not be recorded. 
-	 *                   if false, the statParamsHashMap will be updated.
+	 * @param tsRecord:
+	 *            input Data
+	 * @param isMonitor:
+	 *            if true, the insertion is done by StatMonitor and thestatistic
+	 *            Info will not be recorded. if false, the statParamsHashMap
+	 *            will be updated.
 	 * @return an int value represents the insert type
 	 * @throws FileNodeManagerException
 	 */
@@ -364,9 +367,8 @@ public class FileNodeManager implements IStatistic {
 				}
 			}
 		} catch (FileNodeProcessorException e) {
-			LOGGER.error(
-					String.format("Encounter an error when closing the buffer write processor %s.", fileNodeProcessor.getProcessorName()),
-					e);
+			LOGGER.error(String.format("Encounter an error when closing the buffer write processor %s.",
+					fileNodeProcessor.getProcessorName()), e);
 			e.printStackTrace();
 		} finally {
 			fileNodeProcessor.writeUnlock();
@@ -554,9 +556,12 @@ public class FileNodeManager implements IStatistic {
 	}
 
 	/**
-	 * @param path : the column path
-	 * @param startTime : the startTime of index
-	 * @param endTime : the endTime of index
+	 * @param path
+	 *            : the column path
+	 * @param startTime
+	 *            : the startTime of index
+	 * @param endTime
+	 *            : the endTime of index
 	 * @throws FileNodeManagerException
 	 */
 	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
@@ -609,7 +614,8 @@ public class FileNodeManager implements IStatistic {
 			}
 			long totalTime = 0;
 			for (Future<?> task : futureTasks) {
-				// loop waiting for merge to end, the longest waiting time is 60s.
+				// loop waiting for merge to end, the longest waiting time is
+				// 60s.
 				int time = 2;
 				while (!task.isDone()) {
 					try {
@@ -683,7 +689,8 @@ public class FileNodeManager implements IStatistic {
 									processorMap.remove(processorName);
 									break;
 								} else {
-									LOGGER.info("Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
+									LOGGER.info(
+											"Can't delete the filenode processor {}, because the filenode processor can't be closed. Wait 100ms to retry");
 								}
 							} catch (ProcessorException e) {
 								LOGGER.error("Delete the filenode processor {} error.", processorName, e);
@@ -746,9 +753,6 @@ public class FileNodeManager implements IStatistic {
 				} catch (FileNodeProcessorException e) {
 					LOGGER.error("Get the bufferwrite processor failed, the filenode is {}",
 							fileNodeProcessor.getProcessorName());
-					throw new FileNodeManagerException(e);
-				} catch (IOException e) {
-					LOGGER.error("Add timeseries error ", e);
 					throw new FileNodeManagerException(e);
 				}
 			} else {
