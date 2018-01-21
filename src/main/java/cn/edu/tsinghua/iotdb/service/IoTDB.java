@@ -56,6 +56,8 @@ public class IoTDB implements IoTDBMBean{
 			LOGGER.error("{}: failed to start because: {}", IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return;
 		}
+		// When registering statMonitor, we should start recovering some statistics with latest values stored
+		// Warn: registMonitor() method should be called after systemDataRecovery()
 		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
 			StatMonitor.getInstance().recovery();
 		}
