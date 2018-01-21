@@ -30,7 +30,7 @@ public class SimpleTimeValuePairSerializerTest {
         String rootPath = "d1";
         String filePath = rootPath + "/d2/d3/tmpFile1";
         int count = 10000;
-        testReadWrite(genTimeValuePairs(1000), count, rootPath, filePath, Type.SIMPLE);
+        testReadWrite(genTimeValuePairs(count), count, rootPath, filePath, Type.SIMPLE);
     }
 
     @Test
@@ -38,12 +38,12 @@ public class SimpleTimeValuePairSerializerTest {
         String rootPath = "tmpFile2";
         String filePath = rootPath;
         int count = 10000;
-        testReadWrite(genTimeValuePairs(10000, TSDataType.BOOLEAN), count, rootPath, filePath, Type.FIX_LENGTH);
-        testReadWrite(genTimeValuePairs(10000, TSDataType.INT32), count, rootPath, filePath, Type.FIX_LENGTH);
-        testReadWrite(genTimeValuePairs(10000, TSDataType.INT64), count, rootPath, filePath, Type.FIX_LENGTH);
-        testReadWrite(genTimeValuePairs(10000, TSDataType.FLOAT), count, rootPath, filePath, Type.FIX_LENGTH);
-        testReadWrite(genTimeValuePairs(10000, TSDataType.DOUBLE), count, rootPath, filePath, Type.FIX_LENGTH);
-        testReadWrite(genTimeValuePairs(10000, TSDataType.TEXT), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(count, TSDataType.BOOLEAN), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(count, TSDataType.INT32), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(count, TSDataType.INT64), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(count, TSDataType.FLOAT), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(count, TSDataType.DOUBLE), count, rootPath, filePath, Type.FIX_LENGTH);
+        testReadWrite(genTimeValuePairs(count, TSDataType.TEXT), count, rootPath, filePath, Type.FIX_LENGTH);
     }
 
     private void testReadWrite(TimeValuePair[] timeValuePairs, int count, String rootPath, String filePath, Type type) throws IOException, ClassNotFoundException {
@@ -76,15 +76,6 @@ public class SimpleTimeValuePairSerializerTest {
         Assert.assertEquals(count, idx);
         deserializer.close();
         deleteFileRecursively(new File(rootPath));
-    }
-
-    @Test
-    public void readFile() throws IOException {
-        String filePath = "externalSortTestTmp/1_20400";
-        SimpleTimeValuePairDeserializer deserializer = new SimpleTimeValuePairDeserializer(filePath);
-        while (deserializer.hasNext()) {
-            deserializer.next();
-        }
     }
 
     private void deleteFileRecursively(File file) throws IOException {

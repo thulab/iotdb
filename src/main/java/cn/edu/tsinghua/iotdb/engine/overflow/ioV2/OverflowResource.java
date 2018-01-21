@@ -216,7 +216,7 @@ public class OverflowResource {
 			// memtable
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
-			// TODO fileschemaa
+			// TODO file-schema
 			// TODO page size
 			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable, 1024 * 1024);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
@@ -283,11 +283,11 @@ public class OverflowResource {
 		updateDeleteIO.close();
 	}
 
-	public void deleteResource(){
+	public void deleteResource() {
 		new File(insertFilePath).delete();
 		new File(updateDeleteFilePath).delete();
 		new File(positionFilePath).delete();
-		new File(parentPath,dataPath).delete();
+		new File(parentPath, dataPath).delete();
 	}
 
 	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {

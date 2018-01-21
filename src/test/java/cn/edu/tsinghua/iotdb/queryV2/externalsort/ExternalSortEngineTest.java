@@ -61,8 +61,8 @@ public class ExternalSortEngineTest {
 
     public void efficiencyTest() throws IOException {
         SimpleExternalSortEngine engine = new SimpleExternalSortEngine(baseDir + "/", 50);
-        int lineCount = 1000;
-        int valueCount = 10000;
+        int lineCount = 1000000;
+        int valueCount = 100;
         List<long[]> data = genData(lineCount, valueCount);
 
         List<PriorityTimeValuePairReader> readerList1 = genReaders(data);

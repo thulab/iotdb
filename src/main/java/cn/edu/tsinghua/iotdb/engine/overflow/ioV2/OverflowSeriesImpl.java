@@ -32,6 +32,10 @@ public class OverflowSeriesImpl {
 		overflowIndex = new IntervalTreeOperation(dataType);
 	}
 
+	public void insert(long time, byte[] value) {
+
+	}
+
 	public void update(long startTime, long endTime, byte[] value) {
 		overflowIndex.update(startTime, endTime, value);
 		statistics.updateStats(startTime, endTime);

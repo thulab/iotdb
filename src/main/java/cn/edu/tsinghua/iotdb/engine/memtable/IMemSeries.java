@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 
 /**
  *
@@ -26,8 +26,8 @@ public interface IMemSeries {
 
     void sortAndDeduplicate();
 
-    Iterable<TreeSetMemSeries.UpdateTimeValuePair> query();
-
+    Iterable<TimeValuePair> query();
+    
     void reset();
 
     int size();

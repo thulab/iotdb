@@ -20,11 +20,11 @@ public interface OverflowQuerier {
     OverflowSeriesReader getOverflowInsertDataSeriesReader(Path path, Filter<?> filter);
 
     /**
-     * Get the OverflowUpdateOperationReader for corresponding series.
+     * Get the OverflowOperationReader for corresponding series.
      * @param path
      * @param filter
      * @return
      */
-    OverflowUpdateOperationReader getOverflowUpdateOperationReader(Path path, Filter<?> filter);
+    OverflowOperationReader getOverflowUpdateOperationReader(Path path, Filter<?> filter);
 
 }

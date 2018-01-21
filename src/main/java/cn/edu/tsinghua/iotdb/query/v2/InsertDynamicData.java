@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.dataset;
+package cn.edu.tsinghua.iotdb.query.v2;
 
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.reader.InsertOperation;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 
