@@ -43,37 +43,49 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putBoolean(long t, boolean v) {
         checkDataType(TSDataType.BOOLEAN);
-        treeSet.add(new UpdateTimeValuePair(t,new TsPrimitiveType.TsBoolean(v)));
+        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsBoolean(v));
+        treeSet.remove(tv);
+        treeSet.add(tv);
     }
 
     @Override
     public void putLong(long t, long v) {
         checkDataType(TSDataType.INT64);
-        treeSet.add(new UpdateTimeValuePair(t,new TsPrimitiveType.TsLong(v)));
+        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsFloat(v));
+        treeSet.remove(tv);
+        treeSet.add(tv);
     }
 
     @Override
     public void putInt(long t, int v) {
         checkDataType(TSDataType.INT32);
-        treeSet.add(new UpdateTimeValuePair(t,new TsPrimitiveType.TsInt(v)));
+        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsInt(v));
+        treeSet.remove(tv);
+        treeSet.add(tv);
     }
 
     @Override
     public void putFloat(long t, float v) {
         checkDataType(TSDataType.FLOAT);
-        treeSet.add(new UpdateTimeValuePair(t,new TsPrimitiveType.TsFloat(v)));
+        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsFloat(v));
+        treeSet.remove(tv);
+        treeSet.add(tv);
     }
 
     @Override
     public void putDouble(long t, double v) {
         checkDataType(TSDataType.DOUBLE);
-        treeSet.add(new UpdateTimeValuePair(t,new TsPrimitiveType.TsDouble(v)));;
+        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsDouble(v));
+        treeSet.remove(tv);
+        treeSet.add(tv);
     }
 
     @Override
     public void putBinary(long t, Binary v) {
         checkDataType(TSDataType.TEXT);
-        treeSet.add(new UpdateTimeValuePair(t,new TsPrimitiveType.TsBinary(v)));
+        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsBinary(v));
+        treeSet.remove(tv);
+        treeSet.add(tv);
     }
 
     @Override
