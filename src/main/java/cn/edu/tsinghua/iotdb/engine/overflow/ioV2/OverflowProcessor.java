@@ -39,8 +39,8 @@ public class OverflowProcessor extends Processor {
 	private OverflowSupport workSupport;
 	private OverflowSupport flushSupport;
 
-	private FlushStatus flushStatus = new FlushStatus();
-	private boolean isMerge;
+	private volatile FlushStatus flushStatus = new FlushStatus();
+	private volatile boolean isMerge;
 	private int valueCount;
 	private String parentPath;
 	private long lastFlushTime = -1;
@@ -417,12 +417,12 @@ public class OverflowProcessor extends Processor {
 		LOGGER.info("The close operation of overflow processor {} starts at {} and ends at {}. It comsumes {}ms.",
 				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}
-	
-	public void clear() throws IOException{
-		if(workResource!=null){
+
+	public void clear() throws IOException {
+		if (workResource != null) {
 			workResource.close();
 		}
-		if(mergeResource!=null){
+		if (mergeResource != null) {
 			mergeResource.close();
 		}
 	}
@@ -452,7 +452,7 @@ public class OverflowProcessor extends Processor {
 	public long getFileSize() {
 		File insertFile = new File(workResource.getInsertFilePath());
 		File updateFile = new File(workResource.getUpdateDeleteFilePath());
-		return insertFile.length() + updateFile.length()+ memoryUsage();
+		return insertFile.length() + updateFile.length() + memoryUsage();
 	}
 
 	/**

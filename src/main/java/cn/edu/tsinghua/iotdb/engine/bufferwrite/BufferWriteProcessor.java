@@ -92,8 +92,8 @@ public class BufferWriteProcessor extends Processor {
 
 	private long memUsed = 0;
 
-	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters)
-			throws BufferWriteProcessorException {
+	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters,
+			FileSchema fileSchema) throws BufferWriteProcessorException {
 		super(processorName);
 
 		this.fileName = fileName;
@@ -116,12 +116,7 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteOutputFilePath = outputFile.getPath();
 		bufferwriterelativePath = processorName + File.separatorChar + fileName;
 		// get the fileschema
-		try {
-			fileSchema = constructFileSchema(processorName);
-		} catch (PathErrorException | WriteProcessException e) {
-			LOGGER.error("Get the FileSchema error, the bufferwrite processor is {}.", processorName, e);
-			throw new BufferWriteProcessorException(e);
-		}
+		this.fileSchema = fileSchema;
 
 		if (outputFile.exists() && restoreFile.exists()) {
 			//
@@ -186,7 +181,8 @@ public class BufferWriteProcessor extends Processor {
 		long lastFlushPosition = pair.left;
 		File lastBufferWriteFile = new File(bufferwriteOutputFilePath);
 		if (lastBufferWriteFile.length() != lastFlushPosition) {
-			LOGGER.warn("The last bufferwrite file is damaged, the length of the last bufferwrite file is {}, the end of last successful flush is {}.",
+			LOGGER.warn(
+					"The last bufferwrite file is damaged, the length of the last bufferwrite file is {}, the end of last successful flush is {}.",
 					lastBufferWriteFile.length(), lastFlushPosition);
 			try {
 				cutOffFile(lastFlushPosition);
@@ -384,7 +380,8 @@ public class BufferWriteProcessor extends Processor {
 			// present one long number.
 			randomAccessFile.read(lastPostionBytes);
 		} catch (FileNotFoundException e) {
-			LOGGER.error("The restore file does not exist, the restore file path is {}.", bufferwriteRestoreFilePath, e);
+			LOGGER.error("The restore file does not exist, the restore file path is {}.", bufferwriteRestoreFilePath,
+					e);
 			throw e;
 		} catch (IOException e) {
 			LOGGER.error("Read data from file error.", e);
@@ -397,33 +394,6 @@ public class BufferWriteProcessor extends Processor {
 		long lastPostion = BytesUtils.bytesToLong(lastPostionBytes);
 		Pair<Long, List<RowGroupMetaData>> result = new Pair<Long, List<RowGroupMetaData>>(lastPostion, groupMetaDatas);
 		return result;
-	}
-
-	private FileSchema constructFileSchema(String processorName) throws PathErrorException, WriteProcessException {
-		List<ColumnSchema> columnSchemaList;
-
-		columnSchemaList = mManager.getSchemaForFileName(processorName);
-		FileSchema fileSchema = null;
-		try {
-			fileSchema = getFileSchemaFromColumnSchema(columnSchemaList, processorName);
-		} catch (WriteProcessException e) {
-			LOGGER.error("Get the FileSchema {} error, the bufferwrite write processor is {}", columnSchemaList,
-					getProcessorName(), e);
-			throw e;
-		}
-		return fileSchema;
-	}
-
-	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String processorName)
-			throws WriteProcessException {
-		JSONArray rowGroup = new JSONArray();
-		for (ColumnSchema col : schemaList) {
-			rowGroup.put(constrcutMeasurement(col));
-		}
-		JSONObject jsonSchema = new JSONObject();
-		jsonSchema.put(JsonFormatConstant.JSON_SCHEMA, rowGroup);
-		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, processorName);
-		return new FileSchema(jsonSchema);
 	}
 
 	private JSONObject constrcutMeasurement(ColumnSchema col) {
@@ -647,7 +617,8 @@ public class BufferWriteProcessor extends Processor {
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
 				DateTime thisDateTime = new DateTime(thisFlushTime,
 						TsfileDBDescriptor.getInstance().getConfig().timeZone);
-				LOGGER.info("The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
+				LOGGER.info(
+						"The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
 						getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval / 1000);
 			}
 			lastFlushTime = System.currentTimeMillis();
@@ -697,10 +668,12 @@ public class BufferWriteProcessor extends Processor {
 						throw e;
 					} catch (BufferWriteProcessorException e) {
 						// write restore error
-						LOGGER.error("When writing bufferwrite processor {} information to disk, an error occurred.", getProcessorName(), e);
+						LOGGER.error("When writing bufferwrite processor {} information to disk, an error occurred.",
+								getProcessorName(), e);
 						throw new IOException(e);
 					} catch (Exception e) {
-						LOGGER.error("The bufferwrite processor {} failed to flush synchronously, when calling the filenodeFlushAction.",
+						LOGGER.error(
+								"The bufferwrite processor {} failed to flush synchronously, when calling the filenodeFlushAction.",
 								getProcessorName(), e);
 						throw new IOException(e);
 					}

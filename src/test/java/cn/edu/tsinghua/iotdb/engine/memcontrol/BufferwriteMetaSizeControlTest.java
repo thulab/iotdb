@@ -110,9 +110,9 @@ public class BufferwriteMetaSizeControlTest {
         parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bfflushaction);
         parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bfcloseaction);
         parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, fnflushaction);
-
+        
         try {
-            processor = new BufferWriteProcessor(nsp, filename, parameters);
+            processor = new BufferWriteProcessor(nsp, filename, parameters,constructFileSchema(nsp));
         } catch (BufferWriteProcessorException e) {
             e.printStackTrace();
             fail(e.getMessage());

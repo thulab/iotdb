@@ -107,6 +107,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	private Map<String, Object> parameters = null;
 	private final String statStorageDeltaName;
 
+	private FileSchema fileSchema;
+
 	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
 		{
 			for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
@@ -292,6 +294,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		isMerging = fileNodeProcessorStore.getFileNodeProcessorStatus();
 		numOfMergeFile = fileNodeProcessorStore.getNumOfMergeFile();
 		InvertedindexOfFiles = new HashMap<>();
+		// construct the fileschema
+		try {
+			this.fileSchema = constructFileSchema(processorName);
+		} catch (WriteProcessException e) {
+			e.printStackTrace();
+			throw new FileNodeProcessorException(e);
+		}
 		// status is not NONE, or the last intervalFile is not closed
 		if (isMerging != FileNodeProcessorStatus.NONE
 				|| (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed())) {
@@ -366,7 +375,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					getProcessorName(), fileNames[fileNames.length - 1]);
 			try {
 				bufferWriteProcessor = new BufferWriteProcessor(getProcessorName(), fileNames[fileNames.length - 1],
-						parameters);
+						parameters, fileSchema);
 			} catch (BufferWriteProcessorException e) {
 				// unlock
 				writeUnlock();
@@ -421,7 +430,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			try {
 				bufferWriteProcessor = new BufferWriteProcessor(processorName,
 						insertTime + FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis(),
-						parameters);
+						parameters, fileSchema);
 			} catch (BufferWriteProcessorException e) {
 				LOGGER.error("The filenode processor {} failed to get the bufferwrite processor.", processorName, e);
 				throw new FileNodeProcessorException(e);
@@ -527,7 +536,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 */
 	public void changeTypeToChanged(String deltaObjectId, long startTime, long endTime) {
 		if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
-			LOGGER.warn("Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
+			LOGGER.warn(
+					"Can not find any tsfile which will be overflowed in the filenode processor {}, the data is [deltaObject:{}, start time:{}, end time:{}]",
 					getProcessorName(), deltaObjectId, startTime, endTime);
 			emptyIntervalFileNode.setStartTime(deltaObjectId, 0L);
 			emptyIntervalFileNode.setEndTime(deltaObjectId, getLastUpdateTime(deltaObjectId));
@@ -691,8 +701,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	/**
 	 * submit the merge task to the <code>MergePool</code>
 	 * 
-	 * @return null -can't submit the merge task, because this filenode is not overflowed or it is merging now. 
-	 *         Future<?> - submit the merge task successfully.
+	 * @return null -can't submit the merge task, because this filenode is not
+	 *         overflowed or it is merging now. Future<?> - submit the merge
+	 *         task successfully.
 	 */
 	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {
