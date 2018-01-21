@@ -17,7 +17,14 @@ public class UpdateDeleteInfoOfOneSeries {
     private TSDataType dataType;
     private List<OverflowUpdateDeleteFile> overflowUpdateFileList;
     private DynamicOneColumnData overflowUpdateInMem;
-    
+    private OverflowOperationReader overflowUpdateOperationReader;
+
+    public OverflowOperationReader getOverflowUpdateOperationReader() {
+        if (overflowUpdateOperationReader == null) {
+            overflowUpdateOperationReader = new OverflowOperationReaderImpl(overflowUpdateInMem, overflowUpdateFileList, dataType);
+        }
+        return overflowUpdateOperationReader;
+    }
     
     public void setDataType(TSDataType dataType) {
 		this.dataType = dataType;
@@ -42,20 +49,4 @@ public class UpdateDeleteInfoOfOneSeries {
 	public DynamicOneColumnData getOverflowUpdateInMem() {
 		return overflowUpdateInMem;
 	}
-
-    private OverflowOperationReader overflowUpdateOperationReader;
-
-    public UpdateDeleteInfoOfOneSeries(TSDataType dataType, List<OverflowUpdateDeleteFile> overflowUpdateFileList, DynamicOneColumnData overflowUpdateInMem) {
-        this.dataType = dataType;
-        this.overflowUpdateFileList = overflowUpdateFileList;
-        this.overflowUpdateInMem = overflowUpdateInMem;
-    }
-
-    public OverflowOperationReader getOverflowUpdateOperationReader() {
-        if (overflowUpdateOperationReader == null) {
-            overflowUpdateOperationReader = new OverflowOperationReaderImpl(overflowUpdateInMem, overflowUpdateFileList, dataType);
-        }
-
-        return overflowUpdateOperationReader;
-    }
 }
