@@ -52,21 +52,25 @@ public class InsertDynamicDataTest {
         CompressionTypeName compressionTypeName = pair.right;
         DynamicOneColumnData lastPageData = (DynamicOneColumnData) writeList.get(0);
         DynamicOneColumnData overflowInsert = buildOverflowInsertData();
-        DynamicOneColumnData overflowUpdateTrue = buildOverflowUpdateTrue();
-        DynamicOneColumnData overflowUpdateFalse = buildOverflowUpdateFalse();
+        DynamicOneColumnData overflowUpdate = buildOverflowUpdate();
 
         InsertDynamicData insertDynamicData = new InsertDynamicData(TSDataType.FLOAT, compressionTypeName, sealedPageList, lastPageData,
-                overflowInsert, overflowUpdateTrue, overflowUpdateFalse, null, null);
+                overflowInsert, overflowUpdate,null, null);
 
         int cnt = 0;
         while (insertDynamicData.hasInsertData()) {
             long time = insertDynamicData.getCurrentMinTime();
             float value = insertDynamicData.getCurrentFloatValue();
+            //System.out.println(time + "," + value);
             if (time >= 50 && time <= 60) {
                 assertEquals(value, -111, 0.0);
             } else if (time >= 100 && time <= 520) {
-                if (time >= 200 && time <= 220) {
+                if (time >= 200 && time <= 210) {
+                    assertEquals( -100, value, 0.0);
+                } else if (time > 210 && time <= 220) {
                     assertEquals( -111, value, 0.0);
+                } else if (time >= 300 && time <= 350) {
+                    assertEquals( -333, value, 0.0);
                 } else if (time >= 490 && time < 510) {
                     assertEquals(-222, value,0.0);
                 } else if (time >= 510 && time <= 520) {
@@ -79,17 +83,16 @@ public class InsertDynamicDataTest {
                     assertEquals(value, -111, 0.0);
                 } else if (time >= 960 && time <= 965) {
                     assertEquals(value, -222, 0.0);
+                } else if (time >= 980 && time <= 990) {
+                    assertEquals(-333, value, 0.0);
                 } else {
                     assertEquals(value, time, 0.0);
                 }
             }
-            // System.out.println(time + "," + value);
             cnt ++;
             insertDynamicData.removeCurrentValue();
-            //System.out.println(time + "," + value);
         }
-        assertEquals(670, cnt);
-        //System.out.println("..." + cnt);
+        assertEquals(724, cnt);
     }
 
     @Test
@@ -110,19 +113,51 @@ public class InsertDynamicDataTest {
         CompressionTypeName compressionTypeName = pair.right;
         DynamicOneColumnData lastPageData = (DynamicOneColumnData) writeList.get(0);
         DynamicOneColumnData overflowInsert = buildOverflowInsertData();
-        DynamicOneColumnData overflowUpdateTrue = buildOverflowUpdateTrue();
-        DynamicOneColumnData overflowUpdateFalse = buildOverflowUpdateFalse();
+        DynamicOneColumnData overflowUpdate = buildOverflowUpdate();
 
         SingleSeriesFilterExpression timeFilter = ltEq(timeSeries, 560L, true);
         SingleSeriesFilterExpression valueFilter = gtEq(valueSeries, -300.0f, true);
         InsertDynamicData insertDynamicData = new InsertDynamicData(TSDataType.FLOAT, compressionTypeName, sealedPageList, lastPageData,
-                overflowInsert, overflowUpdateTrue, overflowUpdateFalse, timeFilter, valueFilter);
+                overflowInsert, overflowUpdate, timeFilter, valueFilter);
+        int cnt = 0;
         while (insertDynamicData.hasInsertData()) {
             long time = insertDynamicData.getCurrentMinTime();
             float value = insertDynamicData.getCurrentFloatValue();
             System.out.println(time + "," + value);
+
+            if (time >= 50 && time <= 60) {
+                assertEquals(value, -111, 0.0);
+            } else if (time >= 100 && time <= 520) {
+                if (time >= 200 && time <= 210) {
+                    assertEquals(-100, value, 0.0);
+                } else if (time > 210 && time <= 220) {
+                    assertEquals( -111, value, 0.0);
+                } else if (time >= 300 && time <= 350) {
+                    assertEquals( -333, value, 0.0);
+                } else if (time >= 490 && time < 510) {
+                    assertEquals(-222, value,0.0);
+                } else if (time >= 510 && time <= 520) {
+                    assertEquals(-111, value, 0.0);
+                } else {
+                    assertEquals(time-50, value, 0.0);
+                }
+            } else {
+                if (time >= 900 && time <= 910) {
+                    assertEquals(value, -111, 0.0);
+                } else if (time >= 960 && time <= 965) {
+                    assertEquals(value, -222, 0.0);
+                } else if (time >= 980 && time <= 990) {
+                    assertEquals(-333, value, 0.0);
+                } else {
+                    assertEquals(value, time, 0.0);
+                }
+            }
+
             insertDynamicData.removeCurrentValue();
+            cnt ++;
         }
+        assertEquals(383, cnt);
+//        System.out.println(cnt);
     }
 
     private DynamicOneColumnData buildOverflowInsertData() {
@@ -150,8 +185,17 @@ public class InsertDynamicDataTest {
         return overflowInsert;
     }
 
-    private DynamicOneColumnData buildOverflowUpdateTrue() {
+    private DynamicOneColumnData buildOverflowUpdate() {
         DynamicOneColumnData ans = new DynamicOneColumnData(TSDataType.FLOAT, true);
+
+        ans.putTime(200);
+        ans.putTime(210);
+        ans.putFloat(-100.0f);
+
+        ans.putTime(300);
+        ans.putTime(350);
+        ans.putFloat(-333.0f);
+
         ans.putTime(490);
         ans.putTime(500);
         ans.putFloat(-222.0f);
@@ -159,18 +203,12 @@ public class InsertDynamicDataTest {
         ans.putTime(960);
         ans.putTime(965);
         ans.putFloat(-222.0f);
-        return ans;
-    }
-
-    private DynamicOneColumnData buildOverflowUpdateFalse() {
-        DynamicOneColumnData ans = new DynamicOneColumnData(TSDataType.FLOAT, true);
-        ans.putTime(300);
-        ans.putTime(350);
-        ans.putFloat(-333.0f);
 
         ans.putTime(980);
         ans.putTime(990);
         ans.putFloat(-333.0f);
+
         return ans;
     }
+
 }

@@ -9,6 +9,8 @@ import cn.edu.tsinghua.iotdb.query.engine.EngineUtils;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
+import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -368,8 +370,8 @@ public class GroupByEngineWithFilter {
             String deltaObjectId = path.getDeltaObjectToString();
             String measurementId = path.getMeasurementToString();
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
-            RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
-                    null, null, null, null, recordReaderPrefix);
+            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
+                    null, null,  null, recordReaderPrefix, ReaderType.QUERY);
 
             if (recordReader.insertMemoryData == null) {
                 recordReader.buildInsertMemoryData(null, null);
@@ -402,8 +404,8 @@ public class GroupByEngineWithFilter {
         //TODO may have dnf conflict
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(valueFilterNumber);
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                null, null, queryValueFilter, null, valueFilterPrefix);
+        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                null,  queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {
             recordReader.buildInsertMemoryData(null, queryValueFilter);

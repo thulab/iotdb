@@ -5,6 +5,9 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.query.reader.AggregateRecordReader;
+import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
+import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -85,7 +88,7 @@ public class AggregateEngine {
                                                                SingleSeriesFilterExpression valueFilter, int valueFilterNumber)
                         throws ProcessorException, IOException {
                     try {
-                        return getDataUseSingleValueFilter(valueFilter, freqFilter, res, fetchSize, valueFilterNumber);
+                        return getDataUseSingleValueFilter(valueFilter, res, fetchSize, valueFilterNumber);
                     } catch (PathErrorException e) {
                         e.printStackTrace();
                         return null;
@@ -175,9 +178,9 @@ public class AggregateEngine {
                 }
 
                 // the query prefix here must not be confilct with method querySeriesForCross()
-                RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                        null, null, null, null,
-                        ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal));
+                AggregateRecordReader recordReader = (AggregateRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                        null,  null, null,
+                        ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal), ReaderType.AGGREGATE);
 
                 if (recordReader.insertMemoryData == null) {
                     recordReader.buildInsertMemoryData(null, null);
@@ -225,10 +228,9 @@ public class AggregateEngine {
             AggregateFunction aggregateFunction = pair.right;
             String deltaObjectUID = path.getDeltaObjectToString();
             String measurementUID = path.getMeasurementToString();
-            TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
 
-            RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                    queryTimeFilter, null, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber));
+            AggregateRecordReader recordReader = (AggregateRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                    queryTimeFilter, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber), ReaderType.AGGREGATE);
 
             if (recordReader.insertMemoryData == null) {
                 recordReader.buildInsertMemoryData(queryTimeFilter, null);
@@ -254,8 +256,8 @@ public class AggregateEngine {
      * <code>RecordReaderCache</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCache</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    private DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter, SingleSeriesFilterExpression freqFilter,
-                                                                    DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
+    private DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter,
+                                                             DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getDeltaObjectUID();
@@ -264,8 +266,8 @@ public class AggregateEngine {
         // query prefix here must not be conflict with query in multiAggregate method
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
-                null, freqFilter, queryValueFilter, null, valueFilterPrefix);
+        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {
             recordReader.buildInsertMemoryData(null, queryValueFilter);

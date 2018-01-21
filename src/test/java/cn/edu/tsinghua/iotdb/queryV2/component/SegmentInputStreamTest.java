@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.component;
 
-import cn.edu.tsinghua.iotdb.queryV2.TestFileWriter;
+import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStream;
 import org.junit.After;
 import org.junit.Assert;
@@ -25,7 +25,7 @@ public class SegmentInputStreamTest {
         for (int i = 0; i < count; i++) {
             bytes[i] = (byte) ((i % 254) + 1);
         }
-        TestFileWriter.writeFile(PATH, bytes);
+        SimpleFileWriter.writeFile(PATH, bytes);
     }
 
     @After

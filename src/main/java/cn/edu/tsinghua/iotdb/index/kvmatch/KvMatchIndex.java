@@ -20,6 +20,7 @@ import cn.edu.tsinghua.iotdb.index.common.QueryDataSetIterator;
 import cn.edu.tsinghua.iotdb.index.utils.IndexFileUtils;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
+import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -594,7 +595,7 @@ public class KvMatchIndex  implements IoTIndex {
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(0);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().
-                getRecordReader(deltaObjectUID, measurementUID, null, null, null, readToken, recordReaderPrefix);
+                getRecordReader(deltaObjectUID, measurementUID, null,  null, readToken, recordReaderPrefix, ReaderType.QUERY);
 
         long bufferWriteBeginTime = Long.MAX_VALUE;
         if (recordReader.bufferWritePageList != null && recordReader.bufferWritePageList.size() > 0) {
@@ -606,7 +607,7 @@ public class KvMatchIndex  implements IoTIndex {
         }
 
         DynamicOneColumnData insert = recordReader.overflowInsertData;
-        DynamicOneColumnData update = recordReader.overflowUpdateTrue;
+        DynamicOneColumnData update = recordReader.overflowUpdate;
         SingleSeriesFilterExpression deleteFilter = recordReader.overflowTimeFilter;
         long maxDeleteTime = 0;
         if (deleteFilter != null) {

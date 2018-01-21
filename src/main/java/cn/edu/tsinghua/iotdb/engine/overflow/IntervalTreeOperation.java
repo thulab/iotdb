@@ -383,7 +383,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                             // relation == CrossRelation.LCOVERSR) : newerTimePair covers oldTimePair, newTimePair width must > 1, impossible
                             // relation == CrossRelation.LFIRSTCROSS) :  newTimePair first cross, impossible
                             // relation == CrossRelation.RFIRSTCROSS) :  oldTimePair first cross, impossible
-                            LOG.error("unreachable method");
+
+                            LOG.error("unreachable method, new time pair:" + newTimePair.toString() + ". old time pair"
+                            + oldTimePair.toString());
                         }
                     }
                 }
@@ -815,43 +817,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     /**
-     * To determine whether a time pair is satisfy the demand of the SingleSeriesFilterExpression.
-     *
-     * @param valueFilter - value filter
-     * @param data        - DynamicOneColumnData
-     * @param i           - index
-     * @return - boolean
-     */
-    private boolean isIntervalSatisfy(SingleSeriesFilterExpression valueFilter, DynamicOneColumnData data, int i) {
-        if (valueFilter == null) {
-            return true;
-        }
-
-        switch (valueFilter.getFilterSeries().getSeriesDataType()) {
-            case INT32:
-                SingleValueVisitor<?> visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getInt(i));
-            case INT64:
-                visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getLong(i));
-            case FLOAT:
-                visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getFloat(i));
-            case DOUBLE:
-                visitor = new SingleValueVisitor(valueFilter);
-                return visitor.verify(data.getDouble(i));
-            case BOOLEAN:
-                return SingleValueVisitorFactory.getSingleValueVisitor(TSDataType.BOOLEAN).satisfyObject(data.getBoolean(i), valueFilter);
-            case TEXT:
-                return SingleValueVisitorFactory.getSingleValueVisitor(TSDataType.TEXT).satisfyObject(data.getBinary(i), valueFilter);
-            default:
-                LOG.error("Unsupported TSFile data type.");
-                throw new UnSupportedDataTypeException("Unsupported TSFile data type.");
-
-        }
-    }
-
-    /**
      * put data from DynamicOneColumnData[data] to DynamicOneColumnData[ope]
      * <p>
      * value in ope must > 0
@@ -947,32 +912,18 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                 } else if (L > 0 && R > 0) { // UPDATE
                     switch (crossRelation) {
                         case LCOVERSR:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(L, R, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(L, R, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(L, R, dataType, updateAdopt, overflowData, i);
                             break;
                         case RCOVERSL:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
+
                             break;
                         case LFIRSTCROSS:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(exist.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(exist.s, filterTimePair.e, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(exist.s, filterTimePair.e, dataType, updateAdopt, overflowData, i);
+
                             break;
                         case RFIRSTCROSS:
-                            if (isIntervalSatisfy(valueFilter, overflowData, i)) {
-                                putDynamicValue(filterTimePair.s, exist.e, dataType, updateAdopt, overflowData, i);
-                            } else {
-                                putDynamicValue(filterTimePair.s, exist.e, dataType, updateNotAdopt, overflowData, i);
-                            }
+                            putDynamicValue(filterTimePair.s, exist.e, dataType, updateAdopt, overflowData, i);
                             break;
                     }
                 } else {    // DELETE
@@ -984,7 +935,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
 
         ans.add(insertAdopt);
         ans.add(updateAdopt);
-        ans.add(updateNotAdopt);
         GtEq<Long> deleteFilter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
                 "Any", "Any", FilterSeriesType.TIME_FILTER), deleteMaxLength, false);
         And and = (And) FilterFactory.and(timeFilter, deleteFilter);

@@ -5,6 +5,8 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
+import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -195,7 +197,6 @@ public class  GroupByEngineNoFilter {
             groupByResult.mapRet.put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
         }
 
-        //LOG.debug("current group by function with no filter is over.");
         return groupByResult;
     }
 
@@ -209,8 +210,8 @@ public class  GroupByEngineNoFilter {
         String measurementID = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
-                queryTimeFilter, null, null, readLock, recordReaderPrefix);
+        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
+                queryTimeFilter, null,  readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
             recordReader.buildInsertMemoryData(queryTimeFilter, null);

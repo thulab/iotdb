@@ -23,7 +23,7 @@ public class TreeSetMemTable implements IMemTable{
 
     @Override
     public boolean checkPath(String deltaObject, String measurement) {
-        return !memTableMap.containsKey(deltaObject) &&
+        return memTableMap.containsKey(deltaObject) &&
                 memTableMap.get(deltaObject).containsKey(measurement);
 
     }
@@ -56,12 +56,22 @@ public class TreeSetMemTable implements IMemTable{
         }
         return sum;
     }
+    
+    @Override
+    public void clear(){
+    	memTableMap.clear();
+    }
+    
+    @Override
+    public boolean isEmpty() {
+    	return memTableMap.isEmpty();
+    }
 
 
     @Override
-    public Iterable<?> query(String deltaObject, String measurement) {
+    public Iterable<?> query(String deltaObject, String measurement,TSDataType dataType) {
         if(!checkPath(deltaObject,measurement))
-            return null;
+        	return new TreeSetMemSeries(dataType).query();
         return memTableMap.get(deltaObject).get(measurement).query();
     }
 

@@ -1,10 +1,10 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.query.reader.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +12,6 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.filenode.QueryStructure;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 
@@ -42,11 +41,10 @@ public class RecordReaderFactory {
      * @param prefix   for the exist of <code>RecordReaderCache</code> and batch read, we need a prefix to
      *                 represent the uniqueness.
      * @return <code>RecordReader</code>
-     * @throws ProcessorException
      */
     public RecordReader getRecordReader(String deltaObjectUID, String measurementID,
-                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
-                                        Integer readLock, String prefix) throws ProcessorException, PathErrorException {
+                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                                        Integer readLock, String prefix, ReaderType readerType) throws ProcessorException, PathErrorException {
         int token = 0;
         if (readLock == null) {
             token = readLockManager.lock(deltaObjectUID);
@@ -59,20 +57,19 @@ public class RecordReaderFactory {
         } else {
             QueryStructure queryStructure;
             try {
-                queryStructure = fileNodeManager.query(deltaObjectUID, measurementID, timeFilter, freqFilter, valueFilter);
-                // LOGGER.debug(queryStructure.toString());
+                queryStructure = fileNodeManager.query(deltaObjectUID, measurementID, timeFilter, null, valueFilter);
             } catch (FileNodeManagerException e) {
                 throw new ProcessorException(e.getMessage());
             }
-            RecordReader recordReader = createANewRecordReader(deltaObjectUID, measurementID, queryStructure, token);
+            RecordReader recordReader = createANewRecordReader(deltaObjectUID, measurementID, queryStructure, readerType);
             readLockManager.recordReaderCache.put(cacheDeltaKey, measurementID, recordReader);
             return recordReader;
         }
     }
 
     private RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
-                                                QueryStructure queryStructure, int token) throws ProcessorException, PathErrorException {
-        RecordReader recordReader;
+                                                QueryStructure queryStructure, ReaderType readerType) throws PathErrorException {
+        RecordReader recordReader = null;
 
         List<IntervalFileNode> fileNodes = queryStructure.getBufferwriteDataInFiles();
         boolean hasUnEnvelopedFile;
@@ -91,25 +88,79 @@ public class RecordReaderFactory {
 
             // if currentPage is null, both currentPage and pageList must both are null
             if (queryStructure.getCurrentPage() == null) {
-                recordReader = new RecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
-                        deltaObjectUID, measurementID, token, null, null, null,
-                        queryStructure.getAllOverflowData());
+                switch (readerType) {
+                    case QUERY:
+                        recordReader = new QueryRecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
+                                deltaObjectUID, measurementID, null, null, null,
+                                queryStructure.getAllOverflowData());
+                        break;
+                    case AGGREGATE:
+                        recordReader = new AggregateRecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
+                                deltaObjectUID, measurementID,null, null, null,
+                                queryStructure.getAllOverflowData());
+                        break;
+                    case FILL:
+                        recordReader = new FillRecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
+                                deltaObjectUID, measurementID, null, null, null,
+                                queryStructure.getAllOverflowData());
+                        break;
+                }
             } else {
-                recordReader = new RecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
-                        deltaObjectUID, measurementID, token, queryStructure.getCurrentPage(),
-                        queryStructure.getPageList().left, queryStructure.getPageList().right, queryStructure.getAllOverflowData());
+                switch (readerType) {
+                    case QUERY:
+                        recordReader = new QueryRecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
+                                deltaObjectUID, measurementID, queryStructure.getCurrentPage(),
+                                queryStructure.getPageList().left, queryStructure.getPageList().right, queryStructure.getAllOverflowData());
+                        break;
+                    case AGGREGATE:
+                        recordReader = new AggregateRecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
+                                deltaObjectUID, measurementID, queryStructure.getCurrentPage(),
+                                queryStructure.getPageList().left, queryStructure.getPageList().right, queryStructure.getAllOverflowData());
+                        break;
+                    case FILL:
+                        recordReader = new FillRecordReader(filePathList, unsealedFilePath, queryStructure.getBufferwriteDataInDisk(),
+                                deltaObjectUID, measurementID, queryStructure.getCurrentPage(),
+                                queryStructure.getPageList().left, queryStructure.getPageList().right, queryStructure.getAllOverflowData());
+                        break;
+                }
             }
         } else {
             if (fileNodes.size() > 0) {
                 filePathList.add(fileNodes.get(fileNodes.size() - 1).getFilePath());
             }
             if (queryStructure.getCurrentPage() == null) {
-                recordReader = new RecordReader(filePathList, deltaObjectUID, measurementID, token,
-                        queryStructure.getCurrentPage(), null, null, queryStructure.getAllOverflowData());
+                switch (readerType) {
+                    case QUERY:
+                        recordReader = new QueryRecordReader(filePathList, deltaObjectUID, measurementID,
+                                queryStructure.getCurrentPage(), null, null, queryStructure.getAllOverflowData());
+                        break;
+                    case AGGREGATE:
+                        recordReader = new AggregateRecordReader(filePathList, deltaObjectUID, measurementID,
+                                queryStructure.getCurrentPage(), null, null, queryStructure.getAllOverflowData());
+                        break;
+                    case FILL:
+                        recordReader = new FillRecordReader(filePathList, deltaObjectUID, measurementID,
+                                queryStructure.getCurrentPage(), null, null, queryStructure.getAllOverflowData());
+                        break;
+                }
             } else {
-                recordReader = new RecordReader(filePathList, deltaObjectUID, measurementID, token,
-                        queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right,
-                        queryStructure.getAllOverflowData());
+                switch (readerType) {
+                    case QUERY:
+                        recordReader = new QueryRecordReader(filePathList, deltaObjectUID, measurementID,
+                                queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right,
+                                queryStructure.getAllOverflowData());
+                        break;
+                    case AGGREGATE:
+                        recordReader = new AggregateRecordReader(filePathList, deltaObjectUID, measurementID,
+                                queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right,
+                                queryStructure.getAllOverflowData());
+                        break;
+                    case FILL:
+                        recordReader = new FillRecordReader(filePathList, deltaObjectUID, measurementID,
+                                queryStructure.getCurrentPage(), queryStructure.getPageList().left, queryStructure.getPageList().right,
+                                queryStructure.getAllOverflowData());
+                        break;
+                }
             }
         }
 
@@ -122,7 +173,7 @@ public class RecordReaderFactory {
     }
 
     // TODO this method is only used in test case and KV-match index
-    public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException, ProcessorException {
+    public void removeRecordReader(String deltaObjectId, String measurementId) {
         if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
             // close the RecordReader read stream.
             readLockManager.recordReaderCache.get(deltaObjectId, measurementId).closeFileStream();
