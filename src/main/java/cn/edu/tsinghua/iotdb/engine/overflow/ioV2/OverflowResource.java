@@ -33,6 +33,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 public class OverflowResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);
 	private String parentPath;
+	private String dataPath;
 	private String insertFilePath;
 	private String updateDeleteFilePath;
 	private String positionFilePath;
@@ -52,6 +53,7 @@ public class OverflowResource {
 		this.insertMetadatas = new HashMap<>();
 		this.updateDeleteMetadatas = new HashMap<>();
 		this.parentPath = parentPath;
+		this.dataPath = dataPath;
 		File dataFile = new File(new File(parentPath), dataPath);
 		if (!dataFile.exists()) {
 			dataFile.mkdirs();
@@ -218,8 +220,13 @@ public class OverflowResource {
 			// TODO page size
 			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable, 1024 * 1024);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
+			for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
+				for (TimeSeriesChunkMetaData seriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
+					addInsertMetadata(rowGroupMetaData.getDeltaObjectID(),
+							seriesChunkMetaData.getProperties().getMeasurementUID(), seriesChunkMetaData);
+				}
+			}
 			if (!rowGroupMetaDatas.isEmpty()) {
-				insertIO.clearRowGroupMetadatas();
 				insertIO.getWriter().write(BytesUtils.longToBytes(lastPosition));
 				TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData(rowGroupMetaDatas);
 				long start = insertIO.getPos();
@@ -227,6 +234,7 @@ public class OverflowResource {
 						insertIO.getWriter());
 				long end = insertIO.getPos();
 				insertIO.getWriter().write(BytesUtils.intToBytes((int) (end - start)));
+				insertIO.clearRowGroupMetadatas();
 			}
 		}
 	}
@@ -273,17 +281,13 @@ public class OverflowResource {
 		updateDeleteMetadatas.clear();
 		insertIO.close();
 		updateDeleteIO.close();
-		deleteDir(parentPath);
 	}
 
-	private void deleteDir(String path) {
-		File file = new File(path);
-		if (file.isDirectory()) {
-			for (String subPath : file.list()) {
-				deleteDir(subPath);
-			}
-		}
-		file.delete();
+	public void deleteResource(){
+		new File(insertFilePath).delete();
+		new File(updateDeleteFilePath).delete();
+		new File(positionFilePath).delete();
+		new File(parentPath,dataPath).delete();
 	}
 
 	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {

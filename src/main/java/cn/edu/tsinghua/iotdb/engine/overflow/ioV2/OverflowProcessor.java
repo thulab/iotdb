@@ -94,6 +94,7 @@ public class OverflowProcessor extends Processor {
 			// work dir > merge dir
 			workResource = new OverflowResource(parentPath, String.valueOf(count2));
 			mergeResource = new OverflowResource(parentPath, String.valueOf(count1));
+			isMerge = true;
 			LOGGER.info("The overflow processor {} recover from merge status.", getProcessorName());
 		}
 	}
@@ -281,6 +282,7 @@ public class OverflowProcessor extends Processor {
 	public void switchMergeToWork() throws IOException {
 		if (mergeResource != null) {
 			mergeResource.close();
+			mergeResource.deleteResource();
 			mergeResource = null;
 		}
 		isMerge = false;
@@ -415,6 +417,15 @@ public class OverflowProcessor extends Processor {
 		LOGGER.info("The close operation of overflow processor {} starts at {} and ends at {}. It comsumes {}ms.",
 				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}
+	
+	public void clear() throws IOException{
+		if(workResource!=null){
+			workResource.close();
+		}
+		if(mergeResource!=null){
+			mergeResource.close();
+		}
+	}
 
 	@Override
 	public boolean canBeClosed() {
@@ -439,9 +450,9 @@ public class OverflowProcessor extends Processor {
 	 * @return The size of overflow file corresponding to this processor.
 	 */
 	public long getFileSize() {
-		// TODO : save this variable to avoid object creation?
-		File file = new File(workResource.getInsertFilePath());
-		return file.length() + memoryUsage();
+		File insertFile = new File(workResource.getInsertFilePath());
+		File updateFile = new File(workResource.getUpdateDeleteFilePath());
+		return insertFile.length() + updateFile.length()+ memoryUsage();
 	}
 
 	/**

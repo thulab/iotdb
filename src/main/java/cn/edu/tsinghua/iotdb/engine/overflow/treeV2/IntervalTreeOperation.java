@@ -1,21 +1,11 @@
-package cn.edu.tsinghua.iotdb.engine.overflow;
-
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+package cn.edu.tsinghua.iotdb.engine.overflow.treeV2;
 
 import cn.edu.tsinghua.iotdb.engine.overflow.index.CrossRelation;
+import cn.edu.tsinghua.iotdb.engine.overflow.index.IntervalRelation;
+import cn.edu.tsinghua.iotdb.engine.overflow.treeV2.IntervalTree;
+import cn.edu.tsinghua.iotdb.engine.overflow.utils.MergeStatus;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowOpType;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TimePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.engine.overflow.index.IntervalRelation;
-import cn.edu.tsinghua.iotdb.engine.overflow.index.IntervalTree;
-import cn.edu.tsinghua.iotdb.engine.overflow.utils.MergeStatus;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedOverflowOpTypeException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -28,9 +18,15 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils.readUnsignedVarInt;
 
@@ -42,11 +38,13 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
 
     private static final Logger LOG = LoggerFactory.getLogger(IntervalTreeOperation.class);
 
-    private IntervalTree index = null;
+    private IntervalTree index;
 
     private TSDataType dataType; // All operations data type in IntervalTreeOperation.
 
     private int valueSize; // byte occupation of data type.
+
+    private long maxTimestamps;
 
     public IntervalTreeOperation(TSDataType dataType) {
         index = new IntervalTree(dataType);
@@ -74,13 +72,19 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
 
     @Override
     public void insert(long t, byte[] value) {
+        if (t > maxTimestamps) {
+            return;
+        }
+
         index.update(new TimePair(t, t, value, OverflowOpType.INSERT, dataType));
     }
 
     @Override
     public void update(long s, long e, byte[] value) {
-        // s must >= e !
+        // s must >= e
         index.update(new TimePair(s, e, value, OverflowOpType.UPDATE, dataType));
+
+        maxTimestamps = Math.max(maxTimestamps, e);
     }
 
     @Override
@@ -92,6 +96,8 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
         else
             // for "DELETE X where Y = 0"
             index.update(new TimePair(0, timestamp, null, OverflowOpType.DELETE, dataType));
+
+        maxTimestamps = Math.max(maxTimestamps, timestamp);
     }
 
     /**
@@ -295,9 +301,8 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     @Override
-    public DynamicOneColumnData queryFileBlock(SingleSeriesFilterExpression timeFilter,
-                                               SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, InputStream inputStream,
-                                               DynamicOneColumnData newData) throws IOException {
+    public DynamicOneColumnData queryFileBlock(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                                               InputStream inputStream, DynamicOneColumnData newData) throws IOException {
 
         DynamicOneColumnData ans = new DynamicOneColumnData(dataType, true); // merge answer
         int i = 0;
@@ -545,9 +550,8 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     @Override
-    public DynamicOneColumnData queryMemory(SingleSeriesFilterExpression timeFilter,
-                                            SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter
-            , DynamicOneColumnData newerMemoryData) {
+    public DynamicOneColumnData queryMemory(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+            DynamicOneColumnData newerMemoryData) {
         if (newerMemoryData == null) {
             return index.dynamicQuery(timeFilter, dataType);
         }
@@ -823,13 +827,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      */
     private void putDynamicValue(long s, long e, TSDataType dataType, DynamicOneColumnData ope
             , DynamicOneColumnData data, int i) {
-        if (s > 0 && e < 0) {        // INSERT OPERATION, storage single point
-            ope.putTime(s < 0 ? -s : s);
-
-        } else if (s > 0 && e > 0) {    // UPDATE OPERATION
-            ope.putTime(s < 0 ? -s : s);
-            ope.putTime(e < 0 ? -e : e);
-        }
 
         switch (dataType) {
             case INT32:
@@ -865,13 +862,11 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      *
      * @param timeFilter   - time filter specified by user
      * @param valueFilter  - value filter specified by user
-     * @param freqFilter   - frequency filter specified by user
      * @param overflowData - overflow data
      * @return - List<Object>
      */
     @Override
-    public List<Object> getDynamicList(SingleSeriesFilterExpression timeFilter,
-                                       SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, DynamicOneColumnData overflowData) {
+    public List<Object> getDynamicList(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData overflowData) {
 
         long deleteMaxLength = -1;
 
@@ -880,7 +875,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                     "NoName", "NoName", FilterSeriesType.TIME_FILTER), 0L, true);
         }
         List<Object> ans = new ArrayList<>();
-        DynamicOneColumnData insertAdopt = new DynamicOneColumnData(dataType, true);
         DynamicOneColumnData updateAdopt = new DynamicOneColumnData(dataType, true);
         LongInterval filterInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(timeFilter);
 
@@ -893,22 +887,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                         filterInterval.flag[j] ? filterInterval.v[j] : filterInterval.v[j]+1,
                         filterInterval.flag[j+1] ? filterInterval.v[j + 1] : filterInterval.v[j + 1] - 1, MergeStatus.MERGING);
                 CrossRelation crossRelation = IntervalRelation.getRelation(filterTimePair, exist);
-                if (L > 0 && R < 0) {    // INSERT
-                    switch (crossRelation) {
-                        case LCOVERSR:
-                            putDynamicValue(L, R, dataType, insertAdopt, overflowData, i);
-                            break;
-                        case RCOVERSL:
-                            putDynamicValue(filterTimePair.s, filterTimePair.e, dataType, insertAdopt, overflowData, i);
-                            break;
-                        case LFIRSTCROSS:
-                            putDynamicValue(exist.s, filterTimePair.e, dataType, insertAdopt, overflowData, i);
-                            break;
-                        case RFIRSTCROSS:
-                            putDynamicValue(filterTimePair.s, exist.e, dataType, insertAdopt, overflowData, i);
-                            break;
-                    }
-                } else if (L > 0 && R > 0) { // UPDATE
+                if (L > 0 && R > 0) { // UPDATE
                     switch (crossRelation) {
                         case LCOVERSR:
                             putDynamicValue(L, R, dataType, updateAdopt, overflowData, i);
@@ -932,7 +911,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
             }
         }
 
-        ans.add(insertAdopt);
         ans.add(updateAdopt);
         GtEq<Long> deleteFilter = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), deleteMaxLength, false);
         And and = (And) FilterFactory.and(timeFilter, deleteFilter);
