@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.treeV2;
 
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
@@ -71,8 +72,8 @@ public interface IIntervalTreeOperator {
      * @param data        - a DynamicOneColumnData information.
      * @return - List<Object>
      */
-    List<Object> getDynamicList(SingleSeriesFilterExpression timeFilter,
-                                SingleSeriesFilterExpression valueFilter, DynamicOneColumnData data);
+    Pair<DynamicOneColumnData, SingleSeriesFilterExpression> getDynamicList(SingleSeriesFilterExpression timeFilter,
+                                                                            SingleSeriesFilterExpression valueFilter, DynamicOneColumnData data);
 
     /**
      * delete all values earlier than timestamp.

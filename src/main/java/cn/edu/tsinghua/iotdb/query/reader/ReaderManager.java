@@ -37,7 +37,7 @@ public class ReaderManager {
      *
      * @param sealedFilePathList fileInputStreamList
      */
-    ReaderManager(List<String> sealedFilePathList) {
+    public ReaderManager(List<String> sealedFilePathList) {
         this.sealedFilePathList = sealedFilePathList;
         //this.rowGroupReaderMap = new HashMap<>();
     }
@@ -48,7 +48,7 @@ public class ReaderManager {
      * @param unsealedFilePath fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
      */
-    ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
+    public ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
         this.sealedFilePathList = sealedFilePathList;
         this.unSealedFilePath = unsealedFilePath;
         this.unSealedRowGroupMetadataList = rowGroupMetadataList;
