@@ -1,5 +1,7 @@
-package cn.edu.tsinghua.iotdb.engine.bufferwrite;
+package cn.edu.tsinghua.iotdb.engine.bufferwriteV2;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,27 +10,51 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class BufferWriteResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteResource.class);
 	private static final String restoreSuffix = ".restore";
 
 	private Map<String, Map<String, List<TimeSeriesChunkMetaData>>> metadatas;
-	private BufferWriteIOWriter bufferWriteIOWriter;
+	private BufferWriteIO bufferWriteIO;
 	private String insertFilePath;
 	private String restoreFilePath;
 
-	public BufferWriteResource(String insertFilePath) {
+	public BufferWriteResource(String dataPath, String insertFilePath) throws IOException {
 		this.insertFilePath = insertFilePath;
 		this.restoreFilePath = insertFilePath + restoreSuffix;
 		metadatas = new HashMap<>();
-		// check status and restore
 
+		recover();
+		// check status and restore
+		// restore the metadatas
+		// restore IO
 	}
 
-	private void writeRestoreInfo() {
+	private void recover() throws IOException {
+		File insertFile = new File(insertFilePath);
+		File restoreFile = new File(restoreFilePath);
+		if (insertFile.exists() && restoreFile.exists()) {
+
+		} else {
+			insertFile.delete();
+			restoreFile.delete();
+			bufferWriteIO = new BufferWriteIO(new TsRandomAccessFileWriter(insertFile), 0, new ArrayList<>());
+		}
+	}
+
+	private void writeRestoreInfo() throws IOException {
+
+		long position = bufferWriteIO.getPos();
+		List<RowGroupMetaData> append = bufferWriteIO.getAppendedRowGroupMetadata();
+		TsRowGroupBlockMetaData blockMetaData = new TsRowGroupBlockMetaData(append);
 
 	}
 
@@ -62,7 +88,7 @@ public class BufferWriteResource {
 		metadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
 	}
 
-	public void flush() {
+	public void flush(FileSchema fileSchema, IMemTable iMemTable) {
 
 	}
 
@@ -71,6 +97,6 @@ public class BufferWriteResource {
 	}
 
 	private void delete() {
-		
+
 	}
 }

@@ -64,8 +64,8 @@ public class OverflowSupport {
 		indexTrees.get(deltaObjectId).get(measurementId).delete(timestamp);
 	}
 
-	public Iterable<TimeValuePair> queryOverflowInsertInMemory(String deltaObjectId,
-																		 String measurementId, TSDataType dataType) {
+	public Iterable<TimeValuePair> queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
+			TSDataType dataType) {
 		return (Iterable<TimeValuePair>) memTable.query(deltaObjectId, measurementId, dataType);
 	}
 
@@ -73,7 +73,8 @@ public class OverflowSupport {
 			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
 			SingleSeriesFilterExpression valueFilter, TSDataType dataType, DynamicOneColumnData data) {
 		if (indexTrees.containsKey(deltaObjectId)) {
-			if (indexTrees.get(deltaObjectId).containsKey(measurementId)) {
+			if (indexTrees.get(deltaObjectId).containsKey(measurementId)
+					&& indexTrees.get(deltaObjectId).get(measurementId).getDataType().equals(dataType)) {
 				return indexTrees.get(deltaObjectId).get(measurementId).query(timeFilter, freqFilter, valueFilter,
 						dataType, data);
 			}
