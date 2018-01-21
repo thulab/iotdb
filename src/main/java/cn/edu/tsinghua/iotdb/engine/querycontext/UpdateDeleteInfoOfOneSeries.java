@@ -14,8 +14,33 @@ public class UpdateDeleteInfoOfOneSeries {
     private TSDataType dataType;
     private List<OverflowUpdateDeleteFile> overflowUpdateFileList;
     private DynamicOneColumnData overflowUpdateInMem;
+    
+    
+    public void setDataType(TSDataType dataType) {
+		this.dataType = dataType;
+	}
 
-    public OverflowUpdateOperationReader getOverflowUpdateOperationReader() {
+	public void setOverflowUpdateFileList(List<OverflowUpdateDeleteFile> overflowUpdateFileList) {
+		this.overflowUpdateFileList = overflowUpdateFileList;
+	}
+
+	public void setOverflowUpdateInMem(DynamicOneColumnData overflowUpdateInMem) {
+		this.overflowUpdateInMem = overflowUpdateInMem;
+	}
+	
+	public TSDataType getDataType() {
+		return dataType;
+	}
+
+	public List<OverflowUpdateDeleteFile> getOverflowUpdateFileList() {
+		return overflowUpdateFileList;
+	}
+
+	public DynamicOneColumnData getOverflowUpdateInMem() {
+		return overflowUpdateInMem;
+	}
+
+	public OverflowUpdateOperationReader getOverflowUpdateOperationReader() {
         //TODO: CGF
         return null;
     }

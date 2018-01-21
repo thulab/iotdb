@@ -27,7 +27,7 @@ public interface IMemSeries {
     void sortAndDeduplicate();
 
     Iterable<TimeValuePair> query();
-
+    
     void reset();
 
     int size();

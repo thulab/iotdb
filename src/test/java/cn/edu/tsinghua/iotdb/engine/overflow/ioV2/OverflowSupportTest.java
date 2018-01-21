@@ -10,6 +10,7 @@ import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 
 public class OverflowSupportTest {
 
@@ -103,14 +104,14 @@ public class OverflowSupportTest {
 		assertEquals(false, support.isEmptyOfMemTable());
 
 		int num = 1;
-		for (TreeSetMemSeries.TimeValuePairInMemTable pair : support.queryOverflowInsertInMemory(deltaObjectId1,
+		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId1,
 				measurementId1, dataType1)) {
 			assertEquals(num, pair.getTimestamp());
 			assertEquals(num, pair.getValue().getInt());
 			num++;
 		}
 		num = 1;
-		for (TreeSetMemSeries.TimeValuePairInMemTable pair : support.queryOverflowInsertInMemory(deltaObjectId2,
+		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId2,
 				measurementId2, dataType2)) {
 			assertEquals(num, pair.getTimestamp());
 			if (num == 2) {

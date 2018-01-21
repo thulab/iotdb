@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class TreeSetMemTable implements IMemTable{
 
 
     @Override
-    public Iterable<?> query(String deltaObject, String measurement,TSDataType dataType) {
+    public Iterable<TimeValuePair> query(String deltaObject, String measurement,TSDataType dataType) {
         if(!checkPath(deltaObject,measurement))
         	return new TreeSetMemSeries(dataType).query();
         return memTableMap.get(deltaObject).get(measurement).query();
