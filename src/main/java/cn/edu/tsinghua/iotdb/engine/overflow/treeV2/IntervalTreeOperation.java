@@ -10,6 +10,7 @@ import cn.edu.tsinghua.iotdb.exception.UnSupportedOverflowOpTypeException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
@@ -854,7 +855,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
 
     }
 
-    /**
+    /**c
      * Given time filter, value filter and frequency filter,
      * return the correspond data which meet all the filters expression. </br>
      * List<Object> stores three DynamicOneColumnData structures, insertAdopt, updateAdopt
@@ -866,13 +867,12 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      * @return - List<Object>
      */
     @Override
-    public List<Object> getDynamicList(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData overflowData) {
+    public Pair<DynamicOneColumnData, SingleSeriesFilterExpression> getDynamicList(SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, DynamicOneColumnData overflowData) {
 
         long deleteMaxLength = -1;
 
         if (timeFilter == null) {
-            timeFilter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
-                    "NoName", "NoName", FilterSeriesType.TIME_FILTER), 0L, true);
+            timeFilter = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), 0L, true);
         }
         List<Object> ans = new ArrayList<>();
         DynamicOneColumnData updateAdopt = new DynamicOneColumnData(dataType, true);
@@ -911,11 +911,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
             }
         }
 
-        ans.add(updateAdopt);
         GtEq<Long> deleteFilter = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), deleteMaxLength, false);
         And and = (And) FilterFactory.and(timeFilter, deleteFilter);
-        ans.add(and);
-        return ans;
+        return new Pair<>(updateAdopt, and);
     }
 
     /**
