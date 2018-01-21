@@ -28,7 +28,7 @@ public class SimpleTimeValuePairDeserializer implements TimeValuePairDeserialize
     @Override
     public TimeValuePair next() throws IOException {
         try {
-            return (TimeValuePair) objectInputStream.readObject();
+            return (TimeValuePair) objectInputStream.readUnshared();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
