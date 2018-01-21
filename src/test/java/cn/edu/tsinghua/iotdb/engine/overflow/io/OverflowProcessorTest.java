@@ -58,29 +58,11 @@ public class OverflowProcessorTest {
 		}
 	};
 
-	private Action filenodemanagerbackupaction = new Action() {
-
-		@Override
-		public void act() throws Exception {
-			System.out.println("filenode manager backup action");
-		}
-	};
-
-	private Action filenodemanagerflushaction = new Action() {
-
-		@Override
-		public void act() throws Exception {
-			System.out.println("filenode manager flush action");
-		}
-	};
-
 	@Before
 	public void setUp() throws Exception {
 		parameters = new HashMap<String, Object>();
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowflushaction);
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, filenodeflushaction);
-		parameters.put(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION, filenodemanagerbackupaction);
-		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION, filenodemanagerflushaction);
 
 		overflowfilePath = new File(PathUtils.getOverflowWriteDir(nameSpacePath), nameSpacePath + ".overflow")
 				.getPath();

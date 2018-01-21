@@ -9,12 +9,7 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.format.DataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType.TsInt;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class OverflowSupportTest {
 
@@ -103,7 +98,6 @@ public class OverflowSupportTest {
 	@Test
 	public void testInsert() {
 		support.clear();
-		// d1 s1
 		assertEquals(true, support.isEmptyOfMemTable());
 		OverflowTestUtils.produceInsertData(support);
 		assertEquals(false, support.isEmptyOfMemTable());
