@@ -26,7 +26,7 @@ public class MemTableFlushUtil {
 				IPageWriter pageWriter = new PageWriterImpl(desc);
 				SeriesWriterImpl seriesWriter = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,
 						pageSizeThreshold);
-				for (TreeSetMemSeries.UpdateTimeValuePair tvPair : series.query()) {
+				for (TreeSetMemSeries.TimeValuePairInMemTable tvPair : series.query()) {
 					recordCount++;
 					switch (desc.getType()) {
 					case BOOLEAN:

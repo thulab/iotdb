@@ -12,7 +12,7 @@ import java.util.TreeSet;
 public class TreeSetMemSeries implements IMemSeries{
     private static final Logger logger = LoggerFactory.getLogger(TreeSetMemSeries.class);
 
-    private final TreeSet<UpdateTimeValuePair> treeSet;
+    private final TreeSet<TimeValuePairInMemTable> treeSet;
     private final TSDataType dataType;
 
     public TreeSetMemSeries(TSDataType dataType) {
@@ -43,7 +43,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putBoolean(long t, boolean v) {
         checkDataType(TSDataType.BOOLEAN);
-        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsBoolean(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsBoolean(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }
@@ -51,7 +51,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putLong(long t, long v) {
         checkDataType(TSDataType.INT64);
-        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsFloat(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsFloat(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }
@@ -59,7 +59,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putInt(long t, int v) {
         checkDataType(TSDataType.INT32);
-        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsInt(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsInt(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }
@@ -67,7 +67,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putFloat(long t, float v) {
         checkDataType(TSDataType.FLOAT);
-        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsFloat(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsFloat(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }
@@ -75,7 +75,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putDouble(long t, double v) {
         checkDataType(TSDataType.DOUBLE);
-        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsDouble(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsDouble(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }
@@ -83,7 +83,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putBinary(long t, Binary v) {
         checkDataType(TSDataType.TEXT);
-        UpdateTimeValuePair tv = new UpdateTimeValuePair(t, new TsPrimitiveType.TsBinary(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsBinary(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }
@@ -124,8 +124,8 @@ public class TreeSetMemSeries implements IMemSeries{
     }
 
     @Override
-    public Iterable<UpdateTimeValuePair> query() {
-        return (Iterable<UpdateTimeValuePair>) treeSet.clone();
+    public Iterable<TimeValuePair> query() {
+        return (Iterable<TimeValuePair>) treeSet.clone();
     }
 
     @Override
@@ -139,15 +139,15 @@ public class TreeSetMemSeries implements IMemSeries{
         return treeSet.size();
     }
 
-    public class UpdateTimeValuePair extends TimeValuePair implements Comparable{
+    public class TimeValuePairInMemTable extends TimeValuePair implements Comparable{
 
-        public UpdateTimeValuePair(long timestamp, TsPrimitiveType value) {
+        public TimeValuePairInMemTable(long timestamp, TsPrimitiveType value) {
             super(timestamp, value);
         }
 
         @Override
         public int compareTo(Object object) {
-            UpdateTimeValuePair o = (UpdateTimeValuePair) object;
+            TimeValuePairInMemTable o = (TimeValuePairInMemTable) object;
             if(this.getTimestamp() == o.getTimestamp())
                 return 0;
             return this.getTimestamp() < o.getTimestamp()? -1 : 1;
@@ -155,9 +155,9 @@ public class TreeSetMemSeries implements IMemSeries{
 
         @Override
         public boolean equals(Object object) {
-            if(object == null || !(object instanceof UpdateTimeValuePair))
+            if(object == null || !(object instanceof TimeValuePairInMemTable))
                 return false;
-            UpdateTimeValuePair o = (UpdateTimeValuePair) object;
+            TimeValuePairInMemTable o = (TimeValuePairInMemTable) object;
             return o.getTimestamp() == this.getTimestamp();
         }
     }
