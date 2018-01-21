@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries;
-import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries.UpdateTimeValuePair;
+import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries.TimeValuePairInMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
@@ -65,9 +64,9 @@ public class OverflowSupport {
 		indexTrees.get(deltaObjectId).get(measurementId).delete(timestamp);
 	}
 
-	public Iterable<TreeSetMemSeries.UpdateTimeValuePair> queryOverflowInsertInMemory(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
-		return (Iterable<UpdateTimeValuePair>) memTable.query(deltaObjectId, measurementId, dataType);
+	public Iterable<TimeValuePairInMemTable> queryOverflowInsertInMemory(String deltaObjectId,
+																		 String measurementId, TSDataType dataType) {
+		return (Iterable<TimeValuePairInMemTable>) memTable.query(deltaObjectId, measurementId, dataType);
 	}
 
 	public DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,

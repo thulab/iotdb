@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 
 import java.util.List;
 
@@ -11,7 +10,7 @@ import java.util.List;
 public class GlobalSortedSeriesDataSource {
     private List<IntervalFileNode> sealedTsFiles;
     private UnsealedTsFile unsealedTsFile;
-    private SeriesChunk memSeriesChunk;
+    private RawSeriesChunk rawSeriesChunk;
 
     public boolean hasUnsealedTsFile() {
         return unsealedTsFile != null;
@@ -33,11 +32,11 @@ public class GlobalSortedSeriesDataSource {
         this.unsealedTsFile = unsealedTsFile;
     }
 
-    public SeriesChunk getMemSeriesChunk() {
-        return memSeriesChunk;
+    public RawSeriesChunk getRawSeriesChunk() {
+        return rawSeriesChunk;
     }
 
-    public void setMemSeriesChunk(SeriesChunk memSeriesChunk) {
-        this.memSeriesChunk = memSeriesChunk;
+    public void setRawSeriesChunk(RawSeriesChunk rawSeriesChunk) {
+        this.rawSeriesChunk = rawSeriesChunk;
     }
 }

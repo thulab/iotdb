@@ -103,14 +103,14 @@ public class OverflowSupportTest {
 		assertEquals(false, support.isEmptyOfMemTable());
 
 		int num = 1;
-		for (TreeSetMemSeries.UpdateTimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId1,
+		for (TreeSetMemSeries.TimeValuePairInMemTable pair : support.queryOverflowInsertInMemory(deltaObjectId1,
 				measurementId1, dataType1)) {
 			assertEquals(num, pair.getTimestamp());
 			assertEquals(num, pair.getValue().getInt());
 			num++;
 		}
 		num = 1;
-		for (TreeSetMemSeries.UpdateTimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId2,
+		for (TreeSetMemSeries.TimeValuePairInMemTable pair : support.queryOverflowInsertInMemory(deltaObjectId2,
 				measurementId2, dataType2)) {
 			assertEquals(num, pair.getTimestamp());
 			if (num == 2) {
