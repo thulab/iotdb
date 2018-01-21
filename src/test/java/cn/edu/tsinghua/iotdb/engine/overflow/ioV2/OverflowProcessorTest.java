@@ -56,7 +56,7 @@ public class OverflowProcessorTest {
 
 	@Test
 	public void test() throws IOException, OverflowProcessorException {
-		processor = new OverflowProcessor(processorName, parameters);
+		processor = new OverflowProcessor(processorName, parameters, OverflowTestUtils.getFileSchema());
 		assertEquals(true, new File(PathUtils.getOverflowWriteDir(processorName), "0").exists());
 		assertEquals(false, processor.isFlush());
 		assertEquals(false, processor.isMerge());

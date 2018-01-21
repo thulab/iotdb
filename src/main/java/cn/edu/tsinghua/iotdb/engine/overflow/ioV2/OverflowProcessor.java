@@ -28,6 +28,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class OverflowProcessor extends Processor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowProcessor.class);
@@ -48,9 +49,11 @@ public class OverflowProcessor extends Processor {
 
 	private Action overflowFlushAction = null;
 	private Action filenodeFlushAction = null;
+	private FileSchema fileSchema;
 
-	public OverflowProcessor(String processorName, Map<String, Object> parameters) {
+	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) {
 		super(processorName);
+		this.fileSchema = fileSchema;
 		String overflowDirPath = TsFileDBConf.overflowDataDir;
 		if (overflowDirPath.length() > 0
 				&& overflowDirPath.charAt(overflowDirPath.length() - 1) != File.separatorChar) {
@@ -298,7 +301,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			LOGGER.info("The overflow processor {} starts flushing {}.", getProcessorName(), flushFunction);
 			// flush data
-			workResource.flush(flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap());
+			workResource.flush(this.fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap());
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {

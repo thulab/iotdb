@@ -28,6 +28,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class OverflowResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);
@@ -201,20 +202,21 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	public void flush(IMemTable memTable, Map<String, Map<String, OverflowSeriesImpl>> overflowTrees)
-			throws IOException {
-		flush(memTable);
+	public void flush(FileSchema fileSchema, IMemTable memTable,
+			Map<String, Map<String, OverflowSeriesImpl>> overflowTrees) throws IOException {
+		flush(fileSchema, memTable);
 		flush(overflowTrees);
 		writePositionInfo(insertIO.getPos(), updateDeleteIO.getPos());
 	}
 
-	public void flush(IMemTable memTable) throws IOException {
+	public void flush(FileSchema fileSchema, IMemTable memTable) throws IOException {
 		if (memTable != null && !memTable.isEmpty()) {
 			// memtable
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
 			// TODO fileschemaa
-			MemTableFlushUtil.flushMemTable(null, insertIO, memTable, 1000);
+			// TODO page size
+			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable, 1024 * 1024);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
 			if (!rowGroupMetaDatas.isEmpty()) {
 				insertIO.clearRowGroupMetadatas();

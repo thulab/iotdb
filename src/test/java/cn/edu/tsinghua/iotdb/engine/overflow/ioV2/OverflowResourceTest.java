@@ -45,7 +45,7 @@ public class OverflowResourceTest {
 	@Test
 	public void testOverflowUpdate() throws IOException {
 		OverflowTestUtils.produceUpdateData(support);
-		work.flush(null, support.getOverflowSeriesMap());
+		work.flush(null, null, support.getOverflowSeriesMap());
 		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
 				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
 		assertEquals(true, chunkMetaDatas.isEmpty());
@@ -66,10 +66,11 @@ public class OverflowResourceTest {
 		work = new OverflowResource(filePath, dataPath);
 		assertEquals(originlength, updateFile.length());
 	}
-
+	
+	@Test
 	public void testOverflowInsert() throws IOException {
 		OverflowTestUtils.produceInsertData(support);
-		work.flush(support.getMemTabale(), null);
+		work.flush(OverflowTestUtils.getFileSchema(), support.getMemTabale(), null);
 		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1,
 				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
 		assertEquals(0, chunkMetaDatas.size());
