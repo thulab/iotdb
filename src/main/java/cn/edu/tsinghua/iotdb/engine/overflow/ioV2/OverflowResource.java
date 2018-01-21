@@ -50,6 +50,7 @@ public class OverflowResource {
 	public OverflowResource(String parentPath, String dataPath) {
 		this.insertMetadatas = new HashMap<>();
 		this.updateDeleteMetadatas = new HashMap<>();
+		this.parentPath = parentPath;
 		File dataFile = new File(new File(parentPath), dataPath);
 		if (!dataFile.exists()) {
 			dataFile.mkdirs();

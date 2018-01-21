@@ -103,7 +103,6 @@ public class OverflowSupportTest {
 	@Test
 	public void testInsert() {
 		support.clear();
-		// d1 s1
 		assertEquals(true, support.isEmptyOfMemTable());
 		OverflowTestUtils.produceInsertData(support);
 		assertEquals(false, support.isEmptyOfMemTable());
