@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
-import cn.edu.tsinghua.iotdb.conf.TsFileConstant;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
@@ -37,7 +37,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
     private final String STATUS_UP = "UP";
     private final String STATUS_DOWN = "DOWN";
     
-    private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileConstant.IOTDB_PACKAGE, TsFileConstant.JMX_TYPE, getID().getJmxName());
+    private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileDBConstant.IOTDB_PACKAGE, TsFileDBConstant.JMX_TYPE, getID().getJmxName());
     
 	private static class JDBCServiceHolder{
 		private static final JDBCService INSTANCE = new JDBCService();
@@ -82,17 +82,17 @@ public class JDBCService implements JDBCServiceMBean, IService {
     @Override
     public synchronized void startService() {
         if (isStart) {
-            LOGGER.info("{}: {} has been already running now", TsFileConstant.GLOBAL_DB_NAME, this.getID().getName());
+            LOGGER.info("{}: {} has been already running now", TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
             return;
         }
-        LOGGER.info("{}: start {}...",TsFileConstant.GLOBAL_DB_NAME, this.getID().getName());
+        LOGGER.info("{}: start {}...",TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
 
         try {
         	jdbcServiceThread = new Thread(new JDBCServiceThread());
         	jdbcServiceThread.setName(ThreadName.JDBC_SERVICE.getName());
         } catch (IOException e) {
             LOGGER.error("{}: failed to start {} because of {}",
-            		TsFileConstant.GLOBAL_DB_NAME, 
+            		TsFileDBConstant.GLOBAL_DB_NAME, 
             		this.getID().getName(),
             		e.getMessage());
             return;
@@ -100,7 +100,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
         jdbcServiceThread.start();
 
         LOGGER.info("{}: start {} successfully, listening on port {}",
-        		TsFileConstant.GLOBAL_DB_NAME, 
+        		TsFileDBConstant.GLOBAL_DB_NAME, 
         		this.getID().getName(), 
         		TsfileDBDescriptor.getInstance().getConfig().rpcPort);
         isStart = true;
@@ -115,12 +115,12 @@ public class JDBCService implements JDBCServiceMBean, IService {
     @Override
     public synchronized void stopService() {
         if (!isStart) {
-            LOGGER.info("{}: {} isn't running now",TsFileConstant.GLOBAL_DB_NAME, this.getID().getName());
+            LOGGER.info("{}: {} isn't running now",TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
             return;
         }
-        LOGGER.info("{}: closing {}...", TsFileConstant.GLOBAL_DB_NAME, this.getID().getName());
+        LOGGER.info("{}: closing {}...", TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
         close();
-        LOGGER.info("{}: close {} successfully", TsFileConstant.GLOBAL_DB_NAME, this.getID().getName());
+        LOGGER.info("{}: close {} successfully", TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
     }
 
     private synchronized void close() {
@@ -156,12 +156,12 @@ public class JDBCService implements JDBCServiceMBean, IService {
                 poolServer.setServerEventHandler(new JDBCServiceEventHandler(impl));
                 poolServer.serve();
             } catch (TTransportException e) {
-                LOGGER.error("{}: failed to start {}, because ",TsFileConstant.GLOBAL_DB_NAME, getID().getName(), e);
+                LOGGER.error("{}: failed to start {}, because ",TsFileDBConstant.GLOBAL_DB_NAME, getID().getName(), e);
             } catch (Exception e) {
-                LOGGER.error("{}: {} exit, because ",TsFileConstant.GLOBAL_DB_NAME, getID().getName(), e);
+                LOGGER.error("{}: {} exit, because ",TsFileDBConstant.GLOBAL_DB_NAME, getID().getName(), e);
             } finally {
                 close();
-                LOGGER.info("{}: close TThreadPoolServer and TServerSocket for {}",TsFileConstant.GLOBAL_DB_NAME, getID().getName());
+                LOGGER.info("{}: close TThreadPoolServer and TServerSocket for {}",TsFileDBConstant.GLOBAL_DB_NAME, getID().getName());
             }
         }
     }

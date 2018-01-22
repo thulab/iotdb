@@ -20,7 +20,7 @@ import javax.management.remote.JMXServiceURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileConstant;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 
 public class JMXService implements IService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JMXService.class);
@@ -44,9 +44,9 @@ public class JMXService implements IService {
         InetAddress serverAddress = null;
         if (local) {
             serverAddress = InetAddress.getLoopbackAddress();
-            System.setProperty(TsFileConstant.RMI_SERVER_HOST_NAME, serverAddress.getHostAddress());
+            System.setProperty(TsFileDBConstant.RMI_SERVER_HOST_NAME, serverAddress.getHostAddress());
         }
-        int rmiPort = Integer.getInteger(TsFileConstant.JMX_REMOTE_RMI_PORT, 0);
+        int rmiPort = Integer.getInteger(TsFileDBConstant.JMX_REMOTE_RMI_PORT, 0);
 
         JMXConnectorServer jmxServer = JMXConnectorServerFactory.newJMXConnectorServer(
                 new JMXServiceURL("rmi", null, rmiPort), env, ManagementFactory.getPlatformMBeanServer());
@@ -84,19 +84,19 @@ public class JMXService implements IService {
 
 	@Override
 	public void start() {
-		if (System.getProperty(TsFileConstant.REMOTE_JMX_PORT_NAME) != null) {
+		if (System.getProperty(TsFileDBConstant.REMOTE_JMX_PORT_NAME) != null) {
 			LOGGER.warn("JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have been bypassed as the JMX connector server is "
 							+ "already initialized. Please refer to {}.sh/bat for JMX configuration info",
-					TsFileConstant.ENV_FILE_NAME, TsFileConstant.ENV_FILE_NAME, TsFileConstant.ENV_FILE_NAME);
+					TsFileDBConstant.ENV_FILE_NAME, TsFileDBConstant.ENV_FILE_NAME, TsFileDBConstant.ENV_FILE_NAME);
 			return;
 		}
-		System.setProperty(TsFileConstant.SERVER_RMI_ID, "true");
+		System.setProperty(TsFileDBConstant.SERVER_RMI_ID, "true");
 		boolean localOnly = false;
-		String jmxPort = System.getProperty(TsFileConstant.TSFILEDB_REMOTE_JMX_PORT_NAME);
+		String jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_REMOTE_JMX_PORT_NAME);
 
 		if (jmxPort == null) {
 			localOnly = true;
-			jmxPort = System.getProperty(TsFileConstant.TSFILEDB_LOCAL_JMX_PORT_NAME);
+			jmxPort = System.getProperty(TsFileDBConstant.TSFILEDB_LOCAL_JMX_PORT_NAME);
 		}
 
 		if (jmxPort == null) {
@@ -108,7 +108,7 @@ public class JMXService implements IService {
 			if (jmxService == null)
 				return;
 			jmxService.start();
-	        LOGGER.info("{}: start {} successfully.", TsFileConstant.GLOBAL_DB_NAME,  this.getID().getName());
+	        LOGGER.info("{}: start {} successfully.", TsFileDBConstant.GLOBAL_DB_NAME,  this.getID().getName());
 		} catch (IOException e) {
 			LOGGER.error("Failed to start {} because {}",this.getID().getName(), e.getMessage());
 		}
@@ -119,7 +119,7 @@ public class JMXService implements IService {
 		if(jmxService != null){
 			try {
 				jmxService.stop();
-				LOGGER.info("{}: close {} successfully", TsFileConstant.GLOBAL_DB_NAME, this.getID().getName());
+				LOGGER.info("{}: close {} successfully", TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
 			} catch (IOException e) {
 				LOGGER.error("Failed to stop {} because of {}",this.getID().getName(), e.getMessage());
 			}

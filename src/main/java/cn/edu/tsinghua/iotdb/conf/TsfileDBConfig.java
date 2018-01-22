@@ -209,7 +209,7 @@ public class TsfileDBConfig {
 
 	public void updateDataPath() {
 		if(dataDir == null){
-			dataDir = System.getProperty(TsFileConstant.IOTDB_HOME, null);
+			dataDir = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
 			if(dataDir == null){
 				dataDir = "data";
 			} else {

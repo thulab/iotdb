@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.client;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileConstant;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.tool.ImportCsv;
 
@@ -309,7 +309,7 @@ public abstract class AbstractClient {
 				"  | |   .--.|_/ | | \\_|  | | `. \\ | |_) |  \n" +
 				"  | | / .'`\\ \\  | |      | |  | | |  __'.  \n" +
 				" _| |_| \\__. | _| |_    _| |_.' /_| |__) | \n" +
-				"|_____|'.__.' |_____|  |______.'|_______/  version "+TsFileConstant.VERSION+"\n" +
+				"|_____|'.__.' |_____|  |______.'|_______/  version "+TsFileDBConstant.VERSION+"\n" +
 				"                                           \n");
 	}
 
