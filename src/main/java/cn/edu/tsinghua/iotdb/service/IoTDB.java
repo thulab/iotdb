@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
-import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
@@ -24,7 +24,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 public class IoTDB implements IoTDBMBean{
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
 	private RegisterManager registerManager = new RegisterManager();
-    private final String MBEAN_NAME = String.format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE, IoTDBConstant.JMX_TYPE, "IoTDB");
+    private final String MBEAN_NAME = String.format("%s:%s=%s", TsfileConstant.IOTDB_PACKAGE, TsfileConstant.JMX_TYPE, "IoTDB");
 	
     private static class IoTDB2Holder {
 		private static final IoTDB INSTANCE = new IoTDB();
@@ -39,7 +39,7 @@ public class IoTDB implements IoTDBMBean{
 		try {
 			checks.verify();
 		} catch (StartupException e) {
-			LOGGER.error("{}: failed to start because some checks failed. {}", IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: failed to start because some checks failed. {}", TsfileConstant.GLOBAL_DB_NAME, e.getMessage());
 			return;
 		}
 		setUp();
@@ -53,7 +53,7 @@ public class IoTDB implements IoTDBMBean{
 		try {
 			systemDataRecovery();
 		} catch (PathErrorException | IOException | FileNodeManagerException e) {
-			LOGGER.error("{}: failed to start because: {}", IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
+			LOGGER.error("{}: failed to start because: {}", TsfileConstant.GLOBAL_DB_NAME, e.getMessage());
 			return;
 		}
 		// When registering statMonitor, we should start recovering some statistics with latest values stored
@@ -100,7 +100,7 @@ public class IoTDB implements IoTDBMBean{
 	 * @throws IOException
 	 */
 	private void systemDataRecovery() throws IOException, FileNodeManagerException, PathErrorException {
-		LOGGER.info("{}: start checking write log...", IoTDBConstant.GLOBAL_DB_NAME);
+		LOGGER.info("{}: start checking write log...", TsfileConstant.GLOBAL_DB_NAME);
 		// QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
 		WriteLogManager writeLogManager = WriteLogManager.getInstance();
 		writeLogManager.recovery();
@@ -126,7 +126,7 @@ public class IoTDB implements IoTDBMBean{
 			}
 		}
 		WriteLogManager.isRecovering = false;
-		LOGGER.info("{}: Done. Recover operation count {}", IoTDBConstant.GLOBAL_DB_NAME, cnt);
+		LOGGER.info("{}: Done. Recover operation count {}", TsfileConstant.GLOBAL_DB_NAME, cnt);
 	}
 	
 	

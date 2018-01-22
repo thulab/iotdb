@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
-import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -71,8 +71,8 @@ public class MemControlTest {
             deamon = IoTDB.getInstance();
             
 
-            config.memThresholdWarning = 3 * IoTDBConstant.MB;
-            config.memThresholdDangerous = 5 * IoTDBConstant.MB;
+            config.memThresholdWarning = 3 * TsfileConstant.MB;
+            config.memThresholdDangerous = 5 * TsfileConstant.MB;
 
             BasicMemController.getInstance().setCheckInterval(15 * 1000);
             BasicMemController.getInstance().setDangerouseThreshold(config.memThresholdDangerous);  // force initialize

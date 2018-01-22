@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.engine.flushthread;
+package cn.edu.tsinghua.iotdb.engine.pool;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;

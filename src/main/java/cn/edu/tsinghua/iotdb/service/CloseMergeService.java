@@ -109,7 +109,7 @@ public class CloseMergeService implements IService{
 	private class MergeServiceThread extends Thread {
 
 		public MergeServiceThread() {
-			super(ThreadName.MERGE_OPERATION.getName());
+			super(ThreadName.MERGE_DAEMON.getName());
 		}
 
 		@Override
@@ -133,7 +133,7 @@ public class CloseMergeService implements IService{
 	private class CloseServiceThread extends Thread {
 
 		public CloseServiceThread() {
-			super(ThreadName.CLOSE_OPEATION.getName());
+			super(ThreadName.CLOSE_DAEMON.getName());
 		}
 
 		@Override

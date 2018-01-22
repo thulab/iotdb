@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.service;
 
 import java.io.File;
 
-import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.apache.commons.io.FileUtils;
@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 public class Monitor implements MonitorMBean, IService{
 	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 	public static final Monitor INSTANCE = new Monitor();
-    private final String MBEAN_NAME = String.format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE, IoTDBConstant.JMX_TYPE, getID().getJmxName());
+    private final String MBEAN_NAME = String.format("%s:%s=%s", TsfileConstant.IOTDB_PACKAGE, TsfileConstant.JMX_TYPE, getID().getJmxName());
 
 	@Override
 	public long getDataSizeInByte() {

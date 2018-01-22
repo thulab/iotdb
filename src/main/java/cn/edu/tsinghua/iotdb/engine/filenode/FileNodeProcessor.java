@@ -29,8 +29,8 @@ import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.flushthread.MergePool;
 import cn.edu.tsinghua.iotdb.engine.overflow.io.OverflowProcessor;
+import cn.edu.tsinghua.iotdb.engine.pool.MergeManager;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
@@ -727,7 +727,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				}
 			};
 			LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
-			return MergePool.getInstance().submit(MergeThread);
+			return MergeManager.getInstance().submit(MergeThread);
 		} else {
 			if (!isOverflowed) {
 				LOGGER.info("Skip this merge taks submission, because the filenode processor {} is not overflowed.",
