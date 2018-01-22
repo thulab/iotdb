@@ -59,7 +59,6 @@ public class OverflowProcessor extends Processor {
 	private long lastFlushTime = -1;
 
 	private WriteLogNode logNode;
-	private String overflowProcessorStoreFilePath;
 
 	public OverflowProcessor(String processorName, Map<String, Object> parameters) throws OverflowProcessorException {
 		super(processorName);
@@ -128,9 +127,9 @@ public class OverflowProcessor extends Processor {
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
-		overflowProcessorStoreFilePath = FileNodeManager.getInstance().getFileNodeRestoreFileName(processorName);
 		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, overflowRestoreFilePath, overflowProcessorStoreFilePath);
+			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, overflowRestoreFilePath,
+					FileNodeManager.getInstance().getFileNodeRestoreFileName(processorName));
 		} catch (IOException e) {
 			LOGGER.error("Cannot create wal node for overflow processor {}", processorName);
 			throw new OverflowProcessorException(e);
