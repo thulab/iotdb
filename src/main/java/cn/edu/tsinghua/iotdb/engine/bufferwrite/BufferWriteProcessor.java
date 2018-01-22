@@ -1,8 +1,10 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushState;
@@ -154,8 +156,9 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
+		processorStoreFileName = FileNodeManager.getInstance().getFileNodeRestoreFileName(processorName);
 		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + "-bufferwrite", restoreFileName, processorStoreFileName);
+			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, restoreFileName, processorStoreFileName);
 		} catch (IOException e) {
 			LOGGER.error("Cannot create wal node for bufferwrite processor {}",processorName);
 			throw new BufferWriteProcessorException(e);

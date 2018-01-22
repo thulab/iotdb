@@ -99,12 +99,7 @@ public class RecoverTest {
             assertTrue(fileNodeRecoverPerformer.called);
             // ensure all logs are replayed
             assertEquals(plansToCheck.size(), dummyLogReplayer.currPos);
-            // the file node should already be closed (to flush)
-            try {
-                assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
-            } catch (FileNodeManagerException e) {
-                fail(e.getMessage());
-            }
+
             // the log diretory should be empty now
             File logDir = new File(logNode.getLogDirectory());
             File[] files = logDir.listFiles();
@@ -191,12 +186,7 @@ public class RecoverTest {
             assertTrue(fileNodeRecoverPerformer.called);
             // ensure all logs are replayed
             assertEquals(plansToCheck.size(), dummyLogReplayer.currPos);
-            // the file node should already be closed (to flush)
-            try {
-                assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
-            } catch (FileNodeManagerException e) {
-                fail(e.getMessage());
-            }
+
             // the log diretory should be empty now
             File logDir = new File(logNode.getLogDirectory());
             File[] files = logDir.listFiles();
@@ -261,12 +251,7 @@ public class RecoverTest {
 
             logNode.recover();
             assertTrue(!fileNodeRecoverPerformer.called);
-            // the file node should already be closed (to flush)
-            try {
-                assertTrue(!FileNodeManager.getInstance().closeOneFileNode(logNode.getFileNodeName()));
-            } catch (FileNodeManagerException e) {
-                fail(e.getMessage());
-            }
+
             // the log diretory should be empty now
             File logDir = new File(logNode.getLogDirectory());
             File[] files = logDir.listFiles();

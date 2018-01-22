@@ -20,6 +20,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -726,6 +729,16 @@ public class FileNodeManager implements IStatistic {
 					String overflowPath = TsFileDBConf.overflowDataDir;
 					overflowPath = standardizeDir(overflowPath) + namespacePath;
 					FileUtils.deleteDirectory(new File(overflowPath));
+
+					// delete log dirs
+					WriteLogNode bufferLogNode = MultiFileLogNodeManager.getInstance().getNode(namespacePath + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, null, null);
+					WriteLogNode overflowLogNode = MultiFileLogNodeManager.getInstance().getNode(namespacePath + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, null, null);
+					if(bufferLogNode != null)
+						bufferLogNode.delete();
+					if (overflowLogNode != null) {
+						overflowLogNode.delete();
+					}
+
 					return true;
 				} catch (IOException e) {
 					throw new FileNodeManagerException(e);
@@ -1069,5 +1082,9 @@ public class FileNodeManager implements IStatistic {
 				}
 			}
 		}
+	}
+
+	public String getFileNodeRestoreFileName(String filenodeName) {
+		return baseDir + File.separator + filenodeName + File.separator + filenodeName + FileNodeProcessor.restoreFile;
 	}
 }

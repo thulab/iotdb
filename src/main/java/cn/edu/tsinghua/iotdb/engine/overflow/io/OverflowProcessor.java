@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.WriteLogNode;
@@ -139,9 +142,9 @@ public class OverflowProcessor extends Processor {
 		filenodeManagerBackUpAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_BACKUP_MANAGER_ACTION);
 		filenodeManagerFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_MANAGER_ACTION);
 
-		// TODO : WAL : add overflowProcessorStoreFilePath
+		overflowProcessorStoreFilePath = FileNodeManager.getInstance().getFileNodeRestoreFileName(processorName);
 		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + "-overflow", overflowRestoreFilePath, overflowProcessorStoreFilePath);
+			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, overflowRestoreFilePath, overflowProcessorStoreFilePath);
 		} catch (IOException e) {
 			LOGGER.error("Cannot create wal node for overflow processor {}", processorName);
 			throw new OverflowProcessorException(e);

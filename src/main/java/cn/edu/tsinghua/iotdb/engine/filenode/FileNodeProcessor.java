@@ -82,7 +82,7 @@ public class FileNodeProcessor extends Processor implements IStatistic{
 	private int numOfMergeFile = 0;
 	private FileNodeProcessorStore fileNodeProcessorStore = null;
 
-	private static final String restoreFile = ".restore";
+	public static final String restoreFile = ".restore";
 	private String fileNodeRestoreFilePath = null;
 	private String baseDirPath;
 

@@ -12,7 +12,8 @@ public interface WriteLogNodeManager {
 
     /**
      * Get a WriteLogNode by a identifier like "{storageGroupName}-bufferwrite/overflow".
-     * The WriteLogNode will be automatically created if not exist.
+     * The WriteLogNode will be automatically created if not exist and restoreFilePath and processorStoreFilePath are provided,
+     * if either restoreFilePath or processorStoreFilePath is not provided and the LogNode does not exist, null is returned.
      * @param identifier
      * @param processorStoreFilePath
      * @param restoreFilePath
