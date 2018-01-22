@@ -33,7 +33,7 @@ public class PerformanceTest {
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     private boolean enableWal;
-    private boolean skip = true;
+    private boolean skip = false;
 
     @Before
     public void setUp() throws Exception {

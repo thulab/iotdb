@@ -105,6 +105,7 @@ public class WriteLogNodeManagerTest {
             logNode.write(deletePlan);
 
             logNode.forceSync();
+            logNode.close();
         }
         manager.recover();
     }

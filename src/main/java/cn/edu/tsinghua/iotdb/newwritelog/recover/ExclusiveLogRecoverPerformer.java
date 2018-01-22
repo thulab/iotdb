@@ -43,9 +43,9 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     private RecoverStage currStage;
 
-    // The two fields can be made static only because the recovery is a serial process.
-    static private LogReplayer replayer = new ConcretLogReplayer();
+    private LogReplayer replayer = new ConcretLogReplayer();
 
+    // The two fields can be made static only because the recovery is a serial process.
     static private LogIterator logIterator = new LogIterator();
 
     private RecoverPerformer fileNodeRecoverPerformer;
