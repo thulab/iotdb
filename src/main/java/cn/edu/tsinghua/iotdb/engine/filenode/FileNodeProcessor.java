@@ -356,7 +356,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 			// this bufferwrite file is not close by normal operation
 			String damagedFilePath = newFileNodes.get(newFileNodes.size() - 1).getFilePath();
-			String[] fileNames = damagedFilePath.split("\\\\" + File.separator);
+			String[] fileNames = damagedFilePath.split("\\" + File.separator);
 			// all information to recovery the damaged file.
 			// contains file path, action parameters and processorName
 			parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bufferwriteFlushAction);

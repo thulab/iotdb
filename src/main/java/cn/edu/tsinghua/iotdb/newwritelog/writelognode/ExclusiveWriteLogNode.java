@@ -207,7 +207,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
             if(!oldLogFile.delete())
                 logger.error("Old log file of {} cannot be deleted", identifier);
             else
-                logger.info("Log node {} cleaned old file", identifier);
+                logger.debug("Log node {} cleaned old file", identifier);
         }
     }
 
