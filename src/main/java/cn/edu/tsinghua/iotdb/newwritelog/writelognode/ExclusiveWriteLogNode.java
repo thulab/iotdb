@@ -110,6 +110,8 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
     public void notifyStartFlush() throws IOException {
         close();
         File oldLogFile = new File(logDirectory + File.separator + WAL_FILE_NAME);
+        if(!oldLogFile.exists())
+            return;
         if(!oldLogFile.renameTo(new File(logDirectory + File.separator + WAL_FILE_NAME + OLD_SUFFIX)))
             logger.error("Log node {} renaming log file failed!", identifier);
         else
@@ -200,7 +202,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
     private void discard() {
         File oldLogFile = new File(logDirectory + File.separator + WAL_FILE_NAME + OLD_SUFFIX);
         if(!oldLogFile.exists()) {
-            logger.error("Old log file of {} does not exist", identifier);
+            logger.debug("No old log to be deleted");
         } else {
             if(!oldLogFile.delete())
                 logger.error("Old log file of {} cannot be deleted", identifier);

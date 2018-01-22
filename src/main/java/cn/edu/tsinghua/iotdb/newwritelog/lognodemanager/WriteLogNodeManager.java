@@ -22,6 +22,12 @@ public interface WriteLogNodeManager {
     WriteLogNode getNode(String identifier, String restoreFilePath, String processorStoreFilePath) throws IOException;
 
     /**
+     * Delete a log node. If the node log does not exist, this will be an empty operation.
+     * @param identifier
+     */
+    void deleteNode(String identifier) throws IOException;
+
+    /**
      * Make all node of this manager start recovery.
      */
     void recover() throws RecoverException;

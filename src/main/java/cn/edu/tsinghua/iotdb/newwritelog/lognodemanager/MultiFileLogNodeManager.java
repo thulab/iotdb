@@ -32,7 +32,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
                     logger.info("WAL sync thread exits.");
                     break;
                 }
-                logger.info("Timed sync starts, {} nodes to be flushed", nodeMap.size());
+                logger.debug("Timed sync starts, {} nodes to be flushed", nodeMap.size());
                 for(WriteLogNode node : nodeMap.values()) {
                     try {
                         node.forceSync();
@@ -40,7 +40,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
                         logger.error("Cannot sync {}, because {}", node.toString(), e.toString());
                     }
                 }
-                logger.info("Timed sync finished");
+                logger.debug("Timed sync finished");
                 try {
                     Thread.sleep(config.flushWalPeriodInMs);
                 } catch (InterruptedException e) {
@@ -75,6 +75,14 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
             nodeMap.put(identifier, node);
         }
         return node;
+    }
+
+    @Override
+    public void deleteNode(String identifier) throws IOException {
+        WriteLogNode node = nodeMap.remove(identifier);
+        if(node != null) {
+            node.delete();
+        }
     }
 
     /*

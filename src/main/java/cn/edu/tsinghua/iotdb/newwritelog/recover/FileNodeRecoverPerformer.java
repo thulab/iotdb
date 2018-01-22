@@ -1,9 +1,15 @@
 package cn.edu.tsinghua.iotdb.newwritelog.recover;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileNodeRecoverPerformer implements RecoverPerformer {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileNodeRecoverPerformer.class);
 
     /**
      * If the storage group is set at "root.a.b", then the identifier for a bufferwrite processor will be "root.a.b-bufferwrite",
@@ -17,8 +23,12 @@ public class FileNodeRecoverPerformer implements RecoverPerformer {
 
     @Override
     public void recover() throws RecoverException {
-        // TODO : make a filenode recover
-        FileNodeManager.getInstance().recoverFileNode(getFileNodeName());
+        try {
+            FileNodeManager.getInstance().recoverFileNode(getFileNodeName());
+        } catch (FileNodeProcessorException | FileNodeManagerException e) {
+            logger.error("Cannot recover filenode {}", identifier);
+            throw new RecoverException(e);
+        }
     }
 
     public String getFileNodeName() {

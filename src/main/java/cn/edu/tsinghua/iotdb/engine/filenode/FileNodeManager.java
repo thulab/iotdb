@@ -166,11 +166,6 @@ public class FileNodeManager implements IStatistic {
 		}
 	};
 
-	public void recoverFileNode(String fileNodeName) {
-		// TODO : implement this
-		throw new UnsupportedOperationException("Method unimplemented");
-	}
-
 	private static class FileNodeManagerHolder {
 		private static FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.fileNodeDir);
 	}
@@ -258,6 +253,19 @@ public class FileNodeManager implements IStatistic {
 		}
 		// processorMap.putIfAbsent(path, processor);
 		return processor;
+	}
+
+	public void recoverFileNode(String filenodeName) throws FileNodeProcessorException, FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
+		if (fileNodeProcessor.shouldRecovery()) {
+			LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
+					fileNodeProcessor.getFileNodeProcessorStatus());
+			fileNodeProcessor.fileNodeRecovery();
+		} else {
+			fileNodeProcessor.writeUnlock();
+		}
+		// add index check sum
+		fileNodeProcessor.rebuildIndex();
 	}
 
 	public void recovery() {
@@ -731,13 +739,8 @@ public class FileNodeManager implements IStatistic {
 					FileUtils.deleteDirectory(new File(overflowPath));
 
 					// delete log dirs
-					WriteLogNode bufferLogNode = MultiFileLogNodeManager.getInstance().getNode(namespacePath + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, null, null);
-					WriteLogNode overflowLogNode = MultiFileLogNodeManager.getInstance().getNode(namespacePath + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, null, null);
-					if(bufferLogNode != null)
-						bufferLogNode.delete();
-					if (overflowLogNode != null) {
-						overflowLogNode.delete();
-					}
+					MultiFileLogNodeManager.getInstance().deleteNode(namespacePath + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX);
+					MultiFileLogNodeManager.getInstance().deleteNode(namespacePath + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX);
 
 					return true;
 				} catch (IOException e) {
