@@ -18,13 +18,9 @@ import org.apache.thrift.server.TThreadPoolServer.Args;
 public class IoTDBThreadPoolFactory {
 
 	/**
-	 * see
-	 * {@link Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}
+	 * see {@link Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}
 	 * 
-	 * @param nThreads
-	 *            the number of threads in the pool
-	 * @param poolName
-	 *            the name of thread pool
+	 * @param poolName - the name of thread pool
 	 * @return fixed size thread pool
 	 */
 	public static ExecutorService newFixedThreadPool(int nThreads, String poolName) {
@@ -32,11 +28,9 @@ public class IoTDBThreadPoolFactory {
 	}
 
 	/**
-	 * see
-	 * {@link Executors#newSingleThreadExecutor(java.util.concurrent.ThreadFactory)
+	 * see {@link Executors#newSingleThreadExecutor(java.util.concurrent.ThreadFactory)
 	 * 
-	 * @param poolName
-	 *            the name of thread pool
+	 * @param poolName - the name of thread pool
 	 * @return thread pool
 	 */
 	public static ExecutorService newSingleThreadExecutor(String poolName) {
@@ -44,11 +38,9 @@ public class IoTDBThreadPoolFactory {
 	}
 
 	/**
-	 * see
-	 * {@link Executors#newCachedThreadPool(java.util.concurrent.ThreadFactory)
+	 * see {@link Executors#newCachedThreadPool(java.util.concurrent.ThreadFactory)
 	 * 
-	 * @param poolName
-	 *            the name of thread pool
+	 * @param poolName - the name of thread pool
 	 * @return thread pool
 	 */
 	public static ExecutorService newCachedThreadPool(String poolName) {
@@ -56,8 +48,7 @@ public class IoTDBThreadPoolFactory {
 	}
 
 	/**
-	 * see
-	 * {@link Executors#newSingleThreadExecutor(java.util.concurrent.ThreadFactory)
+	 * see {@link Executors#newSingleThreadExecutor(java.util.concurrent.ThreadFactory)
 	 * 
 	 * @param poolName
 	 * @return scheduled thread pool
@@ -67,13 +58,10 @@ public class IoTDBThreadPoolFactory {
 	}
 
 	/**
-	 * see
-	 * {@link Executors#newScheduledThreadPool(int, java.util.concurrent.ThreadFactory)
+	 * see {@link Executors#newScheduledThreadPool(int, java.util.concurrent.ThreadFactory)
 	 * 
-	 * @param corePoolSize
-	 *            the number of threads to keep in the pool
-	 * @param poolName
-	 *            the name of thread pool
+	 * @param corePoolSize - the number of threads to keep in the pool
+	 * @param poolName - the name of thread pool
 	 * @return thread pool
 	 */
 	public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, String poolName) {

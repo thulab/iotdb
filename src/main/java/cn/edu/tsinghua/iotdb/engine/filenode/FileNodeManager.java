@@ -1002,11 +1002,13 @@ public class FileNodeManager implements IStatistic, IService {
 			}
 		}
 	}
+
 	@Override
 	public void start() {
 		// TODO Auto-generated method stub
 		
 	}
+
 	@Override
 	public void stop() {
 		try {
@@ -1015,6 +1017,7 @@ public class FileNodeManager implements IStatistic, IService {
 			LOGGER.error("Failed to close file node manager because ",e);
 		}
 	}
+
 	@Override
 	public ServiceType getID() {
 		return ServiceType.FILE_NODE_SERVICE;

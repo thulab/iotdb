@@ -7,6 +7,8 @@ import cn.edu.fudan.dsm.kvmatch.iotdb.common.QueryConfig;
 import cn.edu.fudan.dsm.kvmatch.iotdb.common.QueryResult;
 import cn.edu.fudan.dsm.kvmatch.iotdb.utils.IntervalUtils;
 import cn.edu.fudan.dsm.kvmatch.iotdb.utils.SeriesUtils;
+import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
+import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.filenode.SerializeUtil;
@@ -61,7 +63,7 @@ public class KvMatchIndex  implements IoTIndex {
     private static ConcurrentHashMap<String, IndexConfig> indexConfigStore;
 
     private KvMatchIndex() {
-        executor = Executors.newFixedThreadPool(PARALLELISM);
+        executor = IoTDBThreadPoolFactory.newFixedThreadPool(PARALLELISM, ThreadName.INDEX_SERVICE.getName());
         overflowQueryEngine = new OverflowQueryEngine();
         try {
             File file = new File(CONFIG_FILE_PATH);

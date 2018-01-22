@@ -3,8 +3,6 @@ package cn.edu.tsinghua.iotdb.concurrent;
 public enum ThreadName {
     JDBC_SERVICE("JDBC-Service"),
     JDBC_CLIENT("JDBC-Client"),
-    CLOSE_OPERATION(""),
-    MERGE_OPERATION(""),
     MERGE_SERVICE("Merge-Service"),
     CLOSE_MERGE_SERVICE("Close-Merge-Service"),
     CLOSE_MERGE_DAEMON("Close-Merge-Daemon-Thread"),
@@ -16,7 +14,8 @@ public enum ThreadName {
     FORCE_FLUSH_ALL_POLICY("IoTDB-ForceFlushAllPolicy-thread"),
     STAT_MONITOR("StatMonitor-Service"),
     FLUSH_SERVICE("Flush-Service"),
-	WAL_FLUSH("WAL-flush");
+    WAL_FLUSH("WAL-Flush-Service"),
+    INDEX_SERVICE("Index-Service");
     
 	private String name;
     
