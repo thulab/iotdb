@@ -123,8 +123,8 @@ public enum PhysicalPlanCodec {
                 ByteBuffer buffer = ByteBuffer.wrap(bytes);
                 int type = buffer.get();
 
-                List<Pair<Long, Long>> timeArrayList = new ArrayList<>();
                 int timeListBytesLength = buffer.getInt();
+                List<Pair<Long, Long>> timeArrayList = new ArrayList<>(timeListBytesLength);
                 for (int i = 0; i < timeListBytesLength; i++) {
                     long startTime = buffer.getLong();
                     long endTime = buffer.getLong();
@@ -196,7 +196,7 @@ public enum PhysicalPlanCodec {
                 String deltaObject = BytesUtils.bytesToString(deltaObjBytes);
 
                 int mmListLength = buffer.getInt();
-                List<String> measurementsList = new ArrayList<>();
+                List<String> measurementsList = new ArrayList<>(mmListLength);
                 for(int i = 0; i < mmListLength; i++) {
                     int mmLen = buffer.getInt();
                     byte[] mmBytes = new byte[mmLen];
@@ -205,8 +205,7 @@ public enum PhysicalPlanCodec {
                 }
 
                 int valueListLength = buffer.getInt();
-
-                List<String> valuesList = new ArrayList<>();
+                List<String> valuesList = new ArrayList<>(valueListLength);
                 for(int i = 0; i < valueListLength; i++) {
                     int valueLen = buffer.getInt();
                     byte[] valueBytes = new byte[valueLen];

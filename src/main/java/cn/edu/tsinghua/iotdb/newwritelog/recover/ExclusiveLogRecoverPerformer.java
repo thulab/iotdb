@@ -1,16 +1,13 @@
 package cn.edu.tsinghua.iotdb.newwritelog.recover;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.newwritelog.RecoverStage;
 import cn.edu.tsinghua.iotdb.newwritelog.replay.ConcretLogReplayer;
-import cn.edu.tsinghua.iotdb.newwritelog.replay.LogIterator;
+import cn.edu.tsinghua.iotdb.newwritelog.IO.RAFLogReader;
 import cn.edu.tsinghua.iotdb.newwritelog.replay.LogReplayer;
-import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.ExclusiveWriteLogNode;
-import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.utils.FileUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import org.slf4j.Logger;
@@ -19,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +42,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
     private LogReplayer replayer = new ConcretLogReplayer();
 
     // The two fields can be made static only because the recovery is a serial process.
-    static private LogIterator logIterator = new LogIterator();
+    static private RAFLogReader RAFLogReader = new RAFLogReader();
 
     private RecoverPerformer fileNodeRecoverPerformer;
 
@@ -229,20 +225,20 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         int failedCnt = 0;
         if(logFile.exists()) {
             try {
-                logIterator.open(logFile);
+                RAFLogReader.open(logFile);
             } catch (FileNotFoundException e) {
                 logger.error("Log node {} cannot read old log file, because {}", e.getMessage());
                 throw new RecoverException("Cannot read old log file, recovery aborted.");
             }
-            while(logIterator.hasNext()) {
+            while(RAFLogReader.hasNext()) {
                 try {
-                    replayer.replay(logIterator.next());
+                    replayer.replay(RAFLogReader.next());
                 } catch (ProcessorException e) {
                     failedCnt ++;
                     logger.error("Log node {}, {}", writeLogNode.getLogDirectory(), e.getMessage());
                 }
             }
-            logIterator.close();
+            RAFLogReader.close();
         }
         return failedCnt;
     }

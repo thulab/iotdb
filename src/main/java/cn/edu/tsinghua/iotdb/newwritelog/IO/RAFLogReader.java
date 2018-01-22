@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.newwritelog.replay;
+package cn.edu.tsinghua.iotdb.newwritelog.IO;
 
 import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
@@ -9,21 +9,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Iterator;
 
-public class LogIterator implements Iterator<PhysicalPlan>{
+public class RAFLogReader implements ILogReader{
 
-    private static final Logger logger = LoggerFactory.getLogger(LogIterator.class);
+    private static final Logger logger = LoggerFactory.getLogger(RAFLogReader.class);
     private RandomAccessFile logRAF;
     private String filepath;
     private int bufferSize = 4 * 1024 * 1024;
     private byte[] buffer = new byte[bufferSize];
 
-    public LogIterator() {
+    public RAFLogReader() {
 
     }
 
-    public LogIterator(File logFile) throws FileNotFoundException {
+    public RAFLogReader(File logFile) throws FileNotFoundException {
         open(logFile);
     }
 
@@ -56,6 +55,7 @@ public class LogIterator implements Iterator<PhysicalPlan>{
         return null;
     }
 
+    @Override
     public void close() {
         if (logRAF != null) {
             try {
@@ -66,6 +66,7 @@ public class LogIterator implements Iterator<PhysicalPlan>{
         }
     }
 
+    @Override
     public void open(File logFile) throws FileNotFoundException {
         logRAF = new RandomAccessFile(logFile, "r");
         this.filepath = logFile.getPath();

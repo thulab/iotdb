@@ -3,13 +3,14 @@ package cn.edu.tsinghua.iotdb.newwritelog.writelognode;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.newwritelog.IO.ILogWriter;
+import cn.edu.tsinghua.iotdb.newwritelog.IO.RAFLogWriter;
 import cn.edu.tsinghua.iotdb.newwritelog.LogPosition;
 import cn.edu.tsinghua.iotdb.newwritelog.recover.ExclusiveLogRecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.recover.RecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.utils.FileUtils;
-import org.apache.derby.iapi.services.io.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
 
     private String logDirectory;
 
-    private RandomAccessFile currentFile;
+    private ILogWriter currentFileWriter;
 
     private RecoverPerformer recoverPerformer;
 
@@ -54,6 +55,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
         new File(logDirectory).mkdirs();
 
         recoverPerformer = new ExclusiveLogRecoverPerformer(restoreFilePath, processorStoreFilePath, this);
+        currentFileWriter = new RAFLogWriter(logDirectory + File.separator + WAL_FILE_NAME);
     }
 
     public void setRecoverPerformer(RecoverPerformer recoverPerformer) {
@@ -88,10 +90,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
     public void close() throws IOException {
         sync();
         try {
-            if(this.currentFile != null) {
-                this.currentFile.close();
-                this.currentFile = null;
-            }
+            this.currentFileWriter.close();
             logger.debug("Log node {} closed successfully", identifier);
         } catch (IOException e) {
             logger.error("Cannot close log node {} because {}", identifier, e.getMessage());
@@ -116,7 +115,6 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
             logger.error("Log node {} renaming log file failed!", identifier);
         else
             logger.debug("Log node {} renamed log file", identifier);
-        this.currentFile = null;
     }
 
     /*
@@ -140,8 +138,8 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
     @Override
     public void delete() throws IOException {
         logCache.clear();
-        if(currentFile != null)
-            currentFile.close();
+        if(currentFileWriter != null)
+            currentFileWriter.close();
         FileUtils.recurrentDelete(new File(logDirectory));
     }
 
@@ -162,33 +160,15 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
        lock.writeLock().unlock();
     }
 
-    private void sync() throws FileNotFoundException {
+    private void sync() {
         lockForOther();
         try {
             logger.debug("Log node {} starts sync, {} logs to be synced", identifier, logCache.size());
             if(logCache.size() == 0) {
                 return;
             }
-            if(this.currentFile == null) {
-                try {
-                    this.currentFile = new RandomAccessFile(this.logDirectory + File.separator + WAL_FILE_NAME,"rw");
-                } catch (FileNotFoundException e) {
-                    logger.error("Unable to create write log node : {}", e.getMessage());
-                    throw e;
-                }
-            }
             try {
-                currentFile.seek(currentFile.length());
-                int totalSize = 0;
-                for(byte[] bytes : logCache) {
-                    totalSize += 4 + bytes.length;
-                }
-                ByteBuffer buffer = ByteBuffer.allocate(totalSize);
-                for(byte[] bytes : logCache) {
-                    buffer.putInt(bytes.length);
-                    buffer.put(bytes);
-                }
-                currentFile.write(buffer.array());
+                currentFileWriter.write(logCache);
             } catch (IOException e) {
                 logger.error("Log node {} sync failed because {}.", identifier, e.getMessage());
             }
