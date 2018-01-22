@@ -11,7 +11,15 @@ public interface OverflowOperationReader {
 
     boolean hasNext();
 
+    /**
+     * notice that : invoking this method will remove current overflow operation.
+     */
     OverflowOperation next();
+
+    /**
+     * notice that : invoking this method will not remove current overflow operation.
+     */
+    OverflowOperation getCurrentOperation();
 
     void close() throws IOException;
 }

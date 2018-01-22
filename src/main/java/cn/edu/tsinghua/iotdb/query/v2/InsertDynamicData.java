@@ -1,8 +1,12 @@
 package cn.edu.tsinghua.iotdb.query.v2;
 
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.reader.InsertOperation;
 import cn.edu.tsinghua.iotdb.query.reader.UpdateOperation;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
@@ -19,6 +23,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,58 +32,40 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 
 /**
- * InsertDynamicData is encapsulating class for page list, last page and overflow data.
+ * <p>
+ * InsertDynamicData is encapsulating class for memRawSeriesChunk, overflowSeriesInsertReader, overflowOperationReader.
  * A hasNext and removeCurrentValue method is recommended.
+ * </p>
  *
  * @author CGF
  */
 public class InsertDynamicData {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InsertDynamicData.class);
+    private static final Logger logger = LoggerFactory.getLogger(InsertDynamicData.class);
+
     private TSDataType dataType;
-    private CompressionTypeName compressionTypeName;
     private boolean hasNext = false;
 
-    /** unsealed page list **/
-    private List<ByteArrayInputStream> pageList;
+    /** memtable data in memory **/
+    private RawSeriesChunk memRawSeriesChunk;
 
-    /** used page index of pageList **/
-    private int pageIndex = 0;
+    /** memtable data in memory iterator **/
+    private Iterator<TimeValuePair> memSeriesChunkIterator;
 
-    /** page reader **/
-    private PageReader pageReader = null;
+    /** current TimeValuePair for memtable data **/
+    private TimeValuePair currentTimeValuePair;
 
-    /** value inputstream for current read page, this variable is not null **/
-    private InputStream page = null;
+    /** overflow insert data reader **/
+    private OverflowInsertDataReader overflowInsertDataReader;
 
-    /** time for current read page **/
-    private long[] pageTimes;
-
-    /** used time index for pageTimes**/
-    private int pageTimeIndex = -1;
-
-    /** last page data in memory **/
-    private InsertOperation lastPageData;
-
-    /** overflow insert data, this variable is not null **/
-    private InsertOperation overflowInsertData;
-
-    /** overflow update data which is satisfied with filter, this variable is not null **/
-    private UpdateOperation overflowUpdateOperation;
-
-    /** time decoder **/
-    private Decoder timeDecoder = new DeltaBinaryDecoder.LongDeltaDecoder();
-
-    /** value decoder **/
-    private Decoder valueDecoder;
-
-    /** current satisfied time **/
-    private long currentSatisfiedTime = -1;
+    /** overflow update data reader **/
+    private OverflowOperationReader overflowOperationReader;
 
     /** time filter for this series **/
     public SingleSeriesFilterExpression timeFilter;
@@ -85,43 +73,40 @@ public class InsertDynamicData {
     /** value filter for this series **/
     public SingleSeriesFilterExpression valueFilter;
 
-    /** IntervalTimeVisitor for page time digest **/
-    private IntervalTimeVisitor intervalTimeVisitor = new IntervalTimeVisitor();
+    /** current satisfied time **/
+    private long currentSatisfiedTime = -1;
 
     private int curSatisfiedIntValue;
-    private int[] pageIntValues;
     private boolean curSatisfiedBooleanValue;
-    private boolean[] pageBooleanValues;
     private long curSatisfiedLongValue;
-    private long[] pageLongValues;
     private float curSatisfiedFloatValue;
-    private float[] pageFloatValues;
     private double curSatisfiedDoubleValue;
-    private double[] pageDoubleValues;
     private Binary curSatisfiedBinaryValue;
-    private Binary[] pageBinaryValues;
 
     private DigestVisitor digestVisitor = new DigestVisitor();
     private SingleValueVisitor singleValueVisitor;
     private SingleValueVisitor singleTimeVisitor;
 
-    public InsertDynamicData(TSDataType dataType, CompressionTypeName compressionName,
-                             List<ByteArrayInputStream> pageList, DynamicOneColumnData lastPageData,
-                             DynamicOneColumnData overflowInsertData, DynamicOneColumnData overflowUpdateOperation,
-                             SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter) {
+    public InsertDynamicData(TSDataType dataType, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                             RawSeriesChunk memRawSeriesChunk, OverflowInsertDataReader overflowInsertDataReader, OverflowOperationReader overflowOperationReader) {
         this.dataType = dataType;
-        this.compressionTypeName = compressionName;
-
-        this.pageList = pageList == null ? new ArrayList<>() : pageList;
-        this.lastPageData = new InsertOperation(dataType, lastPageData);
-
-        this.overflowInsertData = new InsertOperation(dataType, overflowInsertData);
-        this.overflowUpdateOperation = new UpdateOperation(dataType, overflowUpdateOperation, valueFilter);
-
         this.timeFilter = timeFilter;
         this.valueFilter = valueFilter;
         this.singleTimeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
         this.singleValueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
+
+        this.memRawSeriesChunk = memRawSeriesChunk;
+        this.overflowInsertDataReader = overflowInsertDataReader;
+        this.overflowOperationReader = overflowOperationReader;
+
+        IntervalTimeVisitor intervalTimeVisitor = new IntervalTimeVisitor();
+        if (memRawSeriesChunk != null) {
+            if (intervalTimeVisitor.satisfy(timeFilter, memRawSeriesChunk.getMinTimestamp(), memRawSeriesChunk.getMaxTimestamp())) {
+                memSeriesChunkIterator = memRawSeriesChunk.getIterator();
+            }
+
+            // TODO add value filter examination and overflow update operation optimization
+        }
     }
 
     public TSDataType getDataType() {
@@ -179,531 +164,321 @@ public class InsertDynamicData {
         hasNext = false;
     }
 
-    public boolean hasInsertData() throws IOException {
+    public boolean hasNext() throws IOException {
         if (hasNext)
             return true;
 
-        if (pageIndex < pageList.size()) {
-            hasNext = readPageList();
-            if (hasNext)
-                return true;
+        if (currentTimeValuePair == null && memSeriesChunkIterator != null && memSeriesChunkIterator.hasNext()) {
+            currentTimeValuePair = memSeriesChunkIterator.next();
         }
 
-        hasNext = readLastPage();
-        if (hasNext)
-            return true;
+        while (currentTimeValuePair != null) {
+            if (overflowInsertDataReader.hasNext() && overflowInsertDataReader.peek().getTimestamp() <= currentTimeValuePair.getTimestamp()) {
+                if (examineOverflowInsertValue()) {
+                    if (overflowInsertDataReader.peek().getTimestamp() == currentTimeValuePair.getTimestamp()) {
+                        overflowInsertDataReader.next();
+                        getNextMemTimeValuePair();
+                    } else {
+                        overflowInsertDataReader.next();
+                    }
+                    hasNext = true;
+                    return true;
+                } else {
+                    if (overflowInsertDataReader.peek().getTimestamp() == currentTimeValuePair.getTimestamp()) {
+                        overflowInsertDataReader.next();
+                        getNextMemTimeValuePair();
+                    } else {
+                        overflowInsertDataReader.next();
+                    }
+                }
+            } else {
+                if (examineCurrentTimeValuePair()) {
+                    getNextMemTimeValuePair();
+                    hasNext = true;
+                    return true;
+                } else {
+                    getNextMemTimeValuePair();
+                }
+            }
+        }
 
-        while (overflowInsertData.hasNext()) {
-            if (examineOverflowInsert()) {
-                overflowInsertData.next();
+        while (overflowInsertDataReader.hasNext()) {
+
+            logger.debug("there exist overflow insert value, but not exist memtable value");
+
+            if (examineOverflowInsertValue()) {
+                overflowInsertDataReader.next();
                 hasNext = true;
                 return true;
             } else {
-                overflowInsertData.next();
+                overflowInsertDataReader.next();
             }
         }
+
+        // TODO close file stream
 
         return false;
     }
 
-    private boolean readPageList() throws IOException {
-        while (pageIndex < pageList.size()) {
-            if (pageTimes != null) {
-                boolean getNext = getSatisfiedTimeAndValue();
-                if (getNext) {
-                    return true;
-                } else {
-                    pageReaderReset();
-                }
-            }
+    private boolean examineOverflowInsertValue() throws IOException {
 
-            if (pageIndex >= pageList.size()) {
-                return false;
-            }
-
-            // construct time and value digest
-            pageReader = new PageReader(pageList.get(pageIndex), compressionTypeName);
-            PageHeader pageHeader = pageReader.getNextPageHeader();
-            Digest pageDigest = pageHeader.data_page_header.getDigest();
-            DigestForFilter valueDigest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
-                    pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
-            long mint = pageHeader.data_page_header.min_timestamp;
-            long maxt = pageHeader.data_page_header.max_timestamp;
-            DigestForFilter timeDigest = new DigestForFilter(mint, maxt);
-            LOG.debug("Page min time:{}, max time:{}, min value:{}, max value:{}",
-                    String.valueOf(mint), String.valueOf(maxt),
-                    pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
-                    pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE));
-
-            while (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < mint) {
-                overflowUpdateOperation.next();
-            }
-
-            // not satisfied with time filter.
-            if (!digestVisitor.satisfy(timeDigest, timeFilter)) {
-                pageReaderReset();
-                continue;
-            } else {
-                if (!digestVisitor.satisfy(valueDigest, valueFilter)) {
-                    if (!overflowUpdateOperation.hasNext()
-                            || (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateStartTime() > maxt)
-                            || (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateStartTime() >= mint
-                                    && overflowUpdateOperation.getUpdateEndTime() <= maxt && !overflowUpdateOperation.verifyValue())) {
-                        pageReaderReset();
-                        continue;
-                    }
-                }
-            }
-
-            getCurrentPageTimeAndValues(pageHeader);
+        while (overflowOperationReader.hasNext() &&
+                overflowOperationReader.getCurrentOperation().getRightBound() < overflowInsertDataReader.peek().getTimestamp()) {
+            overflowOperationReader.next();
         }
 
-        return false;
-    }
+        long time = overflowInsertDataReader.peek().getTimestamp();
 
-    private boolean getSatisfiedTimeAndValue() {
-        if (pageTimeIndex >= pageTimes.length) {
-            return false;
-        }
-
-        while (pageTimeIndex < pageTimes.length) {
-
-            // get all the overflow insert time which is less than page time
-            while (overflowInsertData.hasNext() && overflowInsertData.getInsertTime() <= pageTimes[pageTimeIndex]) {
-                if (overflowInsertData.getInsertTime() < pageTimes[pageTimeIndex]) {
-                    if (examineOverflowInsert()) {
-                        overflowInsertData.next();
-                        return true;
-                    } else {
-                        overflowInsertData.next();
-                    }
-                } else {
-                    // overflow insert time equals to page time
-                    if (examineOverflowInsert()) {
-                        overflowInsertData.next();
-                        pageTimeIndex ++;
-                        return true;
-                    } else {
-                        overflowInsertData.next();
-                        pageTimeIndex ++;
-                    }
-                }
-            }
-
-            while (pageTimeIndex < pageTimes.length && timeFilter != null && !singleTimeVisitor.verify(pageTimes[pageTimeIndex])) {
-                pageTimeIndex++;
-            }
-
-            if (pageTimeIndex >= pageTimes.length) {
-                pageReaderReset();
-                return false;
-            }
-
-            if (examinePageValue()) {
-                pageTimeIndex ++;
-                return true;
-            } else {
-                pageTimeIndex ++;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean examineOverflowInsert() {
-
-        //In current overflow implementation version, overflow insert data must be satisfied with time filter.
-        //data may be inserted after deleting.
-
-        //if (overflowTimeFilter != null && singleTimeVisitor.verifyTime(overflowInsertData.getInsertTime()))
-        //    return false;
-
-        long time = overflowInsertData.getInsertTime();
-
-        // this examination is important
-        // after this examination, the update value must be satisfied with the value filter
-        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
+        // TODO this could be removed if there exist timeFilter examination in overflowInsertDataReader
+        if (!singleTimeVisitor.satisfyObject(time, timeFilter)) {
             return false;
         }
 
         switch (dataType) {
             case INT32:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(overflowInsertData.getInt(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowInsertData.getInt();
-                    return true;
-                }
-                return false;
-            case INT64:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedLongValue = overflowUpdateOperation.getLong();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(overflowInsertData.getLong(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedLongValue = overflowInsertData.getLong();
-                    return true;
-                }
-                return false;
-            case FLOAT:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = overflowUpdateOperation.getFloat();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(overflowInsertData.getFloat(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = overflowInsertData.getFloat();
-                    return true;
-                }
-                return false;
-            case DOUBLE:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = overflowUpdateOperation.getDouble();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(overflowInsertData.getDouble(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = overflowInsertData.getDouble();
-                    return true;
-                }
-                return false;
-            case TEXT:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = overflowUpdateOperation.getText();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(overflowInsertData.getText(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = overflowInsertData.getText();
-                    return true;
-                }
-                return false;
-            case BOOLEAN:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(overflowInsertData.getBoolean(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = overflowInsertData.getBoolean();
-                    return true;
-                }
-                return false;
-            default:
-                throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
-        }
-    }
-
-    private boolean examinePageValue() {
-        long time = pageTimes[pageTimeIndex];
-        if (timeFilter != null && !singleTimeVisitor.verify(time))
-            return false;
-
-        while (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < time)
-            overflowUpdateOperation.next();
-
-        // this examination is important
-        // after this examination, the update value must be satisfied with the value filter
-        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
-            return false;
-        }
-
-        switch (dataType) {
-            case INT32:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getInt(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedIntValue = overflowOperationReader.getCurrentOperation().getValue().getInt();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(overflowInsertDataReader.peek().getValue().getInt(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedIntValue = overflowInsertDataReader.peek().getValue().getInt();
+                        return true;
+                    }
                     return false;
                 }
-                if (singleValueVisitor.satisfyObject(pageIntValues[pageTimeIndex], valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = pageIntValues[pageTimeIndex];
-                    return true;
-                }
-                return false;
             case INT64:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedLongValue = overflowUpdateOperation.getLong();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(pageLongValues[pageTimeIndex], valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedLongValue = pageLongValues[pageTimeIndex];
-                    return true;
-                }
-                return false;
-            case FLOAT:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = overflowUpdateOperation.getFloat();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(pageFloatValues[pageTimeIndex], valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = pageFloatValues[pageTimeIndex];
-                    return true;
-                }
-                return false;
-            case DOUBLE:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = overflowUpdateOperation.getDouble();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(pageDoubleValues[pageTimeIndex], valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = pageDoubleValues[pageTimeIndex];
-                    return true;
-                }
-                return false;
-            case TEXT:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = overflowUpdateOperation.getText();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(pageBinaryValues[pageTimeIndex], valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = pageBinaryValues[pageTimeIndex];
-                    return true;
-                }
-                return false;
-            case BOOLEAN:
-                if (overflowUpdateOperation.verifyTime(time)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = overflowUpdateOperation.getBoolean();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(pageBooleanValues[pageTimeIndex], valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = pageBooleanValues[pageTimeIndex];
-                    return true;
-                }
-                return false;
-            default:
-                throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
-        }
-    }
-
-    private void getCurrentPageTimeAndValues(PageHeader pageHeader) throws IOException {
-        page = pageReader.getNextPage();
-        pageTimes = initTimeValue(page, pageHeader.data_page_header.num_rows);
-        pageTimeIndex = 0;
-
-        valueDecoder = Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType);
-        int cnt = 0;
-        switch (dataType) {
-            case INT32:
-                pageIntValues = new int[pageHeader.data_page_header.num_rows];
-                while (valueDecoder.hasNext(page)) {
-                    pageIntValues[cnt++] = valueDecoder.readInt(page);
-                }
-                break;
-            case INT64:
-                pageLongValues = new long[pageHeader.data_page_header.num_rows];
-                while (valueDecoder.hasNext(page)) {
-                    pageLongValues[cnt++] = valueDecoder.readLong(page);
-                }
-                break;
-            case FLOAT:
-                pageFloatValues = new float[pageHeader.data_page_header.num_rows];
-                while (valueDecoder.hasNext(page)) {
-                    pageFloatValues[cnt++] = valueDecoder.readFloat(page);
-                }
-                break;
-            case DOUBLE:
-                pageDoubleValues = new double[pageHeader.data_page_header.num_rows];
-                while (valueDecoder.hasNext(page)) {
-                    pageDoubleValues[cnt++] = valueDecoder.readDouble(page);
-                }
-                break;
-            case BOOLEAN:
-                pageBooleanValues = new boolean[pageHeader.data_page_header.num_rows];
-                while (valueDecoder.hasNext(page)) {
-                    pageBooleanValues[cnt++] = valueDecoder.readBoolean(page);
-                }
-                break;
-            case TEXT:
-                pageBinaryValues = new Binary[pageHeader.data_page_header.num_rows];
-                while (valueDecoder.hasNext(page)) {
-                    pageBinaryValues[cnt++] = valueDecoder.readBinary(page);
-                }
-                break;
-            default:
-                throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
-        }
-    }
-
-    private boolean readLastPage() {
-
-        // get all the overflow insert time which is less than page time
-        while (lastPageData.hasNext()) {
-            while (overflowInsertData.hasNext() && overflowInsertData.getInsertTime() <= lastPageData.getInsertTime()) {
-                if (overflowInsertData.getInsertTime() < lastPageData.getInsertTime()) {
-                    if (examineOverflowInsert()) {
-                        overflowInsertData.next();
-                        return true;
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getLong(), valueFilter)) {
+                        return false;
                     } else {
-                        overflowInsertData.next();
+                        currentSatisfiedTime = time;
+                        curSatisfiedLongValue = overflowOperationReader.getCurrentOperation().getValue().getLong();
+                        return true;
                     }
                 } else {
-                    // overflow insert time equals to page time
-                    if (examineOverflowInsert()) {
-                        overflowInsertData.next();
-                        lastPageData.next();
+                    if (singleValueVisitor.satisfyObject(overflowInsertDataReader.peek().getValue().getLong(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedLongValue = overflowInsertDataReader.peek().getValue().getLong();
                         return true;
-                    } else {
-                        lastPageData.next();
-                        overflowInsertData.next();
                     }
+                    return false;
                 }
-            }
-
-            if (lastPageData.hasNext()) {
-                if (examineLastPage()) {
-                    lastPageData.next();
-                    return true;
+            case FLOAT:
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getFloat(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedFloatValue = overflowOperationReader.getCurrentOperation().getValue().getFloat();
+                        return true;
+                    }
                 } else {
-                    lastPageData.next();
+                    if (singleValueVisitor.satisfyObject(overflowInsertDataReader.peek().getValue().getFloat(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedFloatValue = overflowInsertDataReader.peek().getValue().getFloat();
+                        return true;
+                    }
+                    return false;
                 }
-            }
+            case DOUBLE:
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getDouble(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedDoubleValue = overflowOperationReader.getCurrentOperation().getValue().getDouble();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(overflowInsertDataReader.peek().getValue().getDouble(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedDoubleValue = overflowInsertDataReader.peek().getValue().getDouble();
+                        return true;
+                    }
+                    return false;
+                }
+            case BOOLEAN:
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getBoolean(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBooleanValue = overflowOperationReader.getCurrentOperation().getValue().getBoolean();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(overflowInsertDataReader.peek().getValue().getBoolean(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBooleanValue = overflowInsertDataReader.peek().getValue().getBoolean();
+                        return true;
+                    }
+                    return false;
+                }
+            case TEXT:
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getBinary(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBinaryValue = overflowOperationReader.getCurrentOperation().getValue().getBinary();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(overflowInsertDataReader.peek().getValue().getBinary(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBinaryValue = overflowInsertDataReader.peek().getValue().getBinary();
+                        return true;
+                    }
+                    return false;
+                }
         }
 
         return false;
     }
 
-    private boolean examineLastPage() {
-        long time = lastPageData.getInsertTime();
+    private boolean examineCurrentTimeValuePair() {
 
-        if (timeFilter != null && !singleTimeVisitor.verify(time))
-            return false;
+        while (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().getRightBound() < currentTimeValuePair.getTimestamp()) {
+            overflowOperationReader.next();
+        }
 
-        while (overflowUpdateOperation.hasNext() && overflowUpdateOperation.getUpdateEndTime() < time)
-            overflowUpdateOperation.next();
-
-        // this examination is important
-        // after this examination, the update value must be satisfied with the value filter
-        if (overflowUpdateOperation.verifyTime(time) && !overflowUpdateOperation.verifyValue()) {
+        long time = currentTimeValuePair.getTimestamp();
+        if (!singleTimeVisitor.satisfyObject(time, timeFilter)) {
             return false;
         }
 
         switch (dataType) {
             case INT32:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = overflowUpdateOperation.getInt();
-                    return true;
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getInt(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedIntValue = overflowOperationReader.getCurrentOperation().getValue().getInt();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(currentTimeValuePair.getValue().getInt(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedIntValue = currentTimeValuePair.getValue().getInt();
+                        return true;
+                    }
+                    return false;
                 }
-                if (singleValueVisitor.satisfyObject(lastPageData.getInt(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedIntValue = lastPageData.getInt();
-                    return true;
-                }
-                return false;
             case INT64:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedLongValue = overflowUpdateOperation.getLong();
-                    return true;
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getLong(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedLongValue = overflowOperationReader.getCurrentOperation().getValue().getLong();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(currentTimeValuePair.getValue().getLong(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedLongValue = currentTimeValuePair.getValue().getLong();
+                        return true;
+                    }
+                    return false;
                 }
-                if (singleValueVisitor.satisfyObject(lastPageData.getLong(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedLongValue = lastPageData.getLong();
-                    return true;
-                }
-                return false;
             case FLOAT:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = overflowUpdateOperation.getFloat();
-                    return true;
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getFloat(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedFloatValue = overflowOperationReader.getCurrentOperation().getValue().getFloat();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(currentTimeValuePair.getValue().getFloat(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedFloatValue = currentTimeValuePair.getValue().getFloat();
+                        return true;
+                    }
+                    return false;
                 }
-                if (singleValueVisitor.satisfyObject(lastPageData.getFloat(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedFloatValue = lastPageData.getFloat();
-                    return true;
-                }
-                return false;
             case DOUBLE:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = overflowUpdateOperation.getDouble();
-                    return true;
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getDouble(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedDoubleValue = overflowOperationReader.getCurrentOperation().getValue().getDouble();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(currentTimeValuePair.getValue().getDouble(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedDoubleValue = currentTimeValuePair.getValue().getDouble();
+                        return true;
+                    }
+                    return false;
                 }
-                if (singleValueVisitor.satisfyObject(lastPageData.getDouble(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedDoubleValue = lastPageData.getDouble();
-                    return true;
-                }
-                return false;
-            case TEXT:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = overflowUpdateOperation.getText();
-                    return true;
-                }
-                if (singleValueVisitor.satisfyObject(lastPageData.getText(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBinaryValue = lastPageData.getText();
-                    return true;
-                }
-                return false;
             case BOOLEAN:
-                if (overflowUpdateOperation.verifyTime(time)){
-                    currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = overflowUpdateOperation.getBoolean();
-                    return true;
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getBoolean(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBooleanValue = overflowOperationReader.getCurrentOperation().getValue().getBoolean();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(currentTimeValuePair.getValue().getBoolean(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBooleanValue = currentTimeValuePair.getValue().getBoolean();
+                        return true;
+                    }
+                    return false;
                 }
-                if (singleValueVisitor.satisfyObject(lastPageData.getBoolean(), valueFilter)) {
-                    currentSatisfiedTime = time;
-                    curSatisfiedBooleanValue = lastPageData.getBoolean();
-                    return true;
+            case TEXT:
+                if (overflowOperationReader.hasNext() && overflowOperationReader.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                            || !singleValueVisitor.satisfyObject(overflowOperationReader.getCurrentOperation().getValue().getBinary(), valueFilter)) {
+                        return false;
+                    } else {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBinaryValue = overflowOperationReader.getCurrentOperation().getValue().getBinary();
+                        return true;
+                    }
+                } else {
+                    if (singleValueVisitor.satisfyObject(currentTimeValuePair.getValue().getBinary(), valueFilter)) {
+                        currentSatisfiedTime = time;
+                        curSatisfiedBinaryValue = currentTimeValuePair.getValue().getBinary();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            default:
-                throw new UnSupportedDataTypeException("UnSupport Aggregation DataType:" + dataType);
-        }
-    }
 
-    private void pageReaderReset() {
-        pageIndex++;
-        pageReader = null;
-        pageTimes = null;
-        currentSatisfiedTime = -1;
-    }
-
-    /**
-     * Read time value from the page and return them.
-     *
-     * @param page data page input stream
-     * @param size data page input stream size
-     * @throws IOException read page error
-     */
-    private long[] initTimeValue(InputStream page, int size) throws IOException {
-        long[] res;
-        int idx = 0;
-
-        int length = ReadWriteStreamUtils.readUnsignedVarInt(page);
-        byte[] buf = new byte[length];
-        int readSize = page.read(buf, 0, length);
-
-        ByteArrayInputStream bis = new ByteArrayInputStream(buf);
-        res = new long[size];
-        while (timeDecoder.hasNext(bis)) {
-            res[idx++] = timeDecoder.readLong(bis);
         }
 
-        return res;
+        return false;
+    }
+
+    private void getNextMemTimeValuePair() {
+        if (memSeriesChunkIterator.hasNext()) {
+            currentTimeValuePair = memSeriesChunkIterator.next();
+        } else {
+            currentTimeValuePair = null;
+        }
     }
 }

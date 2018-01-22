@@ -89,6 +89,11 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
     }
 
     @Override
+    public OverflowOperation getCurrentOperation() {
+        return updateOperations.get(index);
+    }
+
+    @Override
     public void close() throws IOException {
 
     }
