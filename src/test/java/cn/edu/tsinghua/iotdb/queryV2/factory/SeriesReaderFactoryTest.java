@@ -66,7 +66,7 @@ public class SeriesReaderFactoryTest {
 
         public void run() {
             try {
-                OverflowInsertDataReader seriesReader = (OverflowInsertDataReader) SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+                OverflowInsertDataReader seriesReader =  SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
                 synchronized (map) {
                     map[seriesReader.getJobId().intValue() - 1]++;
                 }

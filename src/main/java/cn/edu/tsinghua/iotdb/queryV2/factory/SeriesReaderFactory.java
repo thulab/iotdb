@@ -40,7 +40,7 @@ public class SeriesReaderFactory {
         digestFilterVisitor = new DigestFilterVisitor();
     }
 
-    public SeriesReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource, Filter<?> filter) throws IOException {
+    public OverflowInsertDataReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource, Filter<?> filter) throws IOException {
         long jobId = getNextJobId();
         List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList = SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
         int priorityValue = 1;
@@ -72,7 +72,7 @@ public class SeriesReaderFactory {
         return digestFilterVisitor.satisfy(timeDigest, valueDigest, filter);
     }
 
-    public SeriesReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource) throws IOException {
+    public OverflowInsertDataReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource) throws IOException {
         long jobId = getNextJobId();
         List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList = SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
         int priorityValue = 1;
