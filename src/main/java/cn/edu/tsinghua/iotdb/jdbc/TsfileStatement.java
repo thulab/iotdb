@@ -13,9 +13,11 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataResp;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
 
 import org.apache.thrift.TException;
 
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -220,21 +222,36 @@ public class TsfileStatement implements Statement {
 		}
 	}
 
-	private int[] executeBatchSQL() throws TException, TsfileSQLException {
+	private int[] executeBatchSQL() throws TException, SQLException {
 		isCancelled = false;
 		TSExecuteBatchStatementReq execReq = new TSExecuteBatchStatementReq(sessionHandle, batchSQLList);
 		TSExecuteBatchStatementResp execResp = client.executeBatchStatement(execReq);
-		Utils.verifySuccess(execResp.getStatus());
-		if (execResp.getResult() == null) {
-			return new int[0];
-		} else {
-			List<Integer> result = execResp.getResult();
-			int len = result.size();
-			int[] updateArray = new int[len];
-			for (int i = 0; i < len; i++) {
-				updateArray[i] = result.get(i);
+		if(execResp.getStatus().statusCode ==  TS_StatusCode.SUCCESS_STATUS){
+			if (execResp.getResult() == null) {
+				return new int[0];
+			} else {
+				List<Integer> result = execResp.getResult();
+				int len = result.size();
+				int[] updateArray = new int[len];
+				for (int i = 0; i < len; i++) {
+					updateArray[i] = result.get(i);
+				}
+				return updateArray;
 			}
-			return updateArray;
+		} else {
+			BatchUpdateException exception;
+			if(execResp.getResult() == null){
+				exception = new BatchUpdateException(execResp.getStatus().errorMessage, new int[0]);
+			} else {
+				List<Integer> result = execResp.getResult();
+				int len = result.size();
+				int[] updateArray = new int[len];
+				for (int i = 0; i < len; i++) {
+					updateArray[i] = result.get(i);
+				}
+				exception = new BatchUpdateException(execResp.getStatus().errorMessage, updateArray);
+			}
+			throw exception;
 		}
 	}
 
