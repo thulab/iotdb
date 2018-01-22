@@ -300,10 +300,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         if(failedCnt > 0)
             throw new RecoverException("There are " + failedCnt + " logs failed to recover, see logs above for details");
         try {
-            if(!FileNodeManager.getInstance().closeOneFileNode(writeLogNode.getFileNodeName())){
-                logger.error("Log node {} cannot perform flush after replaying logs for unknown reason", writeLogNode.getIdentifier());
-                throw new RecoverException("Cannot flush fileNode for unknown reason");
-            }
+            FileNodeManager.getInstance().closeOneFileNode(writeLogNode.getFileNodeName());
         } catch (FileNodeManagerException e) {
             logger.error("Log node {} cannot perform flush after replaying logs! Because {}",writeLogNode.getIdentifier(), e.getMessage());
             throw new RecoverException(e);
