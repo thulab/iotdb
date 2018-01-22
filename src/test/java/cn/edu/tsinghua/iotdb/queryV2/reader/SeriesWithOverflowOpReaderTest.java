@@ -151,8 +151,8 @@ public class SeriesWithOverflowOpReaderTest {
         private OverflowOperation[] updataOps;
         private int index = 0;
 
-        public FakedOverflowOperationReader(OverflowOperation[] updataOps) {
-            this.updataOps = updataOps;
+        public FakedOverflowOperationReader(OverflowOperation[] updateOps) {
+            this.updataOps = updateOps;
         }
 
         @Override
@@ -164,6 +164,11 @@ public class SeriesWithOverflowOpReaderTest {
         public OverflowOperation next() {
             index++;
             return updataOps[index - 1];
+        }
+
+        @Override
+        public OverflowOperation getCurrentOperation() {
+            return updataOps[index];
         }
 
         @Override

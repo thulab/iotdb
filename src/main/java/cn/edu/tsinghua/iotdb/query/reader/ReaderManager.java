@@ -54,7 +54,7 @@ public class ReaderManager {
         this.unSealedRowGroupMetadataList = rowGroupMetadataList;
     }
 
-    List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
+    public List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
         if (rowGroupReaderMap.containsKey(deltaObjectUID)) {
             return rowGroupReaderMap.get(deltaObjectUID);
         } else {

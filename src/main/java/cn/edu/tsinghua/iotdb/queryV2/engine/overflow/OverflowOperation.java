@@ -31,7 +31,12 @@ public abstract class OverflowOperation {
 
     public abstract TsPrimitiveType getValue();
 
+    public boolean verifyTime(long time) {
+        return leftBound <= time && rightBound >= time;
+    }
+
     public String toString() {
         return leftBound + "," + rightBound;
     }
+
 }

@@ -1,15 +1,19 @@
 package cn.edu.tsinghua.iotdb.query.v2;
 
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderManager;
 import cn.edu.tsinghua.iotdb.query.reader.UpdateOperation;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +21,14 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.copy;
+import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.and;
 
 /**
+ * <p>
  * A <code>RecordReader</code> contains all the data variables which is needed in read process.
  * Note that : it only contains the data of a (deltaObjectId, measurementId).
- *
+ * </p>
  */
 public class RecordReader {
 
@@ -36,90 +42,59 @@ public class RecordReader {
     /** compression type in this series **/
     public CompressionTypeName compressionTypeName;
 
-    /** 1. TsFile ReaderManager for current (deltaObjectId, measurementId) **/
-    public ReaderManager tsFileReaderManager;
+    /** TsFile ReaderManager for current (deltaObjectId, measurementId) **/
+    protected ReaderManager tsFileReaderManager;
 
-    /** 2. bufferwrite data, the unsealed page **/
-    public List<ByteArrayInputStream> bufferWritePageList;
+    /** memtable data in memory **/
+    protected RawSeriesChunk memRawSeriesChunk;
 
-    /** 3. bufferwrite insert data, the last page data in memory **/
-    public DynamicOneColumnData lastPageInMemory;
+    /** overflow insert data reader **/
+    protected SeriesReader overflowSeriesInsertReader;
 
-    /** 4. overflow insert data **/
-    public DynamicOneColumnData overflowInsertData;
+    /** overflow update data reader **/
+    protected OverflowOperationReader overflowOperationReader;
 
-    /** 5. overflow update data **/
-    public DynamicOneColumnData overflowUpdate;
+    /** series time filter, this filter is the filter **/
+    protected SingleSeriesFilterExpression queryTimeFilter;
+    protected SingleValueVisitor<?> singleTimeVisitor;
 
-    /** 6. series time filter, this filter is the filter **/
-    public SingleSeriesFilterExpression overflowTimeFilter;
+    /** series value filter **/
+    protected SingleSeriesFilterExpression queryValueFilter;
+    protected SingleValueVisitor<?> singleValueVisitor;
 
-    /** 7. series value filter **/
-    public SingleSeriesFilterExpression valueFilter;
-
-    /** bufferWritePageList + lastPageInMemory + overflow **/
-    public InsertDynamicData insertMemoryData;
-
-    // ====================================================================
-    // unseqTsfile implementation
+    /** memRawSeriesChunk + overflowSeriesInsertReader + overflowOperationReader **/
+    protected InsertDynamicData insertMemoryData;
 
 
-    /**
-     * @param filePathList bufferwrite file has been serialized completely
-     */
-    public RecordReader(List<String> filePathList, String deltaObjectId, String measurementId,
-                        DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
-                        List<Object> overflowInfo) throws PathErrorException {
+    public RecordReader(List<String> filePathList, String deltaObjectId, String measurementId, SingleSeriesFilterExpression queryTimeFilter,
+                        SingleSeriesFilterExpression queryValueFilter, CompressionTypeName compressionTypeName)
+            throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList);
         this.deltaObjectId = deltaObjectId;
         this.measurementId = measurementId;
-        this.lastPageInMemory = lastPageInMemory;
-        this.bufferWritePageList = bufferWritePageList;
+        this.queryTimeFilter = queryTimeFilter;
+        if (queryTimeFilter != null) {
+            singleTimeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, queryTimeFilter);
+        }
+        this.queryValueFilter = queryValueFilter;
+        if (queryValueFilter != null) {
+            singleValueVisitor = getSingleValueVisitorByDataType(dataType, queryValueFilter);
+        }
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-
     }
 
-    /**
-     * @param filePathList       bufferwrite file has been serialized completely
-     * @param unsealedFilePath   unsealed file reader
-     * @param rowGroupMetadataList unsealed RowGroupMetadataList to construct unsealedFileReader
-     */
     public RecordReader(List<String> filePathList, String unsealedFilePath,
-                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectId, String measurementId,
-                        DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName,
-                        List<Object> overflowInfo) throws PathErrorException {
+                        List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectId, String measurementId, CompressionTypeName compressionTypeName)
+            throws PathErrorException {
         this.tsFileReaderManager = new ReaderManager(filePathList, unsealedFilePath, rowGroupMetadataList);
         this.deltaObjectId = deltaObjectId;
         this.measurementId = measurementId;
-        this.lastPageInMemory = lastPageInMemory;
-        this.bufferWritePageList = bufferWritePageList;
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-
     }
 
     public void buildInsertMemoryData(SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter) {
-
-        DynamicOneColumnData overflowUpdateCopy = copy(overflowUpdate);
-
-        insertMemoryData = new InsertDynamicData(dataType, compressionTypeName,
-                bufferWritePageList, lastPageInMemory,
-                overflowInsertData, overflowUpdateCopy,
-                mergeTimeFilter(overflowTimeFilter, queryTimeFilter), queryValueFilter);
-    }
-
-    protected SingleSeriesFilterExpression mergeTimeFilter(SingleSeriesFilterExpression overflowTimeFilter, SingleSeriesFilterExpression queryTimeFilter) {
-
-        if (overflowTimeFilter == null && queryTimeFilter == null) {
-            return null;
-        } else if (overflowTimeFilter != null && queryTimeFilter == null) {
-            return overflowTimeFilter;
-        } else if (overflowTimeFilter == null) {
-            return queryTimeFilter;
-        } else {
-            return (SingleSeriesFilterExpression) and(overflowTimeFilter, queryTimeFilter);
-        }
     }
 
     public void closeFileStream() {
@@ -129,7 +104,4 @@ public class RecordReader {
     public void clearReaderMaps() {
         tsFileReaderManager.clearReaderMaps();
     }
-
-    // ====================================================================
-    // unseqTsfile implementation
 }
