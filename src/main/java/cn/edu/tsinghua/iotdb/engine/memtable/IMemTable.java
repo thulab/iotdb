@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public interface IMemTable {
 
     int size();
 
-    Iterable<?> query(String deltaObject, String measurement,TSDataType dataType);
+    Iterable<TimeValuePair> query(String deltaObject, String measurement,TSDataType dataType);
 
     void resetMemSeries(String deltaObject, String measurement);
     

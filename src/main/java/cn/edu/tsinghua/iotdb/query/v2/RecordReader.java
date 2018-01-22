@@ -50,7 +50,6 @@ public class RecordReader {
 
     /** 5. overflow update data **/
     public DynamicOneColumnData overflowUpdate;
-    protected UpdateOperation overflowUpdateOperation;
 
     /** 6. series time filter, this filter is the filter **/
     public SingleSeriesFilterExpression overflowTimeFilter;
@@ -79,11 +78,6 @@ public class RecordReader {
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        // to make sure that overflow data will not be null
-        this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
-        this.overflowUpdate = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
-        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(2);
-        this.overflowUpdateOperation = new UpdateOperation(dataType, overflowUpdate);
     }
 
     /**
@@ -103,11 +97,6 @@ public class RecordReader {
         this.compressionTypeName = compressionTypeName;
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
 
-        // to make sure that overflow data will not be null
-        this.overflowInsertData = overflowInfo.get(0) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(0);
-        this.overflowUpdate = overflowInfo.get(1) == null ? new DynamicOneColumnData(dataType, true) : (DynamicOneColumnData) overflowInfo.get(1);
-        this.overflowTimeFilter = (SingleSeriesFilterExpression) overflowInfo.get(2);
-        this.overflowUpdateOperation = new UpdateOperation(dataType, overflowUpdate);
     }
 
     public void buildInsertMemoryData(SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter) {

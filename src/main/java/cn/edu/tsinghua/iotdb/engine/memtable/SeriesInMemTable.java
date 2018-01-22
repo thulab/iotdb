@@ -11,34 +11,62 @@ import java.util.Iterator;
  * Created by zhangjinrui on 2018/1/21.
  */
 public class SeriesInMemTable implements RawSeriesChunk {
+	
+	private long maxTime;
+	private long minTime;
+	
+	private TsPrimitiveType maxValue;
+	private TsPrimitiveType minValue;
+	private TSDataType dataType;
+	private Iterable<TimeValuePair> values;
+	private boolean isEmpty;
+	
+	public SeriesInMemTable(boolean isEmpty){
+		this.isEmpty = isEmpty;
+	}
+	
+    public SeriesInMemTable(long maxTime, long minTime, TsPrimitiveType maxValue, TsPrimitiveType minValue,
+			TSDataType dataType, Iterable<TimeValuePair> values) {
+		this.maxTime = maxTime;
+		this.minTime = minTime;
+		this.maxValue = maxValue;
+		this.minValue = minValue;
+		this.dataType = dataType;
+		this.values = values;
+	}
 
-    @Override
+	@Override
     public TSDataType getDataType() {
-        return null;
+        return dataType;
     }
 
     @Override
     public long getMaxTimestamp() {
-        return 0;
+        return maxTime;
     }
 
     @Override
     public long getMinTimestamp() {
-        return 0;
+        return minTime;
     }
 
     @Override
     public TsPrimitiveType getMaxValue() {
-        return null;
+        return maxValue;
     }
 
     @Override
     public TsPrimitiveType getMinValue() {
-        return null;
+        return minValue;
     }
 
     @Override
     public Iterator<TimeValuePair> getIterator() {
-        return null;
+        return values.iterator();
     }
+
+	@Override
+	public boolean isEmpty() {
+		return isEmpty;
+	}
 }

@@ -12,7 +12,7 @@ import java.util.TreeSet;
 public class TreeSetMemSeries implements IMemSeries{
     private static final Logger logger = LoggerFactory.getLogger(TreeSetMemSeries.class);
 
-    private final TreeSet<TimeValuePairInMemTable> treeSet;
+    private final TreeSet<TimeValuePair> treeSet;
     private final TSDataType dataType;
 
     public TreeSetMemSeries(TSDataType dataType) {

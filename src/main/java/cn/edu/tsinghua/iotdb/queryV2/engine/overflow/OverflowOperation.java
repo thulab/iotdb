@@ -30,4 +30,8 @@ public abstract class OverflowOperation {
     public abstract OperationType getType();
 
     public abstract TsPrimitiveType getValue();
+
+    public String toString() {
+        return leftBound + "," + rightBound;
+    }
 }

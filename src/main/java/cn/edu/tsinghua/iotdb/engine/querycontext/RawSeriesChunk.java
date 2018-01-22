@@ -22,4 +22,6 @@ public interface RawSeriesChunk {
     TsPrimitiveType getMinValue();
 
     Iterator<TimeValuePair> getIterator();
+    
+    boolean isEmpty();
 }
