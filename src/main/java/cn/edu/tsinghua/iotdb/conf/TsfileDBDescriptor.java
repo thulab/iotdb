@@ -94,7 +94,7 @@ public class TsfileDBDescriptor {
 			
 			conf.dataDir = properties.getProperty("data_dir", conf.dataDir);
 			
-			
+			conf.maxOpenFolder = Integer.parseInt(properties.getProperty("max_opened_folder", conf.maxOpenFolder + ""));
 			conf.mergeConcurrentThreads = Integer.parseInt(properties.getProperty("merge_concurrent_threads", conf.mergeConcurrentThreads + ""));
 			if (conf.mergeConcurrentThreads <= 0
 					|| conf.mergeConcurrentThreads > Runtime.getRuntime().availableProcessors())
