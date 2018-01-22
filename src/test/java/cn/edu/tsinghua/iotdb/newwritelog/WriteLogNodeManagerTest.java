@@ -78,6 +78,7 @@ public class WriteLogNodeManagerTest {
 
     @Test
     public void testRecoverAll() throws IOException, RecoverException, MetadataArgsErrorException {
+        // this test create 5 log nodes and recover them
         File tempRestore = File.createTempFile("managerTest", "restore");
         File tempProcessorStore = File.createTempFile("managerTest", "processorStore");
 
