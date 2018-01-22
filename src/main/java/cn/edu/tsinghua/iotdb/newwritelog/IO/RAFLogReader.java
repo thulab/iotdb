@@ -10,7 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class RAFLogReader implements ILogReader{
+public class RAFLogReader implements ILogReader {
 
     private static final Logger logger = LoggerFactory.getLogger(RAFLogReader.class);
     private RandomAccessFile logRAF;
@@ -39,16 +39,14 @@ public class RAFLogReader implements ILogReader{
     @Override
     public PhysicalPlan next() {
         try {
-            while(logRAF.getFilePointer() < logRAF.length()) {
-                int logSize = logRAF.readInt();
-                if(logSize > bufferSize) {
-                    bufferSize = logSize;
-                    buffer = new byte[bufferSize];
-                }
-                logRAF.read(buffer, 0, logSize);
-                PhysicalPlan plan = PhysicalPlanLogTransfer.logToOperator(buffer);
-                return plan;
+            int logSize = logRAF.readInt();
+            if (logSize > bufferSize) {
+                bufferSize = logSize;
+                buffer = new byte[bufferSize];
             }
+            logRAF.read(buffer, 0, logSize);
+            PhysicalPlan plan = PhysicalPlanLogTransfer.logToOperator(buffer);
+            return plan;
         } catch (IOException e) {
             logger.error("Cannot read log file {}, because {}", filepath, e.getMessage());
         }
