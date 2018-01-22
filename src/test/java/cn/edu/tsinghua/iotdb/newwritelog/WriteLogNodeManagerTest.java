@@ -64,7 +64,7 @@ public class WriteLogNodeManagerTest {
         Thread.sleep(config.flushWalPeriodInMs + 1000);
         assertTrue(walFile.exists());
 
-        logNode.close();
+        logNode.delete();
         config.flushWalPeriodInMs = flushWalPeriod;
         tempRestore.delete();
         tempProcessorStore.delete();

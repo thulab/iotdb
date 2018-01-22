@@ -46,13 +46,19 @@ public interface WriteLogNode {
 
     /**
      *
-     * @return the identifier of this log node.
+     * @return The identifier of this log node.
      */
     String getIdentifier();
 
     /**
      *
-     * @return the directory where wal file is placed.
+     * @return The directory where wal file is placed.
      */
     String getLogDirectory();
+
+    /**
+     * Abandon all logs in this node and delete the log directory.
+     * The caller thould guarantee that NO MORE WRITE is coming.
+     */
+    void delete() throws IOException;
 }

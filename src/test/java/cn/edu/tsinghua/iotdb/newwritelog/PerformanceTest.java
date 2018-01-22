@@ -79,7 +79,7 @@ public class PerformanceTest {
             logNode.forceSync();
             System.out.println(3000000 + " logs use " + (System.currentTimeMillis() - time) + " ms at batch size " + batchSizes[j]);
 
-            logNode.close();
+            logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
         }
@@ -123,7 +123,7 @@ public class PerformanceTest {
             logNode.recover();
             System.out.println(3000000 + " logs use " + (System.currentTimeMillis() - time) + "ms when recovering " );
         } finally {
-            logNode.close();
+            logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
         }

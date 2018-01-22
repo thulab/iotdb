@@ -32,4 +32,15 @@ public class FileUtils {
             outC.force(false);
         }
     }
+
+    public static void recurrentDelete(File file) {
+        if(!file.exists())
+            return;
+        if(file.isDirectory()) {
+            File[] files = file.listFiles();
+            for (File subFile : files)
+                recurrentDelete(subFile);
+        }
+        file.delete();
+    }
 }

@@ -46,17 +46,17 @@ public class WriteLogNodeTest {
 
     @Test
     public void testWriteLogAndSync() throws IOException {
-        // this test use a dummy write log node to write a few logs and flush them
-        // then read the logs from file
+        // this test uses a dummy write log node to write a few logs and flushes them
+        // then reads the logs from file
         File tempRestore = new File("testtemp", "restore");
         File tempProcessorStore = new File("testtemp", "processorStore");
         tempRestore.getParentFile().mkdirs();
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        WriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
 
-        InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));
         UpdatePlan updatePlan = new UpdatePlan(0, 100, "2.0", new Path("root.logTestDevice.s1"));
         DeletePlan deletePlan = new DeletePlan(50,  new Path("root.logTestDevice.s1"));
@@ -67,7 +67,7 @@ public class WriteLogNodeTest {
 
         logNode.forceSync();
 
-        File walFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal");
+        File walFile = new File(config.walFolder + File.separator + "root.logTestDevice" + File.separator + "wal");
         assertTrue(walFile.exists());
 
         RandomAccessFile raf = new RandomAccessFile(walFile, "r");
@@ -97,22 +97,95 @@ public class WriteLogNodeTest {
         assertEquals(deletePlan.getPaths(), deletePlan2.getPaths());
 
         raf.close();
-        logNode.close();
+        logNode.delete();
         tempRestore.delete();
         tempProcessorStore.delete();
     }
 
     @Test
     public void testNotifyFlush() throws IOException {
-        // this test write a few logs and sync them
-        // then call notifyStartFlush() and notifyEndFlush() to delete old file
+        // this test writes a few logs and sync them
+        // then calls notifyStartFlush() and notifyEndFlush() to delete old file
         File tempRestore = new File("testtemp", "restore");
         File tempProcessorStore = new File("testtemp", "processorStore");
         tempRestore.getParentFile().mkdirs();
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        WriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
+
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", "str", "false"));
+        UpdatePlan updatePlan = new UpdatePlan(0, 100, "2.0", new Path("root.logTestDevice.s1"));
+        DeletePlan deletePlan = new DeletePlan(50,  new Path("root.logTestDevice.s1"));
+
+        logNode.write(bwInsertPlan);
+        logNode.write(updatePlan);
+        logNode.write(deletePlan);
+
+        logNode.forceSync();
+
+        File walFile = new File(config.walFolder + File.separator + "root.logTestDevice" + File.separator + "wal");
+        assertTrue(walFile.exists());
+
+        logNode.notifyStartFlush();
+        File oldWalFile = new File(config.walFolder + File.separator + "root.logTestDevice" + File.separator + "wal-old");
+        assertTrue(oldWalFile.exists());
+        assertTrue(oldWalFile.length() > 0);
+
+        logNode.notifyEndFlush(null);
+        assertTrue(!oldWalFile.exists());
+        assertEquals(0, walFile.length());
+
+        logNode.delete();
+        tempRestore.delete();
+        tempProcessorStore.delete();
+    }
+
+    @Test
+    public void testSyncThreshold() throws IOException {
+        // this test checks that if more logs than threshold are written, a sync will be triggered.
+        int flushWalThreshold = config.flushWalThreshold;
+        config.flushWalThreshold = 3;
+        File tempRestore = new File("testtemp", "restore");
+        File tempProcessorStore = new File("testtemp", "processorStore");
+        tempRestore.getParentFile().mkdirs();
+        tempRestore.createNewFile();
+        tempProcessorStore.createNewFile();
+
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
+
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", "str", "false"));
+        UpdatePlan updatePlan = new UpdatePlan(0, 100, "2.0", new Path("root.logTestDevice.s1"));
+        DeletePlan deletePlan = new DeletePlan(50,  new Path("root.logTestDevice.s1"));
+
+        logNode.write(bwInsertPlan);
+        logNode.write(updatePlan);
+
+        File walFile = new File(config.walFolder + File.separator + "root.logTestDevice" + File.separator + "wal");
+        assertTrue(!walFile.exists());
+
+        logNode.write(deletePlan);
+        assertTrue(walFile.exists());
+
+        logNode.delete();
+        tempRestore.delete();
+        tempProcessorStore.delete();
+        config.flushWalThreshold = flushWalThreshold;
+    }
+
+    @Test
+    public void testDelete() throws IOException {
+        // this test uses a dummy write log node to write a few logs and flushes them
+        // then deletes the node
+        File tempRestore = new File("testtemp", "restore");
+        File tempProcessorStore = new File("testtemp", "processorStore");
+        tempRestore.getParentFile().mkdirs();
+        tempRestore.createNewFile();
+        tempProcessorStore.createNewFile();
+
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
 
         InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
                 Arrays.asList("1.0", "15", "str", "false"));
@@ -125,54 +198,14 @@ public class WriteLogNodeTest {
 
         logNode.forceSync();
 
-        File walFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal");
+        File walFile = new File(config.walFolder + File.separator + "root.logTestDevice" + File.separator + "wal");
         assertTrue(walFile.exists());
 
-        logNode.notifyStartFlush();
-        File oldWalFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal-old");
-        assertTrue(oldWalFile.exists());
-        assertTrue(oldWalFile.length() > 0);
+        assertTrue(new File(logNode.getLogDirectory()).exists());
+        logNode.delete();
+        assertTrue(!new File(logNode.getLogDirectory()).exists());
 
-        logNode.notifyEndFlush(null);
-        assertTrue(!oldWalFile.exists());
-        assertEquals(0, walFile.length());
-
-        logNode.close();
         tempRestore.delete();
         tempProcessorStore.delete();
     }
-
-    @Test
-    public void testSyncThreshold() throws IOException {
-        // this test check that if more logs than threshold are written, a sync will be triggered.
-        int flushWalThreshold = config.flushWalThreshold;
-        config.flushWalThreshold = 3;
-        File tempRestore = new File("testtemp", "restore");
-        File tempProcessorStore = new File("testtemp", "processorStore");
-        tempRestore.getParentFile().mkdirs();
-        tempRestore.createNewFile();
-        tempProcessorStore.createNewFile();
-
-        WriteLogNode logNode = new ExclusiveWriteLogNode("root.testLogNode", tempRestore.getPath(), tempProcessorStore.getPath());
-
-        InsertPlan bwInsertPlan = new InsertPlan(1, "logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
-                Arrays.asList("1.0", "15", "str", "false"));
-        UpdatePlan updatePlan = new UpdatePlan(0, 100, "2.0", new Path("root.logTestDevice.s1"));
-        DeletePlan deletePlan = new DeletePlan(50,  new Path("root.logTestDevice.s1"));
-
-        logNode.write(bwInsertPlan);
-        logNode.write(updatePlan);
-
-        File walFile = new File(config.walFolder + File.separator + "root.testLogNode" + File.separator + "wal");
-        assertTrue(!walFile.exists());
-
-        logNode.write(deletePlan);
-        assertTrue(walFile.exists());
-
-        logNode.close();
-        tempRestore.delete();
-        tempProcessorStore.delete();
-        config.flushWalThreshold = flushWalThreshold;
-    }
-
 }

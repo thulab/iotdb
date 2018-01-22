@@ -8,6 +8,8 @@ import cn.edu.tsinghua.iotdb.newwritelog.recover.ExclusiveLogRecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.recover.RecoverPerformer;
 import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
+import cn.edu.tsinghua.iotdb.utils.FileUtils;
+import org.apache.derby.iapi.services.io.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,11 +135,20 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         return logDirectory;
     }
 
+    @Override
+    public void delete() throws IOException {
+        logCache.clear();
+        if(currentFile != null)
+            currentFile.close();
+        FileUtils.recurrentDelete(new File(logDirectory));
+    }
+
     private void lockForWrite(){
         lock.writeLock().lock();
     }
 
-    private void lockForSync() {
+    // other means sync and delete
+    private void lockForOther() {
        lock.writeLock().lock();
     }
 
@@ -145,12 +156,12 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
         lock.writeLock().unlock();
     }
 
-    private void unlockForSync() {
+    private void unlockForOther() {
        lock.writeLock().unlock();
     }
 
     private void sync() throws FileNotFoundException {
-        lockForSync();
+        lockForOther();
         try {
             logger.debug("Log node {} starts sync, {} logs to be synced", identifier, logCache.size());
             if(logCache.size() == 0) {
@@ -182,7 +193,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
             logCache.clear();
             logger.debug("Log node {} ends sync.", identifier);
         } finally {
-            unlockForSync();
+            unlockForOther();
         }
     }
 

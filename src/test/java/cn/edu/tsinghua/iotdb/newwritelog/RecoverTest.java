@@ -110,7 +110,7 @@ public class RecoverTest {
             File[] files = logDir.listFiles();
             assertTrue(files == null || files.length == 0);
         } finally {
-            logNode.close();
+            logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
         }
@@ -202,7 +202,7 @@ public class RecoverTest {
             File[] files = logDir.listFiles();
             assertTrue(files == null || files.length == 0);
         } finally {
-            logNode.close();
+            logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
             assertTrue(!tempRestoreRecovery.exists());
@@ -272,7 +272,7 @@ public class RecoverTest {
             File[] files = logDir.listFiles();
             assertTrue(files == null || files.length == 0);
         } finally {
-            logNode.close();
+            logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
             assertTrue(!tempRestoreRecovery.exists());
