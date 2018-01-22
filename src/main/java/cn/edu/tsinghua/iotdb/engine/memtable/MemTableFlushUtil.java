@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
@@ -15,9 +16,10 @@ import cn.edu.tsinghua.tsfile.timeseries.write.series.SeriesWriterImpl;
 
 public class MemTableFlushUtil {
 	private static final Logger logger = LoggerFactory.getLogger(MemTableFlushUtil.class);
+	private static final int pageSizeThreshold = TSFileDescriptor.getInstance().getConfig().pageSizeInByte;
 
-	public static void flushMemTable(FileSchema fileSchema, TsFileIOWriter tsFileIOWriter, IMemTable iMemTable,
-			int pageSizeThreshold) throws IOException {
+	public static void flushMemTable(FileSchema fileSchema, TsFileIOWriter tsFileIOWriter, IMemTable iMemTable)
+			throws IOException {
 		for (String deltaObjectId : iMemTable.getMemTableMap().keySet()) {
 			long startPos = tsFileIOWriter.getPos();
 			long recordCount = 0;

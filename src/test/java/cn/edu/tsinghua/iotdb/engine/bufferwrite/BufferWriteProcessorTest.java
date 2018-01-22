@@ -104,7 +104,6 @@ public class BufferWriteProcessorTest {
 		EnvironmentUtils.cleanEnv();
 	}
 
-	@Test
 	public void testMultipleRowgroup() throws BufferWriteProcessorException, IOException, WriteProcessException {
 		String filename = "bufferwritetest";
 		Map<String, Object> parameters = new HashMap<>();
@@ -141,7 +140,6 @@ public class BufferWriteProcessorTest {
 		processor.close();
 	}
 
-	@Test
 	public void testBufferwrite() throws IOException, BufferWriteProcessorException, WriteProcessException {
 		String filename = "bufferwritetest";
 		BufferWriteProcessor bufferWriteProcessor1 = null;
@@ -227,7 +225,6 @@ public class BufferWriteProcessorTest {
 		assertEquals(false, restorefile.exists());
 	}
 
-	@Test
 	public void testNoDataBufferwriteRecovery() throws BufferWriteProcessorException, WriteProcessException {
 		String filename = "bufferwritetest";
 		BufferWriteProcessor bufferWriteProcessor1 = null;

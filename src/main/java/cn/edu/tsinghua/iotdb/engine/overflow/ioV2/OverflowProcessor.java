@@ -27,9 +27,13 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -43,6 +47,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 public class OverflowProcessor extends Processor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowProcessor.class);
 	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
+	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
 	private OverflowResource workResource;
 	private OverflowResource mergeResource;
 
@@ -60,6 +65,9 @@ public class OverflowProcessor extends Processor {
 	private Action overflowFlushAction = null;
 	private Action filenodeFlushAction = null;
 	private FileSchema fileSchema;
+
+	private long memThreshold = TsFileConf.groupSizeInByte;
+	private AtomicLong memSize = new AtomicLong();
 
 	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) {
 		super(processorName);
@@ -111,15 +119,26 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * insert one time-series record
+	 * 
 	 * @param tsRecord
+	 * @throws IOException
 	 */
-	public void insert(TSRecord tsRecord) {
+	public void insert(TSRecord tsRecord) throws IOException {
+		// memory control
 		workSupport.insert(tsRecord);
 		valueCount++;
+		long memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
+		if (memUage > memThreshold) {
+			LOGGER.warn("The usage of memory {} in overflow processor {} reaches the threshold {}",
+					MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
+			flush();
+		}
 	}
 
 	/**
-	 * update one time-series data which time range is from startTime from endTime.
+	 * update one time-series data which time range is from startTime from
+	 * endTime.
+	 * 
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param startTime
@@ -132,9 +151,36 @@ public class OverflowProcessor extends Processor {
 		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, value);
 		valueCount++;
 	}
+
+	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
+			String value) {
+		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, convertStringToBytes(type, value));
+		valueCount++;
+	}
 	
+	private byte[] convertStringToBytes(TSDataType type, String o) {
+		switch (type) {
+		case INT32:
+			return BytesUtils.intToBytes(Integer.valueOf(o));
+		case INT64:
+			return BytesUtils.longToBytes(Long.valueOf(o));
+		case BOOLEAN:
+			return BytesUtils.boolToBytes(Boolean.valueOf(o));
+		case FLOAT:
+			return BytesUtils.floatToBytes(Float.valueOf(o));
+		case DOUBLE:
+			return BytesUtils.doubleToBytes(Double.valueOf(o));
+		case TEXT:
+			return BytesUtils.StringToBytes(o);
+		default:
+			LOGGER.error("unsupport data type: {}", type);
+			throw new UnsupportedOperationException();
+		}
+	}
+
 	/**
 	 * delete one time-series data which time range is from 0 to time-stamp.
+	 * 
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param timestamp

@@ -218,7 +218,7 @@ public class OverflowResource {
 			long lastPosition = insertIO.getPos();
 			// TODO file-schema
 			// TODO page size
-			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable, 1024 * 1024);
+			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
 			for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
 				for (TimeSeriesChunkMetaData seriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {

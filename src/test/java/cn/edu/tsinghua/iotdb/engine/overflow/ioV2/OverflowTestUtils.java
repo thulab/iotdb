@@ -2,6 +2,8 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
@@ -81,7 +83,7 @@ public class OverflowTestUtils {
 		processor.delete(deltaObjectId2, measurementId2, 20, dataType2);
 	}
 
-	public static void produceInsertData(OverflowProcessor processor) {
+	public static void produceInsertData(OverflowProcessor processor) throws IOException {
 
 		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(1), 1));
 		processor.insert(getData(deltaObjectId1, measurementId1, dataType1, String.valueOf(3), 3));

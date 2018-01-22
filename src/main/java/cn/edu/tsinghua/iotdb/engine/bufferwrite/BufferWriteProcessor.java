@@ -7,17 +7,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -55,13 +51,10 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
-import cn.edu.tsinghua.tsfile.timeseries.write.series.IRowGroupWriter;
 
 /**
  * @author liukun
@@ -69,8 +62,8 @@ import cn.edu.tsinghua.tsfile.timeseries.write.series.IRowGroupWriter;
 public class BufferWriteProcessor extends Processor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
-	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
 	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
+	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
 	private static final int TSMETADATABYTESIZE = 4;
 	private static final int TSFILEPOINTBYTESIZE = 8;
 
@@ -98,9 +91,11 @@ public class BufferWriteProcessor extends Processor {
 	private Action bufferwriteCloseAction = null;
 	private Action filenodeFlushAction = null;
 
+	private long memThreshold = TsFileConf.groupSizeInByte;
 	private long lastFlushTime = -1;
 	private long valueCount = 0;
-	private boolean isFlush;
+	private volatile boolean isFlush;
+	private AtomicLong memSize = new AtomicLong();
 
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters,
 			FileSchema fileSchema) throws BufferWriteProcessorException {
@@ -442,23 +437,33 @@ public class BufferWriteProcessor extends Processor {
 		TSRecord record = new TSRecord(timestamp, deltaObjectId);
 		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, value);
 		record.addTuple(dataPoint);
-		valueCount++;
 		return write(record);
 	}
 
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
 		long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
 		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newMemUsage);
+		long memUage;
 		switch (level) {
 		case SAFE:
 			// memUsed += newMemUsage;
 			// memtable
-
 			for (DataPoint dataPoint : tsRecord.dataPointList) {
 				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
 						tsRecord.time, dataPoint.getValue().toString());
 			}
 			valueCount++;
+			memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
+			if (memUage > memThreshold) {
+				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
+				try {
+					flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new BufferWriteProcessorException(e);
+				}
+			}
 			return false;
 		case WARNING:
 			LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
@@ -470,6 +475,17 @@ public class BufferWriteProcessor extends Processor {
 						tsRecord.time, dataPoint.getValue().toString());
 			}
 			valueCount++;
+			memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
+			if (memUage > memThreshold) {
+				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
+				try {
+					flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new BufferWriteProcessorException(e);
+				}
+			}
 			return false;
 		case DANGEROUS:
 		default:
@@ -530,9 +546,9 @@ public class BufferWriteProcessor extends Processor {
 			if (flushMemTable == null) {
 				flushMemTable = workMemTable;
 				workMemTable = new TreeSetMemTable();
-				isFlush = true;
 			}
 		} finally {
+			isFlush = true;
 			flushQueryLock.unlock();
 		}
 	}
@@ -542,9 +558,9 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			flushMemTable.clear();
 			flushMemTable = null;
-			isFlush = false;
 			bufferIOWriter.addNewRowGroupMetaDataToBackUp();
 		} finally {
+			isFlush = false;
 			flushQueryLock.unlock();
 		}
 	}
@@ -556,8 +572,7 @@ public class BufferWriteProcessor extends Processor {
 			long startFlushDataTime = System.currentTimeMillis();
 			long startPos = bufferIOWriter.getPos();
 			// TODO : FLUSH DATA
-			// TODO : DATA PAGE
-			MemTableFlushUtil.flushMemTable(fileSchema, bufferIOWriter, flushMemTable, 1024 * 1024);
+			MemTableFlushUtil.flushMemTable(fileSchema, bufferIOWriter, flushMemTable);
 			long flushDataSize = bufferIOWriter.getPos() - startPos;
 			long timeInterval = System.currentTimeMillis() - startFlushDataTime;
 			if (timeInterval == 0) {
@@ -635,6 +650,7 @@ public class BufferWriteProcessor extends Processor {
 			valueCount = 0;
 			flushStatus.setFlushing();
 			switchWorkToFlush();
+			memSize.set(0);
 			// switch
 			if (synchronization) {
 				flushOperation("synchronously");
@@ -710,7 +726,7 @@ public class BufferWriteProcessor extends Processor {
 
 	@Override
 	public long memoryUsage() {
-		return 0;
+		return memSize.get();
 	}
 
 	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs) {
