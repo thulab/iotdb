@@ -316,7 +316,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
         long L = Long.MIN_VALUE;
         long R = Long.MIN_VALUE;
 
-        while (i < newData.valueLength) {
+        while (newData != null && i < newData.valueLength) {
 
             if (newTimePair.mergestatus == MergeStatus.DONE) {
                 // (L,R) represent new time pair range.

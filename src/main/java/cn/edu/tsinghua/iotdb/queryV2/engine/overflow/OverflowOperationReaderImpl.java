@@ -85,7 +85,7 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
 
     @Override
     public OverflowOperation next() {
-        return updateOperations.get(index);
+        return updateOperations.get(index ++);
     }
 
     @Override
