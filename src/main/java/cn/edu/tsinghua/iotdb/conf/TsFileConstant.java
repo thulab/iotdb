@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.conf;
 
-public class TsfileConstant {
+public class TsFileConstant {
     public static final String ENV_FILE_NAME = "iotdb-env";
     public static final String IOTDB_CONF = "IOTDB_CONF";
 	public static final String GLOBAL_DB_NAME = "IoTDB";

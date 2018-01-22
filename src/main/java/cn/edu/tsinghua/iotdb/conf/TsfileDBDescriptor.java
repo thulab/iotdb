@@ -39,9 +39,9 @@ public class TsfileDBDescriptor {
 	 */
 	private void loadProps() {
 		InputStream inputStream = null;
-		String url = System.getProperty(TsfileConstant.IOTDB_CONF, null);
+		String url = System.getProperty(TsFileConstant.IOTDB_CONF, null);
 		if (url == null) {
-			url = System.getProperty(TsfileConstant.IOTDB_HOME, null);
+			url = System.getProperty(TsFileConstant.IOTDB_HOME, null);
 			if (url != null) {
 				url = url + File.separatorChar + "conf" + File.separatorChar + TsfileDBConfig.CONFIG_NAME;
 			} else {
@@ -119,9 +119,9 @@ public class TsfileDBDescriptor {
 			conf.overflowFileSizeThreshold = Long.parseLong(properties.getProperty("overflow_file_size_threshold", conf.overflowFileSizeThreshold + "").trim());
 
 			if(conf.memThresholdWarning <= 0)
-				conf.memThresholdWarning = TsfileConstant.MEM_THRESHOLD_WARNING_DEFAULT;
+				conf.memThresholdWarning = TsFileConstant.MEM_THRESHOLD_WARNING_DEFAULT;
 			if(conf.memThresholdDangerous < conf.memThresholdWarning)
-				conf.memThresholdDangerous = Math.max(conf.memThresholdWarning, TsfileConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
+				conf.memThresholdDangerous = Math.max(conf.memThresholdWarning, TsFileConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
 
 			conf.concurrentFlushThread  = Integer.parseInt(properties.getProperty("concurrent_flush_thread", conf.concurrentFlushThread + ""));
 			if(conf.concurrentFlushThread <= 0)

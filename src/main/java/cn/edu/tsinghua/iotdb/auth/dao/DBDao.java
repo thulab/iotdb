@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthRuntimeException;
-import cn.edu.tsinghua.iotdb.conf.TsfileConstant;
+import cn.edu.tsinghua.iotdb.conf.TsFileConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
@@ -73,9 +73,9 @@ public class DBDao implements IService{
 					LOGGER.error(e2.getMessage());
 					try {
 						FileUtils.deleteDirectory(new File(DBLocalPath));
-						System.out.println(String.format("Delete %s successfully, you may restart %s now.",TsfileConstant.GLOBAL_DB_NAME, DBLocalPath));
+						System.out.println(String.format("Delete %s successfully, you may restart %s now.",TsFileConstant.GLOBAL_DB_NAME, DBLocalPath));
 					} catch (IOException e1) {
-						LOGGER.error("Fail to delete {} automatically, you may delete manually and restart {}",TsfileConstant.GLOBAL_DB_NAME);
+						LOGGER.error("Fail to delete {} automatically, you may delete manually and restart {}",TsFileConstant.GLOBAL_DB_NAME);
 					} 
 					throw new DBDaoInitException(e2);
 				} else{
