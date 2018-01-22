@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.newwritelog.RecoverStage;
 import cn.edu.tsinghua.iotdb.newwritelog.replay.ConcretLogReplayer;
+import cn.edu.tsinghua.iotdb.newwritelog.replay.LogIterator;
 import cn.edu.tsinghua.iotdb.newwritelog.replay.LogReplayer;
 import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.ExclusiveWriteLogNode;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -41,7 +43,10 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     private RecoverStage currStage;
 
-    private LogReplayer replayer = new ConcretLogReplayer();
+    // The two fields can be made static only because the recovery is a serial process.
+    static private LogReplayer replayer = new ConcretLogReplayer();
+
+    static private LogIterator logIterator = new LogIterator();
 
     private RecoverPerformer fileNodeRecoverPerformer;
 
@@ -220,85 +225,40 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         replayLog();
     }
 
+    private int replayLogFile(File logFile) throws RecoverException {
+        int failedCnt = 0;
+        if(logFile.exists()) {
+            try {
+                logIterator.open(logFile);
+            } catch (FileNotFoundException e) {
+                logger.error("Log node {} cannot read old log file, because {}", e.getMessage());
+                throw new RecoverException("Cannot read old log file, recovery aborted.");
+            }
+            while(logIterator.hasNext()) {
+                try {
+                    replayer.replay(logIterator.next());
+                } catch (ProcessorException e) {
+                    failedCnt ++;
+                    logger.error("Log node {}, {}", writeLogNode.getLogDirectory(), e.getMessage());
+                }
+            }
+            logIterator.close();
+        }
+        return failedCnt;
+    }
+
     private void replayLog() throws RecoverException {
+        int failedEntryCnt = 0;
         // if old log file exists, replay it first.
         File oldLogFile = new File(writeLogNode.getLogDirectory() + File.separator +
                 ExclusiveWriteLogNode.WAL_FILE_NAME + ExclusiveWriteLogNode.OLD_SUFFIX);
-        int failedCnt = 0;
-        if(oldLogFile.exists()) {
-            RandomAccessFile oldRaf = null;
-            try {
-                oldRaf = new RandomAccessFile(oldLogFile, "r");
-                int bufferSize = 4 * 1024 * 1024;
-                // do not new buffer inside a loop
-                byte[] buffer = new byte[bufferSize];
-                while(oldRaf.getFilePointer() < oldRaf.length()) {
-                    int logSize = oldRaf.readInt();
-                    if(logSize > bufferSize) {
-                        bufferSize = logSize;
-                        buffer = new byte[bufferSize];
-                    }
-                    oldRaf.read(buffer, 0, logSize);
-                    PhysicalPlan plan = PhysicalPlanLogTransfer.logToOperator(buffer);
-                    try {
-                        replayer.replay(plan);
-                    } catch (ProcessorException e) {
-                        failedCnt ++;
-                        logger.error("Log node {}, {}", writeLogNode.getLogDirectory(), e.getMessage());
-                    }
-                }
-            } catch (IOException e) {
-                logger.error("Log node {} cannot read old log file, because {}", e.getMessage());
-                throw new RecoverException("Cannot read old log file, recovery aborted.");
-            } finally {
-                if(oldRaf != null) {
-                    try {
-                        oldRaf.close();
-                    } catch (IOException e) {
-                        logger.error("Log node {}, old log file cannot be closed", writeLogNode.getLogDirectory());
-                    }
-                }
-            }
-        }
+        failedEntryCnt += replayLogFile(oldLogFile);
         // then replay new log
         File newLogFile = new File(writeLogNode.getLogDirectory() + File.separator + ExclusiveWriteLogNode.WAL_FILE_NAME);
-        if(newLogFile.exists()) {
-            RandomAccessFile newRaf = null;
-            try {
-                newRaf = new RandomAccessFile(newLogFile, "r");
-                int bufferSize = 4 * 1024 * 1024;
-                byte[] buffer = new byte[bufferSize];
-                while(newRaf.getFilePointer() < newRaf.length()) {
-                    int logSize = newRaf.readInt();
-                    if(logSize > bufferSize) {
-                        bufferSize = logSize;
-                        buffer = new byte[bufferSize];
-                    }
-                    newRaf.read(buffer, 0, logSize);
-                    PhysicalPlan plan = PhysicalPlanLogTransfer.logToOperator(buffer);
-                    try {
-                        replayer.replay(plan);
-                    } catch (ProcessorException e) {
-                        failedCnt++;
-                        logger.error("Log node {}, {}", writeLogNode.getLogDirectory(), e.getMessage());
-                    }
-                }
-            } catch (IOException e) {
-                logger.error("Log node {} cannot read old log file, because {}", e.getMessage());
-                throw new RecoverException("Cannot read new log file, recovery aborted.");
-            } finally {
-                if(newRaf != null) {
-                    try {
-                        newRaf.close();
-                    } catch (IOException e) {
-                        logger.error("Log node {}, old log file cannot be closed", writeLogNode.getLogDirectory());
-                    }
-                }
-            }
-        }
+        failedEntryCnt += replayLogFile(newLogFile);
         // TODO : do we need to proceed if there are failed logs ?
-        if(failedCnt > 0)
-            throw new RecoverException("There are " + failedCnt + " logs failed to recover, see logs above for details");
+        if(failedEntryCnt > 0)
+            throw new RecoverException("There are " + failedEntryCnt + " logs failed to recover, see logs above for details");
         try {
             FileNodeManager.getInstance().closeOneFileNode(writeLogNode.getFileNodeName());
         } catch (FileNodeManagerException e) {

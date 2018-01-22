@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * This WriteLogNode is used to manage write ahead logs of a single FileNode.
  */
-public class ExclusiveWriteLogNode implements WriteLogNode {
+public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<ExclusiveWriteLogNode> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExclusiveWriteLogNode.class);
 
@@ -217,5 +217,10 @@ public class ExclusiveWriteLogNode implements WriteLogNode {
 
     public String getFileNodeName() {
         return identifier.split("-")[0];
+    }
+
+    @Override
+    public int compareTo(ExclusiveWriteLogNode o) {
+        return this.identifier.compareTo(o.identifier);
     }
 }

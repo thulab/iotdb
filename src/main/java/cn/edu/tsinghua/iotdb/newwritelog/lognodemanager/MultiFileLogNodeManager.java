@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class MultiFileLogNodeManager implements WriteLogNodeManager {
@@ -90,7 +90,10 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
      */
     @Override
     public void recover() throws RecoverException {
-        for(WriteLogNode node : nodeMap.values()) {
+        List<WriteLogNode> nodeList = new ArrayList<>(nodeMap.size());
+        nodeList.addAll(nodeMap.values());
+        nodeList.sort(null);
+        for(WriteLogNode node : nodeList) {
             try {
                 node.recover();
             } catch (RecoverException e) {
