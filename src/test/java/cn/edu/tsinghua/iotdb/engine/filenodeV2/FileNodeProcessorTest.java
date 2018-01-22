@@ -31,10 +31,13 @@ public class FileNodeProcessorTest {
 	private FileNodeProcessor fileNodeProcessor;
 	private String processorName = "root.vehicle.d0";
 	private String measurementId = "s0";
+	private String measurementId1 = "s1";
 	private TSDataType dataType = TSDataType.INT32;
+	private TSDataType daType1 = TSDataType.INT64;
 	private Map<String, Object> parameters = null;
 	private int groupThreshold;
 	private TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
+	private TsfileDBConfig dbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	@Before
 	public void setUp() throws Exception {
@@ -53,8 +56,8 @@ public class FileNodeProcessorTest {
 	}
 
 	@Test
-	public void test() throws Exception {
-		fileNodeProcessor = new FileNodeProcessor("data", processorName, parameters);
+	public void testInsertAndQuery() throws Exception {
+		fileNodeProcessor = new FileNodeProcessor(dbconfig.fileNodeDir, processorName, parameters);
 		assertEquals(false, fileNodeProcessor.shouldRecovery());
 		assertEquals(false, fileNodeProcessor.isOverflowed());
 		assertEquals(-1, fileNodeProcessor.getLastUpdateTime(processorName));
@@ -79,8 +82,10 @@ public class FileNodeProcessorTest {
 			if (i == 85) {
 
 			} else if (i == 87) {
-				// the groupSize is 1024Bytes. The size of one INT32 data-point is 12Bytes
-				// the flush will be triggered when the number of insert data reaches 86(1024/12=85.33)
+				// the groupSize is 1024Bytes. The size of one INT32 data-point
+				// is 12Bytes
+				// the flush will be triggered when the number of insert data
+				// reaches 86(1024/12=85.33)
 				TimeUnit.SECONDS.sleep(2);
 				// query result contains the flushed result.
 				fileNodeProcessor.getOverflowProcessor(processorName, parameters);
@@ -115,8 +120,37 @@ public class FileNodeProcessorTest {
 				assertEquals(87, globalSortedSeriesDataSource.getRawSeriesChunk().getMaxValue().getInt());
 			}
 		}
+		// insert overflow data and query
+		
+		
 		assertEquals(true, fileNodeProcessor.canBeClosed());
 		fileNodeProcessor.close();
+	}
+
+	@Test
+	public void testQueryToken() {
+		try {
+			fileNodeProcessor = new FileNodeProcessor(dbconfig.fileNodeDir, processorName, parameters);
+			fileNodeProcessor.writeLock();
+			int token = fileNodeProcessor.addMultiPassLock();
+			assertEquals(0, token);
+			assertEquals(false, fileNodeProcessor.canBeClosed());
+			fileNodeProcessor.removeMultiPassLock(token);
+			assertEquals(true, fileNodeProcessor.canBeClosed());
+
+			token = fileNodeProcessor.addMultiPassLock();
+			assertEquals(0, token);
+			int token2 = fileNodeProcessor.addMultiPassLock();
+			assertEquals(1, token2);
+			fileNodeProcessor.removeMultiPassLock(token2);
+			assertEquals(false, fileNodeProcessor.canBeClosed());
+			fileNodeProcessor.removeMultiPassLock(token);
+			fileNodeProcessor.close();
+		} catch (FileNodeProcessorException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
 	}
 
 }
