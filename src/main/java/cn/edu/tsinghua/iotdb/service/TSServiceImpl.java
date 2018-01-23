@@ -9,8 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.iotdb.newwritelog.lognodemanager.WriteLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import org.apache.thrift.TException;
