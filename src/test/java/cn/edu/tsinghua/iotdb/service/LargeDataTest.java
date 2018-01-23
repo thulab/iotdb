@@ -102,9 +102,9 @@ public class LargeDataTest {
 
             // select test
             selectAllTest();
-            selectOneSeriesWithValueFilterTest();
-            seriesTimeDigestReadTest();
-            crossSeriesReadUpdateTest();
+//            selectOneSeriesWithValueFilterTest();
+//            seriesTimeDigestReadTest();
+//            crossSeriesReadUpdateTest();
 
 //            // aggregation test
 //            aggregationWithoutFilterTest();
@@ -138,6 +138,9 @@ public class LargeDataTest {
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
             while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
+                        + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
+                System.out.println("===" + ans);
                 cnt++;
             }
             //System.out.println("cnt ::" + cnt);
@@ -865,9 +868,6 @@ public class LargeDataTest {
                 statement.execute(sql);
             }
 
-            // overflow delete
-            statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
-
             // overflow insert, time < 3000
             for (int time = 2000; time < 2500; time++) {
 
@@ -898,9 +898,11 @@ public class LargeDataTest {
                 statement.execute(sql);
             }
 
+            // overflow delete
+            statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
+
             // overflow update
             statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
-
 
             statement.close();
         } catch (Exception e) {
