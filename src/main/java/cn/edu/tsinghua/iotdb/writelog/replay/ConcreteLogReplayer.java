@@ -17,7 +17,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 import java.util.List;
 
-public class ConcretLogReplayer implements LogReplayer {
+public class ConcreteLogReplayer implements LogReplayer {
 
     public void replay(PhysicalPlan plan) throws ProcessorException {
         try {

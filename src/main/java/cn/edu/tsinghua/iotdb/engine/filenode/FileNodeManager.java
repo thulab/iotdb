@@ -1014,6 +1014,6 @@ public class FileNodeManager implements IStatistic {
     }
 
     public String getFileNodeRestoreFileName(String filenodeName) {
-        return baseDir + File.separator + filenodeName + File.separator + filenodeName + FileNodeProcessor.restoreFile;
+        return baseDir + File.separator + filenodeName + File.separator + filenodeName + FileNodeProcessor.RESTORE_FILE_SUFFIX;
     }
 }

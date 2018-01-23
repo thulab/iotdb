@@ -20,18 +20,6 @@ public class PhysicalPlanLogTransfer {
             case DELETE:
                 codec = (Codec<PhysicalPlan>) PhysicalPlanCodec.fromOpcode(SystemLogOperator.DELETE).codec;
                 break;
-            case OVERFLOWFLUSHSTART:
-                codec = (Codec<PhysicalPlan>) PhysicalPlanCodec.fromOpcode(SystemLogOperator.OVERFLOWFLUSHSTART).codec;
-                break;
-            case OVERFLOWFLUSHEND:
-                codec = (Codec<PhysicalPlan>) PhysicalPlanCodec.fromOpcode(SystemLogOperator.OVERFLOWFLUSHEND).codec;
-                break;
-            case BUFFERFLUSHSTART:
-                codec = (Codec<PhysicalPlan>) PhysicalPlanCodec.fromOpcode(SystemLogOperator.BUFFERFLUSHSTART).codec;
-                break;
-            case BUFFERFLUSHEND:
-                codec = (Codec<PhysicalPlan>) PhysicalPlanCodec.fromOpcode(SystemLogOperator.BUFFERFLUSHEND).codec;
-                break;
             default:
                 throw new UnsupportedOperationException("SystemLogOperator given is not supported. " + plan.getOperatorType());
         }

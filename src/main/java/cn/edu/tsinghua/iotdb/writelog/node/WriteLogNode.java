@@ -17,7 +17,7 @@ public interface WriteLogNode {
      * @param plan
      * @return The position to be written of the log.
      */
-    LogPosition write(PhysicalPlan plan) throws FileNotFoundException, IOException;
+    LogPosition write(PhysicalPlan plan) throws IOException;
 
     /**
      * First judge the stage of recovery by status of files, and then recover from that stage.
@@ -27,12 +27,12 @@ public interface WriteLogNode {
     /**
      * Sync and close streams.
      */
-    void close() throws FileNotFoundException, IOException;
+    void close() throws IOException;
 
     /**
      * Write what in cache to disk.
      */
-    void forceSync() throws FileNotFoundException, IOException;
+    void forceSync() throws IOException;
 
     /**
      * When a FileNode attempts to start a flush, this method must be called to rename log file.

@@ -209,4 +209,35 @@ public class WriteLogNodeTest {
         tempProcessorStore.delete();
         tempRestore.getParentFile().delete();
     }
+
+    @Test
+    public void testOverSizedWAL() throws IOException {
+        // this test uses a dummy write log node to write an over-sized log and assert exception caught
+        File tempRestore = new File("testtemp", "restore");
+        File tempProcessorStore = new File("testtemp", "processorStore");
+        int walSize = config.maxLogEntrySize;
+        config.maxLogEntrySize = 1;
+        tempRestore.getParentFile().mkdirs();
+        tempRestore.createNewFile();
+        tempProcessorStore.createNewFile();
+
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
+
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", "str", "false"));
+
+        boolean caught = false;
+        try {
+            logNode.write(bwInsertPlan);
+        } catch (IOException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+
+        logNode.delete();
+        tempRestore.delete();
+        tempProcessorStore.delete();
+        tempRestore.getParentFile().delete();
+        config.maxLogEntrySize = walSize;
+    }
 }

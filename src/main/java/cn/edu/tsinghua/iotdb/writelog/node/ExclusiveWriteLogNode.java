@@ -11,7 +11,7 @@ import cn.edu.tsinghua.iotdb.writelog.recover.ExclusiveLogRecoverPerformer;
 import cn.edu.tsinghua.iotdb.writelog.recover.RecoverPerformer;
 import cn.edu.tsinghua.iotdb.writelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.iotdb.utils.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +84,12 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
 
     @Override
     public void recover() throws RecoverException {
+        try {
+            close();
+        } catch (IOException e) {
+            logger.error("Cannot close write log {} node before recover! Because {}",identifier, e.getMessage());
+            throw new RecoverException(String.format("Cannot close write log %s node before recover!", identifier));
+        }
         recoverPerformer.recover();
     }
 
@@ -142,7 +148,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
         logCache.clear();
         if(currentFileWriter != null)
             currentFileWriter.close();
-        FileUtils.recurrentDelete(new File(logDirectory));
+        FileUtils.deleteDirectory(new File(logDirectory));
     }
 
     private void lockForWrite(){

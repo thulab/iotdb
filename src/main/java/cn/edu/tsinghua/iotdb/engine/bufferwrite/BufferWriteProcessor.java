@@ -130,7 +130,7 @@ public class BufferWriteProcessor extends Processor {
 
 		if (outputFile.exists() && restoreFile.exists()) {
 			//
-			// There is one damaged file, and the restoreFile exist
+			// There is one damaged file, and the RESTORE_FILE_SUFFIX exist
 			//
 			LOGGER.info("Recorvery the bufferwrite processor {}.", processorName);
 			bufferwriteRecovery();
@@ -169,7 +169,7 @@ public class BufferWriteProcessor extends Processor {
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
 		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, restoreFileName,
+			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, restoreFileName,
 					FileNodeManager.getInstance().getFileNodeRestoreFileName(processorName));
 		} catch (IOException e) {
 			LOGGER.error("Cannot create wal node for bufferwrite processor {}, because {}",processorName, e.getMessage());

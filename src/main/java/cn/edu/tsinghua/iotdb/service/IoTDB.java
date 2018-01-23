@@ -59,11 +59,7 @@ public class IoTDB implements IoTDBMBean {
 			setUp();
 		} catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | TTransportException | IOException e) {
 			LOGGER.error("{}: failed to start because: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
-		} catch (FileNodeManagerException e) {
-			e.printStackTrace();
-		} catch (PathErrorException e) {
-			e.printStackTrace();
-		} catch (RecoverException e) {
+		} catch (FileNodeManagerException | PathErrorException | RecoverException e) {
 			e.printStackTrace();
 		}
 	}

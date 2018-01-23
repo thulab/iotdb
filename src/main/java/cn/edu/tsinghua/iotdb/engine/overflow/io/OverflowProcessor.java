@@ -49,8 +49,8 @@ public class OverflowProcessor extends Processor {
 	private volatile boolean isMerging = false;
 	private volatile FlushStatus flushStatus = new FlushStatus();
 
-	private static final String storeFileName = ".overflow";
-	private static final String restoreFileName = ".restore";
+	private static final String STORE_FILE_SUFFIX = ".overflow";
+	private static final String RESTORE_FILE_SUFFIX = ".restore";
 	private String fileName;
 	private String overflowRestoreFilePath;
 	private String overflowOutputFilePath;
@@ -76,9 +76,9 @@ public class OverflowProcessor extends Processor {
 		}
 		// overflow file name in the overflow data dir with the special
 		// processorName.overflow
-		fileName = processorName + storeFileName;
+		fileName = processorName + STORE_FILE_SUFFIX;
 		overflowOutputFilePath = new File(dataDir, fileName).getPath();
-		overflowRestoreFilePath = overflowOutputFilePath + restoreFileName;
+		overflowRestoreFilePath = overflowOutputFilePath + RESTORE_FILE_SUFFIX;
 
 		// read information from overflow restore file
 		OverflowStoreStruct overflowStoreStruct = readStoreFromDisk();

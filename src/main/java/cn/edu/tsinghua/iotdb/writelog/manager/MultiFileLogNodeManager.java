@@ -73,7 +73,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
         WriteLogNode node = nodeMap.get(identifier);
         if(node == null && restoreFilePath != null && processorStoreFilePath != null) {
             node = new ExclusiveWriteLogNode(identifier, restoreFilePath, processorStoreFilePath);
-            nodeMap.put(identifier, node);
+            nodeMap.putIfAbsent(identifier, node);
         }
         return node;
     }
