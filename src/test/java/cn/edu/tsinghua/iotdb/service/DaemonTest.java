@@ -135,13 +135,12 @@ public class DaemonTest {
 
                 // select test
                 selectAllSQLTest();
-//                selectWildCardSQLTest();
-//                dnfErrorSQLTest();
-//                selectAndOperatorTest();
-//                selectAndOpeCrossTest();
-//                selectOneColumnWithFilterTest();
-//                textDataTypeTest();
-
+                selectWildCardSQLTest();
+                dnfErrorSQLTest();
+                selectAndOperatorTest();
+                selectAndOpeCrossTest();
+                selectOneColumnWithFilterTest();
+                textDataTypeTest();
 
                 // aggregation test
 //                aggregationTest();

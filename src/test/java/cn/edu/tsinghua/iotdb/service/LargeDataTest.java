@@ -106,20 +106,20 @@ public class LargeDataTest {
             seriesTimeDigestReadTest();
             crossSeriesReadUpdateTest();
 
-            // aggregation test
-            aggregationWithoutFilterTest();
-            aggregationTest();
-            allNullSeriesAggregationTest();
-            negativeValueAggTest();
-
-            // group by test
-            groupByTest();
-            allNullSeriesGroupByTest();
-            fixBigGroupByClassFormNumberTest();
-
-            // fill test
-            previousFillTest();
-            linearFillTest();
+//            // aggregation test
+//            aggregationWithoutFilterTest();
+//            aggregationTest();
+//            allNullSeriesAggregationTest();
+//            negativeValueAggTest();
+//
+//            // group by test
+//            groupByTest();
+//            allNullSeriesGroupByTest();
+//            fixBigGroupByClassFormNumberTest();
+//
+//            // fill test
+//            previousFillTest();
+//            linearFillTest();
 
             connection.close();
         }

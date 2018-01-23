@@ -342,7 +342,8 @@ public class OverflowQueryEngine {
         String measurementId = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
+        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectId, measurementId,
                 queryTimeFilter, queryValueFilter, readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
@@ -393,10 +394,11 @@ public class OverflowQueryEngine {
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("CrossQuery", formNumber);
             String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 
-            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
+            cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+                    RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null,  null, null, recordReaderPrefix, ReaderType.QUERY);
 
-            if (recordReader.insertMemoryData == null) {
+            if (recordReader.getInsertMemoryData() == null) {
                 DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(timestamps);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
@@ -427,7 +429,8 @@ public class OverflowQueryEngine {
         String measurementUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getMeasurementUID();
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(ReadCachePrefix.addFilterPrefix(valueFilterNumber), formNumber);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {

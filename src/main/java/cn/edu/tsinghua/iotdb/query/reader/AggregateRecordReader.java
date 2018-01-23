@@ -49,6 +49,7 @@ public class AggregateRecordReader extends RecordReader{
      * @param queryTimeFilter time filter
      * @param valueFilter value filter
      * @return aggregation result
+     *
      * @throws ProcessorException aggregation invoking exception
      * @throws IOException TsFile read exception
      */

@@ -137,4 +137,8 @@ public class RecordReader {
     public void clearReaderMaps() {
         tsFileReaderManager.clearReaderMaps();
     }
+
+    public InsertDynamicData getInsertMemoryData() {
+        return this.insertMemoryData;
+    }
 }
