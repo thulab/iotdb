@@ -929,11 +929,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			numOfMergeFiles++;
 			if (backupIntervalFile.overflowChangeType == OverflowChangeType.CHANGED) {
 				// query data and merge
+				String filePathBeforeMerge = backupIntervalFile.getRelativePath();
 				try {
 					LOGGER.info(
 							"The filenode processor {} begins merging the {}/{} tsfile[{}] with overflow file, the process is {}%",
-							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
-							backupIntervalFile.getRelativePath(),
+							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge,
 							(int) (((numOfMergeFiles - 1) / (float) allNeedMergeFiles) * 100));
 					long startTime = System.currentTimeMillis();
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
@@ -944,8 +944,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					DateTime endDateTime = new DateTime(endTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					LOGGER.info(
 							"The fileNode processor {} has merged the {}/{} tsfile[{}->{}] over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
-							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
-							backupIntervalFile.getRelativePath(), newFile, startDateTime, endDateTime, timeConsume,
+							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge, newFile,
+							startDateTime, endDateTime, timeConsume,
 							(int) (numOfMergeFiles) / (float) allNeedMergeFiles * 100);
 				} catch (IOException | WriteProcessException | PathErrorException e) {
 					LOGGER.error("Merge: query and write data error.");
@@ -1281,10 +1281,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		String fileName = null;
 		for (String deltaObjectId : backupIntervalFile.getStartTimeMap().keySet()) {
 			// query one deltaObjectId
-			long startTime = backupIntervalFile.getStartTime(deltaObjectId);
-			long endTime = backupIntervalFile.getEndTime(deltaObjectId);
 			List<Path> pathList = new ArrayList<>();
-
 			try {
 				ArrayList<String> pathStrings = mManager
 						.getPaths(deltaObjectId + FileNodeConstants.PATH_SEPARATOR + "*");
@@ -1298,13 +1295,16 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			if (pathList.isEmpty()) {
 				continue;
 			}
-			startTime = -1;
-			endTime = -1;
+			long startTime = -1;
+			long endTime = -1;
 			for (Path path : pathList) {
+				// query one measurenment in the special deltaObjectId
 				TSDataType dataType = mManager.getSeriesType(path.getFullPath());
 				OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.queryMerge(deltaObjectId,
 						path.getMeasurementToString(), dataType, true);
-				Filter<Long> timeFilter = FilterFactory.and(TimeFilter.gt(startTime), TimeFilter.lt(endTime));
+				Filter<Long> timeFilter = FilterFactory.and(
+						TimeFilter.gt(backupIntervalFile.getStartTime(deltaObjectId)),
+						TimeFilter.lt(backupIntervalFile.getEndTime(deltaObjectId)));
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
 				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
