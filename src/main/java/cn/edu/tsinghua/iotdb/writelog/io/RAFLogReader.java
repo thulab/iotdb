@@ -34,7 +34,7 @@ public class RAFLogReader implements ILogReader {
         if(planBuffer != null)
             return true;
         try {
-            if(logRAF.getFilePointer() + 12 < logRAF.length()) {
+            if(logRAF.getFilePointer() + 12 > logRAF.length()) {
                 return false;
             }
         } catch (IOException e) {

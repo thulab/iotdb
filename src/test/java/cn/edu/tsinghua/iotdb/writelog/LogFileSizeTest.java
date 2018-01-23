@@ -48,6 +48,8 @@ public class LogFileSizeTest {
 
     @Before
     public void setUp() throws Exception {
+        if(skip)
+            return;
         groupSize = fileConfig.groupSizeInByte;
         fileConfig.groupSizeInByte = 8 * 1024 * 1024;
         EnvironmentUtils.closeStatMonitor();
@@ -59,6 +61,8 @@ public class LogFileSizeTest {
 
     @After
     public void tearDown() throws Exception {
+        if(skip)
+            return;
         fileConfig.groupSizeInByte = groupSize;
         executeSQL(tearDownSqls);
         deamon.stop();
