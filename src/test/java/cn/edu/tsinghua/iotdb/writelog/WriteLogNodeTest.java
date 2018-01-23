@@ -97,6 +97,7 @@ public class WriteLogNodeTest {
         logNode.delete();
         tempRestore.delete();
         tempProcessorStore.delete();
+        tempRestore.getParentFile().delete();
     }
 
     @Test
@@ -137,6 +138,7 @@ public class WriteLogNodeTest {
         logNode.delete();
         tempRestore.delete();
         tempProcessorStore.delete();
+        tempRestore.getParentFile().delete();
     }
 
     @Test
@@ -170,6 +172,7 @@ public class WriteLogNodeTest {
         tempRestore.delete();
         tempProcessorStore.delete();
         config.flushWalThreshold = flushWalThreshold;
+        tempRestore.getParentFile().delete();
     }
 
     @Test
@@ -204,5 +207,6 @@ public class WriteLogNodeTest {
 
         tempRestore.delete();
         tempProcessorStore.delete();
+        tempRestore.getParentFile().delete();
     }
 }

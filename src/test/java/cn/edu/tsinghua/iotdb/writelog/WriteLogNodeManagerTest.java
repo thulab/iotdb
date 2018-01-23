@@ -74,6 +74,7 @@ public class WriteLogNodeManagerTest {
         config.flushWalPeriodInMs = flushWalPeriod;
         tempRestore.delete();
         tempProcessorStore.delete();
+        tempRestore.getParentFile().delete();
     }
 
     @Test

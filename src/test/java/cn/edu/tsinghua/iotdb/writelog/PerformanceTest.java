@@ -80,6 +80,7 @@ public class PerformanceTest {
             logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
+            tempRestore.getParentFile().delete();
         }
         config.flushWalThreshold = oldBatchSize;
     }
@@ -124,6 +125,7 @@ public class PerformanceTest {
             logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
+            tempRestore.getParentFile().delete();
         }
     }
 

@@ -106,6 +106,7 @@ public class RecoverTest {
             logNode.delete();
             tempRestore.delete();
             tempProcessorStore.delete();
+            tempRestore.getParentFile().delete();
         }
     }
 
@@ -195,6 +196,7 @@ public class RecoverTest {
             tempProcessorStore.delete();
             assertTrue(!tempRestoreRecovery.exists());
             assertTrue(!tempProcessorStoreRecovery.exists());
+            tempRestore.getParentFile().delete();
         }
     }
 
@@ -260,6 +262,7 @@ public class RecoverTest {
             tempProcessorStore.delete();
             assertTrue(!tempRestoreRecovery.exists());
             assertTrue(!tempProcessorStoreRecovery.exists());
+            tempRestore.getParentFile().delete();
         }
     }
 }
