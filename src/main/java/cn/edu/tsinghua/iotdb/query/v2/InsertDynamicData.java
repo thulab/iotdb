@@ -101,8 +101,10 @@ public class InsertDynamicData {
 
         IntervalTimeVisitor intervalTimeVisitor = new IntervalTimeVisitor();
         if (memRawSeriesChunk != null) {
-            if (intervalTimeVisitor.satisfy(timeFilter, memRawSeriesChunk.getMinTimestamp(), memRawSeriesChunk.getMaxTimestamp())) {
-                memSeriesChunkIterator = memRawSeriesChunk.getIterator();
+            if (!memRawSeriesChunk.isEmpty()) {
+                if (intervalTimeVisitor.satisfy(timeFilter, memRawSeriesChunk.getMinTimestamp(), memRawSeriesChunk.getMaxTimestamp())) {
+                    memSeriesChunkIterator = memRawSeriesChunk.getIterator();
+                }
             }
 
             // TODO add value filter examination and overflow update operation optimization
