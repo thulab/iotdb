@@ -574,14 +574,14 @@ public class FileNodeManager implements IStatistic {
 	 * Append one specified tsfile to the storage group.
 	 * <b>This method is only provided for transmission module</b>
 	 * 
-	 * @param fileNode
+	 * @param fileNodeName
 	 *            the path of storage group
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @throws FileNodeManagerException
 	 */
-	public void appendFileToFileNode(String fileNode, IntervalFileNode appendFile) throws FileNodeManagerException {
-		FileNodeProcessor fileNodeProcessor = getProcessor(fileNode, true);
+	public void appendFileToFileNode(String fileNodeName, IntervalFileNode appendFile) throws FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
 		fileNodeProcessor.writeLock();
 		try {
 			fileNodeProcessor.closeBufferWrite();
