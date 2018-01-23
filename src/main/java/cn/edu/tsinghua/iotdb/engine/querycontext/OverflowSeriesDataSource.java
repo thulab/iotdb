@@ -64,6 +64,6 @@ public class OverflowSeriesDataSource {
     }
 
     public boolean hasRawSeriesChunk() {
-        return rawSeriesChunk != null;
+        return rawSeriesChunk != null && !rawSeriesChunk.isEmpty();
     }
 }
