@@ -60,6 +60,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -71,6 +72,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 
@@ -697,6 +699,29 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 		}
 		return dataFileInfos;
+	}
+	
+	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs) {
+		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
+				TSEncoding.valueOf(encoding));
+		JSONObject measurement = constrcutMeasurement(col);
+		fileSchema.registerMeasurement(JsonConverter.convertJsonToMeasureMentDescriptor(measurement));
+	}
+	
+
+	private JSONObject constrcutMeasurement(ColumnSchema col) {
+		JSONObject measurement = new JSONObject();
+		measurement.put(JsonFormatConstant.MEASUREMENT_UID, col.name);
+		measurement.put(JsonFormatConstant.DATA_TYPE, col.dataType.toString());
+		measurement.put(JsonFormatConstant.MEASUREMENT_ENCODING, col.encoding.toString());
+		for (Entry<String, String> entry : col.getArgsMap().entrySet()) {
+			if (JsonFormatConstant.ENUM_VALUES.equals(entry.getKey())) {
+				String[] valueArray = entry.getValue().split(",");
+				measurement.put(JsonFormatConstant.ENUM_VALUES, new JSONArray(valueArray));
+			} else
+				measurement.put(entry.getKey(), entry.getValue().toString());
+		}
+		return measurement;
 	}
 
 	/**

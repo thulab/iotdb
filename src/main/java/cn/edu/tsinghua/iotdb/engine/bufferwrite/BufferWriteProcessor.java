@@ -389,21 +389,6 @@ public class BufferWriteProcessor extends Processor {
 		return result;
 	}
 
-	private JSONObject constrcutMeasurement(ColumnSchema col) {
-		JSONObject measurement = new JSONObject();
-		measurement.put(JsonFormatConstant.MEASUREMENT_UID, col.name);
-		measurement.put(JsonFormatConstant.DATA_TYPE, col.dataType.toString());
-		measurement.put(JsonFormatConstant.MEASUREMENT_ENCODING, col.encoding.toString());
-		for (Entry<String, String> entry : col.getArgsMap().entrySet()) {
-			if (JsonFormatConstant.ENUM_VALUES.equals(entry.getKey())) {
-				String[] valueArray = entry.getValue().split(",");
-				measurement.put(JsonFormatConstant.ENUM_VALUES, new JSONArray(valueArray));
-			} else
-				measurement.put(entry.getKey(), entry.getValue().toString());
-		}
-		return measurement;
-	}
-
 	public String getFileName() {
 		return fileName;
 	}
@@ -727,13 +712,6 @@ public class BufferWriteProcessor extends Processor {
 	@Override
 	public long memoryUsage() {
 		return memSize.get();
-	}
-
-	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs) {
-		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
-				TSEncoding.valueOf(encoding));
-		JSONObject measurement = constrcutMeasurement(col);
-		fileSchema.registerMeasurement(JsonConverter.convertJsonToMeasureMentDescriptor(measurement));
 	}
 
 	/**

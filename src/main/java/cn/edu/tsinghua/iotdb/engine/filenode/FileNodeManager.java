@@ -2,7 +2,6 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,7 +30,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -48,7 +46,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class FileNodeManager implements IStatistic {
 
@@ -163,7 +160,7 @@ public class FileNodeManager implements IStatistic {
 			LOGGER.info("{} dir home doesn't exist, create it", dir.getPath());
 		}
 
-		TsFileConf.duplicateIncompletedPage = true;
+		// TsFileConf.duplicateIncompletedPage = true;
 		if (TsFileDBConf.enableStatMonitor) {
 			StatMonitor statMonitor = StatMonitor.getInstance();
 			registStatMetadata();
@@ -711,19 +708,7 @@ public class FileNodeManager implements IStatistic {
 			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(path.getFullPath(), true);
 		try {
-			if (fileNodeProcessor.hasBufferwriteProcessor()) {
-				BufferWriteProcessor bufferWriteProcessor = null;
-				try {
-					bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor();
-					bufferWriteProcessor.addTimeSeries(path.getMeasurementToString(), dataType, encoding, encodingArgs);
-				} catch (FileNodeProcessorException e) {
-					LOGGER.error("Get the bufferwrite processor failed, the filenode is {}",
-							fileNodeProcessor.getProcessorName());
-					throw new FileNodeManagerException(e);
-				}
-			} else {
-				return;
-			}
+			fileNodeProcessor.addTimeSeries(path.getMeasurementToString(), dataType, encoding, encodingArgs);
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
