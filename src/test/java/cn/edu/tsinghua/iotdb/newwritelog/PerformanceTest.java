@@ -3,10 +3,7 @@ package cn.edu.tsinghua.iotdb.newwritelog;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.newwritelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.newwritelog.writelognode.ExclusiveWriteLogNode;
@@ -16,9 +13,12 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +31,7 @@ import java.util.Arrays;
 public class PerformanceTest {
 
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private TSFileConfig fileConfig = TSFileDescriptor.getInstance().getConfig();
 
     private boolean enableWal;
     private boolean skip = false;
@@ -158,5 +159,23 @@ public class PerformanceTest {
             deletePlan = (DeletePlan) PhysicalPlanLogTransfer.logToOperator(bytes3);
         }
         System.out.println("3000000 logs decoding use " + (System.currentTimeMillis() - time) + "ms");
+    }
+
+    @Test
+    public void SQLEncodingComparisonTest() throws WALOverSizedException {
+        String sql = "INSERT INTO root.logTestDevice(time,s1,s2,s3,s4) VALUES (100,1.0,15,\"str\",false)";
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", "str", "false"));
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            byte[] bytes = PhysicalPlanLogTransfer.operatorToLog(bwInsertPlan);
+        }
+        System.out.println("1000000 logs encoding use " + (System.currentTimeMillis() - time) + "ms");
+
+        time = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            byte[] bytes = sql.getBytes();
+        }
+        System.out.println("1000000 sqls encoding use " + (System.currentTimeMillis() - time) + "ms");
     }
 }
