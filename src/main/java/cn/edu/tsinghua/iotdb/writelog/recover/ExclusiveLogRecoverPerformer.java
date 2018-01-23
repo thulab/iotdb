@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.writelog.recover;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.writelog.RecoverStage;
 import cn.edu.tsinghua.iotdb.writelog.replay.ConcreteLogReplayer;
 import cn.edu.tsinghua.iotdb.writelog.io.RAFLogReader;
@@ -223,12 +224,17 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
             try {
                 RAFLogReader.open(logFile);
             } catch (FileNotFoundException e) {
-                logger.error("Log node {} cannot read old log file, because {}", e.getMessage());
+                logger.error("Log node {} cannot read old log file, because {}",writeLogNode.getIdentifier(), e.getMessage());
                 throw new RecoverException("Cannot read old log file, recovery aborted.");
             }
             while(RAFLogReader.hasNext()) {
                 try {
-                    replayer.replay(RAFLogReader.next());
+                    PhysicalPlan physicalPlan = RAFLogReader.next();
+                    if(physicalPlan == null) {
+                        logger.error("Log node {} read a bad log",writeLogNode.getIdentifier());
+                        throw new RecoverException("Cannot read old log file, recovery aborted.");
+                    }
+                    replayer.replay(physicalPlan);
                 } catch (ProcessorException e) {
                     failedCnt ++;
                     logger.error("Log node {}, {}", writeLogNode.getLogDirectory(), e.getMessage());

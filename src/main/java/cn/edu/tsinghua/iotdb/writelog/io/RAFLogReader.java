@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.zip.CRC32;
 
 public class RAFLogReader implements ILogReader {
 
@@ -17,6 +18,8 @@ public class RAFLogReader implements ILogReader {
     private String filepath;
     private int bufferSize = 4 * 1024 * 1024;
     private byte[] buffer = new byte[bufferSize];
+    private CRC32 checkSummer = new CRC32();
+    private PhysicalPlan planBuffer = null;
 
     public RAFLogReader() {
 
@@ -28,29 +31,42 @@ public class RAFLogReader implements ILogReader {
 
     @Override
     public boolean hasNext() {
+        if(planBuffer != null)
+            return true;
         try {
-            return logRAF.getFilePointer() < logRAF.length();
+            if(logRAF.getFilePointer() + 12 < logRAF.length()) {
+                return false;
+            }
         } catch (IOException e) {
-            logger.error("Cannot read log file {}, because {}", filepath, e.getMessage());
+            logger.error("Cannot read from log file {}, because {}", filepath, e.getMessage());
+            return false;
         }
-        return false;
-    }
-
-    @Override
-    public PhysicalPlan next() {
         try {
             int logSize = logRAF.readInt();
             if (logSize > bufferSize) {
                 bufferSize = logSize;
                 buffer = new byte[bufferSize];
             }
+            long checkSum = logRAF.readLong();
             logRAF.read(buffer, 0, logSize);
+            checkSummer.reset();
+            checkSummer.update(buffer, 0, logSize);
+            if(checkSummer.getValue() != checkSum)
+                return false;
             PhysicalPlan plan = PhysicalPlanLogTransfer.logToOperator(buffer);
-            return plan;
+            planBuffer = plan;
+            return true;
         } catch (IOException e) {
             logger.error("Cannot read log file {}, because {}", filepath, e.getMessage());
+            return false;
         }
-        return null;
+    }
+
+    @Override
+    public PhysicalPlan next() {
+        PhysicalPlan ret = planBuffer;
+        planBuffer = null;
+        return ret;
     }
 
     @Override

@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
+import java.util.zip.CRC32;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -50,6 +51,7 @@ public class WriteLogNodeTest {
         tempRestore.getParentFile().mkdirs();
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
+        CRC32 crc32 = new CRC32();
 
         WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
 
@@ -71,7 +73,11 @@ public class WriteLogNodeTest {
         byte[] buffer = new byte[10 * 1024 * 1024];
         int logSize = 0;
         logSize = raf.readInt();
+        long checksum = raf.readLong();
         raf.read(buffer, 0, logSize);
+        crc32.reset();
+        crc32.update(buffer, 0 , logSize);
+        assertEquals(checksum, crc32.getValue());
         InsertPlan bwInsertPlan2 = (InsertPlan) PhysicalPlanLogTransfer.logToOperator(buffer);
         assertEquals(bwInsertPlan.getMeasurements(), bwInsertPlan2.getMeasurements());
         assertEquals(bwInsertPlan.getTime(), bwInsertPlan2.getTime());
@@ -80,7 +86,11 @@ public class WriteLogNodeTest {
         assertEquals(bwInsertPlan.getDeltaObject(), bwInsertPlan2.getDeltaObject());
 
         logSize = raf.readInt();
+        checksum = raf.readLong();
         raf.read(buffer, 0, logSize);
+        crc32.reset();
+        crc32.update(buffer, 0 , logSize);
+        assertEquals(checksum, crc32.getValue());
         UpdatePlan updatePlan2 = (UpdatePlan) PhysicalPlanLogTransfer.logToOperator(buffer);
         assertEquals(updatePlan.getPath(), updatePlan2.getPath());
         assertEquals(updatePlan.getIntervals(), updatePlan2.getIntervals());
@@ -88,7 +98,11 @@ public class WriteLogNodeTest {
         assertEquals(updatePlan.getPaths(), updatePlan2.getPaths());
 
         logSize = raf.readInt();
+        checksum = raf.readLong();
         raf.read(buffer, 0, logSize);
+        crc32.reset();
+        crc32.update(buffer, 0 , logSize);
+        assertEquals(checksum, crc32.getValue());
         DeletePlan deletePlan2 = (DeletePlan) PhysicalPlanLogTransfer.logToOperator(buffer);
         assertEquals(deletePlan.getDeleteTime(), deletePlan2.getDeleteTime());
         assertEquals(deletePlan.getPaths(), deletePlan2.getPaths());
@@ -215,16 +229,14 @@ public class WriteLogNodeTest {
         // this test uses a dummy write log node to write an over-sized log and assert exception caught
         File tempRestore = new File("testtemp", "restore");
         File tempProcessorStore = new File("testtemp", "processorStore");
-        int walSize = config.maxLogEntrySize;
-        config.maxLogEntrySize = 1;
         tempRestore.getParentFile().mkdirs();
         tempRestore.createNewFile();
         tempProcessorStore.createNewFile();
 
-        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice", tempRestore.getPath(), tempProcessorStore.getPath());
+        WriteLogNode logNode = new ExclusiveWriteLogNode("root.logTestDevice.oversize", tempRestore.getPath(), tempProcessorStore.getPath());
 
-        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice", 100, Arrays.asList("s1", "s2", "s3", "s4"),
-                Arrays.asList("1.0", "15", "str", "false"));
+        InsertPlan bwInsertPlan = new InsertPlan(1, "root.logTestDevice.oversize", 100, Arrays.asList("s1", "s2", "s3", "s4"),
+                Arrays.asList("1.0", "15", new String(new char[4 * 1024 * 1024]), "false"));
 
         boolean caught = false;
         try {
@@ -238,6 +250,5 @@ public class WriteLogNodeTest {
         tempRestore.delete();
         tempProcessorStore.delete();
         tempRestore.getParentFile().delete();
-        config.maxLogEntrySize = walSize;
     }
 }
