@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -96,8 +97,8 @@ public class OverflowProcessor extends Processor {
 			workResource = new OverflowResource(parentPath, String.valueOf(dataPahtCount.getAndIncrement()));
 			return;
 		} else if (subFilePaths.length == 1) {
-			long count = Long.valueOf(subFilePaths[0]) + 1;
-			dataPahtCount.addAndGet(count);
+			long count = Long.valueOf(subFilePaths[0]);
+			dataPahtCount.addAndGet(count+1);
 			workResource = new OverflowResource(parentPath, String.valueOf(count));
 			LOGGER.info("The overflow processor {} recover from work status.", getProcessorName());
 		} else {
@@ -157,7 +158,7 @@ public class OverflowProcessor extends Processor {
 		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, convertStringToBytes(type, value));
 		valueCount++;
 	}
-	
+
 	private byte[] convertStringToBytes(TSDataType type, String o) {
 		switch (type) {
 		case INT32:
@@ -372,6 +373,26 @@ public class OverflowProcessor extends Processor {
 				new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right));
 	}
 
+	public OverflowSeriesDataSource queryMerge(String deltaObjectId, String measurementId, TSDataType dataType,
+			boolean isMerge) {
+		Pair<String, List<TimeSeriesChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
+				measurementId, dataType);
+		Pair<String, List<TimeSeriesChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
+				measurementId, dataType);
+		OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(
+				new Path(deltaObjectId + "." + measurementId));
+		overflowSeriesDataSource.setRawSeriesChunk(null);
+		overflowSeriesDataSource
+				.setOverflowInsertFileList(Arrays.asList(new OverflowInsertFile(mergeInsert.left, mergeInsert.right)));
+		UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
+		updateDeleteInfoOfOneSeries.setDataType(dataType);
+		updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(null);
+		updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(
+				Arrays.asList(new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right)));
+		overflowSeriesDataSource.setUpdateDeleteInfoOfOneSeries(updateDeleteInfoOfOneSeries);
+		return overflowSeriesDataSource;
+	}
+
 	/**
 	 * Get the update/delete data which is MERGE in overflowFile.
 	 * 
@@ -439,6 +460,7 @@ public class OverflowProcessor extends Processor {
 			workResource = new OverflowResource(parentPath, String.valueOf(dataPahtCount.getAndIncrement()));
 		}
 		isMerge = true;
+		LOGGER.info("The overflow processor {} switch from WORK to MERGE", getProcessorName());
 	}
 
 	public void switchMergeToWork() throws IOException {
@@ -448,6 +470,7 @@ public class OverflowProcessor extends Processor {
 			mergeResource = null;
 		}
 		isMerge = false;
+		LOGGER.info("The overflow processor {} switch from MERGE to WORK", getProcessorName());
 	}
 
 	public boolean isMerge() {
