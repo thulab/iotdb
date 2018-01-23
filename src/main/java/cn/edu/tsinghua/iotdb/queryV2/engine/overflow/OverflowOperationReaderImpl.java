@@ -59,6 +59,11 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
         }
     }
 
+    public OverflowOperationReaderImpl(List<OverflowOperation> updateOperations) {
+        this.index = 0;
+        this.updateOperations = updateOperations;
+    }
+
     public InputStream getSeriesChunkBytes(String path, int chunkSize, long offset) {
         try {
             RandomAccessFile raf = new RandomAccessFile(path, "r");
@@ -96,5 +101,10 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
     @Override
     public void close() throws IOException {
 
+    }
+
+    @Override
+    public OverflowOperationReader copy() {
+        return new OverflowOperationReaderImpl(updateOperations);
     }
 }

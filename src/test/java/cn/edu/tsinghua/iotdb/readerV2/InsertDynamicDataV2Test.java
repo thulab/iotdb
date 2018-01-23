@@ -177,6 +177,11 @@ public class InsertDynamicDataV2Test {
         @Override
         public void close() throws IOException {
         }
+
+        @Override
+        public OverflowOperationReader copy() {
+            return null;
+        }
     }
 
     private static FakedRawSeriesChunk buildFakedRawSeriesChunk() {

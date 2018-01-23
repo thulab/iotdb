@@ -134,8 +134,9 @@ public class RecordReader {
         tsFileReaderManager.closeFileStream();
     }
 
-    public void clearReaderMaps() {
+    public void closeFileStreamForOneRequest() throws IOException {
         tsFileReaderManager.clearReaderMaps();
+        overflowSeriesInsertReader.close();
     }
 
     public InsertDynamicData getInsertMemoryData() {
