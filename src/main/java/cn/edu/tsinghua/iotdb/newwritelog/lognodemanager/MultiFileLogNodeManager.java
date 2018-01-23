@@ -18,6 +18,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
     private Map<String, WriteLogNode> nodeMap;
 
     private Thread syncThread;
+    private final String syncThreadName = "IoTDB-MultiFileLogNodeManager-Sync-Thread";
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     private static class InstanceHolder {
@@ -53,7 +54,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager {
 
     private MultiFileLogNodeManager() {
         nodeMap = new ConcurrentHashMap<>();
-        syncThread = new Thread(syncTask, "IoTDB-MultiFileLogNodeManager-Sync-Thread");
+        syncThread = new Thread(syncTask, syncThreadName);
         syncThread.start();
     }
 

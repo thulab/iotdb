@@ -92,7 +92,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			raf = new OverflowReadWriter(overflowOutputFilePath);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the overflowReadWrite, the overflow processor is {}", processorName, e);
+			LOGGER.error("Can't get the overflowReadWrite, the overflow processor is {}, because {}", processorName, e.getMessage());
 			throw new OverflowProcessorException(e);
 		}
 		long lastUpdateOffset = 0;

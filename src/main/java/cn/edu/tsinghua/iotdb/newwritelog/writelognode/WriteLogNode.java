@@ -58,7 +58,7 @@ public interface WriteLogNode {
 
     /**
      * Abandon all logs in this node and delete the log directory.
-     * The caller thould guarantee that NO MORE WRITE is coming.
+     * The caller should guarantee that NO MORE WRITE is coming.
      */
     void delete() throws IOException;
 }

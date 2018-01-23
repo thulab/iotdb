@@ -29,6 +29,8 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     public static final String RECOVER_SUFFIX = "-recover";
 
+    public static final String FLAG_SEPERATOR = "-";
+
     private ExclusiveWriteLogNode writeLogNode;
 
     private String recoveryFlagPath;
@@ -97,7 +99,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         String flagName = flagFile.getName();
         recoveryFlagPath = flagFile.getPath();
         // the flag name is like "recover-flag-{flagType}"
-        String[] parts = flagName.split("-");
+        String[] parts = flagName.split(FLAG_SEPERATOR);
         if(parts.length != 3) {
             logger.error("Log node {} invalid recover flag name {}", writeLogNode.getIdentifier(), flagName);
             throw new RecoverException("Illegal recover flag " + flagName);
@@ -136,7 +138,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     private void setFlag(RecoverStage stage) {
         if(recoveryFlagPath == null) {
-            recoveryFlagPath = writeLogNode.getLogDirectory() + File.separator + RECOVER_FLAG_NAME + "-" + stage.name();
+            recoveryFlagPath = writeLogNode.getLogDirectory() + File.separator + RECOVER_FLAG_NAME + FLAG_SEPERATOR + stage.name();
             try {
                 File flagFile = new File(recoveryFlagPath);
                 if(!flagFile.createNewFile())
@@ -146,7 +148,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
             }
         } else {
             File flagFile = new File(recoveryFlagPath);
-            recoveryFlagPath = recoveryFlagPath.replace("-" + currStage.name(), "-" + stage.name());
+            recoveryFlagPath = recoveryFlagPath.replace(FLAG_SEPERATOR + currStage.name(), FLAG_SEPERATOR + stage.name());
             if(!flagFile.renameTo(new File(recoveryFlagPath)))
                 logger.error("Log node {} cannot update flag at stage {}",writeLogNode.getLogDirectory(), stage.name());
         }

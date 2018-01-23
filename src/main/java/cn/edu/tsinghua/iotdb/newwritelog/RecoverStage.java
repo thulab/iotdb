@@ -7,7 +7,7 @@ public enum RecoverStage {
     init,
 
     /**
-     * In this stage, the mission is to backup restore file, processor store file with suffix "-recovery".
+     * In this stage, the mission is to backup restore file, processor.store file with suffix "-recovery".
      * Should SET flag afterward.
      */
     backup,
