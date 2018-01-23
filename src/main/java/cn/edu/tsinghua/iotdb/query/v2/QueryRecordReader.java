@@ -32,15 +32,13 @@ public class QueryRecordReader extends RecordReader {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryRecordReader.class);
     
-    private OverflowOperationReader overflowOperationReaderForFile;
-    
     public QueryRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                              String deltaObjectId, String measurementId,
                              SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter)
             throws PathErrorException, IOException {
         super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter);
 
-        overflowOperationReaderForFile = overflowOperationReader.copy();
+        overflowOperationReaderCopy = overflowOperationReader.copy();
     }
 
     private int usedRowGroupReaderIndex;
@@ -117,8 +115,8 @@ public class QueryRecordReader extends RecordReader {
                 valueReader.getStartTime(), valueReader.getEndTime(), valueDigest.getMinValue(), valueDigest.getMaxValue()));
         DigestVisitor valueDigestVisitor = new DigestVisitor();
 
-        while (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().getRightBound() < valueReader.getStartTime()) {
-            overflowOperationReaderForFile.next();
+        while (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getRightBound() < valueReader.getStartTime()) {
+            overflowOperationReaderCopy.next();
         }
 
         // skip the current series chunk according to time filter
@@ -131,7 +129,7 @@ public class QueryRecordReader extends RecordReader {
 
         // skip the current series chunk according to value filter
         if (valueFilter != null && !valueDigestVisitor.satisfy(valueDigest, valueFilter)) {
-            if ((!overflowOperationReaderForFile.hasNext() || overflowOperationReaderForFile.getCurrentOperation().getLeftBound() > valueReader.getEndTime()) &&
+            if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > valueReader.getEndTime()) &&
                     (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > valueReader.getEndTime())) {
                 logger.debug("series value digest does not satisfy value filter");
                 res.plusRowGroupIndexAndInitPageOffset();
@@ -155,8 +153,8 @@ public class QueryRecordReader extends RecordReader {
             long pageMinTime = pageHeader.data_page_header.min_timestamp;
             long pageMaxTime = pageHeader.data_page_header.max_timestamp;
 
-            while (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().getRightBound() < pageMinTime) {
-                overflowOperationReaderForFile.next();
+            while (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getRightBound() < pageMinTime) {
+                overflowOperationReaderCopy.next();
             }
 
             // skip the current page according to time filter
@@ -168,7 +166,7 @@ public class QueryRecordReader extends RecordReader {
 
             // skip the current page according to value filter
             if (valueFilter != null && !valueDigestVisitor.satisfy(pageValueDigest, valueFilter)) {
-                if ((!overflowOperationReaderForFile.hasNext() || overflowOperationReaderForFile.getCurrentOperation().getLeftBound() > pageMaxTime) &&
+                if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > pageMaxTime) &&
                         (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > pageMaxTime)) {
                     pageReader.skipCurrentPage();
                     res.pageOffset += lastAvailable - bis.available();
@@ -208,15 +206,15 @@ public class QueryRecordReader extends RecordReader {
                         if (timeIdx >= pageTimestamps.length)
                             break;
 
-                        if (overflowOperationReaderForFile.hasNext()) {
-                            if (overflowOperationReaderForFile.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                                if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                        if (overflowOperationReaderCopy.hasNext()) {
+                            if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
+                                if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
                                         || (valueFilter != null &&
-                                        !singleValueVisitor.satisfyObject(overflowOperationReaderForFile.getCurrentOperation().getValue().getInt(), valueFilter))) {
+                                        !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getInt(), valueFilter))) {
                                     continue;
                                 } else {
                                     res.putTime(pageTimestamps[timeIdx]);
-                                    res.putInt(overflowOperationReaderForFile.getCurrentOperation().getValue().getInt());
+                                    res.putInt(overflowOperationReaderCopy.getCurrentOperation().getValue().getInt());
                                     continue;
                                 }
                             }
@@ -255,15 +253,15 @@ public class QueryRecordReader extends RecordReader {
                         if (timeIdx >= pageTimestamps.length)
                             break;
 
-                        if (overflowOperationReaderForFile.hasNext()) {
-                            if (overflowOperationReaderForFile.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                                if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                        if (overflowOperationReaderCopy.hasNext()) {
+                            if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
+                                if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
                                         || (valueFilter != null &&
-                                        !singleValueVisitor.satisfyObject(overflowOperationReaderForFile.getCurrentOperation().getValue().getBoolean(), valueFilter))) {
+                                        !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getBoolean(), valueFilter))) {
                                     continue;
                                 } else {
                                     res.putTime(pageTimestamps[timeIdx]);
-                                    res.putBoolean(overflowOperationReaderForFile.getCurrentOperation().getValue().getBoolean());
+                                    res.putBoolean(overflowOperationReaderCopy.getCurrentOperation().getValue().getBoolean());
                                     continue;
                                 }
                             }
@@ -302,15 +300,15 @@ public class QueryRecordReader extends RecordReader {
                         if (timeIdx >= pageTimestamps.length)
                             break;
 
-                        if (overflowOperationReaderForFile.hasNext()) {
-                            if (overflowOperationReaderForFile.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                                if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                        if (overflowOperationReaderCopy.hasNext()) {
+                            if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
+                                if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
                                         || (valueFilter != null &&
-                                        !singleValueVisitor.satisfyObject(overflowOperationReaderForFile.getCurrentOperation().getValue().getLong(), valueFilter))) {
+                                        !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getLong(), valueFilter))) {
                                     continue;
                                 } else {
                                     res.putTime(pageTimestamps[timeIdx]);
-                                    res.putLong(overflowOperationReaderForFile.getCurrentOperation().getValue().getLong());
+                                    res.putLong(overflowOperationReaderCopy.getCurrentOperation().getValue().getLong());
                                     continue;
                                 }
                             }
@@ -349,15 +347,15 @@ public class QueryRecordReader extends RecordReader {
                         if (timeIdx >= pageTimestamps.length)
                             break;
 
-                        if (overflowOperationReaderForFile.hasNext()) {
-                            if (overflowOperationReaderForFile.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                                if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                        if (overflowOperationReaderCopy.hasNext()) {
+                            if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
+                                if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
                                         || (valueFilter != null &&
-                                        !singleValueVisitor.satisfyObject(overflowOperationReaderForFile.getCurrentOperation().getValue().getFloat(), valueFilter))) {
+                                        !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getFloat(), valueFilter))) {
                                     continue;
                                 } else {
                                     res.putTime(pageTimestamps[timeIdx]);
-                                    res.putFloat(overflowOperationReaderForFile.getCurrentOperation().getValue().getFloat());
+                                    res.putFloat(overflowOperationReaderCopy.getCurrentOperation().getValue().getFloat());
                                     continue;
                                 }
                             }
@@ -396,15 +394,15 @@ public class QueryRecordReader extends RecordReader {
                         if (timeIdx >= pageTimestamps.length)
                             break;
 
-                        if (overflowOperationReaderForFile.hasNext()) {
-                            if (overflowOperationReaderForFile.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                                if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                        if (overflowOperationReaderCopy.hasNext()) {
+                            if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
+                                if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
                                         || (valueFilter != null &&
-                                        !singleValueVisitor.satisfyObject(overflowOperationReaderForFile.getCurrentOperation().getValue().getDouble(), valueFilter))) {
+                                        !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getDouble(), valueFilter))) {
                                     continue;
                                 } else {
                                     res.putTime(pageTimestamps[timeIdx]);
-                                    res.putDouble(overflowOperationReaderForFile.getCurrentOperation().getValue().getDouble());
+                                    res.putDouble(overflowOperationReaderCopy.getCurrentOperation().getValue().getDouble());
                                     continue;
                                 }
                             }
@@ -443,15 +441,15 @@ public class QueryRecordReader extends RecordReader {
                         if (timeIdx >= pageTimestamps.length)
                             break;
 
-                        if (overflowOperationReaderForFile.hasNext()) {
-                            if (overflowOperationReaderForFile.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                                if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
+                        if (overflowOperationReaderCopy.hasNext()) {
+                            if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
+                                if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
                                         || (valueFilter != null &&
-                                        !singleValueVisitor.satisfyObject(overflowOperationReaderForFile.getCurrentOperation().getValue().getBinary(), valueFilter))) {
+                                        !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getBinary(), valueFilter))) {
                                     continue;
                                 } else {
                                     res.putTime(pageTimestamps[timeIdx]);
-                                    res.putBinary(overflowOperationReaderForFile.getCurrentOperation().getValue().getBinary());
+                                    res.putBinary(overflowOperationReaderCopy.getCurrentOperation().getValue().getBinary());
                                     continue;
                                 }
                             }
@@ -604,77 +602,77 @@ public class QueryRecordReader extends RecordReader {
 
         long time = originalQueryData.getTime(dataIdx);
 
-        while(overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().getRightBound() < time)
-            overflowOperationReaderForFile.next();
+        while(overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getRightBound() < time)
+            overflowOperationReaderCopy.next();
 
         switch (dataType) {
             case BOOLEAN:
-                if (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().verifyTime(time)) {
-                    if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
+                if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
                         return;
                     }
                     queryResult.putTime(time);
-                    queryResult.putBoolean(overflowOperationReaderForFile.getCurrentOperation().getValue().getBoolean());
+                    queryResult.putBoolean(overflowOperationReaderCopy.getCurrentOperation().getValue().getBoolean());
                     return;
                 }
                 queryResult.putTime(time);
                 queryResult.putBoolean(originalQueryData.getBoolean(dataIdx));
                 break;
             case INT32:
-                if (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().verifyTime(time)) {
-                    if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
+                if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
                         return;
                     }
                     queryResult.putTime(time);
-                    queryResult.putInt(overflowOperationReaderForFile.getCurrentOperation().getValue().getInt());
+                    queryResult.putInt(overflowOperationReaderCopy.getCurrentOperation().getValue().getInt());
                     return;
                 }
                 queryResult.putTime(time);
                 queryResult.putInt(originalQueryData.getInt(dataIdx));
                 break;
             case INT64:
-                if (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().verifyTime(time)) {
-                    if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
+                if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
                         return;
                     }
                     queryResult.putTime(time);
-                    queryResult.putLong(overflowOperationReaderForFile.getCurrentOperation().getValue().getLong());
+                    queryResult.putLong(overflowOperationReaderCopy.getCurrentOperation().getValue().getLong());
                     return;
                 }
                 queryResult.putTime(time);
                 queryResult.putLong(originalQueryData.getLong(dataIdx));
                 break;
             case FLOAT:
-                if (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().verifyTime(time)) {
-                    if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
+                if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
                         return;
                     }
                     queryResult.putTime(time);
-                    queryResult.putFloat(overflowOperationReaderForFile.getCurrentOperation().getValue().getFloat());
+                    queryResult.putFloat(overflowOperationReaderCopy.getCurrentOperation().getValue().getFloat());
                     return;
                 }
                 queryResult.putTime(time);
                 queryResult.putFloat(originalQueryData.getFloat(dataIdx));
                 break;
             case DOUBLE:
-                if (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().verifyTime(time)) {
-                    if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
+                if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
                         return;
                     }
                     queryResult.putTime(time);
-                    queryResult.putDouble(overflowOperationReaderForFile.getCurrentOperation().getValue().getDouble());
+                    queryResult.putDouble(overflowOperationReaderCopy.getCurrentOperation().getValue().getDouble());
                     return;
                 }
                 queryResult.putTime(time);
                 queryResult.putDouble(originalQueryData.getDouble(dataIdx));
                 break;
             case TEXT:
-                if (overflowOperationReaderForFile.hasNext() && overflowOperationReaderForFile.getCurrentOperation().verifyTime(time)) {
-                    if (overflowOperationReaderForFile.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
+                if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().verifyTime(time)) {
+                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE) {
                         return;
                     }
                     queryResult.putTime(time);
-                    queryResult.putBinary(overflowOperationReaderForFile.getCurrentOperation().getValue().getBinary());
+                    queryResult.putBinary(overflowOperationReaderCopy.getCurrentOperation().getValue().getBinary());
                     return;
                 }
                 queryResult.putTime(time);

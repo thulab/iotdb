@@ -106,20 +106,20 @@ public class LargeDataTest {
             seriesTimeDigestReadTest();
             crossSeriesReadUpdateTest();
 
-//            // aggregation test
-//            aggregationWithoutFilterTest();
-//            aggregationTest();
-//            allNullSeriesAggregationTest();
-//            negativeValueAggTest();
-//
-//            // group by test
-//            groupByTest();
-//            allNullSeriesGroupByTest();
-//            fixBigGroupByClassFormNumberTest();
-//
-//            // fill test
-//            previousFillTest();
-//            linearFillTest();
+            // aggregation test
+            aggregationWithoutFilterTest();
+            aggregationTest();
+            allNullSeriesAggregationTest();
+            negativeValueAggTest();
+
+            // group by test
+            groupByTest();
+            allNullSeriesGroupByTest();
+            fixBigGroupByClassFormNumberTest();
+
+            // fill test
+            previousFillTest();
+            linearFillTest();
 
             connection.close();
         }
@@ -282,7 +282,7 @@ public class LargeDataTest {
                         + "," + resultSet.getString(sum(d0s1)) + "," + resultSet.getString(mean(d0s1))
                         + "," + resultSet.getString(first(d0s1));
                 // 0,23400,2672550.0,114.21153846153847,2000,23200,1.2213278715E10,526434.4273706897,4
-                assertEquals("0,23400,2672550.0,114.21153846153847,2000,23200,1.2213278715E10,526434.4273706897,2001", ans);
+                assertEquals("0,23400,2672550.0,114.21153846153847,2000,22700,1.2212153465E10,537980.3288546256,4", ans);
                 cnt++;
             }
             assertEquals(1, cnt);
@@ -746,7 +746,7 @@ public class LargeDataTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
                         + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d0s4);
-                assertEquals("2300,2300,2301,2302.0,A,null", ans);
+                assertEquals("2300,2300,null,2302.0,A,null", ans);
                 //System.out.println("=====" + ans);
                 cnt ++;
             }
@@ -764,7 +764,7 @@ public class LargeDataTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
                         + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3) + "," + resultSet.getString(d0s4);
-                assertEquals("2600,1996,2141,1998.4192,null,null", ans);
+                assertEquals("2600,1996,null,1998.4192,null,null", ans);
                 //System.out.println("=====" + ans);
                 cnt ++;
             }

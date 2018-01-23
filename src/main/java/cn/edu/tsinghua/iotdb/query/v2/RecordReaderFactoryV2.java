@@ -73,15 +73,15 @@ public class RecordReaderFactoryV2 {
             case QUERY:
                 return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
                         deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
-//            case AGGREGATE:
-//                return new AggregateRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
-//                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
-//            case FILL:
-//                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
-//                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
-//            case GROUPBY:
-//                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
-//                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
+            case AGGREGATE:
+                return new AggregateRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
+            case FILL:
+                return new FillRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
+            case GROUPBY:
+                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
         }
 
         return null;

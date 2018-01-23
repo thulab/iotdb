@@ -68,6 +68,7 @@ public class RecordReader {
 
     /** overflow update data reader **/
     protected OverflowOperationReader overflowOperationReader;
+    protected OverflowOperationReader overflowOperationReaderCopy;
 
     /** series time filter, this filter is the filter **/
     protected SingleSeriesFilterExpression queryTimeFilter;
@@ -114,6 +115,7 @@ public class RecordReader {
 
         overflowSeriesInsertReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
         overflowOperationReader = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateOperationReader();
+        overflowOperationReaderCopy = overflowOperationReader.copy();
 
         this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
         insertMemoryData = new InsertDynamicData(dataType, queryTimeFilter, queryValueFilter, globalSortedSeriesDataSource.getRawSeriesChunk(),
