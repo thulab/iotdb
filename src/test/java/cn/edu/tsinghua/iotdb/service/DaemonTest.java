@@ -135,23 +135,23 @@ public class DaemonTest {
 
                 // select test
                 selectAllSQLTest();
-                selectWildCardSQLTest();
-                dnfErrorSQLTest();
-                selectAndOperatorTest();
-                selectAndOpeCrossTest();
-                selectOneColumnWithFilterTest();
-                textDataTypeTest();
+//                selectWildCardSQLTest();
+//                dnfErrorSQLTest();
+//                selectAndOperatorTest();
+//                selectAndOpeCrossTest();
+//                selectOneColumnWithFilterTest();
+//                textDataTypeTest();
 
 
                 // aggregation test
-                aggregationTest();
-                multiAggregationTest();
-
-                // fill test
-                fillTest();
-
-                // insert new data test
-                crossReadTest();
+//                aggregationTest();
+//                multiAggregationTest();
+//
+//                // fill test
+//                fillTest();
+//
+//                // insert new data test
+//                crossReadTest();
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
                 fail(e.getMessage());

@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.v2;
 
+import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
@@ -34,19 +36,15 @@ public class QueryRecordReader extends RecordReader {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryRecordReader.class);
 
-    public QueryRecordReader(List<String> filePathList, String deltaObjectId, String measurementId,
-                             SingleSeriesFilterExpression queryTimeFilter,
-                             SingleSeriesFilterExpression queryValueFilter,
-                             CompressionTypeName compressionTypeName) throws PathErrorException {
-        super(filePathList, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter, compressionTypeName);
+    public QueryRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
+                             String deltaObjectId, String measurementId,
+                             SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter)
+            throws PathErrorException, IOException {
+        super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter);
     }
 
-    public QueryRecordReader(String deltaObjectId, String measurementId,
-                             List<String> filePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList,
-                             CompressionTypeName compressionTypeName)
-            throws PathErrorException {
-        super(filePathList, unsealedFilePath, rowGroupMetadataList, deltaObjectId, measurementId, compressionTypeName);
-    }
+    private int usedRowGroupReaderIndex;
+    private int usedValueReaderIndex;
 
     /**
      * Query the data of one given series.
@@ -55,10 +53,9 @@ public class QueryRecordReader extends RecordReader {
                                                DynamicOneColumnData res, int fetchSize) throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
-        int rowGroupIndex = res == null ? 0 : res.getRowGroupIndex();
 
-        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
+        while (usedRowGroupReaderIndex < rowGroupReaderList.size()) {
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(usedRowGroupReaderIndex);
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 res = queryOneSeries(rowGroupReader.getValueReaders().get(measurementId), queryTimeFilter, queryValueFilter, res, fetchSize);
@@ -66,6 +63,17 @@ public class QueryRecordReader extends RecordReader {
                     return res;
                 }
             }
+            usedRowGroupReaderIndex ++;
+        }
+
+        while (usedValueReaderIndex < valueReaders.size()) {
+            if (valueReaders.get(usedValueReaderIndex).getDataType().equals(dataType)) {
+                res = queryOneSeries(valueReaders.get(usedValueReaderIndex), queryTimeFilter, queryValueFilter, res, fetchSize);
+                if (res.valueLength >= fetchSize) {
+                    return res;
+                }
+            }
+            usedValueReaderIndex ++;
         }
 
         res = res == null ? new DynamicOneColumnData(dataType, true) : res;
@@ -74,7 +82,6 @@ public class QueryRecordReader extends RecordReader {
             putMemoryDataToResult(res, insertMemoryData);
             insertMemoryData.removeCurrentValue();
 
-            // when the length reach to fetchSize, stop put values and return false
             if (res.valueLength >= fetchSize) {
                 return res;
             }
@@ -522,16 +529,32 @@ public class QueryRecordReader extends RecordReader {
         DynamicOneColumnData res = null;
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
+
         for (int i = 0; i < rowGroupReaderList.size(); i++) {
             RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                ValueReader valueReader = rowGroupReader.getValueReaders().get(measurementId);
+                if (valueReader.getStartTime() > timestamps[timestamps.length - 1])
+                    break;
+
                 if (i == 0) {
                     res = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
                 } else {
-                    DynamicOneColumnData tmpResult = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
-                    res.mergeRecord(tmpResult);
+                    DynamicOneColumnData midResult = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
+                    res.mergeRecord(midResult);
                 }
+            }
+        }
+
+        for (ValueReader valueReader : valueReaders) {
+            if (valueReader.getStartTime() > timestamps[timestamps.length-1]) {
+                break;
+            }
+
+            if (valueReader.getDataType().equals(dataType)) {
+                DynamicOneColumnData midResult = valueReader.getValuesForGivenValues(timestamps);
+                res.mergeRecord(midResult);
             }
         }
 

@@ -82,6 +82,7 @@ public class ReaderManager {
                 }
             }
 
+            // TODO the code below could be removed
             if (unSealedFilePath != null) {
                 TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(unSealedFilePath);
                 // TsRandomAccessLocalFileReader fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);

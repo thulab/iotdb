@@ -13,7 +13,8 @@ import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
-import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -289,11 +290,11 @@ public class OverflowQueryEngine {
         String measurementID = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
+        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader =
+                (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader) RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectID, measurementID,
                 null,  null, readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(null, null);
             res = recordReader.queryOneSeries(null, null, null, fetchSize);
         } else {
             res = recordReader.queryOneSeries(null, null, res, fetchSize);
@@ -345,7 +346,6 @@ public class OverflowQueryEngine {
                 queryTimeFilter, queryValueFilter, readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(queryTimeFilter, queryValueFilter);
             res = recordReader.queryOneSeries(queryTimeFilter, queryValueFilter, null, fetchSize);
         } else {
             res = recordReader.queryOneSeries(queryTimeFilter, queryValueFilter, res, fetchSize);
@@ -397,7 +397,6 @@ public class OverflowQueryEngine {
                     null,  null, null, recordReaderPrefix, ReaderType.QUERY);
 
             if (recordReader.insertMemoryData == null) {
-                recordReader.buildInsertMemoryData(queryTimeFilter, null);
                 DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(timestamps);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
@@ -432,7 +431,6 @@ public class OverflowQueryEngine {
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(null, queryValueFilter);
             res = recordReader.queryOneSeries(null, queryValueFilter, null, fetchSize);
         } else {
             res = recordReader.queryOneSeries( null, queryValueFilter, res, fetchSize);
@@ -444,9 +442,4 @@ public class OverflowQueryEngine {
     private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
         return MManager.getInstance().getSeriesType(path.getFullPath());
     }
-
-
-
-    // ====================================================================
-    // unseqTsfile implementation
 }
