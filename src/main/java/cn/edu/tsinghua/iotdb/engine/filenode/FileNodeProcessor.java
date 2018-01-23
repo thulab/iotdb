@@ -1303,8 +1303,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.queryMerge(deltaObjectId,
 						path.getMeasurementToString(), dataType, true);
 				Filter<Long> timeFilter = FilterFactory.and(
-						TimeFilter.gt(backupIntervalFile.getStartTime(deltaObjectId)),
-						TimeFilter.lt(backupIntervalFile.getEndTime(deltaObjectId)));
+						TimeFilter.gtEq(backupIntervalFile.getStartTime(deltaObjectId)),
+						TimeFilter.ltEq(backupIntervalFile.getEndTime(deltaObjectId)));
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
 				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
