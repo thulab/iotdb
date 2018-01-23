@@ -94,15 +94,18 @@ public class TsfileDBDescriptor {
 			
 			conf.dataDir = properties.getProperty("data_dir", conf.dataDir);
 			
-			
-			conf.mergeConcurrentThreads = Integer.parseInt(properties.getProperty("merge_concurrent_threads", conf.mergeConcurrentThreads + ""));
 			conf.maxOpenFolder = Integer.parseInt(properties.getProperty("max_opened_folder", conf.maxOpenFolder + ""));
+			conf.mergeConcurrentThreads = Integer.parseInt(properties.getProperty("merge_concurrent_threads", conf.mergeConcurrentThreads + ""));
+			if (conf.mergeConcurrentThreads <= 0
+					|| conf.mergeConcurrentThreads > Runtime.getRuntime().availableProcessors())
+				conf.mergeConcurrentThreads = Runtime.getRuntime().availableProcessors();
 			
 			conf.fetchSize = Integer.parseInt(properties.getProperty("fetch_size", conf.fetchSize + ""));
 			
 			conf.periodTimeForFlush = Long.parseLong(properties.getProperty("period_time_for_flush_in_second", conf.periodTimeForFlush+"").trim());
 			conf.periodTimeForMerge = Long.parseLong(properties.getProperty("period_time_for_merge_in_second", conf.periodTimeForMerge+"").trim());
-
+			conf.enableTimingCloseAndMerge = Boolean.parseBoolean(properties.getProperty("enable_timing_close_and_Merge", conf.enableTimingCloseAndMerge+"").trim());
+			
 			conf.memThresholdWarning = (long) (Runtime.getRuntime().maxMemory() * Double.parseDouble(properties.getProperty("mem_threshold_warning", conf.memThresholdWarning+"").trim()) );
 			conf.memThresholdDangerous = (long) (Runtime.getRuntime().maxMemory() * Double.parseDouble(properties.getProperty("mem_threshold_dangerous", conf.memThresholdDangerous+"").trim()));
 

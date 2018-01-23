@@ -39,8 +39,8 @@ public class EnvironmentUtils {
 		// tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager
 		try {
-			if (!FileNodeManager.getInstance().closeAll()) {
-				LOGGER.error("Can't close the filenode manager");
+			if (!FileNodeManager.getInstance().deleteAll()) {
+				LOGGER.error("Can't close the filenode manager in EnvironmentUtils");
 				System.exit(1);
 			}
 		} catch (FileNodeManagerException e) {
