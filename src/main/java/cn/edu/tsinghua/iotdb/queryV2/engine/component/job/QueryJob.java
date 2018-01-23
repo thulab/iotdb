@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2.engine.component;
+package cn.edu.tsinghua.iotdb.queryV2.engine.component.job;
 
 import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
 

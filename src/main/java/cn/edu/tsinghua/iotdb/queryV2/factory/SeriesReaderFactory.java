@@ -5,6 +5,8 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithFilter;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithoutFilter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithUpdateOpReader;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
@@ -58,7 +60,10 @@ public class SeriesReaderFactory {
             }
         }
         //TODO: add SeriesChunkReader in MemTable
-
+        if (overflowSeriesDataSource.hasRawSeriesChunk()) {
+            timeValuePairReaders.add(new PriorityTimeValuePairReader(new RawSeriesChunkReaderWithFilter(
+                    overflowSeriesDataSource.getRawSeriesChunk(), filter), new PriorityTimeValuePairReader.Priority(priorityValue++)));
+        }
         return new OverflowInsertDataReader(jobId, new PriorityMergeSortTimeValuePairReader(timeValuePairReaders));
     }
 
@@ -88,7 +93,10 @@ public class SeriesReaderFactory {
             priorityValue++;
         }
         //TODO: add SeriesChunkReader in MemTable
-
+        if (overflowSeriesDataSource.hasRawSeriesChunk()) {
+            timeValuePairReaders.add(new PriorityTimeValuePairReader(new RawSeriesChunkReaderWithoutFilter(
+                    overflowSeriesDataSource.getRawSeriesChunk()), new PriorityTimeValuePairReader.Priority(priorityValue++)));
+        }
         return new OverflowInsertDataReader(jobId, new PriorityMergeSortTimeValuePairReader(timeValuePairReaders));
     }
 

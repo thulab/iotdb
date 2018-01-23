@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.control;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.QueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
@@ -19,14 +19,6 @@ public class TsFileStreamManager {
 
     private TsFileStreamManager() {
         cache = new ConcurrentHashMap<>();
-    }
-
-    private static class FileStreamManagerHelper {
-        private static TsFileStreamManager INSTANCE = new TsFileStreamManager();
-    }
-
-    public static TsFileStreamManager getInstance() {
-        return FileStreamManagerHelper.INSTANCE;
     }
 
     /**
@@ -98,6 +90,14 @@ public class TsFileStreamManager {
             }
         }
 
+    }
+
+    private static class FileStreamManagerHelper {
+        private static TsFileStreamManager INSTANCE = new TsFileStreamManager();
+    }
+
+    public static TsFileStreamManager getInstance() {
+        return FileStreamManagerHelper.INSTANCE;
     }
 
     private class CachedTsFileReader {

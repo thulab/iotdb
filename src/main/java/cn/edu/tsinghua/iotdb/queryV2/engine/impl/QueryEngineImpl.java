@@ -2,11 +2,11 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.impl;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryJobDispatcher;
-import cn.edu.tsinghua.iotdb.queryV2.engine.QueryJobExecutor;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.QueryJob;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.QueryJobFuture;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.QueryJobStatus;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.impl.QueryJobFutureImpl;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.executor.QueryJobExecutor;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFuture;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobStatus;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFutureImpl;
 import cn.edu.tsinghua.iotdb.utils.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 import org.slf4j.Logger;
