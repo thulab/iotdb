@@ -232,7 +232,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		flushFileNodeProcessorAction.act();
 	}
 
-	public void setIntervalFileNodeStartTime(String deltaObjectId, long startTime) {
+	public void setIntervalFileNodeStartTime(String deltaObjectId) {
 		if (currentIntervalFileNode.getStartTime(deltaObjectId) == -1) {
 			currentIntervalFileNode.setStartTime(deltaObjectId, flushLastUpdateTimeMap.get(deltaObjectId));
 			if (!InvertedindexOfFiles.containsKey(deltaObjectId)) {
@@ -471,7 +471,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	public boolean hasOverflowProcessor() {
-
 		return overflowProcessor != null;
 	}
 
@@ -673,7 +672,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		UnsealedTsFile unsealedTsFile = null;
 		if (!newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 			unsealedTsFile = new UnsealedTsFile();
-			unsealedTsFile.setFilePath(deltaObjectId + "." + measurementId);
+			unsealedTsFile.setFilePath(newFileNodes.get(newFileNodes.size()-1).getFilePath());
 			assert bufferWriteProcessor != null;
 			bufferwritedata = bufferWriteProcessor.queryBufferwriteData(deltaObjectId, measurementId, dataType);
 			unsealedTsFile.setTimeSeriesChunkMetaDatas(bufferwritedata.right);

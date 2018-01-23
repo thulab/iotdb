@@ -51,7 +51,7 @@ public class TreeSetMemSeries implements IMemSeries{
     @Override
     public void putLong(long t, long v) {
         checkDataType(TSDataType.INT64);
-        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsFloat(v));
+        TimeValuePairInMemTable tv = new TimeValuePairInMemTable(t, new TsPrimitiveType.TsLong(v));
         treeSet.remove(tv);
         treeSet.add(tv);
     }

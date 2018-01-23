@@ -448,11 +448,6 @@ public class BufferWriteProcessor extends Processor {
 		case SAFE:
 			// memUsed += newMemUsage;
 			// memtable
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
-						tsRecord.time, dataPoint.getValue().toString());
-			}
-			valueCount++;
 			memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
 			if (memUage > memThreshold) {
 				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
@@ -464,17 +459,17 @@ public class BufferWriteProcessor extends Processor {
 					throw new BufferWriteProcessorException(e);
 				}
 			}
+			for (DataPoint dataPoint : tsRecord.dataPointList) {
+				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
+						tsRecord.time, dataPoint.getValue().toString());
+			}
+			valueCount++;
 			return false;
 		case WARNING:
 			LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
 					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 			// memUsed += newMemUsage;
 			// memtable
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
-						tsRecord.time, dataPoint.getValue().toString());
-			}
-			valueCount++;
 			memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
 			if (memUage > memThreshold) {
 				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
@@ -486,6 +481,11 @@ public class BufferWriteProcessor extends Processor {
 					throw new BufferWriteProcessorException(e);
 				}
 			}
+			for (DataPoint dataPoint : tsRecord.dataPointList) {
+				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
+						tsRecord.time, dataPoint.getValue().toString());
+			}
+			valueCount++;
 			return false;
 		case DANGEROUS:
 		default:

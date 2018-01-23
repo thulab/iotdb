@@ -534,6 +534,7 @@ public class OverflowProcessor extends Processor {
 					throw new OverflowProcessorException(e);
 				}
 			}
+			memSize.set(0);
 			valueCount = 0;
 			// switch from work to flush
 			flushStatus.setFlushing();

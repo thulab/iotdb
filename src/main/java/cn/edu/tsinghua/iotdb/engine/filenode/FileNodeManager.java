@@ -354,7 +354,7 @@ public class FileNodeManager implements IStatistic {
 					}
 					throw new FileNodeManagerException(e);
 				}
-				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, timestamp);
+				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId);
 				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
 				insertType = 2;
 				if (shouldClose) {
