@@ -16,10 +16,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * @author CGF
- */
-// **** how about using factory
 public enum PhysicalPlanCodec {
 
     MULTIINSERTPLAN(SystemLogOperator.INSERT, codecInstances.multiInsertPlanCodec),
@@ -45,9 +41,8 @@ public enum PhysicalPlanCodec {
     }
 
     public static PhysicalPlanCodec fromOpcode(int opcode) {
-        // **** how about return PhysicalPlanCodec.values()[opcode];
         if (!codecMap.containsKey(opcode)) {
-            throw new UnsupportedOperationException("SystemLogOperator given is not supported. " + opcode);
+            throw new UnsupportedOperationException("SystemLogOperator [" + opcode + "] is not supported. " );
         }
         return codecMap.get(opcode);
     }

@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.writelog.node;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.iotdb.writelog.LogPosition;
 import cn.edu.tsinghua.iotdb.writelog.io.ILogWriter;
 import cn.edu.tsinghua.iotdb.writelog.io.RAFLogWriter;
@@ -109,12 +110,13 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
     public void notifyStartFlush() throws IOException {
         close();
         File oldLogFile = new File(logDirectory + File.separator + WAL_FILE_NAME);
+        File newLogFile = new File(logDirectory + File.separator + WAL_FILE_NAME + OLD_SUFFIX);
         if(!oldLogFile.exists())
             return;
-        if(!oldLogFile.renameTo(new File(logDirectory + File.separator + WAL_FILE_NAME + OLD_SUFFIX)))
+        if(!oldLogFile.renameTo(newLogFile))
             logger.error("Log node {} renaming log file failed!", identifier);
         else
-            logger.debug("Log node {} renamed log file", identifier);
+            logger.info("Log node {} renamed log file, file size is {}", identifier, MemUtils.bytesCntToStr(newLogFile.length()));
     }
 
     /*
@@ -182,12 +184,12 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
     private void discard() {
         File oldLogFile = new File(logDirectory + File.separator + WAL_FILE_NAME + OLD_SUFFIX);
         if(!oldLogFile.exists()) {
-            logger.debug("No old log to be deleted");
+            logger.info("No old log to be deleted");
         } else {
             if(!oldLogFile.delete())
                 logger.error("Old log file of {} cannot be deleted", identifier);
             else
-                logger.debug("Log node {} cleaned old file", identifier);
+                logger.info("Log node {} cleaned old file", identifier);
         }
     }
 

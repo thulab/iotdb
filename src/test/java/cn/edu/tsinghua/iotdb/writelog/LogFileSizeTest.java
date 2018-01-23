@@ -10,6 +10,8 @@ import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +26,11 @@ public class LogFileSizeTest {
     private IoTDB deamon;
 
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private TSFileConfig fileConfig = TSFileDescriptor.getInstance().getConfig();
 
     private boolean skip = true;
 
+    private int groupSize;
     private long runtime = 600000;
 
     private String[] setUpSqls = new String[]{
@@ -44,6 +48,8 @@ public class LogFileSizeTest {
 
     @Before
     public void setUp() throws Exception {
+        groupSize = fileConfig.groupSizeInByte;
+        fileConfig.groupSizeInByte = 8 * 1024 * 1024;
         EnvironmentUtils.closeStatMonitor();
         deamon = IoTDB.getInstance();
         deamon.active();
@@ -53,6 +59,7 @@ public class LogFileSizeTest {
 
     @After
     public void tearDown() throws Exception {
+        fileConfig.groupSizeInByte = groupSize;
         executeSQL(tearDownSqls);
         deamon.stop();
         Thread.sleep(5000);

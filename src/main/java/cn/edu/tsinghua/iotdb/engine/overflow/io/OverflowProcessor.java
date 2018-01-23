@@ -131,7 +131,7 @@ public class OverflowProcessor extends Processor {
 			logNode = MultiFileLogNodeManager.getInstance().getNode(getProcessorName() + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, overflowRestoreFilePath,
 					FileNodeManager.getInstance().getFileNodeRestoreFileName(processorName));
 		} catch (IOException e) {
-			LOGGER.error("Cannot create wal node for overflow processor {}", processorName);
+			LOGGER.error("Cannot create wal node for overflow processor {}, because {}", processorName, e.getMessage());
 			throw new OverflowProcessorException(e);
 		}
 	}
