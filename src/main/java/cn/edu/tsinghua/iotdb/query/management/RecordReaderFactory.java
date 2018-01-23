@@ -1,8 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
@@ -11,11 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
-import cn.edu.tsinghua.iotdb.engine.filenode.QueryStructure;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+
+import java.io.IOException;
 
 /**
  * To avoid create RecordReader frequently,<br>
@@ -193,11 +190,11 @@ public class RecordReaderFactory {
     }
 
     // TODO this method is only used in test case and KV-match index
-    public void removeRecordReader(String deltaObjectId, String measurementId) {
+    public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException {
         if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
             // close the RecordReader read stream.
             readLockManager.recordReaderCache.get(deltaObjectId, measurementId).closeFileStream();
-            readLockManager.recordReaderCache.get(deltaObjectId, measurementId).clearReaderMaps();
+            readLockManager.recordReaderCache.get(deltaObjectId, measurementId).closeFileStreamForOneRequest();
             readLockManager.recordReaderCache.remove(deltaObjectId, measurementId);
         }
     }

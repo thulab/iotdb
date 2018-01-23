@@ -102,9 +102,9 @@ public class LargeDataTest {
 
             // select test
             selectAllTest();
-//            selectOneSeriesWithValueFilterTest();
-//            seriesTimeDigestReadTest();
-//            crossSeriesReadUpdateTest();
+            selectOneSeriesWithValueFilterTest();
+            seriesTimeDigestReadTest();
+            crossSeriesReadUpdateTest();
 
 //            // aggregation test
 //            aggregationWithoutFilterTest();
@@ -140,7 +140,7 @@ public class LargeDataTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
                         + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
-                System.out.println("===" + ans);
+                //System.out.println("===" + ans);
                 cnt++;
             }
             //System.out.println("cnt ::" + cnt);
