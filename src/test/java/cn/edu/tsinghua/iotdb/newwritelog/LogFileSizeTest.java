@@ -25,7 +25,7 @@ public class LogFileSizeTest {
 
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
-    private boolean skip = false;
+    private boolean skip = true;
 
     private long runtime = 600000;
 

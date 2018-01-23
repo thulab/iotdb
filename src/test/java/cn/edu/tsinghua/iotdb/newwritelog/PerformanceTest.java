@@ -34,7 +34,7 @@ public class PerformanceTest {
     private TSFileConfig fileConfig = TSFileDescriptor.getInstance().getConfig();
 
     private boolean enableWal;
-    private boolean skip = false;
+    private boolean skip = true;
 
     @Before
     public void setUp() throws Exception {
