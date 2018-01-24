@@ -65,8 +65,10 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
     }
 
     public InputStream getSeriesChunkBytes(String path, int chunkSize, long offset) {
+        RandomAccessFile raf = null;
+
         try {
-            RandomAccessFile raf = new RandomAccessFile(path, "r");
+            raf = new RandomAccessFile(path, "r");
             raf.seek(offset);
             byte[] chunk = new byte[chunkSize];
             int off = 0;
@@ -80,6 +82,14 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
         } catch (IOException e) {
             LOGGER.error("Read series chunk failed, reason is {}", e.getMessage());
             return new ByteArrayInputStream(new byte[0]);
+        } finally {
+            if (raf != null) {
+                try {
+                    raf.close( );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

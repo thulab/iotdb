@@ -26,12 +26,13 @@ public class BufferWriteResource {
 	private BufferWriteIO bufferWriteIO;
 	private String insertFilePath;
 	private String restoreFilePath;
+	private String processorName;
 
-	public BufferWriteResource(String dataPath, String insertFilePath) throws IOException {
-		this.insertFilePath = insertFilePath;
+	public BufferWriteResource(String processorName, String insertFilePath) throws IOException {
 		this.restoreFilePath = insertFilePath + restoreSuffix;
+		this.insertFilePath = insertFilePath;
+		this.processorName = processorName;
 		metadatas = new HashMap<>();
-
 		recover();
 		// check status and restore
 		// restore the metadatas
@@ -42,11 +43,16 @@ public class BufferWriteResource {
 		File insertFile = new File(insertFilePath);
 		File restoreFile = new File(restoreFilePath);
 		if (insertFile.exists() && restoreFile.exists()) {
-
+			LOGGER.info("Recover the bufferwrite processor {}, the tsfile path is {}, the restore file path is {}.",
+					processorName, insertFilePath, restoreFile);
+			// read restore file
+			// cuf off the tsfile
+			// recovery the BufferWriteIO
 		} else {
 			insertFile.delete();
 			restoreFile.delete();
 			bufferWriteIO = new BufferWriteIO(new TsRandomAccessFileWriter(insertFile), 0, new ArrayList<>());
+			writeRestoreInfo();
 		}
 	}
 
@@ -55,7 +61,7 @@ public class BufferWriteResource {
 		long position = bufferWriteIO.getPos();
 		List<RowGroupMetaData> append = bufferWriteIO.getAppendedRowGroupMetadata();
 		TsRowGroupBlockMetaData blockMetaData = new TsRowGroupBlockMetaData(append);
-
+		
 	}
 
 	private void readRestoreInfo() {
@@ -89,14 +95,26 @@ public class BufferWriteResource {
 	}
 
 	public void flush(FileSchema fileSchema, IMemTable iMemTable) {
+		// use the memtable flush funtion
 
+		// get metadata
+
+		// add metadata to map
+
+		// flush metadata to restore file
 	}
 
 	public void close() {
+		// call flush
 
+		// close the file and delete the restore file
 	}
 
-	private void delete() {
+	public String getInsertFilePath() {
+		return insertFilePath;
+	}
 
+	public String getRestoreFilePath() {
+		return restoreFilePath;
 	}
 }

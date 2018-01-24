@@ -7,11 +7,13 @@ import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowTestUtils;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
+import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -129,8 +131,19 @@ public class OverflowOperationReaderTest {
                 null, null, null, OverflowTestUtils.dataType1);
 
         OverflowOperationReader overflowOperationReader = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateOperationReader();
+
+        int cnt = 0;
         while (overflowOperationReader.hasNext()) {
-            System.out.println(overflowOperationReader.next());
+            OverflowOperation operation = overflowOperationReader.getCurrentOperation();
+            overflowOperationReader.next();
+            if (cnt == 0) {
+                Assert.assertEquals(2, operation.getLeftBound());
+                Assert.assertEquals(10, operation.getRightBound());
+            } else {
+                Assert.assertEquals(20, operation.getLeftBound());
+                Assert.assertEquals(30, operation.getRightBound());
+            }
+            cnt ++;
         }
     }
 }
