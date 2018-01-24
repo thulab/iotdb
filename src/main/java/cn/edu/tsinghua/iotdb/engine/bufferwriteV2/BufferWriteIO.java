@@ -12,29 +12,28 @@ public class BufferWriteIO extends TsFileIOWriter {
 
 	private int lastRowGroupIndex = 0;
 	private ITsRandomAccessFileWriter out;
-	
+	private List<RowGroupMetaData> append;
 
 	public BufferWriteIO(ITsRandomAccessFileWriter output, long offset, List<RowGroupMetaData> rowGroups)
 			throws IOException {
 		super(output, offset, rowGroups);
 		lastRowGroupIndex = rowGroups.size();
+		append = new ArrayList<>();
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public List<RowGroupMetaData> getAppendedRowGroupMetadata() {
-		List<RowGroupMetaData> append = new ArrayList<>();
-		List<RowGroupMetaData> all = getRowGroups();
-		for (int i = lastRowGroupIndex; i < all.size(); i++) {
-			append.add(all.get(i));
+		if (lastRowGroupIndex < getRowGroups().size()) {
+			append.clear();
+			List<RowGroupMetaData> all = getRowGroups();
+			for (int i = lastRowGroupIndex; i < all.size(); i++) {
+				append.add(all.get(i));
+			}
+			lastRowGroupIndex = all.size();
 		}
-		lastRowGroupIndex = all.size();
 		return append;
 	}
-	
-	public long getPos() throws IOException{
+
+	public long getPos() throws IOException {
 		return out.getPos();
 	}
 }
