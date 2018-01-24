@@ -13,7 +13,7 @@ import java.util.PriorityQueue;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader {
+public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader, SeriesReader {
 
     private List<PriorityTimeValuePairReader> readerList;
     private PriorityQueue<Element> heap;
