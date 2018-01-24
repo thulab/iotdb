@@ -582,9 +582,9 @@ public class FileNodeManager implements IStatistic {
 	 */
 	public void appendFileToFileNode(String fileNodeName, IntervalFileNode appendFile) throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
-		fileNodeProcessor.writeLock();
 		try {
 			fileNodeProcessor.closeBufferWrite();
+			fileNodeProcessor.closeOverflow();
 			// append file to storage group.
 			fileNodeProcessor.appendFile(appendFile);
 		} catch (FileNodeProcessorException e) {
