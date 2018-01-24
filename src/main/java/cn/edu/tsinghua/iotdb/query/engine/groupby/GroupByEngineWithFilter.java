@@ -2,12 +2,13 @@ package cn.edu.tsinghua.iotdb.query.engine.groupby;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
-import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -365,18 +366,12 @@ public class GroupByEngineWithFilter {
             String deltaObjectId = path.getDeltaObjectToString();
             String measurementId = path.getMeasurementToString();
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
-            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
+            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null, null,  null, recordReaderPrefix, ReaderType.QUERY);
 
-            if (recordReader.insertMemoryData == null) {
-                recordReader.buildInsertMemoryData(null, null);
 
-                data = recordReader.queryUsingTimestamps(aggregateTimestamps.stream().mapToLong(i->i).toArray());
-                queryPathResult.put(aggregationKey, data);
-            } else {
-                data = recordReader.queryUsingTimestamps(aggregateTimestamps.stream().mapToLong(i->i).toArray());
-                queryPathResult.put(aggregationKey, data);
-            }
+            data = recordReader.queryUsingTimestamps(aggregateTimestamps.stream().mapToLong(i->i).toArray());
+            queryPathResult.put(aggregationKey, data);
         }
     }
 
@@ -399,11 +394,10 @@ public class GroupByEngineWithFilter {
         //TODO may have dnf conflict
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(valueFilterNumber);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null,  queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(null, queryValueFilter);
             res = recordReader.queryOneSeries(null, queryValueFilter, null, fetchSize);
         } else {
             res = recordReader.queryOneSeries(null, queryValueFilter, res, fetchSize);

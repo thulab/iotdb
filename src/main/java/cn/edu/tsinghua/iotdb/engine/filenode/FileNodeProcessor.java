@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,10 +31,14 @@ import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.flushthread.MergePool;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.MergeSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
+import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
@@ -51,21 +54,27 @@ import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.query.engine.QueryForMerge;
+import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.format.DataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.ValueFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -73,6 +82,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
+import cn.edu.tsinghua.tsfile.timeseries.write.series.ISeriesWriter;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 
@@ -674,7 +684,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		UnsealedTsFile unsealedTsFile = null;
 		if (!newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 			unsealedTsFile = new UnsealedTsFile();
-			unsealedTsFile.setFilePath(newFileNodes.get(newFileNodes.size()-1).getFilePath());
+			unsealedTsFile.setFilePath(newFileNodes.get(newFileNodes.size() - 1).getFilePath());
 			assert bufferWriteProcessor != null;
 			bufferwritedata = bufferWriteProcessor.queryBufferwriteData(deltaObjectId, measurementId, dataType);
 			unsealedTsFile.setTimeSeriesChunkMetaDatas(bufferwritedata.right);
@@ -700,14 +710,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		return dataFileInfos;
 	}
-	
+
 	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs) {
 		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
 				TSEncoding.valueOf(encoding));
 		JSONObject measurement = constrcutMeasurement(col);
 		fileSchema.registerMeasurement(JsonConverter.convertJsonToMeasureMentDescriptor(measurement));
 	}
-	
 
 	private JSONObject constrcutMeasurement(ColumnSchema col) {
 		JSONObject measurement = new JSONObject();
@@ -920,11 +929,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			numOfMergeFiles++;
 			if (backupIntervalFile.overflowChangeType == OverflowChangeType.CHANGED) {
 				// query data and merge
+				String filePathBeforeMerge = backupIntervalFile.getRelativePath();
 				try {
 					LOGGER.info(
 							"The filenode processor {} begins merging the {}/{} tsfile[{}] with overflow file, the process is {}%",
-							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
-							backupIntervalFile.getRelativePath(),
+							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge,
 							(int) (((numOfMergeFiles - 1) / (float) allNeedMergeFiles) * 100));
 					long startTime = System.currentTimeMillis();
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
@@ -935,10 +944,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					DateTime endDateTime = new DateTime(endTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 					LOGGER.info(
 							"The fileNode processor {} has merged the {}/{} tsfile[{}->{}] over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
-							getProcessorName(), numOfMergeFiles, allNeedMergeFiles,
-							backupIntervalFile.getRelativePath(), newFile, startDateTime, endDateTime, timeConsume,
+							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge, newFile,
+							startDateTime, endDateTime, timeConsume,
 							(int) (numOfMergeFiles) / (float) allNeedMergeFiles * 100);
-				} catch (IOException | WriteProcessException e) {
+				} catch (IOException | WriteProcessException | PathErrorException e) {
 					LOGGER.error("Merge: query and write data error.");
 					throw new FileNodeProcessorException(e);
 				}
@@ -1228,7 +1237,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						fileNode.overflowChangeType = OverflowChangeType.CHANGED;
 					}
 				}
-				// overflow switch
+				// overflow switch from merge to work
 				overflowProcessor.switchMergeToWork();
 				// write status to file
 				isMerging = FileNodeProcessorStatus.NONE;
@@ -1255,9 +1264,15 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	}
 
-	private String queryAndWriteDataForMerge(IntervalFileNode backupIntervalFile)
-			throws IOException, WriteProcessException, FileNodeProcessorException {
+	private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
+		TSRecord record = new TSRecord(timeValuePair.getTimestamp(), deltaObjectId);
+		record.addTuple(DataPoint.getDataPoint(timeValuePair.getValue().getDataType(), measurementId,
+				timeValuePair.getValue().getValue().toString()));
+		return record;
+	}
 
+	private String queryAndWriteDataForMerge(IntervalFileNode backupIntervalFile)
+			throws IOException, WriteProcessException, FileNodeProcessorException, PathErrorException {
 		Map<String, Long> startTimeMap = new HashMap<>();
 		Map<String, Long> endTimeMap = new HashMap<>();
 
@@ -1266,10 +1281,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		String fileName = null;
 		for (String deltaObjectId : backupIntervalFile.getStartTimeMap().keySet()) {
 			// query one deltaObjectId
-			long startTime = backupIntervalFile.getStartTime(deltaObjectId);
-			long endTime = backupIntervalFile.getEndTime(deltaObjectId);
 			List<Path> pathList = new ArrayList<>();
-
 			try {
 				ArrayList<String> pathStrings = mManager
 						.getPaths(deltaObjectId + FileNodeConstants.PATH_SEPARATOR + "*");
@@ -1283,47 +1295,50 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			if (pathList.isEmpty()) {
 				continue;
 			}
-
-			FilterExpression timeFilter = FilterUtilsForOverflow.construct(null, null, "0",
-					"(>=" + startTime + ")&" + "(<=" + endTime + ")");
-			LOGGER.debug("Merge query: deltaObjectId {}, time filter {}", deltaObjectId, timeFilter);
-			startTime = -1;
-			endTime = -1;
-			// overflow data source
-
-			// tsfile
-
-			// fiter
-			QueryForMerge queryer = new QueryForMerge(pathList, (SingleSeriesFilterExpression) timeFilter);
-			if (!queryer.hasNextRecord()) {
-				LOGGER.warn("Merge query: deltaObjectId {}, time filter {}, no query data", deltaObjectId, timeFilter);
-			} else {
-				RowRecord firstRecord = queryer.getNextRecord();
-				if (recordWriter == null) {
-					fileName = String.valueOf(firstRecord.timestamp + FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR
-							+ System.currentTimeMillis());
-					outputPath = constructOutputFilePath(getProcessorName(), fileName);
-					fileName = getProcessorName() + File.separatorChar + fileName;
-					FileSchema fileSchema = constructFileSchema(getProcessorName());
-					recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
-				}
-
-				TSRecord filledRecord = removeNullTSRecord(firstRecord);
-				recordWriter.write(filledRecord);
-				startTime = endTime = firstRecord.getTime();
-
-				while (queryer.hasNextRecord()) {
-					RowRecord row = queryer.getNextRecord();
-					filledRecord = removeNullTSRecord(row);
-					endTime = filledRecord.time;
-					try {
-						recordWriter.write(filledRecord);
-					} catch (WriteProcessException e) {
-						LOGGER.error("Failed to write one record, the record is {}", filledRecord, e);
+			long startTime = -1;
+			long endTime = -1;
+			for (Path path : pathList) {
+				// query one measurenment in the special deltaObjectId
+				TSDataType dataType = mManager.getSeriesType(path.getFullPath());
+				OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.queryMerge(deltaObjectId,
+						path.getMeasurementToString(), dataType, true);
+				Filter<Long> timeFilter = FilterFactory.and(
+						TimeFilter.gtEq(backupIntervalFile.getStartTime(deltaObjectId)),
+						TimeFilter.ltEq(backupIntervalFile.getEndTime(deltaObjectId)));
+				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
+				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
+						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
+				if (!seriesReader.hasNext()) {
+					LOGGER.info("The time-series {} has no data with the filter {} in the filenode processor {}", path,
+							seriesFilter, getProcessorName());
+				} else {
+					TimeValuePair timeValuePair = seriesReader.next();
+					if (recordWriter == null) {
+						fileName = String.valueOf(timeValuePair.getTimestamp()
+								+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
+						outputPath = constructOutputFilePath(getProcessorName(), fileName);
+						fileName = getProcessorName() + File.separatorChar + fileName;
+						recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
+					}
+					TSRecord record = constructTsRecord(timeValuePair, path.getDeltaObjectToString(),
+							path.getMeasurementToString());
+					recordWriter.write(record);
+					startTime = endTime = timeValuePair.getTimestamp();
+					if (!startTimeMap.containsKey(deltaObjectId) || startTimeMap.get(deltaObjectId) > startTime) {
+						startTimeMap.put(deltaObjectId, startTime);
+					}
+					if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
+						endTimeMap.put(deltaObjectId, endTime);
+					}
+					while (seriesReader.hasNext()) {
+						record = constructTsRecord(seriesReader.next(), deltaObjectId, path.getMeasurementToString());
+						endTime = record.time;
+						recordWriter.write(record);
+					}
+					if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
+						endTimeMap.put(deltaObjectId, endTime);
 					}
 				}
-				startTimeMap.put(deltaObjectId, startTime);
-				endTimeMap.put(deltaObjectId, endTime);
 			}
 		}
 		if (recordWriter != null) {

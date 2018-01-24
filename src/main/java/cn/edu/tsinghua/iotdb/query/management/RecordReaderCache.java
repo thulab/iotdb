@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import cn.edu.tsinghua.iotdb.query.v2.RecordReader;
@@ -31,9 +32,9 @@ public class RecordReaderCache {
         return cache.get().remove(getKey(deltaObjectUID, measurementID));
     }
 
-    public void clear() {
+    public void clear() throws IOException {
         for (RecordReader reader : cache.get().values()) {
-            reader.clearReaderMaps();
+            reader.closeFileStreamForOneRequest();
         }
         cache.remove();
     }

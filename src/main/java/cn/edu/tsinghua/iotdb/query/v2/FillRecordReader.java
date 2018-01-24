@@ -1,13 +1,16 @@
 package cn.edu.tsinghua.iotdb.query.v2;
 
+import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
-import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReader;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 import java.io.ByteArrayInputStream;
@@ -15,12 +18,12 @@ import java.io.IOException;
 import java.util.List;
 
 public class FillRecordReader extends RecordReader{
-    public FillRecordReader(List<String> filePathList, String deltaObjectId, String measurementId, DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName, List<Object> overflowInfo) throws PathErrorException {
-        super(filePathList, deltaObjectId, measurementId, lastPageInMemory, bufferWritePageList, compressionTypeName, overflowInfo);
-    }
 
-    public FillRecordReader(List<String> filePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList, String deltaObjectId, String measurementId, DynamicOneColumnData lastPageInMemory, List<ByteArrayInputStream> bufferWritePageList, CompressionTypeName compressionTypeName, List<Object> overflowInfo) throws PathErrorException {
-        super(filePathList, unsealedFilePath, rowGroupMetadataList, deltaObjectId, measurementId, lastPageInMemory, bufferWritePageList, compressionTypeName, overflowInfo);
+    public FillRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
+                             String deltaObjectId, String measurementId,
+                             SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter)
+            throws PathErrorException, IOException {
+        super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter);
     }
 
     /**
@@ -34,21 +37,27 @@ public class FillRecordReader extends RecordReader{
     public void getPreviousFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter, long beforeTime, long queryTime)
             throws IOException {
 
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, fillTimeFilter);
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
                 // get fill result in ValueReader
                 if (FillProcessor.getPreviousFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId),
-                        beforeTime, queryTime, mergeTimeFilter, overflowUpdate)) {
+                        beforeTime, queryTime, fillTimeFilter, overflowOperationReaderCopy)) {
                     break;
                 }
             }
         }
 
+        for (ValueReader valueReader : valueReaders) {
+            if (valueReader.getDataType().equals(dataType)) {
+                if (FillProcessor.getPreviousFillResultInFile(result, valueReader,
+                        beforeTime, queryTime, fillTimeFilter, overflowOperationReaderCopy)) {
+                    break;
+                }
+            }
+        }
         // get fill result in InsertMemoryData
         FillProcessor.getPreviousFillResultInMemory(result, insertMemoryData, beforeTime, queryTime);
 
@@ -70,9 +79,7 @@ public class FillRecordReader extends RecordReader{
     public void getLinearFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter,
                                     long beforeTime, long queryTime, long afterTime) throws IOException {
 
-        SingleSeriesFilterExpression mergeTimeFilter = mergeTimeFilter(overflowTimeFilter, fillTimeFilter);
-
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, mergeTimeFilter);
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
@@ -80,7 +87,17 @@ public class FillRecordReader extends RecordReader{
 
                 // has get fill result in ValueReader
                 if (FillProcessor.getLinearFillResultInFile(result, rowGroupReader.getValueReaders().get(measurementId), beforeTime, queryTime, afterTime,
-                        mergeTimeFilter, overflowUpdate)) {
+                        fillTimeFilter, overflowOperationReaderCopy)) {
+                    break;
+                }
+            }
+        }
+
+        for (ValueReader valueReader : valueReaders) {
+            if (valueReader.getDataType().equals(dataType)) {
+                // has get fill result in ValueReader
+                if (FillProcessor.getLinearFillResultInFile(result, valueReader, beforeTime, queryTime, afterTime,
+                        fillTimeFilter, overflowOperationReaderCopy)) {
                     break;
                 }
             }

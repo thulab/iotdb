@@ -176,6 +176,11 @@ public class SeriesWithOverflowOpReaderTest {
 
         }
 
+        @Override
+        public OverflowOperationReader copy() {
+            return null;
+        }
+
         public void reset() {
             index = 0;
         }

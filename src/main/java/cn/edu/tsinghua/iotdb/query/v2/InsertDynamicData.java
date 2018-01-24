@@ -206,7 +206,7 @@ public class InsertDynamicData {
 
         while (overflowInsertDataReader.hasNext()) {
 
-            logger.debug("there exist overflow insert value, but not exist memtable value");
+            //logger.debug("there exist overflow insert value, but not exist memtable value");
 
             if (examineOverflowInsertValue()) {
                 overflowInsertDataReader.next();

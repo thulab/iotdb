@@ -2,12 +2,12 @@ package cn.edu.tsinghua.iotdb.query.engine.groupby;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
 import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
-import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -210,12 +210,11 @@ public class  GroupByEngineNoFilter {
         String measurementID = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
+        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectID, measurementID,
                 queryTimeFilter, null,  readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(queryTimeFilter, null);
-
             res = recordReader.queryOneSeries(queryTimeFilter, null, null, queryFetchSize);
         } else {
             res.clearData();

@@ -3,12 +3,9 @@ package cn.edu.tsinghua.iotdb.query.engine;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
-import cn.edu.tsinghua.iotdb.query.reader.AggregateRecordReader;
-import cn.edu.tsinghua.iotdb.query.reader.QueryRecordReader;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
-import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -178,13 +175,12 @@ public class AggregateEngine {
                 }
 
                 // the query prefix here must not be confilct with method querySeriesForCross()
-                AggregateRecordReader recordReader = (AggregateRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader)
+                        RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                         null,  null, null,
                         ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal), ReaderType.AGGREGATE);
 
-                if (recordReader.insertMemoryData == null) {
-                    recordReader.buildInsertMemoryData(null, null);
-
+                if (recordReader.getInsertMemoryData() == null) {
                     Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, null,  aggregateTimestamps);
 
                     boolean hasUnReadDataFlag = aggrPair.right;
@@ -229,20 +225,13 @@ public class AggregateEngine {
             String deltaObjectUID = path.getDeltaObjectToString();
             String measurementUID = path.getMeasurementToString();
 
-            AggregateRecordReader recordReader = (AggregateRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+            cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader)
+                    RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                     queryTimeFilter, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber), ReaderType.AGGREGATE);
 
-            if (recordReader.insertMemoryData == null) {
-                recordReader.buildInsertMemoryData(queryTimeFilter, null);
-
+            //if (recordReader.getInsertMemoryData() == null) {
                 recordReader.aggregate(aggregateFunction, queryTimeFilter,  null);
 
-            } else {
-                DynamicOneColumnData aggData = aggregateFunction.resultData;
-                if (aggData != null) {
-                    aggData.clearData();
-                }
-            }
         }
     }
 
@@ -266,12 +255,11 @@ public class AggregateEngine {
         // query prefix here must not be conflict with query in multiAggregate method
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(null, queryValueFilter);
-
             res = recordReader.queryOneSeries(null, queryValueFilter, null, fetchSize);
         } else {
             res = recordReader.queryOneSeries(null, queryValueFilter, res, fetchSize);

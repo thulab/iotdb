@@ -143,14 +143,14 @@ public class DaemonTest {
                 textDataTypeTest();
 
                 // aggregation test
-//                aggregationTest();
-//                multiAggregationTest();
-//
-//                // fill test
-//                fillTest();
-//
-//                // insert new data test
-//                crossReadTest();
+                aggregationTest();
+                multiAggregationTest();
+
+                // fill test
+                fillTest();
+
+                // insert new data test
+                //crossReadTest();
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {
                 fail(e.getMessage());

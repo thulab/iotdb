@@ -22,4 +22,6 @@ public interface OverflowOperationReader {
     OverflowOperation getCurrentOperation();
 
     void close() throws IOException;
+
+    OverflowOperationReader copy();
 }

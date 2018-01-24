@@ -73,15 +73,15 @@ public class RecordReaderFactoryV2 {
             case QUERY:
                 return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
                         deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
-//            case AGGREGATE:
-//                return new AggregateRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
-//                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
-//            case FILL:
-//                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
-//                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
-//            case GROUPBY:
-//                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
-//                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
+            case AGGREGATE:
+                return new AggregateRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
+            case FILL:
+                return new FillRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
+            case GROUPBY:
+                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter);
         }
 
         return null;
@@ -92,11 +92,11 @@ public class RecordReaderFactoryV2 {
     }
 
     // TODO this method is only used in test case and KV-match index
-    public void removeRecordReader(String deltaObjectId, String measurementId) {
+    public void removeRecordReader(String deltaObjectId, String measurementId) throws IOException {
         if (readLockManager.recordReaderCache.containsRecordReader(deltaObjectId, measurementId)) {
             // close the RecordReader read stream.
             readLockManager.recordReaderCache.get(deltaObjectId, measurementId).closeFileStream();
-            readLockManager.recordReaderCache.get(deltaObjectId, measurementId).clearReaderMaps();
+            readLockManager.recordReaderCache.get(deltaObjectId, measurementId).closeFileStreamForOneRequest();
             readLockManager.recordReaderCache.remove(deltaObjectId, measurementId);
         }
     }
