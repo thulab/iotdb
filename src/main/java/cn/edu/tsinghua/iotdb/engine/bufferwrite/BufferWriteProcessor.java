@@ -564,8 +564,9 @@ public class BufferWriteProcessor extends Processor {
 				timeInterval = 1;
 			}
 			LOGGER.info(
-					"The bufferwrite processor {} flush asynchronously, actual:{}, time consumption:{} ms, flush rate:{} bytes/s",
-					getProcessorName(), flushDataSize, timeInterval, flushDataSize / timeInterval * 1000);
+					"The bufferwrite processor {} flush {}, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/s",
+					getProcessorName(), flushFunction, flushDataSize, timeInterval,
+					flushDataSize / timeInterval * 1000);
 			// write restore information
 			writeStoreToDisk();
 			filenodeFlushAction.act();

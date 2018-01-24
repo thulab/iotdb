@@ -488,7 +488,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			LOGGER.info("The overflow processor {} starts flushing {}.", getProcessorName(), flushFunction);
 			// flush data
-			workResource.flush(fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap());
+			workResource.flush(fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap(),getProcessorName());
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
@@ -619,7 +619,7 @@ public class OverflowProcessor extends Processor {
 
 	@Override
 	public long memoryUsage() {
-		return 0;
+		return memSize.get();
 	}
 
 	/**

@@ -1,27 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.joda.time.DateTime;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
@@ -30,20 +8,8 @@ import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.flushthread.MergePool;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
-import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.MergeSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
-import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
-import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.engine.querycontext.*;
+import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
@@ -53,7 +19,6 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.query.engine.QueryForMerge;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -63,11 +28,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.format.DataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.ValueFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
@@ -82,7 +44,21 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
-import cn.edu.tsinghua.tsfile.timeseries.write.series.ISeriesWriter;
+import org.joda.time.DateTime;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 
@@ -746,8 +722,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			long mergeTimeInterval = thisMergeTime - lastMergeTime;
 			DateTime lastDateTime = new DateTime(lastMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}ms",
-					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval);
+			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}s",
+					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval / 1000);
 		}
 		lastMergeTime = System.currentTimeMillis();
 		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
@@ -1308,36 +1284,41 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
 				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
-				if (!seriesReader.hasNext()) {
-					LOGGER.info("The time-series {} has no data with the filter {} in the filenode processor {}", path,
-							seriesFilter, getProcessorName());
-				} else {
-					TimeValuePair timeValuePair = seriesReader.next();
-					if (recordWriter == null) {
-						fileName = String.valueOf(timeValuePair.getTimestamp()
-								+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
-						outputPath = constructOutputFilePath(getProcessorName(), fileName);
-						fileName = getProcessorName() + File.separatorChar + fileName;
-						recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
-					}
-					TSRecord record = constructTsRecord(timeValuePair, path.getDeltaObjectToString(),
-							path.getMeasurementToString());
-					recordWriter.write(record);
-					startTime = endTime = timeValuePair.getTimestamp();
-					if (!startTimeMap.containsKey(deltaObjectId) || startTimeMap.get(deltaObjectId) > startTime) {
-						startTimeMap.put(deltaObjectId, startTime);
-					}
-					if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
-						endTimeMap.put(deltaObjectId, endTime);
-					}
-					while (seriesReader.hasNext()) {
-						record = constructTsRecord(seriesReader.next(), deltaObjectId, path.getMeasurementToString());
-						endTime = record.time;
+				try {
+					if (!seriesReader.hasNext()) {
+						LOGGER.info("The time-series {} has no data with the filter {} in the filenode processor {}",
+								path, seriesFilter, getProcessorName());
+					} else {
+						TimeValuePair timeValuePair = seriesReader.next();
+						if (recordWriter == null) {
+							fileName = String.valueOf(timeValuePair.getTimestamp()
+									+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
+							outputPath = constructOutputFilePath(getProcessorName(), fileName);
+							fileName = getProcessorName() + File.separatorChar + fileName;
+							recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
+						}
+						TSRecord record = constructTsRecord(timeValuePair, path.getDeltaObjectToString(),
+								path.getMeasurementToString());
 						recordWriter.write(record);
+						startTime = endTime = timeValuePair.getTimestamp();
+						if (!startTimeMap.containsKey(deltaObjectId) || startTimeMap.get(deltaObjectId) > startTime) {
+							startTimeMap.put(deltaObjectId, startTime);
+						}
+						if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
+							endTimeMap.put(deltaObjectId, endTime);
+						}
+						while (seriesReader.hasNext()) {
+							record = constructTsRecord(seriesReader.next(), deltaObjectId,
+									path.getMeasurementToString());
+							endTime = record.time;
+							recordWriter.write(record);
+						}
+						if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
+							endTimeMap.put(deltaObjectId, endTime);
+						}
 					}
-					if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
-						endTimeMap.put(deltaObjectId, endTime);
-					}
+				} finally {
+					seriesReader.close();
 				}
 			}
 		}
