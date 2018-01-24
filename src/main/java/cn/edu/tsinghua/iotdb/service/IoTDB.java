@@ -6,23 +6,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
+import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
+
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
 public class IoTDB implements IoTDBMBean{
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
@@ -90,11 +85,7 @@ public class IoTDB implements IoTDBMBean{
 	}
 	
 	private void setUncaughtExceptionHandler(){
-		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-	            public void uncaughtException(Thread t, Throwable e) {
-	            	LOGGER.error("Exception in thread {}-{}", t.getName(), t.getId(), e);
-	            }
-		});
+		Thread.setDefaultUncaughtExceptionHandler(new IoTDBDefaultThreadExceptionHandler());
 	}
 	
 	/**

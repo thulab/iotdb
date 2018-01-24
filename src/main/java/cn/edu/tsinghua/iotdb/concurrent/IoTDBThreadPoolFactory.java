@@ -27,6 +27,10 @@ public class IoTDBThreadPoolFactory {
 		return Executors.newFixedThreadPool(nThreads, new IoTThreadFactory(poolName));
 	}
 
+	public static ExecutorService newFixedThreadPool(int nThreads, String poolName, Thread.UncaughtExceptionHandler handler) {
+		return Executors.newFixedThreadPool(nThreads, new IoTThreadFactory(poolName, handler));
+	}
+
 	/**
 	 * see {@link Executors#newSingleThreadExecutor(java.util.concurrent.ThreadFactory)
 	 * 
@@ -35,6 +39,10 @@ public class IoTDBThreadPoolFactory {
 	 */
 	public static ExecutorService newSingleThreadExecutor(String poolName) {
 		return Executors.newSingleThreadExecutor(new IoTThreadFactory(poolName));
+	}
+
+	public static ExecutorService newSingleThreadExecutor(String poolName, Thread.UncaughtExceptionHandler handler) {
+		return Executors.newSingleThreadExecutor(new IoTThreadFactory(poolName, handler));
 	}
 
 	/**
@@ -47,6 +55,10 @@ public class IoTDBThreadPoolFactory {
 		return Executors.newCachedThreadPool(new IoTThreadFactory(poolName));
 	}
 
+	public static ExecutorService newCachedThreadPool(String poolName, Thread.UncaughtExceptionHandler handler) {
+		return Executors.newCachedThreadPool(new IoTThreadFactory(poolName, handler));
+	}
+
 	/**
 	 * see {@link Executors#newSingleThreadExecutor(java.util.concurrent.ThreadFactory)
 	 * 
@@ -55,6 +67,10 @@ public class IoTDBThreadPoolFactory {
 	 */
 	public static ScheduledExecutorService newSingleThreadScheduledExecutor(String poolName) {
 		return Executors.newSingleThreadScheduledExecutor(new IoTThreadFactory(poolName));
+	}
+
+	public static ScheduledExecutorService newSingleThreadScheduledExecutor(String poolName, Thread.UncaughtExceptionHandler handler) {
+		return Executors.newSingleThreadScheduledExecutor(new IoTThreadFactory(poolName, handler));
 	}
 
 	/**
@@ -68,10 +84,20 @@ public class IoTDBThreadPoolFactory {
 		return Executors.newScheduledThreadPool(corePoolSize, new IoTThreadFactory(poolName));
 	}
 
+	public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, String poolName, Thread.UncaughtExceptionHandler handler) {
+		return Executors.newScheduledThreadPool(corePoolSize, new IoTThreadFactory(poolName, handler));
+	}
+
 	public static ExecutorService createJDBCClientThreadPool(Args args, String poolName) {
 		SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
 		return new ThreadPoolExecutor(args.minWorkerThreads, args.maxWorkerThreads, args.stopTimeoutVal,
 				args.stopTimeoutUnit, executorQueue, (ThreadFactory) new IoTThreadFactory(poolName));
+	}
+
+	public static ExecutorService createJDBCClientThreadPool(Args args, String poolName, Thread.UncaughtExceptionHandler handler) {
+		SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
+		return new ThreadPoolExecutor(args.minWorkerThreads, args.maxWorkerThreads, args.stopTimeoutVal,
+				args.stopTimeoutUnit, executorQueue, (ThreadFactory) new IoTThreadFactory(poolName, handler));
 	}
 
 }
