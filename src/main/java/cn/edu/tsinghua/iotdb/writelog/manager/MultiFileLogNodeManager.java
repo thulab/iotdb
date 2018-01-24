@@ -57,8 +57,6 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
     private MultiFileLogNodeManager() {
         nodeMap = new ConcurrentHashMap<>();
-        syncThread = new Thread(syncTask, syncThreadName);
-        syncThread.start();
     }
 
     static public MultiFileLogNodeManager getInstance() {
@@ -130,6 +128,8 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
 	@Override
 	public void start() {
+        if(!config.enableWal)
+            return;
         if(syncThread == null || !syncThread.isAlive()) {
             InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, ThreadName.WAL_DAEMON.getName());
             InstanceHolder.instance.syncThread.start();
@@ -140,7 +140,9 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
 	@Override
 	public void stop() {
-		close();
+        if(!config.enableWal)
+            return;
+        close();
 	}
 
 	@Override
