@@ -142,7 +142,6 @@ public class IoTDBThreadPoolFactoryTest {
 		
 		@Override
 		public void uncaughtException(Thread t, Throwable e) {
-			System.out.println(2);
 			assertEquals(name, e.getMessage());
 			count.addAndGet(1);
 		}
