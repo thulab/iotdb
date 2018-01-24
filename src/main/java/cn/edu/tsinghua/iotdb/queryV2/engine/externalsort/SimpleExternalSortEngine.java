@@ -1,10 +1,10 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -14,10 +14,12 @@ public class SimpleExternalSortEngine implements ExternalSortJobEngine {
 
     private ExternalSortJobScheduler scheduler;
     //TODO: using config
-    private String baseDir = "src/main/resources/externalSortTmp/";
-    private int minExternalSortSourceCount = 10;
+    private String baseDir;
+    private int minExternalSortSourceCount;
 
     private SimpleExternalSortEngine() {
+        baseDir = TsfileDBDescriptor.getInstance().getConfig().readTmpFileDir;
+        minExternalSortSourceCount = TsfileDBDescriptor.getInstance().getConfig().externalSortThreshold;
         scheduler = ExternalSortJobScheduler.getInstance();
     }
 
@@ -69,7 +71,7 @@ public class SimpleExternalSortEngine implements ExternalSortJobEngine {
         private static SimpleExternalSortEngine INSTANCE = new SimpleExternalSortEngine();
     }
 
-    public SimpleExternalSortEngine getInstance() {
+    public static SimpleExternalSortEngine getInstance() {
         return SimpleExternalSortJobEngineHelper.INSTANCE;
     }
 }

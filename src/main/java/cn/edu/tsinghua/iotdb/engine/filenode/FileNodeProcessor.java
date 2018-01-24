@@ -723,7 +723,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			DateTime lastDateTime = new DateTime(lastMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}s",
-					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval/1000);
+					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval / 1000);
 		}
 		lastMergeTime = System.currentTimeMillis();
 		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
@@ -1284,36 +1284,41 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
 				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
-				if (!seriesReader.hasNext()) {
-					LOGGER.info("The time-series {} has no data with the filter {} in the filenode processor {}", path,
-							seriesFilter, getProcessorName());
-				} else {
-					TimeValuePair timeValuePair = seriesReader.next();
-					if (recordWriter == null) {
-						fileName = String.valueOf(timeValuePair.getTimestamp()
-								+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
-						outputPath = constructOutputFilePath(getProcessorName(), fileName);
-						fileName = getProcessorName() + File.separatorChar + fileName;
-						recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
-					}
-					TSRecord record = constructTsRecord(timeValuePair, path.getDeltaObjectToString(),
-							path.getMeasurementToString());
-					recordWriter.write(record);
-					startTime = endTime = timeValuePair.getTimestamp();
-					if (!startTimeMap.containsKey(deltaObjectId) || startTimeMap.get(deltaObjectId) > startTime) {
-						startTimeMap.put(deltaObjectId, startTime);
-					}
-					if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
-						endTimeMap.put(deltaObjectId, endTime);
-					}
-					while (seriesReader.hasNext()) {
-						record = constructTsRecord(seriesReader.next(), deltaObjectId, path.getMeasurementToString());
-						endTime = record.time;
+				try {
+					if (!seriesReader.hasNext()) {
+						LOGGER.info("The time-series {} has no data with the filter {} in the filenode processor {}",
+								path, seriesFilter, getProcessorName());
+					} else {
+						TimeValuePair timeValuePair = seriesReader.next();
+						if (recordWriter == null) {
+							fileName = String.valueOf(timeValuePair.getTimestamp()
+									+ FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis());
+							outputPath = constructOutputFilePath(getProcessorName(), fileName);
+							fileName = getProcessorName() + File.separatorChar + fileName;
+							recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
+						}
+						TSRecord record = constructTsRecord(timeValuePair, path.getDeltaObjectToString(),
+								path.getMeasurementToString());
 						recordWriter.write(record);
+						startTime = endTime = timeValuePair.getTimestamp();
+						if (!startTimeMap.containsKey(deltaObjectId) || startTimeMap.get(deltaObjectId) > startTime) {
+							startTimeMap.put(deltaObjectId, startTime);
+						}
+						if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
+							endTimeMap.put(deltaObjectId, endTime);
+						}
+						while (seriesReader.hasNext()) {
+							record = constructTsRecord(seriesReader.next(), deltaObjectId,
+									path.getMeasurementToString());
+							endTime = record.time;
+							recordWriter.write(record);
+						}
+						if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
+							endTimeMap.put(deltaObjectId, endTime);
+						}
 					}
-					if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
-						endTimeMap.put(deltaObjectId, endTime);
-					}
+				} finally {
+					seriesReader.close();
 				}
 			}
 		}

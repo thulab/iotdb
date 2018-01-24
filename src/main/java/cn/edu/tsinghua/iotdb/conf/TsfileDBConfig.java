@@ -78,6 +78,11 @@ public class TsfileDBConfig {
 	public String indexFileDir = "index";
 
 	/**
+	 * Temporary directory for temporary files of read (External Sort).
+	 */
+	public String readTmpFileDir = "readTmp";
+
+	/**
 	 * The maximum concurrent thread number for merging overflow.
 	 * When the value<=0 or > CPU core number, use the CPU core number.
 	 */
@@ -204,6 +209,10 @@ public class TsfileDBConfig {
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
+	/**
+	 * Threshold for external sort
+	 */
+	public int externalSortThreshold = 50;
 
 	public TsfileDBConfig() {}
 
@@ -229,5 +238,6 @@ public class TsfileDBConfig {
 		derbyHome = dataDir + derbyHome;
 		walFolder = dataDir + walFolder;
 		indexFileDir = dataDir + indexFileDir;
+		readTmpFileDir = dataDir + readTmpFileDir;
 	}
 }
