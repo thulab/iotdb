@@ -221,6 +221,9 @@ public class OverflowResource {
 		startTime = System.currentTimeMillis();
 		flush(overflowTrees);
 		timeInterval = System.currentTimeMillis() - startTime;
+		if (timeInterval == 0) {
+			timeInterval = 1;
+		}
 		long updateSize = updateDeleteIO.getPos() - startPos;
 		LOGGER.info(
 				"Overflow processor {} flushes overflow update/delete data, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/ms",
