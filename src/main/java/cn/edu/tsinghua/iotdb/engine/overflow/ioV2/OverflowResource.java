@@ -227,7 +227,7 @@ public class OverflowResource {
 		long updateSize = updateDeleteIO.getPos() - startPos;
 		LOGGER.info(
 				"Overflow processor {} flushes overflow update/delete data, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/ms",
-				processorName, updateSize, timeInterval, insertSize / timeInterval);
+				processorName, updateSize, timeInterval, updateSize / timeInterval);
 		writePositionInfo(insertIO.getPos(), updateDeleteIO.getPos());
 	}
 
