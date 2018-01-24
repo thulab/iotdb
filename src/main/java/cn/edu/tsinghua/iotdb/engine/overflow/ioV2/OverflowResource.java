@@ -205,9 +205,26 @@ public class OverflowResource {
 	}
 
 	public void flush(FileSchema fileSchema, IMemTable memTable,
-			Map<String, Map<String, OverflowSeriesImpl>> overflowTrees) throws IOException {
+			Map<String, Map<String, OverflowSeriesImpl>> overflowTrees, String processorName) throws IOException {
+		long startPos = insertIO.getPos();
+		long startTime = System.currentTimeMillis();
 		flush(fileSchema, memTable);
+		long timeInterval = System.currentTimeMillis() - startTime;
+		if (timeInterval == 0) {
+			timeInterval = 1;
+		}
+		long insertSize = insertIO.getPos() - startPos;
+		LOGGER.info(
+				"Overflow processor {} flushes overflow insert data, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/ms",
+				processorName, insertSize, timeInterval, insertSize / timeInterval);
+		startPos = updateDeleteIO.getPos();
+		startTime = System.currentTimeMillis();
 		flush(overflowTrees);
+		timeInterval = System.currentTimeMillis() - startTime;
+		long updateSize = updateDeleteIO.getPos() - startPos;
+		LOGGER.info(
+				"Overflow processor {} flushes overflow update/delete data, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/ms",
+				processorName, updateSize, timeInterval, insertSize / timeInterval);
 		writePositionInfo(insertIO.getPos(), updateDeleteIO.getPos());
 	}
 
