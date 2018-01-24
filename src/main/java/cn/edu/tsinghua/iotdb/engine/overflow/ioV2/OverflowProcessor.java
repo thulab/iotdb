@@ -619,7 +619,7 @@ public class OverflowProcessor extends Processor {
 
 	@Override
 	public long memoryUsage() {
-		return 0;
+		return memSize.get();
 	}
 
 	/**
