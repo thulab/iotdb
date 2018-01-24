@@ -12,8 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
@@ -21,7 +23,6 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
     private Map<String, WriteLogNode> nodeMap;
 
     private Thread syncThread;
-    private final String syncThreadName = ThreadName.WAL_DAEMON.getName();
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     private static class InstanceHolder {
@@ -104,7 +105,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
     @Override
     public void close() {
         if(syncThread == null || !syncThread.isAlive()) {
-            logger.error("MultiFileLogNodeManager does not yet start");
+            logger.error("MultiFileLogNodeManager has not yet start");
             return;
         }
         
@@ -134,7 +135,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
             InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, ThreadName.WAL_DAEMON.getName());
             InstanceHolder.instance.syncThread.start();
         } else {
-            logger.error("MultiFileLogNodeManager has already started");
+            logger.warn("MultiFileLogNodeManager has already started");
         }
 	}
 
