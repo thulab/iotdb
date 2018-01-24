@@ -62,12 +62,6 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
     }
 
     static public MultiFileLogNodeManager getInstance() {
-        if(!InstanceHolder.instance.syncThread.isAlive()) {
-            synchronized (logger) {
-                InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, ThreadName.WAL_DAEMON.getName());
-                InstanceHolder.instance.syncThread.start();
-            }
-        }
         return InstanceHolder.instance;
     }
 
@@ -111,6 +105,11 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
     @Override
     public void close() {
+        if(syncThread == null || !syncThread.isAlive()) {
+            logger.error("MultiFileLogNodeManager does not yet start");
+            return;
+        }
+        
         logger.info("LogNodeManager starts closing..");
         syncThread.interrupt();
         logger.info("Waiting for sync thread to stop");
@@ -131,6 +130,12 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
 	@Override
 	public void start() {
+        if(syncThread == null || !syncThread.isAlive()) {
+            InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, ThreadName.WAL_DAEMON.getName());
+            InstanceHolder.instance.syncThread.start();
+        } else {
+            logger.error("MultiFileLogNodeManager has already started");
+        }
 	}
 
 	@Override
