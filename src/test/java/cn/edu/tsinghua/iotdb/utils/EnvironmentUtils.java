@@ -49,7 +49,7 @@ public class EnvironmentUtils {
 		StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
-		MultiFileLogNodeManager.getInstance().close();
+		MultiFileLogNodeManager.getInstance().stop();
 		// clean cache
 		TsFileMetaDataCache.getInstance().clear();
 		RowGroupBlockMetaDataCache.getInstance().clear();
@@ -120,5 +120,6 @@ public class EnvironmentUtils {
 		config.enableStatMonitor = false;
 		Authorizer.reset();
 		FileNodeManager.getInstance().resetFileNodeManager();
+		MultiFileLogNodeManager.getInstance().start();
 	}
 }
