@@ -590,7 +590,8 @@ public class KvMatchIndex  implements IoTIndex {
      * @throws IOException
      * @throws ProcessorException
      */
-    public OverflowBufferWriteInfo getDataInBufferWriteSeparateWithOverflow(Path path, int readToken) throws PathErrorException, IOException, ProcessorException {
+    public OverflowBufferWriteInfo getDataInBufferWriteSeparateWithOverflow(Path path, int readToken)
+            throws PathErrorException, IOException, ProcessorException {
         String deltaObjectUID = path.getDeltaObjectToString();
         String measurementUID = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(0);
@@ -598,32 +599,33 @@ public class KvMatchIndex  implements IoTIndex {
         RecordReader recordReader = RecordReaderFactoryV2.getInstance().
                 getRecordReader(deltaObjectUID, measurementUID, null,  null, readToken, recordReaderPrefix, ReaderType.QUERY);
 
-        long bufferWriteBeginTime = Long.MAX_VALUE;
-        if (recordReader.bufferWritePageList != null && recordReader.bufferWritePageList.size() > 0) {
-            PageReader pageReader = new PageReader(recordReader.bufferWritePageList.get(0), recordReader.compressionTypeName);
-            PageHeader pageHeader = pageReader.getNextPageHeader();
-            bufferWriteBeginTime = pageHeader.data_page_header.min_timestamp;
-        } else if (recordReader.lastPageInMemory != null && recordReader.lastPageInMemory.timeLength > 0) {
-            bufferWriteBeginTime = recordReader.lastPageInMemory.getTime(0);
-        }
-
-        DynamicOneColumnData insert = recordReader.overflowInsertData;
-        DynamicOneColumnData update = recordReader.overflowUpdate;
-        SingleSeriesFilterExpression deleteFilter = recordReader.overflowTimeFilter;
-        long maxDeleteTime = 0;
-        if (deleteFilter != null) {
-            LongInterval interval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(deleteFilter);
-            if (interval.count > 0) {
-                if (interval.flag[0] && interval.v[0] > 0) {
-                    maxDeleteTime = interval.v[0] - 1;
-                } else {
-                    maxDeleteTime = interval.v[0];
-                }
-            }
-        }
+//        long bufferWriteBeginTime = Long.MAX_VALUE;
+//        if (recordReader.bufferWritePageList != null && recordReader.bufferWritePageList.size() > 0) {
+//            PageReader pageReader = new PageReader(recordReader.bufferWritePageList.get(0), recordReader.compressionTypeName);
+//            PageHeader pageHeader = pageReader.getNextPageHeader();
+//            bufferWriteBeginTime = pageHeader.data_page_header.min_timestamp;
+//        } else if (recordReader.lastPageInMemory != null && recordReader.lastPageInMemory.timeLength > 0) {
+//            bufferWriteBeginTime = recordReader.lastPageInMemory.getTime(0);
+//        }
+//
+//        DynamicOneColumnData insert = recordReader.overflowInsertData;
+//        DynamicOneColumnData update = recordReader.overflowUpdate;
+//        SingleSeriesFilterExpression deleteFilter = recordReader.overflowTimeFilter;
+//        long maxDeleteTime = 0;
+//        if (deleteFilter != null) {
+//            LongInterval interval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(deleteFilter);
+//            if (interval.count > 0) {
+//                if (interval.flag[0] && interval.v[0] > 0) {
+//                    maxDeleteTime = interval.v[0] - 1;
+//                } else {
+//                    maxDeleteTime = interval.v[0];
+//                }
+//            }
+//        }
 
         RecordReaderFactory.getInstance().removeRecordReader(recordReaderPrefix + deltaObjectUID, measurementUID);
-        return new OverflowBufferWriteInfo(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, bufferWriteBeginTime);
+        //return new OverflowBufferWriteInfo(insert, update, maxDeleteTime < 0 ? 0L : maxDeleteTime, bufferWriteBeginTime);
+        return null;
     }
 
     /**
