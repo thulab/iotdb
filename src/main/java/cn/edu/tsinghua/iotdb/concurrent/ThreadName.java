@@ -17,7 +17,7 @@ public enum ThreadName {
     WAL_DAEMON("IoTDB-MultiFileLogNodeManager-Sync-Thread"),
     INDEX_SERVICE("Index-Service");
     
-	private String name;
+    private String name;
     
     private ThreadName(String name){
     	this.name = name;

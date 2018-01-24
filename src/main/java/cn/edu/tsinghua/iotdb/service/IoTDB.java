@@ -24,12 +24,12 @@ public class IoTDB implements IoTDBMBean{
 	private RegisterManager registerManager = new RegisterManager();
     private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileDBConstant.IOTDB_PACKAGE, TsFileDBConstant.JMX_TYPE, "IoTDB");
 	
-    private static class IoTDB2Holder {
+    private static class IoTDBHolder {
 		private static final IoTDB INSTANCE = new IoTDB();
 	}
 
 	public static final IoTDB getInstance() {
-		return IoTDB2Holder.INSTANCE;
+		return IoTDBHolder.INSTANCE;
 	}
 	
 	public void active() {

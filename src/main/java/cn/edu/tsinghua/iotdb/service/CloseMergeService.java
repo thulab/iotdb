@@ -1,12 +1,14 @@
 package cn.edu.tsinghua.iotdb.service;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
@@ -92,8 +94,10 @@ public class CloseMergeService implements IService{
 
 		@Override
 		public void run() {
-			service.scheduleWithFixedDelay(mergeService, mergeDelay, mergePeriod, TimeUnit.SECONDS);
-			service.scheduleWithFixedDelay(closeService, closeDelay, closePeriod, TimeUnit.SECONDS);
+			ScheduledFuture<?> mergeFuture = service.scheduleWithFixedDelay(mergeService, mergeDelay, mergePeriod, TimeUnit.SECONDS);
+			IoTDBDefaultThreadExceptionHandler.futureTaskHandler(mergeFuture);
+			ScheduledFuture<?> closeFuture = service.scheduleWithFixedDelay(closeService, closeDelay, closePeriod, TimeUnit.SECONDS);
+			IoTDBDefaultThreadExceptionHandler.futureTaskHandler(closeFuture);
 			while (!service.isShutdown()) {
 				synchronized (service) {
 					try {

@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.monitor;
 
+import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -168,9 +170,10 @@ public class StatMonitor implements IService{
     public void activate() {
 
         service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, ThreadName.STAT_MONITOR.getName());
-        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
+        ScheduledFuture<?> future = service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
         );
+        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
     }
 
     public void clearIStatisticMap() {

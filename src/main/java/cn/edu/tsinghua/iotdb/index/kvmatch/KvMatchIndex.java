@@ -169,10 +169,14 @@ public class KvMatchIndex  implements IoTIndex {
                 Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
 				
                 indexFls.add(indexFile);
-                Boolean rs = result.get();
-                if (!rs) {
-                    overall = false;
-                    break;
+                try {
+                    Boolean rs = result.get();
+                    if (!rs) {
+                        overall = false;
+                        break;
+                    }
+                } catch (Exception e) {
+					logger.error("Error occurred when building index because of {}", e.getMessage());
                 }
 				
 				TsFile tsfile = (TsFile)(map.get("tsfile"));
@@ -251,15 +255,20 @@ public class KvMatchIndex  implements IoTIndex {
 
             File buildFl = new File(indexFile + buildingStatus);
             if (buildFl.delete()) {
-                logger.warn("{} delete failed".format(buildFl.getAbsolutePath()));
+                logger.warn("{} delete failed", buildFl.getAbsolutePath());
             }
 
             // 1. build index asynchronously
 			Map<String,Object> map = getDataInTsFile(path, newFile.getFilePath());
             QueryDataSet dataSet = (QueryDataSet)(map.get("data"));
             Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
-            result.get();
-			TsFile tsfile = (TsFile)(map.get("tsfile"));
+            try {
+                result.get();
+            } catch (Exception e) {
+                logger.error("Error occurred when building index because of {}", e.getMessage());
+            }
+
+            TsFile tsfile = (TsFile)(map.get("tsfile"));
 			tsfile.close();
 //            KvMatchIndexBuilder rs = new KvMatchIndexBuilder(indexConfig, path, dataSet, IndexFileUtils.getIndexFilePath(path, newFile.getFilePath()));
 //            Boolean rr = rs.call();
@@ -484,9 +493,14 @@ public class KvMatchIndex  implements IoTIndex {
             // 5. collect query results
             QueryResult overallResult = new QueryResult();
             for (Future<QueryResult> result : futureResults) {
-                if (result.get() != null) {
-                    overallResult.addCandidateRanges(result.get().getCandidateRanges());
+                try {
+                    if (result.get() != null) {
+                        overallResult.addCandidateRanges(result.get().getCandidateRanges());
+                    }
+                } catch (Exception e) {
+                    logger.error("Error occurred when querying index because of {}", e.getMessage());
                 }
+
             }
 
             // 6. merge the candidate ranges and non-indexed ranges to produce candidate ranges
@@ -553,9 +567,13 @@ public class KvMatchIndex  implements IoTIndex {
         // collect results
         List<Pair<Pair<Long, Long>, Double>> overallResult = new ArrayList<>();
         for (Future<List<Pair<Pair<Long, Long>, Double>>> result : futureResults) {
-            if (result.get() != null) {
-                overallResult.addAll(result.get());
-            }
+            try {
+                if (result.get() != null) {
+                    overallResult.addAll(result.get());
+                }
+		    } catch (Exception e) {
+                logger.error("Error occurred when validating candidates because of {}", e.getMessage());
+		    }
         }
         return overallResult;
     }

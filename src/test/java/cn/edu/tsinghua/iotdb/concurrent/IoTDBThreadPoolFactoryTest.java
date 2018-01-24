@@ -157,7 +157,6 @@ public class IoTDBThreadPoolFactoryTest {
 		
 		@Override
 		public void run() {
-			System.out.println(1);
 			throw new RuntimeException(name);
 		}
 		
