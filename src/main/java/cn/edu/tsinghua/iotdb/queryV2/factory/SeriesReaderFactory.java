@@ -25,6 +25,8 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesChunkReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesChunkReaderWithFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesChunkReaderWithoutFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ import java.util.List;
  * Created by zhangjinrui on 2018/1/18.
  */
 public class SeriesReaderFactory {
-
+    private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
     private long jodId = 0;
     private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
     private DigestFilterVisitor digestFilterVisitor;
@@ -110,6 +112,7 @@ public class SeriesReaderFactory {
     public SeriesReader createSeriesReaderForMerge(
             IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SeriesFilter<?> seriesFilter)
             throws IOException {
+        logger.debug("create seriesReader for merge. SeriesFilter = {}. TsFilePath = {}", seriesFilter, intervalFileNode.getFilePath());
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(intervalFileNode.getFilePath());
         SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(
                 randomAccessFileReader, seriesFilter.getSeriesPath(), seriesFilter.getFilter());
