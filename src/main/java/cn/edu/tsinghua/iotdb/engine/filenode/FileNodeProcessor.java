@@ -746,8 +746,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			long mergeTimeInterval = thisMergeTime - lastMergeTime;
 			DateTime lastDateTime = new DateTime(lastMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime thisDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}ms",
-					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval);
+			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}s",
+					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval/1000);
 		}
 		lastMergeTime = System.currentTimeMillis();
 		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
