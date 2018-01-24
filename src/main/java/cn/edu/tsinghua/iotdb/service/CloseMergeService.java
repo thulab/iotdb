@@ -95,9 +95,9 @@ public class CloseMergeService implements IService{
 		@Override
 		public void run() {
 			ScheduledFuture<?> mergeFuture = service.scheduleWithFixedDelay(mergeService, mergeDelay, mergePeriod, TimeUnit.SECONDS);
-			IoTDBDefaultThreadExceptionHandler.futureTaskHandler(mergeFuture);
+//			IoTDBDefaultThreadExceptionHandler.futureTaskHandler(mergeFuture);
 			ScheduledFuture<?> closeFuture = service.scheduleWithFixedDelay(closeService, closeDelay, closePeriod, TimeUnit.SECONDS);
-			IoTDBDefaultThreadExceptionHandler.futureTaskHandler(closeFuture);
+//			IoTDBDefaultThreadExceptionHandler.futureTaskHandler(closeFuture);
 			while (!service.isShutdown()) {
 				synchronized (service) {
 					try {
@@ -127,7 +127,7 @@ public class CloseMergeService implements IService{
 			mergeAllLastTime = System.currentTimeMillis();
 			try {
 				FileNodeManager.getInstance().mergeAll();
-			} catch (FileNodeManagerException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				LOGGER.error("Merge all error.", e);
 			}
@@ -151,7 +151,7 @@ public class CloseMergeService implements IService{
 			closeAllLastTime = System.currentTimeMillis();
 			try {
 				FileNodeManager.getInstance().closeAll();
-			} catch (FileNodeManagerException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				LOGGER.error("close all error.", e);
 			}

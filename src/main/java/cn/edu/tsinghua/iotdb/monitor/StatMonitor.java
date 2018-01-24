@@ -173,7 +173,7 @@ public class StatMonitor implements IService{
         ScheduledFuture<?> future = service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
         );
-        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
+//        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
     }
 
     public void clearIStatisticMap() {
@@ -312,30 +312,35 @@ public class StatMonitor implements IService{
 
     class statBackLoop implements Runnable {
         public void run() {
-            long currentTimeMillis = System.currentTimeMillis();
-            long seconds = (currentTimeMillis - runningTimeMillis)/1000;
-            if (seconds - statMonitorDetectFreqSec >= 0) {
-                runningTimeMillis = currentTimeMillis;
-                // delete time-series data
-                FileNodeManager fManager = FileNodeManager.getInstance();
-                try {
-                    for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
-                        for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
-                            fManager.delete(entry.getKey(),
-                                    statParamName,
-                                    currentTimeMillis - statMonitorRetainIntervalSec * 1000,
-                                    TSDataType.INT64
-                            );
+        	try {
+        		long currentTimeMillis = System.currentTimeMillis();
+                long seconds = (currentTimeMillis - runningTimeMillis)/1000;
+                if (seconds - statMonitorDetectFreqSec >= 0) {
+                    runningTimeMillis = currentTimeMillis;
+                    // delete time-series data
+                    FileNodeManager fManager = FileNodeManager.getInstance();
+                    try {
+                        for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
+                            for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
+                                fManager.delete(entry.getKey(),
+                                        statParamName,
+                                        currentTimeMillis - statMonitorRetainIntervalSec * 1000,
+                                        TSDataType.INT64
+                                );
+                            }
                         }
+                    }catch (FileNodeManagerException e) {
+                        LOGGER.error("Error occurred when deleting statistics information periodically, because", e);
+                        e.printStackTrace();
                     }
-                }catch (FileNodeManagerException e) {
-                    LOGGER.error("Error occurred when deleting statistics information periodically, because", e);
-                    e.printStackTrace();
                 }
-            }
-            HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
-            insert(tsRecordHashMap);
-            numBackLoop.incrementAndGet();
+                HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
+                insert(tsRecordHashMap);
+                numBackLoop.incrementAndGet();
+			} catch (Exception e) {
+				LOGGER.error("Error occurred in Stat Monitor thread", e);
+			}
+            
         }
     }
 

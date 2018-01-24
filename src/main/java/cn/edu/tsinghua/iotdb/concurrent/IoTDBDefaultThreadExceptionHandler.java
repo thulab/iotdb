@@ -22,7 +22,9 @@ public class IoTDBDefaultThreadExceptionHandler implements Thread.UncaughtExcept
 		if(future != null){
 			try {
 				future.get();
-			} catch (InterruptedException | ExecutionException e) {
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			} catch (ExecutionException e) {
 				LOGGER.error("Exception in future task {}", future.toString(), e);
 			}
 		}
