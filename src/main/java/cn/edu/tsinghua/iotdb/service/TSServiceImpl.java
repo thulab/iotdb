@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import org.apache.thrift.TException;
@@ -75,7 +76,6 @@ import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.INDEXQUERY;
 
 public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
-//	private WriteLogManager writeLogManager;
 	private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
 	// Record the username for every rpc connection. Username.get() is null if
 	// login is failed.
@@ -88,9 +88,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
 
 	public TSServiceImpl() throws IOException {
-//		if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-//			writeLogManager = WriteLogManager.getInstance();
-//		}
+
 	}
 
 	@Override

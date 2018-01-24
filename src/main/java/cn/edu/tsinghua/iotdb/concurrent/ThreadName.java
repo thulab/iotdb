@@ -14,7 +14,7 @@ public enum ThreadName {
     FORCE_FLUSH_ALL_POLICY("IoTDB-ForceFlushAllPolicy-thread"),
     STAT_MONITOR("StatMonitor-Service"),
     FLUSH_SERVICE("Flush-Service"),
-    WAL_FLUSH("WAL-Flush-Service"),
+    WAL_DAEMON("IoTDB-MultiFileLogNodeManager-Sync-Thread"),
     INDEX_SERVICE("Index-Service");
     
 	private String name;

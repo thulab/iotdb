@@ -23,4 +23,6 @@ public class TsFileDBConstant {
 
     public static final String IOTDB_HOME = "IOTDB_HOME";
 
+    public static final String BUFFERWRITE_LOG_NODE_SUFFIX = "-bufferwrite";
+    public static final String OVERFLOW_LOG_NODE_SUFFIX = "-overflow";
 }
