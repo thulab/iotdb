@@ -2,6 +2,8 @@ package cn.edu.tsinghua.iotdb.queryV2.factory;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.ExternalSortJobEngine;
+import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.SimpleExternalSortEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
@@ -36,10 +38,12 @@ public class SeriesReaderFactory {
     private long jodId = 0;
     private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
     private DigestFilterVisitor digestFilterVisitor;
+    private ExternalSortJobEngine externalSortJobEngine;
 
     private SeriesReaderFactory() {
         overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
         digestFilterVisitor = new DigestFilterVisitor();
+        externalSortJobEngine = SimpleExternalSortEngine.getInstance();
     }
 
     public OverflowInsertDataReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource, Filter<?> filter) throws IOException {
@@ -64,6 +68,8 @@ public class SeriesReaderFactory {
             timeValuePairReaders.add(new PriorityTimeValuePairReader(new RawSeriesChunkReaderWithFilter(
                     overflowSeriesDataSource.getRawSeriesChunk(), filter), new PriorityTimeValuePairReader.Priority(priorityValue++)));
         }
+        //Add External Sort
+        timeValuePairReaders = externalSortJobEngine.execute(timeValuePairReaders);
         return new OverflowInsertDataReader(jobId, new PriorityMergeSortTimeValuePairReader(timeValuePairReaders));
     }
 
@@ -97,6 +103,7 @@ public class SeriesReaderFactory {
             timeValuePairReaders.add(new PriorityTimeValuePairReader(new RawSeriesChunkReaderWithoutFilter(
                     overflowSeriesDataSource.getRawSeriesChunk()), new PriorityTimeValuePairReader.Priority(priorityValue++)));
         }
+        timeValuePairReaders = externalSortJobEngine.execute(timeValuePairReaders);
         return new OverflowInsertDataReader(jobId, new PriorityMergeSortTimeValuePairReader(timeValuePairReaders));
     }
 

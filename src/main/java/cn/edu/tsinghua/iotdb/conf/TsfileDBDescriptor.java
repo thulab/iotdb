@@ -132,6 +132,7 @@ public class TsfileDBDescriptor {
 			conf.enableMemMonitor = Boolean.parseBoolean(properties.getProperty("enable_mem_monitor", conf.enableMemMonitor + "").trim());
 			conf.enableSmallFlush = Boolean.parseBoolean(properties.getProperty("enable_small_flush", conf.enableSmallFlush + "").trim());
 			conf.smallFlushInterval = Long.parseLong(properties.getProperty("small_flush_interval", conf.smallFlushInterval + "").trim());
+			conf.externalSortThreshold = Integer.parseInt(properties.getProperty("external_sort_threshold", conf.externalSortThreshold + "").trim());
 
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {
