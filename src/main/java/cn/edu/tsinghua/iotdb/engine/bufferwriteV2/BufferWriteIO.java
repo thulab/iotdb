@@ -11,7 +11,6 @@ import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 public class BufferWriteIO extends TsFileIOWriter {
 
 	private int lastRowGroupIndex = 0;
-	private ITsRandomAccessFileWriter out;
 	private List<RowGroupMetaData> append;
 
 	public BufferWriteIO(ITsRandomAccessFileWriter output, long offset, List<RowGroupMetaData> rowGroups)
@@ -34,6 +33,6 @@ public class BufferWriteIO extends TsFileIOWriter {
 	}
 
 	public long getPos() throws IOException {
-		return out.getPos();
+		return super.getPos();
 	}
 }

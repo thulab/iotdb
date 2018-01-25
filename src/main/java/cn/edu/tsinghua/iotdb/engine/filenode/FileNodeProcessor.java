@@ -1286,7 +1286,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
 				try {
 					if (!seriesReader.hasNext()) {
-						LOGGER.info("The time-series {} has no data with the filter {} in the filenode processor {}",
+						LOGGER.debug("The time-series {} has no data with the filter {} in the filenode processor {}",
 								path, seriesFilter, getProcessorName());
 					} else {
 						TimeValuePair timeValuePair = seriesReader.next();

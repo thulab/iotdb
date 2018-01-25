@@ -563,10 +563,9 @@ public class BufferWriteProcessor extends Processor {
 			if (timeInterval == 0) {
 				timeInterval = 1;
 			}
-			LOGGER.info(
-					"The bufferwrite processor {} flush {}, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/s",
-					getProcessorName(), flushFunction, flushDataSize, timeInterval,
-					flushDataSize / timeInterval * 1000);
+			LOGGER.info("The bufferwrite processor {} flush {}, actual:{}, time consumption:{} ms, flush rate:{}/s",
+					getProcessorName(), flushFunction, MemUtils.bytesCntToStr(flushDataSize), timeInterval,
+					MemUtils.bytesCntToStr(flushDataSize / timeInterval * 1000));
 			// write restore information
 			writeStoreToDisk();
 			filenodeFlushAction.act();

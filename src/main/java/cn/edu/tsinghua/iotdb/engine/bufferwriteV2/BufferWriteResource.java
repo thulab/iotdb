@@ -162,7 +162,7 @@ public class BufferWriteResource {
 		}
 	}
 
-	private Pair<Long, List<RowGroupMetaData>> readRestoreInfo() throws IOException {
+	public Pair<Long, List<RowGroupMetaData>> readRestoreInfo() throws IOException {
 		byte[] lastPostionBytes = new byte[TSFILEPOINTBYTESIZE];
 		List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
 		RandomAccessFile randomAccessFile = null;
@@ -233,7 +233,7 @@ public class BufferWriteResource {
 
 	public void flush(FileSchema fileSchema, IMemTable iMemTable) {
 		// use the memtable flush funtion
-		
+
 		// get metadata
 
 		// add metadata to map
@@ -241,9 +241,15 @@ public class BufferWriteResource {
 		// flush metadata to restore file
 	}
 
-	public void close() {
+	public void close(FileSchema fileSchema) throws IOException {
 		// call flush
-
+		bufferWriteIO.endFile(fileSchema);
 		// close the file and delete the restore file
+		deleteRestoreFile();
+	}
+
+	private void deleteRestoreFile() {
+		File restoreFile = new File(restoreFilePath);
+		restoreFile.delete();
 	}
 }
