@@ -10,8 +10,8 @@ import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
 import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
-import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
-import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
+import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -288,7 +288,7 @@ public class OverflowQueryEngine {
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
         cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader =
-                (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader) RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectID, measurementID,
+                (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
                 null,  null, readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
@@ -340,7 +340,7 @@ public class OverflowQueryEngine {
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
         cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
-                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectId, measurementId,
+                RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 queryTimeFilter, queryValueFilter, readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
@@ -392,7 +392,7 @@ public class OverflowQueryEngine {
             String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 
             cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
-                    RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectId, measurementId,
+                    RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null,  null, null, recordReaderPrefix, ReaderType.QUERY);
 
             if (recordReader.getInsertMemoryData() == null) {
@@ -427,7 +427,7 @@ public class OverflowQueryEngine {
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(ReadCachePrefix.addFilterPrefix(valueFilterNumber), formNumber);
 
         cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
-                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {

@@ -17,7 +17,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.IIntervalTreeOperator;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFFileMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

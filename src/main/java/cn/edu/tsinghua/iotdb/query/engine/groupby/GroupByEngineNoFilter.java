@@ -4,8 +4,8 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
-import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
-import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
+import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -209,7 +209,7 @@ public class  GroupByEngineNoFilter {
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
 
         cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
-                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectID, measurementID,
+                RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
                 queryTimeFilter, null,  readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {

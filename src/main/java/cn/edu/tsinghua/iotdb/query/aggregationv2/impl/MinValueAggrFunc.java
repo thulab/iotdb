@@ -1,7 +1,7 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2;
+package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
@@ -15,12 +15,12 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import java.io.IOException;
 import java.util.List;
 
-public class MaxValueAggrFunc extends AggregateFunction {
+public class MinValueAggrFunc extends AggregateFunction {
 
     private boolean hasSetValue = false;
 
-    public MaxValueAggrFunc(TSDataType dataType) {
-        super(AggregationConstant.MAX_VALUE, dataType);
+    public MinValueAggrFunc(TSDataType dataType) {
+        super(AggregationConstant.MIN_VALUE, dataType);
     }
 
     @Override
@@ -37,8 +37,8 @@ public class MaxValueAggrFunc extends AggregateFunction {
         Digest pageDigest = pageHeader.data_page_header.getDigest();
         DigestForFilter digest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 pageDigest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
-        Comparable<?> maxv = digest.getMaxValue();
-        updateMaxValue(maxv);
+        Comparable<?> minv = digest.getMinValue();
+        updateMinValue(minv);
     }
 
     @Override
@@ -50,8 +50,8 @@ public class MaxValueAggrFunc extends AggregateFunction {
         if (dataInThisPage.valueLength == 0) {
             return;
         }
-        Comparable<?> maxv = getMaxValue(dataInThisPage);
-        updateMaxValue(maxv);
+        Comparable<?> minv = getMinValue(dataInThisPage);
+        updateMinValue(minv);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
         }
 
         while (insertMemoryData.hasNext()) {
-            updateMaxValue((Comparable<?>) insertMemoryData.getCurrentObjectValue());
+            updateMinValue((Comparable<?>) insertMemoryData.getCurrentObjectValue());
             insertMemoryData.removeCurrentValue();
         }
     }
@@ -77,7 +77,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
                     Object value = insertMemoryData.getCurrentObjectValue();
-                    updateMaxValue((Comparable<?>)value);
+                    updateMinValue((Comparable<?>) value);
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
@@ -94,8 +94,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
     }
 
     @Override
-    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
-                                       DynamicOneColumnData data) {
+    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
         if (resultData.emptyTimeLength == 0) {
             if (resultData.timeLength == 0) {
                 resultData.putEmptyTime(partitionStart);
@@ -109,7 +108,7 @@ public class MaxValueAggrFunc extends AggregateFunction {
                 resultData.putEmptyTime(partitionStart);
         }
 
-        Comparable<?> maxValue = null;
+        Comparable<?> minValue = null;
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -117,48 +116,48 @@ public class MaxValueAggrFunc extends AggregateFunction {
             } else if (time < intervalStart || time < partitionStart) {
                 data.curIdx++;
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
-                if (maxValue == null) {
-                    maxValue = data.getAnObject(data.curIdx);
+                if (minValue == null) {
+                    minValue = data.getAnObject(data.curIdx);
                 } else {
-                    if (compare(maxValue, data.getAnObject(data.curIdx)) < 0) {
-                        maxValue = data.getAnObject(data.curIdx);
+                    if (compare(minValue, data.getAnObject(data.curIdx)) > 0) {
+                        minValue = data.getAnObject(data.curIdx);
                     }
                 }
                 data.curIdx++;
             }
         }
 
-        if (maxValue != null) {
+        if (minValue != null) {
             if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
                 resultData.removeLastEmptyTime();
                 resultData.putTime(partitionStart);
-                resultData.putAnObject(maxValue);
+                resultData.putAnObject(minValue);
             } else {
                 Comparable<?> v = resultData.getAnObject(resultData.valueLength - 1);
-                if (compare(maxValue, v) > 0) {
-                    resultData.setAnObject(resultData.valueLength - 1, maxValue);
+                if (compare(minValue, v) < 0) {
+                    resultData.setAnObject(resultData.valueLength - 1, minValue);
                 }
             }
         }
     }
 
-    private void updateMaxValue(Comparable<?> maxv) {
+    private void updateMinValue(Comparable<?> minv) {
         if (!hasSetValue) {
-            resultData.putAnObject(maxv);
+            resultData.putAnObject(minv);
             hasSetValue = true;
         } else {
             Comparable<?> v = resultData.getAnObject(0);
-            if (compare(v, maxv) < 0) {
-                resultData.setAnObject(0, maxv);
+            if (compare(v, minv) > 0) {
+                resultData.setAnObject(0, minv);
             }
         }
     }
 
-    private Comparable<?> getMaxValue(DynamicOneColumnData dataInThisPage) {
+    private Comparable<?> getMinValue(DynamicOneColumnData dataInThisPage) {
         Comparable<?> v = dataInThisPage.getAnObject(0);
         for (int i = 1; i < dataInThisPage.valueLength; i++) {
             Comparable<?> nextV = dataInThisPage.getAnObject(i);
-            if (compare(v, nextV) < 0) {
+            if (compare(v, nextV) > 0) {
                 v = nextV;
             }
         }
@@ -179,25 +178,6 @@ public class MaxValueAggrFunc extends AggregateFunction {
                 return ((Double) o1).compareTo((Double) o2);
             case TEXT:
                 return ((Binary) o1).compareTo((Binary) o2);
-            default:
-                throw new UnSupportedDataTypeException("Aggregation UnSupportDataType: " + dataType);
-        }
-    }
-
-    private Object getCurrentObject(DynamicOneColumnData data) {
-        switch (dataType) {
-            case BOOLEAN:
-                return data.getBoolean(data.curIdx);
-            case INT32:
-                return data.getInt(data.curIdx);
-            case INT64:
-                return data.getLong(data.curIdx);
-            case FLOAT:
-                return data.getFloat(data.curIdx);
-            case DOUBLE:
-                return data.getDouble(data.curIdx);
-            case TEXT:
-                return data.getBinary(data.curIdx);
             default:
                 throw new UnSupportedDataTypeException("Aggregation UnSupportDataType: " + dataType);
         }
