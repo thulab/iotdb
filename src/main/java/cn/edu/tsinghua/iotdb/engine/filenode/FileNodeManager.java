@@ -598,6 +598,7 @@ public class FileNodeManager implements IStatistic {
 				}
 			}
 			fileNodeManagerStatus = FileNodeManagerStatus.NONE;
+			LOGGER.info("End to merge all overflowed filenode");
 		} else {
 			LOGGER.warn("Failed to merge all overflowed filenode, because filenode manager status is {}",
 					fileNodeManagerStatus);

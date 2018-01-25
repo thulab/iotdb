@@ -20,6 +20,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TSFileMetaDataConverter;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
@@ -139,7 +140,6 @@ public class OverflowResource {
 		// read insert meta-data
 		insertIO.toTail();
 		position = insertIO.getPos();
-		// TODD: attention
 		while (position != 0) {
 			insertIO.getReader().seek(position - FOOTER_LENGTH);
 			int metadataLength = insertIO.getReader().readInt();
@@ -178,7 +178,8 @@ public class OverflowResource {
 			if (insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
 				for (TimeSeriesChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
 					// filter
-					if (dataType.equals(chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType())) {
+					//
+					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
 					}
 				}
@@ -195,7 +196,7 @@ public class OverflowResource {
 				for (TimeSeriesChunkMetaData chunkMetaData : updateDeleteMetadatas.get(deltaObjectId)
 						.get(measurementId)) {
 					// filter
-					if (dataType.equals(chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType())) {
+					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
 					}
 				}
@@ -210,34 +211,29 @@ public class OverflowResource {
 		long startTime = System.currentTimeMillis();
 		flush(fileSchema, memTable);
 		long timeInterval = System.currentTimeMillis() - startTime;
-		if (timeInterval == 0) {
-			timeInterval = 1;
-		}
+		timeInterval = timeInterval == 0 ? 1 : timeInterval;
 		long insertSize = insertIO.getPos() - startPos;
 		LOGGER.info(
-				"Overflow processor {} flushes overflow insert data, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/ms",
-				processorName, insertSize, timeInterval, insertSize / timeInterval);
+				"Overflow processor {} flushes overflow insert data, actual:{}, time consumption:{} ms, flush rate:{}/s",
+				processorName, MemUtils.bytesCntToStr(insertSize), timeInterval,
+				MemUtils.bytesCntToStr(insertSize / timeInterval * 1000));
 		startPos = updateDeleteIO.getPos();
 		startTime = System.currentTimeMillis();
 		flush(overflowTrees);
 		timeInterval = System.currentTimeMillis() - startTime;
-		if (timeInterval == 0) {
-			timeInterval = 1;
-		}
+		timeInterval = timeInterval == 0 ? 1 : timeInterval;
 		long updateSize = updateDeleteIO.getPos() - startPos;
 		LOGGER.info(
-				"Overflow processor {} flushes overflow update/delete data, actual:{}bytes, time consumption:{} ms, flush rate:{} bytes/ms",
-				processorName, updateSize, timeInterval, insertSize / timeInterval);
+				"Overflow processor {} flushes overflow update/delete data, actual:{}, time consumption:{} ms, flush rate:{}/s",
+				processorName, MemUtils.bytesCntToStr(updateSize), timeInterval,
+				MemUtils.bytesCntToStr(updateSize / timeInterval * 1000));
 		writePositionInfo(insertIO.getPos(), updateDeleteIO.getPos());
 	}
 
 	public void flush(FileSchema fileSchema, IMemTable memTable) throws IOException {
 		if (memTable != null && !memTable.isEmpty()) {
-			// memtable
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
-			// TODO file-schema
-			// TODO page size
 			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
 			for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
@@ -330,5 +326,4 @@ public class OverflowResource {
 		}
 		updateDeleteMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
 	}
-
 }
