@@ -428,14 +428,13 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
-		long newMemUsage = MemUtils.getTsRecordMemBufferwrite(tsRecord);
-		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, newMemUsage);
-		long memUage;
+		long memUage = MemUtils.getRecordSize(tsRecord);
+		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, memUage);
 		switch (level) {
 		case SAFE:
 			// memUsed += newMemUsage;
 			// memtable
-			memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
+			memUage = memSize.addAndGet(memUage);
 			if (memUage > memThreshold) {
 				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
 						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
@@ -457,7 +456,7 @@ public class BufferWriteProcessor extends Processor {
 					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 			// memUsed += newMemUsage;
 			// memtable
-			memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
+			memUage = memSize.addAndGet(memUage);
 			if (memUage > memThreshold) {
 				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
 						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
@@ -638,6 +637,7 @@ public class BufferWriteProcessor extends Processor {
 			valueCount = 0;
 			flushStatus.setFlushing();
 			switchWorkToFlush();
+			BasicMemController.getInstance().reportFree(this, memSize.get());
 			memSize.set(0);
 			// switch
 			if (synchronization) {

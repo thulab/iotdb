@@ -21,6 +21,7 @@ import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
 import cn.edu.tsinghua.iotdb.engine.querycontext.MergeSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
@@ -126,9 +127,13 @@ public class OverflowProcessor extends Processor {
 	 */
 	public void insert(TSRecord tsRecord) throws IOException {
 		// memory control
+		long memUage = MemUtils.getRecordSize(tsRecord);
+		BasicMemController.getInstance().reportUse(this, memUage);
+		// write data
 		workSupport.insert(tsRecord);
 		valueCount++;
-		long memUage = memSize.addAndGet(MemUtils.getRecordSize(tsRecord));
+		// check flush
+		memUage = memSize.addAndGet(memUage);
 		if (memUage > memThreshold) {
 			LOGGER.warn("The usage of memory {} in overflow processor {} reaches the threshold {}",
 					MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
@@ -557,6 +562,7 @@ public class OverflowProcessor extends Processor {
 					throw new OverflowProcessorException(e);
 				}
 			}
+			BasicMemController.getInstance().reportFree(this, memSize.get());
 			memSize.set(0);
 			valueCount = 0;
 			// switch from work to flush
