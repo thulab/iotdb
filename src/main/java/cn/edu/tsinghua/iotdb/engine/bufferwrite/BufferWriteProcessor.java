@@ -28,6 +28,7 @@ import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
+import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
@@ -156,7 +157,8 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
-		workMemTable = new TreeSetMemTable();
+		//workMemTable = new TreeSetMemTable();
+		workMemTable = new PrimitiveMemTable();
 	}
 
 	/**
@@ -530,7 +532,8 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			if (flushMemTable == null) {
 				flushMemTable = workMemTable;
-				workMemTable = new TreeSetMemTable();
+				//workMemTable = new TreeSetMemTable();
+				workMemTable = new PrimitiveMemTable();
 			}
 		} finally {
 			isFlush = true;

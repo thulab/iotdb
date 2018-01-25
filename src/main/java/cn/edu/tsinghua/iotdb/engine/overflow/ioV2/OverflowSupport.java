@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
@@ -33,7 +34,8 @@ public class OverflowSupport {
 
 	public OverflowSupport() {
 		indexTrees = new HashMap<>();
-		memTable = new TreeSetMemTable();
+		//memTable = new TreeSetMemTable();
+		memTable = new PrimitiveMemTable();
 	}
 
 	public void insert(TSRecord tsRecord) {
