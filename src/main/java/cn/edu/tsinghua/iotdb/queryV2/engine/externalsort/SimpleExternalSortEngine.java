@@ -18,7 +18,7 @@ public class SimpleExternalSortEngine implements ExternalSortJobEngine {
     private int minExternalSortSourceCount;
 
     private SimpleExternalSortEngine() {
-        baseDir = TsfileDBDescriptor.getInstance().getConfig().readTmpFileDir;
+        baseDir = TsfileDBDescriptor.getInstance().getConfig().readTmpFileDir + "/";
         minExternalSortSourceCount = TsfileDBDescriptor.getInstance().getConfig().externalSortThreshold;
         scheduler = ExternalSortJobScheduler.getInstance();
     }

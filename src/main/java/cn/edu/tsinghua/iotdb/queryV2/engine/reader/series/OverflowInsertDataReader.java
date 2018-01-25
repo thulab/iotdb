@@ -51,6 +51,7 @@ public class OverflowInsertDataReader implements SeriesReader {
     /**
      * Retrieves, but does not remove, next {@code TimeValuePair} in this SeriesReader,
      * or returns {@code null} if this there is no {@code TimeValuePair} in this SeriesReader.
+     *
      * @return
      * @throws IOException
      */
@@ -75,6 +76,7 @@ public class OverflowInsertDataReader implements SeriesReader {
      * @throws IOException
      */
     public void close() throws IOException {
+        seriesReader.close();
         OverflowFileStreamManager.getInstance().closeAll(this.jobId);
     }
 
