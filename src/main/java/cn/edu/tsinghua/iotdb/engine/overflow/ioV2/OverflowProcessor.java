@@ -93,7 +93,7 @@ public class OverflowProcessor extends Processor {
 	}
 
 	private void recovery(File parentFile) {
-		String[] subFilePaths = parentFile.list();
+		String[] subFilePaths = clearFile(parentFile.list());
 		if (subFilePaths.length == 0) {
 			workResource = new OverflowResource(parentPath, String.valueOf(dataPahtCount.getAndIncrement()));
 			return;
@@ -117,6 +117,18 @@ public class OverflowProcessor extends Processor {
 			isMerge = true;
 			LOGGER.info("The overflow processor {} recover from merge status.", getProcessorName());
 		}
+	}
+	
+	private String[] clearFile(String[] subFilePaths) {
+		List<String> files = new ArrayList<>();
+		for (String file : subFilePaths) {
+			try {
+				Long.valueOf(file);
+				files.add(file);
+			} catch (NumberFormatException e) {
+			}
+		}
+		return files.toArray(new String[files.size()]);
 	}
 
 	/**
