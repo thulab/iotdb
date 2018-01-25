@@ -41,6 +41,7 @@ public class IoTDB implements IoTDBMBean{
 			return;
 		}
 		setUp();
+		LOGGER.info("{} has started.", TsFileDBConstant.GLOBAL_DB_NAME);
 	}
 	
 	

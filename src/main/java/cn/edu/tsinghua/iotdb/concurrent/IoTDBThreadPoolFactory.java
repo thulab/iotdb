@@ -91,13 +91,13 @@ public class IoTDBThreadPoolFactory {
 	public static ExecutorService createJDBCClientThreadPool(Args args, String poolName) {
 		SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
 		return new ThreadPoolExecutor(args.minWorkerThreads, args.maxWorkerThreads, args.stopTimeoutVal,
-				args.stopTimeoutUnit, executorQueue, (ThreadFactory) new IoTThreadFactory(poolName));
+				args.stopTimeoutUnit, executorQueue, new IoTThreadFactory(poolName));
 	}
 
 	public static ExecutorService createJDBCClientThreadPool(Args args, String poolName, Thread.UncaughtExceptionHandler handler) {
 		SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
 		return new ThreadPoolExecutor(args.minWorkerThreads, args.maxWorkerThreads, args.stopTimeoutVal,
-				args.stopTimeoutUnit, executorQueue, (ThreadFactory) new IoTThreadFactory(poolName, handler));
+				args.stopTimeoutUnit, executorQueue, new IoTThreadFactory(poolName, handler));
 	}
 
 }
