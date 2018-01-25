@@ -5,6 +5,7 @@ public class IoTDBException extends Exception{
     private int ErrorCode;
     private String ErrorEnum;
     private String Description;
+    
 
     IoTDBException(int ErrCode, String ErrEnum, String Desc){
         super("[Error: "+ErrCode+"] "+ErrEnum+" "+ Desc);
