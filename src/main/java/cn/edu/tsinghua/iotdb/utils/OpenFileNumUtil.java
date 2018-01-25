@@ -184,24 +184,34 @@ public class OpenFileNumUtil {
      * @return list
      */
     public ArrayList<Integer> get() {
+        String os = System.getProperty("os.name").toLowerCase();
         ArrayList<Integer> list = null;
-        //如果pid不合理，再次尝试获取
-        if (pid < 0) {
-            pid = getPid();
-        }
-        //如果pid合理，则加入打开文件总数和数据文件数目以及socket数目
-        if (pid > 0) {
-            try {
-                list = getOpenFile(pid);
-            } catch (SQLException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
+        //判断当前操作系统，目前仅支持Linux和Mac OS
+        if(os.startsWith("linux") || os.startsWith("mac")) {
+            //如果pid不合理，再次尝试获取
+            if (pid < 0) {
+                pid = getPid();
+            }
+            //如果pid合理，则加入打开文件总数和数据文件数目以及socket数目
+            if (pid > 0) {
+                try {
+                    list = getOpenFile(pid);
+                } catch (SQLException e) {
+                    log.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                //pid 不合理，则全赋值为-1
+                list = new ArrayList<Integer>();
+                for (int i = 0; i < 8; i++) {
+                    list.add(-1);
+                }
             }
         } else {
-            //pid 不合理，则全赋值为-1
-                list = new ArrayList<Integer>();
+            //操作系统不支持，则全赋值为-2
+            list = new ArrayList<Integer>();
             for (int i = 0; i < 8; i++) {
-                list.add(-1);
+                list.add(-2);
             }
         }
         return list;
