@@ -16,6 +16,7 @@ import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService.Processor;
 
@@ -63,9 +64,15 @@ public class JDBCService implements JDBCServiceMBean, IService {
 	}
 	
 	@Override
-	public void start() {
-		JMXService.registerMBean(getInstance(), MBEAN_NAME);
-		startService();
+	public void start() throws StartupException {
+		try {
+			JMXService.registerMBean(getInstance(), MBEAN_NAME);
+			startService();
+		} catch (Exception e) {
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
+		}
+		
 	}
 
 	@Override
@@ -80,7 +87,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
 	}
     
     @Override
-    public synchronized void startService() {
+    public synchronized void startService() throws StartupException {
         if (isStart) {
             LOGGER.info("{}: {} has been already running now", TsFileDBConstant.GLOBAL_DB_NAME, this.getID().getName());
             return;
@@ -91,11 +98,8 @@ public class JDBCService implements JDBCServiceMBean, IService {
         	jdbcServiceThread = new Thread(new JDBCServiceThread());
         	jdbcServiceThread.setName(ThreadName.JDBC_SERVICE.getName());
         } catch (IOException e) {
-            LOGGER.error("{}: failed to start {} because of {}",
-            		TsFileDBConstant.GLOBAL_DB_NAME, 
-            		this.getID().getName(),
-            		e.getMessage());
-            return;
+        	String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
         }
         jdbcServiceThread.start();
 
@@ -107,7 +111,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
     }
 
     @Override
-    public synchronized void restartService() {
+    public synchronized void restartService() throws StartupException {
         stopService();
         startService();
     }
@@ -166,7 +170,7 @@ public class JDBCService implements JDBCServiceMBean, IService {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws StartupException {
         JDBCService server = JDBCService.getInstance();
         server.start();
     }

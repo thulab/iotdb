@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 
 public class JMXService implements IService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JMXService.class);
@@ -83,7 +84,7 @@ public class JMXService implements IService {
 	}
 
 	@Override
-	public void start() {
+	public void start() throws StartupException {
 		if (System.getProperty(TsFileDBConstant.REMOTE_JMX_PORT_NAME) != null) {
 			LOGGER.warn("JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have been bypassed as the JMX connector server is "
 							+ "already initialized. Please refer to {}.sh/bat for JMX configuration info",
@@ -110,7 +111,8 @@ public class JMXService implements IService {
 			jmxService.start();
 	        LOGGER.info("{}: start {} successfully.", TsFileDBConstant.GLOBAL_DB_NAME,  this.getID().getName());
 		} catch (IOException e) {
-			LOGGER.error("Failed to start {} because {}",this.getID().getName(), e.getMessage());
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
 		}
 	}
 

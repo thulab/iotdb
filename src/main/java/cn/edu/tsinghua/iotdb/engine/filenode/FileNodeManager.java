@@ -13,6 +13,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
@@ -1020,9 +1021,7 @@ public class FileNodeManager implements IStatistic, IService {
     }
 
 	@Override
-	public void start() {
-		// TODO Auto-generated method stub
-		
+	public void start() throws StartupException{
 	}
 
 	@Override

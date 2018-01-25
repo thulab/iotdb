@@ -5,6 +5,8 @@ import java.io.File;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+
 import org.apache.commons.io.FileUtils;
 
 public class Monitor implements MonitorMBean, IService{
@@ -65,8 +67,13 @@ public class Monitor implements MonitorMBean, IService{
 	}
 
 	@Override
-	public void start() {
-		JMXService.registerMBean(INSTANCE, MBEAN_NAME);
+	public void start() throws StartupException {
+		try {
+			JMXService.registerMBean(INSTANCE, MBEAN_NAME);
+		} catch (Exception e) {
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
+		}
 	}
 
 	@Override

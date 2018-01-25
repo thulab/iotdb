@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 
@@ -14,22 +15,28 @@ public abstract class BasicMemController implements IService{
     private TsfileDBConfig config;
 
     @Override
-    public void start() {
-        if(config.enableMemMonitor) {
-            if(monitorThread == null) {
-                monitorThread = new MemMonitorThread(config);
-                monitorThread.start();
-            } else {
-                logger.error("Attempt to start MemController but it has already started");
+    public void start() throws StartupException {
+    	try {
+            if(config.enableMemMonitor) {
+                if(monitorThread == null) {
+                    monitorThread = new MemMonitorThread(config);
+                    monitorThread.start();
+                } else {
+                    logger.error("Attempt to start MemController but it has already started");
+                }
+                if(memStatisticThread == null) {
+                    memStatisticThread = new MemStatisticThread();
+                    memStatisticThread.start();
+                } else {
+                    logger.warn("Attempt to start MemController but it has already started");
+                }
             }
-            if(memStatisticThread == null) {
-                memStatisticThread = new MemStatisticThread();
-                memStatisticThread.start();
-            } else {
-                logger.warn("Attempt to start MemController but it has already started");
-            }
-        }
-        logger.info("MemController starts");
+            logger.info("MemController starts");
+		} catch (Exception e) {
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
+		}
+
     }
 
     @Override

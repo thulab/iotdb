@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -18,6 +17,7 @@ import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthRuntimeException;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 
@@ -37,7 +37,6 @@ public class DBDao implements IService{
 
 	private static Connection connection = null;
 	private static Statement statement = null;
-	private PreparedStatement preparedStatement = null;
 
 	private DBDao(String dBName) {
 		String derbyDirPath = TsfileDBDescriptor.getInstance().getConfig().derbyHome;
@@ -209,11 +208,12 @@ public class DBDao implements IService{
 	}
 
 	@Override
-	public void start() {
+	public void start() throws StartupException {
 		try {
 			open();
 		} catch (ClassNotFoundException | SQLException | DBDaoInitException e) {
-			LOGGER.error("Failed to start {} because of {}", this.getID().getName(), e.getMessage());
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
 		}
 	}
 

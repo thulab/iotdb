@@ -23,7 +23,7 @@ public class IoTDB implements IoTDBMBean{
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
 	private RegisterManager registerManager = new RegisterManager();
     private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileDBConstant.IOTDB_PACKAGE, TsFileDBConstant.JMX_TYPE, "IoTDB");
-	
+
     private static class IoTDBHolder {
 		private static final IoTDB INSTANCE = new IoTDB();
 	}
@@ -31,7 +31,7 @@ public class IoTDB implements IoTDBMBean{
 	public static final IoTDB getInstance() {
 		return IoTDBHolder.INSTANCE;
 	}
-	
+
 	public void active() {
 		StartupChecks checks = new StartupChecks().withDefaultTest();
 		try {
@@ -40,20 +40,26 @@ public class IoTDB implements IoTDBMBean{
 			LOGGER.error("{}: failed to start because some checks failed. {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
 			return;
 		}
-		setUp();
+		try {
+			setUp();
+		} catch (StartupException e) {
+			LOGGER.error(e.getMessage());
+			deactivate();
+			LOGGER.error("{} exit", TsFileDBConstant.GLOBAL_DB_NAME);
+			return;
+		}
 		LOGGER.info("{} has started.", TsFileDBConstant.GLOBAL_DB_NAME);
 	}
 	
-	
-	private void setUp() {
+	private void setUp() throws StartupException {
 		setUncaughtExceptionHandler();
 		
 		FileNodeManager.getInstance().recovery();
 		try {
 			systemDataRecovery();
 		} catch (RecoverException e) {
-			LOGGER.error("{}: failed to start because: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
-			return;
+			String errorMessage = String.format("Failed to recovery system data because of %s", e.getMessage());
+			throw new StartupException(errorMessage);
 		}
 		// When registering statMonitor, we should start recovering some statistics with latest values stored
 		// Warn: registMonitor() method should be called after systemDataRecovery()
@@ -74,21 +80,21 @@ public class IoTDB implements IoTDBMBean{
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
 	}
-	
+
 	public void deactivate(){
 		registerManager.deregisterAll();
 		JMXService.deregisterMBean(MBEAN_NAME);
 	}
-	
+
 	@Override
 	public void stop() {
 		deactivate();
 	}
-	
+
 	private void setUncaughtExceptionHandler(){
 		Thread.setDefaultUncaughtExceptionHandler(new IoTDBDefaultThreadExceptionHandler());
 	}
-	
+
 	/**
 	 * Recover data using system log.
 	 * @throws RecoverException 
@@ -105,12 +111,10 @@ public class IoTDB implements IoTDBMBean{
 		writeLogManager.recover();
 		config.enableWal = enableWal;
 	}
-	
-	
+
 	public static void main(String[] args) {
 		IoTDB daemon = IoTDB.getInstance();
 		daemon.active();
-
 	}
 
 }

@@ -1,10 +1,12 @@
 package cn.edu.tsinghua.iotdb.service;
 
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+
 public interface IService {
 	/**
 	 * Start current service.
 	 */
-	void start();
+	void start() throws StartupException;
 
 	/**
 	 * Stop current service.

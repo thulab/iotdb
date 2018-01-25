@@ -4,6 +4,7 @@ import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.writelog.node.ExclusiveWriteLogNode;
@@ -128,15 +129,20 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
     }
 
 	@Override
-	public void start() {
-        if(!config.enableWal)
-            return;
-        if(syncThread == null || !syncThread.isAlive()) {
-            InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, ThreadName.WAL_DAEMON.getName());
-            InstanceHolder.instance.syncThread.start();
-        } else {
-            logger.warn("MultiFileLogNodeManager has already started");
-        }
+	public void start() throws StartupException {
+		try {
+			if(!config.enableWal)
+	            return;
+	        if(syncThread == null || !syncThread.isAlive()) {
+	            InstanceHolder.instance.syncThread = new Thread(InstanceHolder.instance.syncTask, ThreadName.WAL_DAEMON.getName());
+	            InstanceHolder.instance.syncThread.start();
+	        } else {
+	            logger.warn("MultiFileLogNodeManager has already started");
+	        }
+		} catch (Exception e) {
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
+		}
 	}
 
 	@Override

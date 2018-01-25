@@ -17,6 +17,7 @@ import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 
 /**
@@ -112,7 +113,7 @@ public class EnvironmentUtils {
 		config.enableMemMonitor = false;
 	}
 
-	public static void envSetUp() {
+	public static void envSetUp() throws StartupException {
 		tsfileConfig.duplicateIncompletedPage = true;
 		// disable the memory control
 		config.enableMemMonitor = false;

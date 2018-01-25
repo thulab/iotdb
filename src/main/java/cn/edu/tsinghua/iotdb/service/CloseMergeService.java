@@ -12,6 +12,7 @@ import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 
 /**
  * A service that triggers close and merge operation regularly
@@ -152,8 +153,13 @@ public class CloseMergeService implements IService{
 	}
 
 	@Override
-	public void start() {
-		startService();
+	public void start() throws StartupException {
+		try {
+			startService();
+		} catch (Exception e) {
+			String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
+			throw new StartupException(errorMessage);
+		}
 	}
 
 	@Override

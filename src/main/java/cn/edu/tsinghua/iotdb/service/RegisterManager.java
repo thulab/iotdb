@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+
 public class RegisterManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RegisterManager.class);
 	private List<IService> iServices;
@@ -13,7 +15,7 @@ public class RegisterManager {
 		iServices = new ArrayList<>();
 	}
 	
-	public void register(IService service){
+	public void register(IService service) throws StartupException {
 		for(IService s: iServices){
 			if(s.getID() == service.getID()){
 				LOGGER.info("{} has already been registered. skip", service.getID().getName());
@@ -22,12 +24,15 @@ public class RegisterManager {
 		}
 		iServices.add(service);
 		service.start();
-		LOGGER.info("{} has been registered.", service.getID().getName());
 	}
 	
 	public void deregisterAll(){
 		for(IService service: iServices){
-			service.stop();
+			try {
+				service.stop();
+			} catch (Exception e) {
+				LOGGER.error("Failed to stop {} because {}", service.getID().getName(), e.getMessage());
+			}
 		}
 		iServices.clear();
 		LOGGER.info("deregister all service.");
