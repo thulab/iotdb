@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.monitor;
 
-import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
@@ -124,7 +123,7 @@ public class StatMonitor implements IService{
                 mManager.setStorageLevelToMTree(prefix);
             }
         } catch (Exception e){
-            LOGGER.error("MManager cannot set storage level to MTree, because ", e);
+            LOGGER.error("MManager cannot set storage level to MTree, because {}", e.getMessage());
         }
     }
 
@@ -170,10 +169,9 @@ public class StatMonitor implements IService{
     public void activate() {
 
         service = IoTDBThreadPoolFactory.newScheduledThreadPool(1, ThreadName.STAT_MONITOR.getName());
-        ScheduledFuture<?> future = service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
+        service.scheduleAtFixedRate(new StatMonitor.statBackLoop(),
                 1, backLoopPeriod, TimeUnit.SECONDS
         );
-//        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
     }
 
     public void clearIStatisticMap() {
@@ -312,35 +310,30 @@ public class StatMonitor implements IService{
 
     class statBackLoop implements Runnable {
         public void run() {
-        	try {
-        		long currentTimeMillis = System.currentTimeMillis();
-                long seconds = (currentTimeMillis - runningTimeMillis)/1000;
-                if (seconds - statMonitorDetectFreqSec >= 0) {
-                    runningTimeMillis = currentTimeMillis;
-                    // delete time-series data
-                    FileNodeManager fManager = FileNodeManager.getInstance();
-                    try {
-                        for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
-                            for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
-                                fManager.delete(entry.getKey(),
-                                        statParamName,
-                                        currentTimeMillis - statMonitorRetainIntervalSec * 1000,
-                                        TSDataType.INT64
-                                );
-                            }
-                        }
-                    }catch (FileNodeManagerException e) {
-                        LOGGER.error("Error occurred when deleting statistics information periodically, because", e);
-                        e.printStackTrace();
-                    }
-                }
-                HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
-                insert(tsRecordHashMap);
-                numBackLoop.incrementAndGet();
+			try {
+				long currentTimeMillis = System.currentTimeMillis();
+				long seconds = (currentTimeMillis - runningTimeMillis) / 1000;
+				if (seconds - statMonitorDetectFreqSec >= 0) {
+					runningTimeMillis = currentTimeMillis;
+					// delete time-series data
+					FileNodeManager fManager = FileNodeManager.getInstance();
+					try {
+						for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
+							for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
+								fManager.delete(entry.getKey(), statParamName, currentTimeMillis - statMonitorRetainIntervalSec * 1000, TSDataType.INT64);
+							}
+						}
+					} catch (FileNodeManagerException e) {
+						LOGGER.error("Error occurred when deleting statistics information periodically, because", e);
+						e.printStackTrace();
+					}
+				}
+				HashMap<String, TSRecord> tsRecordHashMap = gatherStatistics();
+				insert(tsRecordHashMap);
+				numBackLoop.incrementAndGet();
 			} catch (Exception e) {
 				LOGGER.error("Error occurred in Stat Monitor thread", e);
 			}
-            
         }
     }
 

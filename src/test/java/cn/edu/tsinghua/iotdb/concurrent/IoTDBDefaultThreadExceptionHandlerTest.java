@@ -30,7 +30,6 @@ public class IoTDBDefaultThreadExceptionHandlerTest {
 		for(int i = 0; i < num; i++){
 			TestThread thread = new TestThread();
 			thread.start();
-			thread.join();
 		}
 		Thread.sleep(100);
 		assertEquals(count.get(), num);

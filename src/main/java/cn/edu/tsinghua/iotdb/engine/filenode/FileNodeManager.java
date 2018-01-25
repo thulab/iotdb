@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -310,8 +309,7 @@ public class FileNodeManager implements IStatistic, IService {
                         LOGGER.info(
                                 "The overflow file or metadata reaches the threshold, merge the filenode processor {}",
                                 filenodeName);
-                        Future<?> future = fileNodeProcessor.submitToMerge();
-                        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
+                        fileNodeProcessor.submitToMerge();
                     }
                 } catch (ProcessorException e) {
                     LOGGER.error("Insert into overflow error, the reason is {}", e.getMessage());
@@ -453,8 +451,7 @@ public class FileNodeManager implements IStatistic, IService {
                 if (shouldMerge) {
                     LOGGER.info("The overflow file or metadata reaches the threshold, merge the filenode processor {}",
                             filenodeName);
-                    Future<?> future = fileNodeProcessor.submitToMerge();
-                    IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
+                    fileNodeProcessor.submitToMerge();
                 }
             } catch (OverflowProcessorException e) {
                 LOGGER.error("Update error: deltaObjectId {}, measurementId {}, startTime {}, endTime {}, value {}",
@@ -512,8 +509,7 @@ public class FileNodeManager implements IStatistic, IService {
                         LOGGER.info(
                                 "The overflow file or metadata reaches the threshold, merge the filenode processor {}",
                                 filenodeName);
-                        Future<?> future = fileNodeProcessor.submitToMerge();
-                        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
+                        fileNodeProcessor.submitToMerge();
                     }
                 } catch (OverflowProcessorException e) {
                     LOGGER.error("Delete error: the deltaObjectId {}, the measurementId {}, the timestamp {}",
@@ -633,8 +629,7 @@ public class FileNodeManager implements IStatistic, IService {
                 int time = 2;
                 while (!task.isDone()) {
                     try {
-                        LOGGER.info("Waiting for the end of merge, already waiting for {}s, continue to wait anothor {}s",
-                                totalTime, time);
+                        LOGGER.info("Waiting for the end of merge, already waiting for {}s, continue to wait anothor {}s", totalTime, time);
                         TimeUnit.SECONDS.sleep(time);
                         totalTime += time;
                         if (time < 32) {
@@ -649,8 +644,7 @@ public class FileNodeManager implements IStatistic, IService {
             }
             fileNodeManagerStatus = FileNodeManagerStatus.NONE;
         } else {
-            LOGGER.warn("Failed to merge all overflowed filenode, because filenode manager status is {}",
-                    fileNodeManagerStatus);
+            LOGGER.warn("Failed to merge all overflowed filenode, because filenode manager status is {}", fileNodeManagerStatus);
         }
     }
 
@@ -985,8 +979,7 @@ public class FileNodeManager implements IStatistic, IService {
                 try {
                     boolean isMerge = processor.flush();
                     if (isMerge) {
-                        Future<?> future = processor.submitToMerge();
-                        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
+                        processor.submitToMerge();
                     }
                 } finally {
                     processor.unlock(true);
@@ -1013,8 +1006,7 @@ public class FileNodeManager implements IStatistic, IService {
                 try {
                     boolean isMerge = processor.flush();
                     if (isMerge) {
-                        Future<?> future = processor.submitToMerge();
-                        IoTDBDefaultThreadExceptionHandler.futureTaskHandler(future);
+                        processor.submitToMerge();
                     }
                 } finally {
                     processor.writeUnlock();
@@ -1038,7 +1030,7 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			closeAll();
 		} catch (FileNodeManagerException e) {
-			LOGGER.error("Failed to close file node manager because ",e);
+			LOGGER.error("Failed to close file node manager because {}.", e.getMessage());
 		}
 	}
 

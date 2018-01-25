@@ -20,13 +20,13 @@ public abstract class BasicMemController implements IService{
                 monitorThread = new MemMonitorThread(config);
                 monitorThread.start();
             } else {
-                logger.error("Attempt to start MemController but it is already started");
+                logger.error("Attempt to start MemController but it has already started");
             }
             if(memStatisticThread == null) {
                 memStatisticThread = new MemStatisticThread();
                 memStatisticThread.start();
             } else {
-                logger.error("Attempt to start MemController but it is already started");
+                logger.warn("Attempt to start MemController but it has already started");
             }
         }
         logger.info("MemController starts");

@@ -18,15 +18,15 @@ public class IoTDBDefaultThreadExceptionHandler implements Thread.UncaughtExcept
 		LOGGER.error("Exception in thread {}-{}", t.getName(), t.getId(), e);
 	}
 
-	public static void futureTaskHandler(Future<?> future){
-		if(future != null){
-			try {
-				future.get();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			} catch (ExecutionException e) {
-				LOGGER.error("Exception in future task {}", future.toString(), e);
-			}
-		}
-	}
+//	public static void futureTaskHandler(Future<?> future){
+//		if(future != null){
+//			try {
+//				future.get();
+//			} catch (InterruptedException e) {
+//				Thread.currentThread().interrupt();
+//			} catch (ExecutionException e) {
+//				LOGGER.error("Exception in future task {}", future.toString(), e);
+//			}
+//		}
+//	}
 }

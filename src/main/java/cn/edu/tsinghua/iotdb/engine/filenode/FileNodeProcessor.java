@@ -721,7 +721,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							"The filenode processor {} merge start time is {}, merge end time is {}, merge consumes {}ms.",
 							getProcessorName(), startDateTime, endDateTime, intervalTime);
 				} catch (FileNodeProcessorException e) {
-					e.printStackTrace();
 					LOGGER.error("The filenode processor {} encountered an error when merging.", getProcessorName(), e);
 					throw new ErrorDebugException(e);
 				}

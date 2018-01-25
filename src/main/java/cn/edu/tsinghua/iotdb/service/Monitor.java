@@ -16,7 +16,7 @@ public class Monitor implements MonitorMBean, IService{
 	public long getDataSizeInByte() {
 		try {
 			return FileUtils.sizeOfDirectory(new File(config.dataDir));
-		} catch (Exception e) {			
+		} catch (Exception e) {
 			return -1;
 		}
 	}

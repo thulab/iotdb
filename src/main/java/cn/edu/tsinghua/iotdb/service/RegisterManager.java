@@ -16,13 +16,13 @@ public class RegisterManager {
 	public void register(IService service){
 		for(IService s: iServices){
 			if(s.getID() == service.getID()){
-				LOGGER.info("{} has already been registed. skip", service.getID().getName());
+				LOGGER.info("{} has already been registered. skip", service.getID().getName());
 				return;
 			}
 		}
 		iServices.add(service);
 		service.start();
-		LOGGER.info("{} has been registed.", service.getID().getName());
+		LOGGER.info("{} has been registered.", service.getID().getName());
 	}
 	
 	public void deregisterAll(){

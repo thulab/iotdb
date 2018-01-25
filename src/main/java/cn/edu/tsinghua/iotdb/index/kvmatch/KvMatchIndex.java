@@ -169,15 +169,15 @@ public class KvMatchIndex  implements IoTIndex {
                 Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
 				
                 indexFls.add(indexFile);
-                try {
-                    Boolean rs = result.get();
-                    if (!rs) {
-                        overall = false;
-                        break;
-                    }
-                } catch (Exception e) {
+				try {
+					Boolean rs = result.get();
+					if (!rs) {
+						overall = false;
+						break;
+					}
+				} catch (Exception e) {
 					logger.error("Error occurred when building index because of {}", e.getMessage());
-                }
+				}
 				
 				TsFile tsfile = (TsFile)(map.get("tsfile"));
 				tsfile.close();
@@ -567,13 +567,13 @@ public class KvMatchIndex  implements IoTIndex {
         // collect results
         List<Pair<Pair<Long, Long>, Double>> overallResult = new ArrayList<>();
         for (Future<List<Pair<Pair<Long, Long>, Double>>> result : futureResults) {
-            try {
-                if (result.get() != null) {
-                    overallResult.addAll(result.get());
-                }
-		    } catch (Exception e) {
-                logger.error("Error occurred when validating candidates because of {}", e.getMessage());
-		    }
+			try {
+				if (result.get() != null) {
+					overallResult.addAll(result.get());
+				}
+			} catch (Exception e) {
+				logger.error("Error occurred when validating candidates because of {}", e.getMessage());
+			}
         }
         return overallResult;
     }
