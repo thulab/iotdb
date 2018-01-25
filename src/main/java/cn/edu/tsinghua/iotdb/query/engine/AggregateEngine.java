@@ -4,8 +4,8 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
-import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
+import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -176,7 +176,7 @@ public class AggregateEngine {
 
                 // the query prefix here must not be confilct with method querySeriesForCross()
                 cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader)
-                        RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                        RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                         null,  null, null,
                         ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal), ReaderType.AGGREGATE);
 
@@ -226,7 +226,7 @@ public class AggregateEngine {
             String measurementUID = path.getMeasurementToString();
 
             cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader)
-                    RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                    RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                     queryTimeFilter, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber), ReaderType.AGGREGATE);
 
             //if (recordReader.getInsertMemoryData() == null) {
@@ -256,7 +256,7 @@ public class AggregateEngine {
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);
 
         cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
-                RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+                RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {

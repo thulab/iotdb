@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.iotdb.index.common.QueryDataSetIterator;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
-import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

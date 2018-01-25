@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.aggregation;
+package cn.edu.tsinghua.iotdb.query.aggregationv2;
 
 
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;

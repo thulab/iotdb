@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.tool.ImportCsv;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;

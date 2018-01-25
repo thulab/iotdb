@@ -1,39 +1,22 @@
 package cn.edu.tsinghua.iotdb.query.v2;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
-import cn.edu.tsinghua.iotdb.query.reader.InsertOperation;
-import cn.edu.tsinghua.iotdb.query.reader.UpdateOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
-import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
-import cn.edu.tsinghua.tsfile.encoding.decoder.DeltaBinaryDecoder;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.format.Digest;
-import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 

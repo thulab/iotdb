@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -160,20 +161,22 @@ public class WriteLogManager {
      * @throws IOException file close error
      */
     public void close() throws IOException {
-        for (Map.Entry<String, WriteLogNode> entry : logNodeMaps.entrySet()) {
-            entry.getValue().closeStreams();
-        }
-        if(timingService.isShutdown()){
-        	return;
-        }
-        timingService.shutdown();
-        
-        try {
-            timingService.awaitTermination(10, TimeUnit.SECONDS);
-            LOGGER.info("shutdown wal server successfully");
-        } catch (InterruptedException e) {
-            LOGGER.error("wal manager timing service could not be shutdown");
-            // e.printStackTrace();
+        if (TsfileDBDescriptor.getInstance().getConfig().enableWal){
+            for (Map.Entry<String, WriteLogNode> entry : logNodeMaps.entrySet()) {
+                entry.getValue().closeStreams();
+            }
+            if(timingService.isShutdown()){
+                return;
+            }
+            timingService.shutdown();
+
+            try {
+                timingService.awaitTermination(10, TimeUnit.SECONDS);
+                LOGGER.info("shutdown wal server successfully");
+            } catch (InterruptedException e) {
+                LOGGER.error("wal manager timing service could not be shutdown");
+                // e.printStackTrace();
+            }
         }
     }
 }

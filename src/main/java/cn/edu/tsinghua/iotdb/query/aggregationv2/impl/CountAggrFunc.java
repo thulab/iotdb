@@ -1,7 +1,7 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2;
+package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -11,53 +11,60 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import java.io.IOException;
 import java.util.List;
 
-public class MaxTimeAggrFunc extends AggregateFunction {
+public class CountAggrFunc extends AggregateFunction {
 
-    private boolean hasSetValue = false;
-
-    public MaxTimeAggrFunc() {
-        super(AggregationConstant.MAX_TIME, TSDataType.INT64);
+    public CountAggrFunc() {
+        super(AggregationConstant.COUNT, TSDataType.INT64);
     }
 
     @Override
     public void putDefaultValue() {
-        resultData.putEmptyTime(0);
+        if (resultData.timeLength == 0) {
+            resultData.putTime(0);
+            resultData.putLong(0);
+        }
     }
 
     @Override
     public void calculateValueFromPageHeader(PageHeader pageHeader) {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
+            resultData.putLong(0);
         }
 
-        long timestamp = pageHeader.data_page_header.max_timestamp;
-        updateMaxTime(timestamp);
+//        System.out.println("PageHeader>>>>>>>>>>>>" + pageHeader.data_page_header.num_rows + " " + pageHeader.data_page_header.min_timestamp
+//        + "," + pageHeader.data_page_header.max_timestamp);
+        long preValue = resultData.getLong(0);
+        preValue += pageHeader.data_page_header.num_rows;
+        resultData.setLong(0, preValue);
+
     }
 
     @Override
     public void calculateValueFromDataPage(DynamicOneColumnData dataInThisPage) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
+            resultData.putLong(0);
         }
 
-        if (dataInThisPage.valueLength == 0) {
-            return;
-        }
-        long timestamp = dataInThisPage.getTime(dataInThisPage.valueLength - 1);
-        updateMaxTime(timestamp);
+        long preValue = resultData.getLong(0);
+        preValue += dataInThisPage.valueLength;
+        resultData.setLong(0, preValue);
     }
 
     @Override
     public void calculateValueFromLeftMemoryData(InsertDynamicData insertMemoryData) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
+            resultData.putLong(0);
         }
 
+        long preValue = resultData.getLong(0);
         while (insertMemoryData.hasNext()) {
-            long time = insertMemoryData.getCurrentMinTime();
-            updateMaxTime(time);
+            preValue += 1;
             insertMemoryData.removeCurrentValue();
         }
+        resultData.setLong(0, preValue);
     }
 
     @Override
@@ -65,13 +72,16 @@ public class MaxTimeAggrFunc extends AggregateFunction {
             throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
+            resultData.putLong(0);
         }
 
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
-                    updateMaxTime(timestamps.get(timeIndex));
-                    timeIndex ++;
+                    long preValue = resultData.getLong(0);
+                    preValue += 1;
+                    resultData.setLong(0, preValue);
+                    timeIndex++;
                     insertMemoryData.removeCurrentValue();
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
@@ -89,6 +99,7 @@ public class MaxTimeAggrFunc extends AggregateFunction {
     @Override
     public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
                                        DynamicOneColumnData data) {
+
         if (resultData.emptyTimeLength == 0) {
             if (resultData.timeLength == 0) {
                 resultData.putEmptyTime(partitionStart);
@@ -102,7 +113,7 @@ public class MaxTimeAggrFunc extends AggregateFunction {
                 resultData.putEmptyTime(partitionStart);
         }
 
-        long maxTime = -1;
+        long valueSum = 0;
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -110,34 +121,20 @@ public class MaxTimeAggrFunc extends AggregateFunction {
             } else if (time < intervalStart || time < partitionStart) {
                 data.curIdx++;
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
-                if (maxTime < data.getTime(data.curIdx)) {
-                    maxTime = data.getTime(data.curIdx);
-                }
+                valueSum++;
                 data.curIdx++;
             }
         }
 
-        if (maxTime != -1) {
+        if (valueSum > 0) {
             if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
                 resultData.removeLastEmptyTime();
                 resultData.putTime(partitionStart);
-                resultData.putLong(maxTime);
+                resultData.putLong(valueSum);
             } else {
-                if (maxTime > resultData.getLong(resultData.valueLength - 1)) {
-                    resultData.setLong(resultData.valueLength - 1, maxTime);
-                }
+                long preSum = resultData.getLong(resultData.valueLength - 1);
+                resultData.setLong(resultData.valueLength - 1, preSum + valueSum);
             }
-        }
-    }
-
-    private void updateMaxTime(long timestamp) {
-        if (!hasSetValue) {
-            resultData.putLong(timestamp);
-            hasSetValue = true;
-        } else {
-            long maxt = resultData.getLong(0);
-            maxt = maxt > timestamp ? maxt : timestamp;
-            resultData.setLong(0, maxt);
         }
     }
 }
