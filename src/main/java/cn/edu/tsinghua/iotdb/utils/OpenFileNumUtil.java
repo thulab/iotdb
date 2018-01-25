@@ -12,7 +12,8 @@ public class OpenFileNumUtil {
     private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
     private static int pid = -1;
 
-    private static final String SEARCH_PID = "ps -aux | grep -i %s | grep -v grep";
+    private static final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
+    private static final String SEARCH_PID_MAC = "ps aux | grep -i %s | grep -v grep";
     private static final String SEARCH_OPEN_DATA_FILE_BY_PID = "lsof -p %d";
     private static String cmds[] = {"/bin/bash", "-c", ""};
     private static OpenFileNumUtil INSTANCE = null;
@@ -43,9 +44,15 @@ public class OpenFileNumUtil {
         Process pro1;
         Runtime r = Runtime.getRuntime();
         String filter = "IOTDB_HOME";
+        String os = System.getProperty("os.name").toLowerCase();
 
         try {
-            String command = String.format(SEARCH_PID, filter);
+            String command ;
+            if(os.startsWith("linux")) {
+                command = String.format(SEARCH_PID_LINUX, filter);
+            } else {
+                command = String.format(SEARCH_PID_MAC, filter);
+            }
             //System.out.println(command);
             cmds[2] = command;
             pro1 = r.exec(cmds);
@@ -179,14 +186,14 @@ public class OpenFileNumUtil {
     }
 
     /**
-     * 正确性检查并返回最终结果列表，若PID异常会返回-1
+     * 正确性检查并返回最终结果列表，若PID异常会返回-1，若操作系统不支持则返回-2
      *
      * @return list
      */
     public ArrayList<Integer> get() {
         String os = System.getProperty("os.name").toLowerCase();
         ArrayList<Integer> list = null;
-        //判断当前操作系统，目前仅支持Linux和Mac OS
+        //判断当前操作系统，目前仅支持Linux和Mac OS，其他Linux系的操作系统行为不明确，暂且认为也不支持
         if(os.startsWith("linux") || os.startsWith("mac")) {
             //如果pid不合理，再次尝试获取
             if (pid < 0) {
