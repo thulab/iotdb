@@ -14,7 +14,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.page.PageWriterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.SeriesWriterImpl;
-import org.junit.*;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

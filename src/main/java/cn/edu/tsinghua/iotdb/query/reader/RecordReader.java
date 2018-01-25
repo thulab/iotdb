@@ -23,8 +23,6 @@ import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.
  */
 public class RecordReader {
 
-    static final Logger logger = LoggerFactory.getLogger(RecordReader.class);
-
     protected String deltaObjectId, measurementId;
 
     /** data type **/

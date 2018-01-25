@@ -5,7 +5,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
-import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import org.slf4j.Logger;
@@ -19,14 +18,14 @@ import java.io.IOException;
  *
  * @author Jinrui Zhang
  */
-public class RecordReaderFactoryV2 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecordReaderFactoryV2.class);
-    private static RecordReaderFactoryV2 instance = new RecordReaderFactoryV2();
+public class RecordReaderFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecordReaderFactory.class);
+    private static RecordReaderFactory instance = new RecordReaderFactory();
 
     private FileNodeManager fileNodeManager;
     private ReadLockManager readLockManager;
 
-    private RecordReaderFactoryV2() {
+    private RecordReaderFactory() {
         fileNodeManager = FileNodeManager.getInstance();
         readLockManager = ReadLockManager.getInstance();
     }
@@ -87,7 +86,7 @@ public class RecordReaderFactoryV2 {
         return null;
     }
 
-    public static RecordReaderFactoryV2 getInstance() {
+    public static RecordReaderFactory getInstance() {
         return instance;
     }
 

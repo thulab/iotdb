@@ -5,9 +5,9 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
-import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
+import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
 import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
-import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactoryV2;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -365,7 +365,7 @@ public class GroupByEngineWithFilter {
             String deltaObjectId = path.getDeltaObjectToString();
             String measurementId = path.getMeasurementToString();
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
-            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectId, measurementId,
+            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null, null,  null, recordReaderPrefix, ReaderType.QUERY);
 
 
@@ -393,7 +393,7 @@ public class GroupByEngineWithFilter {
         //TODO may have dnf conflict
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(valueFilterNumber);
 
-        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactoryV2.getInstance().getRecordReader(deltaObjectUID, measurementUID,
+        QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null,  queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
         if (res == null) {
