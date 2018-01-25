@@ -63,6 +63,14 @@ public class RecordReader {
     /** memtable data in memory **/
     protected RawSeriesChunk memRawSeriesChunk;
 
+    public OverflowInsertDataReader getOverflowSeriesInsertReader() {
+        return overflowSeriesInsertReader;
+    }
+
+    public OverflowOperationReader getOverflowOperationReader() {
+        return overflowOperationReader;
+    }
+
     /** overflow insert data reader **/
     protected OverflowInsertDataReader overflowSeriesInsertReader;
 
