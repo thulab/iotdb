@@ -94,7 +94,7 @@ public class PrimitiveMemSeries implements IMemSeries {
         }
         List<TimeValuePair> ret = new ArrayList<>();
         treeMap.forEach((k, v) -> {
-            ret.add(new TimeValuePair(k, v));
+            ret.add(new TreeSetMemSeries.TimeValuePairInMemTable(k, v));
         });
         return ret;
     }

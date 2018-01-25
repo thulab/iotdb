@@ -16,7 +16,7 @@ public class TsfileDBConfig {
 	/**
 	 * Is write ahead log enable
 	 */
-	public boolean enableWal = true;
+	public boolean enableWal = false;
 
 	/**
 	 * When the total number of write ahead log in the file and memory reaches
