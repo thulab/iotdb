@@ -139,7 +139,7 @@ public class TreeSetMemSeries implements IMemSeries{
         return treeSet.size();
     }
 
-    public class TimeValuePairInMemTable extends TimeValuePair implements Comparable{
+    public static class TimeValuePairInMemTable extends TimeValuePair implements Comparable{
 
         public TimeValuePairInMemTable(long timestamp, TsPrimitiveType value) {
             super(timestamp, value);

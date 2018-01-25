@@ -3,11 +3,11 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 /**
- * @author Rong Kang
+ * Created by zhangjinrui on 2018/1/25.
  */
-public class TreeSetMemTable extends AbstractMemTable {
+public class PrimitiveMemTable extends AbstractMemTable {
     @Override
     protected IMemSeries genMemSeries(TSDataType dataType) {
-        return new TreeSetMemSeries(dataType);
+        return new PrimitiveMemSeries(dataType);
     }
 }
