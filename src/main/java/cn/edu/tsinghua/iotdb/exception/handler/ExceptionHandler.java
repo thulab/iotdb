@@ -47,13 +47,13 @@ public class ExceptionHandler {
             }
             reader.close();
         } catch (IOException e) {
-            LOGGER.error("Read file error. File does not exist or file is broken. File path: {}.",url);
+            LOGGER.error("Read file error. File does not exist or file is broken. File path: {}.Because: {}.",url,e.getMessage());
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    LOGGER.error("Fail to close file: {}.",url);
+                    LOGGER.error("Fail to close file: {}. Because: {}.",url,e.getMessage());
                 }
             }
         }
@@ -65,13 +65,13 @@ public class ExceptionHandler {
                     new FileOutputStream(filePath, true),"UTF-8"));
             out.write("\r\n"+errCode+" && "+errEnum+" && "+msg_EN+" && "+msg_CN);
         } catch (Exception e) {
-            LOGGER.error("Fail to open file: {}.",filePath);
+            LOGGER.error("Fail to open file: {}. Because: {}.",filePath,e.getMessage());
         } finally {
             try {
                 if(out!=null)
                     out.close();
             } catch (IOException e) {
-                LOGGER.error("Fail to close file: {}.",filePath);
+                LOGGER.error("Fail to close file: {}. Because: {}.",filePath,e.getMessage());
             }
         }
     }
@@ -92,7 +92,6 @@ public class ExceptionHandler {
 
             while ((tempString = reader.readLine()) != null) {
                 String[] tempRes = tempString.split(" && ");
-                //builder.append("[Error: "+tempRes[0]+"] "+tempRes[1]+" "+tempRes[2]+" ("+tempRes[3]+")\r\n");
                 builder.append("[Error: "+tempRes[0]+"] "+tempRes[1]+" "+tempRes[2]+" (");
                 for(int i=3;i<tempRes.length;i++){
                     if(i==tempRes.length-1){
@@ -108,21 +107,21 @@ public class ExceptionHandler {
             reader.close();
             out.close();
         } catch (IOException e) {
-            LOGGER.error("Fail to convert file to document. File path: {}, document path: {}", filePath, docPath);
+            LOGGER.error("Fail to convert file to document. File path: {}, document path: {}. Because: {}.", filePath, docPath,e.getMessage());
         } finally {
             try {
                 if(reader != null){
                     reader.close();
                 }
             }catch(IOException e) {
-                LOGGER.error("Fail to close file: {}",filePath);
+                LOGGER.error("Fail to close file: {}. Because: {}.",filePath,e.getMessage());
             }
             try{
                 if(out != null){
                     out.close();
                 }
             } catch (IOException e) {
-                LOGGER.error("Fail to close document: {}", docPath);
+                LOGGER.error("Fail to close document: {}. Because: {}.", docPath,e.getMessage());
             }
         }
     }
