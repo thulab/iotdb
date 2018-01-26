@@ -531,7 +531,6 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			if (flushMemTable == null) {
 				flushMemTable = workMemTable;
-				//workMemTable = new TreeSetMemTable();
 				workMemTable = new PrimitiveMemTable();
 			}
 		} finally {

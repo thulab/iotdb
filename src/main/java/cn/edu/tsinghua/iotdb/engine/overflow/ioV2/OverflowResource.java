@@ -183,7 +183,6 @@ public class OverflowResource {
 			if (insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
 				for (TimeSeriesChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
 					// filter
-					//
 					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
 					}
