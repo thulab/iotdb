@@ -1,0 +1,9 @@
+﻿2000 && CR_UNKNOWN_ERROR && Unknown MySQL error && 未知MySQL错误
+2001 && CR_NO_PARAMETERS EXISTS && No parameters exist in the statement && 语句中无变量
+2002 && CR_INVALID_PARAMETER NO && Invalid parameter number && 无效的变量
+2003 && CR_CONN_HOST_ERROR && Can't connect to MySQL server on {}({}) && 无法连接到MySQL服务器
+2061 && CR_AUTH_PLUGIN_ERR && Authentication plugin {} reported error: {} && 验证失败
+2062 && CR_INSECURE_API_ERR && Insecure API function call: {} && 不安全的函数调用
+2064 && CR_OUT_OF_MEMORY && MySQL client ran out of memory && MySQL客户端内存溢出
+2130 && CR_NO_PREPARE_STMT && Statement not prepared && 语句未就绪
+2022 && CR_CON_FAIL_ERR && Fail to connect. && 连接失败

@@ -13,6 +13,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.handler.ExceptionHandler;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 
 import org.apache.thrift.transport.TTransportException;
@@ -32,6 +33,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.iotdb.exception.handler.*;
 
 public class IoTDB implements IoTDBMBean {
 
@@ -99,8 +101,11 @@ public class IoTDB implements IoTDBMBean {
 		registMonitor();
 		registIoTDBServer();
 		startCloseAndMergeServer();
+
+		initErrorInformation();
 		// StatMonitor should start at the end
 		enableStatMonitor();
+
 	}
 
 	private void maybeInitJmx() {
@@ -156,6 +161,10 @@ public class IoTDB implements IoTDBMBean {
             statMonitor.activate();
         }
     }
+
+    private void initErrorInformation(){
+		ExceptionHandler.getInstance().loadInfo();
+	}
 	/**
 	 * Recover data using system log.
 	 *

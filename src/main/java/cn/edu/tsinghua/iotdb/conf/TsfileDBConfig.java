@@ -204,6 +204,10 @@ public class TsfileDBConfig {
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
+	/*
+	* Set the language version when loading file including error information, default value is "EN"
+	* */
+	public String languageVersion = "EN";
 
 	public TsfileDBConfig() {}
 

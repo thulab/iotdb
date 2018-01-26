@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
+import cn.edu.tsinghua.iotdb.exception.handler.Language;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +133,11 @@ public class TsfileDBDescriptor {
 			conf.enableMemMonitor = Boolean.parseBoolean(properties.getProperty("enable_mem_monitor", conf.enableMemMonitor + "").trim());
 			conf.enableSmallFlush = Boolean.parseBoolean(properties.getProperty("enable_small_flush", conf.enableSmallFlush + "").trim());
 			conf.smallFlushInterval = Long.parseLong(properties.getProperty("small_flush_interval", conf.smallFlushInterval + "").trim());
+
+			conf.languageVersion = properties.getProperty("language_version", conf.languageVersion + "").trim();
+			if(!Language.isSupported(conf.languageVersion)){
+				conf.languageVersion = "EN";
+			}
 
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {
