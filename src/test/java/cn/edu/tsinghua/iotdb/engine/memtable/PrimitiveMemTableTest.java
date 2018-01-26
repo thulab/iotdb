@@ -18,6 +18,23 @@ import java.util.Random;
 public class PrimitiveMemTableTest {
 
     @Test
+    public void memSeriesCloneTest() {
+        TSDataType dataType = TSDataType.INT32;
+        PrimitiveMemSeries series = new PrimitiveMemSeries(dataType);
+        int count = 1000;
+        for (int i = 0; i < count; i++) {
+            series.write(dataType, i, String.valueOf(i));
+        }
+        Iterator<TimeValuePair> it = series.query().iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            Assert.assertEquals(i, it.next().getTimestamp());
+            i++;
+        }
+        Assert.assertEquals(count, i);
+    }
+
+    @Test
     public void simpleTest() {
         IMemTable memTable = new PrimitiveMemTable();
         int count = 10;

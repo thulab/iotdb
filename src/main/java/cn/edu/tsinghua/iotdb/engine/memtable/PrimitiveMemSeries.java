@@ -8,10 +8,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
-
 /**
  * Created by zhangjinrui on 2018/1/25.
  */
@@ -87,16 +83,7 @@ public class PrimitiveMemSeries implements IMemSeries {
 
     @Override
     public Iterable<TimeValuePair> query() {
-        int length = list.size();
-        TreeMap<Long, TsPrimitiveType> treeMap = new TreeMap<>();
-        for (int i = 0; i < length; i++) {
-            treeMap.put(list.getTimestamp(i), genTsPrimitiveType(dataType, list.getValue(i)));
-        }
-        List<TimeValuePair> ret = new ArrayList<>();
-        treeMap.forEach((k, v) -> {
-            ret.add(new TreeSetMemSeries.TimeValuePairInMemTable(k, v));
-        });
-        return ret;
+        return new PrimitiveMemSeriesLazyIterable(dataType, cloneList());
     }
 
     @Override
@@ -111,5 +98,9 @@ public class PrimitiveMemSeries implements IMemSeries {
 
     private TsPrimitiveType genTsPrimitiveType(TSDataType dataType, Object v) {
         return TsPrimitiveType.getByType(dataType, v);
+    }
+
+    public PrimitiveArrayList cloneList() {
+        return list.clone();
     }
 }

@@ -90,6 +90,29 @@ public class PrimitiveArrayList {
     public int size() {
         return length;
     }
+
+    public PrimitiveArrayList clone() {
+        PrimitiveArrayList cloneList = new PrimitiveArrayList(clazz);
+        cloneList.values.clear();
+        cloneList.timestamps.clear();
+        for (Object valueArray : values) {
+            cloneList.values.add(cloneArray(valueArray, clazz));
+        }
+        for (Object timestampArray : timestamps) {
+            cloneList.timestamps.add((long[]) cloneArray(timestampArray, long.class));
+        }
+        cloneList.length = length;
+        cloneList.currentIndex = currentIndex;
+        cloneList.currentArrayIndex = currentArrayIndex;
+        cloneList.currentArraySize = currentArraySize;
+        return cloneList;
+    }
+
+    private Object cloneArray(Object array, Class clazz) {
+        Object cloneArray = Array.newInstance(clazz, Array.getLength(array));
+        System.arraycopy(array, 0, cloneArray, 0, Array.getLength(array));
+        return cloneArray;
+    }
 //    public void putBooleanTimeValuePair(long timestamps, boolean values){
 //        throw new UnsupportedOperationException("putBooleanTimeValuePair not supported for current PrimitiveArrayList");
 //    }
