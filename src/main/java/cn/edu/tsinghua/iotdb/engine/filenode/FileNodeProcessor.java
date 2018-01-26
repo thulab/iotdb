@@ -1326,6 +1326,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (recordWriter != null) {
 			recordWriter.close();
 		}
+		if (fileName == null) {
+			LOGGER.error("The filenode processor {} has no data after merge. the interval fle is {}",
+					getProcessorName(), backupIntervalFile);
+		}
 		backupIntervalFile.setRelativePath(fileName);
 		backupIntervalFile.overflowChangeType = OverflowChangeType.NO_CHANGE;
 		backupIntervalFile.setStartTimeMap(startTimeMap);

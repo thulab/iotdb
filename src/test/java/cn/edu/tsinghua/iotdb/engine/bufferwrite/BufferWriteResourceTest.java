@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.engine.bufferwriteV2.BufferWriteResource;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableTestUtils;
 import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
@@ -69,10 +70,27 @@ public class BufferWriteResourceTest {
 		assertEquals(insertRestorePath, bufferwriteResource.getRestoreFilePath());
 		bufferwriteResource.close(new FileSchema());
 	}
-	
+
 	@Test
-	public void testFlushAndGetMetadata(){
+	public void testFlushAndGetMetadata() throws IOException {
+		bufferwriteResource = new BufferWriteResource(processorName, insertRestorePath);
+		assertEquals(0, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
+				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 		IMemTable memTable = new TreeSetMemTable();
+		MemTableTestUtils.produceData(memTable, 10, 100, MemTableTestUtils.deltaObjectId0,
+				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0);
+		bufferwriteResource.flush(MemTableTestUtils.getFileSchema(), memTable);
+		assertEquals(0, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
+				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
+		bufferwriteResource.appendMetadata();
+		assertEquals(1, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
+				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
+		MemTableTestUtils.produceData(memTable, 200, 300, MemTableTestUtils.deltaObjectId0,
+				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0);
+		bufferwriteResource.appendMetadata();
+		assertEquals(1, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
+				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
+		bufferwriteResource.close(MemTableTestUtils.getFileSchema());
 	}
 
 	private void writeRestoreFile(ITsRandomAccessFileWriter out, int metadataNum) throws IOException {
