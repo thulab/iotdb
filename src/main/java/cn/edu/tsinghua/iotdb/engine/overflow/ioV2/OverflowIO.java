@@ -163,7 +163,7 @@ public class OverflowIO extends TsFileIOWriter {
 		return overflowReadWriter;
 	}
 
-	static class OverflowReadWriter extends OutputStream
+	public static class OverflowReadWriter extends OutputStream
 			implements ITsRandomAccessFileReader, ITsRandomAccessFileWriter {
 
 		private RandomAccessFile raf;
