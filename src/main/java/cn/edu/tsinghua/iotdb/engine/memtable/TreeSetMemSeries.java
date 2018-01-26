@@ -7,9 +7,11 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 
-public class TreeSetMemSeries implements IMemSeries{
+public class TreeSetMemSeries implements IMemSeries {
     private static final Logger logger = LoggerFactory.getLogger(TreeSetMemSeries.class);
 
     private final TreeSet<TimeValuePair> treeSet;
@@ -17,7 +19,7 @@ public class TreeSetMemSeries implements IMemSeries{
 
     public TreeSetMemSeries(TSDataType dataType) {
         this.dataType = dataType;
-        switch (dataType){
+        switch (dataType) {
             case BOOLEAN:
             case INT32:
             case INT64:
@@ -36,7 +38,7 @@ public class TreeSetMemSeries implements IMemSeries{
         }
     }
 
-    private void checkDataType(TSDataType dataType){
+    private void checkDataType(TSDataType dataType) {
         assert dataType == this.dataType;
     }
 
@@ -90,7 +92,7 @@ public class TreeSetMemSeries implements IMemSeries{
 
     @Override
     public void write(TSDataType dataType, long insertTime, String insertValue) {
-        switch (dataType){
+        switch (dataType) {
             case BOOLEAN:
                 putBoolean(insertTime, Boolean.valueOf(insertValue));
                 break;
@@ -124,8 +126,8 @@ public class TreeSetMemSeries implements IMemSeries{
     }
 
     @Override
-    public Iterable<TimeValuePair> query() {
-        return (Iterable<TimeValuePair>) treeSet.clone();
+    public List<TimeValuePair> getSortedTimeValuePairList() {
+        return new ArrayList<>(treeSet);
     }
 
     @Override
@@ -137,28 +139,5 @@ public class TreeSetMemSeries implements IMemSeries{
     public int size() {
         //TODO: this implement just returns the number of data points in the tree set.
         return treeSet.size();
-    }
-
-    public static class TimeValuePairInMemTable extends TimeValuePair implements Comparable{
-
-        public TimeValuePairInMemTable(long timestamp, TsPrimitiveType value) {
-            super(timestamp, value);
-        }
-
-        @Override
-        public int compareTo(Object object) {
-            TimeValuePairInMemTable o = (TimeValuePairInMemTable) object;
-            if(this.getTimestamp() == o.getTimestamp())
-                return 0;
-            return this.getTimestamp() < o.getTimestamp()? -1 : 1;
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if(object == null || !(object instanceof TimeValuePairInMemTable))
-                return false;
-            TimeValuePairInMemTable o = (TimeValuePairInMemTable) object;
-            return o.getTimestamp() == this.getTimestamp();
-        }
     }
 }

@@ -25,7 +25,7 @@ public class PrimitiveMemTableTest {
         for (int i = 0; i < count; i++) {
             series.write(dataType, i, String.valueOf(i));
         }
-        Iterator<TimeValuePair> it = series.query().iterator();
+        Iterator<TimeValuePair> it = series.getSortedTimeValuePairList().iterator();
         int i = 0;
         while (it.hasNext()) {
             Assert.assertEquals(i, it.next().getTimestamp());
@@ -51,7 +51,7 @@ public class PrimitiveMemTableTest {
         for (int i = 0; i < dataSize; i++) {
             memTable.write(deviceId, measurementId[0], TSDataType.INT32, i, String.valueOf(i));
         }
-        Iterator<TimeValuePair> tvPair = memTable.query(deviceId, measurementId[0], TSDataType.INT32).iterator();
+        Iterator<TimeValuePair> tvPair = memTable.query(deviceId, measurementId[0], TSDataType.INT32).getSortedTimeValuePairList().iterator();
         for (int i = 0; i < dataSize; i++) {
             TimeValuePair timeValuePair = tvPair.next();
             Assert.assertEquals(i, timeValuePair.getTimestamp());
@@ -66,7 +66,7 @@ public class PrimitiveMemTableTest {
         for (int i = 0; i < ret.length; i++) {
             memTable.write(deviceId, sensorId, dataType, ret[i].getTimestamp(), ret[i].getValue().getStringValue());
         }
-        Iterator<TimeValuePair> tvPair = memTable.query(deviceId, sensorId, dataType).iterator();
+        Iterator<TimeValuePair> tvPair = memTable.query(deviceId, sensorId, dataType).getSortedTimeValuePairList().iterator();
         Arrays.sort(ret);
         TimeValuePair last = null;
         for (int i = 0; i < ret.length; i++) {
@@ -110,22 +110,22 @@ public class PrimitiveMemTableTest {
         for (int i = 0; i < size; i++) {
             switch (dataType) {
                 case BOOLEAN:
-                    ret[i] = new TreeSetMemSeries.TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, true));
+                    ret[i] = new TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, true));
                     break;
                 case INT32:
-                    ret[i] = new TreeSetMemSeries.TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextInt()));
+                    ret[i] = new TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextInt()));
                     break;
                 case INT64:
-                    ret[i] = new TreeSetMemSeries.TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextLong()));
+                    ret[i] = new TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextLong()));
                     break;
                 case FLOAT:
-                    ret[i] = new TreeSetMemSeries.TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextFloat()));
+                    ret[i] = new TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextFloat()));
                     break;
                 case DOUBLE:
-                    ret[i] = new TreeSetMemSeries.TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextDouble()));
+                    ret[i] = new TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, rand.nextDouble()));
                     break;
                 case TEXT:
-                    ret[i] = new TreeSetMemSeries.TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, new Binary("a" + rand.nextDouble())));
+                    ret[i] = new TimeValuePairInMemTable(rand.nextLong(), TsPrimitiveType.getByType(dataType, new Binary("a" + rand.nextDouble())));
                     break;
                 default:
                     throw new UnSupportedDataTypeException("Unsupported data type:" + dataType);

@@ -9,15 +9,13 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.*;
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
 import org.joda.time.DateTime;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,20 +24,13 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
-import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -48,14 +39,11 @@ import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
 
 /**
  * @author liukun
@@ -497,30 +485,13 @@ public class BufferWriteProcessor extends Processor {
 			String measurementId, TSDataType dataType) {
 		flushQueryLock.lock();
 		try {
-			TreeSet<TimeValuePair> result = new TreeSet<>();
-			Iterable<TimeValuePair> workIterable = workMemTable.query(deltaObjectId, measurementId, dataType);
-			for (TimeValuePair timeValuePair : workIterable) {
-				if (!result.contains(timeValuePair)) {
-					result.add(timeValuePair);
-				}
-			}
+			MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
 			if (isFlush) {
-				Iterable<TimeValuePair> flushIterable = flushMemTable.query(deltaObjectId, measurementId, dataType);
-				for (TimeValuePair timeValuePair : flushIterable) {
-					if (!result.contains(timeValuePair)) {
-						result.add(timeValuePair);
-					}
-				}
+				memSeriesLazyMerger.addMemSeries(flushMemTable.query(deltaObjectId, measurementId, dataType));
 			}
-			RawSeriesChunk rawSeriesChunk = null;
-			if (result.isEmpty()) {
-				rawSeriesChunk = new SeriesInMemTable(true);
-			} else {
-				rawSeriesChunk = new SeriesInMemTable(result.last().getTimestamp(), result.first().getTimestamp(),
-						result.last().getValue(), result.first().getValue(), dataType, result);
-			}
-			return new Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>>(rawSeriesChunk,
-					bufferIOWriter.getCurrentTimeSeriesMetadataList(deltaObjectId, measurementId, dataType));
+			memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
+			RawSeriesChunk rawSeriesChunk = new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
+			return new Pair<>(rawSeriesChunk, bufferIOWriter.getCurrentTimeSeriesMetadataList(deltaObjectId, measurementId, dataType));
 		} finally {
 			flushQueryLock.unlock();
 		}

@@ -4,11 +4,12 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 
+import java.util.List;
+
 /**
- *
  * @author Rong Kang
  */
-public interface IMemSeries {
+public interface IMemSeries extends TimeValuePairSorter{
 
     void putLong(long t, long v);
 
@@ -26,8 +27,6 @@ public interface IMemSeries {
 
     void sortAndDeduplicate();
 
-    Iterable<TimeValuePair> query();
-    
     void reset();
 
     int size();

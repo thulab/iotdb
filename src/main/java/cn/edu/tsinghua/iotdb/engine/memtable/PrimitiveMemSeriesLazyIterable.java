@@ -32,7 +32,7 @@ public class PrimitiveMemSeriesLazyIterable implements Iterable<TimeValuePair>{
         }
         List<TimeValuePair> ret = new ArrayList<>();
         treeMap.forEach((k, v) -> {
-            ret.add(new TreeSetMemSeries.TimeValuePairInMemTable(k, v));
+            ret.add(new TimeValuePairInMemTable(k, v));
         });
         return ret.iterator();
     }

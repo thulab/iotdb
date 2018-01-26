@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.IMemSeries;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
@@ -66,9 +67,9 @@ public class OverflowSupport {
 		indexTrees.get(deltaObjectId).get(measurementId).delete(timestamp);
 	}
 
-	public Iterable<TimeValuePair> queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
-			TSDataType dataType) {
-		return (Iterable<TimeValuePair>) memTable.query(deltaObjectId, measurementId, dataType);
+	public IMemSeries queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
+												  TSDataType dataType) {
+		return memTable.query(deltaObjectId, measurementId, dataType);
 	}
 
 	public DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,

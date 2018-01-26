@@ -30,7 +30,7 @@ public class MemTableFlushUtil {
 				IPageWriter pageWriter = new PageWriterImpl(desc);
 				SeriesWriterImpl seriesWriter = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,
 						pageSizeThreshold);
-				for (TimeValuePair tvPair : series.query()) {
+				for (TimeValuePair tvPair : series.getSortedTimeValuePairList()) {
 					recordCount++;
 					switch (desc.getType()) {
 					case BOOLEAN:

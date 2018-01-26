@@ -30,7 +30,7 @@ public interface IMemTable {
 
     int size();
 
-    Iterable<TimeValuePair> query(String deltaObject, String measurement,TSDataType dataType);
+    IMemSeries query(String deltaObject, String measurement,TSDataType dataType);
 
     void resetMemSeries(String deltaObject, String measurement);
     

@@ -114,7 +114,7 @@ public class TreeMapMemSeries implements IMemSeries{
     }
 
     @Override
-    public Iterable<TimeValuePair> query() {
+    public List<TimeValuePair> getSortedTimeValuePairList() {
         List<TimeValuePair> ret = new ArrayList<>();
         treeMap.forEach((k, v) ->{ret.add(new TimeValuePair(k,v));});
         return ret;

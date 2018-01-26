@@ -6,7 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemSeries;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -105,14 +104,14 @@ public class OverflowSupportTest {
 
 		int num = 1;
 		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId1,
-				measurementId1, dataType1)) {
+				measurementId1, dataType1).getSortedTimeValuePairList()) {
 			assertEquals(num, pair.getTimestamp());
 			assertEquals(num, pair.getValue().getInt());
 			num++;
 		}
 		num = 1;
 		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId2,
-				measurementId2, dataType2)) {
+				measurementId2, dataType2).getSortedTimeValuePairList()) {
 			assertEquals(num, pair.getTimestamp());
 			if (num == 2) {
 				assertEquals(10.5, pair.getValue().getFloat(), error);

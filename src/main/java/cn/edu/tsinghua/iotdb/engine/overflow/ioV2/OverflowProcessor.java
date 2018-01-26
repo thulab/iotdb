@@ -11,6 +11,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
+import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +25,6 @@ import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
-import cn.edu.tsinghua.iotdb.engine.querycontext.MergeSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
-import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
@@ -118,7 +115,7 @@ public class OverflowProcessor extends Processor {
 			LOGGER.info("The overflow processor {} recover from merge status.", getProcessorName());
 		}
 	}
-	
+
 	private String[] clearFile(String[] subFilePaths) {
 		List<String> files = new ArrayList<>();
 		for (String file : subFilePaths) {
@@ -133,7 +130,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * insert one time-series record
-	 * 
+	 *
 	 * @param tsRecord
 	 * @throws IOException
 	 */
@@ -156,7 +153,7 @@ public class OverflowProcessor extends Processor {
 	/**
 	 * update one time-series data which time range is from startTime from
 	 * endTime.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param startTime
@@ -198,7 +195,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * delete one time-series data which time range is from 0 to time-stamp.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param timestamp
@@ -212,7 +209,7 @@ public class OverflowProcessor extends Processor {
 	/**
 	 * query all overflow data which contain insert data in memory, insert data
 	 * in file, update/delete data in memory, update/delete data in file.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param timeFilter
@@ -229,7 +226,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			// query insert data in memory and unseqTsFiles
 			// memory
-			SeriesInMemTable insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, timeFilter,
+			RawSeriesChunk insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, timeFilter,
 					freqFilter, valueFilter, dataType);
 
 			List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
@@ -278,7 +275,7 @@ public class OverflowProcessor extends Processor {
 	/**
 	 * query insert data in memory table. while flushing, merge the work memory
 	 * table with flush memory table.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param timeFilter
@@ -287,38 +284,23 @@ public class OverflowProcessor extends Processor {
 	 * @param dataType
 	 * @return insert data in SeriesInMemTable
 	 */
-	private SeriesInMemTable queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-			SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
-		TreeSet<TimeValuePair> result = new TreeSet<>();
-		Iterable<TimeValuePair> workIterable = workSupport.queryOverflowInsertInMemory(deltaObjectId, measurementId,
-				dataType);
-		for (TimeValuePair timeValuePair : workIterable) {
-			if (!result.contains(timeValuePair)) {
-				result.add(timeValuePair);
-			}
-		}
+	private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
+													   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+													   SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
+
+		MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
 		if (flushStatus.isFlushing()) {
-			Iterable<TimeValuePair> flushIterable = flushSupport.queryOverflowInsertInMemory(deltaObjectId,
-					measurementId, dataType);
-			for (TimeValuePair timeValuePair : flushIterable) {
-				if (!result.contains(timeValuePair)) {
-					result.add(timeValuePair);
-				}
-			}
+			memSeriesLazyMerger.addMemSeries(flushSupport.queryOverflowInsertInMemory(deltaObjectId,
+					measurementId, dataType));
 		}
-		if (result.isEmpty()) {
-			return new SeriesInMemTable(true);
-		} else {
-			return new SeriesInMemTable(result.last().getTimestamp(), result.first().getTimestamp(),
-					result.last().getValue(), result.first().getValue(), dataType, result);
-		}
+		memSeriesLazyMerger.addMemSeries(workSupport.queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType));
+		return new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
 	}
 
 	/**
 	 * query update/delete data in memory. while flushing, merge the work
 	 * {@code IntervalTreeOperation} with flush {@code IntervalTreeOperation}}.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param timeFilter
@@ -341,7 +323,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * Get the update/delete data which is WORK in overflowFile.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
@@ -358,7 +340,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * Get the insert data which is WORK in unseqTsFile.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
@@ -375,7 +357,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * Get the all merge data in unseqTsFile and overflowFile.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
@@ -412,7 +394,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * Get the update/delete data which is MERGE in overflowFile.
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
@@ -432,7 +414,7 @@ public class OverflowProcessor extends Processor {
 
 	/**
 	 * Get the insert data which is MERGE in unseqTsFile
-	 * 
+	 *
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
