@@ -145,7 +145,7 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
-		//workMemTable = new TreeSetMemTable();
+		// workMemTable = new TreeSetMemTable();
 		workMemTable = new PrimitiveMemTable();
 	}
 
@@ -418,13 +418,19 @@ public class BufferWriteProcessor extends Processor {
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
 		long memUage = MemUtils.getRecordSize(tsRecord);
 		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, memUage);
+
+		for (DataPoint dataPoint : tsRecord.dataPointList) {
+			workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+					dataPoint.getValue().toString());
+		}
+		valueCount++;
 		switch (level) {
 		case SAFE:
 			// memUsed += newMemUsage;
 			// memtable
 			memUage = memSize.addAndGet(memUage);
 			if (memUage > memThreshold) {
-				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+				LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
 						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
 				try {
 					flush();
@@ -433,20 +439,15 @@ public class BufferWriteProcessor extends Processor {
 					throw new BufferWriteProcessorException(e);
 				}
 			}
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
-						tsRecord.time, dataPoint.getValue().toString());
-			}
-			valueCount++;
 			return false;
 		case WARNING:
-			LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
+			LOGGER.warn("Memory usage will exceed warning threshold, current : {}.",
 					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 			// memUsed += newMemUsage;
 			// memtable
 			memUage = memSize.addAndGet(memUage);
 			if (memUage > memThreshold) {
-				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+				LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
 						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
 				try {
 					flush();
@@ -455,17 +456,12 @@ public class BufferWriteProcessor extends Processor {
 					throw new BufferWriteProcessorException(e);
 				}
 			}
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
-						tsRecord.time, dataPoint.getValue().toString());
-			}
-			valueCount++;
 			return false;
 		case DANGEROUS:
 		default:
 			LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
 					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-			throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
+			return false;
 		}
 	}
 
@@ -491,7 +487,8 @@ public class BufferWriteProcessor extends Processor {
 			}
 			memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
 			RawSeriesChunk rawSeriesChunk = new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
-			return new Pair<>(rawSeriesChunk, bufferIOWriter.getCurrentTimeSeriesMetadataList(deltaObjectId, measurementId, dataType));
+			return new Pair<>(rawSeriesChunk,
+					bufferIOWriter.getCurrentTimeSeriesMetadataList(deltaObjectId, measurementId, dataType));
 		} finally {
 			flushQueryLock.unlock();
 		}
