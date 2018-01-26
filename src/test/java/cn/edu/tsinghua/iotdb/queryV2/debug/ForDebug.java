@@ -91,7 +91,18 @@ public class ForDebug {
         long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
         long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
         System.out.println(startTime + " - " + endTime);
-        SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
+        SeriesReader reader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
+
+        int i = 0;
+        TimeValuePair timeValuePair = null;
+        while (reader.hasNext()) {
+            timeValuePair = reader.next();
+            if (i == 0) {
+                System.out.println("Min: " + timeValuePair.getTimestamp());
+            }
+            i++;
+        }
+        System.out.println("Max:" + timeValuePair.getTimestamp());
     }
 
     @Test
