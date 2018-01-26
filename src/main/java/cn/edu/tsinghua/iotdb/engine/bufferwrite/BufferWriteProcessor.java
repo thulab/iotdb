@@ -482,8 +482,8 @@ public class BufferWriteProcessor extends Processor {
 	 * @param timestamp
 	 * @param dataType
 	 * @param value
-	 * @return true -the size of tsfile or metadata reaches to the threshold.
-	 *         false -otherwise
+	 * @return true - the size of tsfile or metadata reaches the threshold.
+	 *         false - otherwise
 	 * @throws BufferWriteProcessorException
 	 */
 	public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
@@ -498,8 +498,8 @@ public class BufferWriteProcessor extends Processor {
 	 * write one TsRecord to the buffewrite
 	 * 
 	 * @param tsRecord
-	 * @return true -the size of tsfile or metadata reaches the threshold. false
-	 *         -otherwise
+	 * @return true - the size of tsfile or metadata reaches the threshold.
+	 *         false - otherwise
 	 * @throws BufferWriteProcessorException
 	 */
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {

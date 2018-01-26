@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FileNodeManager implements IStatistic {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
     private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
     private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
@@ -580,6 +579,31 @@ public class FileNodeManager implements IStatistic {
             fileNodeProcessor.readUnlock();
         }
     }
+    
+    /**
+	 * Append one specified tsfile to the storage group.
+	 * <b>This method is only provided for transmission module</b>
+	 * 
+	 * @param fileNodeName
+	 *            the path of storage group
+	 * @param appendFile
+	 *            the appended tsfile information
+	 * @throws FileNodeManagerException
+	 */
+	public void appendFileToFileNode(String fileNodeName, IntervalFileNode appendFile) throws FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
+		try {
+			fileNodeProcessor.closeBufferWrite();
+			fileNodeProcessor.closeOverflow();
+			// append file to storage group.
+			fileNodeProcessor.appendFile(appendFile);
+		} catch (FileNodeProcessorException e) {
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		} finally {
+			fileNodeProcessor.writeUnlock();
+		}
+	}
 
     public void endQuery(String deltaObjectId, int token) throws FileNodeManagerException {
 

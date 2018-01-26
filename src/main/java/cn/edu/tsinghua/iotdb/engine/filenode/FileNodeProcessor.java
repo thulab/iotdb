@@ -673,6 +673,33 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return queryStructure;
 	}
 
+	/**
+	 * append one specified tsfile to this filenode processor
+	 * 
+	 * @param appendFile
+	 *            the appended tsfile information
+	 * @throws FileNodeProcessorException 
+	 */
+	public void appendFile(IntervalFileNode appendFile) throws FileNodeProcessorException {
+		try {
+			// append the new tsfile
+			this.newFileNodes.add(appendFile);
+			overflowFlushAction.act();
+			// update the lastUpdateTime
+			for (Entry<String, Long> entry : appendFile.getEndTimeMap().entrySet()) {
+				lastUpdateTimeMap.put(entry.getKey(), entry.getValue());
+			}
+			bufferwriteFlushAction.act();
+			// reconstruct the inverted index of the newFileNodes
+			addALLFileIntoIndex(newFileNodes);
+			flushFileNodeProcessorAction.act();
+		} catch (Exception e) {
+			LOGGER.error("Failed to append the tsfile {} to filenode processor {}",appendFile,getProcessorName());
+			e.printStackTrace();
+			throw new FileNodeProcessorException(e);
+		}
+	}
+
 	public List<DataFileInfo> indexQuery(String deltaObjectId, long startTime, long endTime) {
 		List<DataFileInfo> dataFileInfos = new ArrayList<>();
 		for (IntervalFileNode intervalFileNode : newFileNodes) {
