@@ -343,6 +343,8 @@ public class FileNodeManager implements IStatistic {
 				}
 				// Write data
 				boolean shouldClose = false;
+				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId);
+				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
 				try {
 					shouldClose = bufferWriteProcessor.write(tsRecord);
 				} catch (BufferWriteProcessorException e) {
@@ -351,8 +353,6 @@ public class FileNodeManager implements IStatistic {
 					}
 					throw new FileNodeManagerException(e);
 				}
-				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId);
-				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
 				insertType = 2;
 				if (shouldClose) {
 					fileNodeProcessor.closeBufferWrite();
