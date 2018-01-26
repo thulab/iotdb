@@ -171,20 +171,20 @@ public class BufferWriteProcessor extends Processor {
 		flushQueryLock.lock();
 		try {
 			TreeSet<TimeValuePair> result = new TreeSet<>();
-			Iterable<TimeValuePair> workIterable = workMemTable.query(deltaObjectId, measurementId, dataType);
-			for (TimeValuePair timeValuePair : workIterable) {
-				if (!result.contains(timeValuePair)) {
-					result.add(timeValuePair);
-				}
-			}
-			if (isFlush) {
-				Iterable<TimeValuePair> flushIterable = flushMemTable.query(deltaObjectId, measurementId, dataType);
-				for (TimeValuePair timeValuePair : flushIterable) {
-					if (!result.contains(timeValuePair)) {
-						result.add(timeValuePair);
-					}
-				}
-			}
+//			Iterable<TimeValuePair> workIterable = workMemTable.query(deltaObjectId, measurementId, dataType);
+//			for (TimeValuePair timeValuePair : workIterable) {
+//				if (!result.contains(timeValuePair)) {
+//					result.add(timeValuePair);
+//				}
+//			}
+//			if (isFlush) {
+//				Iterable<TimeValuePair> flushIterable = flushMemTable.query(deltaObjectId, measurementId, dataType);
+//				for (TimeValuePair timeValuePair : flushIterable) {
+//					if (!result.contains(timeValuePair)) {
+//						result.add(timeValuePair);
+//					}
+//				}
+//			}
 			RawSeriesChunk rawSeriesChunk = null;
 			if (result.isEmpty()) {
 				rawSeriesChunk = new SeriesInMemTable(true);
