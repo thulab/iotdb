@@ -29,7 +29,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -99,7 +98,7 @@ public class OverflowProcessor extends Processor {
 			return;
 		} else if (subFilePaths.length == 1) {
 			long count = Long.valueOf(subFilePaths[0]);
-			dataPahtCount.addAndGet(count+1);
+			dataPahtCount.addAndGet(count + 1);
 			workResource = new OverflowResource(parentPath, String.valueOf(count));
 			LOGGER.info("The overflow processor {} recover from work status.", getProcessorName());
 		} else {
@@ -118,7 +117,7 @@ public class OverflowProcessor extends Processor {
 			LOGGER.info("The overflow processor {} recover from merge status.", getProcessorName());
 		}
 	}
-	
+
 	private String[] clearFile(String[] subFilePaths) {
 		List<String> files = new ArrayList<>();
 		for (String file : subFilePaths) {
@@ -464,6 +463,7 @@ public class OverflowProcessor extends Processor {
 		queryFlushLock.lock();
 		try {
 			flushSupport.clear();
+			workResource.appendMetadatas();
 			flushSupport = null;
 		} finally {
 			queryFlushLock.unlock();
@@ -505,7 +505,8 @@ public class OverflowProcessor extends Processor {
 		try {
 			LOGGER.info("The overflow processor {} starts flushing {}.", getProcessorName(), flushFunction);
 			// flush data
-			workResource.flush(fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap(),getProcessorName());
+			workResource.flush(fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap(),
+					getProcessorName());
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {

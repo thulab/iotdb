@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
@@ -35,6 +37,7 @@ public class BufferWriteResource {
 	private static final String restoreSuffix = ".restore";
 	private static final String DEFAULT_MODE = "rw";
 	private Map<String, Map<String, List<TimeSeriesChunkMetaData>>> metadatas;
+	private List<RowGroupMetaData> appendRowGroupMetadats;
 	private BufferWriteIO bufferWriteIO;
 	private String insertFilePath;
 	private String restoreFilePath;
@@ -45,6 +48,7 @@ public class BufferWriteResource {
 		this.restoreFilePath = insertFilePath + restoreSuffix;
 		this.processorName = processorName;
 		this.metadatas = new HashMap<>();
+		this.appendRowGroupMetadats = new ArrayList<>();
 		recover();
 	}
 
@@ -213,16 +217,6 @@ public class BufferWriteResource {
 		return chunkMetaDatas;
 	}
 
-	public void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
-		if (!metadatas.containsKey(deltaObjectId)) {
-			metadatas.put(deltaObjectId, new HashMap<>());
-		}
-		if (!metadatas.get(deltaObjectId).containsKey(measurementId)) {
-			metadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
-		}
-		metadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
-	}
-
 	public String getInsertFilePath() {
 		return insertFilePath;
 	}
@@ -231,14 +225,45 @@ public class BufferWriteResource {
 		return restoreFilePath;
 	}
 
-	public void flush(FileSchema fileSchema, IMemTable iMemTable) {
-		// use the memtable flush funtion
+	public void flush(FileSchema fileSchema, IMemTable iMemTable) throws IOException {
+		if (iMemTable != null && !iMemTable.isEmpty()) {
+			long startPos = bufferWriteIO.getPos();
+			long startTime = System.currentTimeMillis();
+			// flush data
+			MemTableFlushUtil.flushMemTable(fileSchema, bufferWriteIO, iMemTable);
+			writeRestoreInfo();
+			// write restore information
+			long timeInterval = System.currentTimeMillis() - startTime;
+			timeInterval = timeInterval == 0 ? 1 : timeInterval;
+			long insertSize = bufferWriteIO.getPos() - startPos;
+			LOGGER.info(
+					"Bufferwrite processor {} flushes insert data, actual:{}, time consumption:{} ms, flush rate:{}/s",
+					processorName, MemUtils.bytesCntToStr(insertSize), timeInterval,
+					MemUtils.bytesCntToStr(insertSize / timeInterval * 1000));
+			appendRowGroupMetadats.addAll(bufferWriteIO.getAppendedRowGroupMetadata());
+		}
+	}
 
-		// get metadata
+	public void appendMetadata() {
+		if (!appendRowGroupMetadats.isEmpty()) {
+			for (RowGroupMetaData rowGroupMetaData : appendRowGroupMetadats) {
+				for (TimeSeriesChunkMetaData chunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
+					addInsertMetadata(rowGroupMetaData.getDeltaObjectID(),
+							chunkMetaData.getProperties().getMeasurementUID(), chunkMetaData);
+				}
+			}
+			appendRowGroupMetadats.clear();
+		}
+	}
 
-		// add metadata to map
-
-		// flush metadata to restore file
+	private void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
+		if (!metadatas.containsKey(deltaObjectId)) {
+			metadatas.put(deltaObjectId, new HashMap<>());
+		}
+		if (!metadatas.get(deltaObjectId).containsKey(measurementId)) {
+			metadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+		}
+		metadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
 	}
 
 	public void close(FileSchema fileSchema) throws IOException {
