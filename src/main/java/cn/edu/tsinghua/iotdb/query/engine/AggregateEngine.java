@@ -4,6 +4,8 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
 import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -174,14 +176,14 @@ public class AggregateEngine {
                     continue;
                 }
 
-                // the query prefix here must not be confilct with method querySeriesForCross()
-                cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader)
+                // the query prefix here must not be conflict with method querySeriesForCross()
+                AggregateRecordReader recordReader = (AggregateRecordReader)
                         RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                         null,  null, null,
                         ReadCachePrefix.addQueryPrefix("AggQuery", aggregationPathOrdinal), ReaderType.AGGREGATE);
 
                 if (recordReader.getInsertMemoryData() == null) {
-                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, null,  aggregateTimestamps);
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, aggregateTimestamps);
 
                     boolean hasUnReadDataFlag = aggrPair.right;
                     aggregationHasUnReadDataMap.put(aggregationPathOrdinal, hasUnReadDataFlag);
@@ -190,7 +192,7 @@ public class AggregateEngine {
                     }
 
                 } else {
-                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, null, aggregateTimestamps);
+                    Pair<AggregateFunction, Boolean> aggrPair = recordReader.aggregateUsingTimestamps(aggregateFunction, aggregateTimestamps);
                     boolean hasUnReadDataFlag = aggrPair.right;
                     aggregationHasUnReadDataMap.put(aggregationPathOrdinal, hasUnReadDataFlag);
                     if (hasUnReadDataFlag) {
@@ -225,13 +227,11 @@ public class AggregateEngine {
             String deltaObjectUID = path.getDeltaObjectToString();
             String measurementUID = path.getMeasurementToString();
 
-            cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.AggregateRecordReader)
+            AggregateRecordReader recordReader = (AggregateRecordReader)
                     RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                     queryTimeFilter, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber), ReaderType.AGGREGATE);
 
-            //if (recordReader.getInsertMemoryData() == null) {
-                recordReader.aggregate(aggregateFunction, queryTimeFilter,  null);
-
+            recordReader.aggregate(aggregateFunction);
         }
     }
 
@@ -255,7 +255,7 @@ public class AggregateEngine {
         // query prefix here must not be conflict with query in multiAggregate method
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);
 
-        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+        QueryRecordReader recordReader = (QueryRecordReader)
                 RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 

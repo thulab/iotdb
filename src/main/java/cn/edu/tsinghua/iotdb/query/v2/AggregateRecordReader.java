@@ -36,37 +36,33 @@ public class AggregateRecordReader extends RecordReader{
                              String deltaObjectId, String measurementId,
                              SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter)
             throws PathErrorException, IOException {
-        super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter);
+        super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId,
+                queryTimeFilter, queryValueFilter);
     }
 
     /**
      * Aggregation calculate function of <code>RecordReader</code> without filter.
      *
      * @param aggregateFunction aggregation function
-     * @param queryTimeFilter query time filter
-     * @param queryValueFilter query value filter, in current implementation, queryValueFilter will always be null
      * @return aggregation result
      *
      * @throws ProcessorException aggregation invoking exception
      * @throws IOException TsFile read exception
      */
-    public AggregateFunction aggregate(AggregateFunction aggregateFunction,
-                                       SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter)
-            throws ProcessorException, IOException {
+    public AggregateFunction aggregate(AggregateFunction aggregateFunction) throws ProcessorException, IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
 
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
-                aggregate(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, overflowOperationReaderCopy, queryTimeFilter, queryValueFilter);
+                aggregate(rowGroupReader.getValueReaders().get(measurementId), aggregateFunction);
             }
         }
 
         for (ValueReader valueReader : valueReaders) {
             if (valueReader.getDataType().equals(dataType)) {
-                aggregate(valueReader, aggregateFunction, overflowOperationReaderCopy, queryTimeFilter, queryValueFilter);
+                aggregate(valueReader, aggregateFunction);
             }
         }
 
@@ -86,15 +82,15 @@ public class AggregateRecordReader extends RecordReader{
      * Boolean represents that whether there still has unread data.
      *
      * @param aggregateFunction aggregation function
-     * @param queryTimeFilter time filter
      * @param timestamps timestamps calculated by the cross filter
      * @return aggregation result and whether still has unread data
      *
      * @throws ProcessorException aggregation invoking exception
      * @throws IOException TsFile read exception
      */
-    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(AggregateFunction aggregateFunction, SingleSeriesFilterExpression queryTimeFilter,
-                                                                     List<Long> timestamps) throws ProcessorException, IOException {
+    public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(AggregateFunction aggregateFunction,
+                                                                     List<Long> timestamps)
+            throws ProcessorException, IOException {
         boolean stillHasUnReadData;
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
@@ -111,7 +107,7 @@ public class AggregateRecordReader extends RecordReader{
                 // TODO commonTimestampsIndex could be saved as a parameter
 
                 commonTimestampsIndex = aggregateUsingTimestamps(rowGroupReader.getValueReaders().get(measurementId),
-                        aggregateFunction, overflowOperationReaderCopy, queryTimeFilter, timestamps);
+                        aggregateFunction, timestamps);
 
                 // all value of commonTimestampsIndex has been used,
                 // the next batch of commonTimestamps should be loaded
@@ -135,11 +131,8 @@ public class AggregateRecordReader extends RecordReader{
         return new Pair<>(aggregateFunction, stillHasUnReadData);
     }
 
-    private void aggregate(ValueReader valueReader, AggregateFunction func, OverflowOperationReader updateOperationReader,
-                           SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter)
-            throws IOException, ProcessorException {
+    private void aggregate(ValueReader valueReader, AggregateFunction func) throws IOException, ProcessorException {
 
-        TSDataType dataType = valueReader.dataType;
         DynamicOneColumnData result = new DynamicOneColumnData(dataType, true);
         result.pageOffset = valueReader.fileOffset;
 
@@ -160,7 +153,7 @@ public class AggregateRecordReader extends RecordReader{
 
         // skip the current series chunk according to value filter
         if (queryValueFilter != null && !valueDigestVisitor.satisfy(valueDigest, queryValueFilter)) {
-            if ((!updateOperationReader.hasNext() || updateOperationReader.getCurrentOperation().getLeftBound() > valueReader.getEndTime()) &&
+            if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > valueReader.getEndTime()) &&
                     (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > valueReader.getEndTime())) {
                 logger.debug("calculate aggregation without filter, series value digest does not satisfy value filter");
                 result.plusRowGroupIndexAndInitPageOffset();
@@ -188,7 +181,7 @@ public class AggregateRecordReader extends RecordReader{
 
             // skip the current page according to value filter
             if (queryValueFilter != null && !valueDigestVisitor.satisfy(pageValueDigest, queryValueFilter)) {
-                if ((!updateOperationReader.hasNext() || updateOperationReader.getCurrentOperation().getLeftBound() > pageMaxTime) &&
+                if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > pageMaxTime) &&
                         (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > pageMaxTime)) {
                     pageReader.skipCurrentPage();
                     result.pageOffset += lastAvailable - bis.available();
@@ -200,16 +193,16 @@ public class AggregateRecordReader extends RecordReader{
             result.pageOffset += lastAvailable - bis.available();
 
             // whether this page is changed by overflow info
-            boolean hasOverflowDataInThisPage = checkDataChanged(pageMinTime, pageMaxTime, updateOperationReader, insertMemoryData);
+            boolean hasOverflowDataInThisPage = checkDataChanged(pageMinTime, pageMaxTime, insertMemoryData);
 
             // there is no overflow data in this page
             if (!hasOverflowDataInThisPage) {
                 func.calculateValueFromPageHeader(pageHeader);
             } else {
-                long[] timeValues = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
+                long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
                 valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
-                result = ReaderUtils.readOnePage(dataType, timeValues, valueReader.decoder, page, result,
-                        queryTimeFilter, queryValueFilter, insertMemoryData, updateOperationReader);
+                result = ReaderUtils.readOnePage(dataType, timestamps, valueReader.decoder, page, result,
+                        queryTimeFilter, queryValueFilter, insertMemoryData, overflowOperationReaderCopy);
                 func.calculateValueFromDataPage(result);
                 result.clearData();
             }
@@ -221,14 +214,13 @@ public class AggregateRecordReader extends RecordReader{
      * The aggregation will be calculated using the calculated common timestamps.
      *
      * @param aggregateFunction aggregation function
-     * @param overflowTimeFilter time filter
      * @param aggregationTimestamps the timestamps which aggregation must satisfy
      * @return an int value, represents the read time index of timestamps
      * @throws IOException TsFile read error
      * @throws ProcessorException get read info error
      */
-    private int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction aggregateFunction, OverflowOperationReader updateOperationReader,
-                                        SingleSeriesFilterExpression overflowTimeFilter, List<Long> aggregationTimestamps)
+    private int aggregateUsingTimestamps(ValueReader valueReader, AggregateFunction aggregateFunction,
+                                         List<Long> aggregationTimestamps)
             throws IOException, ProcessorException {
 
         TSDataType dataType = valueReader.dataType;
@@ -272,7 +264,7 @@ public class AggregateRecordReader extends RecordReader{
             }
 
             // if the current page doesn't satisfy the time filter
-            if (overflowTimeFilter != null && !digestVisitor.satisfy(timeDigestFF, overflowTimeFilter))  {
+            if (queryTimeFilter != null && !digestVisitor.satisfy(timeDigestFF, queryTimeFilter))  {
                 pageReader.skipCurrentPage();
                 lastAggregationResult.pageOffset += lastAvailable - bis.available();
                 continue;
@@ -284,7 +276,7 @@ public class AggregateRecordReader extends RecordReader{
 
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePageUsingCommonTime(
                     dataType, pageTimestamps, valueReader.decoder, page,
-                    overflowTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, updateOperationReader);
+                    queryTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, overflowOperationReaderCopy);
 
 
 
@@ -307,13 +299,12 @@ public class AggregateRecordReader extends RecordReader{
         return timestampsUsedIndex;
     }
 
-    private boolean checkDataChanged(long pageMinTime, long pageMaxTime, OverflowOperationReader updateOperationReader, InsertDynamicData insertMemoryData)
-            throws IOException {
+    private boolean checkDataChanged(long pageMinTime, long pageMaxTime, InsertDynamicData insertMemoryData) throws IOException {
 
-        while (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().getRightBound() < pageMinTime)
-            updateOperationReader.next();
+        while (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getRightBound() < pageMinTime)
+            overflowOperationReaderCopy.next();
 
-        if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().getLeftBound() <= pageMaxTime) {
+        if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getLeftBound() <= pageMaxTime) {
             return true;
         }
 

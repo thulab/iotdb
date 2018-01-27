@@ -29,7 +29,7 @@ public class ReaderUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ReaderUtils.class);
 
-    private static SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SingleSeriesFilterExpression filter) {
+    public static SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SingleSeriesFilterExpression filter) {
         if (filter == null) {
             return new SingleValueVisitor<>();
         }
@@ -89,7 +89,7 @@ public class ReaderUtils {
                 }
 
                 // TODO there may return many results
-                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                while (timeIdx < pageTimestamps.length) {
                     while (insertMemoryData.hasNext() && timeIdx < pageTimestamps.length
                             && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                         res.putTime(insertMemoryData.getCurrentMinTime());
@@ -102,14 +102,19 @@ public class ReaderUtils {
                             insertMemoryData.removeCurrentValue();
                         }
                     }
+
                     if (timeIdx >= pageTimestamps.length)
                         break;
 
                     if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                         if (updateOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                                || (queryValueFilter != null && singleValueVisitor.satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter)))
-                        continue;
+                                || (queryValueFilter != null && singleValueVisitor.
+                                satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter))) {
+                            timeIdx++;
+                            continue;
+                        }
                     }
+
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
                             (queryValueFilter == null || singleValueVisitor.verify(pageIntValues[timeIdx]))) {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -118,6 +123,7 @@ public class ReaderUtils {
                         } else {
                             res.putInt(pageIntValues[timeIdx]);
                         }
+                        timeIdx ++;
                     }
                 }
                 break;
@@ -129,7 +135,7 @@ public class ReaderUtils {
                 }
 
                 // TODO there may return many results
-                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                while (timeIdx < pageTimestamps.length) {
                     while (insertMemoryData.hasNext() && timeIdx < pageTimestamps.length
                             && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                         res.putTime(insertMemoryData.getCurrentMinTime());
@@ -142,14 +148,19 @@ public class ReaderUtils {
                             insertMemoryData.removeCurrentValue();
                         }
                     }
+
                     if (timeIdx >= pageTimestamps.length)
                         break;
 
                     if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                         if (updateOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                                || (queryValueFilter != null && singleValueVisitor.satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter)))
+                                || (queryValueFilter != null && singleValueVisitor.
+                                satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter))) {
+                            timeIdx++;
                             continue;
+                        }
                     }
+
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
                             (queryValueFilter == null || singleValueVisitor.satisfyObject(pageBooleanValues[timeIdx], queryValueFilter))) {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -158,6 +169,7 @@ public class ReaderUtils {
                         } else {
                             res.putBoolean(pageBooleanValues[timeIdx]);
                         }
+                        timeIdx ++;
                     }
                 }
                 break;
@@ -169,7 +181,7 @@ public class ReaderUtils {
                 }
 
                 // TODO there may return many results
-                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                while (timeIdx < pageTimestamps.length) {
                     while (insertMemoryData.hasNext() && timeIdx < pageTimestamps.length
                             && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                         res.putTime(insertMemoryData.getCurrentMinTime());
@@ -182,14 +194,19 @@ public class ReaderUtils {
                             insertMemoryData.removeCurrentValue();
                         }
                     }
+
                     if (timeIdx >= pageTimestamps.length)
                         break;
 
                     if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                         if (updateOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                                || (queryValueFilter != null && singleValueVisitor.satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter)))
+                                || (queryValueFilter != null && singleValueVisitor.
+                                satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter))) {
+                            timeIdx++;
                             continue;
+                        }
                     }
+
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
                             (queryValueFilter == null || singleValueVisitor.verify(pageLongValues[timeIdx]))) {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -198,6 +215,7 @@ public class ReaderUtils {
                         } else {
                             res.putLong(pageLongValues[timeIdx]);
                         }
+                        timeIdx ++;
                     }
                 }
                 break;
@@ -227,9 +245,13 @@ public class ReaderUtils {
 
                     if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                         if (updateOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                                || (queryValueFilter != null && singleValueVisitor.satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter)))
+                                || (queryValueFilter != null && singleValueVisitor.
+                                satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter))) {
+                            timeIdx ++;
                             continue;
+                        }
                     }
+
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
                             (queryValueFilter == null || singleValueVisitor.verify(pageFloatValues[timeIdx]))) {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -238,6 +260,7 @@ public class ReaderUtils {
                         } else {
                             res.putFloat(pageFloatValues[timeIdx]);
                         }
+                        timeIdx ++;
                     }
                 }
                 break;
@@ -262,14 +285,19 @@ public class ReaderUtils {
                             insertMemoryData.removeCurrentValue();
                         }
                     }
+
                     if (timeIdx >= pageTimestamps.length)
                         break;
 
                     if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                         if (updateOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                                || (queryValueFilter != null && singleValueVisitor.satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter)))
+                                || (queryValueFilter != null && singleValueVisitor.
+                                satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter))) {
+                            timeIdx ++;
                             continue;
+                        }
                     }
+
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
                             (queryValueFilter == null || singleValueVisitor.verify(pageDoubleValues[timeIdx]))) {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -278,6 +306,7 @@ public class ReaderUtils {
                         } else {
                             res.putDouble(pageDoubleValues[timeIdx]);
                         }
+                        timeIdx ++;
                     }
                 }
                 break;
@@ -302,13 +331,17 @@ public class ReaderUtils {
                             insertMemoryData.removeCurrentValue();
                         }
                     }
+
                     if (timeIdx >= pageTimestamps.length)
                         break;
 
                     if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                         if (updateOperationReader.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                                || (queryValueFilter != null && singleValueVisitor.satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter)))
+                                || (queryValueFilter != null && singleValueVisitor.
+                                satisfyObject(updateOperationReader.getCurrentOperation().getValue(), queryValueFilter))) {
+                            timeIdx ++;
                             continue;
+                        }
                     }
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
                             (queryValueFilter == null || singleValueVisitor.satisfyObject(pageTextValues[timeIdx], queryValueFilter))) {
@@ -318,6 +351,7 @@ public class ReaderUtils {
                         } else {
                             res.putBinary(pageTextValues[timeIdx]);
                         }
+                        timeIdx ++;
                     }
                 }
                 break;

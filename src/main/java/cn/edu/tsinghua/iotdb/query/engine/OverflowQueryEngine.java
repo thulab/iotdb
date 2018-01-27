@@ -10,6 +10,7 @@ import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
 import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
+import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
 import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -426,7 +427,7 @@ public class OverflowQueryEngine {
         String measurementUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getMeasurementUID();
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(ReadCachePrefix.addFilterPrefix(valueFilterNumber), formNumber);
 
-        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+        QueryRecordReader recordReader = (QueryRecordReader)
                 RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                 null, queryValueFilter, null, valueFilterPrefix, ReaderType.QUERY);
 
