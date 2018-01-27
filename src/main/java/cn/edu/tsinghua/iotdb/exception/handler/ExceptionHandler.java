@@ -8,12 +8,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ExceptionHandler {
     private  HashMap<String,String> errInfo = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
     public static final String CONFIG_NAME = "error_info.txt";
+    private static final String encodeMode = "UTF-8";
+    private static final String separator = " && ";
 
     private static final ExceptionHandler INSTANCE = new ExceptionHandler();
     public static final ExceptionHandler getInstance() {
@@ -24,10 +27,10 @@ public class ExceptionHandler {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(
-                    filePath), "UTF-8"));
+                    filePath), encodeMode));
             String tempString;
             while ((tempString = reader.readLine()) != null) {
-                String[] tempRes = tempString.split(" && ");
+                String[] tempRes = tempString.split(separator);
                 Language language = Language.valueOf(languageVersion);
                 int index = language.getIndex();
                 errInfo.put(tempRes[1],"[Error: "+tempRes[0]+"] "+tempRes[index]);
@@ -66,8 +69,8 @@ public class ExceptionHandler {
         BufferedWriter out = null;
         try {
             out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(filePath, true),"UTF-8"));
-            out.write("\r\n"+errCode+" && "+errEnum+" && "+msg_EN+" && "+msg_CN);
+                    new FileOutputStream(filePath, true),encodeMode));
+            out.write("\r\n"+errCode+separator+errEnum+separator+msg_EN+separator+msg_CN);
         } catch (Exception e) {
             LOGGER.error("Fail to open file: {}. Because: {}.",filePath,e.getMessage());
         } finally {
@@ -88,14 +91,14 @@ public class ExceptionHandler {
         BufferedWriter out = null;
         try {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(
-                    filePath), "UTF-8"));
+                    filePath), encodeMode));
             out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(docPath, true),"UTF-8"));
+                    new FileOutputStream(docPath, true),encodeMode));
             String tempString;
             StringBuilder builder = new StringBuilder();
 
             while ((tempString = reader.readLine()) != null) {
-                String[] tempRes = tempString.split(" && ");
+                String[] tempRes = tempString.split(separator);
                 builder.append("[Error: "+tempRes[0]+"] "+tempRes[1]+" "+tempRes[2]+" (");
                 for(int i=3;i<tempRes.length;i++){
                     if(i==tempRes.length-1){
