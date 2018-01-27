@@ -688,6 +688,33 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return dataFileInfos;
 	}
 
+	/**
+	 * append one specified tsfile to this filenode processor
+	 * 
+	 * @param appendFile
+	 *            the appended tsfile information
+	 * @throws FileNodeProcessorException
+	 */
+	public void appendFile(IntervalFileNode appendFile) throws FileNodeProcessorException {
+		try {
+			// append the new tsfile
+			this.newFileNodes.add(appendFile);
+			overflowFlushAction.act();
+			// update the lastUpdateTime
+			for (Entry<String, Long> entry : appendFile.getEndTimeMap().entrySet()) {
+				lastUpdateTimeMap.put(entry.getKey(), entry.getValue());
+			}
+			bufferwriteFlushAction.act();
+			// reconstruct the inverted index of the newFileNodes
+			addALLFileIntoIndex(newFileNodes);
+			flushFileNodeProcessorAction.act();
+		} catch (Exception e) {
+			LOGGER.error("Failed to append the tsfile {} to filenode processor {}", appendFile, getProcessorName());
+			e.printStackTrace();
+			throw new FileNodeProcessorException(e);
+		}
+	}
+
 	public void addTimeSeries(String measurementToString, String dataType, String encoding, String[] encodingArgs) {
 		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
 				TSEncoding.valueOf(encoding));
