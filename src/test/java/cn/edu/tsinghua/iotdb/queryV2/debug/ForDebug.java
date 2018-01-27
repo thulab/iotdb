@@ -27,6 +27,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -39,8 +40,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Dear Kuner, do you remember the night we find the big bug ?
  * Created by zhangjinrui on 2018/1/26.
  */
+@Ignore
 public class ForDebug {
 
     private static final int FOOTER_LENGTH = 4;
@@ -52,7 +55,6 @@ public class ForDebug {
 
     Path path = new Path("root.performf.group_0.d_0.s_0");
 
-    @Test
     public void test() throws IOException {
 
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
@@ -84,17 +86,29 @@ public class ForDebug {
         System.out.println(count);
     }
 
-    @Test
     public void readTsFile() throws IOException {
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
         TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
         long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
         long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
         System.out.println(startTime + " - " + endTime);
-        SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
+        SeriesReader reader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
+
+        int i = 0;
+        TimeValuePair lastTimeValuePair = null;
+        TimeValuePair timeValuePair = null;
+        while (reader.hasNext()) {
+            lastTimeValuePair = timeValuePair;
+            timeValuePair = reader.next();
+            if (i == 0) {
+                System.out.println("Min: " + timeValuePair.getTimestamp());
+            }
+            i++;
+        }
+        System.out.println("Max:" + lastTimeValuePair.getTimestamp());
+        System.out.println("Max:" + timeValuePair.getTimestamp());
     }
 
-    @Test
     public void readUnseqTsFile() throws IOException {
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(path);
         OverflowInsertDataReader overflowInsertDataReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
