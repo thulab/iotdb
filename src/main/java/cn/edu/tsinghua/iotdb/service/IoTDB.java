@@ -1,26 +1,37 @@
 package cn.edu.tsinghua.iotdb.service;
 
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.sql.SQLException;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.handler.ExceptionHandler;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+
+import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.auth.dao.DBDaoInitException;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
-import org.apache.thrift.transport.TTransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.management.*;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.sql.SQLException;
 
 public class IoTDB implements IoTDBMBean {
 
@@ -86,8 +97,11 @@ public class IoTDB implements IoTDBMBean {
 		registMonitor();
 		registIoTDBServer();
 		startCloseAndMergeServer();
+
+		initErrorInformation();
 		// StatMonitor should start at the end
 		enableStatMonitor();
+
 	}
 
 	private void maybeInitJmx() {
@@ -143,6 +157,10 @@ public class IoTDB implements IoTDBMBean {
             statMonitor.activate();
         }
     }
+
+    private void initErrorInformation(){
+		ExceptionHandler.getInstance().loadInfo();
+	}
 	/**
 	 * Recover data using system log.
 	 *

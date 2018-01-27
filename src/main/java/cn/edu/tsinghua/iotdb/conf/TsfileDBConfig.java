@@ -196,6 +196,11 @@ public class TsfileDBConfig {
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
+	/*
+	* Set the language version when loading file including error information, default value is "EN"
+	* */
+	public String languageVersion = "EN";
+	
 	/**
 	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
 	 */
