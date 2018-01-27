@@ -1,4 +1,4 @@
-﻿2000 && CR_UNKNOWN_ERROR && Unknown MySQL error && 未知MySQL错误
+2000 && CR_UNKNOWN_ERROR && Unknown MySQL error && 未知MySQL错误
 2001 && CR_NO_PARAMETERS EXISTS && No parameters exist in the statement && 语句中无变量
 2002 && CR_INVALID_PARAMETER NO && Invalid parameter number && 无效的变量
 2003 && CR_CONN_HOST_ERROR && Can't connect to MySQL server on {}({}) && 无法连接到MySQL服务器

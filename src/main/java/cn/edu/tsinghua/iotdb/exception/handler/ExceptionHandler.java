@@ -20,8 +20,33 @@ public class ExceptionHandler {
         return ExceptionHandler.INSTANCE;
     }
 
-    public void loadInfo() {
+    public void loadInfo(String filePath, String languageVersion){
         BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+                    filePath), "UTF-8"));
+            String tempString;
+            while ((tempString = reader.readLine()) != null) {
+                String[] tempRes = tempString.split(" && ");
+                Language language = Language.valueOf(languageVersion);
+                int index = language.getIndex();
+                errInfo.put(tempRes[1],"[Error: "+tempRes[0]+"] "+tempRes[index]);
+            }
+            reader.close();
+        } catch (IOException e) {
+            LOGGER.error("Read file error. File does not exist or file is broken. File path: {}.Because: {}.",filePath,e.getMessage());
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    LOGGER.error("Fail to close file: {}. Because: {}.",filePath,e.getMessage());
+                }
+            }
+        }
+    }
+
+    public void loadInfo(){
         String url = System.getProperty(TsFileDBConstant.IOTDB_CONF, null);
         if (url == null) {
             url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
@@ -34,29 +59,8 @@ public class ExceptionHandler {
         } else{
             url += (File.separatorChar + ExceptionHandler.CONFIG_NAME);
         }
-
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(
-                    url), "UTF-8"));
-            String tempString;
-            while ((tempString = reader.readLine()) != null) {
-                String[] tempRes = tempString.split(" && ");
-                Language language = Language.valueOf(TsfileDBDescriptor.getInstance().getConfig().languageVersion);
-                int index = language.getIndex();
-                errInfo.put(tempRes[1],"[Error: "+tempRes[0]+"] "+tempRes[index]);
-            }
-            reader.close();
-        } catch (IOException e) {
-            LOGGER.error("Read file error. File does not exist or file is broken. File path: {}.Because: {}.",url,e.getMessage());
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    LOGGER.error("Fail to close file: {}. Because: {}.",url,e.getMessage());
-                }
-            }
-        }
+        Language language = Language.valueOf(TsfileDBDescriptor.getInstance().getConfig().languageVersion);
+        loadInfo(url,language.name());
     }
     public void writeInfo(int errCode,String errEnum,String msg_CN,String msg_EN,String filePath){
         BufferedWriter out = null;
