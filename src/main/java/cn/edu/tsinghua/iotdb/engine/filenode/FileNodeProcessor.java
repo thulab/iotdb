@@ -329,8 +329,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					}
 					InvertedindexOfFiles.get(deltaObjectId).add(fileNode);
 				}
-			} else {
-				LOGGER.error("fuck~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~fuck~~~~~~~~~~~~~~~~~~");
 			}
 		}
 	}
@@ -1002,9 +1000,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (!newFileNodes.isEmpty()) {
 			for (IntervalFileNode intervalFileNode : newFileNodes) {
 				if (intervalFileNode.overflowChangeType == OverflowChangeType.NO_CHANGE) {
-					if (intervalFileNode.getStartTimeMap().isEmpty() || intervalFileNode.getEndTimeMap().isEmpty()) {
-						LOGGER.error("The filenode {} is empty {}", getProcessorName(), intervalFileNode);
-					}
 					result.add(intervalFileNode.backUp());
 				} else {
 					Map<String, Long> startTimeMap = new HashMap<>();
@@ -1028,9 +1023,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					}
 					IntervalFileNode node = new IntervalFileNode(startTimeMap, endTimeMap,
 							intervalFileNode.overflowChangeType, intervalFileNode.getRelativePath());
-					if (node.getStartTimeMap().isEmpty() || node.getEndTimeMap().isEmpty()) {
-						LOGGER.error("The filenode {} is empty {}", getProcessorName(), node);
-					}
 					result.add(node);
 				}
 			}
@@ -1162,7 +1154,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 			// add new file when merge
 			for (int i = backupIntervalFiles.size() - beginIndex; i < newFileNodes.size(); i++) {
-				result.add(newFileNodes.get(i).backUp());
+				IntervalFileNode fileNode = newFileNodes.get(i);
+				if (fileNode.isClosed()) {
+					result.add(fileNode.backUp());
+				} else {
+					result.add(fileNode);
+				}
 			}
 
 			isMerging = FileNodeProcessorStatus.WAITING;
@@ -1172,10 +1169,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			// clear merge changed
 			for (IntervalFileNode fileNode : newFileNodes) {
 				fileNode.clearMergeChanged();
-				if (fileNode.getStartTimeMap().isEmpty() || fileNode.getEndTimeMap().isEmpty()) {
-					LOGGER.error("~~~~~~~~~~The filenode processor {} empty interval file is {}", getProcessorName(),
-							fileNode);
-				}
 			}
 
 			synchronized (fileNodeProcessorStore) {
@@ -1235,8 +1228,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				// add the restore file, if the last file is not closed
 				if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 					String bufferFileRestorePath = newFileNodes.get(newFileNodes.size() - 1).getFilePath() + ".restore";
-					File bufferRestoreFile = new File(bufferwriteDir, bufferFileRestorePath);
-					bufferFiles.add(bufferRestoreFile.getPath());
+					bufferFiles.add(bufferFileRestorePath);
 				}
 
 				for (File file : bufferwriteDir.listFiles()) {
@@ -1365,13 +1357,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (recordWriter != null) {
 			recordWriter.close();
 		}
-		if (fileName == null) {
-			LOGGER.error("The filenode processor {} has no data after merge. the interval fle is {}",
-					getProcessorName(), backupIntervalFile);
-		}
-		LOGGER.info("The filenode processor {} merge {}->{}, the internalFile start-map {}->{}, end-map {}->{}.",
-				getProcessorName(), backupIntervalFile.getRelativePath(), fileName,
-				backupIntervalFile.getStartTimeMap(), startTimeMap, backupIntervalFile.getEndTimeMap(), endTimeMap);
 		backupIntervalFile.setRelativePath(fileName);
 		backupIntervalFile.overflowChangeType = OverflowChangeType.NO_CHANGE;
 		backupIntervalFile.setStartTimeMap(startTimeMap);
