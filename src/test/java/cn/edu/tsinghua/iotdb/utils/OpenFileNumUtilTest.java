@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,19 +20,20 @@ public class OpenFileNumUtilTest {
         OpenFileNumUtil openFileNumUtil = OpenFileNumUtil.getInstance();
         OpenFileNumUtil.setPid(getProcessID());
         String currDir = System.getProperty("user.dir");
+        ArrayList<Integer> openFileNumResultList;
         ArrayList<File> fileList = new ArrayList<>();
-        int testTime = 10 ;
-        int testFileNum;
         ArrayList<FileWriter> fileWriterList = new ArrayList<>();
         //ArrayList<FileReader> fileReaderList = new ArrayList<>();
-        ArrayList<Integer> openFileNumResultList;
+        int testTime = 10 ;
+        int testFileNum;
         int totalOpenFileNumBefore;
         int totalOpenFileNumAfter;
         int totalOpenFileNumChange;
+        Random random = new Random(100);
 
-        for(int test=0; test < testTime; test++) {
+        for(int test = 0; test < testTime; test++) {
             //随机测试testTime次，每次创建随机的testFileNum个文件进行测试
-            testFileNum = (int) ((Math.random() * 100) + 2);
+            testFileNum = (int) ((random.nextDouble() * 100) + 2);
             //初始状态统计打开文件数
             openFileNumResultList = openFileNumUtil.get();
             totalOpenFileNumBefore = openFileNumResultList.get(0);
@@ -43,7 +45,7 @@ public class OpenFileNumUtilTest {
             totalOpenFileNumAfter = openFileNumResultList.get(0);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //创建testFileNum个File对象应该不影响打开文件数
-            assertEquals("0", String.valueOf(totalOpenFileNumChange));
+            assertEquals(0, totalOpenFileNumChange);
 
             openFileNumResultList = openFileNumUtil.get();
             totalOpenFileNumBefore = openFileNumResultList.get(0);
@@ -71,8 +73,22 @@ public class OpenFileNumUtilTest {
             totalOpenFileNumAfter = openFileNumResultList.get(0);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //创建testFileNum个FileWriter对象应该增加testFileNum个打开文件数
-            assertEquals(String.valueOf(testFileNum), String.valueOf(totalOpenFileNumChange));
+            assertEquals(testFileNum, totalOpenFileNumChange);
 
+            openFileNumResultList = openFileNumUtil.get();
+            totalOpenFileNumBefore = openFileNumResultList.get(0);
+            for(FileWriter fw : fileWriterList){
+                try {
+                    fw.write("this is a test file for open file number counting.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            openFileNumResultList = openFileNumUtil.get();
+            totalOpenFileNumAfter = openFileNumResultList.get(0);
+            totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
+            //testFileNum个FileWriter对象写文件前后应该不影响打开文件数
+            assertEquals(0, totalOpenFileNumChange);
 
             openFileNumResultList = openFileNumUtil.get();
             totalOpenFileNumBefore = openFileNumResultList.get(0);
@@ -87,7 +103,7 @@ public class OpenFileNumUtilTest {
             totalOpenFileNumAfter = openFileNumResultList.get(0);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //关闭testFileNum个FileWriter对象应该减少testFileNum个打开文件数
-            assertEquals(String.valueOf(-testFileNum), String.valueOf(totalOpenFileNumChange));
+            assertEquals(-testFileNum, totalOpenFileNumChange);
 
             //删除testFileNum个测试文件
             for (File file : fileList) {
@@ -95,6 +111,9 @@ public class OpenFileNumUtilTest {
                     file.delete();
                 }
             }
+
+            fileWriterList.clear();
+            fileList.clear();
         }
 
     }
@@ -174,7 +193,7 @@ public class OpenFileNumUtilTest {
         getl0= openFileNumUtil.get();
         System.out.println("stage3");
         for(int i =0; i < getl0.size(); i++){
-            System.out.println(statistic[i]+getl0.get(i));
+            System.out.println(statistic[i] + getl0.get(i));
         }
 
         for(FileWriter fw : fileWriterList){
