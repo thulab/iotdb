@@ -1162,7 +1162,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 			// add new file when merge
 			for (int i = backupIntervalFiles.size() - beginIndex; i < newFileNodes.size(); i++) {
-				result.add(newFileNodes.get(i).backUp());
+				IntervalFileNode fileNode = newFileNodes.get(i);
+				if (fileNode.isClosed()) {
+					result.add(newFileNodes.get(i).backUp());
+				}else {
+					result.add(fileNode);
+				}
 			}
 
 			isMerging = FileNodeProcessorStatus.WAITING;
@@ -1172,7 +1177,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			// clear merge changed
 			for (IntervalFileNode fileNode : newFileNodes) {
 				fileNode.clearMergeChanged();
-				if (fileNode.getStartTimeMap().isEmpty() || fileNode.getEndTimeMap().isEmpty()) {
+				if (fileNode.getStartTimeMap().isEmpty()) {
 					LOGGER.error("~~~~~~~~~~The filenode processor {} empty interval file is {}", getProcessorName(),
 							fileNode);
 				}
@@ -1235,8 +1240,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				// add the restore file, if the last file is not closed
 				if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 					String bufferFileRestorePath = newFileNodes.get(newFileNodes.size() - 1).getFilePath() + ".restore";
-					File bufferRestoreFile = new File(bufferwriteDir, bufferFileRestorePath);
-					bufferFiles.add(bufferRestoreFile.getPath());
+					bufferFiles.add(bufferFileRestorePath);
 				}
 
 				for (File file : bufferwriteDir.listFiles()) {
