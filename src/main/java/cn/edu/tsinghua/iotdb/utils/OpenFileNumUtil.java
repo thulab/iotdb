@@ -7,10 +7,16 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+/**
+ * @author liurui
+ */
+
 // Notice : methods in this class may not be accurate. Because limited user authority.
+
 public class OpenFileNumUtil {
     private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
     private static int pid = -1;
+    private static String processName ;
 
     private static final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
     private static final String SEARCH_PID_MAC = "ps aux | grep -i %s | grep -v grep";
@@ -18,14 +24,27 @@ public class OpenFileNumUtil {
     private static String cmds[] = {"/bin/bash", "-c", ""};
     private static OpenFileNumUtil INSTANCE = null;
 
+    /**
+     * 指定进程关键字的构造函数
+     * @param pName 进程关键字
+     */
+    private OpenFileNumUtil(String pName) {
+        processName = pName;
+        pid = getPID();
+    }
+
+    /**
+     * 不指定进程关键字的构造函数，默认进程关键字为IOTDB_HOME
+     */
     private OpenFileNumUtil() {
+        processName = "IOTDB_HOME";
         pid = getPID();
     }
 
     /**
      * 单例模式
      *
-     * @return
+     * @return 单例对象
      */
     public static OpenFileNumUtil getInstance() {
         if (INSTANCE == null) {
@@ -35,23 +54,33 @@ public class OpenFileNumUtil {
     }
 
     /**
-     * @param
-     * @return int, pid
-     * @Purpose:获得IoTDB服务的PID
+     * 测试用的指定进程关键字的getInstance函数
+     * @param pName
+     * @return
+     */
+    public static OpenFileNumUtil getInstance(String pName) {
+        if (INSTANCE == null) {
+            INSTANCE = new OpenFileNumUtil(pName);
+        }
+        return INSTANCE;
+    }
+    /**
+     * 获得IoTDB服务的PID
+     * @return  pid
+     *
      */
     public int getPID() {
         int pid = -1;
         Process pro1;
         Runtime r = Runtime.getRuntime();
-        String filter = "IOTDB_HOME";
         String os = System.getProperty("os.name").toLowerCase();
 
         try {
             String command ;
             if(os.startsWith("linux")) {
-                command = String.format(SEARCH_PID_LINUX, filter);
+                command = String.format(SEARCH_PID_LINUX, processName);
             } else {
-                command = String.format(SEARCH_PID_MAC, filter);
+                command = String.format(SEARCH_PID_MAC, processName);
             }
             //System.out.println(command);
             cmds[2] = command;
@@ -79,18 +108,43 @@ public class OpenFileNumUtil {
     }
 
     /**
-     * 获取IoTDB服务的进程id
+     * 获取进程id
      *
      * @return pid
      */
-    private int getPid() {
+    public static int getPid() {
         return pid;
+    }
+
+    /**
+     * 设置进程id
+     *
+     */
+    public static void setPid(int pid) {
+        OpenFileNumUtil.pid = pid;
+    }
+
+    /**
+     * 获取进程关键字
+     *
+     * @return processName
+     */
+    public static String getProcessName() {
+        return processName;
+    }
+
+    /**
+     * 设置进程关键字
+     *
+     */
+    public static void setProcessName(String processName) {
+        OpenFileNumUtil.processName = processName;
     }
 
     /**
      * 检验一个字符串是否是整数
      *
-     * @param str
+     * @param str 需要判断是否为整数的字符串
      * @return
      */
     private static boolean isNumeric(String str) {
@@ -187,7 +241,15 @@ public class OpenFileNumUtil {
 
     /**
      * 正确性检查并返回最终结果列表，若PID异常会返回-1，若操作系统不支持则返回-2
-     *
+     * 若操作系统支持，则返回打开文件数的统计结果列表，其中：
+     * list[0]表示当前IoTDB服务进程一共打开的文件数目
+     * 1ist[1]表示当前IoTDB服务进程打开的/data路径下文件的数目
+     * 1ist[2]表示当前IoTDB服务进程打开的/data/delta路径下文件的数目
+     * 1ist[3]表示当前IoTDB服务进程打开的/data/overflow路径下文件的数目
+     * 1ist[4]表示当前IoTDB服务进程打开的/data/wals路径下文件的数目
+     * 1ist[5]表示当前IoTDB服务进程打开的/data/metadata路径下文件的数目
+     * 1ist[6]表示当前IoTDB服务进程打开的/data/digest路径下文件的数目
+     * 1ist[7]表示当前IoTDB服务进程打开的socket的数目
      * @return list
      */
     public ArrayList<Integer> get() {
