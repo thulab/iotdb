@@ -21,9 +21,11 @@ import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
@@ -115,13 +117,18 @@ public class BufferWriteProcessor extends Processor {
 	public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
 		long memUage = MemUtils.getRecordSize(tsRecord);
 		BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, memUage);
+		for (DataPoint dataPoint : tsRecord.dataPointList) {
+			workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+					dataPoint.getValue().toString());
+		}
+		valueCount++;
 		switch (level) {
 		case SAFE:
 			// memUsed += newMemUsage;
 			// memtable
 			memUage = memSize.addAndGet(memUage);
 			if (memUage > memThreshold) {
-				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+				LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
 						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
 				try {
 					flush();
@@ -130,20 +137,15 @@ public class BufferWriteProcessor extends Processor {
 					throw new BufferWriteProcessorException(e);
 				}
 			}
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
-						tsRecord.time, dataPoint.getValue().toString());
-			}
-			valueCount++;
 			return false;
 		case WARNING:
-			LOGGER.debug("Memory usage will exceed warning threshold, current : {}.",
+			LOGGER.warn("Memory usage will exceed warning threshold, current : {}.",
 					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
 			// memUsed += newMemUsage;
 			// memtable
 			memUage = memSize.addAndGet(memUage);
 			if (memUage > memThreshold) {
-				LOGGER.warn("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+				LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
 						MemUtils.bytesCntToStr(memUage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
 				try {
 					flush();
@@ -152,17 +154,12 @@ public class BufferWriteProcessor extends Processor {
 					throw new BufferWriteProcessorException(e);
 				}
 			}
-			for (DataPoint dataPoint : tsRecord.dataPointList) {
-				workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(),
-						tsRecord.time, dataPoint.getValue().toString());
-			}
-			valueCount++;
 			return false;
 		case DANGEROUS:
 		default:
 			LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
 					MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-			throw new BufferWriteProcessorException("Memory usage exceeded dangerous threshold.");
+			return false;
 		}
 	}
 
@@ -170,29 +167,13 @@ public class BufferWriteProcessor extends Processor {
 			String measurementId, TSDataType dataType) {
 		flushQueryLock.lock();
 		try {
-			TreeSet<TimeValuePair> result = new TreeSet<>();
-//			Iterable<TimeValuePair> workIterable = workMemTable.query(deltaObjectId, measurementId, dataType);
-//			for (TimeValuePair timeValuePair : workIterable) {
-//				if (!result.contains(timeValuePair)) {
-//					result.add(timeValuePair);
-//				}
-//			}
-//			if (isFlush) {
-//				Iterable<TimeValuePair> flushIterable = flushMemTable.query(deltaObjectId, measurementId, dataType);
-//				for (TimeValuePair timeValuePair : flushIterable) {
-//					if (!result.contains(timeValuePair)) {
-//						result.add(timeValuePair);
-//					}
-//				}
-//			}
-			RawSeriesChunk rawSeriesChunk = null;
-			if (result.isEmpty()) {
-				rawSeriesChunk = new SeriesInMemTable(true);
-			} else {
-				rawSeriesChunk = new SeriesInMemTable(result.last().getTimestamp(), result.first().getTimestamp(),
-						result.last().getValue(), result.first().getValue(), dataType, result);
+			MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
+			if (isFlush) {
+				memSeriesLazyMerger.addMemSeries(flushMemTable.query(deltaObjectId, measurementId, dataType));
 			}
-			return new Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>>(rawSeriesChunk,
+			memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
+			RawSeriesChunk rawSeriesChunk = new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
+			return new Pair<>(rawSeriesChunk,
 					bufferWriteResource.getInsertMetadatas(deltaObjectId, measurementId, dataType));
 		} finally {
 			flushQueryLock.unlock();
@@ -202,10 +183,12 @@ public class BufferWriteProcessor extends Processor {
 	private void switchWorkToFlush() {
 		flushQueryLock.lock();
 		try {
-			flushMemTable = workMemTable;
-			workMemTable = new PrimitiveMemTable();
-			isFlush = true;
+			if (flushMemTable == null) {
+				flushMemTable = workMemTable;
+				workMemTable = new PrimitiveMemTable();
+			}
 		} finally {
+			isFlush = true;
 			flushQueryLock.unlock();
 		}
 	}
@@ -217,6 +200,7 @@ public class BufferWriteProcessor extends Processor {
 			flushMemTable = null;
 			bufferWriteResource.appendMetadata();
 		} finally {
+			isFlush = false;
 			flushQueryLock.unlock();
 		}
 	}

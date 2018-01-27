@@ -329,6 +329,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					}
 					InvertedindexOfFiles.get(deltaObjectId).add(fileNode);
 				}
+			} else {
+				LOGGER.error("fuck~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~fuck~~~~~~~~~~~~~~~~~~");
 			}
 		}
 	}
@@ -1000,6 +1002,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (!newFileNodes.isEmpty()) {
 			for (IntervalFileNode intervalFileNode : newFileNodes) {
 				if (intervalFileNode.overflowChangeType == OverflowChangeType.NO_CHANGE) {
+					if (intervalFileNode.getStartTimeMap().isEmpty() || intervalFileNode.getEndTimeMap().isEmpty()) {
+						LOGGER.error("The filenode {} is empty {}", getProcessorName(), intervalFileNode);
+					}
 					result.add(intervalFileNode.backUp());
 				} else {
 					Map<String, Long> startTimeMap = new HashMap<>();
@@ -1023,6 +1028,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					}
 					IntervalFileNode node = new IntervalFileNode(startTimeMap, endTimeMap,
 							intervalFileNode.overflowChangeType, intervalFileNode.getRelativePath());
+					if (node.getStartTimeMap().isEmpty() || node.getEndTimeMap().isEmpty()) {
+						LOGGER.error("The filenode {} is empty {}", getProcessorName(), node);
+					}
 					result.add(node);
 				}
 			}
@@ -1164,6 +1172,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			// clear merge changed
 			for (IntervalFileNode fileNode : newFileNodes) {
 				fileNode.clearMergeChanged();
+				if (fileNode.getStartTimeMap().isEmpty() || fileNode.getEndTimeMap().isEmpty()) {
+					LOGGER.error("~~~~~~~~~~The filenode processor {} empty interval file is {}", getProcessorName(),
+							fileNode);
+				}
 			}
 
 			synchronized (fileNodeProcessorStore) {
