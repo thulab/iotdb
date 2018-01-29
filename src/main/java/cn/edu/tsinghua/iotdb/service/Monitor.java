@@ -54,42 +54,42 @@ public class Monitor implements MonitorMBean{
 
 	@Override
 	public int getTotalOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getDataOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getDeltaOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.DELTA_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.DELTA_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getOverflowOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getWalOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.WAL_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.WAL_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getMetadataOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.METADATA_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.METADATA_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getDigestOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM);
 	}
 
 	@Override
 	public int getSocketOpenFileNum() {
-		return OpenFileNumUtil.getInstance().get().get(OpenFileNumUtil.OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM);
+		return OpenFileNumUtil.getInstance().get(OpenFileNumUtil.OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM);
 	}
 
 	@Override
