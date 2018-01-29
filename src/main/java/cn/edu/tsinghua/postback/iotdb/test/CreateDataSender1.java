@@ -97,8 +97,8 @@ public class CreateDataSender1 {
 
         int sqlCount = 0;
 
-        long time = 1516955101330L;
-        long startTime = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
+        Thread.sleep(100);
         for (int i = 0; i < TOTAL_DATA; i++) {
 
         	time = time + 100;
@@ -165,7 +165,7 @@ public class CreateDataSender1 {
             }
         }
         statement.executeBatch();
-        System.out.println(System.currentTimeMillis() - startTime);
+        System.out.println(System.currentTimeMillis() - time);
         statement.clearBatch();
     }
 
@@ -194,8 +194,8 @@ public class CreateDataSender1 {
             while(true) {
             randomInsertData(statement, timeseriesMap);
 
-            statement.execute("merge");
-            statement.execute("flush");
+//            statement.execute("merge");
+//            statement.execute("flush");
             }
             
         } catch (Exception e) {

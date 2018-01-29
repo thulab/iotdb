@@ -45,7 +45,8 @@ public class TransferData {
 	private Service.Client clientOfServer;
 	private List<String> schema = new ArrayList<>();
 	private String uuid;
-	private PostBackConfig config= PostBackDescriptor.getInstance().getConfig();
+	private boolean connection_orElse;
+	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferData.class);
 
@@ -63,7 +64,7 @@ public class TransferData {
 	public void setConfig(PostBackConfig config) {
 		this.config = config;
 	}
-	
+
 	public void connection(String serverIP, int serverPort) {
 		transport = new TSocket(serverIP, serverPort);
 		TProtocol protocol = new TBinaryProtocol(transport);
@@ -71,7 +72,9 @@ public class TransferData {
 		try {
 			transport.open();
 		} catch (TTransportException e) {
-			LOGGER.error("IoTDB post back sender: IoTDB post back sender: cannot connect to server because {}", e.getMessage());
+			LOGGER.error("IoTDB post back sender: IoTDB post back sender: cannot connect to server because {}",
+					e.getMessage());
+			connection_orElse = false;
 		}
 	}
 
@@ -89,6 +92,7 @@ public class TransferData {
 				out.close();
 			} catch (Exception e) {
 				LOGGER.error("IoTDB post back sender: cannot write UUID to file because {}", e.getMessage());
+				connection_orElse = false;
 			}
 		} else {
 			try {
@@ -97,29 +101,31 @@ public class TransferData {
 				bf.close();
 			} catch (IOException e) {
 				LOGGER.error("IoTDB post back sender: cannot read UUID from file because {}", e.getMessage());
+				connection_orElse = false;
 			}
 		}
 		try {
 			uuidOfReceiver = clientOfServer.getUUID(uuid);
 		} catch (TException e) {
 			LOGGER.error("IoTDB sender: cannot send UUID to receiver because {}", e.getMessage());
+			connection_orElse = false;
 		}
 		return uuidOfReceiver;
 	}
 
 	public void makeFileSnapshot(Set<String> sendingFileList, String snapshotPath, String iotdbPath) {
 		try {
-			if(!new File(snapshotPath).exists())
+			if (!new File(snapshotPath).exists())
 				new File(snapshotPath).mkdir();
 			for (String filePath : sendingFileList) {
 				String relativeFilePath = filePath.substring(iotdbPath.length());
 				String newPath = snapshotPath + File.separator + relativeFilePath;
 				File newfile = new File(newPath);
-				if (!newfile.getParentFile().exists()) { 
+				if (!newfile.getParentFile().exists()) {
 					newfile.getParentFile().mkdirs();
 				}
-				Path link = FileSystems.getDefault().getPath(newPath);   
-				Path target = FileSystems.getDefault().getPath(filePath);   
+				Path link = FileSystems.getDefault().getPath(newPath);
+				Path target = FileSystems.getDefault().getPath(filePath);
 				Files.createLink(link, target);
 			}
 		} catch (IOException e) {
@@ -140,29 +146,29 @@ public class TransferData {
 				String os = System.getProperty("os.name");
 				if (os.toLowerCase().startsWith("windows")) {
 					String[] name = filePath.split(File.separator + File.separator);
-					for(String temp:name)
+					for (String temp : name)
 						filePathSplit.add(temp);
 				} else {
 					String[] name = filePath.split(File.separator);
-					for(String temp:name)
+					for (String temp : name)
 						filePathSplit.add(temp);
 				}
-				while (true) {	
+				while (true) {
 					FileInputStream fis = new FileInputStream(file);
 					MessageDigest md = MessageDigest.getInstance("MD5");
 					int mBufferSize = 4 * 1024 * 1024;
-		            ByteArrayOutputStream bos = new ByteArrayOutputStream(mBufferSize);
+					ByteArrayOutputStream bos = new ByteArrayOutputStream(mBufferSize);
 					byte[] buffer = new byte[mBufferSize];
 					int n;
 					while ((n = fis.read(buffer)) != -1) { // cut the file into pieces to send
-						bos.write(buffer, 0, n); 
+						bos.write(buffer, 0, n);
 						ByteBuffer buffToSend = ByteBuffer.wrap(bos.toByteArray());
 						bos.reset();
 						md.update(buffer, 0, n);
 						clientOfServer.startReceiving(null, filePathSplit, buffToSend, 1);
 					}
 					fis.close();
-					
+
 					// the file is sent successfully
 					String md5OfSender = (new BigInteger(1, md.digest())).toString(16);
 					String md5OfReceiver = clientOfServer.startReceiving(md5OfSender, filePathSplit, null, 0);
@@ -170,46 +176,45 @@ public class TransferData {
 						LOGGER.info("IoTDB sender: receiver has received {} {}", filePath, "successfully!");
 						break;
 					}
-				}				
-				LOGGER.info("IoTDB sender : Task of sending files to receiver has completed " + num + "/" + fileList.size());
+				}
+				LOGGER.info("IoTDB sender : Task of sending files to receiver has completed " + num + "/"
+						+ fileList.size());
 			}
 		} catch (Exception e) {
 			LOGGER.error("IoTDB sender: cannot sending data because {}", e.getMessage());
+			connection_orElse = false;
 		}
 	}
 
-	public void getSchema(String schemaPath){
+	public void getSchema(String schemaPath) {
 		try {
 			BufferedReader bf = new BufferedReader(new FileReader(schemaPath));
 			String data;
 			schema.clear();
-			while((data = bf.readLine())!=null)
-			{
+			while ((data = bf.readLine()) != null) {
 				String item[] = data.split(",");
-				if(item[0].equals("2"))
-				{
+				if (item[0].equals("2")) {
 					String sql = "SET STORAGE GROUP TO " + item[1];
 					schema.add(sql);
-				}
-				else if(item[0].equals("0"))
-				{
+				} else if (item[0].equals("0")) {
 					String sql = "CREATE TIMESERIES " + item[1] + " WITH DATATYPE=" + item[2] + ", ENCODING=" + item[3];
 					schema.add(sql);
 				}
 			}
 			bf.close();
-		}catch(IOException e) {
+		} catch (IOException e) {
 			LOGGER.error("IoTDB sender : cannot get schema from mlog.txt because {}", e.getMessage());
+			connection_orElse = false;
 		}
 	}
-	
+
 	public void sendSchema() {
-		for(String sql:schema)
-		{
+		for (String sql : schema) {
 			try {
 				clientOfServer.getSchema(sql);
 			} catch (TException e) {
 				LOGGER.error("IoTDB sender : Receiver cannot get schema because {}", e.getMessage());
+				connection_orElse = false;
 			}
 		}
 	}
@@ -228,55 +233,51 @@ public class TransferData {
 			LOGGER.error("IoTDB sender : can not close connection to the receiver because {}", e.getMessage());
 		}
 	}
-	
+
 	public void deleteSnapshot(File file) {
 		if (file.isFile() || file.list().length == 0) {
 			file.delete();
-		} 
-		else{
+		} else {
 			File[] files = file.listFiles();
 			for (File f : files) {
-				deleteSnapshot(f);        
-				f.delete();       
+				deleteSnapshot(f);
+				f.delete();
 			}
-		}		
+		}
 	}
-	
+
 	public List<String> getSchema() {
 		return schema;
 	}
-	
+
 	public String getUuid() {
 		return uuid;
 	}
-	
+
 	public static void main(String[] args) {
 		TransferData transferData = new TransferData();
 		transferData.timedTask();
 	}
-	
+
 	public void timedTask() {
-		if(!config.IS_UPLOAD_ENABLE) {
-			LOGGER.info("IoTDB post back sender: the iotdb-postback property IS_UPLOAD_ENABLE is set false, so poatback function is banned. ");
-		}
-		else {
+		if (!config.IS_UPLOAD_ENABLE) {
+			LOGGER.info(
+					"IoTDB post back sender: the iotdb-postback property IS_UPLOAD_ENABLE is set false, so poatback function is banned. ");
+		} else {
 			postback();
 			Date lastTime = new Date();
 			Date currentTime = new Date();
-			while(true)
-			{
+			while (true) {
 				currentTime = new Date();
-				if(currentTime.getTime() - lastTime.getTime() > config.UPLOAD_CYCLE_IN_SECONDS * 1000)
-				{
+				if (currentTime.getTime() - lastTime.getTime() > config.UPLOAD_CYCLE_IN_SECONDS * 1000) {
 					lastTime = currentTime;
 					postback();
 				}
 			}
 		}
 	}
-	
-	public void postback()
-	{
+
+	public void postback() {
 		try {
 			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 			Connection connection = null;
@@ -296,23 +297,33 @@ public class TransferData {
 		} catch (ClassNotFoundException | SQLException e) {
 			LOGGER.error("IoTDB post back sender: cannot execute flush and merge because {}", e.getMessage());
 		}
-        FileManager fileManager = FileManager.getInstance();
-        fileManager.getLastLocalFileList(config.LAST_FILE_INFO);
-        fileManager.getNowLocalFileList(config.SENDER_FILE_PATH);
-        fileManager.getSendingFileList();
-        Set<String> sendingList = fileManager.getSendingFiles();
-        if(sendingList.size()==0)
-        	LOGGER.info("IoTDB post back sender : there has no files to postback");
-        else
-        {
-            connection(config.SERVER_IP, config.SERVER_PORT);
-            transferUUID(config.UUID_PATH);
-	        getSchema(config.SCHEMA_PATH);
+		FileManager fileManager = FileManager.getInstance();
+		fileManager.getLastLocalFileList(config.LAST_FILE_INFO);
+		fileManager.getNowLocalFileList(config.SENDER_FILE_PATH);
+		fileManager.getSendingFileList();
+		Set<String> sendingList = fileManager.getSendingFiles();
+		connection_orElse = true;
+		if (sendingList.size() == 0)
+			LOGGER.info("IoTDB post back sender : there has no files to postback");
+		else {
+			connection(config.SERVER_IP, config.SERVER_PORT);
+			if (!connection_orElse)
+				return;
+			transferUUID(config.UUID_PATH);
+			if (!connection_orElse)
+				return;
+			getSchema(config.SCHEMA_PATH);
+			if (!connection_orElse)
+				return;
 			makeFileSnapshot(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-	        sendSchema();
-	        startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-	        fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
-	        afterSending(config.SNAPSHOT_PATH);
-        }
+			sendSchema();
+			if (!connection_orElse)
+				return;
+			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
+			if (!connection_orElse)
+				return;
+			afterSending(config.SNAPSHOT_PATH);
+			fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
+		}
 	}
 }

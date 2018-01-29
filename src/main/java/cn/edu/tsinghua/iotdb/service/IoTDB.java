@@ -14,6 +14,7 @@ import javax.management.ObjectName;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
 
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
+import cn.edu.tsinghua.postback.iotdb.receiver.ServerManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
@@ -46,6 +48,8 @@ public class IoTDB implements IoTDBMBean {
 	private final String MONITOR_STR = "Monitor";
 	private final String IOTDB_STR = "IoTDB";
     private StatMonitor statMonitor;
+	private String postBack_type = PostBackDescriptor.getInstance().getConfig().POSTBACK_TYPE;
+	private ServerManager serverManager = ServerManager.getInstance();
 	private static class IoTDBHolder {
 		private static final IoTDB INSTANCE = new IoTDB();
 	}
@@ -101,6 +105,9 @@ public class IoTDB implements IoTDBMBean {
 		startCloseAndMergeServer();
 		// StatMonitor should start at the end
 		enableStatMonitor();
+		if (postBack_type.equals("Server")) {
+			serverManager.startServer();
+		}
 	}
 
 	private void maybeInitJmx() {
@@ -194,6 +201,10 @@ public class IoTDB implements IoTDBMBean {
 	@Override
 	public void stop() throws FileNodeManagerException, IOException {
 		// TODO Auto-generated method stub
+		if (postBack_type.equals("Server")) {
+			serverManager.closeServer();
+		}
+		
 		if (dBdao != null) {
 			dBdao.close();
 		}
