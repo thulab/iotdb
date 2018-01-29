@@ -258,7 +258,7 @@ public class OverflowQueryEngine {
      * Query type 1: query without filter.
      */
     private QueryDataSet querySeriesWithoutFilter(List<Path> paths, QueryDataSet queryDataSet, int fetchSize, Integer readLock)
-            throws ProcessorException, IOException {
+            throws ProcessorException, IOException, PathErrorException {
         if (queryDataSet == null) {
             queryDataSet = new QueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
@@ -278,6 +278,21 @@ public class OverflowQueryEngine {
         queryDataSet.clear();
         queryDataSet.getBatchReadGenerator().calculateRecord();
         EngineUtils.putRecordFromBatchReadGenerator(queryDataSet);
+
+//        if (queryDataSet == null) {
+//            queryDataSet = new QueryDataSet();
+//            for (Path path : paths) {
+//                DynamicOneColumnData queryResult = queryOneSeriesWithoutFilter(path, null, fetchSize, readLock);
+//                queryDataSet.mapRet.put(path.getFullPath(), queryResult);
+//            }
+//        } else {
+//            queryDataSet.clear();
+//            for (Path path : paths) {
+//                DynamicOneColumnData queryResult = queryOneSeriesWithoutFilter(path, null, fetchSize, readLock);
+//                queryDataSet.mapRet.put(path.getFullPath(), queryResult);
+//            }
+//        }
+
         return queryDataSet;
     }
 
@@ -288,8 +303,8 @@ public class OverflowQueryEngine {
         String measurementID = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
-        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader =
-                (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
+        QueryRecordReader recordReader = (QueryRecordReader)
+                RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
                 null,  null, readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
@@ -340,7 +355,7 @@ public class OverflowQueryEngine {
         String measurementId = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
-        cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
+        QueryRecordReader recordReader = (QueryRecordReader)
                 RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                 queryTimeFilter, queryValueFilter, readLock, recordReaderPrefix, ReaderType.QUERY);
 
@@ -392,8 +407,7 @@ public class OverflowQueryEngine {
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("CrossQuery", formNumber);
             String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 
-            cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader recordReader = (cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader)
-                    RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
+            QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null,  null, null, recordReaderPrefix, ReaderType.QUERY);
 
             if (recordReader.getInsertMemoryData() == null) {

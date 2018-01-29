@@ -25,9 +25,14 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * This class is used for TsFile batch read.
+ * <p> This class is used for TsFile batch read.
  * A list of <code>RowGroupReader</code> is needed, the time hasNext method is invoked,
  * the next satisfied value will be calculated.
+ * </p>
+ *
+ * <p>
+ * Notice that, this class is not used currently.
+ * </p>
  */
 public class TsFileBatchReader {
 

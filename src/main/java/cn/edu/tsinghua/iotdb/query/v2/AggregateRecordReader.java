@@ -5,7 +5,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
@@ -39,6 +38,15 @@ public class AggregateRecordReader extends RecordReader{
         super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId,
                 queryTimeFilter, queryValueFilter);
     }
+
+    /** the RowGroupReader used index **/
+    private int usedRowGroupReaderIndex;
+
+    /** the ValueReader used index **/
+    private int usedValueReaderIndex;
+
+    /** the used file stream offset for batch read **/
+    private long usedPageOffset = -1;
 
     /**
      * Aggregation calculate function of <code>RecordReader</code> without filter.
@@ -91,16 +99,13 @@ public class AggregateRecordReader extends RecordReader{
     public Pair<AggregateFunction, Boolean> aggregateUsingTimestamps(AggregateFunction aggregateFunction,
                                                                      List<Long> timestamps)
             throws ProcessorException, IOException {
+
         boolean stillHasUnReadData;
-
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
-
         int commonTimestampsIndex = 0;
 
-        int rowGroupIndex = aggregateFunction.resultData.rowGroupIndex;
-
-        for (; rowGroupIndex < rowGroupReaderList.size(); rowGroupIndex++) {
-            RowGroupReader rowGroupReader = rowGroupReaderList.get(rowGroupIndex);
+        while (usedRowGroupReaderIndex < rowGroupReaderList.size()) {
+            RowGroupReader rowGroupReader = rowGroupReaderList.get(usedRowGroupReaderIndex);
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
 
@@ -114,6 +119,26 @@ public class AggregateRecordReader extends RecordReader{
                 if (commonTimestampsIndex >= timestamps.size()) {
                     return new Pair<>(aggregateFunction, true);
                 }
+                usedRowGroupReaderIndex ++;
+            } else {
+                usedRowGroupReaderIndex ++;
+            }
+        }
+
+        while (usedValueReaderIndex < valueReaders.size()) {
+            if (valueReaders.get(usedValueReaderIndex).getDataType().equals(dataType)) {
+
+                // TODO commonTimestampsIndex could be saved as a parameter
+
+                commonTimestampsIndex = aggregateUsingTimestamps(valueReaders.get(usedValueReaderIndex), aggregateFunction, timestamps);
+
+                // all value of commonTimestampsIndex has been used,
+                // the next batch of commonTimestamps should be loaded
+                if (commonTimestampsIndex >= timestamps.size()) {
+                    return new Pair<>(aggregateFunction, true);
+                }
+            } else {
+                usedValueReaderIndex ++;
             }
         }
 
@@ -134,7 +159,7 @@ public class AggregateRecordReader extends RecordReader{
     private void aggregate(ValueReader valueReader, AggregateFunction func) throws IOException, ProcessorException {
 
         DynamicOneColumnData result = new DynamicOneColumnData(dataType, true);
-        result.pageOffset = valueReader.fileOffset;
+        usedPageOffset = valueReader.fileOffset;
 
         // get series digest
         TsDigest digest = valueReader.getDigest();
@@ -148,7 +173,8 @@ public class AggregateRecordReader extends RecordReader{
         IntervalTimeVisitor seriesTimeVisitor = new IntervalTimeVisitor();
         if (queryTimeFilter != null && !seriesTimeVisitor.satisfy(queryTimeFilter, valueReader.getStartTime(), valueReader.getEndTime())) {
             logger.debug("calculate aggregation without filter, series time digest does not satisfy time filter");
-            result.plusRowGroupIndexAndInitPageOffset();
+            usedPageOffset = -1;
+            return;
         }
 
         // skip the current series chunk according to value filter
@@ -156,14 +182,15 @@ public class AggregateRecordReader extends RecordReader{
             if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > valueReader.getEndTime()) &&
                     (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > valueReader.getEndTime())) {
                 logger.debug("calculate aggregation without filter, series value digest does not satisfy value filter");
-                result.plusRowGroupIndexAndInitPageOffset();
+                usedPageOffset = -1;
+                return;
             }
         }
 
-        ByteArrayInputStream bis = valueReader.initBAISForOnePage(result.pageOffset);
+        ByteArrayInputStream bis = valueReader.initBAISForOnePage(usedPageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
 
-        while ((result.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
+        while ((usedPageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
@@ -175,7 +202,7 @@ public class AggregateRecordReader extends RecordReader{
             // skip the current page according to time filter
             if (queryTimeFilter != null && !seriesTimeVisitor.satisfy(queryTimeFilter, pageMinTime, pageMaxTime)) {
                 pageReader.skipCurrentPage();
-                result.pageOffset += lastAvailable - bis.available();
+                usedPageOffset += lastAvailable - bis.available();
                 continue;
             }
 
@@ -184,13 +211,13 @@ public class AggregateRecordReader extends RecordReader{
                 if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > pageMaxTime) &&
                         (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > pageMaxTime)) {
                     pageReader.skipCurrentPage();
-                    result.pageOffset += lastAvailable - bis.available();
+                    usedPageOffset += lastAvailable - bis.available();
                     continue;
                 }
             }
 
             InputStream page = pageReader.getNextPage();
-            result.pageOffset += lastAvailable - bis.available();
+            usedPageOffset += lastAvailable - bis.available();
 
             // whether this page is changed by overflow info
             boolean hasOverflowDataInThisPage = checkDataChanged(pageMinTime, pageMaxTime, insertMemoryData);
@@ -223,16 +250,12 @@ public class AggregateRecordReader extends RecordReader{
                                          List<Long> aggregationTimestamps)
             throws IOException, ProcessorException {
 
-        TSDataType dataType = valueReader.dataType;
-
         // the used count of aggregationTimestamps,
         // if all the time of aggregationTimestamps has been read, timestampsUsedIndex >= aggregationTimestamps.size()
         int timestampsUsedIndex = 0;
 
-        // lastAggregationResult records some information such as file page offset
-        DynamicOneColumnData lastAggregationResult = aggregateFunction.resultData;
-        if (lastAggregationResult.pageOffset == -1) {
-            lastAggregationResult.pageOffset = valueReader.fileOffset;
+        if (usedPageOffset == -1) {
+            usedPageOffset = valueReader.fileOffset;
         }
 
         // get column digest
@@ -243,12 +266,17 @@ public class AggregateRecordReader extends RecordReader{
                 + digestFF.getMinValue() + " --- " + digestFF.getMaxValue() + " min, max time is : "
                 + valueReader.getStartTime() + "--" + valueReader.getEndTime());
 
+        if (aggregationTimestamps.size() > 0 && valueReader.getEndTime() < aggregationTimestamps.get(timestampsUsedIndex)) {
+            logger.debug("current series does not satisfy the common timestamps");
+            return timestampsUsedIndex;
+        }
+
         DigestVisitor digestVisitor = new DigestVisitor();
-        ByteArrayInputStream bis = valueReader.initBAISForOnePage(lastAggregationResult.pageOffset);
+        ByteArrayInputStream bis = valueReader.initBAISForOnePage(usedPageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
 
         // still has unread data
-        while ((lastAggregationResult.pageOffset - valueReader.fileOffset) < valueReader.totalSize) {
+        while ((usedPageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
 
             PageHeader pageHeader = pageReader.getNextPageHeader();
@@ -259,14 +287,14 @@ public class AggregateRecordReader extends RecordReader{
             // the min value of common timestamps is greater than max time in this series
             if (aggregationTimestamps.get(timestampsUsedIndex) > pageMaxTime) {
                 pageReader.skipCurrentPage();
-                lastAggregationResult.pageOffset += lastAvailable - bis.available();
+                usedPageOffset += lastAvailable - bis.available();
                 continue;
             }
 
             // if the current page doesn't satisfy the time filter
             if (queryTimeFilter != null && !digestVisitor.satisfy(timeDigestFF, queryTimeFilter))  {
                 pageReader.skipCurrentPage();
-                lastAggregationResult.pageOffset += lastAvailable - bis.available();
+                usedPageOffset += lastAvailable - bis.available();
                 continue;
             }
 
@@ -278,8 +306,6 @@ public class AggregateRecordReader extends RecordReader{
                     dataType, pageTimestamps, valueReader.decoder, page,
                     queryTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, overflowOperationReaderCopy);
 
-
-
             if (pageData.left != null && pageData.left.valueLength > 0)
                 aggregateFunction.calculateValueFromDataPage(pageData.left);
 
@@ -290,11 +316,11 @@ public class AggregateRecordReader extends RecordReader{
             // update lastAggregationResult's pageOffset to the start of next page.
             // notice that : when the aggregationTimestamps is used all, but there still have unused page data,
             // in the next read batch process, the current page will be loaded
-            lastAggregationResult.pageOffset += lastAvailable - bis.available();
+            usedPageOffset += lastAvailable - bis.available();
         }
 
         if (timestampsUsedIndex < aggregationTimestamps.size())
-            lastAggregationResult.plusRowGroupIndexAndInitPageOffset();
+            usedPageOffset = -1;
 
         return timestampsUsedIndex;
     }
