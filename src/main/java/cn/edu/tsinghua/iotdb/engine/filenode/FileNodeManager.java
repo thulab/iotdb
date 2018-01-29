@@ -178,7 +178,7 @@ public class FileNodeManager implements IStatistic {
 		}
 	}
 
-	private FileNodeProcessor getProcessor(String path, boolean isWriteLock) throws FileNodeManagerException {
+	public FileNodeProcessor getProcessor(String path, boolean isWriteLock) throws FileNodeManagerException {
 		String filenodeName;
 		try {
 			filenodeName = MManager.getInstance().getFileNameByPath(path);

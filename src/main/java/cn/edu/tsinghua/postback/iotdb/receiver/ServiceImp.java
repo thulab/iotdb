@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.postback.iotdb.receiver;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -78,6 +79,7 @@ public class ServiceImp implements Service.Iface {
 	private int fileNum = 0;
 	private int fileNum_NewFiles = 0;
 	private int fileNum_OldFiles = 0;
+	private String schemaFromSenderPath = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "mlog.txt";
 	private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 	private static final MManager mManager = MManager.getInstance();
 
@@ -86,6 +88,10 @@ public class ServiceImp implements Service.Iface {
 		fileNum = 0;
 		fileNum_NewFiles = 0;
 		fileNum_OldFiles = 0;
+		if(new File(config.IOTDB_DATA_DIRECTORY + uuid).exists() && new File(config.IOTDB_DATA_DIRECTORY + uuid).list().length!=0) {
+			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
+			deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid));
+		}
 		return this.uuid;
 	}
 
@@ -147,24 +153,70 @@ public class ServiceImp implements Service.Iface {
 		return md5OfReceiver;
 	}
 
-	public void getSchema(String sql) throws TException {
-		Connection connection = null;
-		Statement statement = null;
-		try {
-			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
-			statement = connection.createStatement();
-			statement.execute(sql);
-		} catch (SQLException | ClassNotFoundException e) {
-			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
-		} finally {
+	public void getSchema(ByteBuffer schema, int status) throws TException {
+		FileOutputStream fos = null;
+		FileChannel channel = null;
+		if(status == 0) {
+			Connection connection = null;
+			Statement statement = null;
 			try {
-				if(statement!=null)
-					statement.close();
-				if(connection!=null)
-					connection.close();
-			} catch (SQLException e) {
-				LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
+				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+				connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+				statement = connection.createStatement();
+				
+				BufferedReader bf;
+				try {
+					bf = new BufferedReader(new java.io.FileReader(schemaFromSenderPath));
+					String data;
+					statement.clearBatch();
+					while ((data = bf.readLine()) != null) {
+						String item[] = data.split(",");
+						if (item[0].equals("2")) {
+							String sql = "SET STORAGE GROUP TO " + item[1];
+							statement.addBatch(sql);
+						} else if (item[0].equals("0")) {
+							String sql = "CREATE TIMESERIES " + item[1] + " WITH DATATYPE=" + item[2] + ", ENCODING=" + item[3];
+							statement.addBatch(sql);
+						}
+					}
+					bf.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				statement.executeBatch();
+			} catch (SQLException | ClassNotFoundException e) {
+				LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+			} finally {
+				try {
+					if(statement!=null)
+						statement.close();
+					if(connection!=null)
+						connection.close();
+				} catch (SQLException e) {
+					LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
+				}
+			}
+		}
+		else {
+			File file = new File(schemaFromSenderPath);
+			if (!file.getParentFile().exists()) {
+				try {
+					file.getParentFile().mkdirs();
+					file.createNewFile();
+				} catch (IOException e) {
+					LOGGER.error("IoTDB post back receicer: cannot make schema file because {}", e.getMessage());
+				}
+			}
+			try {
+				fos = new FileOutputStream(file, true);
+				channel = fos.getChannel();
+				channel.write(schema);
+				channel.close();
+				fos.close();
+			} catch (Exception e) {
+				LOGGER.error("IoTDB post back receicer: cannot write data to file because {}", e.getMessage());
 			}
 		}
 	}
@@ -288,26 +340,26 @@ public class ServiceImp implements Service.Iface {
 				fileNum_NewFiles += newFiles.size();
 			} else // the two other types:new tsFile but not new Storage Group , not new tsFile
 			{
-				Connection connection = null;
-				Statement statement = null;
-				try {
-					Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-					connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
-					statement = connection.createStatement();
-					statement.execute("flush");
-					fileNodeManager.mergeAll();
-				} catch (SQLException | ClassNotFoundException| FileNodeManagerException e) {
-					LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
-				} finally {
-					try {
-						if(statement!=null)
-							statement.close();
-						if(connection!=null)
-							connection.close();
-					} catch (SQLException e) {
-						LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
-					}
-				}
+//				Connection connection = null;
+//				Statement statement = null;
+//				try {
+//					Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+//					connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+//					statement = connection.createStatement();
+//					statement.execute("flush");
+//					fileNodeManager.mergeAll();
+//				} catch (SQLException | ClassNotFoundException| FileNodeManagerException e) {
+//					LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+//				} finally {
+//					try {
+//						if(statement!=null)
+//							statement.close();
+//						if(connection!=null)
+//							connection.close();
+//					} catch (SQLException e) {
+//						LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
+//					}
+//				}
 				
 				List<String> newFiles = new ArrayList<>();
 				List<String> oldFiles = new ArrayList<>();
@@ -317,63 +369,62 @@ public class ServiceImp implements Service.Iface {
 				timeseriesEndTimeMap.clear();
 				File[] filesSG = storageGroup.listFiles();
 				// get all timeseries detail endTime
-				for (File fileTF : filesSG) {
-					TsRandomAccessLocalFileReader input = null;
-					try {
-						input = new TsRandomAccessLocalFileReader(
-								fileTF.getAbsolutePath());
-						FileReader reader = new FileReader(input);
-						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
-						Iterator<String> it = deltaObjectMap.keySet().iterator();
-						while (it.hasNext()) {
-							String key = it.next().toString(); // key represent storage group
-							TsDeltaObject deltaObj = deltaObjectMap.get(key);
-							TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-							blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
-									deltaObj.offset, deltaObj.metadataBlockSize));
-							List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
-							for (RowGroupMetaData rowGroupMetaData : rowGroupMetadataList) {
-								List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataList = rowGroupMetaData
-										.getTimeSeriesChunkMetaDataList();
-								for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
-									TInTimeSeriesChunkMetaData tInTimeSeriesChunkMetaData = timeSeriesChunkMetaData
-											.getTInTimeSeriesChunkMetaData();
-									TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
-									String measurementUID = properties.getMeasurementUID();
-									long endTime = tInTimeSeriesChunkMetaData.getEndTime();
-									measurementUID = key + "." + measurementUID;
-									if (!timeseriesEndTimeMap.containsKey(measurementUID))
-										timeseriesEndTimeMap.put(measurementUID, endTime);
-									else {
-										if (timeseriesEndTimeMap.get(measurementUID) < endTime)
-											timeseriesEndTimeMap.put(measurementUID, endTime);
-									}
-								}
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						try {
-							input.close();
-						} catch (IOException e) {
-							LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
-									fileTF.getAbsolutePath(), e.getMessage());
-						}	
-					}
-				}
-				// FileNodeProcessor fileNodeProcessor = null;
-				// try {
-				// fileNodeProcessor = fileNodeManager.getProcessor(file.getName(), true);
-				// timeseriesEndTimeMap = fileNodeProcessor.getLastUpdateTimeMap();
-				// } catch (FileNodeManagerException e1) {
-				// // TODO Auto-generated catch block
-				// e1.printStackTrace();
-				// } finally {
-				// fileNodeProcessor.writeUnlock();
-				// }
-				//
-				// judge uuid TsFile is new file or not
+//				for (File fileTF : filesSG) {
+//					TsRandomAccessLocalFileReader input = null;
+//					try {
+//						input = new TsRandomAccessLocalFileReader(
+//								fileTF.getAbsolutePath());
+//						FileReader reader = new FileReader(input);
+//						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
+//						Iterator<String> it = deltaObjectMap.keySet().iterator();
+//						while (it.hasNext()) {
+//							String key = it.next().toString(); // key represent storage group
+//							TsDeltaObject deltaObj = deltaObjectMap.get(key);
+//							TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
+//							blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
+//									deltaObj.offset, deltaObj.metadataBlockSize));
+//							List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
+//							for (RowGroupMetaData rowGroupMetaData : rowGroupMetadataList) {
+//								List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataList = rowGroupMetaData
+//										.getTimeSeriesChunkMetaDataList();
+//								for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
+//									TInTimeSeriesChunkMetaData tInTimeSeriesChunkMetaData = timeSeriesChunkMetaData
+//											.getTInTimeSeriesChunkMetaData();
+//									TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
+//									String measurementUID = properties.getMeasurementUID();
+//									long endTime = tInTimeSeriesChunkMetaData.getEndTime();
+//									measurementUID = key + "." + measurementUID;
+//									if (!timeseriesEndTimeMap.containsKey(measurementUID))
+//										timeseriesEndTimeMap.put(measurementUID, endTime);
+//									else {
+//										if (timeseriesEndTimeMap.get(measurementUID) < endTime)
+//											timeseriesEndTimeMap.put(measurementUID, endTime);
+//									}
+//								}
+//							}
+//						}
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					} finally {
+//						try {
+//							input.close();
+//						} catch (IOException e) {
+//							LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
+//									fileTF.getAbsolutePath(), e.getMessage());
+//						}	
+//					}
+//				}
+				 FileNodeProcessor fileNodeProcessor = null;
+				 try {
+				 fileNodeProcessor = fileNodeManager.getProcessor(file.getName(), true);
+				 timeseriesEndTimeMap = fileNodeProcessor.getLastUpdateTimeMap();
+				 } catch (FileNodeManagerException e) {
+						LOGGER.info("IoTDB receiver : can not get lastupdateTimeMap because {}", e.getMessage());
+				 } finally {
+					 fileNodeProcessor.writeUnlock();
+				 }
+				
+				 //judge uuid TsFile is new file or not
 				filesSG = storageGroupPB.listFiles();
 				for (File fileTF : filesSG) {
 					Map<String, Long> startTimeMap = new HashMap<>();
@@ -553,11 +604,12 @@ public class ServiceImp implements Service.Iface {
 			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
 			statement = connection.createStatement();
 			for (String sql : SQLToMerge) {
-				statement.execute(sql);
+				statement.addBatch(sql);
 			}
+			statement.executeBatch();
 			statement.execute("flush");
-			fileNodeManager.mergeAll();
-		} catch (SQLException | ClassNotFoundException | FileNodeManagerException e) {
+		//	fileNodeManager.mergeAll();
+		} catch (SQLException | ClassNotFoundException e) {
 			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
 		} finally {
 			try {
@@ -629,7 +681,7 @@ public class ServiceImp implements Service.Iface {
 				try {
 					Files.createLink(link, target);
 				} catch (IOException e) {
-					LOGGER.error("IoTDB receiver : Cannot create a link for file : {}", path);
+					LOGGER.error("IoTDB receiver : Cannot create a link for file : {} , because {}", path, e.getMessage());
 				}
 				
 				num++;

@@ -53,7 +53,7 @@ public class ServiceImpTest {
             "flush",
     };
 
-    private boolean testFlag = TestUtils.isTestFlag();
+    private boolean testFlag = TestUtils.testFlag;
 
     @Before
     public void setUp() throws Exception {

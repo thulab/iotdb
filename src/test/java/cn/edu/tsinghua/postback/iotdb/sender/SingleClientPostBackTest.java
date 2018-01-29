@@ -150,7 +150,7 @@ public class SingleClientPostBackTest {
 			"insert into root.test.d1.g0(timestamp,s0) values(400,1050)",
 			};
 
-	private boolean testFlag = TestUtils.isTestFlag();
+	private boolean testFlag = TestUtils.testFlag;
 
 	@Before
 	public void setUp() throws Exception {

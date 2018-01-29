@@ -125,15 +125,12 @@ public class MultipleClientPostBackTest {
 				try {
 					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
 					Statement statement = connection.createStatement();
-					boolean hasResultSet = statement.execute(String.format(sqlFormat,storageGroup));
+					boolean hasResultSet = statement.execute(String.format(sqlFormat,"city_510100.A3T1J0.lng",storageGroup));
 					if (hasResultSet) {
 						ResultSet res = statement.getResultSet();
 						while (res.next()) {
 							String info = res.getString("Time");
-							for(String timeseries:timeseriesList.get(storageGroup)) {
-								info = info + res.getString(timeseries);
-							}
-							dataSender.add(info);
+							count++;
 						}
 					}
 					statement.close();

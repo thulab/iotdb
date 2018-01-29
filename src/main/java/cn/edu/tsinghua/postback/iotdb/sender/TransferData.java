@@ -186,37 +186,25 @@ public class TransferData {
 		}
 	}
 
-	public void getSchema(String schemaPath) {
+	public void sendSchema(String schemaPath) {
 		try {
-			BufferedReader bf = new BufferedReader(new FileReader(schemaPath));
-			String data;
-			schema.clear();
-			while ((data = bf.readLine()) != null) {
-				String item[] = data.split(",");
-				if (item[0].equals("2")) {
-					String sql = "SET STORAGE GROUP TO " + item[1];
-					schema.add(sql);
-				} else if (item[0].equals("0")) {
-					String sql = "CREATE TIMESERIES " + item[1] + " WITH DATATYPE=" + item[2] + ", ENCODING=" + item[3];
-					schema.add(sql);
-				}
+			FileInputStream fis = new FileInputStream(new File(schemaPath));
+			int mBufferSize = 4 * 1024 * 1024;
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(mBufferSize);
+			byte[] buffer = new byte[mBufferSize];
+			int n;
+			while ((n = fis.read(buffer)) != -1) { // cut the file into pieces to send
+				bos.write(buffer, 0, n);
+				ByteBuffer buffToSend = ByteBuffer.wrap(bos.toByteArray());
+				bos.reset();
+				clientOfServer.getSchema(buffToSend, 1);				
 			}
-			bf.close();
-		} catch (IOException e) {
-			LOGGER.error("IoTDB sender : cannot get schema from mlog.txt because {}", e.getMessage());
+			fis.close();
+			clientOfServer.getSchema(null, 0);
+		} catch (Exception e) {
+			LOGGER.error("IoTDB sender : cannot send schema from mlog.txt because {}", e.getMessage());
 			connection_orElse = false;
-		}
-	}
-
-	public void sendSchema() {
-		for (String sql : schema) {
-			try {
-				clientOfServer.getSchema(sql);
-			} catch (TException e) {
-				LOGGER.error("IoTDB sender : Receiver cannot get schema because {}", e.getMessage());
-				connection_orElse = false;
-			}
-		}
+		}	
 	}
 
 	public void stop() {
@@ -297,6 +285,10 @@ public class TransferData {
 		} catch (ClassNotFoundException | SQLException e) {
 			LOGGER.error("IoTDB post back sender: cannot execute flush and merge because {}", e.getMessage());
 		}
+		if(new File(config.SNAPSHOT_PATH).exists() && new File(config.SNAPSHOT_PATH).list().length!=0) { 
+			// it means that the last time postback does not succeed! Clear the files and start to postback again 
+			deleteSnapshot(new File(config.SNAPSHOT_PATH));
+		}
 		FileManager fileManager = FileManager.getInstance();
 		fileManager.getLastLocalFileList(config.LAST_FILE_INFO);
 		fileManager.getNowLocalFileList(config.SENDER_FILE_PATH);
@@ -312,11 +304,8 @@ public class TransferData {
 			transferUUID(config.UUID_PATH);
 			if (!connection_orElse)
 				return;
-			getSchema(config.SCHEMA_PATH);
-			if (!connection_orElse)
-				return;
 			makeFileSnapshot(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-			sendSchema();
+			sendSchema(config.SCHEMA_PATH);
 			if (!connection_orElse)
 				return;
 			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);

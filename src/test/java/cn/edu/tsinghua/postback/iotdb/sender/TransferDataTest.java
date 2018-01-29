@@ -125,7 +125,7 @@ public class TransferDataTest {
             "insert into root.vehicle.d0(timestamp,s4) values(100, true)",
     };
 
-    private boolean testFlag = TestUtils.isTestFlag();
+    private boolean testFlag = TestUtils.testFlag;
 
     @Before
     public void setUp() throws Exception {
@@ -340,34 +340,6 @@ public class TransferDataTest {
  		assert(new File(SNAPSHOT_PATH_TEST).list().length==0);
 	}
 
-    
-	@Test
-	public void testGetSchema() {
-		if (testFlag) {
-            try {
-                Thread.sleep(5000);
-                insertSQL();
-                
-                Set<String> schema = new HashSet<>();
-                schema.clear();
-                for(String sql:sqls)
-                {
-                	if(sql.toLowerCase().startsWith("set") || sql.toLowerCase().startsWith("create"))
-                	{
-                		schema.add(sql);
-                	}
-                }
-        		transferData.connection(config.SERVER_IP, config.SERVER_PORT);
-        		transferData.getSchema(conf.metadataDir  + File.separator + "mlog.txt");
-        		schemaToSend = transferData.getSchema();
-                assert(schema.size() == schemaToSend.size() && schema.containsAll(schemaToSend));
-
-            } catch (ClassNotFoundException | SQLException | InterruptedException e) {
-                fail(e.getMessage());
-            }
-        }
-	}
-	
 	private void insertSQL() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;

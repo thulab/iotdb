@@ -12,7 +12,7 @@ import java.util.*;
 public class CreateDataSender1 {
 
     public static final int TIME_INTERVAL = 0;
-    public static final int TOTAL_DATA = 200;
+    public static final int TOTAL_DATA = 2000000;
     public static final int ABNORMAL_MAX_INT = 0;
     public static final int ABNORMAL_MIN_INT = -10;
     public static final int ABNORMAL_MAX_FLOAT = 0;
@@ -25,6 +25,7 @@ public class CreateDataSender1 {
     public static final int MAX_FLOAT = 30;
     public static final int STRING_LENGTH = 5;
     public static final int BATCH_SQL = 30000;
+    public static long time = System.currentTimeMillis();
 
     public static HashMap generateTimeseriesMapFromFile(String inputFilePath) throws Exception{
 
@@ -97,17 +98,15 @@ public class CreateDataSender1 {
 
         int sqlCount = 0;
 
-        long time = System.currentTimeMillis();
-        Thread.sleep(100);
         for (int i = 0; i < TOTAL_DATA; i++) {
 
-        	time = time + 100;
             if (i % ABNORMAL_FREQUENCY == 250) {
                 abnormalFlag = 0;
             }
 
             for(String key : timeseriesMap.keySet()) {
 
+            	time = time + 1;
                 String type = Utils.getType(timeseriesMap.get(key));
                 String path = Utils.getPath(key);
                 String sensor = Utils.getSensor(key);

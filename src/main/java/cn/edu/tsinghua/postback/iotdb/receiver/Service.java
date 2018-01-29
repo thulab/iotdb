@@ -48,7 +48,7 @@ public class Service {
 
     public void mergeNewData() throws org.apache.thrift.TException;
 
-    public void getSchema(String sql) throws org.apache.thrift.TException;
+    public void getSchema(ByteBuffer buff, int status) throws org.apache.thrift.TException;
 
     public void afterReceiving() throws org.apache.thrift.TException;
 
@@ -70,7 +70,7 @@ public class Service {
 
     public void mergeNewData(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getSchema(String sql, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getSchema(ByteBuffer buff, int status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void afterReceiving(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -223,16 +223,17 @@ public class Service {
       return;
     }
 
-    public void getSchema(String sql) throws org.apache.thrift.TException
+    public void getSchema(ByteBuffer buff, int status) throws org.apache.thrift.TException
     {
-      send_getSchema(sql);
+      send_getSchema(buff, status);
       recv_getSchema();
     }
 
-    public void send_getSchema(String sql) throws org.apache.thrift.TException
+    public void send_getSchema(ByteBuffer buff, int status) throws org.apache.thrift.TException
     {
       getSchema_args args = new getSchema_args();
-      args.setSql(sql);
+      args.setBuff(buff);
+      args.setStatus(status);
       sendBase("getSchema", args);
     }
 
@@ -488,24 +489,27 @@ public class Service {
       }
     }
 
-    public void getSchema(String sql, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getSchema(ByteBuffer buff, int status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getSchema_call method_call = new getSchema_call(sql, resultHandler, this, ___protocolFactory, ___transport);
+      getSchema_call method_call = new getSchema_call(buff, status, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getSchema_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String sql;
-      public getSchema_call(String sql, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private ByteBuffer buff;
+      private int status;
+      public getSchema_call(ByteBuffer buff, int status, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.sql = sql;
+        this.buff = buff;
+        this.status = status;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getSchema", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getSchema_args args = new getSchema_args();
-        args.setSql(sql);
+        args.setBuff(buff);
+        args.setStatus(status);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -738,7 +742,7 @@ public class Service {
 
       public getSchema_result getResult(I iface, getSchema_args args) throws org.apache.thrift.TException {
         getSchema_result result = new getSchema_result();
-        iface.getSchema(args.sql);
+        iface.getSchema(args.buff, args.status);
         return result;
       }
     }
@@ -1156,7 +1160,7 @@ public class Service {
       }
 
       public void start(I iface, getSchema_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.getSchema(args.sql,resultHandler);
+        iface.getSchema(args.buff, args.status,resultHandler);
       }
     }
 
@@ -5007,7 +5011,8 @@ public class Service {
   public static class getSchema_args implements org.apache.thrift.TBase<getSchema_args, getSchema_args._Fields>, java.io.Serializable, Cloneable, Comparable<getSchema_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getSchema_args");
 
-    private static final org.apache.thrift.protocol.TField SQL_FIELD_DESC = new org.apache.thrift.protocol.TField("sql", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField BUFF_FIELD_DESC = new org.apache.thrift.protocol.TField("buff", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.I32, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -5015,11 +5020,13 @@ public class Service {
       schemes.put(TupleScheme.class, new getSchema_argsTupleSchemeFactory());
     }
 
-    public String sql; // required
+    public ByteBuffer buff; // required
+    public int status; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SQL((short)1, "sql");
+      BUFF((short)1, "buff"),
+      STATUS((short)2, "status");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5034,8 +5041,10 @@ public class Service {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // SQL
-            return SQL;
+          case 1: // BUFF
+            return BUFF;
+          case 2: // STATUS
+            return STATUS;
           default:
             return null;
         }
@@ -5076,11 +5085,15 @@ public class Service {
     }
 
     // isset id assignments
+    private static final int __STATUS_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SQL, new org.apache.thrift.meta_data.FieldMetaData("sql", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.BUFF, new org.apache.thrift.meta_data.FieldMetaData("buff", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING          , true)));
+      tmpMap.put(_Fields.STATUS, new org.apache.thrift.meta_data.FieldMetaData("status", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getSchema_args.class, metaDataMap);
     }
@@ -5089,19 +5102,25 @@ public class Service {
     }
 
     public getSchema_args(
-      String sql)
+      ByteBuffer buff,
+      int status)
     {
       this();
-      this.sql = sql;
+      this.buff = buff;
+      this.status = status;
+      setStatusIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public getSchema_args(getSchema_args other) {
-      if (other.isSetSql()) {
-        this.sql = other.sql;
+      __isset_bitfield = other.__isset_bitfield;
+      if (other.isSetBuff()) {
+        this.buff = org.apache.thrift.TBaseHelper.copyBinary(other.buff);
+;
       }
+      this.status = other.status;
     }
 
     public getSchema_args deepCopy() {
@@ -5110,40 +5129,83 @@ public class Service {
 
     @Override
     public void clear() {
-      this.sql = null;
+      this.buff = null;
+      setStatusIsSet(false);
+      this.status = 0;
     }
 
-    public String getSql() {
-      return this.sql;
+    public byte[] getBuff() {
+      setBuff(org.apache.thrift.TBaseHelper.rightSize(buff));
+      return buff == null ? null : buff.array();
     }
 
-    public getSchema_args setSql(String sql) {
-      this.sql = sql;
+    public ByteBuffer bufferForBuff() {
+      return buff;
+    }
+
+    public getSchema_args setBuff(byte[] buff) {
+      setBuff(buff == null ? (ByteBuffer)null : ByteBuffer.wrap(buff));
       return this;
     }
 
-    public void unsetSql() {
-      this.sql = null;
+    public getSchema_args setBuff(ByteBuffer buff) {
+      this.buff = buff;
+      return this;
     }
 
-    /** Returns true if field sql is set (has been assigned a value) and false otherwise */
-    public boolean isSetSql() {
-      return this.sql != null;
+    public void unsetBuff() {
+      this.buff = null;
     }
 
-    public void setSqlIsSet(boolean value) {
+    /** Returns true if field buff is set (has been assigned a value) and false otherwise */
+    public boolean isSetBuff() {
+      return this.buff != null;
+    }
+
+    public void setBuffIsSet(boolean value) {
       if (!value) {
-        this.sql = null;
+        this.buff = null;
       }
+    }
+
+    public int getStatus() {
+      return this.status;
+    }
+
+    public getSchema_args setStatus(int status) {
+      this.status = status;
+      setStatusIsSet(true);
+      return this;
+    }
+
+    public void unsetStatus() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __STATUS_ISSET_ID);
+    }
+
+    /** Returns true if field status is set (has been assigned a value) and false otherwise */
+    public boolean isSetStatus() {
+      return EncodingUtils.testBit(__isset_bitfield, __STATUS_ISSET_ID);
+    }
+
+    public void setStatusIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STATUS_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SQL:
+      case BUFF:
         if (value == null) {
-          unsetSql();
+          unsetBuff();
         } else {
-          setSql((String)value);
+          setBuff((ByteBuffer)value);
+        }
+        break;
+
+      case STATUS:
+        if (value == null) {
+          unsetStatus();
+        } else {
+          setStatus((Integer)value);
         }
         break;
 
@@ -5152,8 +5214,11 @@ public class Service {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SQL:
-        return getSql();
+      case BUFF:
+        return getBuff();
+
+      case STATUS:
+        return Integer.valueOf(getStatus());
 
       }
       throw new IllegalStateException();
@@ -5166,8 +5231,10 @@ public class Service {
       }
 
       switch (field) {
-      case SQL:
-        return isSetSql();
+      case BUFF:
+        return isSetBuff();
+      case STATUS:
+        return isSetStatus();
       }
       throw new IllegalStateException();
     }
@@ -5185,12 +5252,21 @@ public class Service {
       if (that == null)
         return false;
 
-      boolean this_present_sql = true && this.isSetSql();
-      boolean that_present_sql = true && that.isSetSql();
-      if (this_present_sql || that_present_sql) {
-        if (!(this_present_sql && that_present_sql))
+      boolean this_present_buff = true && this.isSetBuff();
+      boolean that_present_buff = true && that.isSetBuff();
+      if (this_present_buff || that_present_buff) {
+        if (!(this_present_buff && that_present_buff))
           return false;
-        if (!this.sql.equals(that.sql))
+        if (!this.buff.equals(that.buff))
+          return false;
+      }
+
+      boolean this_present_status = true;
+      boolean that_present_status = true;
+      if (this_present_status || that_present_status) {
+        if (!(this_present_status && that_present_status))
+          return false;
+        if (this.status != that.status)
           return false;
       }
 
@@ -5210,12 +5286,22 @@ public class Service {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSql()).compareTo(other.isSetSql());
+      lastComparison = Boolean.valueOf(isSetBuff()).compareTo(other.isSetBuff());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSql()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sql, other.sql);
+      if (isSetBuff()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.buff, other.buff);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetStatus()).compareTo(other.isSetStatus());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetStatus()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.status, other.status);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5240,12 +5326,16 @@ public class Service {
       StringBuilder sb = new StringBuilder("getSchema_args(");
       boolean first = true;
 
-      sb.append("sql:");
-      if (this.sql == null) {
+      sb.append("buff:");
+      if (this.buff == null) {
         sb.append("null");
       } else {
-        sb.append(this.sql);
+        org.apache.thrift.TBaseHelper.toString(this.buff, sb);
       }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("status:");
+      sb.append(this.status);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -5266,6 +5356,8 @@ public class Service {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -5290,10 +5382,18 @@ public class Service {
             break;
           }
           switch (schemeField.id) {
-            case 1: // SQL
+            case 1: // BUFF
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.sql = iprot.readString();
-                struct.setSqlIsSet(true);
+                struct.buff = iprot.readBinary();
+                struct.setBuffIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // STATUS
+              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+                struct.status = iprot.readI32();
+                struct.setStatusIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -5313,11 +5413,14 @@ public class Service {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.sql != null) {
-          oprot.writeFieldBegin(SQL_FIELD_DESC);
-          oprot.writeString(struct.sql);
+        if (struct.buff != null) {
+          oprot.writeFieldBegin(BUFF_FIELD_DESC);
+          oprot.writeBinary(struct.buff);
           oprot.writeFieldEnd();
         }
+        oprot.writeFieldBegin(STATUS_FIELD_DESC);
+        oprot.writeI32(struct.status);
+        oprot.writeFieldEnd();
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -5336,22 +5439,32 @@ public class Service {
       public void write(org.apache.thrift.protocol.TProtocol prot, getSchema_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetSql()) {
+        if (struct.isSetBuff()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
-        if (struct.isSetSql()) {
-          oprot.writeString(struct.sql);
+        if (struct.isSetStatus()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetBuff()) {
+          oprot.writeBinary(struct.buff);
+        }
+        if (struct.isSetStatus()) {
+          oprot.writeI32(struct.status);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getSchema_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.sql = iprot.readString();
-          struct.setSqlIsSet(true);
+          struct.buff = iprot.readBinary();
+          struct.setBuffIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.status = iprot.readI32();
+          struct.setStatusIsSet(true);
         }
       }
     }
