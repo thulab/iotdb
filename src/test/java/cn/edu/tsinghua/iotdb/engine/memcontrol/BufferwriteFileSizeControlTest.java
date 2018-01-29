@@ -78,7 +78,6 @@ public class BufferwriteFileSizeControlTest {
     @Before
     public void setUp() throws Exception {
         //origin value
-        cachePageData = TsFileConf.duplicateIncompletedPage;
         groupSizeInByte = TsFileConf.groupSizeInByte;
         pageCheckSizeThreshold = TsFileConf.pageCheckSizeThreshold;
         pageSizeInByte = TsFileConf.pageSizeInByte;
@@ -86,7 +85,6 @@ public class BufferwriteFileSizeControlTest {
         fileSizeThreshold = dbConfig.bufferwriteFileSizeThreshold;
         memMonitorInterval = dbConfig.memMonitorInterval;
         //new value
-        TsFileConf.duplicateIncompletedPage = true;
         TsFileConf.groupSizeInByte = 200000;
         TsFileConf.pageCheckSizeThreshold = 3;
         TsFileConf.pageSizeInByte = 10000;
@@ -100,7 +98,6 @@ public class BufferwriteFileSizeControlTest {
     @After
     public void tearDown() throws Exception {
         //recovery value
-        TsFileConf.duplicateIncompletedPage = cachePageData;
         TsFileConf.groupSizeInByte = groupSizeInByte;
         TsFileConf.pageCheckSizeThreshold = pageCheckSizeThreshold;
         TsFileConf.pageSizeInByte = pageSizeInByte;
