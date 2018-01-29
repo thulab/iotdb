@@ -246,6 +246,10 @@ public class FileNodeManager implements IStatistic {
 	 */
 	public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
 		long timestamp = tsRecord.time;
+		if (timestamp < 0) {
+			LOGGER.error("The insert time lt 0, {}.", tsRecord);
+			throw new FileNodeManagerException("The insert time lt 0, the tsrecord is " + tsRecord);
+		}
 		String deltaObjectId = tsRecord.deltaObjectId;
 
 		if (!isMonitor) {

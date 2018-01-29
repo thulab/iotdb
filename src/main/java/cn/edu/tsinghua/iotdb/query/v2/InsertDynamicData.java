@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
+import static cn.edu.tsinghua.iotdb.query.v2.ReaderUtils.getSingleValueVisitorByDataType;
 
 /**
  * <p>
