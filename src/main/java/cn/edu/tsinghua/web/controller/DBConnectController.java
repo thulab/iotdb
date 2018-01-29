@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,24 +42,31 @@ public class DBConnectController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     public void testDataConnection(HttpServletResponse response) throws IOException {
-        logger.info("Connection is ok!");
+        logger.info("Connection is ok now!");
         response.getWriter().print("I have sent a message.");
     }
 
     @RequestMapping(value = "/search")
     @ResponseBody
-    public String metricFindQuery(HttpServletRequest request, HttpServletResponse response) {
-        Map<Integer, String> target = new HashMap<>();
-        response.setStatus(200);
-        List<String> columnsName = DBConnectService.getMetaData();
-        Collections.sort(columnsName);
-        int cnt = 0;
-        for (String columnName : columnsName) {
-            target.put(cnt++, columnName);
-        }
-        JSONObject ojb = new JSONObject(target);
-        return ojb.toString();
-    }
+	public String metricFindQuery(HttpServletRequest request, HttpServletResponse response) {
+		Map<Integer, String> target = new HashMap<>();
+		response.setStatus(200);
+		System.out.println("Start to get metadata");
+		List<String> columnsName = new ArrayList<>();
+		try {
+			columnsName = DBConnectService.getMetaData();
+		} catch (Exception e) {
+			logger.error("Failed to get metadata", e);
+		}
+		System.out.println("End to get metadata");
+		Collections.sort(columnsName);
+		int cnt = 0;
+		for (String columnName : columnsName) {
+			target.put(cnt++, columnName);
+		}
+		JSONObject ojb = new JSONObject(target);
+		return ojb.toString();
+	}
 
     @RequestMapping(value = "/query")
     @ResponseBody
@@ -86,7 +94,7 @@ public class DBConnectController {
             logger.info("query finished");
             return result.toString();
         } catch (Exception e) {
-            logger.error(e.toString());
+            logger.error("/query failed", e);
         }
         return null;
     }
@@ -147,10 +155,9 @@ public class DBConnectController {
             while((line = br.readLine()) != null) {
                 sb.append(line);
             }
-            //System.out.println(sb.toString());
             return new JSONObject(sb.toString());
         } catch (IOException e) {
-            logger.error(e.toString());
+            logger.error("getRequestBodyJSON failed", e);
         }
         return null;
     }

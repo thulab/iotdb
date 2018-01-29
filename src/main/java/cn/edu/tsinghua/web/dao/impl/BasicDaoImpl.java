@@ -37,19 +37,18 @@ public class BasicDaoImpl implements BasicDao {
 
     @Override
     public List<String> getMetaData() {
-        ConnectionCallback<Object> connectionCallback = new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection connection) throws SQLException {
-                DatabaseMetaData databaseMetaData = connection.getMetaData();
-                ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
-                List<String> columnsName = new ArrayList<>();
-                while(resultSet.next()){
-                		String timeseries = resultSet.getString(1).substring(5);
-                		System.out.println(timeseries);
-                    columnsName.add(timeseries);
-                    //System.out.println(String.format("column %s", resultSet.getString(0)));
-                }
-                return columnsName;
-            }
+		ConnectionCallback<Object> connectionCallback = new ConnectionCallback<Object>() {
+			public Object doInConnection(Connection connection) throws SQLException {
+				DatabaseMetaData databaseMetaData = connection.getMetaData();
+				ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
+				System.out.println("Start to get timeseries");
+				List<String> columnsName = new ArrayList<>();
+				while (resultSet.next()) {
+					String timeseries = resultSet.getString(1);
+					columnsName.add(timeseries.substring(5));
+				}
+				return columnsName;
+			}
         };
         return (List<String>)jdbcTemplate.execute(connectionCallback);
     }
@@ -69,21 +68,36 @@ public class BasicDaoImpl implements BasicDao {
         return time.toInstant().toEpochMilli();
     }
 
-    static class TimeValuesRowMapper implements RowMapper<TimeValues> {
-        String columnName;
+	static class TimeValuesRowMapper implements RowMapper<TimeValues> {
+		String columnName;
+		final String TRUE_STR = "true";
+		final String FALSE_STR = "false";
 
-        TimeValuesRowMapper(String columnName) {
-            this.columnName = columnName;
-        }
+		TimeValuesRowMapper(String columnName) {
+			this.columnName = columnName;
+		}
 
-        @Override
-        public TimeValues mapRow(ResultSet resultSet, int i) throws SQLException {
-            TimeValues tv = new TimeValues();
-            tv.setTime(resultSet.getLong("Time"));
-            tv.setValue(resultSet.getFloat(columnName));
-            return tv;
-        }
-    }
+		@Override
+		public TimeValues mapRow(ResultSet resultSet, int i) throws SQLException {
+			TimeValues tv = new TimeValues();
+			tv.setTime(resultSet.getLong("Time"));
+			String vString = resultSet.getString(columnName);
+			if (vString != null) {
+				if (TRUE_STR.equals(vString.toLowerCase())) {
+					tv.setValue(1);
+				} else if (FALSE_STR.equals(vString.toLowerCase())) {
+					tv.setValue(0);
+				} else {
+					try {
+						tv.setValue(resultSet.getFloat(columnName));
+					} catch (Exception e) {
+						tv.setValue(0);
+					}
+				}
+			}
+			return tv;
+		}
+	}
 
 }
 
