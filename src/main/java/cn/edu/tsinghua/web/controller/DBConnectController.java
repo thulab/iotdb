@@ -51,14 +51,12 @@ public class DBConnectController {
 	public String metricFindQuery(HttpServletRequest request, HttpServletResponse response) {
 		Map<Integer, String> target = new HashMap<>();
 		response.setStatus(200);
-		System.out.println("Start to get metadata");
 		List<String> columnsName = new ArrayList<>();
 		try {
 			columnsName = DBConnectService.getMetaData();
 		} catch (Exception e) {
 			logger.error("Failed to get metadata", e);
 		}
-		System.out.println("End to get metadata");
 		Collections.sort(columnsName);
 		int cnt = 0;
 		for (String columnName : columnsName) {
@@ -130,11 +128,7 @@ public class DBConnectController {
 
     private void setJSONTimeseries(JSONObject obj, String target, Pair<ZonedDateTime, ZonedDateTime> timeRange) throws JSONException {
         List<TimeValues> timeValues = DBConnectService.querySeries(target, timeRange);
-        if (timeValues.size() > 1000) {
-            logger.info("query size:" + timeValues.size() + "; last value is " + timeValues.get(timeValues.size() - 1),toString());
-        } else {
-            logger.info("query size:" + timeValues.size() + "; values are " + timeValues);
-        }
+        logger.info("query size: {}", timeValues.size());
         JSONArray dataPoints = new JSONArray();
         for (TimeValues tv : timeValues) {
             long time = tv.getTime();
