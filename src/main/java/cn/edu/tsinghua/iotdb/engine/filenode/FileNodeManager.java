@@ -1050,4 +1050,17 @@ public class FileNodeManager implements IStatistic, IService {
 		else
 			return null;
 	}
+
+    public void recoverFileNode(String filenodeName) throws FileNodeProcessorException, FileNodeManagerException {
+        FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
+        if (fileNodeProcessor.shouldRecovery()) {
+            LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
+                    fileNodeProcessor.getFileNodeProcessorStatus());
+            fileNodeProcessor.fileNodeRecovery();
+        } else {
+            fileNodeProcessor.writeUnlock();
+        }
+        // add index check sum
+        fileNodeProcessor.rebuildIndex();
+    }
 }

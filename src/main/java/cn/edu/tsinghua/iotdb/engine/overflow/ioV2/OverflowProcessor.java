@@ -67,13 +67,9 @@ public class OverflowProcessor extends Processor {
 	private long memThreshold = TsFileConf.groupSizeInByte;
 	private AtomicLong memSize = new AtomicLong();
 
-<<<<<<< HEAD
-	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) throws IOException {
-=======
 	private WriteLogNode logNode;
 
-	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) {
->>>>>>> fcad1860de99d38a33413ca6ba2f70d263fce0c6
+	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) throws IOException{
 		super(processorName);
 		this.fileSchema = fileSchema;
 		String overflowDirPath = TsFileDBConf.overflowDataDir;
@@ -93,12 +89,7 @@ public class OverflowProcessor extends Processor {
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
-		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, restoreFileName, FileNodeManager.getInstance().getRestoreFilePath(processorName));
-		} catch (IOException e) {
-			// TODO : throw a concrete exception
-			throw new Exception(e);
-		}
+		logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
 	}
 
 	private void recovery(File parentFile) throws IOException {

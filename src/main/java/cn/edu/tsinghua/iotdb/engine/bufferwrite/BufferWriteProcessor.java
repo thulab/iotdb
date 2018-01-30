@@ -75,7 +75,7 @@ public class BufferWriteProcessor extends Processor {
 	// this just the bufferwrite file name
 	private String fileName;
 	private static final String restoreFile = ".restore";
-	// this is the bufferwrite file absolute path
+    // this is the bufferwrite file absolute path
 	private String bufferwriteRestoreFilePath;
 	private String bufferwriteOutputFilePath;
 	private String bufferwriterelativePath;
@@ -156,7 +156,7 @@ public class BufferWriteProcessor extends Processor {
 		workMemTable = new PrimitiveMemTable();
 
 		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, restoreFileName, FileNodeManager.getInstance().getRestoreFilePath(processorName));
+			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
 		} catch (IOException e) {
 			throw new BufferWriteProcessorException(e);
 		}
@@ -748,4 +748,8 @@ public class BufferWriteProcessor extends Processor {
 	public WriteLogNode getLogNode() {
 		return logNode;
 	}
+
+    public String getBufferwriteRestoreFilePath() {
+        return bufferwriteRestoreFilePath;
+    }
 }
