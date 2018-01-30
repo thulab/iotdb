@@ -641,7 +641,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * try to close the filenode processor. The name of filenode processor is
 	 * processorName
 	 * 
-	 * @param namespacePath
+	 * @param processorName
 	 * @throws FileNodeManagerException
 	 */
 	private boolean closeOneProcessor(String processorName) throws FileNodeManagerException {
@@ -1006,5 +1006,13 @@ public class FileNodeManager implements IStatistic, IService {
 	@Override
 	public ServiceType getID() {
 		return ServiceType.FILE_NODE_SERVICE;
+	}
+
+	public String getRestoreFilePath(String processorName) {
+		FileNodeProcessor fileNodeProcessor = processorMap.get(processorName);
+		if(fileNodeProcessor != null)
+			return  fileNodeProcessor.getFileNodeRestoreFilePath();
+		else
+			return null;
 	}
 }
