@@ -24,6 +24,7 @@ public class OpenFileNumUtil {
     private static final int PID_ERROR_CODE = -1;
     private static final int UNSUPPORTED_OS_ERROR_CODE = -2;
     private static final int UNKNOWN_STATISTICS_ERROR_CODE = -3;
+    private static final String IOTDB_PROCESS_KEY_WORD = "iotdb.IoTDB";
     private static final String LINUX_OS_NAME = "linux";
     private static final String MAC_OS_NAME = "mac";
     private static final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
@@ -51,7 +52,7 @@ public class OpenFileNumUtil {
      */
     private OpenFileNumUtil() {
         config = TsfileDBDescriptor.getInstance().getConfig();
-        processName = "IOTDB_HOME";
+        processName = IOTDB_PROCESS_KEY_WORD;
         pid = getPID();
     }
 
