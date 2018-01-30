@@ -1,29 +1,17 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
+import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
+import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * This class takes the responsibility of serialization of all the metadata info
@@ -47,6 +35,8 @@ public class MManager {
     private boolean writeToLog;
     private String metadataDirPath;
 
+    private RandomDeleteCache<String, PathCheckRet> checkAndGetDataTypeCache;
+
     private static class MManagerHolder {
         private static final MManager INSTANCE = new MManager();
     }
@@ -57,7 +47,6 @@ public class MManager {
     }
 
     private MManager() {
-
         metadataDirPath = TsfileDBDescriptor.getInstance().getConfig().metadataDir;
         if (metadataDirPath.length() > 0
                 && metadataDirPath.charAt(metadataDirPath.length() - 1) != File.separatorChar) {
@@ -70,6 +59,20 @@ public class MManager {
         datafilePath = metadataDirPath + MetadataConstant.METADATA_OBJ;
         logFilePath = metadataDirPath + MetadataConstant.METADATA_LOG;
         writeToLog = false;
+
+        int cacheSize = TsfileDBDescriptor.getInstance().getConfig().mManagerCacheSize;
+        checkAndGetDataTypeCache = new RandomDeleteCache<String, PathCheckRet>(cacheSize) {
+            @Override
+            public void beforeRemove(PathCheckRet object) throws CacheException {
+
+            }
+
+            @Override
+            public PathCheckRet loadObjectByKey(String key) throws CacheException {
+                return loadPathToCache(key);
+            }
+        };
+
         init();
     }
 
@@ -183,12 +186,9 @@ public class MManager {
      * <code>getFileNameByPath</code> method first to check timeseries.
      * </p>
      *
-     * @param path
-     *            the timeseries path
-     * @param dataType
-     *            the datetype {@code DataType} for the timeseries
-     * @param encoding
-     *            the encoding function {@code Encoding} for the timeseries
+     * @param path     the timeseries path
+     * @param dataType the datetype {@code DataType} for the timeseries
+     * @param encoding the encoding function {@code Encoding} for the timeseries
      * @param args
      * @throws PathErrorException
      * @throws IOException
@@ -215,9 +215,9 @@ public class MManager {
     }
 
     public String deletePathFromMTree(String path) throws PathErrorException, IOException {
-
         lock.writeLock().lock();
         try {
+            checkAndGetDataTypeCache.clear();
             String dataFileName = mGraph.deletePath(path);
             if (writeToLog) {
                 initLogStream();
@@ -235,6 +235,7 @@ public class MManager {
 
         lock.writeLock().lock();
         try {
+            checkAndGetDataTypeCache.clear();
             mGraph.setStorageLevel(path);
             if (writeToLog) {
                 initLogStream();
@@ -364,7 +365,7 @@ public class MManager {
      * Get all DeltaObject type in current Metadata Tree
      *
      * @return a HashMap contains all distinct DeltaObject type separated by
-     *         DeltaObject Type
+     * DeltaObject Type
      * @throws PathErrorException
      */
     public Map<String, List<ColumnSchema>> getSchemaForAllType() throws PathErrorException {
@@ -396,8 +397,7 @@ public class MManager {
     /**
      * Get all ColumnSchemas for given delta object type
      *
-     * @param path
-     *            A path represented one Delta object
+     * @param path A path represented one Delta object
      * @return a list contains all column schema
      * @throws PathErrorException
      */
@@ -414,38 +414,39 @@ public class MManager {
 
     /**
      * <p>Get all ColumnSchemas for the filenode path</p>
+     *
      * @param path
      * @return ArrayList<ColumnSchema> The list of the schema
      */
-    public ArrayList<ColumnSchema> getSchemaForFileName(String path){
+    public ArrayList<ColumnSchema> getSchemaForFileName(String path) {
 
         lock.readLock().lock();
-        try{
+        try {
             return mGraph.getSchemaForOneFileNode(path);
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
-    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path){
+
+    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path) {
 
         lock.readLock().lock();
-        try{
+        try {
             return mGraph.getSchemaMapForOneFileNode(path);
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
 
-    public Map<String,Integer> getNumSchemaMapForOneFileNode(String path){
+    public Map<String, Integer> getNumSchemaMapForOneFileNode(String path) {
 
         lock.readLock().lock();
-        try{
+        try {
             return mGraph.getNumSchemaMapForOneFileNode(path);
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
-
 
 
     /**
@@ -539,6 +540,19 @@ public class MManager {
             }
             return res;
         } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * @param path
+     * @return All leaf nodes' path(s) of given path.
+     */
+    public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
+        lock.readLock().lock();
+        try{
+            return mGraph.getLeafNodePathInNextLevel(path);
+        }finally {
             lock.readLock().unlock();
         }
     }
@@ -736,6 +750,55 @@ public class MManager {
             }
         } finally {
             lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Check whether {@code path} exists and whether {@code path} has been set storage level.
+     * If true, return the {@link TSDataType} of given path; else return null.
+     *
+     * @param path
+     * @return
+     */
+    public PathCheckRet checkPathStorageLevelAndGetDataType(String path) throws PathErrorException {
+        try {
+            return checkAndGetDataTypeCache.get(path);
+        } catch (CacheException e) {
+            throw new PathErrorException(e);
+        }
+    }
+
+    private PathCheckRet loadPathToCache(String path) throws CacheException {
+        try {
+            if (!pathExist(path)) {
+                return new PathCheckRet(false, null);
+            }
+            List<Path> p = new ArrayList<>();
+            p.add(new Path(path));
+            if (!checkFileLevel(p)) {
+                return new PathCheckRet(false, null);
+            }
+            return new PathCheckRet(true, getSeriesType(path));
+        } catch (PathErrorException e) {
+            throw new CacheException(e);
+        }
+    }
+
+    public static class PathCheckRet{
+        private boolean successfully;
+        private TSDataType dataType;
+
+        public PathCheckRet(boolean successfully, TSDataType dataType) {
+            this.successfully = successfully;
+            this.dataType = dataType;
+        }
+
+        public boolean isSuccessfully() {
+            return successfully;
+        }
+
+        public TSDataType getDataType() {
+            return dataType;
         }
     }
 }

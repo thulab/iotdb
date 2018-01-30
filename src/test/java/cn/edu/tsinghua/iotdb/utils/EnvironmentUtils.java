@@ -113,7 +113,6 @@ public class EnvironmentUtils {
 	}
 
 	public static void envSetUp() {
-		tsfileConfig.duplicateIncompletedPage = false;
 		// disable the memory control
 		config.enableMemMonitor = false;
 		// disable the system monitor

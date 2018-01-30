@@ -7,11 +7,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import org.junit.Test;
 
 public class MManagerAdvancedTest {
 
@@ -39,6 +42,10 @@ public class MManagerAdvancedTest {
 		mmanager.addPathToMTree("root.vehicle.d1.s4", "BOOLEAN", "PLAIN", new String[0]);
 		mmanager.addPathToMTree("root.vehicle.d1.s5", "TEXT", "PLAIN", new String[0]);
 
+		mmanager.addPathToMTree("root.vehicle.d2.s0", "DOUBLE", "RLE", new String[0]);
+		mmanager.addPathToMTree("root.vehicle.d2.s1", "BOOLEAN", "PLAIN", new String[0]);
+		mmanager.addPathToMTree("root.vehicle.d2.s2.g0", "TEXT", "PLAIN", new String[0]);
+		mmanager.addPathToMTree("root.vehicle.d2.s3", "TEXT", "PLAIN", new String[0]);
 		
 		
 	}
@@ -73,6 +80,24 @@ public class MManagerAdvancedTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+	}
+
+	@Test
+	public void testCache() throws PathErrorException {
+		Assert.assertEquals(TSDataType.INT32, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s0").getDataType());
+		Assert.assertEquals(TSDataType.INT64, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s1").getDataType());
+
+		Assert.assertEquals(false, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s100").isSuccessfully());
+		Assert.assertEquals(null, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s100").getDataType());
+	}
+
+	@Test
+	public void testGetNextLevelPath() throws PathErrorException {
+		List<String> paths = mmanager.getLeafNodePathInNextLevel("root.vehicle.d2");
+		Assert.assertEquals(3, paths.size());
+
+		paths = mmanager.getLeafNodePathInNextLevel("root.vehicle.d2.s2");
+		Assert.assertEquals(1, paths.size());
 	}
 
 }

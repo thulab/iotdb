@@ -133,6 +133,7 @@ public class TsfileDBDescriptor {
 			conf.enableSmallFlush = Boolean.parseBoolean(properties.getProperty("enable_small_flush", conf.enableSmallFlush + "").trim());
 			conf.smallFlushInterval = Long.parseLong(properties.getProperty("small_flush_interval", conf.smallFlushInterval + "").trim());
 			conf.externalSortThreshold = Integer.parseInt(properties.getProperty("external_sort_threshold", conf.externalSortThreshold + "").trim());
+			conf.mManagerCacheSize = Integer.parseInt(properties.getProperty("schema_manager_cache_size", conf.mManagerCacheSize + "").trim());
 
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {

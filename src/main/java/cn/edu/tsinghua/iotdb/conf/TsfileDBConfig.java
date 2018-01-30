@@ -214,6 +214,8 @@ public class TsfileDBConfig {
 	 */
 	public int externalSortThreshold = 50;
 
+	public int mManagerCacheSize = 400000;
+
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {
