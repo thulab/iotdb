@@ -96,7 +96,10 @@ public class BufferWriteResource {
 		String tempPath = insertFilePath + ".backup";
 		File tempFile = new File(tempPath);
 		File normalFile = new File(insertFilePath);
-		if (normalFile.exists() && normalFile.length() > 0) {
+		if (normalFile.exists() && normalFile.length() > length) {
+			if (tempFile.exists()) {
+				tempFile.delete();
+			}
 			RandomAccessFile normalReader = null;
 			RandomAccessFile tempWriter = null;
 			try {
@@ -111,10 +114,6 @@ public class BufferWriteResource {
 					tempWriter.close();
 				}
 				throw e;
-			}
-
-			if (tempFile.exists()) {
-				tempFile.delete();
 			}
 			long offset = 0;
 			int step = 4 * 1024 * 1024;
@@ -133,9 +132,9 @@ public class BufferWriteResource {
 			tempWriter.write(buff, 0, (int) (length - offset));
 			normalReader.close();
 			tempWriter.close();
+			normalFile.delete();
+			tempFile.renameTo(normalFile);
 		}
-		normalFile.delete();
-		tempFile.renameTo(normalFile);
 	}
 
 	private void writeRestoreInfo() throws IOException {

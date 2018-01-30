@@ -211,6 +211,9 @@ public class BufferWriteProcessor extends Processor {
 
 		if (normalFile.exists() && normalFile.length() > 0) {
 
+			if (tempFile.exists()) {
+				tempFile.delete();
+			}
 			RandomAccessFile normalReader = null;
 			RandomAccessFile tempWriter = null;
 			try {
@@ -227,10 +230,6 @@ public class BufferWriteProcessor extends Processor {
 					tempWriter.close();
 				}
 				throw e;
-			}
-
-			if (tempFile.exists()) {
-				tempFile.delete();
 			}
 			long offset = 0;
 			int step = 4 * 1024 * 1024;
