@@ -121,7 +121,7 @@ public class ServiceImp implements Service.Iface {
 				}
 			}
 			try {
-				fos = new FileOutputStream(file, true);
+				fos = new FileOutputStream(file, true); //append new data
 				channel = fos.getChannel();
 				channel.write(dataToReceive);
 				channel.close();
@@ -129,7 +129,7 @@ public class ServiceImp implements Service.Iface {
 			} catch (Exception e) {
 				LOGGER.error("IoTDB post back receicer: cannot write data to file because {}", e.getMessage());
 			}
-		} else { // the data has received successfully
+		} else {                                        // all data in the same file has received successfully
 			try {
 				FileInputStream fis = new FileInputStream(filePath);
 				MessageDigest md = MessageDigest.getInstance("MD5");
@@ -367,7 +367,7 @@ public class ServiceImp implements Service.Iface {
 				oldFiles.clear();
 				Map<String, Long> timeseriesEndTimeMap = new HashMap<>();
 				timeseriesEndTimeMap.clear();
-				File[] filesSG = storageGroup.listFiles();
+//				File[] filesSG = storageGroup.listFiles();
 				// get all timeseries detail endTime
 //				for (File fileTF : filesSG) {
 //					TsRandomAccessLocalFileReader input = null;
@@ -416,8 +416,9 @@ public class ServiceImp implements Service.Iface {
 //				}
 				 FileNodeProcessor fileNodeProcessor = null;
 				 try {
-				 fileNodeProcessor = fileNodeManager.getProcessor(file.getName(), true);
-				 timeseriesEndTimeMap = fileNodeProcessor.getLastUpdateTimeMap();
+					 fileNodeProcessor = fileNodeManager.getProcessor(file.getName(), true);
+					 timeseriesEndTimeMap = fileNodeProcessor.getLastUpdateTimeMap();
+					 System.out.println(timeseriesEndTimeMap);
 				 } catch (FileNodeManagerException e) {
 						LOGGER.info("IoTDB receiver : can not get lastupdateTimeMap because {}", e.getMessage());
 				 } finally {
@@ -425,7 +426,7 @@ public class ServiceImp implements Service.Iface {
 				 }
 				
 				 //judge uuid TsFile is new file or not
-				filesSG = storageGroupPB.listFiles();
+				File[] filesSG = storageGroupPB.listFiles();
 				for (File fileTF : filesSG) {
 					Map<String, Long> startTimeMap = new HashMap<>();
 					Map<String, Long> endTimeMap = new HashMap<>();
@@ -439,7 +440,7 @@ public class ServiceImp implements Service.Iface {
 						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
 						Iterator<String> it = deltaObjectMap.keySet().iterator();
 						while (it.hasNext()) {
-							String key = it.next().toString(); // key represent storage group
+							String key = it.next().toString(); // key represent device
 							TsDeltaObject deltaObj = deltaObjectMap.get(key);
 							TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
 							blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
@@ -460,9 +461,9 @@ public class ServiceImp implements Service.Iface {
 									long endTime = tInTimeSeriesChunkMetaData.getEndTime();
 									deltaObjectStartTime = Math.min(startTime, deltaObjectStartTime);
 									deltaObjectEndTime = Math.max(endTime, deltaObjectEndTime);
-									if (timeseriesEndTimeMap.containsKey(measurementUID)
+									if (timeseriesEndTimeMap.containsKey(key)
 											&& timeseriesEndTimeMap
-													.get(measurementUID) >= startTime) {
+													.get(key) >= startTime) {
 										isNew = false;
 									}
 								}
@@ -681,6 +682,10 @@ public class ServiceImp implements Service.Iface {
 				try {
 					Files.createLink(link, target);
 				} catch (IOException e) {
+					if(new File(path).exists())
+						System.out.println(path + "存在啊！！！");
+					else
+						System.out.println(path + "根本就不存在！！");
 					LOGGER.error("IoTDB receiver : Cannot create a link for file : {} , because {}", path, e.getMessage());
 				}
 				

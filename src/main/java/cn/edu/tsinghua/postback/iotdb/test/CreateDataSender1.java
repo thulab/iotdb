@@ -25,7 +25,7 @@ public class CreateDataSender1 {
     public static final int MAX_FLOAT = 30;
     public static final int STRING_LENGTH = 5;
     public static final int BATCH_SQL = 30000;
-    public static long time = System.currentTimeMillis();
+    public static long time = 1517217510475L;
 
     public static HashMap generateTimeseriesMapFromFile(String inputFilePath) throws Exception{
 

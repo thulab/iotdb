@@ -296,7 +296,7 @@ public class TransferData {
 		Set<String> sendingList = fileManager.getSendingFiles();
 		connection_orElse = true;
 		if (sendingList.size() == 0)
-			LOGGER.info("IoTDB post back sender : there has no files to postback");
+			LOGGER.info("IoTDB post back sender : there has no files to postback！");
 		else {
 			connection(config.SERVER_IP, config.SERVER_PORT);
 			if (!connection_orElse)
