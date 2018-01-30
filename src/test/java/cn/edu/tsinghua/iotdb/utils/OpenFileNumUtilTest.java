@@ -17,6 +17,7 @@ public class OpenFileNumUtilTest {
     private OpenFileNumUtil openFileNumUtil = OpenFileNumUtil.getInstance();
     private ArrayList<File> fileList = new ArrayList<>();
     private ArrayList<FileWriter> fileWriterList = new ArrayList<>();
+    private String testFileName = "/testFileForOpenFileNumUtil";
     private int totalOpenFileNumBefore;
     private int totalOpenFileNumAfter;
     private int totalOpenFileNumChange;
@@ -57,7 +58,7 @@ public class OpenFileNumUtilTest {
         //get total open file number statistics of original state
         totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
         for (int i = 0; i < testFileNum; i++) {
-            fileList.add(new File(currDir + "/testFileForOpenFileNumUtil" + i));
+            fileList.add(new File(currDir + testFileName + i));
         }
         //create testFileNum File，then get total open file number statistics
         totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
@@ -69,7 +70,7 @@ public class OpenFileNumUtilTest {
     @Test
     public void testTotalOpenFileNumWhenCreateFileWriter() {
         for (int i = 0; i < testFileNum; i++) {
-            fileList.add(new File(currDir + "/testFileForOpenFileNumUtil" + i));
+            fileList.add(new File(currDir + testFileName + i));
         }
         totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
         for (File file : fileList) {
@@ -101,7 +102,7 @@ public class OpenFileNumUtilTest {
     @Test
     public void testTotalOpenFileNumWhenFileWriterWriting() {
         for (int i = 0; i < testFileNum; i++) {
-            fileList.add(new File(currDir + "/testFileForOpenFileNumUtil" + i));
+            fileList.add(new File(currDir + testFileName + i));
         }
         for (File file : fileList) {
             if (file.exists()) {
@@ -140,7 +141,7 @@ public class OpenFileNumUtilTest {
     @Test
     public void testTotalOpenFileNumWhenFileWriterClose() {
         for (int i = 0; i < testFileNum; i++) {
-            fileList.add(new File(currDir + "/testFileForOpenFileNumUtil" + i));
+            fileList.add(new File(currDir + testFileName + i));
         }
         for (File file : fileList) {
             if (file.exists()) {

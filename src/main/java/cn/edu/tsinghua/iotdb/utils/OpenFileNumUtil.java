@@ -17,20 +17,20 @@ import java.util.HashMap;
 
 // Notice : methods in this class may not be accurate because of limited user authority.
 public class OpenFileNumUtil {
-    private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
+    private Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
     private TsfileDBConfig config;
-    private static int pid = -1;
-    private static String processName;
-    private static final int PID_ERROR_CODE = -1;
-    private static final int UNSUPPORTED_OS_ERROR_CODE = -2;
-    private static final int UNKNOWN_STATISTICS_ERROR_CODE = -3;
-    private static final String IOTDB_PROCESS_KEY_WORD = "iotdb.IoTDB";
-    private static final String LINUX_OS_NAME = "linux";
-    private static final String MAC_OS_NAME = "mac";
-    private static final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
-    private static final String SEARCH_PID_MAC = "ps aux | grep -i %s | grep -v grep";
-    private static final String SEARCH_OPEN_DATA_FILE_BY_PID = "lsof -p %d";
-    private static String cmds[] = {"/bin/bash", "-c", ""};
+    private int pid = -1;
+    private String processName;
+    private final int PID_ERROR_CODE = -1;
+    private final int UNSUPPORTED_OS_ERROR_CODE = -2;
+    private final int UNKNOWN_STATISTICS_ERROR_CODE = -3;
+    private final String IOTDB_PROCESS_KEY_WORD = "iotdb.IoTDB";
+    private final String LINUX_OS_NAME = "linux";
+    private final String MAC_OS_NAME = "mac";
+    private final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
+    private final String SEARCH_PID_MAC = "ps aux | grep -i %s | grep -v grep";
+    private final String SEARCH_OPEN_DATA_FILE_BY_PID = "lsof -p %d";
+    private final String cmds[] = {"/bin/bash", "-c", ""};
 
     public enum OpenFileNumStatistics {
         TOTAL_OPEN_FILE_NUM,
@@ -70,7 +70,7 @@ public class OpenFileNumUtil {
      *
      * @return pid
      */
-    public int getPID() {
+    private int getPID() {
         int pid = -1;
         Process pro1;
         Runtime r = Runtime.getRuntime();
@@ -106,8 +106,8 @@ public class OpenFileNumUtil {
     /**
      * set id
      */
-    public static void setPid(int pid) {
-        OpenFileNumUtil.pid = pid;
+    public void setPid(int pid) {
+        this.pid = pid;
     }
 
     /**
