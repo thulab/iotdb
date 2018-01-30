@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.utils;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +18,18 @@ import java.util.HashMap;
 // Notice : methods in this class may not be accurate because of limited user authority.
 public class OpenFileNumUtil {
     private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
+    private TsfileDBConfig config;
     private static int pid = -1;
     private static String processName;
+    private static final int PID_ERROR_CODE = -1;
+    private static final int UNSUPPORTED_OS_ERROR_CODE = -2;
+    private static final int UNKNOWN_STATISTICS_ERROR_CODE = -3;
+    private static final String LINUX_OS_NAME = "linux";
+    private static final String MAC_OS_NAME = "mac";
     private static final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
     private static final String SEARCH_PID_MAC = "ps aux | grep -i %s | grep -v grep";
     private static final String SEARCH_OPEN_DATA_FILE_BY_PID = "lsof -p %d";
     private static String cmds[] = {"/bin/bash", "-c", ""};
-    private static OpenFileNumUtil INSTANCE = null;
 
     public enum OpenFileNumStatistics {
         TOTAL_OPEN_FILE_NUM,
@@ -35,10 +42,15 @@ public class OpenFileNumUtil {
         SOCKET_OPEN_FILE_NUM
     }
 
+    private static class OpenFileNumUtilHolder {
+        private static final OpenFileNumUtil INSTANCE = new OpenFileNumUtil();
+    }
+
     /**
      * constructor, default process key word is "IOTDB_HOME"
      */
     private OpenFileNumUtil() {
+        config = TsfileDBDescriptor.getInstance().getConfig();
         processName = "IOTDB_HOME";
         pid = getPID();
     }
@@ -48,11 +60,8 @@ public class OpenFileNumUtil {
      *
      * @return instance
      */
-    public static OpenFileNumUtil getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new OpenFileNumUtil();
-        }
-        return INSTANCE;
+    public static final OpenFileNumUtil getInstance() {
+        return OpenFileNumUtilHolder.INSTANCE;
     }
 
     /**
@@ -68,7 +77,7 @@ public class OpenFileNumUtil {
 
         try {
             String command;
-            if (os.startsWith("linux")) {
+            if (os.startsWith(LINUX_OS_NAME)) {
                 command = String.format(SEARCH_PID_LINUX, processName);
             } else {
                 command = String.format(SEARCH_PID_MAC, processName);
@@ -88,7 +97,7 @@ public class OpenFileNumUtil {
             in1.close();
             pro1.destroy();
         } catch (IOException e) {
-            log.error("execute getPid() catch IOException：" + e.getMessage());
+            log.error("Cannot get pid of IoTDB process because of {}" + e.getMessage());
         }
         return pid;
     }
@@ -137,14 +146,10 @@ public class OpenFileNumUtil {
      */
     private HashMap<OpenFileNumStatistics, Integer> getOpenFile(int pid) {
         HashMap<OpenFileNumStatistics, Integer> resultMap = new HashMap<>();
-        int dataFileNum = 0;
-        int totalFileNum = 0;
-        int socketNum = 0;
-        int deltaNum = 0;
-        int walNum = 0;
-        int overflowNum = 0;
-        int metadataNum = 0;
-        int digestNum = 0;
+        //initialize resultMap
+        for (OpenFileNumStatistics openFileNumStatistics : OpenFileNumStatistics.values()) {
+            resultMap.put(openFileNumStatistics, 0);
+        }
 
         Process pro;
         Runtime r = Runtime.getRuntime();
@@ -154,47 +159,47 @@ public class OpenFileNumUtil {
             pro = r.exec(cmds);
             BufferedReader in = new BufferedReader(new InputStreamReader(pro.getInputStream()));
             String line = null;
-
+            int oldValue;
             while ((line = in.readLine()) != null) {
                 String[] temp = line.split("\\s+");
                 if (line.contains("" + pid) && temp.length > 8) {
-                    totalFileNum++;
-                    if (temp[8].contains("/data/")) {
-                        dataFileNum++;
+                    oldValue = resultMap.get(OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+                    resultMap.put(OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM, oldValue + 1);
+                    if (temp[8].contains(config.dataDir)) {
+                        oldValue = resultMap.get(OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.DATA_OPEN_FILE_NUM, oldValue + 1);
                     }
-                    if (temp[8].contains("/data/delta/")) {
-                        deltaNum++;
+                    if (temp[8].contains(config.bufferWriteDir)) {
+                        oldValue = resultMap.get(OpenFileNumStatistics.DELTA_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.DELTA_OPEN_FILE_NUM, oldValue + 1);
                     }
-                    if (temp[8].contains("/data/overflow/")) {
-                        overflowNum++;
+                    if (temp[8].contains(config.overflowDataDir)) {
+                        oldValue = resultMap.get(OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM, oldValue + 1);
                     }
-                    if (temp[8].contains("/data/wals/")) {
-                        walNum++;
+                    if (temp[8].contains(config.walFolder)) {
+                        oldValue = resultMap.get(OpenFileNumStatistics.WAL_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.WAL_OPEN_FILE_NUM, oldValue + 1);
                     }
-                    if (temp[8].contains("/data/metadata/")) {
-                        metadataNum++;
+                    if (temp[8].contains(config.metadataDir)) {
+                        oldValue = resultMap.get(OpenFileNumStatistics.METADATA_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.METADATA_OPEN_FILE_NUM, oldValue + 1);
                     }
-                    if (temp[8].contains("/data/digest/")) {
-                        digestNum++;
+                    if (temp[8].contains(config.fileNodeDir)) {
+                        oldValue = resultMap.get(OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM, oldValue + 1);
                     }
                     if (temp[7].contains("TCP") || temp[7].contains("UDP")) {
-                        socketNum++;
+                        oldValue = resultMap.get(OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM);
+                        resultMap.put(OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM, oldValue + 1);
                     }
                 }
             }
             in.close();
             pro.destroy();
         } catch (IOException e) {
-            log.error("execute getOpenFile() catch IOException: {} ", e.getMessage());
+            log.error("Cannot get open file number of IoTDB process because of {}", e.getMessage());
         }
-        resultMap.put(OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM, totalFileNum);
-        resultMap.put(OpenFileNumStatistics.DATA_OPEN_FILE_NUM, dataFileNum);
-        resultMap.put(OpenFileNumStatistics.DELTA_OPEN_FILE_NUM, deltaNum);
-        resultMap.put(OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM, overflowNum);
-        resultMap.put(OpenFileNumStatistics.WAL_OPEN_FILE_NUM, walNum);
-        resultMap.put(OpenFileNumStatistics.METADATA_OPEN_FILE_NUM, metadataNum);
-        resultMap.put(OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM, digestNum);
-        resultMap.put(OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM, socketNum);
         return resultMap;
     }
 
@@ -208,20 +213,20 @@ public class OpenFileNumUtil {
         HashMap<OpenFileNumStatistics, Integer> resultMap = new HashMap<>();
         String os = System.getProperty("os.name").toLowerCase();
         //get runtime OS name, currently only support Linux and MacOS
-        if (os.startsWith("linux") || os.startsWith("mac")) {
+        if (os.startsWith(LINUX_OS_NAME) || os.startsWith(MAC_OS_NAME)) {
             //if pid is normal，then get statistics
             if (pid > 0) {
                 resultMap = getOpenFile(pid);
             } else {
                 //pid is abnormal, give all statistics abnormal value -1
                 for (OpenFileNumStatistics statistics : OpenFileNumStatistics.values()) {
-                    resultMap.put(statistics, -1);
+                    resultMap.put(statistics, PID_ERROR_CODE);
                 }
             }
         } else {
             //operation system not supported, give all statistics abnormal value -2
             for (OpenFileNumStatistics statistics : OpenFileNumStatistics.values()) {
-                resultMap.put(statistics, -2);
+                resultMap.put(statistics, UNSUPPORTED_OS_ERROR_CODE);
             }
         }
         return resultMap;
@@ -229,30 +234,16 @@ public class OpenFileNumUtil {
 
     /**
      * get statistics
+     *
      * @param statistics get what statistics of open file number
      * @return open file number
      */
     public int get(OpenFileNumStatistics statistics) {
         HashMap<OpenFileNumStatistics, Integer> statisticsMap = getStatisticMap();
-        switch (statistics) {
-            case TOTAL_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
-            case WAL_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.WAL_OPEN_FILE_NUM);
-            case DATA_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
-            case DIGEST_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM);
-            case OVERFLOW_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM);
-            case METADATA_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.METADATA_OPEN_FILE_NUM);
-            case DELTA_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.DELTA_OPEN_FILE_NUM);
-            case SOCKET_OPEN_FILE_NUM:
-                return statisticsMap.get(OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM);
-            default:
-                return -3;
+        if (statisticsMap.containsKey(statistics)) {
+            return statisticsMap.get(statistics);
+        } else {
+            return UNKNOWN_STATISTICS_ERROR_CODE;
         }
     }
 
