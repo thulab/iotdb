@@ -36,8 +36,8 @@ public class InsertDynamicDataTest {
 
     @Test
     public void queryWithoutFilterTest() throws IOException {
-        TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
-        config.duplicateIncompletedPage = true;
+        //TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
+        //config.duplicateIncompletedPage = true;
         SeriesWriterImpl writer = new SeriesWriterImpl(deltaObjectId, descriptor, new PageWriterImpl(descriptor), 1000);
         for (long i = 100;i <= 500; i++) {
             writer.write(i, (float) i - 50);
@@ -97,8 +97,8 @@ public class InsertDynamicDataTest {
 
     @Test
     public void queryFilterTest() throws IOException {
-        TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
-        config.duplicateIncompletedPage = true;
+        //TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
+        //config.duplicateIncompletedPage = true;
         SeriesWriterImpl writer = new SeriesWriterImpl(deltaObjectId, descriptor, new PageWriterImpl(descriptor), 1000);
         for (long i = 100;i <= 500; i++) {
             writer.write(i, (float)i - 50);
@@ -123,7 +123,7 @@ public class InsertDynamicDataTest {
         while (insertDynamicData.hasInsertData()) {
             long time = insertDynamicData.getCurrentMinTime();
             float value = insertDynamicData.getCurrentFloatValue();
-            System.out.println(time + "," + value);
+            //System.out.println(time + "," + value);
 
             if (time >= 50 && time <= 60) {
                 assertEquals(value, -111, 0.0);
