@@ -96,7 +96,9 @@ public class BufferWriteProcessor extends Processor {
 		workMemTable = new PrimitiveMemTable();
 
 		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
+			logNode = MultiFileLogNodeManager.getInstance().getNode(
+					processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
+					FileNodeManager.getInstance().getRestoreFilePath(processorName));
 		} catch (IOException e) {
 			throw new BufferWriteProcessorException(e);
 		}
@@ -398,6 +400,10 @@ public class BufferWriteProcessor extends Processor {
 			return true;
 		}
 		return false;
+	}
+
+	private String getBufferwriteRestoreFilePath() {
+		return bufferWriteResource.getRestoreFilePath();
 	}
 
 }
