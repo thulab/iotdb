@@ -1,15 +1,45 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.joda.time.DateTime;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.flushthread.MergePool;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
-import cn.edu.tsinghua.iotdb.engine.querycontext.*;
-import cn.edu.tsinghua.iotdb.exception.*;
+import cn.edu.tsinghua.iotdb.engine.pool.MergeManager;
+import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
+import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
+import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
@@ -44,21 +74,6 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
-import org.joda.time.DateTime;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 
@@ -82,8 +97,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	// this is used when work->merge operation
 	private int numOfMergeFile = 0;
 	private FileNodeProcessorStore fileNodeProcessorStore = null;
-	// file path
-	private static final String restoreFile = ".restore";
+
+	public static final String RESTORE_FILE_SUFFIX = ".restore";
 	private String fileNodeRestoreFilePath = null;
 	private String baseDirPath;
 	// last merge time
@@ -277,7 +292,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.info("The data directory of the filenode processor {} doesn't exist. Create new directory {}",
 					getProcessorName(), baseDirPath);
 		}
-		fileNodeRestoreFilePath = new File(dataDir, processorName + restoreFile).getPath();
+		fileNodeRestoreFilePath = new File(dataDir, processorName + RESTORE_FILE_SUFFIX).getPath();
 		try {
 			fileNodeProcessorStore = readStoreToDisk();
 		} catch (FileNodeProcessorException e) {
@@ -389,7 +404,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		LOGGER.info("The filenode processor {} will recovery the overflow processor.", getProcessorName());
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
-		overflowProcessor = new OverflowProcessor(getProcessorName(), parameters, fileSchema);
+		try {
+			overflowProcessor = new OverflowProcessor(getProcessorName(), parameters, fileSchema);
+		} catch (IOException e) {
+			writeUnlock();
+			LOGGER.error("The filenode processor {} failed to recovery the overflow processor.");
+			throw new FileNodeProcessorException(e);
+		}
 
 		shouldRecovery = false;
 
@@ -440,7 +461,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return bufferWriteProcessor;
 	}
 
-	public OverflowProcessor getOverflowProcessor(String processorName, Map<String, Object> parameters) {
+	public OverflowProcessor getOverflowProcessor(String processorName, Map<String, Object> parameters) throws IOException {
 		if (overflowProcessor == null) {
 			// construct processor or restore
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
@@ -771,13 +792,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							"The filenode processor {} merge start time is {}, merge end time is {}, merge consumes {}ms.",
 							getProcessorName(), startDateTime, endDateTime, intervalTime);
 				} catch (FileNodeProcessorException e) {
-					e.printStackTrace();
 					LOGGER.error("The filenode processor {} encountered an error when merging.", getProcessorName(), e);
 					throw new ErrorDebugException(e);
 				}
 			};
 			LOGGER.info("Submit the merge task, the merge filenode is {}", getProcessorName());
-			return MergePool.getInstance().submit(MergeThread);
+			return MergeManager.getInstance().submit(MergeThread);
 		} else {
 			if (!isOverflowed) {
 				LOGGER.info("Skip this merge taks submission, because the filenode processor {} is not overflowed.",
@@ -816,7 +836,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.info("The filenode processor {} prepares for merge, closes the overflow processor",
 					getProcessorName());
 			getOverflowProcessor().close();
-		} catch (FileNodeProcessorException | OverflowProcessorException e) {
+		} catch (FileNodeProcessorException | OverflowProcessorException | IOException e) {
 			e.printStackTrace();
 			LOGGER.error("The filenode processor {} prepares for merge error.", getProcessorName(), e);
 			writeUnlock();
@@ -909,19 +929,14 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		emptyIntervalFileNode.clear();
 		// attention
-		// try {
-		//
-		// change the overflow work to merge
-		//
-		overflowProcessor.switchWorkToMerge();
-		// } catch (ProcessorException e) {
-		// LOGGER.error("The filenode processor {} can't switch overflow
-		// processor from work to merge.",
-		// getProcessorName(), e);
-		// writeUnlock();
-		// throw new FileNodeProcessorException(e);
-		// }
-		// unlock this filenode
+		try {
+			overflowProcessor.switchWorkToMerge();
+		} catch (IOException e) {
+			LOGGER.error("The filenode processor {} can't switch overflow processor from work to merge.",
+					getProcessorName(), e);
+			writeUnlock();
+			throw new FileNodeProcessorException(e);
+		}
 		LOGGER.info("The filenode processor {} switches from {} to {}.", getProcessorName(),
 				FileNodeProcessorStatus.NONE, FileNodeProcessorStatus.MERGING_WRITE);
 		writeUnlock();
@@ -1624,5 +1639,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public void rebuildIndex() throws FileNodeProcessorException {
 		mergeIndex();
 		switchMergeIndex();
+	}
+
+	public String getFileNodeRestoreFilePath() {
+		return fileNodeRestoreFilePath;
 	}
 }

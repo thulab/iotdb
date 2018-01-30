@@ -63,7 +63,6 @@ import cn.edu.tsinghua.iotdb.qp.executor.OverflowQPExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
@@ -76,7 +75,6 @@ import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.INDEXQUERY;
 
 public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
-	private WriteLogManager writeLogManager;
 	private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
 	// Record the username for every rpc connection. Username.get() is null if
 	// login is failed.
@@ -89,9 +87,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
 
 	public TSServiceImpl() throws IOException {
-		if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-			writeLogManager = WriteLogManager.getInstance();
-		}
+
 	}
 
 	@Override
@@ -572,15 +568,15 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		return resp;
 	}
 
-	private boolean needToBeWrittenToLog(PhysicalPlan plan) {
-		if (plan.getOperatorType() == Operator.OperatorType.UPDATE) {
-			return true;
-		}
-		if (plan.getOperatorType() == Operator.OperatorType.DELETE) {
-			return true;
-		}
-		return false;
-	}
+//	private boolean needToBeWrittenToLog(PhysicalPlan plan) {
+//		if (plan.getOperatorType() == Operator.OperatorType.UPDATE) {
+//			return true;
+//		}
+//		if (plan.getOperatorType() == Operator.OperatorType.DELETE) {
+//			return true;
+//		}
+//		return false;
+//	}
 
 	private void recordANewQuery(String statement, PhysicalPlan physicalPlan) {
 		queryStatus.get().put(statement, physicalPlan);
