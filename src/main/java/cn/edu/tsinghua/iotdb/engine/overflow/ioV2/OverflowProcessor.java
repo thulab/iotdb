@@ -6,13 +6,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +26,9 @@ import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -38,7 +39,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
@@ -67,7 +67,13 @@ public class OverflowProcessor extends Processor {
 	private long memThreshold = TsFileConf.groupSizeInByte;
 	private AtomicLong memSize = new AtomicLong();
 
+<<<<<<< HEAD
 	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) throws IOException {
+=======
+	private WriteLogNode logNode;
+
+	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) {
+>>>>>>> fcad1860de99d38a33413ca6ba2f70d263fce0c6
 		super(processorName);
 		this.fileSchema = fileSchema;
 		String overflowDirPath = TsFileDBConf.overflowDataDir;
@@ -86,6 +92,13 @@ public class OverflowProcessor extends Processor {
 		workSupport = new OverflowSupport();
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
+
+		try {
+			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, restoreFileName, FileNodeManager.getInstance().getRestoreFilePath(processorName));
+		} catch (IOException e) {
+			// TODO : throw a concrete exception
+			throw new Exception(e);
+		}
 	}
 
 	private void recovery(File parentFile) throws IOException {
@@ -492,7 +505,7 @@ public class OverflowProcessor extends Processor {
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				WriteLogManager.getInstance().endOverflowFlush(getProcessorName());
+				logNode.notifyStartFlush();
 			}
 		} catch (IOException e) {
 			LOGGER.error("Flush overflow processor {} rowgroup to file error in {}. Thread {} exits.",
@@ -551,11 +564,7 @@ public class OverflowProcessor extends Processor {
 			}
 
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				try {
-					WriteLogManager.getInstance().startOverflowFlush(getProcessorName());
-				} catch (IOException e) {
-					throw new OverflowProcessorException(e);
-				}
+				logNode.notifyEndFlush(null);
 			}
 			BasicMemController.getInstance().reportFree(this, memSize.get());
 			memSize.set(0);
@@ -674,5 +683,9 @@ public class OverflowProcessor extends Processor {
 		} else {
 			return false;
 		}
+	}
+
+	public WriteLogNode getLogNode() {
+		return logNode;
 	}
 }

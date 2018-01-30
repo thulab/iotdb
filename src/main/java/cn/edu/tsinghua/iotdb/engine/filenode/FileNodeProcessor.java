@@ -1640,4 +1640,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		mergeIndex();
 		switchMergeIndex();
 	}
+
+	public String getFileNodeRestoreFilePath() {
+		return fileNodeRestoreFilePath;
+	}
 }

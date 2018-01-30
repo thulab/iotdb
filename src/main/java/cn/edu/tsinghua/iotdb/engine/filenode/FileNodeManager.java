@@ -15,6 +15,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +43,6 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
@@ -283,18 +284,22 @@ public class FileNodeManager implements IStatistic, IService {
 				// write wal
 				try {
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						if (!WriteLogManager.isRecovering) {
-							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.OVERFLOW);
+						List<String> measurementList = new ArrayList<>();
+						List<String> insertValues = new ArrayList<>();
+						for (DataPoint dp : tsRecord.dataPointList) {
+							measurementList.add(dp.getMeasurementId());
+							insertValues.add(dp.getValue().toString());
 						}
+						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+								measurementList, insertValues));
 					}
-				} catch (IOException | PathErrorException e) {
+				} catch (IOException e) {
 					LOGGER.error("Error in write WAL.", e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
 					throw new FileNodeManagerException(e);
 				}
-
 				// write overflow data
 				try {
 					overflowProcessor.insert(tsRecord);
@@ -346,11 +351,16 @@ public class FileNodeManager implements IStatistic, IService {
 				// write wal
 				try {
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						if (!WriteLogManager.isRecovering) {
-							WriteLogManager.getInstance().write(filenodeName, tsRecord, WriteLogManager.BUFFERWRITER);
+						List<String> measurementList = new ArrayList<>();
+						List<String> insertValues = new ArrayList<>();
+						for (DataPoint dp : tsRecord.dataPointList) {
+							measurementList.add(dp.getMeasurementId());
+							insertValues.add(dp.getValue().toString());
 						}
+						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+								measurementList, insertValues));
 					}
-				} catch (IOException | PathErrorException e) {
+				} catch (IOException e) {
 					LOGGER.error("Error in write WAL.", e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
@@ -401,18 +411,6 @@ public class FileNodeManager implements IStatistic, IService {
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		try {
-			// write wal
-			try {
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-					if (!WriteLogManager.isRecovering) {
-						WriteLogManager.getInstance().write(fileNodeProcessor.getProcessorName(),
-								new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
-					}
-				}
-			} catch (IOException | PathErrorException e) {
-				LOGGER.error("Error in write WAL.", e);
-				throw new FileNodeManagerException(e);
-			}
 
 			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 			if (startTime > lastUpdateTime) {
@@ -439,6 +437,17 @@ public class FileNodeManager implements IStatistic, IService {
 			// change the type of tsfile to overflowed
 			fileNodeProcessor.changeTypeToChanged(deltaObjectId, startTime, endTime);
 			fileNodeProcessor.setOverflowed(true);
+
+			// write wal
+			try {
+				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+					overflowProcessor.getLogNode().write(
+							new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
+				}
+			} catch (IOException e) {
+				LOGGER.error("Error in write WAL.", e);
+				throw new FileNodeManagerException(e);
+			}
 			// if (shouldMerge) {
 			// LOGGER.info("The overflow file or metadata reaches the
 			// threshold, merge the filenode processor {}",
@@ -455,19 +464,6 @@ public class FileNodeManager implements IStatistic, IService {
 
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
 		try {
-			// write wal
-			try {
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-					if (!WriteLogManager.isRecovering) {
-						WriteLogManager.getInstance().write(fileNodeProcessor.getProcessorName(),
-								new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
-					}
-				}
-			} catch (IOException | PathErrorException e) {
-				LOGGER.error("Error in write WAL,", e);
-				throw new FileNodeManagerException(e);
-			}
-
 			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
 			// no tsfile data, the delete operation is invalid
 			if (lastUpdateTime == -1) {
@@ -501,6 +497,17 @@ public class FileNodeManager implements IStatistic, IService {
 				// }
 				fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
 				fileNodeProcessor.setOverflowed(true);
+
+				// write wal
+				try {
+					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+						overflowProcessor.getLogNode()
+								.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
+					}
+				} catch (IOException e) {
+					LOGGER.error("Error in write WAL,", e);
+					throw new FileNodeManagerException(e);
+				}
 			}
 		} finally {
 			fileNodeProcessor.writeUnlock();
@@ -669,7 +676,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * try to close the filenode processor. The name of filenode processor is
 	 * processorName
 	 * 
-	 * @param namespacePath
+	 * @param processorName
 	 * @throws FileNodeManagerException
 	 */
 	private boolean closeOneProcessor(String processorName) throws FileNodeManagerException {
@@ -1034,5 +1041,13 @@ public class FileNodeManager implements IStatistic, IService {
 	@Override
 	public ServiceType getID() {
 		return ServiceType.FILE_NODE_SERVICE;
+	}
+
+	public String getRestoreFilePath(String processorName) {
+		FileNodeProcessor fileNodeProcessor = processorMap.get(processorName);
+		if (fileNodeProcessor != null)
+			return fileNodeProcessor.getFileNodeRestoreFilePath();
+		else
+			return null;
 	}
 }
