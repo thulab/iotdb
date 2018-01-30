@@ -121,6 +121,9 @@ public class LargeDataTest {
             previousFillTest();
             linearFillTest();
 
+            // verify the rightness of overflow insert and after merge operation
+            //newInsertAggTest();
+
             connection.close();
         }
     }
@@ -904,6 +907,90 @@ public class LargeDataTest {
             // overflow update
             statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    public void newInsertAggTest() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            String sql;
+            boolean hasResultSet;
+            ResultSet resultSet;
+            int cnt;
+            String[] retArray = new String[]{};
+            sql = "select count(s0),count(s1),count(s2),count(s3),count(s4)" +
+                    "from root.vehicle.d0";
+            hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
+                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
+                //assertEquals("0,0,null,null,null,null,null,null,null,null", ans);
+                System.out.println("(1) ============ " + ans);
+                cnt++;
+            }
+            statement.close();
+
+            statement = connection.createStatement();
+            for (int time = 10000; time < 60000; time++) {
+                sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 20);
+                statement.execute(sql);
+                sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 30);
+                statement.execute(sql);
+                sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 77);
+                statement.execute(sql);
+            }
+            statement.close();
+
+            sql = "select count(s0),count(s1),count(s2),count(s3),count(s4)" +
+                    "from root.vehicle.d0";
+            statement = connection.createStatement();
+            hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
+                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
+                //assertEquals("0,0,null,null,null,null,null,null,null,null", ans);
+                System.out.println("(2) ============ " + ans);
+                cnt++;
+            }
+            statement.close();
+
+            statement = connection.createStatement();
+            statement.execute("merge");
+            statement.close();
+
+            statement = connection.createStatement();
+            hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            resultSet = statement.getResultSet();
+            cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
+                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
+                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
+                //assertEquals("0,0,null,null,null,null,null,null,null,null", ans);
+                System.out.println("(3) ============ " + ans);
+                cnt++;
+            }
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

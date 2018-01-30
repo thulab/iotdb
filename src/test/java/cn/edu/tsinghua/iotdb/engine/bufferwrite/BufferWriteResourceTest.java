@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,19 +55,51 @@ public class BufferWriteResourceTest {
 		bufferwriteResource.close(fileSchema);
 		assertEquals(false, new File(insertRestorePath).exists());
 	}
-
+	
 	@Test
-	public void testRecover() throws IOException {
+	public void testAbnormalRecover() throws IOException{
 		File insertFile = new File(insertPath);
+		File restoreFile = new File(insertPath+".restore");
+		FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
 		// mkdir
-		insertFile.mkdir();
+		fileOutputStream.write(new byte[400]);
+		fileOutputStream.close();
 		ITsRandomAccessFileWriter out = new TsRandomAccessFileWriter(new File(insertRestorePath));
 		// write tsfile position using byte[8] which is present one long
 		writeRestoreFile(out, 2);
 		writeRestoreFile(out, 3);
 		byte[] lastPositionBytes = BytesUtils.longToBytes(200);
 		out.write(lastPositionBytes);
+		assertEquals(true, insertFile.exists());
+		assertEquals(true, restoreFile.exists());
+		assertEquals(400, insertFile.length());
 		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
+		assertEquals(true, insertFile.exists());
+		assertEquals(200, insertFile.length());
+		assertEquals(insertPath, bufferwriteResource.getInsertFilePath());
+		assertEquals(insertRestorePath, bufferwriteResource.getRestoreFilePath());
+		bufferwriteResource.close(new FileSchema());
+	}
+
+	@Test
+	public void testRecover() throws IOException {
+		File insertFile = new File(insertPath);
+		File restoreFile = new File(insertPath+".restore");
+		FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
+		// mkdir
+		fileOutputStream.write(new byte[200]);
+		fileOutputStream.close();
+		ITsRandomAccessFileWriter out = new TsRandomAccessFileWriter(new File(insertRestorePath));
+		// write tsfile position using byte[8] which is present one long
+		writeRestoreFile(out, 2);
+		writeRestoreFile(out, 3);
+		byte[] lastPositionBytes = BytesUtils.longToBytes(200);
+		out.write(lastPositionBytes);
+		assertEquals(true, insertFile.exists());
+		assertEquals(true, restoreFile.exists());
+		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
+		assertEquals(true, insertFile.exists());
+		assertEquals(200, insertFile.length());
 		assertEquals(insertPath, bufferwriteResource.getInsertFilePath());
 		assertEquals(insertRestorePath, bufferwriteResource.getRestoreFilePath());
 		bufferwriteResource.close(new FileSchema());

@@ -24,7 +24,7 @@ public class EngineUtils {
             DynamicOneColumnData leftData = batchReadData.sub(batchReadData.curIdx);
 
             // copy batch read info from oneColRet to leftRet
-            batchReadData.copyFetchInfoTo(leftData);
+            // batchReadData.copyFetchInfoTo(leftData);
             dataSet.getBatchReadGenerator().retMap.put(path, leftData);
             batchReadData.rollBack(batchReadData.valueLength - batchReadData.curIdx);
             dataSet.mapRet.put(path.getFullPath(), batchReadData);

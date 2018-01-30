@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
+import static cn.edu.tsinghua.iotdb.query.v2.ReaderUtils.getSingleValueVisitorByDataType;
 
 /**
  * InsertDynamicData is encapsulating class for page list, last page and overflow data.
