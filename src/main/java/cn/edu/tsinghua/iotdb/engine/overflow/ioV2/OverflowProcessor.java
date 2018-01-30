@@ -67,7 +67,7 @@ public class OverflowProcessor extends Processor {
 	private long memThreshold = TsFileConf.groupSizeInByte;
 	private AtomicLong memSize = new AtomicLong();
 
-	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) {
+	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) throws IOException {
 		super(processorName);
 		this.fileSchema = fileSchema;
 		String overflowDirPath = TsFileDBConf.overflowDataDir;
@@ -88,7 +88,7 @@ public class OverflowProcessor extends Processor {
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 	}
 
-	private void recovery(File parentFile) {
+	private void recovery(File parentFile) throws IOException {
 		String[] subFilePaths = clearFile(parentFile.list());
 		if (subFilePaths.length == 0) {
 			workResource = new OverflowResource(parentPath, String.valueOf(dataPahtCount.getAndIncrement()));
@@ -452,7 +452,7 @@ public class OverflowProcessor extends Processor {
 		}
 	}
 
-	public void switchWorkToMerge() {
+	public void switchWorkToMerge() throws IOException {
 		if (mergeResource == null) {
 			mergeResource = workResource;
 			// TODO: NEW ONE workResource
@@ -621,6 +621,10 @@ public class OverflowProcessor extends Processor {
 	@Override
 	public long memoryUsage() {
 		return memSize.get();
+	}
+	
+	public String getOverflowRestoreFile(){
+		return workResource.getPositionFilePath();
 	}
 
 	/**

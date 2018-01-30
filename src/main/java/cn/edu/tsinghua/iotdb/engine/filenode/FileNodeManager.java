@@ -270,7 +270,16 @@ public class FileNodeManager implements IStatistic, IService {
 				Map<String, Object> parameters = new HashMap<>();
 				// get overflow processor
 				OverflowProcessor overflowProcessor;
-				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+				try {
+					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+				} catch (IOException e) {
+					LOGGER.error("Get the overflow processor failed, the filenode is {}, insert time is {}",
+							filenodeName, timestamp);
+					if (!isMonitor) {
+						updateStatHashMapWhenFail(tsRecord);
+					}
+					throw new FileNodeManagerException(e);
+				}
 				// write wal
 				try {
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
@@ -418,7 +427,14 @@ public class FileNodeManager implements IStatistic, IService {
 			String filenodeName = fileNodeProcessor.getProcessorName();
 			// get overflow processor
 			OverflowProcessor overflowProcessor;
-			overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+			try {
+				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+			} catch (IOException e) {
+				LOGGER.error(
+						"Get the overflow processor failed, the filenode is {}, insert time range is from {} to {}",
+						filenodeName, startTime, endTime);
+				throw new FileNodeManagerException(e);
+			}
 			overflowProcessor.update(deltaObjectId, measurementId, startTime, endTime, type, v);
 			// change the type of tsfile to overflowed
 			fileNodeProcessor.changeTypeToChanged(deltaObjectId, startTime, endTime);
@@ -465,7 +481,13 @@ public class FileNodeManager implements IStatistic, IService {
 				String filenodeName = fileNodeProcessor.getProcessorName();
 				// get overflow processor
 				OverflowProcessor overflowProcessor;
-				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+				try {
+					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+				} catch (IOException e) {
+					LOGGER.error("Get the overflow processor failed, the filenode is {}, delete time is {}.",
+							filenodeName, timestamp);
+					throw new FileNodeManagerException(e);
+				}
 				overflowProcessor.delete(deltaObjectId, measurementId, timestamp, type);
 				// change the type of tsfile to overflowed
 				fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
@@ -508,7 +530,13 @@ public class FileNodeManager implements IStatistic, IService {
 			// query operation must have overflow processor
 			if (!fileNodeProcessor.hasOverflowProcessor()) {
 				Map<String, Object> parameters = new HashMap<>();
-				fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName(), parameters);
+				try {
+					fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName(), parameters);
+				} catch (IOException e) {
+					LOGGER.error("Get the overflow processor failed, the filenode is {}, query is {},{}",
+							fileNodeProcessor.getProcessorName(), deltaObjectId, measurementId);
+					throw new FileNodeManagerException(e);
+				}
 			}
 			try {
 				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, timeFilter, freqFilter,

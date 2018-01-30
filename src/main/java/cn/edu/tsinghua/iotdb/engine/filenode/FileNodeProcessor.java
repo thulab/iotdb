@@ -404,7 +404,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		LOGGER.info("The filenode processor {} will recovery the overflow processor.", getProcessorName());
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
-		overflowProcessor = new OverflowProcessor(getProcessorName(), parameters, fileSchema);
+		try {
+			overflowProcessor = new OverflowProcessor(getProcessorName(), parameters, fileSchema);
+		} catch (IOException e) {
+			writeUnlock();
+			LOGGER.error("The filenode processor {} failed to recovery the overflow processor.");
+			throw new FileNodeProcessorException(e);
+		}
 
 		shouldRecovery = false;
 
@@ -455,7 +461,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return bufferWriteProcessor;
 	}
 
-	public OverflowProcessor getOverflowProcessor(String processorName, Map<String, Object> parameters) {
+	public OverflowProcessor getOverflowProcessor(String processorName, Map<String, Object> parameters) throws IOException {
 		if (overflowProcessor == null) {
 			// construct processor or restore
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
@@ -830,7 +836,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.info("The filenode processor {} prepares for merge, closes the overflow processor",
 					getProcessorName());
 			getOverflowProcessor().close();
-		} catch (FileNodeProcessorException | OverflowProcessorException e) {
+		} catch (FileNodeProcessorException | OverflowProcessorException | IOException e) {
 			e.printStackTrace();
 			LOGGER.error("The filenode processor {} prepares for merge error.", getProcessorName(), e);
 			writeUnlock();
@@ -923,19 +929,14 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		emptyIntervalFileNode.clear();
 		// attention
-		// try {
-		//
-		// change the overflow work to merge
-		//
-		overflowProcessor.switchWorkToMerge();
-		// } catch (ProcessorException e) {
-		// LOGGER.error("The filenode processor {} can't switch overflow
-		// processor from work to merge.",
-		// getProcessorName(), e);
-		// writeUnlock();
-		// throw new FileNodeProcessorException(e);
-		// }
-		// unlock this filenode
+		try {
+			overflowProcessor.switchWorkToMerge();
+		} catch (IOException e) {
+			LOGGER.error("The filenode processor {} can't switch overflow processor from work to merge.",
+					getProcessorName(), e);
+			writeUnlock();
+			throw new FileNodeProcessorException(e);
+		}
 		LOGGER.info("The filenode processor {} switches from {} to {}.", getProcessorName(),
 				FileNodeProcessorStatus.NONE, FileNodeProcessorStatus.MERGING_WRITE);
 		writeUnlock();
