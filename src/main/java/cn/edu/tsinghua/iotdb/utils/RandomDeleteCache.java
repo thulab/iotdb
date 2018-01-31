@@ -55,6 +55,7 @@ public abstract class RandomDeleteCache<K, V> implements Cache<K, V> {
 
     public abstract V loadObjectByKey(K key) throws CacheException;
 
+    @Override
     public void clear() {
         cache.clear();
     }

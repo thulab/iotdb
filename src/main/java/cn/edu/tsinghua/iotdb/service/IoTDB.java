@@ -14,6 +14,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
+
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
@@ -24,8 +25,10 @@ public class IoTDB implements IoTDBMBean{
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
 	private RegisterManager registerManager = new RegisterManager();
     private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileDBConstant.IOTDB_PACKAGE, TsFileDBConstant.JMX_TYPE, "IoTDB");
+
     private String postBack_type = PostBackDescriptor.getInstance().getConfig().POSTBACK_TYPE;
 	private ServerManager serverManager = ServerManager.getInstance();
+	
     private static class IoTDBHolder {
 		private static final IoTDB INSTANCE = new IoTDB();
 	}
