@@ -1,10 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,16 +36,18 @@ public class BufferWriteResourceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
+		
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		EnvironmentUtils.cleanDir(insertPath);
+		EnvironmentUtils.cleanDir(insertRestorePath);
 	}
 
 	@Test
 	public void testInitResource() throws IOException {
+		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
 		Pair<Long, List<RowGroupMetaData>> pair = bufferwriteResource.readRestoreInfo();
 		assertEquals(true, new File(insertRestorePath).exists());
 		assertEquals(0, (long) pair.left);
@@ -58,21 +59,24 @@ public class BufferWriteResourceTest {
 	
 	@Test
 	public void testAbnormalRecover() throws IOException{
+		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
 		File insertFile = new File(insertPath);
 		File restoreFile = new File(insertPath+".restore");
 		FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
 		// mkdir
 		fileOutputStream.write(new byte[400]);
 		fileOutputStream.close();
+		assertEquals(true, insertFile.exists());
+		assertEquals(true, restoreFile.exists());
+		assertEquals(400, insertFile.length());
+		bufferwriteResource.close(new FileSchema());
 		ITsRandomAccessFileWriter out = new TsRandomAccessFileWriter(new File(insertRestorePath));
 		// write tsfile position using byte[8] which is present one long
 		writeRestoreFile(out, 2);
 		writeRestoreFile(out, 3);
 		byte[] lastPositionBytes = BytesUtils.longToBytes(200);
 		out.write(lastPositionBytes);
-		assertEquals(true, insertFile.exists());
-		assertEquals(true, restoreFile.exists());
-		assertEquals(400, insertFile.length());
+		out.close();
 		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
 		assertEquals(true, insertFile.exists());
 		assertEquals(200, insertFile.length());
@@ -83,6 +87,7 @@ public class BufferWriteResourceTest {
 
 	@Test
 	public void testRecover() throws IOException {
+		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
 		File insertFile = new File(insertPath);
 		File restoreFile = new File(insertPath+".restore");
 		FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
@@ -95,19 +100,21 @@ public class BufferWriteResourceTest {
 		writeRestoreFile(out, 3);
 		byte[] lastPositionBytes = BytesUtils.longToBytes(200);
 		out.write(lastPositionBytes);
+		out.close();
 		assertEquals(true, insertFile.exists());
 		assertEquals(true, restoreFile.exists());
-		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
+		BufferWriteResource tempbufferwriteResource = new BufferWriteResource(processorName, insertPath);
 		assertEquals(true, insertFile.exists());
 		assertEquals(200, insertFile.length());
-		assertEquals(insertPath, bufferwriteResource.getInsertFilePath());
-		assertEquals(insertRestorePath, bufferwriteResource.getRestoreFilePath());
+		assertEquals(insertPath, tempbufferwriteResource.getInsertFilePath());
+		assertEquals(insertRestorePath, tempbufferwriteResource.getRestoreFilePath());
+		tempbufferwriteResource.close(new FileSchema());
 		bufferwriteResource.close(new FileSchema());
 	}
 
 	@Test
 	public void testFlushAndGetMetadata() throws IOException {
-		bufferwriteResource = new BufferWriteResource(processorName, insertRestorePath);
+		bufferwriteResource = new BufferWriteResource(processorName, insertPath);
 		assertEquals(0, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 		IMemTable memTable = new TreeSetMemTable();
