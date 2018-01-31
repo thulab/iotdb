@@ -8,10 +8,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +38,11 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
                     long offset = seriesMetaData.getProperties().getFileOffset();
                     in = getSeriesChunkBytes(overflowUpdateDeleteFile.getFilePath(), chunkSize, offset);
                     updateDynamic = overflowIndex.queryFileBlock(null, null, in, memoryUpdate);
+                    if (in != null) {
+                        in.close();
+                    }
                 }
             }
-
             updateOperations = overflowIndex.getDynamicList(updateDynamic);
         } catch (IOException e) {
             LOGGER.error("Read overflow file block failed, reason {}", e.getMessage());
