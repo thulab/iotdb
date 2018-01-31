@@ -95,12 +95,14 @@ public class BufferWriteProcessor extends Processor {
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 		workMemTable = new PrimitiveMemTable();
 
-		try {
-			logNode = MultiFileLogNodeManager.getInstance().getNode(
-					processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
-					FileNodeManager.getInstance().getRestoreFilePath(processorName));
-		} catch (IOException e) {
-			throw new BufferWriteProcessorException(e);
+		if(TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+			try {
+				logNode = MultiFileLogNodeManager.getInstance().getNode(
+						processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
+						FileNodeManager.getInstance().getRestoreFilePath(processorName));
+			} catch (IOException e) {
+				throw new BufferWriteProcessorException(e);
+			}
 		}
 	}
 

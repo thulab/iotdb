@@ -89,7 +89,8 @@ public class OverflowProcessor extends Processor {
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
-		logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
+		if(TsfileDBDescriptor.getInstance().getConfig().enableWal)
+			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
 	}
 
 	private void recovery(File parentFile) throws IOException {

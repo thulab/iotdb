@@ -15,7 +15,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -751,6 +753,9 @@ public class FileNodeManager implements IStatistic, IService {
 				String overflowPath = TsFileDBConf.overflowDataDir;
 				overflowPath = standardizeDir(overflowPath) + processorName;
 				FileUtils.deleteDirectory(new File(overflowPath));
+
+				MultiFileLogNodeManager.getInstance().deleteNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX);
+				MultiFileLogNodeManager.getInstance().deleteNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX);
 				return true;
 			} catch (IOException e) {
 				LOGGER.error("Delete the filenode processor {} error.", processorName, e);
