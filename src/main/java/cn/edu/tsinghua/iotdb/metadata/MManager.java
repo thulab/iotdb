@@ -361,6 +361,36 @@ public class MManager {
         }
     }
 
+    public TSDataType getSeriesType(MNode node, String fullPath) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return getSchemaForOnePath(node, fullPath).dataType;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public TSDataType getSeriesTypeWithCheck(MNode node, String fullPath) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return getSchemaForOnePathWithCheck(node, fullPath).dataType;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public TSDataType getSeriesTypeWithCheck(String fullPath) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return getSchemaForOnePathWithCheck(fullPath).dataType;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     /**
      * Get all DeltaObject type in current Metadata Tree
      *
@@ -487,6 +517,30 @@ public class MManager {
         }
     }
 
+    public String getFileNameByPath(MNode node, String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getFileNameByPath(node, path);
+        } catch (PathErrorException e) {
+            throw new PathErrorException(String.format(e.getMessage()));
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getFileNameByPath(node, path);
+        } catch (PathErrorException e) {
+            throw new PathErrorException(String.format(e.getMessage()));
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     public boolean checkFileNameByPath(String path) {
 
         lock.readLock().lock();
@@ -570,6 +624,34 @@ public class MManager {
         }
     }
 
+    public boolean pathExist(MNode node, String path) {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.pathExist(node, path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public MNode getNodeByPath(String path) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            return mGraph.getNodeByPath(path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public MNode getNodeByPathWithCheck(String path) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            return mGraph.getNodeByPathWithCheck(path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     /**
      * Get ColumnSchema for given path. Notice: Path must be a complete Path
      * from root to leaf node.
@@ -579,6 +661,36 @@ public class MManager {
         lock.readLock().lock();
         try {
             return mGraph.getSchemaForOnePath(path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public ColumnSchema getSchemaForOnePath(MNode node, String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getSchemaForOnePath(node, path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public ColumnSchema getSchemaForOnePathWithCheck(MNode node, String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getSchemaForOnePathWithCheck(node, path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public ColumnSchema getSchemaForOnePathWithCheck(String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getSchemaForOnePathWithCheck(path);
         } finally {
             lock.readLock().unlock();
         }
@@ -595,6 +707,41 @@ public class MManager {
             for (Path p : path) {
                 getFileNameByPath(p.getFullPath());
             }
+            return true;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public boolean checkFileLevel(MNode node, List<Path> path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            for (Path p : path) {
+                getFileNameByPath(node, p.getFullPath());
+            }
+            return true;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public boolean checkFileLevel(String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            getFileNameByPath(path);
+            return true;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public boolean checkFileLevelWithCheck(MNode node, String path) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            getFileNameByPathWithCheck(node, path);
             return true;
         } finally {
             lock.readLock().unlock();

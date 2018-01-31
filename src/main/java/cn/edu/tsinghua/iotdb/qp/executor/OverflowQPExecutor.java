@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.executor;
 import java.io.IOException;
 import java.util.*;
 
+import cn.edu.tsinghua.iotdb.metadata.MNode;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import org.slf4j.Logger;
@@ -272,15 +273,19 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			throws ProcessorException {
 		try {
 			TSRecord tsRecord = new TSRecord(insertTime, deltaObject);
+
+			boolean isFileLevelChecked;
+			try{
+				isFileLevelChecked = mManager.checkFileLevel(deltaObject);
+			} catch (PathErrorException e){
+				isFileLevelChecked = false;
+			}
+			MNode node = mManager.getNodeByPathWithCheck(deltaObject);
+
 			for (int i = 0; i < measurementList.size(); i++) {
 				String p = deltaObject + "." + measurementList.get(i);
-				if (!mManager.pathExist(p)) {
-					throw new ProcessorException(String.format("Timeseries %s does not exist.", p));
-				}
-				List<Path> paths = new ArrayList<>();
-				paths.add(new Path(p));
-				mManager.checkFileLevel(paths);
-				TSDataType dataType = mManager.getSeriesType(p);
+				if(!isFileLevelChecked)isFileLevelChecked = mManager.checkFileLevelWithCheck(node, measurementList.get(i));
+				TSDataType dataType = mManager.getSeriesTypeWithCheck(node, measurementList.get(i));
 				String value = insertValues.get(i);
 				value = checkValue(dataType, value);
 				DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementList.get(i), value);
