@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.exception.handler;
 
 public enum Language {
-    CN(3),
-    EN(2);
+    CN(2),
+    EN(1);
     private int index;
 
     Language(int index){

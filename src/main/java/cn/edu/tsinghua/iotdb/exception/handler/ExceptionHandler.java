@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExceptionHandler {
-    private  HashMap<String,String> errInfo = new HashMap<>();
+    private  HashMap<Integer,String> errInfo = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
     public static final String CONFIG_NAME = "error_info.txt";
@@ -33,7 +33,7 @@ public class ExceptionHandler {
                 String[] tempRes = tempString.split(separator);
                 Language language = Language.valueOf(languageVersion);
                 int index = language.getIndex();
-                errInfo.put(tempRes[1],"[Error: "+tempRes[0]+"] "+tempRes[index]);
+                errInfo.put(Integer.parseInt(tempRes[0]),"[Error: "+tempRes[index]+"]");
             }
             reader.close();
         } catch (IOException e) {
@@ -82,10 +82,10 @@ public class ExceptionHandler {
             }
         }
     }
-    public String searchInfo(String errEnum){
-        String SearchResult = errInfo.get(errEnum);
-        return SearchResult;
+    public String searchInfo(int errCode){
+        return errInfo.get(errCode);
     }
+    
     public void convertToDocument(String filePath, String docPath){
         BufferedReader reader = null;
         BufferedWriter out = null;
