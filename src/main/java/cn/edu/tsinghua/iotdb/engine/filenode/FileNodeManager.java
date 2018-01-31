@@ -602,21 +602,30 @@ public class FileNodeManager implements IStatistic, IService {
 	 *            the path of storage group
 	 * @param appendFile
 	 *            the appended tsfile information
+	 * @return
 	 * @throws FileNodeManagerException
 	 */
-	public void appendFileToFileNode(String fileNodeName, IntervalFileNode appendFile) throws FileNodeManagerException {
+	public boolean appendFileToFileNode(String fileNodeName, IntervalFileNode appendFile, String appendFilePath)
+			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
 		try {
+			// check append file
+			for (Entry<String, Long> entry : appendFile.getEndTimeMap().entrySet()) {
+				if (fileNodeProcessor.getLastUpdateTime(entry.getKey()) >= entry.getValue()) {
+					return false;
+				}
+			}
+			// close bufferwrite file
 			fileNodeProcessor.closeBufferWrite();
-			fileNodeProcessor.closeOverflow();
 			// append file to storage group.
-			fileNodeProcessor.appendFile(appendFile);
+			fileNodeProcessor.appendFile(appendFile, appendFilePath);
 		} catch (FileNodeProcessorException e) {
 			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
+		return true;
 	}
 
 	public synchronized void mergeAll() throws FileNodeManagerException {
@@ -754,8 +763,10 @@ public class FileNodeManager implements IStatistic, IService {
 				overflowPath = standardizeDir(overflowPath) + processorName;
 				FileUtils.deleteDirectory(new File(overflowPath));
 
-				MultiFileLogNodeManager.getInstance().deleteNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX);
-				MultiFileLogNodeManager.getInstance().deleteNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX);
+				MultiFileLogNodeManager.getInstance()
+						.deleteNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX);
+				MultiFileLogNodeManager.getInstance()
+						.deleteNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX);
 				return true;
 			} catch (IOException e) {
 				LOGGER.error("Delete the filenode processor {} error.", processorName, e);
@@ -1056,16 +1067,16 @@ public class FileNodeManager implements IStatistic, IService {
 			return null;
 	}
 
-    public void recoverFileNode(String filenodeName) throws FileNodeProcessorException, FileNodeManagerException {
-        FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
-        if (fileNodeProcessor.shouldRecovery()) {
-            LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
-                    fileNodeProcessor.getFileNodeProcessorStatus());
-            fileNodeProcessor.fileNodeRecovery();
-        } else {
-            fileNodeProcessor.writeUnlock();
-        }
-        // add index check sum
-        fileNodeProcessor.rebuildIndex();
-    }
+	public void recoverFileNode(String filenodeName) throws FileNodeProcessorException, FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
+		if (fileNodeProcessor.shouldRecovery()) {
+			LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
+					fileNodeProcessor.getFileNodeProcessorStatus());
+			fileNodeProcessor.fileNodeRecovery();
+		} else {
+			fileNodeProcessor.writeUnlock();
+		}
+		// add index check sum
+		fileNodeProcessor.rebuildIndex();
+	}
 }
