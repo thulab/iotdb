@@ -58,15 +58,13 @@ public class MManagerEfficiencyTest {
         }
     }
 
-    @Test
-    public void testRandom() throws MetadataArgsErrorException, PathErrorException, IOException, CacheException {
+    public void testMManagerNodeCache() throws PathErrorException {
         long count = 0;
         paths = shuffle(paths);
         String tp;
         long startTime = System.currentTimeMillis();
         while (true) {
             for (int i = 0; i < total; i++) {
-                manager.checkPathStorageLevelAndGetDataType(paths[i]);
                 count++;
                 if (count % 10000000 == 0) {
                     long timeUsed = (System.currentTimeMillis() - startTime);
@@ -78,14 +76,14 @@ public class MManagerEfficiencyTest {
         }
     }
 
-    @Test
-    public void testMManagerNodeCache() throws PathErrorException {
+    public void testRandom() throws MetadataArgsErrorException, PathErrorException, IOException, CacheException {
         long count = 0;
         paths = shuffle(paths);
         String tp;
         long startTime = System.currentTimeMillis();
         while (true) {
             for (int i = 0; i < total; i++) {
+                manager.checkPathStorageLevelAndGetDataType(paths[i]);
                 count++;
                 if (count % 10000000 == 0) {
                     long timeUsed = (System.currentTimeMillis() - startTime);

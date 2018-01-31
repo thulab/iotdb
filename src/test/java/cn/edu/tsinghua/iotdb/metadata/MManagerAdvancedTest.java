@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
+import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -8,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,13 +42,6 @@ public class MManagerAdvancedTest {
         mmanager.addPathToMTree("root.vehicle.d1.s3", "DOUBLE", "RLE", new String[0]);
         mmanager.addPathToMTree("root.vehicle.d1.s4", "BOOLEAN", "PLAIN", new String[0]);
         mmanager.addPathToMTree("root.vehicle.d1.s5", "TEXT", "PLAIN", new String[0]);
-
-        mmanager.addPathToMTree("root.vehicle.d2.s0", "DOUBLE", "RLE", new String[0]);
-        mmanager.addPathToMTree("root.vehicle.d2.s1", "BOOLEAN", "PLAIN", new String[0]);
-        mmanager.addPathToMTree("root.vehicle.d2.s2.g0", "TEXT", "PLAIN", new String[0]);
-        mmanager.addPathToMTree("root.vehicle.d2.s3", "TEXT", "PLAIN", new String[0]);
-
-
     }
 
     @After
@@ -82,7 +77,12 @@ public class MManagerAdvancedTest {
     }
 
     @Test
-    public void testCache() throws PathErrorException {
+    public void testCache() throws PathErrorException, IOException, MetadataArgsErrorException {
+        mmanager.addPathToMTree("root.vehicle.d2.s0", "DOUBLE", "RLE", new String[0]);
+        mmanager.addPathToMTree("root.vehicle.d2.s1", "BOOLEAN", "PLAIN", new String[0]);
+        mmanager.addPathToMTree("root.vehicle.d2.s2.g0", "TEXT", "PLAIN", new String[0]);
+        mmanager.addPathToMTree("root.vehicle.d2.s3", "TEXT", "PLAIN", new String[0]);
+
         Assert.assertEquals(TSDataType.INT32, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s0").getDataType());
         Assert.assertEquals(TSDataType.INT64, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s1").getDataType());
 
@@ -101,7 +101,12 @@ public class MManagerAdvancedTest {
     }
 
     @Test
-    public void testGetNextLevelPath() throws PathErrorException {
+    public void testGetNextLevelPath() throws PathErrorException, IOException, MetadataArgsErrorException {
+        mmanager.addPathToMTree("root.vehicle.d2.s0", "DOUBLE", "RLE", new String[0]);
+        mmanager.addPathToMTree("root.vehicle.d2.s1", "BOOLEAN", "PLAIN", new String[0]);
+        mmanager.addPathToMTree("root.vehicle.d2.s2.g0", "TEXT", "PLAIN", new String[0]);
+        mmanager.addPathToMTree("root.vehicle.d2.s3", "TEXT", "PLAIN", new String[0]);
+
         List<String> paths = mmanager.getLeafNodePathInNextLevel("root.vehicle.d2");
         Assert.assertEquals(3, paths.size());
 

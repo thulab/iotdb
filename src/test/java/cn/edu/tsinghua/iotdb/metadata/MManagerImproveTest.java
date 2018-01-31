@@ -1,12 +1,16 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,13 +19,11 @@ import static org.junit.Assert.assertEquals;
 public class MManagerImproveTest {
 
     private static MManager mManager = null;
-    private final int timeseriesNum = 1000;
+    private final int timeseriesNum = 10;
 
-    @Test
+    @Before
     public void setUp() throws Exception {
-
         mManager = MManager.getInstance();
-
         for(int i = 0;i < 10;i++){
             for(int j = 0;j < 10;j++){
                 mManager.setStorageLevelToMTree("root.t" + i + ".v" + j);
@@ -32,13 +34,19 @@ public class MManagerImproveTest {
             for(int j = 0;j < 10;j++){
                 for(int k = 0;k < 10;k++){
                     for(int l = 0;l < timeseriesNum;l++){
-                        mManager.addPathToMTree("root.t" + i + ".v" + j + ".d" + k + ".s" + l, "TEXT", "RLE", new String[0]);
+                        String p = new StringBuilder().append("root.t").append(i).append(".v").append(j).append(".d").append(k).append(".s").append(l).toString();
+                        mManager.addPathToMTree(p, "TEXT", "RLE", new String[0]);
                     }
                 }
             }
         }
 
         mManager.flushObjectToFile();
+    }
+
+    @After
+    public void after() throws IOException {
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
@@ -197,7 +205,7 @@ public class MManagerImproveTest {
             }
         }
         List<String> measurementList = new ArrayList<>();
-        for(int i = 0;i < 1000;i++){
+        for(int i = 0;i < timeseriesNum;i++){
             measurementList.add("s" + i);
         }
 

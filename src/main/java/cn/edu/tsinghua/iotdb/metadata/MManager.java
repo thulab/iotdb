@@ -8,7 +8,6 @@ import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
 import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import sun.dc.path.PathError;
 
 import java.io.*;
 import java.util.*;
@@ -44,7 +43,6 @@ public class MManager {
     }
 
     public static MManager getInstance() {
-
         return MManagerHolder.INSTANCE;
     }
 
@@ -234,6 +232,7 @@ public class MManager {
         lock.writeLock().lock();
         try {
             checkAndGetDataTypeCache.clear();
+            mNodeCache.clear();
             String dataFileName = mGraph.deletePath(path);
             if (writeToLog) {
                 initLogStream();
@@ -252,6 +251,7 @@ public class MManager {
         lock.writeLock().lock();
         try {
             checkAndGetDataTypeCache.clear();
+            mNodeCache.clear();
             mGraph.setStorageLevel(path);
             if (writeToLog) {
                 initLogStream();
@@ -660,10 +660,13 @@ public class MManager {
     }
 
     public MNode getNodeByDeltaObjectIDFromCache(String deltaObjectID) throws PathErrorException {
+        lock.readLock().lock();
         try {
             return mNodeCache.get(deltaObjectID);
         } catch (CacheException e) {
             throw new PathErrorException(e);
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
