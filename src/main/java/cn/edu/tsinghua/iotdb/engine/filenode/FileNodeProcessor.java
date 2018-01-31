@@ -461,7 +461,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return bufferWriteProcessor;
 	}
 
-	public OverflowProcessor getOverflowProcessor(String processorName, Map<String, Object> parameters) throws IOException {
+	public OverflowProcessor getOverflowProcessor(String processorName, Map<String, Object> parameters)
+			throws IOException {
 		if (overflowProcessor == null) {
 			// construct processor or restore
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
@@ -1306,8 +1307,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			// query one deltaObjectId
 			List<Path> pathList = new ArrayList<>();
 			try {
-				ArrayList<String> pathStrings = mManager
-						.getPaths(deltaObjectId + FileNodeConstants.PATH_SEPARATOR + "*");
+				List<String> pathStrings = mManager.getLeafNodePathInNextLevel(deltaObjectId);
 				for (String string : pathStrings) {
 					pathList.add(new Path(string));
 				}
@@ -1344,7 +1344,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							fileName = getProcessorName() + File.separatorChar + fileName;
 							recordWriter = new TsFileWriter(new File(outputPath), fileSchema, TsFileConf);
 						}
-						TSRecord record = constructTsRecord(timeValuePair, path.getDeltaObjectToString(),
+						TSRecord record = constructTsRecord(timeValuePair, deltaObjectId,
 								path.getMeasurementToString());
 						recordWriter.write(record);
 						startTime = endTime = timeValuePair.getTimestamp();
