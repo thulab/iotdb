@@ -131,7 +131,7 @@ public class FileNodeProcessorTest {
 		// the flush last update time is 87
 		// insert overflow data, whose time range is from 0 to 86.
 		for (int i = 1; i <= 100; i++) {
-			System.out.println(i);
+			//System.out.println(i);
 			long flushLastUpdateTime = fileNodeProcessor.getFlushLastUpdateTime(processorName);
 			if (i <= 85) {
 				if (i == 66) {
