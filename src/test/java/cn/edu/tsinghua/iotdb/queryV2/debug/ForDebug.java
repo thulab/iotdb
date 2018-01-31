@@ -9,17 +9,13 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataRead
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
@@ -32,7 +28,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,8 +48,8 @@ public class ForDebug {
     String tsfilePath = "/users/zhangjinrui/Desktop/readTest/tsfile";
     String unseqTsfilePath = "/users/zhangjinrui/Desktop/readTest/unseqTsfile";
 
-    Path path = new Path("root.performf.group_0.d_0.s_0");
-
+    Path path = new Path("root.vehicle2.d0.s1.g0");
+    
     public void test() throws IOException {
 
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
@@ -86,12 +81,26 @@ public class ForDebug {
         System.out.println(count);
     }
 
-    public void readTsFile() throws IOException {
+    public void readTsFileMetadata() {
+
+    }
+
+    public void loadRowGroupMetadata() throws IOException {
+        List<RowGroupMetaData> rowGroupMetaDatas = new ArrayList<>();
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
         TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
-        long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
-        long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
-        System.out.println(startTime + " - " + endTime);
+        for (String deltaObjectID : tsFileMetaData.getDeltaObjectMap().keySet()) {
+            TsDeltaObject deltaObject = tsFileMetaData.getDeltaObject(deltaObjectID);
+            TsRowGroupBlockMetaData rowGroupBlockMetaData = new TsRowGroupBlockMetaData();
+            rowGroupBlockMetaData.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(randomAccessFileReader,
+                    deltaObject.offset, deltaObject.metadataBlockSize));
+            rowGroupMetaDatas.addAll(rowGroupBlockMetaData.getRowGroups());
+        }
+        System.out.println(rowGroupMetaDatas);
+    }
+
+    public void readTsFile() throws IOException {
+        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
         SeriesReader reader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
 
         int i = 0;
@@ -107,6 +116,7 @@ public class ForDebug {
         }
         System.out.println("Max:" + lastTimeValuePair.getTimestamp());
         System.out.println("Max:" + timeValuePair.getTimestamp());
+        System.out.println("Count = " + i);
     }
 
     public void readUnseqTsFile() throws IOException {

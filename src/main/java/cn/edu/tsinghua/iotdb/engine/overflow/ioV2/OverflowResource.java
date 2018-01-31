@@ -53,7 +53,7 @@ public class OverflowResource {
 	private List<RowGroupMetaData> appendInsertMetadatas;
 	private List<OFRowGroupListMetadata> appendUpdateDeleteMetadats;
 
-	public OverflowResource(String parentPath, String dataPath) {
+	public OverflowResource(String parentPath, String dataPath) throws IOException {
 		this.insertMetadatas = new HashMap<>();
 		this.updateDeleteMetadatas = new HashMap<>();
 		this.appendInsertMetadatas = new ArrayList<>();
@@ -75,6 +75,7 @@ public class OverflowResource {
 		} catch (IOException e) {
 			LOGGER.error("Failed to construct the OverflowIO.", e);
 			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -299,6 +300,10 @@ public class OverflowResource {
 
 	public String getInsertFilePath() {
 		return insertFilePath;
+	}
+	
+	public String getPositionFilePath(){
+		return positionFilePath;
 	}
 
 	public String getUpdateDeleteFilePath() {

@@ -188,6 +188,10 @@ public class MGraph implements Serializable {
 		return metadata;
 	}
 
+	public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
+		return mTree.getLeafNodePathInNextLevel(path);
+	}
+
 	/**
 	 * Get all ColumnSchemas for given delta object type
 	 * @param path A path represented one Delta object

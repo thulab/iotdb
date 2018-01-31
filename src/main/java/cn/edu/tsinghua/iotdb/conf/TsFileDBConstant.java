@@ -11,6 +11,8 @@ public class TsFileDBConstant {
     public static final String SERVER_RMI_ID = "java.rmi.server.randomIDs";
     public static final String RMI_SERVER_HOST_NAME = "java.rmi.server.hostname";
     public static final String JMX_REMOTE_RMI_PORT = "com.sun.management.jmxremote.rmi.port";
+    public static final String IOTDB_PACKAGE = "cn.edu.tsinghua.iotdb.service";
+    public static final String JMX_TYPE = "type";
 
     public static final long GB = 1024 * 1024 * 1024L;
     public static final long MB = 1024 * 1024L;
@@ -21,4 +23,6 @@ public class TsFileDBConstant {
 
     public static final String IOTDB_HOME = "IOTDB_HOME";
 
+    public static final String BUFFERWRITE_LOG_NODE_SUFFIX = "-bufferwrite";
+    public static final String OVERFLOW_LOG_NODE_SUFFIX = "-overflow";
 }

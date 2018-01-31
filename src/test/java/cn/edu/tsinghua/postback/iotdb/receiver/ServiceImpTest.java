@@ -103,12 +103,12 @@ public class ServiceImpTest {
                 }
                 ServiceImp serviceImp = new ServiceImp();
             	serviceImp.init();
-                serviceImp.setOldFilesMap(oldFilesMap);
-                try {
-					serviceImp.getSqlToMerge();
-				} catch (TException e) {
-					e.printStackTrace();
-				}
+//                serviceImp.setOldFilesMap(oldFilesMap);
+//                try {
+//					serviceImp.getSqlToMerge();
+//				} catch (TException e) {
+//					e.printStackTrace();
+//				}
                 Set<String> SQLToMerge = serviceImp.getSQLToMerge();
                 System.out.println("SQLTOMERGE:");
                 for(String sql: SQLToMerge)

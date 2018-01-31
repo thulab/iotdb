@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -298,8 +299,11 @@ public class MTree implements Serializable {
 
 	/**
 	 * Check whether a path is available
+	 * @param path
+	 * @return last node in given path if current path is available
+	 * @throws PathErrorException
 	 */
-	private void checkPath(String path) throws PathErrorException {
+	private MNode checkPath(String path) throws PathErrorException {
 		String[] nodes = path.split(separator);
 		if (nodes.length < 2 || !nodes[0].equals(getRoot().getName())) {
 			throw new PathErrorException(String.format("Timeseries %s is not correct", path));
@@ -312,6 +316,7 @@ public class MTree implements Serializable {
 			}
 			cur = cur.getChild(nodes[i]);
 		}
+		return cur;
 	}
 
 	/**
@@ -382,6 +387,22 @@ public class MTree implements Serializable {
 		}
 		findPath(getRoot(), nodes, 1, "", paths);
 		return paths;
+	}
+
+	/**
+	 *
+	 * @param path
+	 * @return All leaf nodes' path(s) of given path.
+	 */
+	public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
+		List<String> ret = new ArrayList<>();
+		MNode cur = checkPath(path);
+		for(MNode child : cur.getChildren().values()) {
+			if (child.isLeaf()) {
+				ret.add(new StringBuilder(path).append(".").append(child.getName()).toString());
+			}
+		}
+		return ret;
 	}
 
 	public ArrayList<String> getAllPathInList(String path) throws PathErrorException {

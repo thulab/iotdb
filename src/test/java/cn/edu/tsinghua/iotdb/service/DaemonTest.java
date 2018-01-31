@@ -149,7 +149,7 @@ public class DaemonTest {
                 // fill test
                 fillTest();
 
-                // insert new data test
+                //insert new data test
                 //crossReadTest();
                 connection.close();
             } catch (ClassNotFoundException | SQLException | InterruptedException e) {

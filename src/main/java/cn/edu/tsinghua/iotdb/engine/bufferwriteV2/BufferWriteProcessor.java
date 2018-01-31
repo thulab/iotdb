@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,24 +21,21 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.SeriesInMemTable;
+import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
@@ -65,6 +65,8 @@ public class BufferWriteProcessor extends Processor {
 	private String fileName;
 	private String insertFilePath;
 
+	private WriteLogNode logNode;
+
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters,
 			FileSchema fileSchema) throws BufferWriteProcessorException {
 		super(processorName);
@@ -92,6 +94,16 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 		workMemTable = new PrimitiveMemTable();
+
+		if(TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+			try {
+				logNode = MultiFileLogNodeManager.getInstance().getNode(
+						processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
+						FileNodeManager.getInstance().getRestoreFilePath(processorName));
+			} catch (IOException e) {
+				throw new BufferWriteProcessorException(e);
+			}
+		}
 	}
 
 	/**
@@ -212,7 +224,7 @@ public class BufferWriteProcessor extends Processor {
 			bufferWriteResource.flush(fileSchema, flushMemTable);
 			filenodeFlushAction.act();
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
+				logNode.notifyEndFlush(null);
 			}
 		} catch (IOException e) {
 			LOGGER.error("The bufferwrite processor {} failed to flush {}.", getProcessorName(), flushFunction, e);
@@ -270,7 +282,7 @@ public class BufferWriteProcessor extends Processor {
 				throw new IOException(e);
 			}
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				WriteLogManager.getInstance().startBufferWriteFlush(getProcessorName());
+				logNode.notifyStartFlush();
 			}
 			valueCount = 0;
 			flushStatus.setFlushing();
@@ -390,6 +402,10 @@ public class BufferWriteProcessor extends Processor {
 			return true;
 		}
 		return false;
+	}
+
+	private String getBufferwriteRestoreFilePath() {
+		return bufferWriteResource.getRestoreFilePath();
 	}
 
 }

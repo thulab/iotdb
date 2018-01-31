@@ -131,7 +131,7 @@ public class FileNodeProcessorTest {
 		// the flush last update time is 87
 		// insert overflow data, whose time range is from 0 to 86.
 		for (int i = 1; i <= 100; i++) {
-			System.out.println(i);
+			//System.out.println(i);
 			long flushLastUpdateTime = fileNodeProcessor.getFlushLastUpdateTime(processorName);
 			if (i <= 85) {
 				if (i == 66) {
@@ -202,7 +202,7 @@ public class FileNodeProcessorTest {
 						rawSeriesChunk = dataSource.getSeriesDataSource().getRawSeriesChunk();
 						assertEquals(false, rawSeriesChunk.isEmpty());
 						Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();
-						for (int j = 86; j <= 100; j++) {
+						for (int j = 87; j <= 100; j++) {
 							iterator.hasNext();
 							TimeValuePair timeValuePair = iterator.next();
 							assertEquals(j, timeValuePair.getTimestamp());

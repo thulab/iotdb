@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class AbstractClient {
-    	protected static final String HOST_ARGS = "h";
+	protected static final String HOST_ARGS = "h";
 	protected static final String HOST_NAME = "host";
 
 	protected static final String HELP_ARGS = "help";
@@ -101,9 +101,10 @@ public abstract class AbstractClient {
 		AGGREGRATE_TIME_LIST.add(AggregationConstant.MAX_TIME);
 		AGGREGRATE_TIME_LIST.add(AggregationConstant.MIN_TIME);
 	}
-	
+
 	public static void output(ResultSet res, boolean printToConsole, String statement, DateTimeZone timeZone) throws SQLException {
 		int cnt = 0;
+		int displayCnt = 0;
 		ResultSetMetaData resultSetMetaData = res.getMetaData();
 		int colCount = resultSetMetaData.getColumnCount();
 		boolean printTimestamp = true;
@@ -138,21 +139,21 @@ public abstract class AbstractClient {
 					 		break;
 					 	}
 					}
-				    	if(flag){
-				    		try {
-				    			System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+					if (flag) {
+						try {
+							System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
 						} catch (Exception e) {
 							System.out.printf(formatValue, "null");
 						}
-				    	    	
-				    	} else{
+					} else {
 						System.out.printf(formatValue, String.valueOf(res.getString(i)));
-				    	}
+					}
 				}
 			}
 
 			if (printToConsole && cnt < maxPrintRowCount) {
 				System.out.printf("\n");
+				displayCnt++;
 			}
 			cnt++;
 
@@ -166,7 +167,9 @@ public abstract class AbstractClient {
 			printBlockLine(printTimestamp, colCount, res);
 		}
 		printBlockLine(printTimestamp, colCount, res);
-		System.out.println("record number = " + cnt);
+		System.out.println(String.format("Display the first %s lines", displayCnt));
+		System.out.println(StringUtils.repeat('-', 40));
+		System.out.println("Total line number = " + cnt);
 	}
 
 	protected static Options createOptions() {
@@ -324,7 +327,7 @@ public abstract class AbstractClient {
 			try {
 				System.out.println(connection.getMetaData());
 			} catch (SQLException e) {
-				System.out.println("> failed to show timeseries because: " + e.getMessage());
+				System.out.println("Failed to show timeseries because: " + e.getMessage());
 			}
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
@@ -332,7 +335,7 @@ public abstract class AbstractClient {
 		if(specialCmd.startsWith(SET_TIMESTAMP_DISPLAY)){
 			String[] values = specialCmd.split("=");
 			if(values.length != 2){
-				System.out.println(String.format("time display format error, please input like %s=ISO8601", SET_TIMESTAMP_DISPLAY));
+				System.out.println(String.format("Time display format error, please input like %s=ISO8601", SET_TIMESTAMP_DISPLAY));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
 			try {
@@ -341,55 +344,55 @@ public abstract class AbstractClient {
 				System.out.println(String.format("time display format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("time display type has set to "+cmd.split("=")[1].trim());
+			System.out.println("Time display type has set to "+cmd.split("=")[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 		
 		if(specialCmd.startsWith(SET_TIME_ZONE)){
 			String[] values = specialCmd.split("=");
 			if(values.length != 2){
-				System.out.println(String.format("time zone format error, please input like %s=+08:00", SET_TIME_ZONE));
+				System.out.println(String.format("Time zone format error, please input like %s=+08:00", SET_TIME_ZONE));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
 			try {
 				connection.setTimeZone(cmd.split("=")[1].trim());
 			} catch (Exception e) {
-				System.out.println(String.format("time zone format error, %s", e.getMessage()));
+				System.out.println(String.format("Time zone format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("time zone has set to "+values[1].trim());
+			System.out.println("Time zone has set to "+values[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 		
 		if(specialCmd.startsWith(SET_FETCH_SIZE)){
 			String[] values = specialCmd.split("=");
 			if(values.length != 2){
-				System.out.println(String.format("fetch size format error, please input like %s=10000", SET_FETCH_SIZE));
+				System.out.println(String.format("Fetch size format error, please input like %s=10000", SET_FETCH_SIZE));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
 			try {
 				setFetchSize(cmd.split("=")[1]);
 			} catch (Exception e) {
-				System.out.println(String.format("fetch size format error, %s", e.getMessage()));
+				System.out.println(String.format("Fetch size format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("fetch size has set to "+values[1].trim());
+			System.out.println("Fetch size has set to "+values[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 
 		if(specialCmd.startsWith(SET_MAX_DISPLAY_NUM)) {
 			String[] values = specialCmd.split("=");
 			if(values.length != 2){
-				System.out.println(String.format("max display number format error, please input like %s = 10000", SET_MAX_DISPLAY_NUM));
+				System.out.println(String.format("Max display number format error, please input like %s = 10000", SET_MAX_DISPLAY_NUM));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
 			try {
 				setMaxDisplayNumber(cmd.split("=")[1]);
 			} catch (Exception e) {
-				System.out.println(String.format("max display number format error, %s", e.getMessage()));
+				System.out.println(String.format("Max display number format error, %s", e.getMessage()));
 				return OPERATION_RESULT.CONTINUE_OPER;
 			}
-			System.out.println("max display number has set to "+values[1].trim());
+			System.out.println("Max display number has set to "+values[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
 
@@ -428,6 +431,7 @@ public abstract class AbstractClient {
 		}
 
 		Statement statement = null;
+		long startTime = System.currentTimeMillis();
 		try {
 			DateTimeZone timeZone = DateTimeZone.forID(connection.getTimeZone());
 			statement = connection.createStatement();
@@ -437,20 +441,22 @@ public abstract class AbstractClient {
 				ResultSet resultSet = statement.getResultSet();
 				output(resultSet, printToConsole, cmd.trim(), timeZone);
 			}
-			System.out.println("execute successfully.");
+			System.out.println("Execute successfully.");
 		} catch (SQLException e) {
-			System.out.println("error: " + e.getMessage());
+			System.out.println("Error: " + e.getMessage());
 		} catch (Exception e) {
-			System.out.println("error: " + e.getMessage());
+			System.out.println("Error: " + e.getMessage());
 		} finally {
-		    	if(statement != null){
-			    	try {
-				    statement.close();
+			if (statement != null) {
+				try {
+					statement.close();
 				} catch (SQLException e) {
-				    System.out.println("cannot close statement because: " + e.getMessage());
+					System.out.println("Cannot close statement because: " + e.getMessage());
 				}
-		    	}
+			}
 		}
+		long costTime = System.currentTimeMillis() - startTime;
+		System.out.println(String.format("It costs %.3fs", costTime/1000.0));
 		return OPERATION_RESULT.NO_OPER;
 	}
 

@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +17,8 @@ import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 
 /**
  * <p>
@@ -49,7 +50,7 @@ public class EnvironmentUtils {
 		StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
-		WriteLogManager.getInstance().close();
+		MultiFileLogNodeManager.getInstance().stop();
 		// clean cache
 		TsFileMetaDataCache.getInstance().clear();
 		RowGroupBlockMetaDataCache.getInstance().clear();
@@ -112,12 +113,13 @@ public class EnvironmentUtils {
 		config.enableMemMonitor = false;
 	}
 
-	public static void envSetUp() {
+	public static void envSetUp() throws StartupException {
 		// disable the memory control
 		config.enableMemMonitor = false;
 		// disable the system monitor
 		config.enableStatMonitor = false;
 		Authorizer.reset();
 		FileNodeManager.getInstance().resetFileNodeManager();
+		MultiFileLogNodeManager.getInstance().start();
 	}
 }

@@ -40,9 +40,9 @@ public class Service {
 
     public String startReceiving(String md5, List<String> filename, ByteBuffer buff, int status) throws org.apache.thrift.TException;
 
-    public void judgeMergeType() throws org.apache.thrift.TException;
+    public void getFileNodeInfo() throws org.apache.thrift.TException;
 
-    public void getSqlToMerge() throws org.apache.thrift.TException;
+    public void getSqlToMerge(String path) throws org.apache.thrift.TException;
 
     public void insertSQL() throws org.apache.thrift.TException;
 
@@ -62,9 +62,9 @@ public class Service {
 
     public void startReceiving(String md5, List<String> filename, ByteBuffer buff, int status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void judgeMergeType(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getFileNodeInfo(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getSqlToMerge(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getSqlToMerge(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void insertSQL(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -147,34 +147,35 @@ public class Service {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "startReceiving failed: unknown result");
     }
 
-    public void judgeMergeType() throws org.apache.thrift.TException
+    public void getFileNodeInfo() throws org.apache.thrift.TException
     {
-      send_judgeMergeType();
-      recv_judgeMergeType();
+      send_getFileNodeInfo();
+      recv_getFileNodeInfo();
     }
 
-    public void send_judgeMergeType() throws org.apache.thrift.TException
+    public void send_getFileNodeInfo() throws org.apache.thrift.TException
     {
-      judgeMergeType_args args = new judgeMergeType_args();
-      sendBase("judgeMergeType", args);
+      getFileNodeInfo_args args = new getFileNodeInfo_args();
+      sendBase("getFileNodeInfo", args);
     }
 
-    public void recv_judgeMergeType() throws org.apache.thrift.TException
+    public void recv_getFileNodeInfo() throws org.apache.thrift.TException
     {
-      judgeMergeType_result result = new judgeMergeType_result();
-      receiveBase(result, "judgeMergeType");
+      getFileNodeInfo_result result = new getFileNodeInfo_result();
+      receiveBase(result, "getFileNodeInfo");
       return;
     }
 
-    public void getSqlToMerge() throws org.apache.thrift.TException
+    public void getSqlToMerge(String path) throws org.apache.thrift.TException
     {
-      send_getSqlToMerge();
+      send_getSqlToMerge(path);
       recv_getSqlToMerge();
     }
 
-    public void send_getSqlToMerge() throws org.apache.thrift.TException
+    public void send_getSqlToMerge(String path) throws org.apache.thrift.TException
     {
       getSqlToMerge_args args = new getSqlToMerge_args();
+      args.setPath(path);
       sendBase("getSqlToMerge", args);
     }
 
@@ -373,21 +374,21 @@ public class Service {
       }
     }
 
-    public void judgeMergeType(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getFileNodeInfo(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      judgeMergeType_call method_call = new judgeMergeType_call(resultHandler, this, ___protocolFactory, ___transport);
+      getFileNodeInfo_call method_call = new getFileNodeInfo_call(resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class judgeMergeType_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public judgeMergeType_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class getFileNodeInfo_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public getFileNodeInfo_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("judgeMergeType", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        judgeMergeType_args args = new judgeMergeType_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getFileNodeInfo", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getFileNodeInfo_args args = new getFileNodeInfo_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -398,25 +399,28 @@ public class Service {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_judgeMergeType();
+        (new Client(prot)).recv_getFileNodeInfo();
       }
     }
 
-    public void getSqlToMerge(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getSqlToMerge(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getSqlToMerge_call method_call = new getSqlToMerge_call(resultHandler, this, ___protocolFactory, ___transport);
+      getSqlToMerge_call method_call = new getSqlToMerge_call(path, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getSqlToMerge_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public getSqlToMerge_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String path;
+      public getSqlToMerge_call(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.path = path;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getSqlToMerge", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getSqlToMerge_args args = new getSqlToMerge_args();
+        args.setPath(path);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -597,7 +601,7 @@ public class Service {
     private static <I extends Iface> Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> getProcessMap(Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
       processMap.put("getUUID", new getUUID());
       processMap.put("startReceiving", new startReceiving());
-      processMap.put("judgeMergeType", new judgeMergeType());
+      processMap.put("getFileNodeInfo", new getFileNodeInfo());
       processMap.put("getSqlToMerge", new getSqlToMerge());
       processMap.put("insertSQL", new insertSQL());
       processMap.put("mergeNewData", new mergeNewData());
@@ -647,22 +651,22 @@ public class Service {
       }
     }
 
-    public static class judgeMergeType<I extends Iface> extends org.apache.thrift.ProcessFunction<I, judgeMergeType_args> {
-      public judgeMergeType() {
-        super("judgeMergeType");
+    public static class getFileNodeInfo<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getFileNodeInfo_args> {
+      public getFileNodeInfo() {
+        super("getFileNodeInfo");
       }
 
-      public judgeMergeType_args getEmptyArgsInstance() {
-        return new judgeMergeType_args();
+      public getFileNodeInfo_args getEmptyArgsInstance() {
+        return new getFileNodeInfo_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public judgeMergeType_result getResult(I iface, judgeMergeType_args args) throws org.apache.thrift.TException {
-        judgeMergeType_result result = new judgeMergeType_result();
-        iface.judgeMergeType();
+      public getFileNodeInfo_result getResult(I iface, getFileNodeInfo_args args) throws org.apache.thrift.TException {
+        getFileNodeInfo_result result = new getFileNodeInfo_result();
+        iface.getFileNodeInfo();
         return result;
       }
     }
@@ -682,7 +686,7 @@ public class Service {
 
       public getSqlToMerge_result getResult(I iface, getSqlToMerge_args args) throws org.apache.thrift.TException {
         getSqlToMerge_result result = new getSqlToMerge_result();
-        iface.getSqlToMerge();
+        iface.getSqlToMerge(args.path);
         return result;
       }
     }
@@ -802,7 +806,7 @@ public class Service {
     private static <I extends AsyncIface> Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase,?>> getProcessMap(Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase, ?>> processMap) {
       processMap.put("getUUID", new getUUID());
       processMap.put("startReceiving", new startReceiving());
-      processMap.put("judgeMergeType", new judgeMergeType());
+      processMap.put("getFileNodeInfo", new getFileNodeInfo());
       processMap.put("getSqlToMerge", new getSqlToMerge());
       processMap.put("insertSQL", new insertSQL());
       processMap.put("mergeNewData", new mergeNewData());
@@ -914,20 +918,20 @@ public class Service {
       }
     }
 
-    public static class judgeMergeType<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, judgeMergeType_args, Void> {
-      public judgeMergeType() {
-        super("judgeMergeType");
+    public static class getFileNodeInfo<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getFileNodeInfo_args, Void> {
+      public getFileNodeInfo() {
+        super("getFileNodeInfo");
       }
 
-      public judgeMergeType_args getEmptyArgsInstance() {
-        return new judgeMergeType_args();
+      public getFileNodeInfo_args getEmptyArgsInstance() {
+        return new getFileNodeInfo_args();
       }
 
       public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new AsyncMethodCallback<Void>() { 
           public void onComplete(Void o) {
-            judgeMergeType_result result = new judgeMergeType_result();
+            getFileNodeInfo_result result = new getFileNodeInfo_result();
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -939,7 +943,7 @@ public class Service {
           public void onError(Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TBase msg;
-            judgeMergeType_result result = new judgeMergeType_result();
+            getFileNodeInfo_result result = new getFileNodeInfo_result();
             {
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
@@ -959,8 +963,8 @@ public class Service {
         return false;
       }
 
-      public void start(I iface, judgeMergeType_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.judgeMergeType(resultHandler);
+      public void start(I iface, getFileNodeInfo_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+        iface.getFileNodeInfo(resultHandler);
       }
     }
 
@@ -1010,7 +1014,7 @@ public class Service {
       }
 
       public void start(I iface, getSqlToMerge_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.getSqlToMerge(resultHandler);
+        iface.getSqlToMerge(args.path,resultHandler);
       }
     }
 
@@ -3040,14 +3044,14 @@ public class Service {
 
   }
 
-  public static class judgeMergeType_args implements org.apache.thrift.TBase<judgeMergeType_args, judgeMergeType_args._Fields>, java.io.Serializable, Cloneable, Comparable<judgeMergeType_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("judgeMergeType_args");
+  public static class getFileNodeInfo_args implements org.apache.thrift.TBase<getFileNodeInfo_args, getFileNodeInfo_args._Fields>, java.io.Serializable, Cloneable, Comparable<getFileNodeInfo_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFileNodeInfo_args");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new judgeMergeType_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new judgeMergeType_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new getFileNodeInfo_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getFileNodeInfo_argsTupleSchemeFactory());
     }
 
 
@@ -3110,20 +3114,20 @@ public class Service {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(judgeMergeType_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getFileNodeInfo_args.class, metaDataMap);
     }
 
-    public judgeMergeType_args() {
+    public getFileNodeInfo_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public judgeMergeType_args(judgeMergeType_args other) {
+    public getFileNodeInfo_args(getFileNodeInfo_args other) {
     }
 
-    public judgeMergeType_args deepCopy() {
-      return new judgeMergeType_args(this);
+    public getFileNodeInfo_args deepCopy() {
+      return new getFileNodeInfo_args(this);
     }
 
     @Override
@@ -3156,12 +3160,12 @@ public class Service {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof judgeMergeType_args)
-        return this.equals((judgeMergeType_args)that);
+      if (that instanceof getFileNodeInfo_args)
+        return this.equals((getFileNodeInfo_args)that);
       return false;
     }
 
-    public boolean equals(judgeMergeType_args that) {
+    public boolean equals(getFileNodeInfo_args that) {
       if (that == null)
         return false;
 
@@ -3174,7 +3178,7 @@ public class Service {
     }
 
     @Override
-    public int compareTo(judgeMergeType_args other) {
+    public int compareTo(getFileNodeInfo_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -3198,7 +3202,7 @@ public class Service {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("judgeMergeType_args(");
+      StringBuilder sb = new StringBuilder("getFileNodeInfo_args(");
       boolean first = true;
 
       sb.append(")");
@@ -3226,15 +3230,15 @@ public class Service {
       }
     }
 
-    private static class judgeMergeType_argsStandardSchemeFactory implements SchemeFactory {
-      public judgeMergeType_argsStandardScheme getScheme() {
-        return new judgeMergeType_argsStandardScheme();
+    private static class getFileNodeInfo_argsStandardSchemeFactory implements SchemeFactory {
+      public getFileNodeInfo_argsStandardScheme getScheme() {
+        return new getFileNodeInfo_argsStandardScheme();
       }
     }
 
-    private static class judgeMergeType_argsStandardScheme extends StandardScheme<judgeMergeType_args> {
+    private static class getFileNodeInfo_argsStandardScheme extends StandardScheme<getFileNodeInfo_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, judgeMergeType_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getFileNodeInfo_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -3255,7 +3259,7 @@ public class Service {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, judgeMergeType_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getFileNodeInfo_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -3265,35 +3269,35 @@ public class Service {
 
     }
 
-    private static class judgeMergeType_argsTupleSchemeFactory implements SchemeFactory {
-      public judgeMergeType_argsTupleScheme getScheme() {
-        return new judgeMergeType_argsTupleScheme();
+    private static class getFileNodeInfo_argsTupleSchemeFactory implements SchemeFactory {
+      public getFileNodeInfo_argsTupleScheme getScheme() {
+        return new getFileNodeInfo_argsTupleScheme();
       }
     }
 
-    private static class judgeMergeType_argsTupleScheme extends TupleScheme<judgeMergeType_args> {
+    private static class getFileNodeInfo_argsTupleScheme extends TupleScheme<getFileNodeInfo_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, judgeMergeType_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, getFileNodeInfo_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, judgeMergeType_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, getFileNodeInfo_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 
   }
 
-  public static class judgeMergeType_result implements org.apache.thrift.TBase<judgeMergeType_result, judgeMergeType_result._Fields>, java.io.Serializable, Cloneable, Comparable<judgeMergeType_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("judgeMergeType_result");
+  public static class getFileNodeInfo_result implements org.apache.thrift.TBase<getFileNodeInfo_result, getFileNodeInfo_result._Fields>, java.io.Serializable, Cloneable, Comparable<getFileNodeInfo_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFileNodeInfo_result");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new judgeMergeType_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new judgeMergeType_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new getFileNodeInfo_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getFileNodeInfo_resultTupleSchemeFactory());
     }
 
 
@@ -3356,20 +3360,20 @@ public class Service {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(judgeMergeType_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getFileNodeInfo_result.class, metaDataMap);
     }
 
-    public judgeMergeType_result() {
+    public getFileNodeInfo_result() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public judgeMergeType_result(judgeMergeType_result other) {
+    public getFileNodeInfo_result(getFileNodeInfo_result other) {
     }
 
-    public judgeMergeType_result deepCopy() {
-      return new judgeMergeType_result(this);
+    public getFileNodeInfo_result deepCopy() {
+      return new getFileNodeInfo_result(this);
     }
 
     @Override
@@ -3402,12 +3406,12 @@ public class Service {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof judgeMergeType_result)
-        return this.equals((judgeMergeType_result)that);
+      if (that instanceof getFileNodeInfo_result)
+        return this.equals((getFileNodeInfo_result)that);
       return false;
     }
 
-    public boolean equals(judgeMergeType_result that) {
+    public boolean equals(getFileNodeInfo_result that) {
       if (that == null)
         return false;
 
@@ -3420,7 +3424,7 @@ public class Service {
     }
 
     @Override
-    public int compareTo(judgeMergeType_result other) {
+    public int compareTo(getFileNodeInfo_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -3444,7 +3448,7 @@ public class Service {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("judgeMergeType_result(");
+      StringBuilder sb = new StringBuilder("getFileNodeInfo_result(");
       boolean first = true;
 
       sb.append(")");
@@ -3472,15 +3476,15 @@ public class Service {
       }
     }
 
-    private static class judgeMergeType_resultStandardSchemeFactory implements SchemeFactory {
-      public judgeMergeType_resultStandardScheme getScheme() {
-        return new judgeMergeType_resultStandardScheme();
+    private static class getFileNodeInfo_resultStandardSchemeFactory implements SchemeFactory {
+      public getFileNodeInfo_resultStandardScheme getScheme() {
+        return new getFileNodeInfo_resultStandardScheme();
       }
     }
 
-    private static class judgeMergeType_resultStandardScheme extends StandardScheme<judgeMergeType_result> {
+    private static class getFileNodeInfo_resultStandardScheme extends StandardScheme<getFileNodeInfo_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, judgeMergeType_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getFileNodeInfo_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -3501,7 +3505,7 @@ public class Service {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, judgeMergeType_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getFileNodeInfo_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -3511,21 +3515,21 @@ public class Service {
 
     }
 
-    private static class judgeMergeType_resultTupleSchemeFactory implements SchemeFactory {
-      public judgeMergeType_resultTupleScheme getScheme() {
-        return new judgeMergeType_resultTupleScheme();
+    private static class getFileNodeInfo_resultTupleSchemeFactory implements SchemeFactory {
+      public getFileNodeInfo_resultTupleScheme getScheme() {
+        return new getFileNodeInfo_resultTupleScheme();
       }
     }
 
-    private static class judgeMergeType_resultTupleScheme extends TupleScheme<judgeMergeType_result> {
+    private static class getFileNodeInfo_resultTupleScheme extends TupleScheme<getFileNodeInfo_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, judgeMergeType_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, getFileNodeInfo_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, judgeMergeType_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, getFileNodeInfo_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
@@ -3535,6 +3539,7 @@ public class Service {
   public static class getSqlToMerge_args implements org.apache.thrift.TBase<getSqlToMerge_args, getSqlToMerge_args._Fields>, java.io.Serializable, Cloneable, Comparable<getSqlToMerge_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getSqlToMerge_args");
 
+    private static final org.apache.thrift.protocol.TField PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("path", org.apache.thrift.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -3542,10 +3547,11 @@ public class Service {
       schemes.put(TupleScheme.class, new getSqlToMerge_argsTupleSchemeFactory());
     }
 
+    public String path; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      PATH((short)1, "path");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3560,6 +3566,8 @@ public class Service {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 1: // PATH
+            return PATH;
           default:
             return null;
         }
@@ -3598,9 +3606,13 @@ public class Service {
         return _fieldName;
       }
     }
+
+    // isset id assignments
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.PATH, new org.apache.thrift.meta_data.FieldMetaData("path", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getSqlToMerge_args.class, metaDataMap);
     }
@@ -3608,10 +3620,20 @@ public class Service {
     public getSqlToMerge_args() {
     }
 
+    public getSqlToMerge_args(
+      String path)
+    {
+      this();
+      this.path = path;
+    }
+
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public getSqlToMerge_args(getSqlToMerge_args other) {
+      if (other.isSetPath()) {
+        this.path = other.path;
+      }
     }
 
     public getSqlToMerge_args deepCopy() {
@@ -3620,15 +3642,51 @@ public class Service {
 
     @Override
     public void clear() {
+      this.path = null;
+    }
+
+    public String getPath() {
+      return this.path;
+    }
+
+    public getSqlToMerge_args setPath(String path) {
+      this.path = path;
+      return this;
+    }
+
+    public void unsetPath() {
+      this.path = null;
+    }
+
+    /** Returns true if field path is set (has been assigned a value) and false otherwise */
+    public boolean isSetPath() {
+      return this.path != null;
+    }
+
+    public void setPathIsSet(boolean value) {
+      if (!value) {
+        this.path = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case PATH:
+        if (value == null) {
+          unsetPath();
+        } else {
+          setPath((String)value);
+        }
+        break;
+
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case PATH:
+        return getPath();
+
       }
       throw new IllegalStateException();
     }
@@ -3640,6 +3698,8 @@ public class Service {
       }
 
       switch (field) {
+      case PATH:
+        return isSetPath();
       }
       throw new IllegalStateException();
     }
@@ -3657,6 +3717,15 @@ public class Service {
       if (that == null)
         return false;
 
+      boolean this_present_path = true && this.isSetPath();
+      boolean that_present_path = true && that.isSetPath();
+      if (this_present_path || that_present_path) {
+        if (!(this_present_path && that_present_path))
+          return false;
+        if (!this.path.equals(that.path))
+          return false;
+      }
+
       return true;
     }
 
@@ -3673,6 +3742,16 @@ public class Service {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetPath()).compareTo(other.isSetPath());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPath()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.path, other.path);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -3693,6 +3772,13 @@ public class Service {
       StringBuilder sb = new StringBuilder("getSqlToMerge_args(");
       boolean first = true;
 
+      sb.append("path:");
+      if (this.path == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.path);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -3736,6 +3822,14 @@ public class Service {
             break;
           }
           switch (schemeField.id) {
+            case 1: // PATH
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.path = iprot.readString();
+                struct.setPathIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -3751,6 +3845,11 @@ public class Service {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.path != null) {
+          oprot.writeFieldBegin(PATH_FIELD_DESC);
+          oprot.writeString(struct.path);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -3768,11 +3867,24 @@ public class Service {
       @Override
       public void write(org.apache.thrift.protocol.TProtocol prot, getSqlToMerge_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetPath()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetPath()) {
+          oprot.writeString(struct.path);
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getSqlToMerge_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.path = iprot.readString();
+          struct.setPathIsSet(true);
+        }
       }
     }
 

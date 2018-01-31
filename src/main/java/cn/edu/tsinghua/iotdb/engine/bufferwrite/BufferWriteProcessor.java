@@ -13,8 +13,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
-import cn.edu.tsinghua.iotdb.engine.memtable.*;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +24,16 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
-import cn.edu.tsinghua.iotdb.engine.flushthread.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
+import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
+import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
+import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.sys.writelog.WriteLogManager;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -69,7 +75,7 @@ public class BufferWriteProcessor extends Processor {
 	// this just the bufferwrite file name
 	private String fileName;
 	private static final String restoreFile = ".restore";
-	// this is the bufferwrite file absolute path
+    // this is the bufferwrite file absolute path
 	private String bufferwriteRestoreFilePath;
 	private String bufferwriteOutputFilePath;
 	private String bufferwriterelativePath;
@@ -85,6 +91,8 @@ public class BufferWriteProcessor extends Processor {
 	private long valueCount = 0;
 	private volatile boolean isFlush;
 	private AtomicLong memSize = new AtomicLong();
+
+	private WriteLogNode logNode;
 
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters,
 			FileSchema fileSchema) throws BufferWriteProcessorException {
@@ -114,7 +122,7 @@ public class BufferWriteProcessor extends Processor {
 
 		if (outputFile.exists() && restoreFile.exists()) {
 			//
-			// There is one damaged file, and the restoreFile exist
+			// There is one damaged file, and the RESTORE_FILE_SUFFIX exist
 			//
 			LOGGER.info("Recorvery the bufferwrite processor {}.", processorName);
 			bufferwriteRecovery();
@@ -145,8 +153,15 @@ public class BufferWriteProcessor extends Processor {
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
 		bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
-		// workMemTable = new TreeSetMemTable();
 		workMemTable = new PrimitiveMemTable();
+
+		if(TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+            try {
+                logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
+            } catch (IOException e) {
+                throw new BufferWriteProcessorException(e);
+            }
+        }
 	}
 
 	/**
@@ -538,7 +553,7 @@ public class BufferWriteProcessor extends Processor {
 			writeStoreToDisk();
 			filenodeFlushAction.act();
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				WriteLogManager.getInstance().endBufferWriteFlush(getProcessorName());
+				logNode.notifyStartFlush();
 			}
 		} catch (IOException e) {
 			LOGGER.error("The bufferwrite processor {} failed to flush {}.", getProcessorName(), flushFunction, e);
@@ -598,7 +613,7 @@ public class BufferWriteProcessor extends Processor {
 				throw new IOException(e);
 			}
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				WriteLogManager.getInstance().startBufferWriteFlush(getProcessorName());
+				logNode.notifyEndFlush(null);
 			}
 			valueCount = 0;
 			flushStatus.setFlushing();
@@ -731,4 +746,12 @@ public class BufferWriteProcessor extends Processor {
 		}
 		return false;
 	}
+
+	public WriteLogNode getLogNode() {
+		return logNode;
+	}
+
+    public String getBufferwriteRestoreFilePath() {
+        return bufferwriteRestoreFilePath;
+    }
 }
