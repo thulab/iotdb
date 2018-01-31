@@ -58,7 +58,6 @@ public class OpenFileNumUtilTest {
 
     @Test
     public void testTotalOpenFileNumWhenCreateFile() {
-        System.out.println();
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             //get total open file number statistics of original state
             totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
