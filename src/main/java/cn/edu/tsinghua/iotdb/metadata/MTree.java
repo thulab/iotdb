@@ -389,7 +389,8 @@ public class MTree implements Serializable {
 		return cur;
 	}
 
-	public MNode getNodeByPathWithCheck(String path) throws PathErrorException {
+	public MNode getNodeByPathWithFileLevelCheck(String path) throws PathErrorException {
+		boolean fileLevelChecked = false;
 		String[] nodes = path.split(separator);
 		if (nodes.length < 2 || !nodes[0].equals(getRoot().getName())) {
 			throw new PathErrorException(String.format("Timeseries %s is not correct", path));
@@ -402,6 +403,12 @@ public class MTree implements Serializable {
 						"Timeseries is not correct. Node[" + cur.getName() + "] doesn't have child named:" + nodes[i]);
 			}
 			cur = cur.getChild(nodes[i]);
+			if (cur.isStorageLevel()) {
+				fileLevelChecked = true;
+			}
+		}
+		if (!fileLevelChecked) {
+			throw new PathErrorException("FileLevel is not set for current path:" + path);
 		}
 		return cur;
 	}

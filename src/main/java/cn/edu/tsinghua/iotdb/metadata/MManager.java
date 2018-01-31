@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
 import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import sun.dc.path.PathError;
 
 import java.io.*;
 import java.util.*;
@@ -36,6 +37,7 @@ public class MManager {
     private String metadataDirPath;
 
     private RandomDeleteCache<String, PathCheckRet> checkAndGetDataTypeCache;
+    private RandomDeleteCache<String, MNode> mNodeCache;
 
     private static class MManagerHolder {
         private static final MManager INSTANCE = new MManager();
@@ -70,6 +72,20 @@ public class MManager {
             @Override
             public PathCheckRet loadObjectByKey(String key) throws CacheException {
                 return loadPathToCache(key);
+            }
+        };
+
+        mNodeCache = new RandomDeleteCache<String, MNode>(cacheSize) {
+            @Override
+            public void beforeRemove(MNode object) throws CacheException {}
+
+            @Override
+            public MNode loadObjectByKey(String key) throws CacheException {
+                try {
+                    return getNodeByPathWithCheck(key);
+                } catch (PathErrorException e) {
+                    throw new CacheException(e);
+                }
             }
         };
 
@@ -640,6 +656,14 @@ public class MManager {
             return mGraph.getNodeByPath(path);
         } finally {
             lock.readLock().unlock();
+        }
+    }
+
+    public MNode getNodeByDeltaObjectIDFromCache(String deltaObjectID) throws PathErrorException {
+        try {
+            return mNodeCache.get(deltaObjectID);
+        } catch (CacheException e) {
+            throw new PathErrorException(e);
         }
     }
 

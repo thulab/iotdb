@@ -263,7 +263,7 @@ public class MGraph implements Serializable {
 	}
 
 	public MNode getNodeByPathWithCheck(String path) throws PathErrorException {
-		return mTree.getNodeByPathWithCheck(path);
+		return mTree.getNodeByPathWithFileLevelCheck(path);
 	}
 
 	/**
