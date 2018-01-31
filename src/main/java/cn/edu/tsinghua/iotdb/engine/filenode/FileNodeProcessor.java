@@ -308,7 +308,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		numOfMergeFile = fileNodeProcessorStore.getNumOfMergeFile();
 		InvertedindexOfFiles = new HashMap<>();
 		// deep clone
-		flushLastUpdateTimeMap = new HashMap<>(lastUpdateTimeMap);
+		flushLastUpdateTimeMap = new HashMap<>();
+		for (Entry<String, Long> entry : lastUpdateTimeMap.entrySet()) {
+			flushLastUpdateTimeMap.put(entry.getKey(), entry.getValue() + 1);
+		}
 		// construct the fileschema
 		try {
 			this.fileSchema = constructFileSchema(processorName);
@@ -715,21 +718,35 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * 
 	 * @param appendFile
 	 *            the appended tsfile information
+	 * @param appendFilePath
+	 *            the path of appended file
 	 * @throws FileNodeProcessorException
 	 */
-	public void appendFile(IntervalFileNode appendFile) throws FileNodeProcessorException {
+	public void appendFile(IntervalFileNode appendFile, String appendFilePath) throws FileNodeProcessorException {
 		try {
+			// move file
+			File originFile = new File(appendFilePath);
+			File targetFile = new File(appendFile.getFilePath());
+			if (!originFile.exists()) {
+				throw new FileNodeProcessorException(
+						String.format("The appended file %s does not exist.", appendFilePath));
+			}
+			if (targetFile.exists()) {
+				throw new FileNodeProcessorException(
+						String.format("The appended target file % does not exist.", appendFile.getFilePath()));
+			}
+			originFile.renameTo(targetFile);
 			// append the new tsfile
 			this.newFileNodes.add(appendFile);
-			overflowFlushAction.act();
 			// update the lastUpdateTime
 			for (Entry<String, Long> entry : appendFile.getEndTimeMap().entrySet()) {
 				lastUpdateTimeMap.put(entry.getKey(), entry.getValue());
 			}
 			bufferwriteFlushAction.act();
+			fileNodeProcessorStore.setNewFileNodes(newFileNodes);
 			// reconstruct the inverted index of the newFileNodes
-			addALLFileIntoIndex(newFileNodes);
 			flushFileNodeProcessorAction.act();
+			addALLFileIntoIndex(newFileNodes);
 		} catch (Exception e) {
 			LOGGER.error("Failed to append the tsfile {} to filenode processor {}", appendFile, getProcessorName());
 			e.printStackTrace();

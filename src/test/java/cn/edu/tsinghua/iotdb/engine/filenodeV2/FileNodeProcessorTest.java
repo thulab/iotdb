@@ -202,7 +202,7 @@ public class FileNodeProcessorTest {
 						rawSeriesChunk = dataSource.getSeriesDataSource().getRawSeriesChunk();
 						assertEquals(false, rawSeriesChunk.isEmpty());
 						Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();
-						for (int j = 86; j <= 100; j++) {
+						for (int j = 87; j <= 100; j++) {
 							iterator.hasNext();
 							TimeValuePair timeValuePair = iterator.next();
 							assertEquals(j, timeValuePair.getTimestamp());
