@@ -17,8 +17,8 @@ import java.util.HashMap;
 
 // Notice : methods in this class may not be accurate because of limited user authority.
 public class OpenFileNumUtil {
-    private Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
-    private TsfileDBConfig config;
+    private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
+    private static TsfileDBConfig config;
     private int pid = -1;
     private String processName;
     private final int PID_ERROR_CODE = -1;
@@ -33,14 +33,20 @@ public class OpenFileNumUtil {
     private final String cmds[] = {"/bin/bash", "-c", ""};
 
     public enum OpenFileNumStatistics {
-        TOTAL_OPEN_FILE_NUM,
-        DATA_OPEN_FILE_NUM,
-        DELTA_OPEN_FILE_NUM,
-        OVERFLOW_OPEN_FILE_NUM,
-        WAL_OPEN_FILE_NUM,
-        METADATA_OPEN_FILE_NUM,
-        DIGEST_OPEN_FILE_NUM,
-        SOCKET_OPEN_FILE_NUM
+        TOTAL_OPEN_FILE_NUM(null),
+        DATA_OPEN_FILE_NUM(config.dataDir),
+        DELTA_OPEN_FILE_NUM(config.bufferWriteDir),
+        OVERFLOW_OPEN_FILE_NUM(config.overflowDataDir),
+        WAL_OPEN_FILE_NUM(config.walFolder),
+        METADATA_OPEN_FILE_NUM(config.metadataDir),
+        DIGEST_OPEN_FILE_NUM(config.fileNodeDir),
+        SOCKET_OPEN_FILE_NUM(null);
+
+        private String path;
+
+        OpenFileNumStatistics(String path){
+            this.path = path;
+        }
     }
 
     private static class OpenFileNumUtilHolder {
@@ -166,29 +172,13 @@ public class OpenFileNumUtil {
                 if (line.contains("" + pid) && temp.length > 8) {
                     oldValue = resultMap.get(OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
                     resultMap.put(OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM, oldValue + 1);
-                    if (temp[8].contains(config.dataDir)) {
-                        oldValue = resultMap.get(OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
-                        resultMap.put(OpenFileNumStatistics.DATA_OPEN_FILE_NUM, oldValue + 1);
-                    }
-                    if (temp[8].contains(config.bufferWriteDir)) {
-                        oldValue = resultMap.get(OpenFileNumStatistics.DELTA_OPEN_FILE_NUM);
-                        resultMap.put(OpenFileNumStatistics.DELTA_OPEN_FILE_NUM, oldValue + 1);
-                    }
-                    if (temp[8].contains(config.overflowDataDir)) {
-                        oldValue = resultMap.get(OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM);
-                        resultMap.put(OpenFileNumStatistics.OVERFLOW_OPEN_FILE_NUM, oldValue + 1);
-                    }
-                    if (temp[8].contains(config.walFolder)) {
-                        oldValue = resultMap.get(OpenFileNumStatistics.WAL_OPEN_FILE_NUM);
-                        resultMap.put(OpenFileNumStatistics.WAL_OPEN_FILE_NUM, oldValue + 1);
-                    }
-                    if (temp[8].contains(config.metadataDir)) {
-                        oldValue = resultMap.get(OpenFileNumStatistics.METADATA_OPEN_FILE_NUM);
-                        resultMap.put(OpenFileNumStatistics.METADATA_OPEN_FILE_NUM, oldValue + 1);
-                    }
-                    if (temp[8].contains(config.fileNodeDir)) {
-                        oldValue = resultMap.get(OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM);
-                        resultMap.put(OpenFileNumStatistics.DIGEST_OPEN_FILE_NUM, oldValue + 1);
+                    for(OpenFileNumStatistics openFileNumStatistics: OpenFileNumStatistics.values()){
+                        if(openFileNumStatistics.path!=null){
+                            if(temp[8].contains(openFileNumStatistics.path)){
+                                oldValue = resultMap.get(openFileNumStatistics);
+                                resultMap.put(openFileNumStatistics, oldValue + 1);
+                            }
+                        }
                     }
                     if (temp[7].contains("TCP") || temp[7].contains("UDP")) {
                         oldValue = resultMap.get(OpenFileNumStatistics.SOCKET_OPEN_FILE_NUM);
