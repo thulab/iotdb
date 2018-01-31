@@ -234,6 +234,14 @@ public class MGraph implements Serializable {
 	public String getFileNameByPath(String path) throws PathErrorException {
 		return mTree.getFileNameByPath(path);
 	}
+
+	public String getFileNameByPath(MNode node, String path) throws PathErrorException {
+		return mTree.getFileNameByPath(node, path);
+	}
+
+	public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
+		return mTree.getFileNameByPathWithCheck(node, path);
+	}
 	
 	public boolean checkFileNameByPath(String path){
 		return mTree.checkFileNameByPath(path);
@@ -244,6 +252,18 @@ public class MGraph implements Serializable {
 	 */
 	public boolean pathExist(String path) {
 		return mTree.isPathExist(path);
+	}
+
+	public boolean pathExist(MNode node, String path) {
+		return mTree.isPathExist(node, path);
+	}
+
+	public MNode getNodeByPath(String path) throws PathErrorException {
+		return mTree.getNodeByPath(path);
+	}
+
+	public MNode getNodeByPathWithCheck(String path) throws PathErrorException {
+		return mTree.getNodeByPathWithFileLevelCheck(path);
 	}
 
 	/**
@@ -260,6 +280,18 @@ public class MGraph implements Serializable {
 	 */
 	public ColumnSchema getSchemaForOnePath(String path) throws PathErrorException {
 		return mTree.getSchemaForOnePath(path);
+	}
+
+	public ColumnSchema getSchemaForOnePath(MNode node, String path) throws PathErrorException {
+		return mTree.getSchemaForOnePath(node, path);
+	}
+
+	public ColumnSchema getSchemaForOnePathWithCheck(MNode node, String path) throws PathErrorException {
+		return mTree.getSchemaForOnePathWithCheck(node, path);
+	}
+
+	public ColumnSchema getSchemaForOnePathWithCheck(String path) throws PathErrorException {
+		return mTree.getSchemaForOnePathWithCheck(path);
 	}
 
 	public String toString() {
