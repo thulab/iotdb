@@ -142,11 +142,9 @@ public class FileManager {
 		return sendingFiles;
 	}
 
-
 	public Set<String> getLastLocalFiles() {
 		return lastLocalFiles;
 	}
-
 
 	public Set<String> getNowLocalFiles() {
 		return nowLocalFiles;

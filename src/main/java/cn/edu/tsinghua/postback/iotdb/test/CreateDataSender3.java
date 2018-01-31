@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-public class CreateDataSender2 {
+public class CreateDataSender3 {
 
     public static final int TIME_INTERVAL = 0;
     public static final int TOTAL_DATA = 2000000;
@@ -24,7 +24,7 @@ public class CreateDataSender2 {
     public static final int MIN_FLOAT = 20;
     public static final int MAX_FLOAT = 30;
     public static final int STRING_LENGTH = 5;
-    public static final int BATCH_SQL = 40000;
+    public static final int BATCH_SQL = 30000;
 
     public static HashMap generateTimeseriesMapFromFile(String inputFilePath) throws Exception{
 
@@ -75,13 +75,12 @@ public class CreateDataSender2 {
     }
 
     public static void setStorageGroup(Statement statement, ArrayList<String> storageGroupList) throws SQLException {
-
     	try {
 	        String setStorageGroupSql = "SET STORAGE GROUP TO <prefixpath>";
 	        for (String str : storageGroupList) {
 	            String sql = setStorageGroupSql.replace("<prefixpath>", str);
 	            statement.execute(sql);
-	        }
+        }
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
@@ -96,11 +95,11 @@ public class CreateDataSender2 {
         int abnormalFlag = 1;
 
         int sqlCount = 0;
-        
+
         for (int i = 0; i < TOTAL_DATA; i++) {
 
         	long time = System.currentTimeMillis();
-
+        	
             if (i % ABNORMAL_FREQUENCY == 250) {
                 abnormalFlag = 0;
             }
@@ -143,6 +142,7 @@ public class CreateDataSender2 {
                         .replace("<value>", "\"" + value+"\"");
                 }
 
+                //TODO: other data type
                 statement.addBatch(sql);
                 sqlCount++;
                 if (sqlCount >= BATCH_SQL) {
@@ -170,23 +170,26 @@ public class CreateDataSender2 {
         Connection connection = null;
         Statement statement = null;
 
-        HashMap timeseriesMap = generateTimeseriesMapFromFile("/home/hadoop/xuyi/iotdb/CreateTimeseries2.txt");
+        HashMap timeseriesMap = generateTimeseriesMapFromFile("/home/hadoop/xuyi/iotdb/CreateTimeseries3.txt");
 
         ArrayList<String> storageGroupList = new ArrayList();
-        storageGroupList.add("root.vehicle_history1");
-        storageGroupList.add("root.vehicle_alarm1");
-        storageGroupList.add("root.vehicle_temp1");
-        storageGroupList.add("root.range_event1");
+        storageGroupList.add("root.vehicle_history2");
+        storageGroupList.add("root.vehicle_alarm2");
+        storageGroupList.add("root.vehicle_temp2");
+        storageGroupList.add("root.range_event2");
 
         try {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");
             connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
             statement = connection.createStatement();
+
             setStorageGroup(statement, storageGroupList);
+            System.out.println("Finish set storage group.");
             createTimeseries(statement, timeseriesMap);
             System.out.println("Finish create timeseries.");
             while(true) {
             randomInsertData(statement, timeseriesMap);
+
             }
             
         } catch (Exception e) {

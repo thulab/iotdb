@@ -49,7 +49,7 @@ public class ServiceImpTest {
             "insert into root.vehicle.d0(timestamp,s2,s4) values(102,80.0,true)",
             "insert into root.vehicle.d0(timestamp,s0) values(103,99)",
             "insert into root.vehicle.d0(timestamp,s0) values(104,90)",
-            "merge",
+            
             "flush",
     };
 
@@ -102,6 +102,7 @@ public class ServiceImpTest {
                 	oldFilesMap.get("root.vehicle").add(file.getAbsolutePath());
                 }
                 ServiceImp serviceImp = new ServiceImp();
+            	serviceImp.init();
                 serviceImp.setOldFilesMap(oldFilesMap);
                 try {
 					serviceImp.getSqlToMerge();
@@ -130,7 +131,6 @@ public class ServiceImpTest {
             Statement statement = connection.createStatement();
             for (String sql : sqls) {
                 statement.execute(sql);
-                System.out.println(sql);
             }
             statement.execute("flush");
             statement.close();

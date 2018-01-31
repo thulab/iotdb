@@ -60,7 +60,9 @@ public class MultipleClientPostBackTest {
             String timeseries = line.split(" ")[2];
             for(String storageGroup:timeseriesList.keySet()) {
             	if(timeseries.startsWith(storageGroup + ".")) {
-            		timeseriesList.get(storageGroup).add(timeseries);
+            		String timesery = timeseries.substring((storageGroup + ".").length());
+            		timeseriesList.get(storageGroup).add(timesery);
+            		break;
             	}
             }
         }
@@ -71,85 +73,69 @@ public class MultipleClientPostBackTest {
             String timeseries = line.split(" ")[2];
             for(String storageGroup:timeseriesList.keySet()) {
             	if(timeseries.startsWith(storageGroup + ".")) {
-            		timeseriesList.get(storageGroup).add(timeseries);
+            		String timesery = timeseries.substring((storageGroup + ".").length());
+            		timeseriesList.get(storageGroup).add(timesery);
+            		break;
             	}
             }
-        }
-        
-        for(String storageGroup:timeseriesList.keySet()) {
-        	System.out.println(storageGroup);
-        	System.out.println(timeseriesList.get(storageGroup).size());
         }
         
 		// Compare data of sender and receiver
         for(String storageGroup:timeseriesList.keySet()) {
         	String sqlFormat = "select %s from %s";
-        	dataSender.clear();
-        	dataReceiver.clear();
+        	System.out.println(storageGroup + ":");
         	int count=0;
-			try {
-				Thread.sleep(2000);
-				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-				Connection connection = null;
-				try {
-					if(!storageGroup.contains("1")) {
-						connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.14:6667/", "root", "root");
-					}else {
-						connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.15:6667/", "root", "root");
-					}
-					Statement statement = connection.createStatement();
-					System.out.println(String.format(sqlFormat,"city_510100.A3T1J0.lng",storageGroup));
-					boolean hasResultSet = statement.execute(String.format(sqlFormat,"city_510100.A3T1J0.lng",storageGroup));
-					if (hasResultSet) {
-						ResultSet res = statement.getResultSet();
-						while (res.next()) {
-							count++;
+        	for(String timesery:timeseriesList.get(storageGroup)) {
+            	count++; 
+        		dataSender.clear();
+            	dataReceiver.clear();
+        		try {
+					Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+					Connection connection = null;
+					Connection connection1 = null;
+					try {
+						if(!storageGroup.contains("1")) {
+							connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.14:6667/", "root", "root");
+						}else {
+							connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.15:6667/", "root", "root");
+						}
+						connection1 = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
+						Statement statement = connection.createStatement();
+						Statement statement1 = connection1.createStatement();
+						String SQL = String.format(sqlFormat, timesery, storageGroup);
+						boolean hasResultSet = statement.execute(SQL);
+						boolean hasResultSet1 = statement1.execute(SQL);
+						if (hasResultSet) {
+							ResultSet res = statement.getResultSet();
+							while (res.next()) {
+								dataSender.add(res.getString("Time") + res.getString(storageGroup + "." + timesery));
+							}
+						}
+						if (hasResultSet1) {
+							ResultSet res = statement1.getResultSet();
+							while (res.next()) {
+								dataReceiver.add(res.getString("Time") + res.getString(storageGroup + "." + timesery));
+							}
+						}
+						assert((dataSender.size()==dataReceiver.size()) && dataSender.containsAll(dataReceiver));
+						statement.close();
+						statement1.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (connection != null) {
+							connection.close();
+						}
+						if (connection1 != null) {
+							connection1.close();
 						}
 					}
-					System.out.println(count);
-					statement.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (connection != null) {
-						connection.close();
-					}
+				} catch (ClassNotFoundException | SQLException e) {
+					fail(e.getMessage());
 				}
-			} catch (ClassNotFoundException | SQLException | InterruptedException e) {
-				fail(e.getMessage());
-			}
-			try {
-				Thread.sleep(2000);
-				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-				Connection connection = null;
-				try {
-					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
-					Statement statement = connection.createStatement();
-					boolean hasResultSet = statement.execute(String.format(sqlFormat,"city_510100.A3T1J0.lng",storageGroup));
-					if (hasResultSet) {
-						ResultSet res = statement.getResultSet();
-						while (res.next()) {
-							String info = res.getString("Time");
-							count++;
-						}
-					}
-					statement.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (connection != null) {
-						connection.close();
-					}
-				}
-			} catch (ClassNotFoundException | SQLException | InterruptedException e) {
-				fail(e.getMessage());
-			}
-			System.out.println("Storage Group: " + storageGroup);
-			System.out.println("dataSender's size is : " + dataSender.size()); 
-			System.out.println(dataSender);
-			System.out.println("dataReceiver's size is : " + dataReceiver.size());
-			System.out.println(dataReceiver);
-			assert((dataSender.size()==dataReceiver.size()) && dataSender.containsAll(dataReceiver));
+            	if(count > 100)
+            		break;
+        	}
         }
 	}
 }

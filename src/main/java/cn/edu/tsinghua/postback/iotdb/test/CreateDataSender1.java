@@ -25,7 +25,6 @@ public class CreateDataSender1 {
     public static final int MAX_FLOAT = 30;
     public static final int STRING_LENGTH = 5;
     public static final int BATCH_SQL = 30000;
-    public static long time = 1517217510475L;
 
     public static HashMap generateTimeseriesMapFromFile(String inputFilePath) throws Exception{
 
@@ -80,9 +79,8 @@ public class CreateDataSender1 {
 	        String setStorageGroupSql = "SET STORAGE GROUP TO <prefixpath>";
 	        for (String str : storageGroupList) {
 	            String sql = setStorageGroupSql.replace("<prefixpath>", str);
-	            //System.out.println(sql);
 	            statement.execute(sql);
-        }
+	        }
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
@@ -100,13 +98,14 @@ public class CreateDataSender1 {
 
         for (int i = 0; i < TOTAL_DATA; i++) {
 
+        	long time = System.currentTimeMillis();
+        	
             if (i % ABNORMAL_FREQUENCY == 250) {
                 abnormalFlag = 0;
             }
 
             for(String key : timeseriesMap.keySet()) {
 
-            	time = time + 1;
                 String type = Utils.getType(timeseriesMap.get(key));
                 String path = Utils.getPath(key);
                 String sensor = Utils.getSensor(key);
@@ -148,7 +147,6 @@ public class CreateDataSender1 {
                 sqlCount++;
                 if (sqlCount >= BATCH_SQL) {
                     statement.executeBatch();
-                    System.out.println("Batch execute " + BATCH_SQL + " sql.");
                     statement.clearBatch();
                     sqlCount = 0;
                 }
@@ -164,7 +162,6 @@ public class CreateDataSender1 {
             }
         }
         statement.executeBatch();
-        System.out.println(System.currentTimeMillis() - time);
         statement.clearBatch();
     }
 
@@ -193,8 +190,6 @@ public class CreateDataSender1 {
             while(true) {
             randomInsertData(statement, timeseriesMap);
 
-//            statement.execute("merge");
-//            statement.execute("flush");
             }
             
         } catch (Exception e) {

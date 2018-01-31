@@ -167,6 +167,7 @@ public class TransferData {
 						md.update(buffer, 0, n);
 						clientOfServer.startReceiving(null, filePathSplit, buffToSend, 1);
 					}
+					bos.close();
 					fis.close();
 
 					// the file is sent successfully
@@ -199,6 +200,7 @@ public class TransferData {
 				bos.reset();
 				clientOfServer.getSchema(buffToSend, 1);				
 			}
+			bos.close();
 			fis.close();
 			clientOfServer.getSchema(null, 0);
 		} catch (Exception e) {
@@ -258,8 +260,8 @@ public class TransferData {
 			while (true) {
 				currentTime = new Date();
 				if (currentTime.getTime() - lastTime.getTime() > config.UPLOAD_CYCLE_IN_SECONDS * 1000) {
-					lastTime = currentTime;
 					postback();
+					lastTime = currentTime;
 				}
 			}
 		}
@@ -302,15 +304,21 @@ public class TransferData {
 			if (!connection_orElse)
 				return;
 			transferUUID(config.UUID_PATH);
-			if (!connection_orElse)
+			if (!connection_orElse) {
+				transport.close();
 				return;
+			}
 			makeFileSnapshot(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
 			sendSchema(config.SCHEMA_PATH);
-			if (!connection_orElse)
+			if (!connection_orElse) {
+				transport.close();
 				return;
+			}
 			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-			if (!connection_orElse)
+			if (!connection_orElse) {
+				transport.close();
 				return;
+			}
 			afterSending(config.SNAPSHOT_PATH);
 			fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
 		}

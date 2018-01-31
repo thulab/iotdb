@@ -58,41 +58,52 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
 public class ServiceImp implements Service.Iface {
-	private String uuid;
-	private Map<String, List<String>> newFilesMap = new HashMap<>(); // String means Storage Group, List means the set
+	private ThreadLocal<String> uuid = new ThreadLocal<String>();
+	private ThreadLocal<Map<String, List<String>>> newFilesMap = new ThreadLocal<>(); // String means Storage Group, List means the set
 																		// of
 																		// new Files(AbsulutePath) in local IoTDB
-	private Map<String, Map<String, Long>> newFilesStartTime = new HashMap<>(); // String means AbsulutePath of new
+	private ThreadLocal<Map<String, Map<String, Long>>> newFilesStartTime = new ThreadLocal<>(); // String means AbsulutePath of new
 																				// Files, Map String1 means
 																				// timeseries、 String2 means
 																				// startTime
-	private Map<String, Map<String, Long>> newFilesEndTime = new HashMap<>();// String means AbsulutePath of new
+	private ThreadLocal<Map<String, Map<String, Long>>> newFilesEndTime = new ThreadLocal<>();// String means AbsulutePath of new
 																				// Files, Map String1 means timeseries、
 																				// String2 means startTime
-	private Map<String, List<String>> oldFilesMap = new HashMap<>();
+	private ThreadLocal<Map<String, List<String>>> oldFilesMap = new ThreadLocal<>();
 
-	private Map<String, String> linkFilePath = new HashMap<>();
+	private ThreadLocal<Map<String, String>> linkFilePath = new ThreadLocal<>();
 
-	private Set<String> SQLToMerge = new HashSet<>(); // SQL for data of the seconde type
-	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImp.class);
+	private ThreadLocal<Set<String>> SQLToMerge = new ThreadLocal<>(); // SQL for data of the seconde type
 	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
-	private int fileNum = 0;
-	private int fileNum_NewFiles = 0;
-	private int fileNum_OldFiles = 0;
-	private String schemaFromSenderPath = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "mlog.txt";
+	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
+	private ThreadLocal<Integer> fileNum_NewFiles = new ThreadLocal<Integer>();
+	private ThreadLocal<Integer> fileNum_OldFiles = new ThreadLocal<Integer>();
+	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImp.class);
 	private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 	private static final MManager mManager = MManager.getInstance();
 
+	public void init() {
+		fileNum.set(0); 
+		fileNum_NewFiles.set(0); 
+		fileNum_OldFiles.set(0);
+		newFilesMap.set(new HashMap<>());
+		newFilesStartTime.set(new HashMap<>());
+		newFilesEndTime.set(new HashMap<>());
+		oldFilesMap.set(new HashMap<>());
+		linkFilePath.set(new HashMap<>());
+		SQLToMerge.set(new HashSet<>());
+		schemaFromSenderPath.set(config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "mlog.txt");
+	}
+	
 	public String getUUID(String uuid) throws TException {
-		this.uuid = uuid;
-		fileNum = 0;
-		fileNum_NewFiles = 0;
-		fileNum_OldFiles = 0;
-		if(new File(config.IOTDB_DATA_DIRECTORY + uuid).exists() && new File(config.IOTDB_DATA_DIRECTORY + uuid).list().length!=0) {
+		this.uuid.set(uuid);
+		init();
+		if(new File(config.IOTDB_DATA_DIRECTORY + this.uuid.get()).exists() && new File(config.IOTDB_DATA_DIRECTORY + this.uuid.get()).list().length!=0) {
 			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
-			deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid));
+			deleteFile(new File(config.IOTDB_DATA_DIRECTORY + this.uuid.get()));
 		}
-		return this.uuid;
+		return this.uuid.get();
 	}
 
 	public String startReceiving(String md5, List<String> filePathSplit, ByteBuffer dataToReceive, int status)
@@ -108,7 +119,7 @@ public class ServiceImp implements Service.Iface {
 				filePath = filePath + filePathSplit.get(i) + File.separator;
 			}
 		}
-		filePath = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + filePath;
+		filePath = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + filePath;
 		if (status == 1) // there are still data stream to add
 		{
 			File file = new File(filePath);
@@ -143,8 +154,8 @@ public class ServiceImp implements Service.Iface {
 				md5OfReceiver = (new BigInteger(1, md.digest())).toString(16);
 				fis.close();
 				if (md5.equals(md5OfReceiver)) {
-					fileNum++;
-					LOGGER.info("IoTDB post back receicer : Receiver has received " + fileNum + " files from sender!");
+					fileNum.set(fileNum.get()+1);
+					LOGGER.info("IoTDB post back receicer : Receiver has received " + fileNum.get() + " files from sender!");
 				}
 			} catch (Exception e) {
 				LOGGER.error("IoTDB post back receicer: cannot generate md5 because {}", e.getMessage());
@@ -166,7 +177,7 @@ public class ServiceImp implements Service.Iface {
 				
 				BufferedReader bf;
 				try {
-					bf = new BufferedReader(new java.io.FileReader(schemaFromSenderPath));
+					bf = new BufferedReader(new java.io.FileReader(schemaFromSenderPath.get()));
 					String data;
 					statement.clearBatch();
 					while ((data = bf.readLine()) != null) {
@@ -200,7 +211,7 @@ public class ServiceImp implements Service.Iface {
 			}
 		}
 		else {
-			File file = new File(schemaFromSenderPath);
+			File file = new File(schemaFromSenderPath.get());
 			if (!file.getParentFile().exists()) {
 				try {
 					file.getParentFile().mkdirs();
@@ -227,13 +238,24 @@ public class ServiceImp implements Service.Iface {
 	 */
 	public void afterReceiving() throws TException {
 		judgeMergeType();
-		SQLToMerge.clear();
-		if (fileNum_OldFiles != 0) {
-			getSqlToMerge();
-		}
-		insertSQL();
+		getSqlToMerge();
 		mergeNewData();
-		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid));
+		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid.get()));
+		remove();
+	}
+	
+	public void remove() {
+		uuid.remove();
+		fileNum.remove();
+		fileNum_NewFiles.remove(); 
+		fileNum_OldFiles.remove();
+		newFilesMap.remove();
+		newFilesStartTime.remove();
+		newFilesEndTime.remove();
+		oldFilesMap.remove();
+		linkFilePath.remove();
+		schemaFromSenderPath.remove();
+		SQLToMerge.remove();
 	}
 
 	private void deleteFile(File file) {
@@ -256,22 +278,19 @@ public class ServiceImp implements Service.Iface {
 	}
 
 	public void judgeMergeType() throws TException {
-		String filePath = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "delta";
+		String filePath = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta";
 		File root = new File(filePath);
 		File[] files = root.listFiles();
-		oldFilesMap.clear();
-		newFilesMap.clear();
 		int num = 0;
-		linkFilePath.clear();
 		for (File file : files) {
-			String storageGroupPathPB = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "delta" + File.separator
+			String storageGroupPathPB = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta" + File.separator
 					+ file.getName();
 			File storageGroupPB = new File(storageGroupPathPB);
 			File[] filesSG = storageGroupPB.listFiles();
 		}
 		for (File file : files) {
 			String storageGroupPath = config.IOTDB_DATA_DIRECTORY + "delta" + File.separator + file.getName();
-			String storageGroupPathPB = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "delta" + File.separator
+			String storageGroupPathPB = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta" + File.separator
 					+ file.getName();
 			String digestPath = config.IOTDB_DATA_DIRECTORY + "digest" + File.separator + file.getName();
 			File storageGroup = new File(storageGroupPath);
@@ -328,97 +347,29 @@ public class ServiceImp implements Service.Iface {
 									fileTF.getAbsolutePath(), e.getMessage());
 						}
 					}
-					linkFilePath.put(fileTF.getAbsolutePath(), storageGroupPath + File.separator + fileTF.getName());
-					newFilesStartTime.put(fileTF.getAbsolutePath(), startTimeMap);
-					newFilesEndTime.put(fileTF.getAbsolutePath(), endTimeMap);
+					linkFilePath.get().put(fileTF.getAbsolutePath(), storageGroupPath + File.separator + fileTF.getName());
+					newFilesStartTime.get().put(fileTF.getAbsolutePath(), startTimeMap);
+					newFilesEndTime.get().put(fileTF.getAbsolutePath(), endTimeMap);
 					newFiles.add(fileTF.getAbsolutePath());
 					num++;
-					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum);
+					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum.get());
 				}
 				// .restore file will create when SET and CREATE and flush
-				newFilesMap.put(file.getName(), newFiles);
-				fileNum_NewFiles += newFiles.size();
+				newFilesMap.get().put(file.getName(), newFiles);
+				fileNum_NewFiles.set(fileNum_NewFiles.get() + newFiles.size());
 			} else // the two other types:new tsFile but not new Storage Group , not new tsFile
-			{
-//				Connection connection = null;
-//				Statement statement = null;
-//				try {
-//					Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-//					connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
-//					statement = connection.createStatement();
-//					statement.execute("flush");
-//					fileNodeManager.mergeAll();
-//				} catch (SQLException | ClassNotFoundException| FileNodeManagerException e) {
-//					LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
-//				} finally {
-//					try {
-//						if(statement!=null)
-//							statement.close();
-//						if(connection!=null)
-//							connection.close();
-//					} catch (SQLException e) {
-//						LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
-//					}
-//				}
-				
+			{				
 				List<String> newFiles = new ArrayList<>();
 				List<String> oldFiles = new ArrayList<>();
 				newFiles.clear();
 				oldFiles.clear();
 				Map<String, Long> timeseriesEndTimeMap = new HashMap<>();
 				timeseriesEndTimeMap.clear();
-//				File[] filesSG = storageGroup.listFiles();
 				// get all timeseries detail endTime
-//				for (File fileTF : filesSG) {
-//					TsRandomAccessLocalFileReader input = null;
-//					try {
-//						input = new TsRandomAccessLocalFileReader(
-//								fileTF.getAbsolutePath());
-//						FileReader reader = new FileReader(input);
-//						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
-//						Iterator<String> it = deltaObjectMap.keySet().iterator();
-//						while (it.hasNext()) {
-//							String key = it.next().toString(); // key represent storage group
-//							TsDeltaObject deltaObj = deltaObjectMap.get(key);
-//							TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-//							blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
-//									deltaObj.offset, deltaObj.metadataBlockSize));
-//							List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
-//							for (RowGroupMetaData rowGroupMetaData : rowGroupMetadataList) {
-//								List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataList = rowGroupMetaData
-//										.getTimeSeriesChunkMetaDataList();
-//								for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
-//									TInTimeSeriesChunkMetaData tInTimeSeriesChunkMetaData = timeSeriesChunkMetaData
-//											.getTInTimeSeriesChunkMetaData();
-//									TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
-//									String measurementUID = properties.getMeasurementUID();
-//									long endTime = tInTimeSeriesChunkMetaData.getEndTime();
-//									measurementUID = key + "." + measurementUID;
-//									if (!timeseriesEndTimeMap.containsKey(measurementUID))
-//										timeseriesEndTimeMap.put(measurementUID, endTime);
-//									else {
-//										if (timeseriesEndTimeMap.get(measurementUID) < endTime)
-//											timeseriesEndTimeMap.put(measurementUID, endTime);
-//									}
-//								}
-//							}
-//						}
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					} finally {
-//						try {
-//							input.close();
-//						} catch (IOException e) {
-//							LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
-//									fileTF.getAbsolutePath(), e.getMessage());
-//						}	
-//					}
-//				}
 				 FileNodeProcessor fileNodeProcessor = null;
 				 try {
 					 fileNodeProcessor = fileNodeManager.getProcessor(file.getName(), true);
 					 timeseriesEndTimeMap = fileNodeProcessor.getLastUpdateTimeMap();
-					 System.out.println(timeseriesEndTimeMap);
 				 } catch (FileNodeManagerException e) {
 						LOGGER.info("IoTDB receiver : can not get lastupdateTimeMap because {}", e.getMessage());
 				 } finally {
@@ -487,36 +438,37 @@ public class ServiceImp implements Service.Iface {
 					}
 					if (isNew) // if the file is new data and not new storage group , copy it
 					{
-						linkFilePath.put(fileTF.getAbsolutePath(),
+						linkFilePath.get().put(fileTF.getAbsolutePath(),
 								storageGroupPath + File.separator + fileTF.getName());
 						String newFilePath = fileTF.getAbsolutePath();
-						newFilesStartTime.put(newFilePath, startTimeMap);
-						newFilesEndTime.put(newFilePath, endTimeMap);
+						newFilesStartTime.get().put(newFilePath, startTimeMap);
+						newFilesEndTime.get().put(newFilePath, endTimeMap);
 						newFiles.add(newFilePath);
 					} else {
 						oldFiles.add(fileTF.getAbsolutePath());
 					}
 					num++;
-					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum);
+					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum.get());
 				}
 				if (newFiles.size() != 0) {
-					newFilesMap.put(file.getName(), newFiles);
-					fileNum_NewFiles += newFiles.size();
+					newFilesMap.get().put(file.getName(), newFiles);
+					fileNum_NewFiles.set(fileNum_NewFiles.get() + newFiles.size());
 				}
 				if (oldFiles.size() != 0) {
-					oldFilesMap.put(file.getName(), oldFiles);
-					fileNum_OldFiles += oldFiles.size();
+					oldFilesMap.get().put(file.getName(), oldFiles);
+					fileNum_OldFiles.set(fileNum_OldFiles.get() + oldFiles.size());
 				}
 			}
 		}
 	}
 
 	public void getSqlToMerge() throws TException {
-		Iterator<String> iterator = oldFilesMap.keySet().iterator();
+		Iterator<String> iterator = oldFilesMap.get().keySet().iterator();
 		int num = 0;
 		while (iterator.hasNext()) {
-			List<String> oldFiles = oldFilesMap.get(iterator.next());
+			List<String> oldFiles = oldFilesMap.get().get(iterator.next());
 			for (String filePath : oldFiles) {
+				SQLToMerge.get().clear();
 				Set<String> timeseries = new HashSet<>();
 				TsRandomAccessLocalFileReader input = null;				
 				try {
@@ -577,7 +529,7 @@ public class ServiceImp implements Service.Iface {
 									}
 								}
 								String sql = sql_front + sql_rear + ")";
-								SQLToMerge.add(sql);
+								SQLToMerge.get().add(sql);
 							}
 						}
 					}
@@ -592,7 +544,27 @@ public class ServiceImp implements Service.Iface {
 					}
 				}
 				num++;
-				LOGGER.info("IoTDB receiver : Merging old files has completed : " + num + "/" + fileNum_OldFiles);
+				LOGGER.info("IoTDB receiver : Merging old files has completed : " + num + "/" + fileNum_OldFiles.get());
+				insertSQL();
+			}
+		}
+		Connection connection = null;
+		Statement statement = null;
+		try {
+			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+			statement = connection.createStatement();
+			statement.execute("flush");
+		} catch (SQLException | ClassNotFoundException e) {
+			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+		} finally {
+			try {
+				if(statement!=null)
+					statement.close();
+				if(connection!=null)
+					connection.close();
+			} catch (SQLException e) {
+				LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
 			}
 		}
 	}
@@ -604,12 +576,10 @@ public class ServiceImp implements Service.Iface {
 			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
 			statement = connection.createStatement();
-			for (String sql : SQLToMerge) {
+			for (String sql : SQLToMerge.get()) {
 				statement.addBatch(sql);
 			}
 			statement.executeBatch();
-			statement.execute("flush");
-		//	fileNodeManager.mergeAll();
 		} catch (SQLException | ClassNotFoundException e) {
 			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
 		} finally {
@@ -628,16 +598,16 @@ public class ServiceImp implements Service.Iface {
 		// !!! Attention: before modify .restore file, it is neccessary to execute flush
 		// order and synchronized the thread
 		int num = 0;
-		for (String storageGroup : newFilesMap.keySet()) {
-			List<String> newFilePath = newFilesMap.get(storageGroup);
+		for (String storageGroup : newFilesMap.get().keySet()) {
+			List<String> newFilePath = newFilesMap.get().get(storageGroup);
 			// before load extern tsFile, it is necessary to order files in the same SG
 			for (int i = 0; i < newFilePath.size(); i++) {
 				for (int j = i + 1; j < newFilePath.size(); j++) {
 					boolean swapOrNot = false;
-					Map<String, Long> startTimeI = newFilesStartTime.get(newFilePath.get(i));
-					Map<String, Long> endTimeI = newFilesStartTime.get(newFilePath.get(i));
-					Map<String, Long> startTimeJ = newFilesStartTime.get(newFilePath.get(j));
-					Map<String, Long> endTimeJ = newFilesStartTime.get(newFilePath.get(j));
+					Map<String, Long> startTimeI = newFilesStartTime.get().get(newFilePath.get(i));
+					Map<String, Long> endTimeI = newFilesStartTime.get().get(newFilePath.get(i));
+					Map<String, Long> startTimeJ = newFilesStartTime.get().get(newFilePath.get(j));
+					Map<String, Long> endTimeJ = newFilesStartTime.get().get(newFilePath.get(j));
 					for (String deltaObject : endTimeI.keySet()) {
 						if (startTimeJ.containsKey(deltaObject)
 								&& startTimeI.get(deltaObject) > endTimeJ.get(deltaObject)) {
@@ -657,11 +627,11 @@ public class ServiceImp implements Service.Iface {
 				String fileNodeRestoreFilePath = config.IOTDB_DATA_DIRECTORY + "digest" + File.separator + storageGroup
 						+ File.separator + storageGroup + ".restore";
 				// get startTimeMap and endTimeMap
-				Map<String, Long> startTimeMap = newFilesStartTime.get(path);
-				Map<String, Long> endTimeMap = newFilesEndTime.get(path);
+				Map<String, Long> startTimeMap = newFilesStartTime.get().get(path);
+				Map<String, Long> endTimeMap = newFilesEndTime.get().get(path);
 
 				// create a new fileNode
-				String header = config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "delta" + File.separator;
+				String header = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta" + File.separator;
 				String relativePath = path.substring(header.length());
 				IntervalFileNode fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
 						relativePath);
@@ -676,34 +646,30 @@ public class ServiceImp implements Service.Iface {
 
 				// create link for new files , merge will erase all others which are not in the
 				// fileNodemanager!
-				String linkPath = linkFilePath.get(path);
+				String linkPath = linkFilePath.get().get(path);
 				java.nio.file.Path link = FileSystems.getDefault().getPath(linkPath);
 				java.nio.file.Path target = FileSystems.getDefault().getPath(path);
 				try {
 					Files.createLink(link, target);
 				} catch (IOException e) {
-					if(new File(path).exists())
-						System.out.println(path + "存在啊！！！");
-					else
-						System.out.println(path + "根本就不存在！！");
 					LOGGER.error("IoTDB receiver : Cannot create a link for file : {} , because {}", path, e.getMessage());
 				}
 				
 				num++;
-				LOGGER.info("IoTDB receiver : Merging new files has completed : " + num + "/" + fileNum_NewFiles);
+				LOGGER.info("IoTDB receiver : Merging new files has completed : " + num + "/" + fileNum_NewFiles.get());
 			}
 		}
 	}
 
 	public Set<String> getSQLToMerge() {
-		return SQLToMerge;
+		return SQLToMerge.get();
 	}
 
 	public Map<String, List<String>> getOldFilesMap() {
-		return oldFilesMap;
+		return oldFilesMap.get();
 	}
 
 	public void setOldFilesMap(Map<String, List<String>> oldFilesMap) {
-		this.oldFilesMap = oldFilesMap;
+		this.oldFilesMap.set(oldFilesMap);
 	}
 }
