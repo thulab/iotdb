@@ -74,7 +74,7 @@ public class ConcurrentRandomAccessFile implements ITsRandomAccessFileReader {
     @Override
     public void close() throws IOException {
         synchronized (readLock) {
-            if (isClosed) {
+            if (!isClosed) {
                 randomAccessFile.close();
                 isClosed = true;
             }

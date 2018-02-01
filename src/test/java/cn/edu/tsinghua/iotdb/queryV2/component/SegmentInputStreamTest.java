@@ -43,6 +43,7 @@ public class SegmentInputStreamTest {
         testOneSegment(randomAccessFile, 20, 1000);
         testOneSegment(randomAccessFile, 30, 1000);
         testOneSegment(randomAccessFile, 1000, 1000);
+        randomAccessFile.close();
     }
 
     private void testOneSegment(RandomAccessFile randomAccessFile, int offset, int size) throws IOException {
