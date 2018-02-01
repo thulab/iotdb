@@ -301,8 +301,8 @@ public class OverflowResource {
 	public String getInsertFilePath() {
 		return insertFilePath;
 	}
-	
-	public String getPositionFilePath(){
+
+	public String getPositionFilePath() {
 		return positionFilePath;
 	}
 
@@ -317,11 +317,22 @@ public class OverflowResource {
 		updateDeleteIO.close();
 	}
 
-	public void deleteResource() {
-		new File(insertFilePath).delete();
-		new File(updateDeleteFilePath).delete();
-		new File(positionFilePath).delete();
-		new File(parentPath, dataPath).delete();
+	public void deleteResource() throws IOException {
+		cleanDir(new File(parentPath, dataPath).getPath());
+	}
+
+	private void cleanDir(String dir) throws IOException {
+		File file = new File(dir);
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				for (File subFile : file.listFiles()) {
+					cleanDir(subFile.getAbsolutePath());
+				}
+			}
+			if (!file.delete()) {
+				throw new IOException(String.format("The file %s can't be deleted", dir));
+			}
+		}
 	}
 
 	private void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
