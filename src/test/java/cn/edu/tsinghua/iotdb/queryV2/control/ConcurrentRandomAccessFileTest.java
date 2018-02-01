@@ -58,10 +58,10 @@ public class ConcurrentRandomAccessFileTest {
         Thread.sleep(100);
         thread2.start();
         thread3.start();
-        concurrentRandomAcessFile.close();
         thread1.join();
         thread2.join();
         thread3.join();
+        concurrentRandomAcessFile.close();
         List<Byte> ret1 = reader1.getReadRet();
         List<Byte> ret2 = reader2.getReadRet();
         List<Byte> ret3 = reader3.getReadRet();
@@ -114,7 +114,7 @@ public class ConcurrentRandomAccessFileTest {
 
     @Test
     public void testEfficiency() throws IOException, InterruptedException {
-        byte[] bytes = writeFile(100000000);
+        byte[] bytes = writeFile(100000);
         concurrentRead(readType.SINGLE_RANDOMACCESSFILE, 10, 100000);
     }
 
