@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Random;
@@ -52,6 +53,24 @@ public class MManagerEfficiencyTest {
                     String path = new StringBuilder(root).append(".").append(group).append(".")
                             .append(device).append(".").append(sensor).toString();
                     paths[i++] = path;
+                }
+            }
+        }
+    }
+
+    public void testMManagerNodeCache() throws PathErrorException {
+        long count = 0;
+        paths = shuffle(paths);
+        String tp;
+        long startTime = System.currentTimeMillis();
+        while (true) {
+            for (int i = 0; i < total; i++) {
+                count++;
+                if (count % 10000000 == 0) {
+                    long timeUsed = (System.currentTimeMillis() - startTime);
+                    System.out.println(String.format("Speed = %.2f /s", count * 1.0 / timeUsed * 1000));
+                    startTime = System.currentTimeMillis();
+                    count = 0;
                 }
             }
         }

@@ -30,12 +30,14 @@ import java.util.List;
 public class SeriesReaderFactoryTest {
 
     @Test
-    public void testJobId() throws InterruptedException {
+    public void testJobId() throws InterruptedException, IOException {
         OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(new Path("d1.s1"));
         overflowSeriesDataSource.setOverflowInsertFileList(new ArrayList<>());
 
         int count = 10;
-        int[] map = new int[count];
+        OverflowInsertDataReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+        int currentJobId = seriesReader.getJobId().intValue();
+        int[] map = new int[count + currentJobId];
         for (int i = 0; i < count; i++) {
             Assert.assertEquals(0, map[i]);
         }
@@ -50,7 +52,7 @@ public class SeriesReaderFactoryTest {
             threads[i].join();
         }
 
-        for (int i = 0; i < count; i++) {
+        for (int i = currentJobId; i < count; i++) {
             Assert.assertEquals(1, map[i]);
         }
     }
@@ -66,7 +68,7 @@ public class SeriesReaderFactoryTest {
 
         public void run() {
             try {
-                OverflowInsertDataReader seriesReader =  SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+                OverflowInsertDataReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
                 synchronized (map) {
                     map[seriesReader.getJobId().intValue() - 1]++;
                 }

@@ -124,6 +124,34 @@ public class MTree implements Serializable {
 		}
 	}
 
+	public boolean isPathExist(MNode node, String path) {
+		String[] nodeNames = path.trim().split(separator);
+		if(nodeNames.length < 1)return true;
+		if(!node.hasChild(nodeNames[0]))return false;
+		MNode cur = node.getChild(nodeNames[0]);
+
+		int i = 0;
+		while (i < nodeNames.length - 1) {
+			String nodeName = nodeNames[i];
+			if (cur.getName().equals(nodeName)) {
+				i++;
+				nodeName = nodeNames[i];
+				if (cur.hasChild(nodeName)) {
+					cur = cur.getChild(nodeName);
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		if (cur.getName().equals(nodeNames[i])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * make sure check path before setting storage group
 	 * 
@@ -270,6 +298,21 @@ public class MTree implements Serializable {
 		return leaf.getSchema();
 	}
 
+	public ColumnSchema getSchemaForOnePath(MNode node, String path) throws PathErrorException {
+		MNode leaf = getLeafByPath(node, path);
+		return leaf.getSchema();
+	}
+
+	public ColumnSchema getSchemaForOnePathWithCheck(MNode node, String path) throws PathErrorException {
+		MNode leaf = getLeafByPathWithCheck(node, path);
+		return leaf.getSchema();
+	}
+
+	public ColumnSchema getSchemaForOnePathWithCheck(String path) throws PathErrorException {
+		MNode leaf = getLeafByPathWithCheck(path);
+		return leaf.getSchema();
+	}
+
 	private MNode getLeafByPath(String path) throws PathErrorException {
 		checkPath(path);
 		String[] node = path.split(separator);
@@ -279,6 +322,93 @@ public class MTree implements Serializable {
 		}
 		if (!cur.isLeaf()) {
 			throw new PathErrorException(String.format("Timeseries %s is not the leaf node", path));
+		}
+		return cur;
+	}
+
+	private MNode getLeafByPath(MNode node, String path) throws PathErrorException {
+		checkPath(node, path);
+		String[] nodes = path.split(separator);
+		MNode cur = node.getChild(nodes[0]);
+		for (int i = 1; i < nodes.length; i++) {
+			cur = cur.getChild(nodes[i]);
+		}
+		if (!cur.isLeaf()) {
+			throw new PathErrorException(String.format("Timeseries %s is not the leaf node", path));
+		}
+		return cur;
+	}
+
+	private MNode getLeafByPathWithCheck(MNode node, String path) throws PathErrorException {
+		String[] nodes = path.split(separator);
+		if (nodes.length < 1 || !node.hasChild(nodes[0])) {
+			throw new PathErrorException(String.format("Timeseries %s is not correct", path));
+		}
+
+		MNode cur = node.getChild(nodes[0]);
+		for (int i = 1; i < nodes.length; i++) {
+			if (!cur.hasChild(nodes[i])) {
+				throw new PathErrorException(
+						"Timeseries is not correct. Node[" + cur.getName() + "] doesn't have child named:" + nodes[i]);
+			}
+			cur = cur.getChild(nodes[i]);
+		}
+		if (!cur.isLeaf()) {
+			throw new PathErrorException(String.format("Timeseries %s is not the leaf node", path));
+		}
+		return cur;
+	}
+
+	private MNode getLeafByPathWithCheck(String path) throws PathErrorException {
+		String[] nodes = path.split(separator);
+		if (nodes.length < 2 || !nodes[0].equals(getRoot().getName())) {
+			throw new PathErrorException(String.format("Timeseries %s is not correct", path));
+		}
+
+		MNode cur = getRoot();
+		for (int i = 1; i < nodes.length; i++) {
+			if (!cur.hasChild(nodes[i])) {
+				throw new PathErrorException(
+						"Timeseries is not correct. Node[" + cur.getName() + "] doesn't have child named:" + nodes[i]);
+			}
+			cur = cur.getChild(nodes[i]);
+		}
+		if (!cur.isLeaf()) {
+			throw new PathErrorException(String.format("Timeseries %s is not the leaf node", path));
+		}
+		return cur;
+	}
+
+	public MNode getNodeByPath(String path) throws PathErrorException {
+		checkPath(path);
+		String[] node = path.split(separator);
+		MNode cur = getRoot();
+		for (int i = 1; i < node.length; i++) {
+			cur = cur.getChild(node[i]);
+		}
+		return cur;
+	}
+
+	public MNode getNodeByPathWithFileLevelCheck(String path) throws PathErrorException {
+		boolean fileLevelChecked = false;
+		String[] nodes = path.split(separator);
+		if (nodes.length < 2 || !nodes[0].equals(getRoot().getName())) {
+			throw new PathErrorException(String.format("Timeseries %s is not correct", path));
+		}
+
+		MNode cur = getRoot();
+		for (int i = 1; i < nodes.length; i++) {
+			if (!cur.hasChild(nodes[i])) {
+				throw new PathErrorException(
+						"Timeseries is not correct. Node[" + cur.getName() + "] doesn't have child named:" + nodes[i]);
+			}
+			cur = cur.getChild(nodes[i]);
+			if (cur.isStorageLevel()) {
+				fileLevelChecked = true;
+			}
+		}
+		if (!fileLevelChecked) {
+			throw new PathErrorException("FileLevel is not set for current path:" + path);
 		}
 		return cur;
 	}
@@ -319,6 +449,19 @@ public class MTree implements Serializable {
 		return cur;
 	}
 
+	private void checkPath(MNode node, String path) throws PathErrorException {
+		String[] nodes = path.split(separator);
+		if (nodes.length < 1)return;
+		MNode cur = node;
+		for (int i = 0; i < nodes.length; i++) {
+			if (!cur.hasChild(nodes[i])) {
+				throw new PathErrorException(
+						"Timeseries is not correct. Node[" + cur.getName() + "] doesn't have child named:" + nodes[i]);
+			}
+			cur = cur.getChild(nodes[i]);
+		}
+	}
+
 	/**
 	 * <p>
 	 * Get the storage group path from the path
@@ -339,6 +482,52 @@ public class MTree implements Serializable {
 			} else if (cur.isStorageLevel()) {
 				return cur.getDataFileName();
 			} else {
+				cur = cur.getChild(nodes[i]);
+			}
+		}
+		if(cur.isStorageLevel()){
+			return cur.getDataFileName();
+		}
+		throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+	}
+
+	public String getFileNameByPath(MNode node, String path) throws PathErrorException {
+
+		String[] nodes = path.split(separator);
+		MNode cur = node.getChild(nodes[0]);
+		for (int i = 1; i < nodes.length; i++) {
+			if (cur == null) {
+				throw new PathErrorException(
+						String.format("The prefix of the path %s is not one storage group path", path));
+			} else if (cur.isStorageLevel()) {
+				return cur.getDataFileName();
+			} else {
+				cur = cur.getChild(nodes[i]);
+			}
+		}
+		if(cur.isStorageLevel()){
+			return cur.getDataFileName();
+		}
+		throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+	}
+
+	public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
+
+		String[] nodes = path.split(separator);
+		if(nodes.length < 1 || !node.hasChild(nodes[0]))throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+
+		MNode cur = node.getChild(nodes[0]);
+		for (int i = 1; i < nodes.length; i++) {
+			if (cur == null) {
+				throw new PathErrorException(
+						String.format("The prefix of the path %s is not one storage group path", path));
+			} else if (cur.isStorageLevel()) {
+				return cur.getDataFileName();
+			} else {
+				if(!cur.hasChild(nodes[i])){
+					throw new PathErrorException(
+							String.format("The prefix of the path %s is not one storage group path", path));
+				}
 				cur = cur.getChild(nodes[i]);
 			}
 		}

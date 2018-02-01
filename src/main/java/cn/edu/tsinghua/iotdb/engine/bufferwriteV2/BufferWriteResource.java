@@ -67,7 +67,7 @@ public class BufferWriteResource {
 			recoverMetadata(metadatas);
 			LOGGER.info(
 					"Recover the bufferwrite processor {}, the tsfile path is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
-					processorName, insertFilePath, restoreFile, position, metadatas.size());
+					processorName, insertFilePath, position, metadatas.size());
 		} else {
 			insertFile.delete();
 			restoreFile.delete();
