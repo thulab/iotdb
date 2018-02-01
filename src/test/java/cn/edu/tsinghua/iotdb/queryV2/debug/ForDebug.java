@@ -58,7 +58,7 @@ public class ForDebug {
     String tsfilePath = "/users/zhangjinrui/Desktop/readTest/tsfile";
     String unseqTsfilePath = "/users/zhangjinrui/Desktop/readTest/unseqTsfile";
 
-    Path path = new Path("root.vehicle2.d0.s1.g0");
+    Path path = new Path("root.performf.group_23.d_2301.s_1");
 
     public void test() throws IOException {
 
@@ -83,16 +83,11 @@ public class ForDebug {
         TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
 
         int count = 0;
-        TimeValuePair timeValuePair;
         while (reader.hasNext()) {
             count++;
-            timeValuePair = reader.next();
+            reader.next();
         }
         System.out.println(count);
-    }
-
-    public void readTsFileMetadata() {
-
     }
 
     @Test
@@ -135,6 +130,7 @@ public class ForDebug {
 
     @Test
     public void writeTsFileTest() throws WriteProcessException, IOException {
+        long startTime = System.currentTimeMillis();
         FileSchema fileSchema = new FileSchema();
         for (int i = 0; i < 60; i++) {
             fileSchema.registerMeasurement(new MeasurementDescriptor("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
@@ -143,6 +139,7 @@ public class ForDebug {
         TsFileWriter fileWriter = new TsFileWriter(file, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
         for (int i = 0; i < 100; i++) {
+            int count = 0;
             for (int j = 0; j < 60; j++) {
                 String deviceId = new StringBuilder("root.performf.group_23.d_").append(2300 + i).toString();
                 String sensorId = "s_" + j;
@@ -152,19 +149,50 @@ public class ForDebug {
                 SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(
                         randomAccessFileReader, seriesFilter.getSeriesPath(), seriesFilter.getFilter());
 
-                int count = 0;
                 while (seriesInTsFileReader.hasNext()) {
                     TimeValuePair timeValuePair = seriesInTsFileReader.next();
                     TSRecord record = constructTsRecord(timeValuePair, deviceId, sensorId);
-                    fileWriter.write(record);
-                    count ++;
+//                    fileWriter.write(record);
+                    count++;
                 }
                 randomAccessFileReader.close();
             }
-            System.out.println(i);
+            System.out.println("count = " + count + " Time used:" + (System.currentTimeMillis() - startTime) + "ms");
         }
         fileWriter.close();
+    }
 
+    @Test
+    public void writeTsFileUsingNewGenSeriesReaderTest() throws WriteProcessException, IOException {
+        long startTime = System.currentTimeMillis();
+        FileSchema fileSchema = new FileSchema();
+        for (int i = 0; i < 60; i++) {
+            fileSchema.registerMeasurement(new MeasurementDescriptor("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
+        }
+        File file = new File("/users/zhangjinrui/Desktop/readTest/out");
+        TsFileWriter fileWriter = new TsFileWriter(file, fileSchema, TSFileDescriptor.getInstance().getConfig());
+
+        for (int i = 0; i < 100; i++) {
+            int count = 0;
+            for (int j = 0; j < 60; j++) {
+                String deviceId = new StringBuilder("root.performf.group_23.d_").append(2300 + i).toString();
+                String sensorId = "s_" + j;
+
+                SeriesFilter<Long> seriesFilter = new SeriesFilter<>(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
+                SeriesReader seriesInTsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(tsfilePath, seriesFilter);
+
+
+                while (seriesInTsFileReader.hasNext()) {
+                    TimeValuePair timeValuePair = seriesInTsFileReader.next();
+                    TSRecord record = constructTsRecord(timeValuePair, deviceId, sensorId);
+//                    fileWriter.write(record);
+                    count++;
+                }
+                seriesInTsFileReader.close();
+            }
+            System.out.println("count = " + count + " Time used:" + (System.currentTimeMillis() - startTime) + "ms");
+        }
+        fileWriter.close();
     }
 
     private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
