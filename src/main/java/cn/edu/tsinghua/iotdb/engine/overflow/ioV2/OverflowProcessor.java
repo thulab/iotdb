@@ -496,7 +496,7 @@ public class OverflowProcessor extends Processor {
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				logNode.notifyStartFlush();
+				logNode.notifyEndFlush(null);
 			}
 		} catch (IOException e) {
 			LOGGER.error("Flush overflow processor {} rowgroup to file error in {}. Thread {} exits.",
@@ -555,7 +555,11 @@ public class OverflowProcessor extends Processor {
 			}
 
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				logNode.notifyEndFlush(null);
+				try {
+					logNode.notifyStartFlush();
+				} catch (IOException e) {
+					LOGGER.error("Overflow processor {} encountered an error when notifying log node, {}", getProcessorName(), e.getMessage());
+				}
 			}
 			BasicMemController.getInstance().reportFree(this, memSize.get());
 			memSize.set(0);
