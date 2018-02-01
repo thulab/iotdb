@@ -79,6 +79,7 @@ public class LargeDataTest {
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
+            //System.out.println(111111111);
             deamon.stop();
             Thread.sleep(5000);
             //recovery value
@@ -815,7 +816,7 @@ public class LargeDataTest {
 
             // insert large amount of data    time range : 3000 ~ 13600
             for (int time = 3000; time < 13600; time++) {
-
+                //System.out.println("===" + time);
                 String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 100);
                 statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 17);

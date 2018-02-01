@@ -1,43 +1,34 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.engine.PathUtils;
 import cn.edu.tsinghua.iotdb.engine.bufferwriteV2.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class BufferWriteProcessorTest {
 
@@ -118,6 +109,11 @@ public class BufferWriteProcessorTest {
 		fileOutputStream.write(new byte[20]);
 		fileOutputStream.close();
 		assertEquals(insertFileLength + 20, insertFile.length());
+		// copy restore file
+		File file = new File("temp");
+		restoreFile.renameTo(file);
+		bufferwrite.close();
+		file.renameTo(restoreFile);
 		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(deltaObjectId, insertPath, parameters,
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
 		assertEquals(true, insertFile.exists());
@@ -130,7 +126,6 @@ public class BufferWriteProcessorTest {
 		assertEquals(measurementId, chunkMetaData.getProperties().getMeasurementUID());
 		assertEquals(dataType, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
 		bufferWriteProcessor.close();
-		bufferwrite.close();
 		assertEquals(false, restoreFile.exists());
 	}
 

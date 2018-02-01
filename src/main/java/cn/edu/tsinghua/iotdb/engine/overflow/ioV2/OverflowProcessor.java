@@ -115,7 +115,6 @@ public class OverflowProcessor extends Processor {
 			// work dir > merge dir
 			workResource = new OverflowResource(parentPath, String.valueOf(count2));
 			mergeResource = new OverflowResource(parentPath, String.valueOf(count1));
-			isMerge = true;
 			LOGGER.info("The overflow processor {} recover from merge status.", getProcessorName());
 		}
 	}

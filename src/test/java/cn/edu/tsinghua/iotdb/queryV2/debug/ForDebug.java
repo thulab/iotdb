@@ -7,10 +7,13 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
@@ -21,8 +24,15 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -49,7 +59,7 @@ public class ForDebug {
     String unseqTsfilePath = "/users/zhangjinrui/Desktop/readTest/unseqTsfile";
 
     Path path = new Path("root.vehicle2.d0.s1.g0");
-    
+
     public void test() throws IOException {
 
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
@@ -85,6 +95,7 @@ public class ForDebug {
 
     }
 
+    @Test
     public void loadRowGroupMetadata() throws IOException {
         List<RowGroupMetaData> rowGroupMetaDatas = new ArrayList<>();
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
@@ -96,8 +107,73 @@ public class ForDebug {
                     deltaObject.offset, deltaObject.metadataBlockSize));
             rowGroupMetaDatas.addAll(rowGroupBlockMetaData.getRowGroups());
         }
-        System.out.println(rowGroupMetaDatas);
+        randomAccessFileReader.close();
     }
+
+    @Test
+    public void testLoadMetaDataByDeltaObject() throws IOException {
+        long startTime = System.currentTimeMillis();
+        int count = 6000;
+
+        for (int i = 0; i < count; i++) {
+            ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
+            TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
+
+            String deltaObjectID = new StringBuilder("root.performf.group_23.d_").append(2300 + i / 60).toString();
+            TsDeltaObject deltaObject = tsFileMetaData.getDeltaObject(deltaObjectID);
+            TsRowGroupBlockMetaData rowGroupBlockMetaData = new TsRowGroupBlockMetaData();
+            rowGroupBlockMetaData.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(randomAccessFileReader,
+                    deltaObject.offset, deltaObject.metadataBlockSize));
+            randomAccessFileReader.close();
+            if (i % 100 == 0) {
+                System.out.println(i);
+            }
+        }
+
+        System.out.println("Time used:" + (System.currentTimeMillis() - startTime) + "ms");
+    }
+
+    @Test
+    public void writeTsFileTest() throws WriteProcessException, IOException {
+        FileSchema fileSchema = new FileSchema();
+        for (int i = 0; i < 60; i++) {
+            fileSchema.registerMeasurement(new MeasurementDescriptor("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
+        }
+        File file = new File("/users/zhangjinrui/Desktop/readTest/out");
+        TsFileWriter fileWriter = new TsFileWriter(file, fileSchema, TSFileDescriptor.getInstance().getConfig());
+
+        for (int i = 0; i < 100; i++) {
+            for (int j = 0; j < 60; j++) {
+                String deviceId = new StringBuilder("root.performf.group_23.d_").append(2300 + i).toString();
+                String sensorId = "s_" + j;
+
+                SeriesFilter<Long> seriesFilter = new SeriesFilter<>(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
+                ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
+                SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(
+                        randomAccessFileReader, seriesFilter.getSeriesPath(), seriesFilter.getFilter());
+
+                int count = 0;
+                while (seriesInTsFileReader.hasNext()) {
+                    TimeValuePair timeValuePair = seriesInTsFileReader.next();
+                    TSRecord record = constructTsRecord(timeValuePair, deviceId, sensorId);
+                    fileWriter.write(record);
+                    count ++;
+                }
+                randomAccessFileReader.close();
+            }
+            System.out.println(i);
+        }
+        fileWriter.close();
+
+    }
+
+    private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
+        TSRecord record = new TSRecord(timeValuePair.getTimestamp(), deltaObjectId);
+        record.addTuple(DataPoint.getDataPoint(timeValuePair.getValue().getDataType(), measurementId,
+                timeValuePair.getValue().getValue().toString()));
+        return record;
+    }
+
 
     public void readTsFile() throws IOException {
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
