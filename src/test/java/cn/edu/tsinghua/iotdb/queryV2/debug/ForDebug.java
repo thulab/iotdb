@@ -151,7 +151,7 @@ public class ForDebug {
 
                 while (seriesInTsFileReader.hasNext()) {
                     TimeValuePair timeValuePair = seriesInTsFileReader.next();
-                    TSRecord record = constructTsRecord(timeValuePair, deviceId, sensorId);
+//                    TSRecord record = constructTsRecord(timeValuePair, deviceId, sensorId);
 //                    fileWriter.write(record);
                     count++;
                 }
@@ -172,8 +172,8 @@ public class ForDebug {
         File file = new File("/users/zhangjinrui/Desktop/readTest/out");
         TsFileWriter fileWriter = new TsFileWriter(file, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
+        long count = 0;
         for (int i = 0; i < 100; i++) {
-            int count = 0;
             for (int j = 0; j < 60; j++) {
                 String deviceId = new StringBuilder("root.performf.group_23.d_").append(2300 + i).toString();
                 String sensorId = "s_" + j;
@@ -185,12 +185,12 @@ public class ForDebug {
                 while (seriesInTsFileReader.hasNext()) {
                     TimeValuePair timeValuePair = seriesInTsFileReader.next();
                     TSRecord record = constructTsRecord(timeValuePair, deviceId, sensorId);
-//                    fileWriter.write(record);
+                    fileWriter.write(record);
                     count++;
                 }
                 seriesInTsFileReader.close();
             }
-            System.out.println("count = " + count + " Time used:" + (System.currentTimeMillis() - startTime) + "ms");
+            System.out.println(i + " count = " + count + " Time used:" + (System.currentTimeMillis() - startTime) + "ms");
         }
         fileWriter.close();
     }

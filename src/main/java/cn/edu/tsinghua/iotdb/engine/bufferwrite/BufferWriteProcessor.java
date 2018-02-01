@@ -553,7 +553,7 @@ public class BufferWriteProcessor extends Processor {
 			writeStoreToDisk();
 			filenodeFlushAction.act();
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				logNode.notifyStartFlush();
+				logNode.notifyEndFlush(null);
 			}
 		} catch (IOException e) {
 			LOGGER.error("The bufferwrite processor {} failed to flush {}.", getProcessorName(), flushFunction, e);
@@ -613,7 +613,7 @@ public class BufferWriteProcessor extends Processor {
 				throw new IOException(e);
 			}
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				logNode.notifyEndFlush(null);
+				logNode.notifyStartFlush();
 			}
 			valueCount = 0;
 			flushStatus.setFlushing();

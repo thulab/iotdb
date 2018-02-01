@@ -137,7 +137,7 @@ public class SeriesReaderFactory {
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(filePath);
         List<EncodedSeriesChunkDescriptor> seriesChunkDescriptors = getMetadataQuerier(filePath)
                 .getSeriesChunkDescriptorList(seriesFilter.getSeriesPath());
-        SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(
+        SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader,
                 new SeriesChunkLoaderImpl(randomAccessFileReader), seriesChunkDescriptors, seriesFilter.getFilter());
         return seriesInTsFileReader;
     }
