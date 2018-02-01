@@ -198,7 +198,7 @@ public class TransferData {
 				bos.write(buffer, 0, n);
 				ByteBuffer buffToSend = ByteBuffer.wrap(bos.toByteArray());
 				bos.reset();
-				clientOfServer.getSchema(buffToSend, 1);				
+				clientOfServer.getSchema(buffToSend, 1);
 			}
 			bos.close();
 			fis.close();
@@ -206,7 +206,7 @@ public class TransferData {
 		} catch (Exception e) {
 			LOGGER.error("IoTDB sender : cannot send schema from mlog.txt because {}", e.getMessage());
 			connection_orElse = false;
-		}	
+		}
 	}
 
 	public void stop() {
@@ -287,8 +287,9 @@ public class TransferData {
 		} catch (ClassNotFoundException | SQLException e) {
 			LOGGER.error("IoTDB post back sender: cannot execute flush and merge because {}", e.getMessage());
 		}
-		if(new File(config.SNAPSHOT_PATH).exists() && new File(config.SNAPSHOT_PATH).list().length!=0) { 
-			// it means that the last time postback does not succeed! Clear the files and start to postback again 
+		if (new File(config.SNAPSHOT_PATH).exists() && new File(config.SNAPSHOT_PATH).list().length != 0) {
+			// it means that the last time postback does not succeed! Clear the files and
+			// start to postback again
 			deleteSnapshot(new File(config.SNAPSHOT_PATH));
 		}
 		FileManager fileManager = FileManager.getInstance();
@@ -298,7 +299,7 @@ public class TransferData {
 		Set<String> sendingList = fileManager.getSendingFiles();
 		connection_orElse = true;
 		if (sendingList.size() == 0)
-			LOGGER.info("IoTDB post back sender : there has no files to postback！");
+			LOGGER.info("IoTDB post back sender : there has no files to postback!");
 		else {
 			connection(config.SERVER_IP, config.SERVER_PORT);
 			if (!connection_orElse)
