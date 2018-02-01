@@ -96,12 +96,14 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
     @Override
     public void close() throws IOException {
         sync();
+        lockForOther();
         try {
             this.currentFileWriter.close();
             logger.debug("Log node {} closed successfully", identifier);
         } catch (IOException e) {
             logger.error("Cannot close log node {} because {}", identifier, e.getMessage());
         }
+        unlockForOther();
     }
 
     @Override
