@@ -145,10 +145,15 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
 
     @Override
     public void delete() throws IOException {
-        logCache.clear();
-        if(currentFileWriter != null)
-            currentFileWriter.close();
-        FileUtils.deleteDirectory(new File(logDirectory));
+        lockForOther();
+        try {
+            logCache.clear();
+            if(currentFileWriter != null)
+                currentFileWriter.close();
+            FileUtils.deleteDirectory(new File(logDirectory));
+        } finally {
+            unlockForOther();
+        }
     }
 
     private void lockForWrite(){
