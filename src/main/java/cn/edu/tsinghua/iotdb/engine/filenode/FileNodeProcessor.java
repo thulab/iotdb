@@ -1588,10 +1588,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	@Override
 	public void close() throws FileNodeProcessorException {
-		synchronized (fileNodeProcessorStore) {
-			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
-			writeStoreToDisk(fileNodeProcessorStore);
-		}
 		closeBufferWrite();
 		closeOverflow();
 	}
