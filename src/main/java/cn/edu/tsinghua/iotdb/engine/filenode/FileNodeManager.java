@@ -184,7 +184,7 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public FileNodeProcessor getProcessor(String path, boolean isWriteLock) throws FileNodeManagerException {
+	private FileNodeProcessor getProcessor(String path, boolean isWriteLock) throws FileNodeManagerException {
 		String filenodeName;
 		try {
 			filenodeName = MManager.getInstance().getFileNameByPath(path);
@@ -610,7 +610,7 @@ public class FileNodeManager implements IStatistic, IService {
 		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
 		try {
 			// check append file
-			for (Entry<String, Long> entry : appendFile.getEndTimeMap().entrySet()) {
+			for (Entry<String, Long> entry : appendFile.getStartTimeMap().entrySet()) {
 				if (fileNodeProcessor.getLastUpdateTime(entry.getKey()) >= entry.getValue()) {
 					return false;
 				}

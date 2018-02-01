@@ -232,7 +232,7 @@ public class ServiceImp implements Service.Iface {
 	public void afterReceiving() throws TException {
 		getFileNodeInfo();
 		mergeNewData();
-		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid));
+		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid.get()));
 		remove();
 	}
 	
@@ -335,7 +335,7 @@ public class ServiceImp implements Service.Iface {
 					fileNodeEndTime.get().put(fileTF.getAbsolutePath(), endTimeMap);
 					filesPath.add(fileTF.getAbsolutePath());
 					num++;
-					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum);
+					LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
 				}
 				// .restore file will create when SET and CREATE and flush
 				fileNodeMap.get().put(file.getName(), filesPath);

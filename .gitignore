@@ -1,5 +1,3 @@
-iotdb/bin/start-postBackTest.sh
-iotdb/bin/stop-postBackTest.sh
 iotdb/data/*
 iotdb/derby.log
 iotdb/*.pid
