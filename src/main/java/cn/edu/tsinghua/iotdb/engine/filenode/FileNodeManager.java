@@ -296,7 +296,6 @@ public class FileNodeManager implements IStatistic, IService {
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
-					LOGGER.error("Error in write WAL.", e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
@@ -363,7 +362,6 @@ public class FileNodeManager implements IStatistic, IService {
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
-					LOGGER.error("Error in write WAL.", e);
 					if (!isMonitor) {
 						updateStatHashMapWhenFail(tsRecord);
 					}
@@ -447,7 +445,6 @@ public class FileNodeManager implements IStatistic, IService {
 							new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
 				}
 			} catch (IOException e) {
-				LOGGER.error("Error in write WAL.", e);
 				throw new FileNodeManagerException(e);
 			}
 			// if (shouldMerge) {
@@ -507,7 +504,6 @@ public class FileNodeManager implements IStatistic, IService {
 								.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
 					}
 				} catch (IOException e) {
-					LOGGER.error("Error in write WAL,", e);
 					throw new FileNodeManagerException(e);
 				}
 			}
