@@ -630,7 +630,7 @@ public class FileNodeManager implements IStatistic, IService {
 		return true;
 	}
 
-	public synchronized void mergeAll() throws FileNodeManagerException {
+	public void mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
 			LOGGER.info("Start to merge all overflowed filenode");
@@ -717,7 +717,7 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public synchronized boolean deleteOneFileNode(String processorName) throws FileNodeManagerException {
+	public boolean deleteOneFileNode(String processorName) throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
@@ -790,7 +790,7 @@ public class FileNodeManager implements IStatistic, IService {
 		return res;
 	}
 
-	public synchronized void addTimeSeries(Path path, String dataType, String encoding, String[] encodingArgs)
+	public void addTimeSeries(Path path, String dataType, String encoding, String[] encodingArgs)
 			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(path.getFullPath(), true);
 		try {
@@ -806,7 +806,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * @param processorName
 	 * @throws FileNodeManagerException
 	 */
-	public synchronized void closeOneFileNode(String processorName) throws FileNodeManagerException {
+	public void closeOneFileNode(String processorName) throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
@@ -930,7 +930,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 *         operation
 	 * @throws FileNodeManagerException
 	 */
-	public synchronized void closeAll() throws FileNodeManagerException {
+	public void closeAll() throws FileNodeManagerException {
 		LOGGER.info("Start closing all filenode processor");
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
