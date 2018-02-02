@@ -229,11 +229,12 @@ public class ServiceImp implements Service.Iface {
 	 * Close connection of derby database after receiving all files from * sender
 	 * side
 	 */
-	public void afterReceiving() throws TException {
+	public boolean afterReceiving() throws TException {
 		getFileNodeInfo();
 		mergeNewData();
 		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid.get()));
 		remove();
+		return true;
 	}
 	
 	public void remove() {
@@ -296,29 +297,8 @@ public class ServiceImp implements Service.Iface {
 						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
 						Iterator<String> it = deltaObjectMap.keySet().iterator();
 						while (it.hasNext()) {
-							String key = it.next().toString(); // key represent storage group
+							String key = it.next().toString(); // key represent device
 							TsDeltaObject deltaObj = deltaObjectMap.get(key);
-//							TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-//							blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
-//									deltaObj.offset, deltaObj.metadataBlockSize));
-//							List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
-//							for (RowGroupMetaData rowGroupMetaData : rowGroupMetadataList) {
-//								long startTime = 0x7fffffffffffffffL;
-//								long endTime = 0;
-//								List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataList = rowGroupMetaData
-//										.getTimeSeriesChunkMetaDataList();
-//								for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
-//									TInTimeSeriesChunkMetaData tInTimeSeriesChunkMetaData = timeSeriesChunkMetaData
-//											.getTInTimeSeriesChunkMetaData();
-//									TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
-//									String measurementUID = properties.getMeasurementUID();
-//									measurementUID = key + "." + measurementUID;
-//									startTime = Math.min(tInTimeSeriesChunkMetaData.getStartTime(), startTime);
-//									endTime = Math.max(tInTimeSeriesChunkMetaData.getEndTime(), endTime);
-//								}
-//								startTimeMap.put(rowGroupMetaData.getDeltaObjectID(), startTime);
-//								endTimeMap.put(rowGroupMetaData.getDeltaObjectID(), endTime);
-//						}
 							startTimeMap.put(key, deltaObj.startTime);
 							endTimeMap.put(key, deltaObj.endTime);
 						}
@@ -360,29 +340,6 @@ public class ServiceImp implements Service.Iface {
 						while (it.hasNext()) {
 							String key = it.next().toString(); // key represent device
 							TsDeltaObject deltaObj = deltaObjectMap.get(key);
-//							TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-//							blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
-//									deltaObj.offset, deltaObj.metadataBlockSize));
-//							List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
-//							for (RowGroupMetaData rowGroupMetaData : rowGroupMetadataList) {
-//								long deltaObjectStartTime = 0x7fffffffffffffffL;
-//								long deltaObjectEndTime = 0;
-//								List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataList = rowGroupMetaData
-//										.getTimeSeriesChunkMetaDataList();
-//								for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
-//									TInTimeSeriesChunkMetaData tInTimeSeriesChunkMetaData = timeSeriesChunkMetaData
-//											.getTInTimeSeriesChunkMetaData();
-//									TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
-//									String measurementUID = properties.getMeasurementUID();
-//									measurementUID = key + "." + measurementUID;
-//									long startTime = tInTimeSeriesChunkMetaData.getStartTime();
-//									long endTime = tInTimeSeriesChunkMetaData.getEndTime();
-//									deltaObjectStartTime = Math.min(startTime, deltaObjectStartTime);
-//									deltaObjectEndTime = Math.max(endTime, deltaObjectEndTime);
-//								}
-//								startTimeMap.put(rowGroupMetaData.getDeltaObjectID(), deltaObjectStartTime);
-//								endTimeMap.put(rowGroupMetaData.getDeltaObjectID(), deltaObjectEndTime);
-//							}
 							startTimeMap.put(key, deltaObj.startTime);
 							endTimeMap.put(key, deltaObj.endTime);
 						}
@@ -406,26 +363,6 @@ public class ServiceImp implements Service.Iface {
 					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum.get());
 				}
 				fileNodeMap.get().put(file.getName(), filesPath);
-			}
-		}
-		//it is necessary to flush to create .restore file
-		Connection connection = null;
-		Statement statement = null;
-		try {
-			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
-			statement = connection.createStatement();
-			statement.execute("flush");
-		} catch (SQLException | ClassNotFoundException e) {
-			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
-		} finally {
-			try {
-				if(statement!=null)
-					statement.close();
-				if(connection!=null)
-					connection.close();
-			} catch (SQLException e) {
-				LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
 			}
 		}
 	}
@@ -577,13 +514,8 @@ public class ServiceImp implements Service.Iface {
 				try {
 					if(!fileNodeManager.appendFileToFileNode(storageGroup, fileNode, path)) {
 						//it is a file with overflow data
-						System.out.println("这是老文件！！！");
-						System.out.println("path:" + path);
 						getSqlToMerge(path);
-						System.out.println("SQL解析完成");
-						System.out.println(SQLToMerge.get().size());
 						insertSQL();
-						System.out.println("插入数据 完成！！！！");
 					}
 				} catch (FileNodeManagerException e) {
 					LOGGER.error("IoTDB receiver : can not load external file because {}", e.getMessage());
