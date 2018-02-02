@@ -118,7 +118,6 @@ public class OverflowProcessor extends Processor {
 			// work dir > merge dir
 			workResource = new OverflowResource(parentPath, String.valueOf(count2));
 			mergeResource = new OverflowResource(parentPath, String.valueOf(count1));
-			isMerge = true;
 			LOGGER.info("The overflow processor {} recover from merge status.", getProcessorName());
 		}
 	}
@@ -501,7 +500,7 @@ public class OverflowProcessor extends Processor {
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				logNode.notifyStartFlush();
+				logNode.notifyEndFlush(null);
 			}
 		} catch (IOException e) {
 			LOGGER.error("Flush overflow processor {} rowgroup to file error in {}. Thread {} exits.",
@@ -560,7 +559,11 @@ public class OverflowProcessor extends Processor {
 			}
 
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-				logNode.notifyEndFlush(null);
+				try {
+					logNode.notifyStartFlush();
+				} catch (IOException e) {
+					LOGGER.error("Overflow processor {} encountered an error when notifying log node, {}", getProcessorName(), e.getMessage());
+				}
 			}
 			BasicMemController.getInstance().reportFree(this, memSize.get());
 			memSize.set(0);

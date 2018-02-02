@@ -20,6 +20,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunkDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.MetadataQuerier;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesChunkReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesChunkReaderWithFilterImpl;
@@ -28,6 +30,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSing
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +45,13 @@ public class SeriesReaderFactory {
     private DigestFilterVisitor digestFilterVisitor;
     private ExternalSortJobEngine externalSortJobEngine;
 
+    private ThreadLocal<SimpleMetadataQuerierForMerge> metadataQuerierForMerge;
+
     private SeriesReaderFactory() {
         overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
         digestFilterVisitor = new DigestFilterVisitor();
         externalSortJobEngine = SimpleExternalSortEngine.getInstance();
+        metadataQuerierForMerge = new ThreadLocal<>();
     }
 
     public OverflowInsertDataReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource, Filter<?> filter) throws IOException {
@@ -113,9 +119,8 @@ public class SeriesReaderFactory {
             IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SeriesFilter<?> seriesFilter)
             throws IOException {
         logger.debug("create seriesReader for merge. SeriesFilter = {}. TsFilePath = {}", seriesFilter, intervalFileNode.getFilePath());
-        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(intervalFileNode.getFilePath());
-        SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(
-                randomAccessFileReader, seriesFilter.getSeriesPath(), seriesFilter.getFilter());
+        SeriesReader seriesInTsFileReader = genTsFileSeriesReader(intervalFileNode.getFilePath(), seriesFilter);
+
         SeriesReader overflowInsertDataReader = createSeriesReaderForOverflowInsert(overflowSeriesDataSource, seriesFilter.getFilter());
         PriorityTimeValuePairReader priorityTimeValuePairReaderForTsFile = new PriorityTimeValuePairReader(seriesInTsFileReader,
                 new PriorityTimeValuePairReader.Priority(1));
@@ -126,6 +131,22 @@ public class SeriesReaderFactory {
         SeriesWithUpdateOpReader seriesWithUpdateOpReader = new SeriesWithUpdateOpReader(mergeSeriesReader,
                 overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateOperationReader());
         return seriesWithUpdateOpReader;
+    }
+
+    public SeriesReader genTsFileSeriesReader(String filePath, SeriesFilter<?> seriesFilter) throws IOException {
+        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(filePath);
+        List<EncodedSeriesChunkDescriptor> seriesChunkDescriptors = getMetadataQuerier(filePath)
+                .getSeriesChunkDescriptorList(seriesFilter.getSeriesPath());
+        SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader,
+                new SeriesChunkLoaderImpl(randomAccessFileReader), seriesChunkDescriptors, seriesFilter.getFilter());
+        return seriesInTsFileReader;
+    }
+
+    private MetadataQuerier getMetadataQuerier(String filePath) throws IOException {
+        if (metadataQuerierForMerge.get() == null || !metadataQuerierForMerge.get().getFilePath().equals(filePath)) {
+            metadataQuerierForMerge.set(new SimpleMetadataQuerierForMerge(filePath));
+        }
+        return metadataQuerierForMerge.get();
     }
 
     private synchronized long getNextJobId() {

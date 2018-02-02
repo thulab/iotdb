@@ -1464,18 +1464,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return new FileSchema(jsonSchema);
 	}
 
-	private TSRecord removeNullTSRecord(RowRecord src) {
-		TSRecord record = src.toTSRecord();
-		TSRecord filledRecord = new TSRecord(record.time, record.deltaObjectId);
-
-		for (DataPoint dataPoint : record.dataPointList) {
-			if (!"null".equals(dataPoint.getValue())) {
-				filledRecord.addTuple(dataPoint);
-			}
-		}
-		return filledRecord;
-	}
-
 	@Override
 	public boolean canBeClosed() {
 		if (isMerging == FileNodeProcessorStatus.NONE) {
