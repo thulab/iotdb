@@ -104,7 +104,7 @@ public class EnvironmentUtils {
 	public static void closeStatMonitor() {
 		config.enableStatMonitor = false;
 	}
-	
+
 	/**
 	 * disable memory control</br>
 	 * this function should be called before all code in the setup
@@ -114,7 +114,6 @@ public class EnvironmentUtils {
 	}
 
 	public static void envSetUp() throws StartupException {
-		tsfileConfig.duplicateIncompletedPage = true;
 		// disable the memory control
 		config.enableMemMonitor = false;
 		// disable the system monitor

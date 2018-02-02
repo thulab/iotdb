@@ -2,10 +2,11 @@ package cn.edu.tsinghua.iotdb.query.engine.groupby;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
-import cn.edu.tsinghua.iotdb.query.management.RecordReaderFactory;
-import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
+import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
+import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -13,8 +14,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,7 +196,6 @@ public class  GroupByEngineNoFilter {
             groupByResult.mapRet.put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
         }
 
-        //LOG.debug("current group by function with no filter is over.");
         return groupByResult;
     }
 
@@ -209,16 +209,15 @@ public class  GroupByEngineNoFilter {
         String measurementID = path.getMeasurementToString();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
 
-        RecordReader recordReader = RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
-                queryTimeFilter, null, null, readLock, recordReaderPrefix);
+        QueryRecordReader recordReader = (QueryRecordReader)
+                RecordReaderFactory.getInstance().getRecordReader(deltaObjectID, measurementID,
+                queryTimeFilter, null,  readLock, recordReaderPrefix, ReaderType.QUERY);
 
         if (res == null) {
-            recordReader.buildInsertMemoryData(queryTimeFilter, null);
-
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID, queryTimeFilter, null, null, queryFetchSize);
+            res = recordReader.queryOneSeries(queryTimeFilter, null, null, queryFetchSize);
         } else {
             res.clearData();
-            res = recordReader.queryOneSeries(deltaObjectID, measurementID, queryTimeFilter, null, res, queryFetchSize);
+            res = recordReader.queryOneSeries(queryTimeFilter, null, res, queryFetchSize);
         }
 
         return res;

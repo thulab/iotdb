@@ -16,7 +16,7 @@ public class TsfileDBConfig {
 	/**
 	 * Is write ahead log enable
 	 */
-	public boolean enableWal = true;
+	public boolean enableWal = false;
 
 	/**
 	 * When a certain amount of write ahead log is reached, it will be flushed to
@@ -68,6 +68,11 @@ public class TsfileDBConfig {
 	 * Data directory for index files (KV-match indexes)
 	 */
 	public String indexFileDir = "index";
+
+	/**
+	 * Temporary directory for temporary files of read (External Sort).
+	 */
+	public String readTmpFileDir = "readTmp";
 
 	/**
 	 * The maximum concurrent thread number for merging overflow.
@@ -136,7 +141,7 @@ public class TsfileDBConfig {
 	 * 0 is RecordMemController, which count the size of every record (tuple).
 	 * 1 is JVMMemController, which use JVM heap memory as threshold.
 	 */
-	public int memControllerType = 1;
+	public int memControllerType = 0;
 
 	/**
 	 * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
@@ -184,7 +189,7 @@ public class TsfileDBConfig {
 	 * Set true to enable statistics monitor service,
      * false to disable statistics service
 	 */
-	public boolean enableStatMonitor = true;
+	public boolean enableStatMonitor = false;
 
 	/**
 	 * Set the time interval when StatMonitor performs delete detection, default value is 600s,
@@ -196,6 +201,12 @@ public class TsfileDBConfig {
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
+	/**
+	 * Threshold for external sort
+	 */
+	public int externalSortThreshold = 50;
+
+	public int mManagerCacheSize = 400000;
 	/**
 	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
 	 */
@@ -225,5 +236,6 @@ public class TsfileDBConfig {
 		derbyHome = dataDir + derbyHome;
 		walFolder = dataDir + walFolder;
 		indexFileDir = dataDir + indexFileDir;
+		readTmpFileDir = dataDir + readTmpFileDir;
 	}
 }

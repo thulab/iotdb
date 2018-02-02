@@ -37,7 +37,7 @@ public class ReaderManager {
      *
      * @param sealedFilePathList fileInputStreamList
      */
-    ReaderManager(List<String> sealedFilePathList) {
+    public ReaderManager(List<String> sealedFilePathList) {
         this.sealedFilePathList = sealedFilePathList;
         //this.rowGroupReaderMap = new HashMap<>();
     }
@@ -48,13 +48,13 @@ public class ReaderManager {
      * @param unsealedFilePath fileReader for unsealedFile
      * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
      */
-    ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
+    public ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
         this.sealedFilePathList = sealedFilePathList;
         this.unSealedFilePath = unsealedFilePath;
         this.unSealedRowGroupMetadataList = rowGroupMetadataList;
     }
 
-    List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
+    public List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
         if (rowGroupReaderMap.containsKey(deltaObjectUID)) {
             return rowGroupReaderMap.get(deltaObjectUID);
         } else {
@@ -82,6 +82,7 @@ public class ReaderManager {
                 }
             }
 
+            // TODO the code below could be removed
             if (unSealedFilePath != null) {
                 TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(unSealedFilePath);
                 // TsRandomAccessLocalFileReader fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);
