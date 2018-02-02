@@ -173,6 +173,7 @@ public class ServiceImp implements Service.Iface {
 					bf = new BufferedReader(new java.io.FileReader(schemaFromSenderPath.get()));
 					String data;
 					statement.clearBatch();
+					int count = 0;
 					while ((data = bf.readLine()) != null) {
 						String item[] = data.split(",");
 						if (item[0].equals("2")) {
@@ -182,6 +183,13 @@ public class ServiceImp implements Service.Iface {
 							String sql = "CREATE TIMESERIES " + item[1] + " WITH DATATYPE=" + item[2] + ", ENCODING=" + item[3];
 							statement.addBatch(sql);
 						}
+						count++;
+						if(count > 10000)
+						{
+							statement.executeBatch();
+							statement.clearBatch();
+							count = 0 ;
+						}
 					}
 					bf.close();
 				} catch (IOException e) {
@@ -190,6 +198,7 @@ public class ServiceImp implements Service.Iface {
 				}
 
 				statement.executeBatch();
+				statement.clearBatch();
 			} catch (SQLException | ClassNotFoundException e) {
 				LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
 			} finally {
@@ -452,10 +461,18 @@ public class ServiceImp implements Service.Iface {
 			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
 			statement = connection.createStatement();
+			int count = 0;
 			for (String sql : SQLToMerge.get()) {
 				statement.addBatch(sql);
+				count ++;
+				if(count > 10000) {
+					statement.executeBatch();
+					statement.clearBatch();
+					count = 0 ;
+				}
 			}
 			statement.executeBatch();
+			statement.clearBatch();
 		} catch (SQLException | ClassNotFoundException e) {
 			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
 		} finally {

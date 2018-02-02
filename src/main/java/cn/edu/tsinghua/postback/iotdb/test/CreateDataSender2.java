@@ -182,7 +182,9 @@ public class CreateDataSender2 {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");
             connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
             statement = connection.createStatement();
+            
             setStorageGroup(statement, storageGroupList);
+            System.out.println("Finish set storage group.");
             createTimeseries(statement, timeseriesMap);
             System.out.println("Finish create timeseries.");
             while(true) {
