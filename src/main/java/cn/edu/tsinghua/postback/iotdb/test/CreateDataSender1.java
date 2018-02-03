@@ -11,7 +11,7 @@ import java.util.*;
 
 public class CreateDataSender1 {
 
-    public static final int TIME_INTERVAL = 0;
+    public static final int TIME_INTERVAL = 20;
     public static final int TOTAL_DATA = 2000000;
     public static final int ABNORMAL_MAX_INT = 0;
     public static final int ABNORMAL_MIN_INT = -10;
@@ -150,8 +150,8 @@ public class CreateDataSender1 {
                     statement.clearBatch();
                     sqlCount = 0;
                 }
-                Thread.sleep(TIME_INTERVAL);
             }
+            Thread.sleep(TIME_INTERVAL);
 
             if (abnormalFlag == 0) {
                 abnormalCount += 1;

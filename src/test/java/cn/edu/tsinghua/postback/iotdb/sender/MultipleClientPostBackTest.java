@@ -133,7 +133,7 @@ public class MultipleClientPostBackTest {
 				} catch (ClassNotFoundException | SQLException e) {
 					fail(e.getMessage());
 				}
-            	if(count > 100)
+            	if(count > 1000)
             		break;
         	}
         }

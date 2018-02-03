@@ -328,7 +328,6 @@ public class ServiceImp implements Service.Iface {
 					num++;
 					LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
 				}
-				// .restore file will create when SET and CREATE and flush
 				fileNodeMap.get().put(file.getName(), filesPath);
 			} else
 			{				
@@ -369,7 +368,7 @@ public class ServiceImp implements Service.Iface {
 					fileNodeEndTime.get().put(sourceFilePath, endTimeMap);
 					filesPath.add(sourceFilePath);
 					num++;
-					LOGGER.info("IoTDB receiver : Judging MERGE_TYPE has complete : " + num + "/" + fileNum.get());
+					LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
 				}
 				fileNodeMap.get().put(file.getName(), filesPath);
 			}
