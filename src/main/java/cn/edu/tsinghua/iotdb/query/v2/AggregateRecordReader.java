@@ -343,6 +343,7 @@ public class AggregateRecordReader extends RecordReader{
             }
             return true;
         }
+
         return false;
     }
 }
