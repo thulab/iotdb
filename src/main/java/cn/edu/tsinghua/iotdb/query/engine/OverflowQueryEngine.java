@@ -279,20 +279,6 @@ public class OverflowQueryEngine {
         queryDataSet.getBatchReadGenerator().calculateRecord();
         EngineUtils.putRecordFromBatchReadGenerator(queryDataSet);
 
-//        if (queryDataSet == null) {
-//            queryDataSet = new QueryDataSet();
-//            for (Path path : paths) {
-//                DynamicOneColumnData queryResult = queryOneSeriesWithoutFilter(path, null, fetchSize, readLock);
-//                queryDataSet.mapRet.put(path.getFullPath(), queryResult);
-//            }
-//        } else {
-//            queryDataSet.clear();
-//            for (Path path : paths) {
-//                DynamicOneColumnData queryResult = queryOneSeriesWithoutFilter(path, null, fetchSize, readLock);
-//                queryDataSet.mapRet.put(path.getFullPath(), queryResult);
-//            }
-//        }
-
         return queryDataSet;
     }
 
