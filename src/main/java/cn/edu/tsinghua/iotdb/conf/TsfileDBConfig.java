@@ -202,11 +202,16 @@ public class TsfileDBConfig {
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
 	/**
-	 * Threshold for external sort
+	 * Threshold for external sort. When using multi-line merging sort, if the count of lines exceed {@code externalSortThreshold}, it will
+	 * trigger external sort.
 	 */
 	public int externalSortThreshold = 50;
 
+	/**
+	 * Cache size of {@code checkAndGetDataTypeCache} in {@link cn.edu.tsinghua.iotdb.metadata.MManager}
+	 */
 	public int mManagerCacheSize = 400000;
+
 	/**
 	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
 	 */
