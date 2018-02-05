@@ -113,29 +113,4 @@ public class PrimitiveArrayList {
         System.arraycopy(array, 0, cloneArray, 0, Array.getLength(array));
         return cloneArray;
     }
-//    public void putBooleanTimeValuePair(long timestamps, boolean values){
-//        throw new UnsupportedOperationException("putBooleanTimeValuePair not supported for current PrimitiveArrayList");
-//    }
-//
-//    public void putIntTimeValuePair(long timestamps, int values){
-//        throw new UnsupportedOperationException("putLongTimeValuePair not supported for current PrimitiveArrayList");
-//    }
-//
-//    public void putLongTimeValuePair(long timestamps, long values){
-//        throw new UnsupportedOperationException("putLongTimeValuePair not supported for current PrimitiveArrayList");
-//    }
-//
-//    public void putFloatTimeValuePair(long timestamps, float values){
-//        throw new UnsupportedOperationException("putFloatTimeValuePair not supported for current PrimitiveArrayList");
-//    }
-//
-//    public void putDoubleTimeValuePair(long timestamps, double values){
-//        throw new UnsupportedOperationException("putDoubleTimeValuePair not supported for current PrimitiveArrayList");
-//    }
-//
-//    public void putBinaryTimeValuePair(long timestamps, Binary values){
-//        throw new UnsupportedOperationException("putBinaryTimeValuePair not supported for current PrimitiveArrayList");
-//    }
-
-
 }

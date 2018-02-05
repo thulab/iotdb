@@ -175,7 +175,7 @@ public class ForDebug {
         long count = 0;
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 60; j++) {
-                String deviceId = new StringBuilder("root.performf.group_23.d_").append(2300 + i).toString();
+                String deviceId = new StringBuilder("root.performf.group_7.d_").append(700 + i).toString();
                 String sensorId = "s_" + j;
 
                 SeriesFilter<Long> seriesFilter = new SeriesFilter<>(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
