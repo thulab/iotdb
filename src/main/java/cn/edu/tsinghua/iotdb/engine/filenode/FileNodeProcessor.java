@@ -50,6 +50,7 @@ import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
@@ -294,7 +295,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		fileNodeRestoreFilePath = new File(dataDir, processorName + RESTORE_FILE_SUFFIX).getPath();
 		try {
-			fileNodeProcessorStore = readStoreToDisk();
+			fileNodeProcessorStore = readStoreFromDisk();
 		} catch (FileNodeProcessorException e) {
 			LOGGER.error("The fileNode processor {} encountered an error when recoverying restore information.",
 					processorName, e);
@@ -475,10 +476,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return overflowProcessor;
 	}
 
-	public OverflowProcessor getOverflowProcessor() throws FileNodeProcessorException {
+	public OverflowProcessor getOverflowProcessor() {
 		if (overflowProcessor == null) {
 			LOGGER.error("The overflow processor is null when getting the overflowProcessor");
-			throw new FileNodeProcessorException("The overflow processor is null");
 		}
 		return overflowProcessor;
 	}
@@ -793,6 +793,19 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval / 1000);
 		}
 		lastMergeTime = System.currentTimeMillis();
+
+		if (overflowProcessor != null) {
+			if (overflowProcessor
+					.getFileSize() < TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold) {
+				LOGGER.info(
+						"Skip this merge taks submission, because the size{} of overflow processor {} does not reaches the threshold {}.",
+						MemUtils.bytesCntToStr(overflowProcessor.getFileSize()), getProcessorName(),
+						MemUtils.bytesCntToStr(TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold));
+			}
+		} else {
+			LOGGER.info("Skip this merge taks submission, because the filenode processor {} has no overflow processor.",
+					getProcessorName());
+		}
 		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
 			Runnable MergeThread;
 			MergeThread = () -> {
@@ -1586,10 +1599,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.info("Deregister the filenode processor: {} from monitor.", getProcessorName());
 			StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
 		}
-		synchronized (fileNodeProcessorStore) {
-			fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
-			writeStoreToDisk(fileNodeProcessorStore);
-		}
 		closeBufferWrite();
 		closeOverflow();
 	}
@@ -1620,7 +1629,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 	}
 
-	private FileNodeProcessorStore readStoreToDisk() throws FileNodeProcessorException {
+	private FileNodeProcessorStore readStoreFromDisk() throws FileNodeProcessorException {
 
 		synchronized (fileNodeRestoreFilePath) {
 			FileNodeProcessorStore fileNodeProcessorStore = null;

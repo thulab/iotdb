@@ -75,10 +75,11 @@ public class BufferWriteProcessor extends Processor {
 	// this just the bufferwrite file name
 	private String fileName;
 	private static final String restoreFile = ".restore";
-    // this is the bufferwrite file absolute path
+	// this is the bufferwrite file absolute path
 	private String bufferwriteRestoreFilePath;
 	private String bufferwriteOutputFilePath;
 	private String bufferwriterelativePath;
+	private File bufferwriteOutputFile;
 
 	private boolean isNewProcessor = false;
 
@@ -112,15 +113,15 @@ public class BufferWriteProcessor extends Processor {
 			dataDir.mkdirs();
 			LOGGER.debug("The bufferwrite processor data dir doesn't exists, create new directory {}.", dataDirPath);
 		}
-		File outputFile = new File(dataDir, fileName);
+		bufferwriteOutputFile = new File(dataDir, fileName);
 		File restoreFile = new File(dataDir, restoreFileName);
 		bufferwriteRestoreFilePath = restoreFile.getPath();
-		bufferwriteOutputFilePath = outputFile.getPath();
+		bufferwriteOutputFilePath = bufferwriteOutputFile.getPath();
 		bufferwriterelativePath = processorName + File.separatorChar + fileName;
 		// get the fileschema
 		this.fileSchema = fileSchema;
 
-		if (outputFile.exists() && restoreFile.exists()) {
+		if (bufferwriteOutputFile.exists() && restoreFile.exists()) {
 			//
 			// There is one damaged file, and the RESTORE_FILE_SUFFIX exist
 			//
@@ -131,10 +132,10 @@ public class BufferWriteProcessor extends Processor {
 
 			ITsRandomAccessFileWriter outputWriter;
 			try {
-				outputWriter = new TsRandomAccessFileWriter(outputFile);
+				outputWriter = new TsRandomAccessFileWriter(bufferwriteOutputFile);
 			} catch (IOException e) {
 				LOGGER.error("Construct the TSRandomAccessFileWriter error, the absolutePath is {}.",
-						outputFile.getPath(), e);
+						bufferwriteOutputFile.getPath(), e);
 				throw new BufferWriteProcessorException(e);
 			}
 
@@ -155,13 +156,15 @@ public class BufferWriteProcessor extends Processor {
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 		workMemTable = new PrimitiveMemTable();
 
-		if(TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-            try {
-                logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
-            } catch (IOException e) {
-                throw new BufferWriteProcessorException(e);
-            }
-        }
+		if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+			try {
+				logNode = MultiFileLogNodeManager.getInstance().getNode(
+						processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
+						FileNodeManager.getInstance().getRestoreFilePath(processorName));
+			} catch (IOException e) {
+				throw new BufferWriteProcessorException(e);
+			}
+		}
 	}
 
 	/**
@@ -711,9 +714,7 @@ public class BufferWriteProcessor extends Processor {
 	 * @throws IOException
 	 */
 	public long getFileSize() {
-		// TODO : save this variable to avoid object creation?
-		File file = new File(bufferwriteOutputFilePath);
-		return file.length() + memoryUsage();
+		return bufferwriteOutputFile.length() + memoryUsage();
 	}
 
 	/**
@@ -751,7 +752,7 @@ public class BufferWriteProcessor extends Processor {
 		return logNode;
 	}
 
-    public String getBufferwriteRestoreFilePath() {
-        return bufferwriteRestoreFilePath;
-    }
+	public String getBufferwriteRestoreFilePath() {
+		return bufferwriteRestoreFilePath;
+	}
 }

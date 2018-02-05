@@ -69,7 +69,8 @@ public class OverflowProcessor extends Processor {
 
 	private WriteLogNode logNode;
 
-	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema) throws IOException{
+	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema)
+			throws IOException {
 		super(processorName);
 		this.fileSchema = fileSchema;
 		String overflowDirPath = TsFileDBConf.overflowDataDir;
@@ -89,8 +90,10 @@ public class OverflowProcessor extends Processor {
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
-		if(TsfileDBDescriptor.getInstance().getConfig().enableWal)
-			logNode = MultiFileLogNodeManager.getInstance().getNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(), FileNodeManager.getInstance().getRestoreFilePath(processorName));
+		if (TsfileDBDescriptor.getInstance().getConfig().enableWal)
+			logNode = MultiFileLogNodeManager.getInstance().getNode(
+					processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(),
+					FileNodeManager.getInstance().getRestoreFilePath(processorName));
 	}
 
 	private void recovery(File parentFile) throws IOException {
@@ -288,15 +291,16 @@ public class OverflowProcessor extends Processor {
 	 * @return insert data in SeriesChunkInMemTable
 	 */
 	private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
-													   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-													   SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
+			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+			SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
 
 		MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
 		if (flushStatus.isFlushing()) {
-			memSeriesLazyMerger.addMemSeries(flushSupport.queryOverflowInsertInMemory(deltaObjectId,
-					measurementId, dataType));
+			memSeriesLazyMerger
+					.addMemSeries(flushSupport.queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType));
 		}
-		memSeriesLazyMerger.addMemSeries(workSupport.queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType));
+		memSeriesLazyMerger
+				.addMemSeries(workSupport.queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType));
 		return new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
 	}
 
@@ -626,8 +630,8 @@ public class OverflowProcessor extends Processor {
 	public long memoryUsage() {
 		return memSize.get();
 	}
-	
-	public String getOverflowRestoreFile(){
+
+	public String getOverflowRestoreFile() {
 		return workResource.getPositionFilePath();
 	}
 
@@ -643,9 +647,7 @@ public class OverflowProcessor extends Processor {
 	 * @return The size of overflow file corresponding to this processor.
 	 */
 	public long getFileSize() {
-		File insertFile = new File(workResource.getInsertFilePath());
-		File updateFile = new File(workResource.getUpdateDeleteFilePath());
-		return insertFile.length() + updateFile.length() + memoryUsage();
+		return workResource.getInsertFile().length() + workResource.getUpdateDeleteFile().length() + memoryUsage();
 	}
 
 	/**

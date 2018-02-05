@@ -38,6 +38,8 @@ public class OverflowResource {
 	private String insertFilePath;
 	private String updateDeleteFilePath;
 	private String positionFilePath;
+	private File insertFile;
+	private File updateFile;
 
 	private String insertFileName = "unseqTsFile";
 	private String updateDeleteFileName = "overflowFile";
@@ -64,8 +66,10 @@ public class OverflowResource {
 		if (!dataFile.exists()) {
 			dataFile.mkdirs();
 		}
-		insertFilePath = new File(dataFile, insertFileName).getPath();
-		updateDeleteFilePath = new File(dataFile, updateDeleteFileName).getPath();
+		insertFile = new File(dataFile, insertFileName);
+		insertFilePath = insertFile.getPath();
+		updateFile = new File(dataFile, updateDeleteFileName);
+		updateDeleteFilePath = updateFile.getPath();
 		positionFilePath = new File(dataFile, positionFileName).getPath();
 		Pair<Long, Long> position = readPositionInfo();
 		try {
@@ -302,12 +306,20 @@ public class OverflowResource {
 		return insertFilePath;
 	}
 
+	public File getInsertFile(){
+		return insertFile;
+	}
+
 	public String getPositionFilePath() {
 		return positionFilePath;
 	}
 
 	public String getUpdateDeleteFilePath() {
 		return updateDeleteFilePath;
+	}
+	
+	public File getUpdateDeleteFile(){
+		return updateFile;
 	}
 
 	public void close() throws IOException {
