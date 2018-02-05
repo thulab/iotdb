@@ -79,7 +79,6 @@ public class LargeDataTest {
     @After
     public void tearDown() throws Exception {
         if (testFlag) {
-            //System.out.println(111111111);
             deamon.stop();
             Thread.sleep(5000);
             //recovery value

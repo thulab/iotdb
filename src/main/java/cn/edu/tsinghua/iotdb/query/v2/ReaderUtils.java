@@ -225,7 +225,7 @@ public class ReaderUtils {
                 }
 
                 // TODO there may return many results
-                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                while (timeIdx < pageTimestamps.length) {
                     while (insertMemoryData.hasNext() && timeIdx < pageTimestamps.length
                             && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                         res.putTime(insertMemoryData.getCurrentMinTime());
@@ -270,7 +270,7 @@ public class ReaderUtils {
                 }
 
                 // TODO there may return many results
-                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                while (timeIdx < pageTimestamps.length) {
                     while (insertMemoryData.hasNext() && timeIdx < pageTimestamps.length
                             && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                         res.putTime(insertMemoryData.getCurrentMinTime());
@@ -316,7 +316,7 @@ public class ReaderUtils {
                 }
 
                 // TODO there may return many results
-                for (; timeIdx < pageTimestamps.length; timeIdx ++) {
+                while (timeIdx < pageTimestamps.length) {
                     while (insertMemoryData.hasNext() && timeIdx < pageTimestamps.length
                             && insertMemoryData.getCurrentMinTime() <= pageTimestamps[timeIdx]) {
                         res.putTime(insertMemoryData.getCurrentMinTime());
