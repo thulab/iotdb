@@ -11,7 +11,7 @@ import java.util.*;
 
 public class CreateDataSender2 {
 
-    public static final int TIME_INTERVAL = 20;
+    public static final int TIME_INTERVAL = 0;
     public static final int TOTAL_DATA = 2000000;
     public static final int ABNORMAL_MAX_INT = 0;
     public static final int ABNORMAL_MIN_INT = -10;
@@ -24,7 +24,7 @@ public class CreateDataSender2 {
     public static final int MIN_FLOAT = 20;
     public static final int MAX_FLOAT = 30;
     public static final int STRING_LENGTH = 5;
-    public static final int BATCH_SQL = 40000;
+    public static final int BATCH_SQL = 10000;
 
     public static HashMap generateTimeseriesMapFromFile(String inputFilePath) throws Exception{
 
@@ -173,10 +173,10 @@ public class CreateDataSender2 {
         HashMap timeseriesMap = generateTimeseriesMapFromFile("/home/hadoop/xuyi/iotdb/CreateTimeseries2.txt");
 
         ArrayList<String> storageGroupList = new ArrayList();
-        storageGroupList.add("root.vehicle_history1");
-        storageGroupList.add("root.vehicle_alarm1");
-        storageGroupList.add("root.vehicle_temp1");
-        storageGroupList.add("root.range_event1");
+        storageGroupList.add("root.vehicle_history");
+        storageGroupList.add("root.vehicle_alarm");
+        storageGroupList.add("root.vehicle_temp");
+        storageGroupList.add("root.range_event");
 
         try {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");

@@ -42,11 +42,9 @@ public class Service {
 
     public void getFileNodeInfo() throws org.apache.thrift.TException;
 
-    public void getSqlToMerge(String path) throws org.apache.thrift.TException;
+    public void mergeOldData(String path) throws org.apache.thrift.TException;
 
-    public void insertSQL() throws org.apache.thrift.TException;
-
-    public void mergeNewData() throws org.apache.thrift.TException;
+    public void mergeData() throws org.apache.thrift.TException;
 
     public void getSchema(ByteBuffer buff, int status) throws org.apache.thrift.TException;
 
@@ -64,11 +62,9 @@ public class Service {
 
     public void getFileNodeInfo(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getSqlToMerge(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void mergeOldData(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void insertSQL(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
-
-    public void mergeNewData(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void mergeData(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void getSchema(ByteBuffer buff, int status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -166,61 +162,42 @@ public class Service {
       return;
     }
 
-    public void getSqlToMerge(String path) throws org.apache.thrift.TException
+    public void mergeOldData(String path) throws org.apache.thrift.TException
     {
-      send_getSqlToMerge(path);
-      recv_getSqlToMerge();
+      send_mergeOldData(path);
+      recv_mergeOldData();
     }
 
-    public void send_getSqlToMerge(String path) throws org.apache.thrift.TException
+    public void send_mergeOldData(String path) throws org.apache.thrift.TException
     {
-      getSqlToMerge_args args = new getSqlToMerge_args();
+      mergeOldData_args args = new mergeOldData_args();
       args.setPath(path);
-      sendBase("getSqlToMerge", args);
+      sendBase("mergeOldData", args);
     }
 
-    public void recv_getSqlToMerge() throws org.apache.thrift.TException
+    public void recv_mergeOldData() throws org.apache.thrift.TException
     {
-      getSqlToMerge_result result = new getSqlToMerge_result();
-      receiveBase(result, "getSqlToMerge");
+      mergeOldData_result result = new mergeOldData_result();
+      receiveBase(result, "mergeOldData");
       return;
     }
 
-    public void insertSQL() throws org.apache.thrift.TException
+    public void mergeData() throws org.apache.thrift.TException
     {
-      send_insertSQL();
-      recv_insertSQL();
+      send_mergeData();
+      recv_mergeData();
     }
 
-    public void send_insertSQL() throws org.apache.thrift.TException
+    public void send_mergeData() throws org.apache.thrift.TException
     {
-      insertSQL_args args = new insertSQL_args();
-      sendBase("insertSQL", args);
+      mergeData_args args = new mergeData_args();
+      sendBase("mergeData", args);
     }
 
-    public void recv_insertSQL() throws org.apache.thrift.TException
+    public void recv_mergeData() throws org.apache.thrift.TException
     {
-      insertSQL_result result = new insertSQL_result();
-      receiveBase(result, "insertSQL");
-      return;
-    }
-
-    public void mergeNewData() throws org.apache.thrift.TException
-    {
-      send_mergeNewData();
-      recv_mergeNewData();
-    }
-
-    public void send_mergeNewData() throws org.apache.thrift.TException
-    {
-      mergeNewData_args args = new mergeNewData_args();
-      sendBase("mergeNewData", args);
-    }
-
-    public void recv_mergeNewData() throws org.apache.thrift.TException
-    {
-      mergeNewData_result result = new mergeNewData_result();
-      receiveBase(result, "mergeNewData");
+      mergeData_result result = new mergeData_result();
+      receiveBase(result, "mergeData");
       return;
     }
 
@@ -406,23 +383,23 @@ public class Service {
       }
     }
 
-    public void getSqlToMerge(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void mergeOldData(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getSqlToMerge_call method_call = new getSqlToMerge_call(path, resultHandler, this, ___protocolFactory, ___transport);
+      mergeOldData_call method_call = new mergeOldData_call(path, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class getSqlToMerge_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class mergeOldData_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String path;
-      public getSqlToMerge_call(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public mergeOldData_call(String path, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.path = path;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getSqlToMerge", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getSqlToMerge_args args = new getSqlToMerge_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mergeOldData", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        mergeOldData_args args = new mergeOldData_args();
         args.setPath(path);
         args.write(prot);
         prot.writeMessageEnd();
@@ -434,25 +411,25 @@ public class Service {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_getSqlToMerge();
+        (new Client(prot)).recv_mergeOldData();
       }
     }
 
-    public void insertSQL(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void mergeData(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      insertSQL_call method_call = new insertSQL_call(resultHandler, this, ___protocolFactory, ___transport);
+      mergeData_call method_call = new mergeData_call(resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class insertSQL_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public insertSQL_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class mergeData_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public mergeData_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("insertSQL", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        insertSQL_args args = new insertSQL_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mergeData", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        mergeData_args args = new mergeData_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -463,36 +440,7 @@ public class Service {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_insertSQL();
-      }
-    }
-
-    public void mergeNewData(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      mergeNewData_call method_call = new mergeNewData_call(resultHandler, this, ___protocolFactory, ___transport);
-      this.___currentMethod = method_call;
-      ___manager.call(method_call);
-    }
-
-    public static class mergeNewData_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public mergeNewData_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mergeNewData", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        mergeNewData_args args = new mergeNewData_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_mergeNewData();
+        (new Client(prot)).recv_mergeData();
       }
     }
 
@@ -605,9 +553,8 @@ public class Service {
       processMap.put("getUUID", new getUUID());
       processMap.put("startReceiving", new startReceiving());
       processMap.put("getFileNodeInfo", new getFileNodeInfo());
-      processMap.put("getSqlToMerge", new getSqlToMerge());
-      processMap.put("insertSQL", new insertSQL());
-      processMap.put("mergeNewData", new mergeNewData());
+      processMap.put("mergeOldData", new mergeOldData());
+      processMap.put("mergeData", new mergeData());
       processMap.put("getSchema", new getSchema());
       processMap.put("afterReceiving", new afterReceiving());
       processMap.put("cancelReceiving", new cancelReceiving());
@@ -674,62 +621,42 @@ public class Service {
       }
     }
 
-    public static class getSqlToMerge<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getSqlToMerge_args> {
-      public getSqlToMerge() {
-        super("getSqlToMerge");
+    public static class mergeOldData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, mergeOldData_args> {
+      public mergeOldData() {
+        super("mergeOldData");
       }
 
-      public getSqlToMerge_args getEmptyArgsInstance() {
-        return new getSqlToMerge_args();
+      public mergeOldData_args getEmptyArgsInstance() {
+        return new mergeOldData_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public getSqlToMerge_result getResult(I iface, getSqlToMerge_args args) throws org.apache.thrift.TException {
-        getSqlToMerge_result result = new getSqlToMerge_result();
-        iface.getSqlToMerge(args.path);
+      public mergeOldData_result getResult(I iface, mergeOldData_args args) throws org.apache.thrift.TException {
+        mergeOldData_result result = new mergeOldData_result();
+        iface.mergeOldData(args.path);
         return result;
       }
     }
 
-    public static class insertSQL<I extends Iface> extends org.apache.thrift.ProcessFunction<I, insertSQL_args> {
-      public insertSQL() {
-        super("insertSQL");
+    public static class mergeData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, mergeData_args> {
+      public mergeData() {
+        super("mergeData");
       }
 
-      public insertSQL_args getEmptyArgsInstance() {
-        return new insertSQL_args();
-      }
-
-      protected boolean isOneway() {
-        return false;
-      }
-
-      public insertSQL_result getResult(I iface, insertSQL_args args) throws org.apache.thrift.TException {
-        insertSQL_result result = new insertSQL_result();
-        iface.insertSQL();
-        return result;
-      }
-    }
-
-    public static class mergeNewData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, mergeNewData_args> {
-      public mergeNewData() {
-        super("mergeNewData");
-      }
-
-      public mergeNewData_args getEmptyArgsInstance() {
-        return new mergeNewData_args();
+      public mergeData_args getEmptyArgsInstance() {
+        return new mergeData_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public mergeNewData_result getResult(I iface, mergeNewData_args args) throws org.apache.thrift.TException {
-        mergeNewData_result result = new mergeNewData_result();
-        iface.mergeNewData();
+      public mergeData_result getResult(I iface, mergeData_args args) throws org.apache.thrift.TException {
+        mergeData_result result = new mergeData_result();
+        iface.mergeData();
         return result;
       }
     }
@@ -811,9 +738,8 @@ public class Service {
       processMap.put("getUUID", new getUUID());
       processMap.put("startReceiving", new startReceiving());
       processMap.put("getFileNodeInfo", new getFileNodeInfo());
-      processMap.put("getSqlToMerge", new getSqlToMerge());
-      processMap.put("insertSQL", new insertSQL());
-      processMap.put("mergeNewData", new mergeNewData());
+      processMap.put("mergeOldData", new mergeOldData());
+      processMap.put("mergeData", new mergeData());
       processMap.put("getSchema", new getSchema());
       processMap.put("afterReceiving", new afterReceiving());
       processMap.put("cancelReceiving", new cancelReceiving());
@@ -972,20 +898,20 @@ public class Service {
       }
     }
 
-    public static class getSqlToMerge<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getSqlToMerge_args, Void> {
-      public getSqlToMerge() {
-        super("getSqlToMerge");
+    public static class mergeOldData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, mergeOldData_args, Void> {
+      public mergeOldData() {
+        super("mergeOldData");
       }
 
-      public getSqlToMerge_args getEmptyArgsInstance() {
-        return new getSqlToMerge_args();
+      public mergeOldData_args getEmptyArgsInstance() {
+        return new mergeOldData_args();
       }
 
       public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new AsyncMethodCallback<Void>() { 
           public void onComplete(Void o) {
-            getSqlToMerge_result result = new getSqlToMerge_result();
+            mergeOldData_result result = new mergeOldData_result();
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -997,7 +923,7 @@ public class Service {
           public void onError(Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TBase msg;
-            getSqlToMerge_result result = new getSqlToMerge_result();
+            mergeOldData_result result = new mergeOldData_result();
             {
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
@@ -1017,25 +943,25 @@ public class Service {
         return false;
       }
 
-      public void start(I iface, getSqlToMerge_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.getSqlToMerge(args.path,resultHandler);
+      public void start(I iface, mergeOldData_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+        iface.mergeOldData(args.path,resultHandler);
       }
     }
 
-    public static class insertSQL<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, insertSQL_args, Void> {
-      public insertSQL() {
-        super("insertSQL");
+    public static class mergeData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, mergeData_args, Void> {
+      public mergeData() {
+        super("mergeData");
       }
 
-      public insertSQL_args getEmptyArgsInstance() {
-        return new insertSQL_args();
+      public mergeData_args getEmptyArgsInstance() {
+        return new mergeData_args();
       }
 
       public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new AsyncMethodCallback<Void>() { 
           public void onComplete(Void o) {
-            insertSQL_result result = new insertSQL_result();
+            mergeData_result result = new mergeData_result();
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -1047,7 +973,7 @@ public class Service {
           public void onError(Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TBase msg;
-            insertSQL_result result = new insertSQL_result();
+            mergeData_result result = new mergeData_result();
             {
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
@@ -1067,58 +993,8 @@ public class Service {
         return false;
       }
 
-      public void start(I iface, insertSQL_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.insertSQL(resultHandler);
-      }
-    }
-
-    public static class mergeNewData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, mergeNewData_args, Void> {
-      public mergeNewData() {
-        super("mergeNewData");
-      }
-
-      public mergeNewData_args getEmptyArgsInstance() {
-        return new mergeNewData_args();
-      }
-
-      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
-        final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<Void>() { 
-          public void onComplete(Void o) {
-            mergeNewData_result result = new mergeNewData_result();
-            try {
-              fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
-              return;
-            } catch (Exception e) {
-              LOGGER.error("Exception writing to internal frame buffer", e);
-            }
-            fb.close();
-          }
-          public void onError(Exception e) {
-            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
-            org.apache.thrift.TBase msg;
-            mergeNewData_result result = new mergeNewData_result();
-            {
-              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
-              msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
-            }
-            try {
-              fcall.sendResponse(fb,msg,msgType,seqid);
-              return;
-            } catch (Exception ex) {
-              LOGGER.error("Exception writing to internal frame buffer", ex);
-            }
-            fb.close();
-          }
-        };
-      }
-
-      protected boolean isOneway() {
-        return false;
-      }
-
-      public void start(I iface, mergeNewData_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.mergeNewData(resultHandler);
+      public void start(I iface, mergeData_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+        iface.mergeData(resultHandler);
       }
     }
 
@@ -3542,15 +3418,15 @@ public class Service {
 
   }
 
-  public static class getSqlToMerge_args implements org.apache.thrift.TBase<getSqlToMerge_args, getSqlToMerge_args._Fields>, java.io.Serializable, Cloneable, Comparable<getSqlToMerge_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getSqlToMerge_args");
+  public static class mergeOldData_args implements org.apache.thrift.TBase<mergeOldData_args, mergeOldData_args._Fields>, java.io.Serializable, Cloneable, Comparable<mergeOldData_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mergeOldData_args");
 
     private static final org.apache.thrift.protocol.TField PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("path", org.apache.thrift.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new getSqlToMerge_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getSqlToMerge_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new mergeOldData_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new mergeOldData_argsTupleSchemeFactory());
     }
 
     public String path; // required
@@ -3620,13 +3496,13 @@ public class Service {
       tmpMap.put(_Fields.PATH, new org.apache.thrift.meta_data.FieldMetaData("path", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getSqlToMerge_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mergeOldData_args.class, metaDataMap);
     }
 
-    public getSqlToMerge_args() {
+    public mergeOldData_args() {
     }
 
-    public getSqlToMerge_args(
+    public mergeOldData_args(
       String path)
     {
       this();
@@ -3636,14 +3512,14 @@ public class Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getSqlToMerge_args(getSqlToMerge_args other) {
+    public mergeOldData_args(mergeOldData_args other) {
       if (other.isSetPath()) {
         this.path = other.path;
       }
     }
 
-    public getSqlToMerge_args deepCopy() {
-      return new getSqlToMerge_args(this);
+    public mergeOldData_args deepCopy() {
+      return new mergeOldData_args(this);
     }
 
     @Override
@@ -3655,7 +3531,7 @@ public class Service {
       return this.path;
     }
 
-    public getSqlToMerge_args setPath(String path) {
+    public mergeOldData_args setPath(String path) {
       this.path = path;
       return this;
     }
@@ -3714,12 +3590,12 @@ public class Service {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getSqlToMerge_args)
-        return this.equals((getSqlToMerge_args)that);
+      if (that instanceof mergeOldData_args)
+        return this.equals((mergeOldData_args)that);
       return false;
     }
 
-    public boolean equals(getSqlToMerge_args that) {
+    public boolean equals(mergeOldData_args that) {
       if (that == null)
         return false;
 
@@ -3741,7 +3617,7 @@ public class Service {
     }
 
     @Override
-    public int compareTo(getSqlToMerge_args other) {
+    public int compareTo(mergeOldData_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -3775,7 +3651,7 @@ public class Service {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getSqlToMerge_args(");
+      StringBuilder sb = new StringBuilder("mergeOldData_args(");
       boolean first = true;
 
       sb.append("path:");
@@ -3810,15 +3686,15 @@ public class Service {
       }
     }
 
-    private static class getSqlToMerge_argsStandardSchemeFactory implements SchemeFactory {
-      public getSqlToMerge_argsStandardScheme getScheme() {
-        return new getSqlToMerge_argsStandardScheme();
+    private static class mergeOldData_argsStandardSchemeFactory implements SchemeFactory {
+      public mergeOldData_argsStandardScheme getScheme() {
+        return new mergeOldData_argsStandardScheme();
       }
     }
 
-    private static class getSqlToMerge_argsStandardScheme extends StandardScheme<getSqlToMerge_args> {
+    private static class mergeOldData_argsStandardScheme extends StandardScheme<mergeOldData_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getSqlToMerge_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, mergeOldData_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -3847,7 +3723,7 @@ public class Service {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getSqlToMerge_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, mergeOldData_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -3862,16 +3738,16 @@ public class Service {
 
     }
 
-    private static class getSqlToMerge_argsTupleSchemeFactory implements SchemeFactory {
-      public getSqlToMerge_argsTupleScheme getScheme() {
-        return new getSqlToMerge_argsTupleScheme();
+    private static class mergeOldData_argsTupleSchemeFactory implements SchemeFactory {
+      public mergeOldData_argsTupleScheme getScheme() {
+        return new mergeOldData_argsTupleScheme();
       }
     }
 
-    private static class getSqlToMerge_argsTupleScheme extends TupleScheme<getSqlToMerge_args> {
+    private static class mergeOldData_argsTupleScheme extends TupleScheme<mergeOldData_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getSqlToMerge_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, mergeOldData_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetPath()) {
@@ -3884,7 +3760,7 @@ public class Service {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getSqlToMerge_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, mergeOldData_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -3896,14 +3772,14 @@ public class Service {
 
   }
 
-  public static class getSqlToMerge_result implements org.apache.thrift.TBase<getSqlToMerge_result, getSqlToMerge_result._Fields>, java.io.Serializable, Cloneable, Comparable<getSqlToMerge_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getSqlToMerge_result");
+  public static class mergeOldData_result implements org.apache.thrift.TBase<mergeOldData_result, mergeOldData_result._Fields>, java.io.Serializable, Cloneable, Comparable<mergeOldData_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mergeOldData_result");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new getSqlToMerge_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getSqlToMerge_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new mergeOldData_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new mergeOldData_resultTupleSchemeFactory());
     }
 
 
@@ -3966,20 +3842,20 @@ public class Service {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getSqlToMerge_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mergeOldData_result.class, metaDataMap);
     }
 
-    public getSqlToMerge_result() {
+    public mergeOldData_result() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getSqlToMerge_result(getSqlToMerge_result other) {
+    public mergeOldData_result(mergeOldData_result other) {
     }
 
-    public getSqlToMerge_result deepCopy() {
-      return new getSqlToMerge_result(this);
+    public mergeOldData_result deepCopy() {
+      return new mergeOldData_result(this);
     }
 
     @Override
@@ -4012,12 +3888,12 @@ public class Service {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getSqlToMerge_result)
-        return this.equals((getSqlToMerge_result)that);
+      if (that instanceof mergeOldData_result)
+        return this.equals((mergeOldData_result)that);
       return false;
     }
 
-    public boolean equals(getSqlToMerge_result that) {
+    public boolean equals(mergeOldData_result that) {
       if (that == null)
         return false;
 
@@ -4030,7 +3906,7 @@ public class Service {
     }
 
     @Override
-    public int compareTo(getSqlToMerge_result other) {
+    public int compareTo(mergeOldData_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -4054,7 +3930,7 @@ public class Service {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getSqlToMerge_result(");
+      StringBuilder sb = new StringBuilder("mergeOldData_result(");
       boolean first = true;
 
       sb.append(")");
@@ -4082,15 +3958,15 @@ public class Service {
       }
     }
 
-    private static class getSqlToMerge_resultStandardSchemeFactory implements SchemeFactory {
-      public getSqlToMerge_resultStandardScheme getScheme() {
-        return new getSqlToMerge_resultStandardScheme();
+    private static class mergeOldData_resultStandardSchemeFactory implements SchemeFactory {
+      public mergeOldData_resultStandardScheme getScheme() {
+        return new mergeOldData_resultStandardScheme();
       }
     }
 
-    private static class getSqlToMerge_resultStandardScheme extends StandardScheme<getSqlToMerge_result> {
+    private static class mergeOldData_resultStandardScheme extends StandardScheme<mergeOldData_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getSqlToMerge_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, mergeOldData_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -4111,7 +3987,7 @@ public class Service {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getSqlToMerge_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, mergeOldData_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -4121,35 +3997,35 @@ public class Service {
 
     }
 
-    private static class getSqlToMerge_resultTupleSchemeFactory implements SchemeFactory {
-      public getSqlToMerge_resultTupleScheme getScheme() {
-        return new getSqlToMerge_resultTupleScheme();
+    private static class mergeOldData_resultTupleSchemeFactory implements SchemeFactory {
+      public mergeOldData_resultTupleScheme getScheme() {
+        return new mergeOldData_resultTupleScheme();
       }
     }
 
-    private static class getSqlToMerge_resultTupleScheme extends TupleScheme<getSqlToMerge_result> {
+    private static class mergeOldData_resultTupleScheme extends TupleScheme<mergeOldData_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getSqlToMerge_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, mergeOldData_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getSqlToMerge_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, mergeOldData_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 
   }
 
-  public static class insertSQL_args implements org.apache.thrift.TBase<insertSQL_args, insertSQL_args._Fields>, java.io.Serializable, Cloneable, Comparable<insertSQL_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("insertSQL_args");
+  public static class mergeData_args implements org.apache.thrift.TBase<mergeData_args, mergeData_args._Fields>, java.io.Serializable, Cloneable, Comparable<mergeData_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mergeData_args");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new insertSQL_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new insertSQL_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new mergeData_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new mergeData_argsTupleSchemeFactory());
     }
 
 
@@ -4212,20 +4088,20 @@ public class Service {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(insertSQL_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mergeData_args.class, metaDataMap);
     }
 
-    public insertSQL_args() {
+    public mergeData_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public insertSQL_args(insertSQL_args other) {
+    public mergeData_args(mergeData_args other) {
     }
 
-    public insertSQL_args deepCopy() {
-      return new insertSQL_args(this);
+    public mergeData_args deepCopy() {
+      return new mergeData_args(this);
     }
 
     @Override
@@ -4258,12 +4134,12 @@ public class Service {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof insertSQL_args)
-        return this.equals((insertSQL_args)that);
+      if (that instanceof mergeData_args)
+        return this.equals((mergeData_args)that);
       return false;
     }
 
-    public boolean equals(insertSQL_args that) {
+    public boolean equals(mergeData_args that) {
       if (that == null)
         return false;
 
@@ -4276,7 +4152,7 @@ public class Service {
     }
 
     @Override
-    public int compareTo(insertSQL_args other) {
+    public int compareTo(mergeData_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -4300,7 +4176,7 @@ public class Service {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("insertSQL_args(");
+      StringBuilder sb = new StringBuilder("mergeData_args(");
       boolean first = true;
 
       sb.append(")");
@@ -4328,15 +4204,15 @@ public class Service {
       }
     }
 
-    private static class insertSQL_argsStandardSchemeFactory implements SchemeFactory {
-      public insertSQL_argsStandardScheme getScheme() {
-        return new insertSQL_argsStandardScheme();
+    private static class mergeData_argsStandardSchemeFactory implements SchemeFactory {
+      public mergeData_argsStandardScheme getScheme() {
+        return new mergeData_argsStandardScheme();
       }
     }
 
-    private static class insertSQL_argsStandardScheme extends StandardScheme<insertSQL_args> {
+    private static class mergeData_argsStandardScheme extends StandardScheme<mergeData_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, insertSQL_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, mergeData_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -4357,7 +4233,7 @@ public class Service {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, insertSQL_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, mergeData_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -4367,35 +4243,35 @@ public class Service {
 
     }
 
-    private static class insertSQL_argsTupleSchemeFactory implements SchemeFactory {
-      public insertSQL_argsTupleScheme getScheme() {
-        return new insertSQL_argsTupleScheme();
+    private static class mergeData_argsTupleSchemeFactory implements SchemeFactory {
+      public mergeData_argsTupleScheme getScheme() {
+        return new mergeData_argsTupleScheme();
       }
     }
 
-    private static class insertSQL_argsTupleScheme extends TupleScheme<insertSQL_args> {
+    private static class mergeData_argsTupleScheme extends TupleScheme<mergeData_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, insertSQL_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, mergeData_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, insertSQL_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, mergeData_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 
   }
 
-  public static class insertSQL_result implements org.apache.thrift.TBase<insertSQL_result, insertSQL_result._Fields>, java.io.Serializable, Cloneable, Comparable<insertSQL_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("insertSQL_result");
+  public static class mergeData_result implements org.apache.thrift.TBase<mergeData_result, mergeData_result._Fields>, java.io.Serializable, Cloneable, Comparable<mergeData_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mergeData_result");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new insertSQL_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new insertSQL_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new mergeData_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new mergeData_resultTupleSchemeFactory());
     }
 
 
@@ -4458,20 +4334,20 @@ public class Service {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(insertSQL_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mergeData_result.class, metaDataMap);
     }
 
-    public insertSQL_result() {
+    public mergeData_result() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public insertSQL_result(insertSQL_result other) {
+    public mergeData_result(mergeData_result other) {
     }
 
-    public insertSQL_result deepCopy() {
-      return new insertSQL_result(this);
+    public mergeData_result deepCopy() {
+      return new mergeData_result(this);
     }
 
     @Override
@@ -4504,12 +4380,12 @@ public class Service {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof insertSQL_result)
-        return this.equals((insertSQL_result)that);
+      if (that instanceof mergeData_result)
+        return this.equals((mergeData_result)that);
       return false;
     }
 
-    public boolean equals(insertSQL_result that) {
+    public boolean equals(mergeData_result that) {
       if (that == null)
         return false;
 
@@ -4522,7 +4398,7 @@ public class Service {
     }
 
     @Override
-    public int compareTo(insertSQL_result other) {
+    public int compareTo(mergeData_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -4546,7 +4422,7 @@ public class Service {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("insertSQL_result(");
+      StringBuilder sb = new StringBuilder("mergeData_result(");
       boolean first = true;
 
       sb.append(")");
@@ -4574,15 +4450,15 @@ public class Service {
       }
     }
 
-    private static class insertSQL_resultStandardSchemeFactory implements SchemeFactory {
-      public insertSQL_resultStandardScheme getScheme() {
-        return new insertSQL_resultStandardScheme();
+    private static class mergeData_resultStandardSchemeFactory implements SchemeFactory {
+      public mergeData_resultStandardScheme getScheme() {
+        return new mergeData_resultStandardScheme();
       }
     }
 
-    private static class insertSQL_resultStandardScheme extends StandardScheme<insertSQL_result> {
+    private static class mergeData_resultStandardScheme extends StandardScheme<mergeData_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, insertSQL_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, mergeData_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -4603,7 +4479,7 @@ public class Service {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, insertSQL_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, mergeData_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -4613,513 +4489,21 @@ public class Service {
 
     }
 
-    private static class insertSQL_resultTupleSchemeFactory implements SchemeFactory {
-      public insertSQL_resultTupleScheme getScheme() {
-        return new insertSQL_resultTupleScheme();
+    private static class mergeData_resultTupleSchemeFactory implements SchemeFactory {
+      public mergeData_resultTupleScheme getScheme() {
+        return new mergeData_resultTupleScheme();
       }
     }
 
-    private static class insertSQL_resultTupleScheme extends TupleScheme<insertSQL_result> {
+    private static class mergeData_resultTupleScheme extends TupleScheme<mergeData_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, insertSQL_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, mergeData_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, insertSQL_result struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-      }
-    }
-
-  }
-
-  public static class mergeNewData_args implements org.apache.thrift.TBase<mergeNewData_args, mergeNewData_args._Fields>, java.io.Serializable, Cloneable, Comparable<mergeNewData_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mergeNewData_args");
-
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new mergeNewData_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new mergeNewData_argsTupleSchemeFactory());
-    }
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mergeNewData_args.class, metaDataMap);
-    }
-
-    public mergeNewData_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public mergeNewData_args(mergeNewData_args other) {
-    }
-
-    public mergeNewData_args deepCopy() {
-      return new mergeNewData_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof mergeNewData_args)
-        return this.equals((mergeNewData_args)that);
-      return false;
-    }
-
-    public boolean equals(mergeNewData_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    @Override
-    public int compareTo(mergeNewData_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("mergeNewData_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class mergeNewData_argsStandardSchemeFactory implements SchemeFactory {
-      public mergeNewData_argsStandardScheme getScheme() {
-        return new mergeNewData_argsStandardScheme();
-      }
-    }
-
-    private static class mergeNewData_argsStandardScheme extends StandardScheme<mergeNewData_args> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, mergeNewData_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, mergeNewData_args struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class mergeNewData_argsTupleSchemeFactory implements SchemeFactory {
-      public mergeNewData_argsTupleScheme getScheme() {
-        return new mergeNewData_argsTupleScheme();
-      }
-    }
-
-    private static class mergeNewData_argsTupleScheme extends TupleScheme<mergeNewData_args> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, mergeNewData_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, mergeNewData_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-      }
-    }
-
-  }
-
-  public static class mergeNewData_result implements org.apache.thrift.TBase<mergeNewData_result, mergeNewData_result._Fields>, java.io.Serializable, Cloneable, Comparable<mergeNewData_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mergeNewData_result");
-
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new mergeNewData_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new mergeNewData_resultTupleSchemeFactory());
-    }
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mergeNewData_result.class, metaDataMap);
-    }
-
-    public mergeNewData_result() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public mergeNewData_result(mergeNewData_result other) {
-    }
-
-    public mergeNewData_result deepCopy() {
-      return new mergeNewData_result(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof mergeNewData_result)
-        return this.equals((mergeNewData_result)that);
-      return false;
-    }
-
-    public boolean equals(mergeNewData_result that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    @Override
-    public int compareTo(mergeNewData_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-      }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("mergeNewData_result(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class mergeNewData_resultStandardSchemeFactory implements SchemeFactory {
-      public mergeNewData_resultStandardScheme getScheme() {
-        return new mergeNewData_resultStandardScheme();
-      }
-    }
-
-    private static class mergeNewData_resultStandardScheme extends StandardScheme<mergeNewData_result> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, mergeNewData_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, mergeNewData_result struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class mergeNewData_resultTupleSchemeFactory implements SchemeFactory {
-      public mergeNewData_resultTupleScheme getScheme() {
-        return new mergeNewData_resultTupleScheme();
-      }
-    }
-
-    private static class mergeNewData_resultTupleScheme extends TupleScheme<mergeNewData_result> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, mergeNewData_result struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, mergeNewData_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, mergeData_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }

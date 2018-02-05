@@ -71,7 +71,6 @@ public class ServiceImp implements Service.Iface {
 																				// Files, Map String1 means timeseries、
 																				// String2 means startTime
 	private ThreadLocal<Map<String, String>> linkFilePath = new ThreadLocal<>();
-	private ThreadLocal<Set<String>> SQLToMerge = new ThreadLocal<>(); // SQL for data of the seconde type
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
 	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();//config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "mlog.txt";
 	
@@ -86,7 +85,6 @@ public class ServiceImp implements Service.Iface {
 		fileNodeStartTime.set(new HashMap<>());
 		fileNodeEndTime.set(new HashMap<>());
 		linkFilePath.set(new HashMap<>());
-		SQLToMerge.set(new HashSet<>());
 		schemaFromSenderPath.set(config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "mlog.txt");
 	}
 	public String getUUID(String uuid) throws TException {
@@ -240,7 +238,7 @@ public class ServiceImp implements Service.Iface {
 	 */
 	public boolean afterReceiving() throws TException {
 		getFileNodeInfo();
-		mergeNewData();
+		mergeData();
 		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid.get()));
 		remove();
 		return true;
@@ -254,7 +252,6 @@ public class ServiceImp implements Service.Iface {
 		fileNodeEndTime.remove();
 		linkFilePath.remove();
 		schemaFromSenderPath.remove();
-		SQLToMerge.remove();
 	}
 
 	private void deleteFile(File file) {
@@ -375,11 +372,17 @@ public class ServiceImp implements Service.Iface {
 		}
 	}
 
-	public void getSqlToMerge(String filePath) throws TException {
-		SQLToMerge.get().clear();
+	public void mergeOldData(String filePath) throws TException {
 		Set<String> timeseries = new HashSet<>();
-		TsRandomAccessLocalFileReader input = null;				
+		TsRandomAccessLocalFileReader input = null;
+		Connection connection = null;
+		Statement statement = null;
 		try {
+			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+			statement = connection.createStatement();
+			int count = 0;
+			
 			input = new TsRandomAccessLocalFileReader(filePath);
 			FileReader reader = new FileReader(input);
 			Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
@@ -437,44 +440,30 @@ public class ServiceImp implements Service.Iface {
 							}
 						}
 						String sql = sql_front + sql_rear + ")";
-						SQLToMerge.get().add(sql);
+						
+						statement.addBatch(sql);
+						count ++;
+						if(count > 10000) {
+							statement.executeBatch();
+							statement.clearBatch();
+							count = 0 ;
+						}
 					}
 				}
 			}
+			statement.executeBatch();
+			statement.clearBatch();
 		} catch (IOException e) {
 			LOGGER.error("IoTDB receiver can not parse tsfile into SQL because{}", e.getMessage());
-		} finally {
+		} catch (SQLException | ClassNotFoundException e) {
+			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+		}finally {
 			try {
 				input.close();
 			} catch (IOException e) {
 				LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
 						filePath);
 			}
-		}
-	}
-
-	public void insertSQL() {
-		Connection connection = null;
-		Statement statement = null;
-		try {
-			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
-			statement = connection.createStatement();
-			int count = 0;
-			for (String sql : SQLToMerge.get()) {
-				statement.addBatch(sql);
-				count ++;
-				if(count > 10000) {
-					statement.executeBatch();
-					statement.clearBatch();
-					count = 0 ;
-				}
-			}
-			statement.executeBatch();
-			statement.clearBatch();
-		} catch (SQLException | ClassNotFoundException e) {
-			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
-		} finally {
 			try {
 				if(statement!=null)
 					statement.close();
@@ -486,7 +475,7 @@ public class ServiceImp implements Service.Iface {
 		}
 	}
 
-	public void mergeNewData() throws TException {
+	public void mergeData() throws TException {
 		// !!! Attention: before modify .restore file, it is neccessary to execute flush
 		// order and synchronized the thread
 		int num = 0;
@@ -530,8 +519,7 @@ public class ServiceImp implements Service.Iface {
 				try {
 					if(!fileNodeManager.appendFileToFileNode(storageGroup, fileNode, path)) {
 						//it is a file with overflow data
-						getSqlToMerge(path);
-						insertSQL();
+						mergeOldData(path);
 					}
 				} catch (FileNodeManagerException e) {
 					LOGGER.error("IoTDB receiver : can not load external file because {}", e.getMessage());
@@ -541,10 +529,6 @@ public class ServiceImp implements Service.Iface {
 				LOGGER.info("IoTDB receiver : Merging files has completed : " + num + "/" + fileNum.get());
 			}
 		}
-	}
-
-	public Set<String> getSQLToMerge() {
-		return SQLToMerge.get();
 	}
 
 	public Map<String, List<String>> getFileNodeMap() {

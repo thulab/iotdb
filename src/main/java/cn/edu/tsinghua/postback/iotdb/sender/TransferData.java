@@ -327,6 +327,7 @@ public class TransferData {
 			}
 			if(afterSending(config.SNAPSHOT_PATH)){
 				fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
+				LOGGER.info("IoTDB post back sender : the postBack has finished!");
 			}
 			else {
 				LOGGER.info("IoTDB post back sender : receiver has broken down!");

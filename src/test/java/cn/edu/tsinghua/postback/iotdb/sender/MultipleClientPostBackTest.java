@@ -85,8 +85,12 @@ public class MultipleClientPostBackTest {
         	String sqlFormat = "select %s from %s";
         	System.out.println(storageGroup + ":");
         	int count=0;
+        	int count1 =0 ;
+        	int count2 = 0; 
         	for(String timesery:timeseriesList.get(storageGroup)) {
             	count++; 
+            	count1=0;
+            	count2=0;
         		dataSender.clear();
             	dataReceiver.clear();
         		try {
@@ -108,12 +112,14 @@ public class MultipleClientPostBackTest {
 						if (hasResultSet) {
 							ResultSet res = statement.getResultSet();
 							while (res.next()) {
+								count1++;
 								dataSender.add(res.getString("Time") + res.getString(storageGroup + "." + timesery));
 							}
 						}
 						if (hasResultSet1) {
 							ResultSet res = statement1.getResultSet();
 							while (res.next()) {
+								count2++;
 								dataReceiver.add(res.getString("Time") + res.getString(storageGroup + "." + timesery));
 							}
 						}
@@ -133,8 +139,10 @@ public class MultipleClientPostBackTest {
 				} catch (ClassNotFoundException | SQLException e) {
 					fail(e.getMessage());
 				}
-            	if(count > 1000)
+            	if(count > 10)
             		break;
+            	System.out.println(count1);
+            	System.out.println(count2);
         	}
         }
 	}
