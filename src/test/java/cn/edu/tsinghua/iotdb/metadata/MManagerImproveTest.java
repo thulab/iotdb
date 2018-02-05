@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class MManagerImproveTest {
 
     private static MManager mManager = null;
-    private final int timeseriesNum = 10;
+    private final int timeseriesNum = 1000;
 
     @Before
     public void setUp() throws Exception {
@@ -193,6 +193,18 @@ public class MManagerImproveTest {
         }
     }
 
+    public void doCacheTest(String deltaObject, List<String> measurementList)
+            throws PathErrorException, ProcessorException {
+        MNode node = mManager.getNodeByDeltaObjectIDFromCache(deltaObject);
+        for (int i = 0; i < measurementList.size(); i++) {
+            assertEquals(true, node.hasChild(measurementList.get(i)));
+            MNode measurementNode = node.getChild(measurementList.get(i));
+            assertEquals(true, measurementNode.isLeaf());
+            TSDataType dataType = measurementNode.getSchema().dataType;
+            assertEquals(TSDataType.TEXT, dataType);
+        }
+    }
+
     @Test
     public void improveTest() throws PathErrorException, ProcessorException {
         mManager = MManager.getInstance();
@@ -243,6 +255,13 @@ public class MManagerImproveTest {
         }
         endTime = System.currentTimeMillis();
         System.out.println("improve all:\t" + (endTime - startTime));
+
+        startTime = System.currentTimeMillis();
+        for(String deltaObject : deltaObjectList) {
+            doCacheTest(deltaObject, measurementList);
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("add cache:\t" + (endTime - startTime));
     }
 
 //    @After
