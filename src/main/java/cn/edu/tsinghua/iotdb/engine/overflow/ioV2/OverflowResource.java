@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,7 +306,7 @@ public class OverflowResource {
 		return insertFilePath;
 	}
 
-	public File getInsertFile(){
+	public File getInsertFile() {
 		return insertFile;
 	}
 
@@ -316,8 +317,8 @@ public class OverflowResource {
 	public String getUpdateDeleteFilePath() {
 		return updateDeleteFilePath;
 	}
-	
-	public File getUpdateDeleteFile(){
+
+	public File getUpdateDeleteFile() {
 		return updateFile;
 	}
 
@@ -329,7 +330,8 @@ public class OverflowResource {
 	}
 
 	public void deleteResource() throws IOException {
-		cleanDir(new File(parentPath, dataPath).getPath());
+		// cleanDir(new File(parentPath, dataPath).getPath());
+		FileUtils.forceDelete(new File(parentPath, dataPath));
 	}
 
 	private void cleanDir(String dir) throws IOException {
