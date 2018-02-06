@@ -52,7 +52,6 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
                     in.close();
                 } catch (IOException e) {
                     LOGGER.error("Close overflow file stream failed, reason {}", e.getMessage());
-                    e.printStackTrace();
                 }
             }
         }
