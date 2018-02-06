@@ -106,7 +106,7 @@ public class QueryRecordReader extends RecordReader {
     }
 
     /**
-     * <p> Return true if the ValueReader is not useful. </p>
+     * <p> Return true if the ValueReader is useless. </p>
      *
      * @param valueReader
      * @param queryTimeFilter

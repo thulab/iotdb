@@ -207,8 +207,8 @@ public class IntervalTree {
 			}
 			this.dataType = tp.dataType;
 		} else if (tp.dataType != this.dataType) {
-			LOG.error("IntervalTree wrong time pair parameters");
-			throw new OverflowWrongParameterException("IntervalTree wrong time pair parameters");
+			throw new OverflowWrongParameterException(String.format("IntervalTree wrong time pair parameters, " +
+					"update time pair data type is %s, exist time pair data type is %s.", tp.dataType, this.dataType));
 		}
 
 		// When an UPDATE operation covers root(INSERT) node,
