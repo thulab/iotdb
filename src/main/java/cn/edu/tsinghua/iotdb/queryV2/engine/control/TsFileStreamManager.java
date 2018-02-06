@@ -67,7 +67,7 @@ public class TsFileStreamManager {
                 cache.put(path, new CachedTsFileReader(new TsRandomAccessLocalFileReader(path), path));
             }
             CachedTsFileReader cachedTsFileReader = cache.get(path);
-            cachedTsFileReader.plusReferenceCount();
+            cachedTsFileReader.increaseReferenceCount();
             return cachedTsFileReader.getTsRandomAccessFileReader();
         }
 
@@ -110,7 +110,7 @@ public class TsFileStreamManager {
             this.referenceCount = 0;
         }
 
-        public void plusReferenceCount() {
+        public void increaseReferenceCount() {
             this.referenceCount++;
         }
 

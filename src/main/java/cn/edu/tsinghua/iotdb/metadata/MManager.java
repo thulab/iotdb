@@ -929,10 +929,9 @@ public class MManager {
 
     /**
      * Check whether {@code path} exists and whether {@code path} has been set storage level.
-     * If true, return the {@link TSDataType} of given path; else return null.
      *
      * @param path
-     * @return
+     * @return {@link PathCheckRet}
      */
     public PathCheckRet checkPathStorageLevelAndGetDataType(String path) throws PathErrorException {
         try {

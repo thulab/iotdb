@@ -10,7 +10,7 @@ import java.util.Iterator;
 /**
  * Created by zhangjinrui on 2018/1/21.
  */
-public class SeriesInMemTable implements RawSeriesChunk {
+public class SeriesChunkInMemTable implements RawSeriesChunk {
 	
 	private long maxTime;
 	private long minTime;
@@ -21,12 +21,12 @@ public class SeriesInMemTable implements RawSeriesChunk {
 	private Iterable<TimeValuePair> values;
 	private boolean isEmpty;
 	
-	public SeriesInMemTable(boolean isEmpty){
+	public SeriesChunkInMemTable(boolean isEmpty){
 		this.isEmpty = isEmpty;
 	}
 	
-    public SeriesInMemTable(long maxTime, long minTime, TsPrimitiveType maxValue, TsPrimitiveType minValue,
-			TSDataType dataType, Iterable<TimeValuePair> values) {
+    public SeriesChunkInMemTable(long maxTime, long minTime, TsPrimitiveType maxValue, TsPrimitiveType minValue,
+                                 TSDataType dataType, Iterable<TimeValuePair> values) {
 		this.maxTime = maxTime;
 		this.minTime = minTime;
 		this.maxValue = maxValue;

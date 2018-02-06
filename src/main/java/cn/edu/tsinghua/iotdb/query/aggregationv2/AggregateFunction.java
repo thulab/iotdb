@@ -45,18 +45,6 @@ public abstract class AggregateFunction {
      */
     public abstract void calculateValueFromDataPage(DynamicOneColumnData dataInThisPage) throws IOException, ProcessorException;
 
-//    /**
-//     * <p>
-//     * Calculate the aggregation using <code>PageHeader</code> along with given timestamps.
-//     * </p>
-//     *
-//     * @param dataInThisPage Page data after overflow/bufferwrite operation
-//     * @param timestamps     given timestamps, must consider in aggregation calculate
-//     * @param timeIndex      represents the read index of timestamps
-//     * @return the index of read of timestamps after executing this method
-//     */
-//    public abstract int calculateValueFromDataPage(DynamicOneColumnData dataInThisPage, List<Long> timestamps, int timeIndex);
-
     /**
      * <p>
      * Calculate the aggregation in <code>InsertDynamicData</code>.

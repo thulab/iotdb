@@ -34,13 +34,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by zhangjinrui on 2018/1/18.
  */
 public class SeriesReaderFactory {
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
-    private long jodId = 0;
+    private AtomicLong jobId;
     private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
     private DigestFilterVisitor digestFilterVisitor;
     private ExternalSortJobEngine externalSortJobEngine;
@@ -48,6 +49,7 @@ public class SeriesReaderFactory {
     private ThreadLocal<SimpleMetadataQuerierForMerge> metadataQuerierForMerge;
 
     private SeriesReaderFactory() {
+        jobId = new AtomicLong(0L);
         overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
         digestFilterVisitor = new DigestFilterVisitor();
         externalSortJobEngine = SimpleExternalSortEngine.getInstance();
@@ -150,8 +152,7 @@ public class SeriesReaderFactory {
     }
 
     private synchronized long getNextJobId() {
-        jodId++;
-        return jodId;
+        return jobId.incrementAndGet();
     }
 
     private static class SeriesReaderFactoryHelper {

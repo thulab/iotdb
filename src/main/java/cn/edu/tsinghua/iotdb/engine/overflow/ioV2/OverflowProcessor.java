@@ -288,7 +288,7 @@ public class OverflowProcessor extends Processor {
 	 * @param freqFilter
 	 * @param valueFilter
 	 * @param dataType
-	 * @return insert data in SeriesInMemTable
+	 * @return insert data in SeriesChunkInMemTable
 	 */
 	private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
 			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
