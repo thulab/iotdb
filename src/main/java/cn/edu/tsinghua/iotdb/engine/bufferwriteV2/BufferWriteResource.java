@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +33,14 @@ import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 public class BufferWriteResource {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteResource.class);
-	private static final int TSMETADATABYTESIZE = 4;
-	private static final int TSFILEPOINTBYTESIZE = 8;
+	private static final int TS_METADATA_BYTE_SIZE = 4;
+	private static final int TS_POSITION_BYTE_SIZE = 8;
 
 	private static final String restoreSuffix = ".restore";
 	private static final String DEFAULT_MODE = "rw";
 	private Map<String, Map<String, List<TimeSeriesChunkMetaData>>> metadatas;
 	private List<RowGroupMetaData> appendRowGroupMetadats;
-	private BufferWriteIO bufferWriteIO;
+	private BufferIO bufferWriteIO;
 	private String insertFilePath;
 	private String restoreFilePath;
 	private String processorName;
@@ -61,9 +63,12 @@ public class BufferWriteResource {
 			long position = restoreInfo.left;
 			List<RowGroupMetaData> metadatas = restoreInfo.right;
 			// cut off tsfile
-			cutOffFile(position);
+			FileChannel fileChannel = new FileOutputStream(insertFile, true).getChannel();
+			fileChannel.truncate(position);
+			fileChannel.close();
+			//cutOffFile(position);
 			// recovery the BufferWriteIO
-			bufferWriteIO = new BufferWriteIO(new TsRandomAccessFileWriter(insertFile), position, metadatas);
+			bufferWriteIO = new BufferIO(new TsRandomAccessFileWriter(insertFile), position, metadatas);
 			recoverMetadata(metadatas);
 			LOGGER.info(
 					"Recover the bufferwrite processor {}, the tsfile path is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
@@ -71,7 +76,7 @@ public class BufferWriteResource {
 		} else {
 			insertFile.delete();
 			restoreFile.delete();
-			bufferWriteIO = new BufferWriteIO(new TsRandomAccessFileWriter(insertFile), 0, new ArrayList<>());
+			bufferWriteIO = new BufferIO(new TsRandomAccessFileWriter(insertFile), 0, new ArrayList<>());
 			writeRestoreInfo();
 		}
 	}
@@ -104,7 +109,7 @@ public class BufferWriteResource {
 			RandomAccessFile tempWriter = null;
 			try {
 				normalReader = new RandomAccessFile(normalFile, "r");
-				tempWriter = new RandomAccessFile(tempFile, "rw");
+				tempWriter = new RandomAccessFile(tempFile, DEFAULT_MODE);
 			} catch (FileNotFoundException e) {
 				LOGGER.error("Failed to cut off the file {}.", insertFilePath, e);
 				if (normalReader != null) {
@@ -147,7 +152,7 @@ public class BufferWriteResource {
 		out = new RandomAccessFile(restoreFilePath, DEFAULT_MODE);
 		try {
 			if (out.length() > 0) {
-				out.seek(out.length() - TSFILEPOINTBYTESIZE);
+				out.seek(out.length() - TS_POSITION_BYTE_SIZE);
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(tsRowGroupBlockMetaData.convertToThrift(), baos);
@@ -166,16 +171,16 @@ public class BufferWriteResource {
 	}
 
 	public Pair<Long, List<RowGroupMetaData>> readRestoreInfo() throws IOException {
-		byte[] lastPostionBytes = new byte[TSFILEPOINTBYTESIZE];
+		byte[] lastPostionBytes = new byte[TS_POSITION_BYTE_SIZE];
 		List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
 		RandomAccessFile randomAccessFile = null;
-		randomAccessFile = new RandomAccessFile(restoreFilePath, "rw");
+		randomAccessFile = new RandomAccessFile(restoreFilePath, DEFAULT_MODE);
 		try {
 			long fileLength = randomAccessFile.length();
 			// read tsfile position
 			long point = randomAccessFile.getFilePointer();
-			while (point + TSFILEPOINTBYTESIZE < fileLength) {
-				byte[] metadataSizeBytes = new byte[TSMETADATABYTESIZE];
+			while (point + TS_POSITION_BYTE_SIZE < fileLength) {
+				byte[] metadataSizeBytes = new byte[TS_METADATA_BYTE_SIZE];
 				randomAccessFile.read(metadataSizeBytes);
 				int metadataSize = BytesUtils.bytesToInt(metadataSizeBytes);
 				byte[] thriftBytes = new byte[metadataSize];

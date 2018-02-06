@@ -4,11 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +37,10 @@ public class OverflowIO extends TsFileIOWriter {
 
 	public OverflowIO(String filePath, long lastUpdatePosition, boolean isInsert) throws IOException {
 		super();
-		OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
+		FileChannel fileChannel = new FileOutputStream(new File(filePath), true).getChannel();
+		fileChannel.truncate(lastUpdatePosition);
+		fileChannel.close();
+		//OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
 		overflowReadWriter = new OverflowReadWriter(filePath);
 		if (isInsert) {
 			super.setIOWriter(overflowReadWriter);

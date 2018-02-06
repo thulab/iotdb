@@ -123,12 +123,12 @@ public class TsfileDBConfig {
 	/**
 	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
 	 */
-	public long memThresholdWarning = (long) (0.8 * Runtime.getRuntime().maxMemory());
+	public long memThresholdWarning = (long) (0.5 * Runtime.getRuntime().maxMemory());
 
 	/**
 	 * No more insert is allowed if this threshold is reached.
 	 */
-	public long memThresholdDangerous = (long) (0.9 * Runtime.getRuntime().maxMemory());
+	public long memThresholdDangerous = (long) (0.6 * Runtime.getRuntime().maxMemory());
 
 	/**
 	 * MemMonitorThread will check every such interval. If memThresholdWarning is reached, MemMonitorThread

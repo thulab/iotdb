@@ -62,7 +62,7 @@ public class OverflowResource {
 		this.appendUpdateDeleteMetadats = new ArrayList<>();
 		this.parentPath = parentPath;
 		this.dataPath = dataPath;
-		File dataFile = new File(new File(parentPath), dataPath);
+		File dataFile = new File(parentPath, dataPath);
 		if (!dataFile.exists()) {
 			dataFile.mkdirs();
 		}
@@ -78,7 +78,6 @@ public class OverflowResource {
 			readMetadata();
 		} catch (IOException e) {
 			LOGGER.error("Failed to construct the OverflowIO.", e);
-			e.printStackTrace();
 			throw e;
 		}
 	}

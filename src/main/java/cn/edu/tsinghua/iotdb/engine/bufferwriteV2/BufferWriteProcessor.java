@@ -87,7 +87,6 @@ public class BufferWriteProcessor extends Processor {
 		try {
 			bufferWriteResource = new BufferWriteResource(processorName, insertFilePath);
 		} catch (IOException e) {
-			LOGGER.error("Can't get the BufferWriteResource.", e);
 			throw new BufferWriteProcessorException(e);
 		}
 		bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);

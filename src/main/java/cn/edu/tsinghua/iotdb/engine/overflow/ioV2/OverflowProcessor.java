@@ -85,7 +85,7 @@ public class OverflowProcessor extends Processor {
 		}
 		// recover file
 		recovery(processorDataDir);
-		// recover memory
+		// memory
 		workSupport = new OverflowSupport();
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
@@ -194,8 +194,8 @@ public class OverflowProcessor extends Processor {
 		case TEXT:
 			return BytesUtils.StringToBytes(o);
 		default:
-			LOGGER.error("unsupport data type: {}", type);
-			throw new UnsupportedOperationException();
+			LOGGER.error("Unsupport data type: {}", type);
+			throw new UnsupportedOperationException("Unsupport data type:" + type);
 		}
 	}
 
@@ -562,7 +562,8 @@ public class OverflowProcessor extends Processor {
 				try {
 					logNode.notifyStartFlush();
 				} catch (IOException e) {
-					LOGGER.error("Overflow processor {} encountered an error when notifying log node, {}", getProcessorName(), e.getMessage());
+					LOGGER.error("Overflow processor {} encountered an error when notifying log node, {}",
+							getProcessorName(), e.getMessage());
 				}
 			}
 			BasicMemController.getInstance().reportFree(this, memSize.get());
@@ -589,7 +590,6 @@ public class OverflowProcessor extends Processor {
 		try {
 			flush(false);
 		} catch (OverflowProcessorException e) {
-			e.printStackTrace();
 			throw new IOException(e);
 		}
 		return false;

@@ -6,11 +6,9 @@ import java.util.Map;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemSeries;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.TreeSetMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 

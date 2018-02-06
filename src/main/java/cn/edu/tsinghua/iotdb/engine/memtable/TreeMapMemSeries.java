@@ -33,7 +33,7 @@ public class TreeMapMemSeries implements IMemSeries{
             case INT96:
             case BIGDECIMAL:
             default:
-                logger.error("not support data type:", dataType);
+                logger.error("Not support data type: {}.", dataType);
                 treeMap = null;
         }
     }
@@ -104,7 +104,7 @@ public class TreeMapMemSeries implements IMemSeries{
             case INT96:
             case BIGDECIMAL:
             default:
-                logger.error("writing data points not support data type:", dataType);
+                logger.error("Writing data points not support data type:{}.", dataType);
         }
     }
 

@@ -177,8 +177,7 @@ public class FileNodeManager implements IStatistic, IService {
 
 	private FileNodeProcessor constructNewProcessor(String filenodeName) throws FileNodeManagerException {
 		try {
-			Map<String, Object> parameters = new HashMap<>();
-			return new FileNodeProcessor(baseDir, filenodeName, parameters);
+			return new FileNodeProcessor(baseDir, filenodeName);
 		} catch (FileNodeProcessorException e) {
 			LOGGER.error("Can't construct the FileNodeProcessor, the filenode is {}", filenodeName, e);
 			throw new FileNodeManagerException(e);
@@ -271,11 +270,10 @@ public class FileNodeManager implements IStatistic, IService {
 			long lastUpdateTime = fileNodeProcessor.getFlushLastUpdateTime(deltaObjectId);
 			String filenodeName = fileNodeProcessor.getProcessorName();
 			if (timestamp < lastUpdateTime) {
-				Map<String, Object> parameters = new HashMap<>();
 				// get overflow processor
 				OverflowProcessor overflowProcessor;
 				try {
-					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
 				} catch (IOException e) {
 					LOGGER.error("Get the overflow processor failed, the filenode is {}, insert time is {}",
 							filenodeName, timestamp);
@@ -393,7 +391,7 @@ public class FileNodeManager implements IStatistic, IService {
 		} catch (FileNodeProcessorException e) {
 			LOGGER.error(String.format("Encounter an error when closing the buffer write processor %s.",
 					fileNodeProcessor.getProcessorName()), e);
-			e.printStackTrace();
+			throw new FileNodeManagerException(e);
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
@@ -427,12 +425,11 @@ public class FileNodeManager implements IStatistic, IService {
 			if (endTime > lastUpdateTime) {
 				endTime = lastUpdateTime;
 			}
-			Map<String, Object> parameters = new HashMap<>();
 			String filenodeName = fileNodeProcessor.getProcessorName();
 			// get overflow processor
 			OverflowProcessor overflowProcessor;
 			try {
-				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
 			} catch (IOException e) {
 				LOGGER.error(
 						"Get the overflow processor failed, the filenode is {}, insert time range is from {} to {}",
@@ -478,12 +475,11 @@ public class FileNodeManager implements IStatistic, IService {
 				if (timestamp > lastUpdateTime) {
 					timestamp = lastUpdateTime;
 				}
-				Map<String, Object> parameters = new HashMap<>();
 				String filenodeName = fileNodeProcessor.getProcessorName();
 				// get overflow processor
 				OverflowProcessor overflowProcessor;
 				try {
-					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName, parameters);
+					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
 				} catch (IOException e) {
 					LOGGER.error("Get the overflow processor failed, the filenode is {}, delete time is {}.",
 							filenodeName, timestamp);
@@ -540,9 +536,8 @@ public class FileNodeManager implements IStatistic, IService {
 			QueryDataSource queryDataSource = null;
 			// query operation must have overflow processor
 			if (!fileNodeProcessor.hasOverflowProcessor()) {
-				Map<String, Object> parameters = new HashMap<>();
 				try {
-					fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName(), parameters);
+					fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName());
 				} catch (IOException e) {
 					LOGGER.error("Get the overflow processor failed, the filenode is {}, query is {},{}",
 							fileNodeProcessor.getProcessorName(), deltaObjectId, measurementId);

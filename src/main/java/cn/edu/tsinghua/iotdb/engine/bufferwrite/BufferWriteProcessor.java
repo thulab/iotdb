@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +61,8 @@ public class BufferWriteProcessor extends Processor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
 	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
-	private static final int TSMETADATABYTESIZE = 4;
-	private static final int TSFILEPOINTBYTESIZE = 8;
+	private static final int TS_METADATA_BYTE_SIZE = 4;
+	private static final int TSFILE_POSITION_BYTE_SIZE = 8;
 
 	private volatile FlushStatus flushStatus = new FlushStatus();
 	private ReentrantLock flushQueryLock = new ReentrantLock();
@@ -190,10 +192,13 @@ public class BufferWriteProcessor extends Processor {
 		File lastBufferWriteFile = new File(bufferwriteOutputFilePath);
 		if (lastBufferWriteFile.length() != lastFlushPosition) {
 			LOGGER.warn(
-					"The last bufferwrite file is damaged, the length of the last bufferwrite file is {}, the end of last successful flush is {}.",
-					lastBufferWriteFile.length(), lastFlushPosition);
+					"The last bufferwrite file {} is damaged, the length of the last bufferwrite file is {}, the end of last successful flush is {}.",
+					lastBufferWriteFile.getPath(), lastBufferWriteFile.length(), lastFlushPosition);
 			try {
-				cutOffFile(lastFlushPosition);
+				FileChannel fileChannel = new FileOutputStream(bufferwriteOutputFile, true).getChannel();
+				fileChannel.truncate(lastFlushPosition);
+				fileChannel.close();
+				//cutOffFile(lastFlushPosition);
 			} catch (IOException e) {
 				LOGGER.error(
 						"Cut off damaged file error, the damaged file path is {}, the length is {}, the cut off length is {}.",
@@ -305,7 +310,7 @@ public class BufferWriteProcessor extends Processor {
 		}
 		try {
 			if (out.length() > 0) {
-				out.seek(out.length() - TSFILEPOINTBYTESIZE);
+				out.seek(out.length() - TSFILE_POSITION_BYTE_SIZE);
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(tsRowGroupBlockMetaData.convertToThrift(), baos);
@@ -353,7 +358,7 @@ public class BufferWriteProcessor extends Processor {
 	 * @throws IOException
 	 */
 	private Pair<Long, List<RowGroupMetaData>> readStoreFromDisk() throws IOException {
-		byte[] lastPostionBytes = new byte[TSFILEPOINTBYTESIZE];
+		byte[] lastPostionBytes = new byte[TSFILE_POSITION_BYTE_SIZE];
 		List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
 		RandomAccessFile randomAccessFile = null;
 		try {
@@ -361,8 +366,8 @@ public class BufferWriteProcessor extends Processor {
 			long fileLength = randomAccessFile.length();
 			// read tsfile position
 			long point = randomAccessFile.getFilePointer();
-			while (point + TSFILEPOINTBYTESIZE < fileLength) {
-				byte[] metadataSizeBytes = new byte[TSMETADATABYTESIZE];
+			while (point + TSFILE_POSITION_BYTE_SIZE < fileLength) {
+				byte[] metadataSizeBytes = new byte[TS_METADATA_BYTE_SIZE];
 				randomAccessFile.read(metadataSizeBytes);
 				int metadataSize = BytesUtils.bytesToInt(metadataSizeBytes);
 				byte[] thriftBytes = new byte[metadataSize];
@@ -612,7 +617,9 @@ public class BufferWriteProcessor extends Processor {
 			try {
 				bufferwriteFlushAction.act();
 			} catch (Exception e) {
-				LOGGER.error("Failed to flush bufferwrite row group when calling the action function.");
+				LOGGER.error(
+						"The bufferwrite processor {} failed to flush bufferwrite row group when calling the action function.",
+						getProcessorName());
 				throw new IOException(e);
 			}
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
