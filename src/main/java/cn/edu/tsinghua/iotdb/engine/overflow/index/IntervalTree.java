@@ -482,9 +482,9 @@ public class IntervalTree {
 		}
 
 		for (int i = 0; i < val.count; i += 2) {
-			CrossRelation r = IntervalRelation.getRelation(new TimePair(val.v[i], val.v[i + 1]),
+			CrossRelation relation = IntervalRelation.getRelation(new TimePair(val.v[i], val.v[i + 1]),
 					new TimePair(pNode.start, pNode.end));
-			switch (r) {
+			switch (relation) {
 			case LFIRST:
 				continue;
 			case RFIRST:
@@ -502,7 +502,9 @@ public class IntervalTree {
 				putTreeNodeValue(crudResult, pNode.opType, val.v[i], val.v[i + 1], dataType, pNode.value);
 				break;
 			default:
-				LOG.error("un defined CrossRelation");
+				LOG.error("un defined CrossRelation, left time pair is [{},{}], right time pair is [{}, {}], " +
+								"relation type is {}.",
+						val.v[i], val.v[i + 1], pNode.start, pNode.end, relation);
 			}
 		}
 
@@ -629,7 +631,6 @@ public class IntervalTree {
 				}
 				break;
 			default:
-				LOG.error("Unsupported tsfile data type.");
 				throw new UnSupportedDataTypeException("Unsupported tsfile data type.");
 		}
 	}
