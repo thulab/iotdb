@@ -9,6 +9,9 @@ import java.nio.channels.FileChannel;
 public class FileUtils {
 
     public static void fileCopy(File from, File to) throws Exception{
+        if(!from.exists())
+            return;
+        to.delete();
         int length = 2 * 1024 * 1024;
         FileInputStream in = new FileInputStream(from);
         FileOutputStream out = new FileOutputStream(to);
