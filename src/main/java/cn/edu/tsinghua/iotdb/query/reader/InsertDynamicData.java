@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.v2;
+package cn.edu.tsinghua.iotdb.query.reader;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static cn.edu.tsinghua.iotdb.query.v2.ReaderUtils.getSingleValueVisitorByDataType;
+import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 
 /**
  * <p>

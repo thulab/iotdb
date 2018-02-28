@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.v2;
+package cn.edu.tsinghua.iotdb.query.reader;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
@@ -9,7 +9,6 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;

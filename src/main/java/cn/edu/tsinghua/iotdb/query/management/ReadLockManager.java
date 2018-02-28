@@ -7,7 +7,6 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
-import cn.edu.tsinghua.iotdb.query.reader.FileReaderMap;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
 public class ReadLockManager {

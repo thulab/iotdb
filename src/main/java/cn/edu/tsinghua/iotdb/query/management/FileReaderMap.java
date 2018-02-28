@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.reader;
+package cn.edu.tsinghua.iotdb.query.management;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 

@@ -1,19 +1,15 @@
-package cn.edu.tsinghua.iotdb.query.v2;
+package cn.edu.tsinghua.iotdb.query.reader;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
-import cn.edu.tsinghua.iotdb.query.v2.RecordReader;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 

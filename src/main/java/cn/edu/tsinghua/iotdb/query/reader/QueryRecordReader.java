@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.v2;
+package cn.edu.tsinghua.iotdb.query.reader;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;

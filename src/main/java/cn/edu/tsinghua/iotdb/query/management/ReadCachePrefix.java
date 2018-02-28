@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.engine;
+package cn.edu.tsinghua.iotdb.query.management;
 
 /**
  * <p>
