@@ -1,7 +1,7 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
+package cn.edu.tsinghua.iotdb.query.aggregation.impl;
 
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -11,12 +11,12 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import java.io.IOException;
 import java.util.List;
 
-public class MaxTimeAggrFunc extends AggregateFunction {
+public class MinTimeAggrFunc extends AggregateFunction {
 
     private boolean hasSetValue = false;
 
-    public MaxTimeAggrFunc() {
-        super(AggregationConstant.MAX_TIME, TSDataType.INT64);
+    public MinTimeAggrFunc() {
+        super(AggregationConstant.MIN_TIME, TSDataType.INT64);
     }
 
     @Override
@@ -30,8 +30,8 @@ public class MaxTimeAggrFunc extends AggregateFunction {
             resultData.putTime(0);
         }
 
-        long timestamp = pageHeader.data_page_header.max_timestamp;
-        updateMaxTime(timestamp);
+        long timestamp = pageHeader.data_page_header.min_timestamp;
+        updateMinTime(timestamp);
     }
 
     @Override
@@ -43,9 +43,11 @@ public class MaxTimeAggrFunc extends AggregateFunction {
         if (dataInThisPage.valueLength == 0) {
             return;
         }
-        long timestamp = dataInThisPage.getTime(dataInThisPage.valueLength - 1);
-        updateMaxTime(timestamp);
+        // use the first timestamp of the DynamicOneColumnData
+        long timestamp = dataInThisPage.getTime(0);
+        updateMinTime(timestamp);
     }
+    
 
     @Override
     public void calculateValueFromLeftMemoryData(InsertDynamicData insertMemoryData) throws IOException, ProcessorException {
@@ -55,7 +57,7 @@ public class MaxTimeAggrFunc extends AggregateFunction {
 
         while (insertMemoryData.hasNext()) {
             long time = insertMemoryData.getCurrentMinTime();
-            updateMaxTime(time);
+            updateMinTime(time);
             insertMemoryData.removeCurrentValue();
         }
     }
@@ -70,9 +72,8 @@ public class MaxTimeAggrFunc extends AggregateFunction {
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
-                    updateMaxTime(timestamps.get(timeIndex));
-                    timeIndex ++;
-                    insertMemoryData.removeCurrentValue();
+                    updateMinTime(timestamps.get(timeIndex));
+                    return false;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -102,7 +103,7 @@ public class MaxTimeAggrFunc extends AggregateFunction {
                 resultData.putEmptyTime(partitionStart);
         }
 
-        long maxTime = -1;
+        long minTime = Long.MAX_VALUE;
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -110,34 +111,35 @@ public class MaxTimeAggrFunc extends AggregateFunction {
             } else if (time < intervalStart || time < partitionStart) {
                 data.curIdx++;
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
-                if (maxTime < data.getTime(data.curIdx)) {
-                    maxTime = data.getTime(data.curIdx);
+                if (minTime > data.getTime(data.curIdx)) {
+                    minTime = data.getTime(data.curIdx);
                 }
                 data.curIdx++;
             }
         }
 
-        if (maxTime != -1) {
+        if (minTime != Long.MAX_VALUE) {
             if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
                 resultData.removeLastEmptyTime();
                 resultData.putTime(partitionStart);
-                resultData.putLong(maxTime);
+                resultData.putLong(minTime);
             } else {
-                if (maxTime > resultData.getLong(resultData.valueLength - 1)) {
-                    resultData.setLong(resultData.valueLength - 1, maxTime);
+                if (minTime < resultData.getLong(resultData.valueLength - 1)) {
+                    resultData.setLong(resultData.valueLength - 1, minTime);
                 }
             }
         }
     }
 
-    private void updateMaxTime(long timestamp) {
+
+    private void updateMinTime(long timestamp) {
         if (!hasSetValue) {
             resultData.putLong(timestamp);
             hasSetValue = true;
         } else {
-            long maxt = resultData.getLong(0);
-            maxt = maxt > timestamp ? maxt : timestamp;
-            resultData.setLong(0, maxt);
+            long mint = resultData.getLong(0);
+            mint = mint < timestamp ? mint : timestamp;
+            resultData.setLong(0, mint);
         }
     }
 }

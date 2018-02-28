@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.engine;
 
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;

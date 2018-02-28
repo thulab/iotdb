@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2;
+package cn.edu.tsinghua.iotdb.query.aggregation;
 
 import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;

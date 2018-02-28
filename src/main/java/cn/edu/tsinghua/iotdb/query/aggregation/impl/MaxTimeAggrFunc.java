@@ -1,24 +1,22 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
+package cn.edu.tsinghua.iotdb.query.aggregation.impl;
 
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.format.Digest;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 import java.io.IOException;
 import java.util.List;
 
-public class LastAggrFunc extends AggregateFunction {
+public class MaxTimeAggrFunc extends AggregateFunction {
 
     private boolean hasSetValue = false;
 
-    public LastAggrFunc(TSDataType dataType) {
-        super(AggregationConstant.LAST, dataType);
+    public MaxTimeAggrFunc() {
+        super(AggregationConstant.MAX_TIME, TSDataType.INT64);
     }
 
     @Override
@@ -32,13 +30,8 @@ public class LastAggrFunc extends AggregateFunction {
             resultData.putTime(0);
         }
 
-        Digest pageDigest = pageHeader.data_page_header.getDigest();
-
-        // TODO : need to convert to a static method?
-        DigestForFilter digest = new DigestForFilter(pageDigest.getStatistics().get(AggregationConstant.LAST),
-                pageDigest.getStatistics().get(AggregationConstant.LAST), dataType);
-        Comparable<?> val = digest.getMaxValue();
-        updateLast(val);
+        long timestamp = pageHeader.data_page_header.max_timestamp;
+        updateMaxTime(timestamp);
     }
 
     @Override
@@ -50,7 +43,8 @@ public class LastAggrFunc extends AggregateFunction {
         if (dataInThisPage.valueLength == 0) {
             return;
         }
-        updateLast(dataInThisPage);
+        long timestamp = dataInThisPage.getTime(dataInThisPage.valueLength - 1);
+        updateMaxTime(timestamp);
     }
 
     @Override
@@ -58,32 +52,25 @@ public class LastAggrFunc extends AggregateFunction {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
         }
-        long time = -1;
-        Object val = null;
-        // TODO : is there easier way to get the last value ?
-        while(insertMemoryData.hasNext()) {
-            time = insertMemoryData.getCurrentMinTime();
-            val = insertMemoryData.getCurrentObjectValue();
+
+        while (insertMemoryData.hasNext()) {
+            long time = insertMemoryData.getCurrentMinTime();
+            updateMaxTime(time);
             insertMemoryData.removeCurrentValue();
-        }
-        if(time > 0) {
-            updateLast((Comparable<?>)val);
         }
     }
 
     @Override
     public boolean calcAggregationUsingTimestamps(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex)
-            throws IOException {
+            throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
         }
 
-        // TODO : can I traverse from the end ?
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
-                    Object value = insertMemoryData.getCurrentObjectValue();
-                    updateLast((Comparable<?>)value);
+                    updateMaxTime(timestamps.get(timeIndex));
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
@@ -115,8 +102,7 @@ public class LastAggrFunc extends AggregateFunction {
                 resultData.putEmptyTime(partitionStart);
         }
 
-        Comparable<?> lastValue = null;
-        long lastTime = -1;
+        long maxTime = -1;
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -124,39 +110,34 @@ public class LastAggrFunc extends AggregateFunction {
             } else if (time < intervalStart || time < partitionStart) {
                 data.curIdx++;
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
-                if(time > lastTime) {
-                    lastValue = data.getAnObject(data.curIdx);
-                    lastTime = time;
+                if (maxTime < data.getTime(data.curIdx)) {
+                    maxTime = data.getTime(data.curIdx);
                 }
                 data.curIdx++;
             }
         }
 
-        if (lastValue != null) {
+        if (maxTime != -1) {
             if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
                 resultData.removeLastEmptyTime();
                 resultData.putTime(partitionStart);
-                resultData.putAnObject(lastValue);
+                resultData.putLong(maxTime);
             } else {
-                resultData.setAnObject(resultData.valueLength - 1, lastValue);
+                if (maxTime > resultData.getLong(resultData.valueLength - 1)) {
+                    resultData.setLong(resultData.valueLength - 1, maxTime);
+                }
             }
         }
     }
 
-    private void updateLast(Comparable<?> lastVal) {
+    private void updateMaxTime(long timestamp) {
         if (!hasSetValue) {
-            resultData.putAnObject(lastVal);
+            resultData.putLong(timestamp);
             hasSetValue = true;
-        } else  {
-            resultData.setAnObject(0, lastVal);
+        } else {
+            long maxt = resultData.getLong(0);
+            maxt = maxt > timestamp ? maxt : timestamp;
+            resultData.setLong(0, maxt);
         }
     }
-
-    private void updateLast(DynamicOneColumnData dataInThisPage) {
-        // assert : timeLength == valueLength
-        int index = dataInThisPage.timeLength - 1;
-        Comparable<?> lastVal = dataInThisPage.getAnObject(index);
-        updateLast(lastVal);
-    }
-
 }

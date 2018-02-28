@@ -1,7 +1,7 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
+package cn.edu.tsinghua.iotdb.query.aggregation.impl;
 
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
@@ -13,15 +13,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class MeanAggrFunc extends AggregateFunction{
+public class SumAggrFunc extends AggregateFunction {
 
-    private double sum = 0.0;
-    private int cnt = 0;
+    private double sum;
+    private boolean hasValue = false;
 
-    private boolean isResultSet = false;
-
-    public MeanAggrFunc() {
-        super(AggregationConstant.MEAN, TSDataType.DOUBLE);
+    public SumAggrFunc() {
+        super(AggregationConstant.SUM, TSDataType.DOUBLE);
     }
 
     @Override
@@ -31,18 +29,18 @@ public class MeanAggrFunc extends AggregateFunction{
 
     @Override
     public void calculateValueFromPageHeader(PageHeader pageHeader) throws ProcessorException {
-        if (resultData.timeLength == 0)
+        if(resultData.timeLength == 0)
             resultData.putTime(0);
-        ByteBuffer sumVal = pageHeader.data_page_header.digest.getStatistics().get(AggregationConstant.SUM);
-        if (sumVal == null)
-            throw new ProcessorException("In aggregation MEAN : PageHeader contains no SUM value.");
+        ByteBuffer sumValStr = pageHeader.data_page_header.digest.getStatistics().get(AggregationConstant.SUM);
+        if(sumValStr == null)
+            throw new ProcessorException("In aggregation SUM : PageHeader contains no SUM value");
         double pageSum;
-        pageSum = BytesUtils.bytesToDouble(sumVal.array());
-        int pageCnt = pageHeader.data_page_header.num_rows;
+        pageSum = BytesUtils.bytesToDouble(sumValStr.array());
+        if(pageHeader.data_page_header.num_rows > 0)
+            hasValue = true;
 
         sum += pageSum;
-        cnt += pageCnt;
-        updateMean();
+        updateSum();
     }
 
     @Override
@@ -51,7 +49,7 @@ public class MeanAggrFunc extends AggregateFunction{
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
         }
-        updateMean(dataInThisPage);
+        updateSum(dataInThisPage);
     }
 
     @Override
@@ -59,7 +57,7 @@ public class MeanAggrFunc extends AggregateFunction{
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
         }
-        updateMean(insertMemoryData);
+        updateSum(insertMemoryData);
     }
 
     @Override
@@ -70,16 +68,16 @@ public class MeanAggrFunc extends AggregateFunction{
         // use switch here to reduce switch usage to once
         switch (insertMemoryData.getDataType()) {
             case INT32:
-               updateMeanWithInt(insertMemoryData, timestamps, timeIndex);
-               break;
+                updateSumWithInt(insertMemoryData, timestamps, timeIndex);
+                break;
             case INT64:
-                updateMeanWithLong(insertMemoryData, timestamps, timeIndex);
+                updateSumWithLong(insertMemoryData, timestamps, timeIndex);
                 break;
             case FLOAT:
-                updateMeanWithFloat(insertMemoryData, timestamps, timeIndex);
+                updateSumWithFloat(insertMemoryData, timestamps, timeIndex);
                 break;
             case DOUBLE:
-                updateMeanWithDouble(insertMemoryData, timestamps, timeIndex);
+                updateSumWithDouble(insertMemoryData, timestamps, timeIndex);
                 break;
             case INT96:
             case TEXT:
@@ -143,30 +141,29 @@ public class MeanAggrFunc extends AggregateFunction{
      * @param data
      * @throws ProcessorException
      */
-    private void updateMean(DynamicOneColumnData data) throws ProcessorException {
+    private void updateSum(DynamicOneColumnData data) throws ProcessorException {
         switch (data.dataType) {
             case INT32:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
-                    //System.out.println("Agg " + data.getTime(data.curIdx) + "," + data.getInt(data.curIdx));
                     sum += data.getInt(data.curIdx);
-                    cnt++;
+                    hasValue = true;
                 }
             case INT64:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getLong(data.curIdx);
-                    cnt++;
+                    hasValue = true;
                 }
                 break;
             case FLOAT:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getFloat(data.curIdx);
-                    cnt++;
+                    hasValue = true;
                 }
                 break;
             case DOUBLE:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
                     sum += data.getDouble(data.curIdx);
-                    cnt++;
+                    hasValue = true;
                 }
                 break;
             case INT96:
@@ -178,17 +175,17 @@ public class MeanAggrFunc extends AggregateFunction{
             default:
                 throw new ProcessorException("Unsupported data type in aggregation MEAN : " + data.dataType);
         }
-        updateMean();
+        updateSum();
     }
 
-    private void updateMean(InsertDynamicData data) throws ProcessorException {
+    private void updateSum(InsertDynamicData data) throws ProcessorException {
         switch (data.getDataType()) {
             case INT32:
                 try {
                     while (data.hasNext()) {
                         sum += data.getCurrentIntValue();
-                        cnt++;
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -198,8 +195,8 @@ public class MeanAggrFunc extends AggregateFunction{
                 try {
                     while (data.hasNext()) {
                         sum += data.getCurrentLongValue();
-                        cnt++;
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -209,8 +206,8 @@ public class MeanAggrFunc extends AggregateFunction{
                 try {
                     while (data.hasNext()) {
                         sum += data.getCurrentFloatValue();
-                        cnt++;
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -220,8 +217,8 @@ public class MeanAggrFunc extends AggregateFunction{
                 try {
                     while (data.hasNext()) {
                         sum += data.getCurrentDoubleValue();
-                        cnt++;
                         data.removeCurrentValue();
+                        hasValue = true;
                     }
                 } catch (IOException e) {
                     throw new ProcessorException(e.getMessage());
@@ -236,7 +233,7 @@ public class MeanAggrFunc extends AggregateFunction{
             default:
                 throw new ProcessorException("Unsupported data type in aggregation MEAN : " + data.getDataType());
         }
-        updateMean();
+        updateSum();
     }
 
     // TODO : use function template generator
@@ -248,15 +245,16 @@ public class MeanAggrFunc extends AggregateFunction{
      * @param timeIndex
      * @throws IOException
      */
-    private void updateMeanWithInt(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
+    private void updateSumWithInt(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
+                    //System.out.println(">>>> dy >> " + insertMemoryData.getCurrentMinTime() + " " + insertMemoryData.getCurrentIntValue());
                     int val = insertMemoryData.getCurrentIntValue();
                     sum += val;
-                    cnt ++;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -266,18 +264,18 @@ public class MeanAggrFunc extends AggregateFunction{
                 break;
             }
         }
-        updateMean();
+        updateSum();
     }
 
-    private void updateMeanWithLong(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
+    private void updateSumWithLong(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
                     Long val = insertMemoryData.getCurrentLongValue();
                     sum += val;
-                    cnt ++;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -287,18 +285,18 @@ public class MeanAggrFunc extends AggregateFunction{
                 break;
             }
         }
-        updateMean();
+        updateSum();
     }
 
-    private void updateMeanWithFloat(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
+    private void updateSumWithFloat(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
                     float val = insertMemoryData.getCurrentFloatValue();
                     sum += val;
-                    cnt ++;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -308,18 +306,18 @@ public class MeanAggrFunc extends AggregateFunction{
                 break;
             }
         }
-        updateMean();
+        updateSum();
     }
 
-    private void updateMeanWithDouble(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
+    private void updateSumWithDouble(InsertDynamicData insertMemoryData, List<Long> timestamps, int timeIndex) throws IOException {
         while (timeIndex < timestamps.size()) {
             if (insertMemoryData.hasNext()) {
                 if (timestamps.get(timeIndex) == insertMemoryData.getCurrentMinTime()) {
                     double val = insertMemoryData.getCurrentDoubleValue();
                     sum += val;
-                    cnt ++;
                     timeIndex ++;
                     insertMemoryData.removeCurrentValue();
+                    hasValue = true;
                 } else if (timestamps.get(timeIndex) > insertMemoryData.getCurrentMinTime()) {
                     insertMemoryData.removeCurrentValue();
                 } else {
@@ -329,7 +327,7 @@ public class MeanAggrFunc extends AggregateFunction{
                 break;
             }
         }
-        updateMean();
+        updateSum();
     }
 
     /**
@@ -351,8 +349,8 @@ public class MeanAggrFunc extends AggregateFunction{
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
                 int val = data.getInt(data.curIdx);
                 sum += val;
-                cnt ++;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
@@ -368,8 +366,8 @@ public class MeanAggrFunc extends AggregateFunction{
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
                 long val = data.getLong(data.curIdx);
                 sum += val;
-                cnt ++;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
@@ -385,8 +383,8 @@ public class MeanAggrFunc extends AggregateFunction{
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
                 float val = data.getFloat(data.curIdx);
                 sum += val;
-                cnt ++;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
@@ -402,38 +400,36 @@ public class MeanAggrFunc extends AggregateFunction{
             } else if (time >= intervalStart && time <= intervalEnd && time >= partitionStart && time <= partitionEnd) {
                 double val = data.getDouble(data.curIdx);
                 sum += val;
-                cnt ++;
                 data.curIdx++;
+                hasValue = true;
             }
         }
         groupUpdateMean(partitionStart);
     }
 
-    private void updateMean() {
-        if(cnt > 0) {
-            if(isResultSet)
-                resultData.setDouble(0, sum / cnt);
-            else {
-                isResultSet = true;
-                resultData.putDouble(sum / cnt);
-            }
+    private void updateSum() {
+        if(hasValue) {
+            if(resultData.valueLength == 0)
+                resultData.putDouble(sum);
+            else
+                resultData.setDouble(0, sum);
         }
     }
 
     private void groupUpdateMean(long partitionStart) {
-        if(cnt > 0) {
+        if(hasValue) {
             if (resultData.emptyTimeLength > 0 && resultData.getEmptyTime(resultData.emptyTimeLength - 1) == partitionStart) {
                 resultData.removeLastEmptyTime();
                 resultData.putTime(partitionStart);
-                resultData.putDouble(sum / cnt);
+                resultData.putDouble(sum);
             } else {
-                resultData.setDouble(resultData.valueLength - 1, sum / cnt);
+                resultData.setDouble(resultData.valueLength - 1, sum);
             }
         }
     }
 
     private void reset() {
-        cnt = 0;
         sum = 0.0;
+        hasValue = false;
     }
 }

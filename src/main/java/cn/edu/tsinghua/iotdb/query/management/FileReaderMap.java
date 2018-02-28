@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FileReaderMap {
+
     /** map to store opened file stream **/
     private static ThreadLocal<Map<String, TsRandomAccessLocalFileReader>> fileReaderMap = new ThreadLocal<>();
 
