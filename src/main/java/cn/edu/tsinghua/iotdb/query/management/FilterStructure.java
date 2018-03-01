@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.engine;
+package cn.edu.tsinghua.iotdb.query.management;
 
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;

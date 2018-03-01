@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.reader;
+package cn.edu.tsinghua.iotdb.query.management;
 
 import java.io.IOException;
 import java.util.*;
@@ -39,19 +39,6 @@ public class ReaderManager {
      */
     public ReaderManager(List<String> sealedFilePathList) {
         this.sealedFilePathList = sealedFilePathList;
-        //this.rowGroupReaderMap = new HashMap<>();
-    }
-
-    /**
-     *
-     * @param sealedFilePathList file node list
-     * @param unsealedFilePath fileReader for unsealedFile
-     * @param rowGroupMetadataList  RowGroupMetadata List for unsealedFile
-     */
-    public ReaderManager(List<String> sealedFilePathList, String unsealedFilePath, List<RowGroupMetaData> rowGroupMetadataList) {
-        this.sealedFilePathList = sealedFilePathList;
-        this.unSealedFilePath = unsealedFilePath;
-        this.unSealedRowGroupMetadataList = rowGroupMetadataList;
     }
 
     public List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SingleSeriesFilterExpression timeFilter) throws IOException {
@@ -82,10 +69,8 @@ public class ReaderManager {
                 }
             }
 
-            // TODO the code below could be removed
             if (unSealedFilePath != null) {
                 TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(unSealedFilePath);
-                // TsRandomAccessLocalFileReader fileReader = new TsRandomAccessLocalFileReader(unSealedFilePath);
                 for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
                     //TODO parallelism could be used to speed up
 

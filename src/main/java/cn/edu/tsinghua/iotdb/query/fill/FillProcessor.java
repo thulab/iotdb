@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.fill;
 
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
-import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;

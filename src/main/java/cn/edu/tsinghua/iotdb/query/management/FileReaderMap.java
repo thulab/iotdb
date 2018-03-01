@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.reader;
+package cn.edu.tsinghua.iotdb.query.management;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FileReaderMap {
+
     /** map to store opened file stream **/
     private static ThreadLocal<Map<String, TsRandomAccessLocalFileReader>> fileReaderMap = new ThreadLocal<>();
 

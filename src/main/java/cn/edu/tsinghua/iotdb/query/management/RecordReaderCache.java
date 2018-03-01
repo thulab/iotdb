@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.query.management;
 import java.io.IOException;
 import java.util.HashMap;
 
-import cn.edu.tsinghua.iotdb.query.v2.RecordReader;
+import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
 
 /**
  * Used for read process, put the query structure in the cache for one query process.
