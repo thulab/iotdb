@@ -20,15 +20,19 @@ public abstract class AbstractMemTable implements IMemTable{
     public AbstractMemTable() {
         this.memTableMap = new HashMap<>();
     }
-
-    @Override
-    public boolean checkPath(String deltaObject, String measurement) {
+    
+    /**
+     * check whether the given path is within this memtable.
+     *
+     * @return true if path is within this memtable
+     *
+     */
+    private boolean checkPath(String deltaObject, String measurement) {
         return memTableMap.containsKey(deltaObject) &&
                 memTableMap.get(deltaObject).containsKey(measurement);
     }
 
-    @Override
-    public IMemSeries addSeriesIfNone(String deltaObject, String measurement, TSDataType dataType) {
+    private IMemSeries addSeriesIfNone(String deltaObject, String measurement, TSDataType dataType) {
         if(!memTableMap.containsKey(deltaObject)) {
             memTableMap.put(deltaObject, new HashMap<>());
         }
