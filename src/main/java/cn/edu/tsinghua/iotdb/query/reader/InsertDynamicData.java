@@ -22,7 +22,7 @@ import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisit
 
 /**
  * <p>
- * InsertDynamicData is encapsulating class for memRawSeriesChunk, overflowSeriesInsertReader, overflowOperationReader.
+ * InsertDynamicData is encapsulating class for memSeriesChunkIterator, overflowSeriesInsertReader, overflowOperationReader.
  * A hasNext and removeCurrentValue method is recommended.
  * </p>
  *
@@ -34,9 +34,6 @@ public class InsertDynamicData {
 
     private TSDataType dataType;
     private boolean hasNext = false;
-
-    /** memtable data in memory **/
-    private RawSeriesChunk memRawSeriesChunk;
 
     /** memtable data in memory iterator **/
     private Iterator<TimeValuePair> memSeriesChunkIterator;
@@ -78,7 +75,6 @@ public class InsertDynamicData {
         this.singleTimeVisitor = getSingleValueVisitorByDataType(TSDataType.INT64, timeFilter);
         this.singleValueVisitor = getSingleValueVisitorByDataType(dataType, valueFilter);
 
-        this.memRawSeriesChunk = memRawSeriesChunk;
         this.overflowInsertDataReader = overflowInsertDataReader;
         this.overflowOperationReader = overflowOperationReader;
 
