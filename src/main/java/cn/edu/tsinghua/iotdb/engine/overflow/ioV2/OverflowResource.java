@@ -42,9 +42,9 @@ public class OverflowResource {
 	private File insertFile;
 	private File updateFile;
 
-	private String insertFileName = "unseqTsFile";
-	private String updateDeleteFileName = "overflowFile";
-	private String positionFileName = "positionFile";
+	private static final String insertFileName = "unseqTsFile";
+	private static final String updateDeleteFileName = "overflowFile";
+	private static final String positionFileName = "positionFile";
 	private OverflowIO insertIO;
 	private OverflowIO updateDeleteIO;
 	private static final int FOOTER_LENGTH = 4;
