@@ -140,7 +140,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                 putTimePair(doc, -s, -e);
                 break;
             default:
-                LOG.error("Unsupported Overflow operation type.");
                 throw new UnSupportedOverflowOpTypeException("Unsupported Overflow operation type.");
         }
 
@@ -182,7 +181,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                     doc.putBinary(new Binary(""));
                 break;
             default:
-                LOG.error("Unsupported TSFile data type.");
                 throw new UnSupportedDataTypeException("Unsupported TSFile data type.");
         }
     }
@@ -212,7 +210,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                 putTimePair(ansData, -Math.abs(startTime), -Math.abs(endTime));
                 break;
             default:
-                LOG.error("Unsupported Overflow operation type.");
                 throw new UnSupportedOverflowOpTypeException("Unsupported Overflow operation type.");
         }
 
@@ -236,7 +233,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                 ansData.putBinary(doc.getBinary(i));
                 break;
             default:
-                LOG.error("Unsupported TSFile data type.");
                 throw new UnSupportedDataTypeException("Unsupported TSFile data type.");
         }
     }
@@ -477,7 +473,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                                 } else {
                                     // oldTimePair.opType == OverflowOpType.INSERT
                                     // oldTimePair covers newTimePair, but oldTimePair is INSERT operation. impossible
-                                    LOG.error("unreachable method");
+                                    LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                            newTimePair.toString(),
+                                            oldTimePair.toString());
                                 }
                             } else if (oldTimePair.e == R) {
                                 if (oldTimePair.opType == OverflowOpType.DELETE) {
@@ -494,7 +492,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                                     break;
                                 } else if (oldTimePair.opType == OverflowOpType.INSERT) {
                                     // oldTimePair covers newTimePair, but oldTimePair is INSERT operation. impossible
-                                    LOG.error("unreachable method");
+                                    LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                            newTimePair.toString(),
+                                            oldTimePair.toString());
                                 }
                             } else {
                                 if (oldTimePair.opType == OverflowOpType.DELETE) {
@@ -509,7 +509,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                                     break;
                                 } else if (oldTimePair.opType == OverflowOpType.INSERT) {
                                     // oldTimePair covers newTimePair, but oldTimePair is INSERT operation. impossible
-                                    LOG.error("unreachable method");
+                                    LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                            newTimePair.toString(),
+                                            oldTimePair.toString());
                                 }
                             }
                         } else if (relation == CrossRelation.LFIRSTCROSS) {  // newTimePair first cross
@@ -649,7 +651,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                             // relation == CrossRelation.LCOVERSR) : newerTimePair covers oldTimePair, newTimePair width must > 1, impossible
                             // relation == CrossRelation.LFIRSTCROSS) :  newTimePair first cross, impossible
                             // relation == CrossRelation.RFIRSTCROSS) :  oldTimePair first cross, impossible
-                            LOG.error("unreachable method");
+                            LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                    newTimePair.toString(),
+                                    oldTimePair.toString());
                         }
                     }
                 }
@@ -741,7 +745,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                                 } else {
                                     // oldTimePair.opType == OverflowOpType.INSERT
                                     // oldTimePair covers newTimePair, but oldTimePair is INSERT operation. impossible
-                                    LOG.error("unreachable method");
+                                    LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                            newTimePair.toString(),
+                                            oldTimePair.toString());
                                 }
                             } else if (oldTimePair.e == R) {
                                 if (oldTimePair.opType == OverflowOpType.DELETE) {
@@ -761,7 +767,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                                     break;
                                 } else if (oldTimePair.opType == OverflowOpType.INSERT) {
                                     // oldTimePair covers newTimePair, but oldTimePair is INSERT operation. impossible
-                                    LOG.error("unreachable method");
+                                    LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                            newTimePair.toString(),
+                                            oldTimePair.toString());
                                 }
                             } else {
                                 if (oldTimePair.opType == OverflowOpType.DELETE) {
@@ -776,7 +784,9 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                                     break;
                                 } else if (oldTimePair.opType == OverflowOpType.INSERT) {
                                     // oldTimePair covers newTimePair, but oldTimePair is INSERT operation. impossible
-                                    LOG.error("unreachable method");
+                                    LOG.error("unreachable method, new time pair : {}, old time pair : {}, ",
+                                            newTimePair.toString(),
+                                            oldTimePair.toString());
                                 }
                             }
                         } else if (relation == CrossRelation.LFIRSTCROSS) {  // newTimePair first cross
@@ -864,7 +874,6 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                         overflowOperations.add(new OverflowUpdateOperation(L, R, new TsPrimitiveType.TsBinary(overflowData.getBinary(i))));
                         break;
                     default:
-                        LOG.error("Unsupported tsfile data type.");
                         throw new UnSupportedDataTypeException("Unsupported tsfile data type.");
                 }
             } else if (L <= 0 && R <= 0) {    // DELETE
