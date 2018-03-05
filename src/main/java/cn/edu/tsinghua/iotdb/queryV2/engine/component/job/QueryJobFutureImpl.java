@@ -22,30 +22,22 @@ public class QueryJobFutureImpl implements QueryJobFuture {
     }
 
     @Override
-    public void waitToFinished() {
+    public void waitToFinished() throws InterruptedException {
         synchronized (queryJob) {
             if (queryJobIsDone(queryJob)) {
                 return;
             } else {
-                try {
-                    queryJob.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                queryJob.wait();
             }
         }
     }
 
     @Override
-    public void terminateCurrentJob() {
+    public void terminateCurrentJob() throws InterruptedException {
         synchronized (queryJob) {
             if (!queryJobIsDone(queryJob)) {
                 queryJob.setStatus(QueryJobStatus.WAITING_TO_BE_TERMINATED);
-                try {
-                    queryJob.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                queryJob.wait();
             }
         }
     }
