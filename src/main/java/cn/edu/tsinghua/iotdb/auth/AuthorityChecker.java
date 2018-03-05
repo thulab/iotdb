@@ -53,9 +53,14 @@ public class AuthorityChecker {
 
     private static boolean checkOnePath(String username, Path path, int permission) {
         List<String> parentPaths = getAllParentPath(path);
+        IAuthorizer authorizer = Authorizer.instance;
         for (int i = 0; i < parentPaths.size(); i++) {
-            if (Authorizer.checkUserPermission(username, parentPaths.get(i), permission)) {
-                return true;
+            try {
+                if (authorizer.checkUserPermission(username, parentPaths.get(i), permission)) {
+                    return true;
+                }
+            } catch (AuthException e) {
+                logger.error("Error occur when checking the path {} for user {}", path, username, e);
             }
         }
         return false;

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import org.apache.thrift.TException;
@@ -95,8 +96,9 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
 		boolean status;
+		IAuthorizer authorizer = Authorizer.instance;
 		try {
-			status = Authorizer.login(req.getUsername(), req.getPassword());
+			status = authorizer.login(req.getUsername(), req.getPassword());
 		} catch (AuthException e) {
 			status = false;
 		}

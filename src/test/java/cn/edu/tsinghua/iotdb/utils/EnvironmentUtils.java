@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.utils;
 import java.io.File;
 import java.io.IOException;
 
+import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -119,7 +120,8 @@ public class EnvironmentUtils {
 		config.enableMemMonitor = false;
 		// disable the system monitor
 		config.enableStatMonitor = false;
-		Authorizer.reset();
+		IAuthorizer authorizer = Authorizer.instance;
+		authorizer.reset();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		MultiFileLogNodeManager.getInstance().start();
 	}

@@ -34,12 +34,13 @@ public class AuthorizerTest {
 	@Test
 	public void testAuthorizer() {
 
+		IAuthorizer authorizer = Authorizer.instance;
 		/**
 		 * login
 		 */
 		boolean status = false;
 		try {
-			status = Authorizer.login("root", "root");
+			status = authorizer.login("root", "root");
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
@@ -47,7 +48,7 @@ public class AuthorizerTest {
 		}
 
 		try {
-			status = Authorizer.login("root", "error");
+			status = authorizer.login("root", "error");
 		} catch (AuthException e) {
 			assertEquals("The username or the password is not correct", e.getMessage());
 		}
@@ -56,33 +57,33 @@ public class AuthorizerTest {
 		 */
 		User user = new User("user", "password");
 		try {
-			status = Authorizer.createUser(user.getUserName(), user.getPassWord());
+			status = authorizer.createUser(user.getUserName(), user.getPassWord());
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.createUser(user.getUserName(), user.getPassWord());
+			status = authorizer.createUser(user.getUserName(), user.getPassWord());
 		} catch (AuthException e) {
 			assertEquals("The user is exist", e.getMessage());
 		}
 		try {
-			status = Authorizer.login(user.getUserName(), user.getPassWord());
+			status = authorizer.login(user.getUserName(), user.getPassWord());
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.deleteUser(user.getUserName());
+			status = authorizer.deleteUser(user.getUserName());
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.deleteUser(user.getUserName());
+			status = authorizer.deleteUser(user.getUserName());
 		} catch (AuthException e) {
 			assertEquals("The user is not exist", e.getMessage());
 		}
@@ -92,38 +93,38 @@ public class AuthorizerTest {
 		 */
 		String nodeName = "root.laptop.d1";
 		try {
-			Authorizer.createUser(user.getUserName(), user.getPassWord());
-			status = Authorizer.addPmsToUser(user.getUserName(), nodeName, 1);
+			authorizer.createUser(user.getUserName(), user.getPassWord());
+			status = authorizer.grantPrivilegeToUser(user.getUserName(), nodeName, 1);
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			Authorizer.addPmsToUser(user.getUserName(), nodeName, 1);
+			authorizer.grantPrivilegeToUser(user.getUserName(), nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The permission is exist", e.getMessage());
 		}
 		try {
-			Authorizer.addPmsToUser("error", nodeName, 1);
+			authorizer.grantPrivilegeToUser("error", nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The user is not exist", e.getMessage());
 		}
 		try {
-			status = Authorizer.removePmsFromUser(user.getUserName(), nodeName, 1);
+			status = authorizer.revokePrivilegeFromUser(user.getUserName(), nodeName, 1);
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.removePmsFromUser(user.getUserName(), nodeName, 1);
+			status = authorizer.revokePrivilegeFromUser(user.getUserName(), nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The permission is not exist", e.getMessage());
 		}
 		try {
-			Authorizer.deleteUser(user.getUserName());
-			Authorizer.removePmsFromUser(user.getUserName(), nodeName, 1);
+			authorizer.deleteUser(user.getUserName());
+			authorizer.revokePrivilegeFromUser(user.getUserName(), nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The user is not exist", e.getMessage());
 		}
@@ -132,27 +133,27 @@ public class AuthorizerTest {
 		 */
 		String roleName = "role";
 		try {
-			status = Authorizer.createRole(roleName);
+			status = authorizer.createRole(roleName);
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.createRole(roleName);
+			status = authorizer.createRole(roleName);
 		} catch (AuthException e) {
 			assertEquals("The role is exist", e.getMessage());
 		}
 
 		try {
-			status = Authorizer.deleteRole(roleName);
+			status = authorizer.deleteRole(roleName);
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.deleteRole(roleName);
+			status = authorizer.deleteRole(roleName);
 		} catch (AuthException e) {
 			assertEquals("The role is not exist", e.getMessage());
 		}
@@ -160,8 +161,8 @@ public class AuthorizerTest {
 		 * role permission
 		 */
 		try {
-			status = Authorizer.createRole(roleName);
-			status = Authorizer.addPmsToRole(roleName, nodeName, 1);
+			status = authorizer.createRole(roleName);
+			status = authorizer.grantPrivilegeToRole(roleName, nodeName, 1);
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
@@ -169,37 +170,37 @@ public class AuthorizerTest {
 		}
 
 		try {
-			status = Authorizer.addPmsToRole(roleName, nodeName, 1);
+			status = authorizer.grantPrivilegeToRole(roleName, nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The permission is exist", e.getMessage());
 		}
 
 		try {
-			status = Authorizer.removePmsFromRole(roleName, nodeName, 1);
+			status = authorizer.revokePrivilegeFromRole(roleName, nodeName, 1);
 			assertEquals(true, status);
 		} catch (AuthException e1) {
 			fail(e1.getMessage());
 		}
 		try {
-			Authorizer.removePmsFromRole(roleName, nodeName, 1);
+			authorizer.revokePrivilegeFromRole(roleName, nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The permission is not exist", e.getMessage());
 		}
 
 		try {
-			Authorizer.deleteRole(roleName);
+			authorizer.deleteRole(roleName);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 
 		try {
-			Authorizer.removePmsFromRole(roleName, nodeName, 1);
+			authorizer.revokePrivilegeFromRole(roleName, nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The role is not exist", e.getMessage());
 		}
 		try {
-			Authorizer.addPmsToRole(roleName, nodeName, 1);
+			authorizer.grantPrivilegeToRole(roleName, nodeName, 1);
 		} catch (AuthException e) {
 			assertEquals("The role is not exist", e.getMessage());
 		}
@@ -208,24 +209,24 @@ public class AuthorizerTest {
 		 * user role
 		 */
 		try {
-			Authorizer.createUser(user.getUserName(), user.getPassWord());
-			Authorizer.createRole(roleName);
-			status = Authorizer.grantRoleToUser(roleName, user.getUserName());
+			authorizer.createUser(user.getUserName(), user.getPassWord());
+			authorizer.createRole(roleName);
+			status = authorizer.grantRoleToUser(roleName, user.getUserName());
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			Authorizer.addPmsToUser(user.getUserName(), nodeName, 1);
-			Authorizer.addPmsToRole(roleName, nodeName, 2);
-			Authorizer.addPmsToRole(roleName, nodeName, 3);
+			authorizer.grantPrivilegeToUser(user.getUserName(), nodeName, 1);
+			authorizer.grantPrivilegeToRole(roleName, nodeName, 2);
+			authorizer.grantPrivilegeToRole(roleName, nodeName, 3);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			Set<Integer> permisssions = Authorizer.getPermission(user.getUserName(), nodeName);
+			Set<Integer> permisssions = authorizer.getPermission(user.getUserName(), nodeName);
 			assertEquals(3, permisssions.size());
 			assertEquals(true, permisssions.contains(1));
 			assertEquals(true, permisssions.contains(2));
@@ -236,9 +237,9 @@ public class AuthorizerTest {
 			fail(e.getMessage());
 		}
 		try {
-			status = Authorizer.revokeRoleFromUser(roleName, user.getUserName());
+			status = authorizer.revokeRoleFromUser(roleName, user.getUserName());
 			assertEquals(true, status);
-			Set<Integer> permisssions = Authorizer.getPermission(user.getUserName(), nodeName);
+			Set<Integer> permisssions = authorizer.getPermission(user.getUserName(), nodeName);
 			assertEquals(1, permisssions.size());
 			assertEquals(true, permisssions.contains(1));
 			assertEquals(false, permisssions.contains(2));
@@ -246,21 +247,29 @@ public class AuthorizerTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		status = Authorizer.checkUserPermission(user.getUserName(), nodeName, 1);
+		try {
+			status = authorizer.checkUserPermission(user.getUserName(), nodeName, 1);
+		} catch (AuthException e) {
+			fail(e.getMessage());
+		}
 		assertEquals(true, status);
-		status = Authorizer.checkUserPermission(user.getUserName(), nodeName, 2);
+		try {
+			status = authorizer.checkUserPermission(user.getUserName(), nodeName, 2);
+		} catch (AuthException e) {
+			fail(e.getMessage());
+		}
 		assertEquals(false, status);
 		try {
-			status = Authorizer.updateUserPassword(user.getUserName(), "new");
-			status = Authorizer.login(user.getUserName(), "new");
+			status = authorizer.updateUserPassword(user.getUserName(), "new");
+			status = authorizer.login(user.getUserName(), "new");
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		try {
-			Authorizer.deleteUser(user.getUserName());
-			Authorizer.deleteRole(roleName);
+			authorizer.deleteUser(user.getUserName());
+			authorizer.deleteRole(roleName);
 		} catch (AuthException e) {
 			e.printStackTrace();
 		}

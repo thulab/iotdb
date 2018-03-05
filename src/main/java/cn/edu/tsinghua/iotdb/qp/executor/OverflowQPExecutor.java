@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.executor;
 import java.io.IOException;
 import java.util.*;
 
+import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import org.slf4j.Logger;
@@ -327,47 +328,48 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		String newPassword = author.getNewPassword();
 		Set<Integer> permissions = author.getPermissions();
 		Path nodeName = author.getNodeName();
+		IAuthorizer authorizer = Authorizer.instance;
 		try {
 			boolean flag = true;
 			switch (authorType) {
 			case UPDATE_USER:
-				Authorizer.updateUserPassword(userName, newPassword);
+				authorizer.updateUserPassword(userName, newPassword);
 			case CREATE_USER:
-				Authorizer.createUser(userName, password);
+				authorizer.createUser(userName, password);
 			case CREATE_ROLE:
-				Authorizer.createRole(roleName);
+				authorizer.createRole(roleName);
 			case DROP_USER:
-				return Authorizer.deleteUser(userName);
+				return authorizer.deleteUser(userName);
 			case DROP_ROLE:
-				return Authorizer.deleteRole(roleName);
+				return authorizer.deleteRole(roleName);
 			case GRANT_ROLE:
 				for (int i : permissions) {
-					if (!Authorizer.addPmsToRole(roleName, nodeName.getFullPath(), i))
+					if (!authorizer.grantPrivilegeToRole(roleName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case GRANT_USER:
 				for (int i : permissions) {
-					if (!Authorizer.addPmsToUser(userName, nodeName.getFullPath(), i))
+					if (!authorizer.grantPrivilegeToUser(userName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case GRANT_ROLE_TO_USER:
-				return Authorizer.grantRoleToUser(roleName, userName);
+				return authorizer.grantRoleToUser(roleName, userName);
 			case REVOKE_USER:
 				for (int i : permissions) {
-					if (!Authorizer.removePmsFromUser(userName, nodeName.getFullPath(), i))
+					if (!authorizer.revokePrivilegeFromUser(userName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case REVOKE_ROLE:
 				for (int i : permissions) {
-					if (!Authorizer.removePmsFromRole(roleName, nodeName.getFullPath(), i))
+					if (!authorizer.revokePrivilegeFromRole(roleName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case REVOKE_ROLE_FROM_USER:
-				return Authorizer.revokeRoleFromUser(roleName, userName);
+				return authorizer.revokeRoleFromUser(roleName, userName);
 			default:
 				break;
 
@@ -579,7 +581,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	}
 
 	public Set<Integer> getPermissionsOfUser(String username, String nodeName) throws AuthException {
-		return Authorizer.getPermission(username, nodeName);
+		IAuthorizer authorizer = Authorizer.instance;
+		return authorizer.getPermission(username, nodeName);
 	}
 
 }
