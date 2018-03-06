@@ -55,17 +55,16 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             return null;
         }
         FileInputStream inputStream = new FileInputStream(roleProfile);
-        try (FileChannel channel = inputStream.getChannel()) {
-            ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, roleProfile.length());
-
+        DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream));
+        try {
             Role role = new Role();
-            role.name = IOUtils.readString(buffer, STRING_ENCODING, strBufferLocal);
+            role.name = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
 
-            int privilegeNum = buffer.getInt();
+            int privilegeNum = dataInputStream.readInt();
             List<PathPrivilege> pathPrivilegeList = new ArrayList<>();
             for (int i = 0; i < privilegeNum; i++) {
-                String path = IOUtils.readString(buffer, STRING_ENCODING, strBufferLocal);
-                PrivilegeType privilegeType = PrivilegeType.values()[buffer.getInt()];
+                String path = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
+                PrivilegeType privilegeType = PrivilegeType.values()[dataInputStream.readInt()];
                 pathPrivilegeList.add(new PathPrivilege(privilegeType, path));
             }
             role.privilegeList = pathPrivilegeList;
@@ -73,6 +72,8 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             return role;
         } catch (Exception e) {
             throw new IOException(e.getMessage());
+        } finally {
+            dataInputStream.close();
         }
     }
 

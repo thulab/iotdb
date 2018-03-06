@@ -19,6 +19,14 @@ import java.util.Set;
 
 public class LocalFileAuthorizer implements IAuthorizer {
 
+    private static class InstanceHolder {
+        private static LocalFileAuthorizer instance = new LocalFileAuthorizer();
+    }
+
+    public static LocalFileAuthorizer getInstance() {
+        return InstanceHolder.instance;
+    }
+
     private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
     private String userDirPath;
     private String roleDirPath;

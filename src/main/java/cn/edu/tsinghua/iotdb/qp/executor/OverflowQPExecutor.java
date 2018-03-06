@@ -1,16 +1,8 @@
 package cn.edu.tsinghua.iotdb.qp.executor;
 
-import java.io.IOException;
-import java.util.*;
-
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
-import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
-import cn.edu.tsinghua.iotdb.query.fill.IFill;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.auth.AuthException;
-import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
+import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -20,6 +12,7 @@ import cn.edu.tsinghua.iotdb.index.IoTIndex;
 import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.MetadataOperator;
@@ -35,6 +28,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.sys.MetadataPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
+import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.utils.LoadDataUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -44,6 +38,11 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
 
 public class OverflowQPExecutor extends QueryProcessExecutor {
 
@@ -328,7 +327,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		String newPassword = author.getNewPassword();
 		Set<Integer> permissions = author.getPermissions();
 		Path nodeName = author.getNodeName();
-		IAuthorizer authorizer = Authorizer.instance;
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		try {
 			boolean flag = true;
 			switch (authorType) {
@@ -581,7 +580,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 	}
 
 	public Set<Integer> getPermissionsOfUser(String username, String nodeName) throws AuthException {
-		IAuthorizer authorizer = Authorizer.instance;
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		return authorizer.getPrivileges(username, nodeName);
 	}
 

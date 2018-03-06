@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.utils.IOUtils;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,26 +72,25 @@ public class LocalFileUserAccessor implements IUserAccessor{
             return null;
         }
         FileInputStream inputStream = new FileInputStream(userProfile);
-        try (FileChannel channel = inputStream.getChannel()) {
-            ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, userProfile.length());
-
+        DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream));
+        try {
             User user = new User();
-            user.name = IOUtils.readString(buffer, STRING_ENCODING, strBufferLocal);
-            user.password = IOUtils.readString(buffer, STRING_ENCODING, strBufferLocal);
+            user.name = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
+            user.password = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
 
-            int privilegeNum = buffer.getInt();
+            int privilegeNum = dataInputStream.readInt();
             List<PathPrivilege> pathPrivilegeList = new ArrayList<>();
             for (int i = 0; i < privilegeNum; i++) {
-                String path = IOUtils.readString(buffer, STRING_ENCODING, strBufferLocal);
-                PrivilegeType privilegeType = PrivilegeType.values()[buffer.getInt()];
+                String path = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
+                PrivilegeType privilegeType = PrivilegeType.values()[dataInputStream.readInt()];
                 pathPrivilegeList.add(new PathPrivilege(privilegeType, path));
             }
             user.privilegeList = pathPrivilegeList;
 
-            int roleNum = buffer.getInt();
+            int roleNum = dataInputStream.readInt();
             List<String> roleList = new ArrayList<>();
             for (int i = 0; i < roleNum; i++) {
-                String roleName = IOUtils.readString(buffer, STRING_ENCODING, strBufferLocal);
+                String roleName = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
                 roleList.add(roleName);
             }
             user.roleList = roleList;
@@ -98,6 +98,8 @@ public class LocalFileUserAccessor implements IUserAccessor{
             return user;
         } catch (Exception e) {
             throw new IOException(e.getMessage());
+        } finally {
+            dataInputStream.close();
         }
     }
 

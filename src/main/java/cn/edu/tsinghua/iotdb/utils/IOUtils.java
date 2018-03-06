@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.utils;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 public class IOUtils {
 
@@ -48,4 +48,22 @@ public class IOUtils {
         buffer.get(strBuffer, 0, length);
         return new String(strBuffer, 0, length, encoding);
     }
+
+    public static String readString(DataInputStream inputStream, String encoding, ThreadLocal<byte[]> strBufferLocal) throws IOException {
+        byte[] strBuffer;
+        int length = inputStream.readInt();
+        if(strBufferLocal != null) {
+            strBuffer = strBufferLocal.get();
+            if(strBuffer == null || length > strBuffer.length) {
+                strBuffer = new byte[length];
+                strBufferLocal.set(strBuffer);
+            }
+        } else {
+            strBuffer = new byte[length];
+        }
+
+        inputStream.read(strBuffer, 0, length);
+        return new String(strBuffer, 0, length, encoding);
+    }
+
 }

@@ -1,19 +1,16 @@
 package cn.edu.tsinghua.iotdb.auth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.Set;
-
 import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.model.User;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
-import cn.edu.tsinghua.iotdb.auth.model.User;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class AuthorizerTest {
 
@@ -31,7 +28,7 @@ public class AuthorizerTest {
 	@Test
 	public void testAuthorizer() {
 
-		IAuthorizer authorizer = new LocalFileAuthorizer();
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		/**
 		 * login
 		 */

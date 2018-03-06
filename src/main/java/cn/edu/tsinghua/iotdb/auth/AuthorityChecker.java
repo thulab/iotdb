@@ -1,15 +1,14 @@
 package cn.edu.tsinghua.iotdb.auth;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
+import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AuthorityChecker {
 
@@ -53,7 +52,7 @@ public class AuthorityChecker {
 
     private static boolean checkOnePath(String username, Path path, int permission) {
         List<String> parentPaths = getAllParentPath(path);
-        IAuthorizer authorizer = Authorizer.instance;
+        IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
         for (int i = 0; i < parentPaths.size(); i++) {
             try {
                 if (authorizer.checkUserPrivileges(username, parentPaths.get(i), permission)) {

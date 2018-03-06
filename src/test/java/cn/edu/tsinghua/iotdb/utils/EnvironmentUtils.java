@@ -1,17 +1,7 @@
 package cn.edu.tsinghua.iotdb.utils;
 
-import java.io.File;
-import java.io.IOException;
-
 import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
+import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
@@ -20,6 +10,15 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * <p>
@@ -120,7 +119,7 @@ public class EnvironmentUtils {
 		config.enableMemMonitor = false;
 		// disable the system monitor
 		config.enableStatMonitor = false;
-		IAuthorizer authorizer = Authorizer.instance;
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		authorizer.reset();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		MultiFileLogNodeManager.getInstance().start();

@@ -54,8 +54,14 @@ public class HashLock {
      */
     public void reset() {
         for(int i = 0; i < lockSize; i++) {
-            locks[i].readLock().unlock();
-            locks[i].writeLock().unlock();
+            try {
+                locks[i].readLock().unlock();
+            } catch (Exception ignored) {
+            }
+            try {
+                locks[i].writeLock().unlock();
+            } catch (Exception ignored) {
+            }
         }
     }
 }

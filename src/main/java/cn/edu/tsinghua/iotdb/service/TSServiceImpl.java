@@ -1,26 +1,9 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
-import org.apache.thrift.TException;
-import org.apache.thrift.server.ServerContext;
-import org.joda.time.DateTimeZone;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthorityChecker;
-import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
+import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -28,33 +11,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCancelOperationReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCancelOperationResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseOperationResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseSessionReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSCloseSessionResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteBatchStatementReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteBatchStatementResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteStatementReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSExecuteStatementResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchMetadataResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchResultsReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchResultsResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSGetTimeZoneResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSHandleIdentifier;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOpenSessionReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOpenSessionResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSProtocolVersion;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSSetTimeZoneReq;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSSetTimeZoneResp;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_Status;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.*;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.metadata.Metadata;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
@@ -63,10 +20,22 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.OverflowQPExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import org.apache.thrift.TException;
+import org.apache.thrift.server.ServerContext;
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.sql.Statement;
+import java.util.*;
 
 import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.INDEXQUERY;
 
@@ -96,7 +65,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
 		boolean status;
-		IAuthorizer authorizer = Authorizer.instance;
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		try {
 			status = authorizer.login(req.getUsername(), req.getPassword());
 		} catch (AuthException e) {
