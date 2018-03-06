@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +42,9 @@ public class OverflowResource {
 	private File insertFile;
 	private File updateFile;
 
-	private String insertFileName = "unseqTsFile";
-	private String updateDeleteFileName = "overflowFile";
-	private String positionFileName = "positionFile";
+	private static final String insertFileName = "unseqTsFile";
+	private static final String updateDeleteFileName = "overflowFile";
+	private static final String positionFileName = "positionFile";
 	private OverflowIO insertIO;
 	private OverflowIO updateDeleteIO;
 	private static final int FOOTER_LENGTH = 4;
@@ -62,7 +63,7 @@ public class OverflowResource {
 		this.appendUpdateDeleteMetadats = new ArrayList<>();
 		this.parentPath = parentPath;
 		this.dataPath = dataPath;
-		File dataFile = new File(new File(parentPath), dataPath);
+		File dataFile = new File(parentPath, dataPath);
 		if (!dataFile.exists()) {
 			dataFile.mkdirs();
 		}
@@ -78,7 +79,6 @@ public class OverflowResource {
 			readMetadata();
 		} catch (IOException e) {
 			LOGGER.error("Failed to construct the OverflowIO.", e);
-			e.printStackTrace();
 			throw e;
 		}
 	}
@@ -306,7 +306,7 @@ public class OverflowResource {
 		return insertFilePath;
 	}
 
-	public File getInsertFile(){
+	public File getInsertFile() {
 		return insertFile;
 	}
 
@@ -317,8 +317,8 @@ public class OverflowResource {
 	public String getUpdateDeleteFilePath() {
 		return updateDeleteFilePath;
 	}
-	
-	public File getUpdateDeleteFile(){
+
+	public File getUpdateDeleteFile() {
 		return updateFile;
 	}
 
@@ -330,7 +330,8 @@ public class OverflowResource {
 	}
 
 	public void deleteResource() throws IOException {
-		cleanDir(new File(parentPath, dataPath).getPath());
+		// cleanDir(new File(parentPath, dataPath).getPath());
+		FileUtils.forceDelete(new File(parentPath, dataPath));
 	}
 
 	private void cleanDir(String dir) throws IOException {

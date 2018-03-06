@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.engine.bufferwriteV2.BufferWriteIO;
+import cn.edu.tsinghua.iotdb.engine.bufferwriteV2.BufferIO;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
@@ -19,12 +19,12 @@ import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class BufferWriteIOTest {
 
-	private BufferWriteIO bufferWriteIO = null;
+	private BufferIO bufferWriteIO = null;
 	private String filePath = "bufferwritepath";
 
 	@Before
 	public void setUp() throws Exception {
-		bufferWriteIO = new BufferWriteIO(new TsRandomAccessFileWriter(new File(filePath)), 0, new ArrayList<>());
+		bufferWriteIO = new BufferIO(new TsRandomAccessFileWriter(new File(filePath)), 0, new ArrayList<>());
 	}
 
 	@After

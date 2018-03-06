@@ -123,12 +123,12 @@ public class TsfileDBConfig {
 	/**
 	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
 	 */
-	public long memThresholdWarning = (long) (0.8 * Runtime.getRuntime().maxMemory());
+	public long memThresholdWarning = (long) (0.5 * Runtime.getRuntime().maxMemory());
 
 	/**
 	 * No more insert is allowed if this threshold is reached.
 	 */
-	public long memThresholdDangerous = (long) (0.9 * Runtime.getRuntime().maxMemory());
+	public long memThresholdDangerous = (long) (0.6 * Runtime.getRuntime().maxMemory());
 
 	/**
 	 * MemMonitorThread will check every such interval. If memThresholdWarning is reached, MemMonitorThread
@@ -202,11 +202,16 @@ public class TsfileDBConfig {
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
 	/**
-	 * Threshold for external sort
+	 * Threshold for external sort. When using multi-line merging sort, if the count of lines exceed {@code externalSortThreshold}, it will
+	 * trigger external sort.
 	 */
 	public int externalSortThreshold = 50;
 
+	/**
+	 * Cache size of {@code checkAndGetDataTypeCache} in {@link cn.edu.tsinghua.iotdb.metadata.MManager}
+	 */
 	public int mManagerCacheSize = 400000;
+
 	/**
 	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
 	 */

@@ -63,7 +63,7 @@ public class FileNodeProcessorTest {
 
 	@Test
 	public void testInsertAndQuery() throws Exception {
-		fileNodeProcessor = new FileNodeProcessor(dbconfig.fileNodeDir, processorName, parameters);
+		fileNodeProcessor = new FileNodeProcessor(dbconfig.fileNodeDir, processorName);
 		fileNodeProcessor.close();
 		assertEquals(false, fileNodeProcessor.shouldRecovery());
 		assertEquals(false, fileNodeProcessor.isOverflowed());
@@ -97,7 +97,7 @@ public class FileNodeProcessorTest {
 				// waiting for the end of asynchronous flush.
 				TimeUnit.SECONDS.sleep(2);
 				// query result contains the flushed result.
-				fileNodeProcessor.getOverflowProcessor(processorName, parameters);
+				fileNodeProcessor.getOverflowProcessor(processorName);
 				assertEquals(true, fileNodeProcessor.hasBufferwriteProcessor());
 				QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId, null, null, null);
 				// overflow data | no overflow data
@@ -131,7 +131,7 @@ public class FileNodeProcessorTest {
 		// the flush last update time is 87
 		// insert overflow data, whose time range is from 0 to 86.
 		for (int i = 1; i <= 100; i++) {
-			//System.out.println(i);
+			// System.out.println(i);
 			long flushLastUpdateTime = fileNodeProcessor.getFlushLastUpdateTime(processorName);
 			if (i <= 85) {
 				if (i == 66) {
@@ -141,8 +141,7 @@ public class FileNodeProcessorTest {
 				assertEquals(86, flushLastUpdateTime);
 				if (i < flushLastUpdateTime) {
 					// insert value whose data-type is INT64.
-					OverflowProcessor overflowProcessor = fileNodeProcessor.getOverflowProcessor(processorName,
-							parameters);
+					OverflowProcessor overflowProcessor = fileNodeProcessor.getOverflowProcessor(processorName);
 					TSRecord tsRecord = new TSRecord(i, processorName);
 					tsRecord.addTuple(DataPoint.getDataPoint(daType1, measurementId1, String.valueOf(i)));
 					overflowProcessor.insert(tsRecord);
@@ -172,8 +171,7 @@ public class FileNodeProcessorTest {
 							assertEquals(j, pair.getValue().getLong());
 						}
 						// insert time = 86 overflow data
-						OverflowProcessor overflowProcessor = fileNodeProcessor.getOverflowProcessor(processorName,
-								parameters);
+						OverflowProcessor overflowProcessor = fileNodeProcessor.getOverflowProcessor(processorName);
 						TSRecord tsRecord = new TSRecord(i, processorName);
 						tsRecord.addTuple(DataPoint.getDataPoint(daType1, measurementId1, String.valueOf(i)));
 						overflowProcessor.insert(tsRecord);
@@ -188,7 +186,7 @@ public class FileNodeProcessorTest {
 						fail("overflow data" + i + "flushLastUpdateTime" + flushLastUpdateTime);
 					} else {
 						// waiting the end of overflow flush.
-						//TimeUnit.SECONDS.sleep(2);
+						// TimeUnit.SECONDS.sleep(2);
 						// query data
 						QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null, null,
 								null);
@@ -233,7 +231,7 @@ public class FileNodeProcessorTest {
 	@Test
 	public void testQueryToken() {
 		try {
-			fileNodeProcessor = new FileNodeProcessor(dbconfig.fileNodeDir, processorName, parameters);
+			fileNodeProcessor = new FileNodeProcessor(dbconfig.fileNodeDir, processorName);
 			fileNodeProcessor.writeLock();
 			int token = fileNodeProcessor.addMultiPassLock();
 			assertEquals(0, token);

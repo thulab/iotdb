@@ -2,10 +2,10 @@ package cn.edu.tsinghua.iotdb.query.fill;
 
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.query.engine.ReadCachePrefix;
-import cn.edu.tsinghua.iotdb.query.v2.FillRecordReader;
-import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
-import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.query.management.ReadCachePrefix;
+import cn.edu.tsinghua.iotdb.query.reader.FillRecordReader;
+import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
+import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;

@@ -4,11 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
@@ -35,7 +37,10 @@ public class OverflowIO extends TsFileIOWriter {
 
 	public OverflowIO(String filePath, long lastUpdatePosition, boolean isInsert) throws IOException {
 		super();
-		OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
+		FileChannel fileChannel = new FileOutputStream(new File(filePath), true).getChannel();
+		fileChannel.truncate(lastUpdatePosition);
+		fileChannel.close();
+		//OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
 		overflowReadWriter = new OverflowReadWriter(filePath);
 		if (isInsert) {
 			super.setIOWriter(overflowReadWriter);

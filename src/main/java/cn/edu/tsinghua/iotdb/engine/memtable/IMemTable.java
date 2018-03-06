@@ -16,16 +16,6 @@ import java.util.Map;
 public interface IMemTable {
     Map<String, Map<String, IMemSeries>> getMemTableMap();
 
-    /**
-     * check whether the given path is within this memtable.
-     *
-     * @return true if path is within this memtable
-     *
-     */
-    boolean checkPath(String deltaObject, String measurement);
-
-    IMemSeries addSeriesIfNone(String deltaObject, String measurement, TSDataType dataType);
-
     public void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue);
 
     int size();

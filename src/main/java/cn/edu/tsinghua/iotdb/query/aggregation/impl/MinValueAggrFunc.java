@@ -1,8 +1,8 @@
-package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
+package cn.edu.tsinghua.iotdb.query.aggregation.impl;
 
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
-import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
-import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
+import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;

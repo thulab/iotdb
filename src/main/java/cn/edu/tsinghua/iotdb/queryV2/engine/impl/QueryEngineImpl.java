@@ -4,10 +4,7 @@ import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryJobDispatcher;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.executor.QueryJobExecutor;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFuture;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobStatus;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFutureImpl;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.*;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,15 +55,15 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
                 prepareJob(queryJob);
                 executeJob(queryJob);
             } catch (InterruptedException e) {
-                logger.info("QueryJob[" + queryJob + "] was terminated");
+                logger.info("QueryJob[{}] was terminated", queryJob);
                 synchronized (queryJob) {
                     queryJob.setStatus(QueryJobStatus.TERMINATED);
                     queryJob.notify();
                 }
             } catch (Exception e) {
-                logger.error("Execute QueryJob[" + queryJob + "] error: " + e.getMessage());
-                e.printStackTrace();
+                logger.error(String.format("Execute QueryJob[%s] error: ", queryJob), e);
                 synchronized (queryJob) {
+                    queryJob.setMessage(new QueryJobExecutionMessage(e.getMessage()));
                     queryJob.setStatus(QueryJobStatus.TERMINATED);
                     queryJob.notify();
                 }
@@ -103,8 +100,8 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
                 queryJob.setEndTimestamp(System.currentTimeMillis());
                 queryJob.notify();
             } catch (Exception e) {
-                logger.error("finish QueryJob[" + queryJob + "] Error: " + e.getMessage());
-                e.printStackTrace();
+                logger.error(String.format("finish QueryJob[%s] error: ", queryJob), e);
+                queryJob.setMessage(new QueryJobExecutionMessage(e.getMessage()));
                 queryJob.notify();
             }
         }
@@ -116,8 +113,8 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
                 queryJob.setStatus(QueryJobStatus.TERMINATED);
                 queryJob.notify();
             } catch (Exception e) {
-                logger.error("terminate QueryJob[" + queryJob + "] Error: " + e.getMessage());
-                e.printStackTrace();
+                logger.error(String.format("terminate QueryJob[%s] error: ", queryJob), e);
+                queryJob.setMessage(new QueryJobExecutionMessage(e.getMessage()));
                 queryJob.notify();
             }
         }
