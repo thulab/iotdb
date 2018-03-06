@@ -46,7 +46,8 @@ public class LocalFileUserAccessor implements IUserAccessor{
 
     private String userDirPath;
     /**
-     * Reused buffer for primitive types encoding.
+     * Reused buffer for primitive types encoding/decoding, which aim to reduce memory fragments.
+     * Use ThreadLocal for thread safety.
      */
     private ThreadLocal<ByteBuffer> encodingBufferLocal = new ThreadLocal<>();
     private ThreadLocal<byte[]> strBufferLocal = new ThreadLocal<>();
@@ -90,7 +91,6 @@ public class LocalFileUserAccessor implements IUserAccessor{
                 roleList.add(roleName);
             }
             user.roleList = roleList;
-            user.type = buffer.get();
 
             return user;
         } catch (Exception e) {
@@ -124,7 +124,6 @@ public class LocalFileUserAccessor implements IUserAccessor{
                 IOUtils.writeString(outputStream, user.roleList.get(i), STRING_ENCODING, encodingBufferLocal);
             }
 
-            outputStream.write(user.type);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         } finally {

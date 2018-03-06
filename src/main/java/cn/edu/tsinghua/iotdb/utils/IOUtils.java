@@ -5,6 +5,11 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 public class IOUtils {
+
+    /*
+    In the following methods, you may pass a ThreadLocal buffer to avoid frequently memory allocation.
+    You may also pass a null to use a local buffer.
+     */
     public static void writeString(OutputStream outputStream, String str, String encoding, ThreadLocal<ByteBuffer> encodingBufferLocal) throws IOException {
         byte[] strBuffer =str.getBytes(encoding);
         writeInt(outputStream, strBuffer.length, encodingBufferLocal);

@@ -6,6 +6,8 @@ import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,6 +17,10 @@ import java.util.Map;
  * This class stores information of each user in a separate file within a directory, and cache them in memory when a user is accessed.
  */
 public class LocalFileUserManager implements IUserManager {
+
+    public static final String ADMIN_NAME = "root";
+    private static final String ADMIN_PW = "root";
+    private static final Logger logger = LoggerFactory.getLogger(LocalFileUserManager.class);
 
     private String userDir;
     private Map<String, User> userMap;
@@ -26,7 +32,32 @@ public class LocalFileUserManager implements IUserManager {
         this.userMap = new HashMap<>();
         this.accessor = new LocalFileUserAccessor(userDir);
         this.lock = new HashLock();
+
+        initAdmin();
     }
+
+    /**
+     * Try to load admin. If it doesn't exist, automatically create one.
+     */
+    private void initAdmin() {
+        User admin;
+        try {
+            admin = getUser(ADMIN_NAME);
+        } catch (AuthException e) {
+            logger.warn("Cannot load admin because {}. Create a new one.", e.getMessage());
+            admin = null;
+        }
+
+        if(admin == null) {
+            try {
+                createUser(ADMIN_NAME, ADMIN_PW);
+            } catch (AuthException e) {
+                logger.error("Cannot create admin because {}", e.getMessage());
+            }
+        }
+        logger.info("Admin initialized");
+    }
+
 
     @Override
     public User getUser(String username) throws AuthException {

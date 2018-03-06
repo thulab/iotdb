@@ -10,8 +10,15 @@ public class Role {
     public String name;
     public List<PathPrivilege> privilegeList;
 
+    public Role() {
+    }
+
     public Role(String name) {
         this.name = name;
         this.privilegeList = new ArrayList<>();
+    }
+
+    public boolean hasPrivilege(PathPrivilege pathPrivilege) {
+        return privilegeList.contains(pathPrivilege);
     }
 }

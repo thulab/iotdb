@@ -11,7 +11,6 @@ public class User {
     public String password;
     public List<PathPrivilege> privilegeList;
     public List<String> roleList;
-    public byte type; // 0 : admin, 1 : normal
 
     public User() {
     }
@@ -21,7 +20,6 @@ public class User {
         this.password = password;
         this.privilegeList = new ArrayList<>();
         this.roleList = new ArrayList<>();
-        this.type = 0;
     }
 
     public boolean hasPrivilege(PathPrivilege pathPrivilege) {
@@ -32,7 +30,4 @@ public class User {
         return roleList.contains(roleName);
     }
 
-    public boolean isAdmin() {
-        return type == 0;
-    }
 }
