@@ -143,7 +143,6 @@ public class LocalFileAuthorizer implements IAuthorizer {
 
     @Override
     public void reset() {
-        roleManager.reset();
-        userManager.reset();
+        init();
     }
 }

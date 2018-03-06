@@ -249,6 +249,7 @@ public class LocalFileUserManager implements IUserManager {
     public void reset() {
         userMap.clear();
         lock.reset();
+        initAdmin();
     }
 
     @Override
