@@ -4,6 +4,9 @@ import cn.edu.tsinghua.iotdb.auth.entity.User;
 
 import java.io.IOException;
 
+/**
+ * This interface manages the serialization/deserialization of the user objects.
+ */
 public interface IUserAccessor {
 
     /**

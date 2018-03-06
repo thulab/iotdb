@@ -142,7 +142,7 @@ public class LocalFileUserManager implements IUserManager {
         } catch (AuthException e) {
             return false;
         }
-        
+
         lock.writeLock(username);
         try {
             User user = getUser(username);
@@ -155,6 +155,54 @@ public class LocalFileUserManager implements IUserManager {
                 accessor.saveUser(user);
             } catch (IOException e) {
                 user.password = oldPassword;
+                throw new AuthException(e);
+            }
+            return true;
+        } finally {
+            lock.writeUnlock(username);
+        }
+    }
+
+    @Override
+    public boolean grantRoleToUser(String roleName, String username) throws AuthException {
+        lock.writeLock(username);
+        try {
+            User user = getUser(username);
+            if(user == null) {
+                throw new AuthException(String.format("No such user %s", username));
+            }
+            if(user.hasRole(roleName)) {
+                return false;
+            }
+            user.roleList.add(roleName);
+            try {
+                accessor.saveUser(user);
+            } catch (IOException e) {
+                user.roleList.remove(roleName);
+                throw new AuthException(e);
+            }
+            return true;
+        } finally {
+            lock.writeUnlock(username);
+        }
+    }
+
+    @Override
+    public boolean revokeRoleFromUser(String roleName, String username) throws AuthException {
+        lock.writeLock(username);
+        try {
+            User user = getUser(username);
+            if(user == null) {
+                throw new AuthException(String.format("No such user %s", username));
+            }
+            if(!user.hasRole(roleName)) {
+                return false;
+            }
+            user.roleList.remove(roleName);
+            try {
+                accessor.saveUser(user);
+            } catch (IOException e) {
+                user.roleList.add(roleName);
                 throw new AuthException(e);
             }
             return true;

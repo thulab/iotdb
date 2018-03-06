@@ -66,4 +66,25 @@ public interface IUserManager {
      * @throws AuthException If the user does not exists.
      */
     boolean updateUserPassword(String username, String newPassword) throws AuthException;
+
+
+    /**
+     * Add a role to a user.
+     *
+     * @param roleName The name of the role to be added.
+     * @param username The name of the user to which the role is added.
+     * @return True if the role is successfully added, false if the role already exists.
+     * @throws AuthException If either the role or the user does not exist.
+     */
+    boolean grantRoleToUser(String roleName, String username) throws AuthException;
+
+    /**
+     * Revoke a role from a user.
+     *
+     * @param roleName The name of the role to be removed.
+     * @param username The name of the user from which the role is removed.
+     * @return True if the role is successfully removed, false if the role already exists.
+     * @throws AuthException If either the role or the user does not exist.
+     */
+    boolean revokeRoleFromUser(String roleName, String username) throws AuthException;
 }

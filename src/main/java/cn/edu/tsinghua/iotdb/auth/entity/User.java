@@ -28,6 +28,10 @@ public class User {
         return privilegeList.contains(pathPrivilege);
     }
 
+    public boolean hasRole(String roleName) {
+        return roleList.contains(roleName);
+    }
+
     public boolean isAdmin() {
         return type == 0;
     }
