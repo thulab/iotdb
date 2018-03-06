@@ -124,7 +124,7 @@ public interface IAuthorizer {
      * @return A set of integers each present a privilege.
      * @throws AuthException
      */
-     Set<Integer> getPermission(String username, String path) throws AuthException;
+     Set<Integer> getPrivileges(String username, String path) throws AuthException;
 
     /**
      * Modify the password of a user.
@@ -145,7 +145,7 @@ public interface IAuthorizer {
      * @return  True if the user has such privilege, false if the user does not have such privilege.
      * @throws AuthException If the path or the privilege is illegal.
      */
-    boolean checkUserPermission(String username, String path, int privilegeId) throws AuthException;
+    boolean checkUserPrivileges(String username, String path, int privilegeId) throws AuthException;
 
     /**
      * Reset the Authorizer to initiative status.

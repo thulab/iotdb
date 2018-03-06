@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * This interface manages the serialization/deserialization of the role objects.
@@ -30,4 +31,10 @@ public interface IRoleAccessor {
      * @throws IOException when the file cannot be deleted.
      */
     boolean deleteRole(String rolename) throws IOException;
+
+    /**
+     *
+     * @return A list contains all names of the roles.
+     */
+    List<String> listAllRoles();
 }

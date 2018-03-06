@@ -25,4 +25,6 @@ public class TsFileDBConstant {
 
     public static final String BUFFERWRITE_LOG_NODE_SUFFIX = "-bufferwrite";
     public static final String OVERFLOW_LOG_NODE_SUFFIX = "-overflow";
+
+    public static final char PATH_SEPARATER = '.';
 }

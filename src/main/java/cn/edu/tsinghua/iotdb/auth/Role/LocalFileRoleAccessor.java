@@ -9,6 +9,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
  */
 public class LocalFileRoleAccessor implements IRoleAccessor {
 
-    private static final String ROLE_PROFILE_SUFFIX = ".profile";
+    public static final String ROLE_PROFILE_SUFFIX = ".profile";
     private static final String TEMP_SUFFIX = ".temp";
     private static final String STRING_ENCODING = "utf-8";
 
@@ -96,20 +97,28 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             outputStream.flush();
             outputStream.close();
         }
-
-        if(!roleProfile.renameTo(new File(roleDirPath + File.separator + role.name + ROLE_PROFILE_SUFFIX))) {
+        File oldFile = new File(roleDirPath + File.separator + role.name + ROLE_PROFILE_SUFFIX);
+        oldFile.delete();
+        if(!roleProfile.renameTo(oldFile)) {
             throw new IOException(String.format("Cannot replace old role file with new one, role : %s", role.name));
         }
     }
 
     @Override
     public boolean deleteRole(String rolename) throws IOException {
-        File roleProfile = new File(roleDirPath + File.separator + rolename + ROLE_PROFILE_SUFFIX + TEMP_SUFFIX);
+        File roleProfile = new File(roleDirPath + File.separator + rolename + ROLE_PROFILE_SUFFIX);
         if(!roleProfile.exists())
             return false;
         if(!roleProfile.delete()) {
             throw new IOException(String.format("Cannot delete role file of %s", rolename));
         }
         return true;
+    }
+
+    @Override
+    public List<String> listAllRoles() {
+        File userDir = new File(roleDirPath);
+        String[] names = userDir.list((dir, name) -> name.endsWith(ROLE_PROFILE_SUFFIX));
+        return Arrays.asList(names != null ? names : new String[0]);
     }
 }

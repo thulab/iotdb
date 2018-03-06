@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Set;
 
+import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,25 +17,21 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class AuthorizerTest {
 
-	private DBDao dbdao = null;
 
 	@Before
 	public void setUp() throws Exception {
-		dbdao = new DBDao();
-		dbdao.open();
 		EnvironmentUtils.envSetUp();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		dbdao.close();
 		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test
 	public void testAuthorizer() {
 
-		IAuthorizer authorizer = Authorizer.instance;
+		IAuthorizer authorizer = new LocalFileAuthorizer();
 		/**
 		 * login
 		 */
@@ -108,7 +105,7 @@ public class AuthorizerTest {
 		try {
 			authorizer.grantPrivilegeToUser("error", nodeName, 1);
 		} catch (AuthException e) {
-			assertEquals("The user is not exist", e.getMessage());
+			assertEquals("No such user error", e.getMessage());
 		}
 		try {
 			status = authorizer.revokePrivilegeFromUser(user.getUserName(), nodeName, 1);
@@ -126,7 +123,7 @@ public class AuthorizerTest {
 			authorizer.deleteUser(user.getUserName());
 			authorizer.revokePrivilegeFromUser(user.getUserName(), nodeName, 1);
 		} catch (AuthException e) {
-			assertEquals("The user is not exist", e.getMessage());
+			assertEquals("No such user user", e.getMessage());
 		}
 		/**
 		 * role
@@ -197,12 +194,12 @@ public class AuthorizerTest {
 		try {
 			authorizer.revokePrivilegeFromRole(roleName, nodeName, 1);
 		} catch (AuthException e) {
-			assertEquals("The role is not exist", e.getMessage());
+			assertEquals("No such role role", e.getMessage());
 		}
 		try {
 			authorizer.grantPrivilegeToRole(roleName, nodeName, 1);
 		} catch (AuthException e) {
-			assertEquals("The role is not exist", e.getMessage());
+			assertEquals("No such role role", e.getMessage());
 		}
 
 		/**
@@ -226,7 +223,7 @@ public class AuthorizerTest {
 			fail(e.getMessage());
 		}
 		try {
-			Set<Integer> permisssions = authorizer.getPermission(user.getUserName(), nodeName);
+			Set<Integer> permisssions = authorizer.getPrivileges(user.getUserName(), nodeName);
 			assertEquals(3, permisssions.size());
 			assertEquals(true, permisssions.contains(1));
 			assertEquals(true, permisssions.contains(2));
@@ -239,7 +236,7 @@ public class AuthorizerTest {
 		try {
 			status = authorizer.revokeRoleFromUser(roleName, user.getUserName());
 			assertEquals(true, status);
-			Set<Integer> permisssions = authorizer.getPermission(user.getUserName(), nodeName);
+			Set<Integer> permisssions = authorizer.getPrivileges(user.getUserName(), nodeName);
 			assertEquals(1, permisssions.size());
 			assertEquals(true, permisssions.contains(1));
 			assertEquals(false, permisssions.contains(2));
@@ -248,20 +245,20 @@ public class AuthorizerTest {
 			fail(e.getMessage());
 		}
 		try {
-			status = authorizer.checkUserPermission(user.getUserName(), nodeName, 1);
+			status = authorizer.checkUserPrivileges(user.getUserName(), nodeName, 1);
 		} catch (AuthException e) {
 			fail(e.getMessage());
 		}
 		assertEquals(true, status);
 		try {
-			status = authorizer.checkUserPermission(user.getUserName(), nodeName, 2);
+			status = authorizer.checkUserPrivileges(user.getUserName(), nodeName, 2);
 		} catch (AuthException e) {
 			fail(e.getMessage());
 		}
 		assertEquals(false, status);
 		try {
-			status = authorizer.updateUserPassword(user.getUserName(), "new");
-			status = authorizer.login(user.getUserName(), "new");
+			status = authorizer.updateUserPassword(user.getUserName(), "newPassword");
+			status = authorizer.login(user.getUserName(), "newPassword");
 			assertEquals(true, status);
 		} catch (AuthException e) {
 			e.printStackTrace();

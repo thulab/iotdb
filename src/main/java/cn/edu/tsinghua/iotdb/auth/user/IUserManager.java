@@ -3,6 +3,8 @@ package cn.edu.tsinghua.iotdb.auth.user;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 
+import java.util.List;
+
 /**
  * This interface provides accesses to users.
  */
@@ -87,4 +89,15 @@ public interface IUserManager {
      * @throws AuthException If either the role or the user does not exist.
      */
     boolean revokeRoleFromUser(String roleName, String username) throws AuthException;
+
+    /**
+     * Re-initialize this object.
+     */
+    void reset();
+
+    /**
+     *
+     * @return A list that contains all users'name.
+     */
+    List<String> listAllUsers();
 }

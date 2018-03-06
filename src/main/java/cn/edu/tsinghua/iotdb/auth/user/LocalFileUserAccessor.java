@@ -6,9 +6,12 @@ import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.utils.IOUtils;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +43,7 @@ import java.util.List;
  *      1 Byte user type
  */
 public class LocalFileUserAccessor implements IUserAccessor{
-    private static final String USER_PROFILE_SUFFIX = ".profile";
+    public static final String USER_PROFILE_SUFFIX = ".profile";
     private static final String TEMP_SUFFIX = ".temp";
     private static final String STRING_ENCODING = "utf-8";
 
@@ -131,7 +134,9 @@ public class LocalFileUserAccessor implements IUserAccessor{
             outputStream.close();
         }
 
-        if(!userProfile.renameTo(new File(userDirPath + File.separator + user.name + USER_PROFILE_SUFFIX))) {
+        File oldFile = new File(userDirPath + File.separator + user.name + USER_PROFILE_SUFFIX);
+        oldFile.delete();
+        if(!userProfile.renameTo(oldFile)) {
             throw new IOException(String.format("Cannot replace old user file with new one, user : %s", user.name));
         }
     }
@@ -143,12 +148,19 @@ public class LocalFileUserAccessor implements IUserAccessor{
      * @throws IOException when the file cannot be deleted.
      */
     public boolean deleteUser(String username) throws IOException{
-        File userProfile = new File(userDirPath + File.separator + username + USER_PROFILE_SUFFIX + TEMP_SUFFIX);
+        File userProfile = new File(userDirPath + File.separator + username + USER_PROFILE_SUFFIX);
         if(!userProfile.exists())
             return false;
         if(!userProfile.delete()) {
             throw new IOException(String.format("Cannot delete user file of %s", username));
         }
         return true;
+    }
+
+    @Override
+    public List<String> listAllUsers() {
+        File userDir = new File(userDirPath);
+        String[] names = userDir.list((dir, name) -> name.endsWith(USER_PROFILE_SUFFIX));
+        return Arrays.asList(names != null ? names : new String[0]);
     }
 }

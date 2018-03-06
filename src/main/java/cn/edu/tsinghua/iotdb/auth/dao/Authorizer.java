@@ -118,7 +118,7 @@ public class Authorizer implements IAuthorizer{
     }
 
     @Override
-    public Set<Integer> getPermission(String username, String nodeName) throws AuthException {
+    public Set<Integer> getPrivileges(String username, String nodeName) throws AuthException {
         Set<Integer> permissionSets = null;
         permissionSets = authDaoWrap.getAllUserPermissions(username, nodeName);
         return permissionSets;
@@ -135,7 +135,7 @@ public class Authorizer implements IAuthorizer{
     }
 
     @Override
-    public boolean checkUserPermission(String username, String nodeName, int permissionId) {
+    public boolean checkUserPrivileges(String username, String nodeName, int permissionId) {
         boolean status = false;
         status = authDaoWrap.checkUserPermission(username, nodeName, permissionId);
         return status;

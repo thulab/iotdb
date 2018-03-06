@@ -56,7 +56,7 @@ public class AuthorityChecker {
         IAuthorizer authorizer = Authorizer.instance;
         for (int i = 0; i < parentPaths.size(); i++) {
             try {
-                if (authorizer.checkUserPermission(username, parentPaths.get(i), permission)) {
+                if (authorizer.checkUserPrivileges(username, parentPaths.get(i), permission)) {
                     return true;
                 }
             } catch (AuthException e) {

@@ -34,18 +34,28 @@ public class HashLock {
     }
 
     public void readLock(Object obj) {
-        this.locks[obj.hashCode() % lockSize].readLock().lock();
+        this.locks[Math.abs(obj.hashCode()) % lockSize].readLock().lock();
     }
 
     public void readUnlock(Object obj) {
-        this.locks[obj.hashCode() % lockSize].readLock().unlock();
+        this.locks[Math.abs(obj.hashCode()) % lockSize].readLock().unlock();
     }
 
     public void writeLock(Object obj) {
-        this.locks[obj.hashCode() % lockSize].writeLock().lock();
+        this.locks[Math.abs(obj.hashCode()) % lockSize].writeLock().lock();
     }
 
     public void writeUnlock(Object obj) {
-        this.locks[obj.hashCode() % lockSize].writeLock().unlock();
+        this.locks[Math.abs(obj.hashCode()) % lockSize].writeLock().unlock();
+    }
+
+    /**
+     * This method will unlock all locks.
+     */
+    public void reset() {
+        for(int i = 0; i < lockSize; i++) {
+            locks[i].readLock().unlock();
+            locks[i].writeLock().unlock();
+        }
     }
 }

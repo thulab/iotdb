@@ -582,7 +582,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
 	public Set<Integer> getPermissionsOfUser(String username, String nodeName) throws AuthException {
 		IAuthorizer authorizer = Authorizer.instance;
-		return authorizer.getPermission(username, nodeName);
+		return authorizer.getPrivileges(username, nodeName);
 	}
 
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,6 +75,8 @@ public class LocalFileUserManager implements IUserManager {
         } finally {
             lock.readUnlock(username);
         }
+        if(user != null)
+            user.lastActiveTime = System.currentTimeMillis();
         return user;
     }
 
@@ -87,7 +90,7 @@ public class LocalFileUserManager implements IUserManager {
             return false;
         lock.writeLock(username);
         try {
-            user = new User(username, password);
+            user = new User(username, ValidateUtils.encryptPassword(password));
             accessor.saveUser(user);
             userMap.put(username, user);
             return true;
@@ -181,7 +184,7 @@ public class LocalFileUserManager implements IUserManager {
                 throw new AuthException(String.format("No such user %s", username));
             }
             String oldPassword = user.password;
-            user.password = newPassword;
+            user.password = ValidateUtils.encryptPassword(newPassword);
             try {
                 accessor.saveUser(user);
             } catch (IOException e) {
@@ -240,6 +243,17 @@ public class LocalFileUserManager implements IUserManager {
         } finally {
             lock.writeUnlock(username);
         }
+    }
+
+    @Override
+    public void reset() {
+        userMap.clear();
+        lock.reset();
+    }
+
+    @Override
+    public List<String> listAllUsers() {
+        return accessor.listAllUsers();
     }
 
 }

@@ -3,6 +3,8 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 
+import java.util.List;
+
 /**
  * This interface maintains roles in memory and is responsible for their modifications.
  */
@@ -54,4 +56,15 @@ public interface IRoleManager {
      * @throws AuthException If the role does not exist or the privilege or the path is illegal.
      */
     boolean revokePrivilegeFromRole(String rolename, String path, int privilegeId) throws AuthException;
+
+    /**
+     * Re-initialize this object.
+     */
+    void reset();
+
+    /**
+     * A list that contains names of all roles.
+     * @return
+     */
+    List<String> listAllRoles();
 }

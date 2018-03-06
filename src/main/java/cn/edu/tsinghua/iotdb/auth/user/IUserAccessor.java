@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.user;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * This interface manages the serialization/deserialization of the user objects.
@@ -31,4 +32,10 @@ public interface IUserAccessor {
      * @throws IOException when the file cannot be deleted.
      */
     boolean deleteUser(String username) throws IOException;
+
+    /**
+     * A list that contains names of all users.
+     * @return
+     */
+    List<String> listAllUsers();
 }

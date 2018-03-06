@@ -2,13 +2,14 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.HashLock;
-import cn.edu.tsinghua.iotdb.auth.entity.*;
-import cn.edu.tsinghua.iotdb.auth.entity.Role;
+import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
+import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -132,5 +133,16 @@ public class LocalFileRoleManager implements IRoleManager {
         } finally {
             lock.writeUnlock(rolename);
         }
+    }
+
+    @Override
+    public void reset() {
+        roleMap.clear();
+        lock.reset();
+    }
+
+    @Override
+    public List<String> listAllRoles() {
+        return accessor.listAllRoles();
     }
 }

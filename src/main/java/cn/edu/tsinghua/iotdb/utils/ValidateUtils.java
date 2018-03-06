@@ -2,12 +2,19 @@ package cn.edu.tsinghua.iotdb.utils;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class ValidateUtils {
     private static final int MIN_PASSWORD_LENGTH = 4;
     private static final int MIN_USERNAME_LENGTH = 4;
     private static final int MIN_ROLENAME_LENGTH = 4;
     private static final String ROOT_PREFIX = "root";
+    private static final String ENCRYPT_ALGORITHM = "MD5";
+    private static final String STRING_ENCODING = "utf-8";
 
     public static void validatePassword(String password) throws AuthException {
         if(password.length() < MIN_PASSWORD_LENGTH)
@@ -56,8 +63,25 @@ public class ValidateUtils {
                     throw new AuthException(String.format("Privilege %s requires a path", type.toString()));
             }
         }
+    }
 
+    public static String encryptPassword(String password) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance(ENCRYPT_ALGORITHM);
+            messageDigest.update(password.getBytes(STRING_ENCODING));
+            return new String(messageDigest.digest(), STRING_ENCODING);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            return password;
+        }
+    }
 
-
+    /**
+     *
+     * @param pathA
+     * @param pathB
+     * @return True if pathA == pathB, or pathA is an extension of pathB, e.g. pathA = "root.a.b.c" and pathB = "root.a"
+     */
+    public static boolean pathBelongsTo(String pathA, String pathB) {
+        return pathA.equals(pathB) || (pathA.startsWith(pathB) && pathA.charAt(pathB.length()) == TsFileDBConstant.PATH_SEPARATER);
     }
 }
