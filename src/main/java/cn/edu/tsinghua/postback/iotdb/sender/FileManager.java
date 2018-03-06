@@ -73,7 +73,7 @@ public class FileManager {
 					}
 					bf.close();
 				} catch (IOException e) {
-					LOGGER.error("IoTDB post back sender: cannot get last pass local file list when reading file {} because {}", config.LAST_FILE_INFO, e.getMessage());
+					LOGGER.error("IoTDB post back sender: cannot get last local file list when reading file {} because {}", config.LAST_FILE_INFO, e.getMessage());
 				} finally {
 					if(bf != null) {
 						bf.close();
@@ -81,7 +81,7 @@ public class FileManager {
 				}
 			}
 		} catch (IOException e) {
-			LOGGER.error("IoTDB post back sender: cannot get last pass local file list because {}", e.getMessage());
+			LOGGER.error("IoTDB post back sender: cannot get last local file list because {}", e.getMessage());
 		}
 		lastLocalFiles = fileList;
 	}

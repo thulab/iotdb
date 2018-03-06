@@ -196,7 +196,7 @@ public class CreateDataSender3 {
             connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
             statement = connection.createStatement();
             connection1 = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
-            statement1 = connection.createStatement();
+            statement1 = connection1.createStatement();
 
             setStorageGroup(statement, statement1, storageGroupList);
             System.out.println("Finish set storage group.");

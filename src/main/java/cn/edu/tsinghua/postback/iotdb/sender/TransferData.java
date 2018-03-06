@@ -273,25 +273,25 @@ public class TransferData {
 	}
 
 	public void postback() {
-		try {
-			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-			Connection connection = null;
-			try {
-				connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-				Statement statement = connection.createStatement();
-				statement.execute("flush");
-				statement.execute("merge");
-				statement.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				if (connection != null) {
-					connection.close();
-				}
-			}
-		} catch (ClassNotFoundException | SQLException e) {
-			LOGGER.error("IoTDB post back sender: cannot execute flush and merge because {}", e.getMessage());
-		}
+//		try {
+//			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+//			Connection connection = null;
+//			try {
+//				connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+//				Statement statement = connection.createStatement();
+//				statement.execute("flush");
+//				statement.execute("merge");
+//				statement.close();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				if (connection != null) {
+//					connection.close();
+//				}
+//			}
+//		} catch (ClassNotFoundException | SQLException e) {
+//			LOGGER.error("IoTDB post back sender: cannot execute flush and merge because {}", e.getMessage());
+//		}
 		if (new File(config.SNAPSHOT_PATH).exists() && new File(config.SNAPSHOT_PATH).list().length != 0) {
 			// it means that the last time postback does not succeed! Clear the files and
 			// start to postback again

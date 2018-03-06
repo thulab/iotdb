@@ -170,7 +170,7 @@ public class CreateDataSender1 {
         Connection connection = null;
         Statement statement = null;
 
-        HashMap timeseriesMap = generateTimeseriesMapFromFile("/home/hadoop/xuyi/iotdb/CreateTimeseries1.txt");
+        HashMap timeseriesMap = generateTimeseriesMapFromFile("/home/liurui/litianan/iotdb/CreateTimeseries1.txt");
 
         ArrayList<String> storageGroupList = new ArrayList();
         storageGroupList.add("root.vehicle_history");
