@@ -8,7 +8,7 @@ import java.util.Set;
  */
 public interface IAuthorizer {
     /**
-     * Check if there exist a user.
+     * Login for a user.
      *
      * @param username The username of the user.
      * @param password The password of the user.
@@ -121,7 +121,7 @@ public interface IAuthorizer {
     /**
      * Get the all the privileges of a user on a path.
      *
-     * @param username The user whose privileges should
+     * @param username The user whose privileges are to be queried.
      * @param path The path on which the privileges take effect. If the privilege is a path-free privilege, this should be null.
      * @return A set of integers each present a privilege.
      * @throws AuthException
