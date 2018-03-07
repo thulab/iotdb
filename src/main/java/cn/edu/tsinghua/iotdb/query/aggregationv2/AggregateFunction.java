@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.aggregationv2;
 
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -83,6 +84,8 @@ public abstract class AggregateFunction {
      */
     public abstract void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
                                                 DynamicOneColumnData data) throws ProcessorException;
+
+    public abstract void calcSegmentByAggregation(int segmentIdx, AbstractUDSF udsf, DynamicOneColumnData data) throws ProcessorException;
 
     /**
      * Convert a value from string to its real data type and put into return data.

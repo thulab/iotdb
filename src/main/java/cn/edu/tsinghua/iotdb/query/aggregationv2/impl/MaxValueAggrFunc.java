@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -139,6 +140,47 @@ public class MaxValueAggrFunc extends AggregateFunction {
                     resultData.setAnObject(resultData.valueLength - 1, maxValue);
                 }
             }
+        }
+    }
+
+    @Override
+    public void calcSegmentByAggregation(int segmentIdx, AbstractUDSF udsf, DynamicOneColumnData data) throws ProcessorException {
+        if (resultData.timeLength == segmentIdx) {
+            resultData.putTime(data.getTime(data.curIdx));
+        }
+
+        Comparable<?> maxValue = data.getAnObject(data.curIdx);
+        while (data.curIdx < data.timeLength) {
+            long time = data.getTime(data.curIdx);
+            Comparable<?> value = data.getAnObject(data.curIdx);
+
+            if (udsf.isBreakpoint(time, value)) {
+                resultData.putEmptyTime(udsf.getLastTime());
+                if (resultData.valueLength - 1 == segmentIdx) {
+                    Comparable<?> preValue = resultData.getAnObject(segmentIdx);
+                    maxValue = compare(maxValue, preValue) > 0 ? maxValue : preValue;
+                    resultData.setAnObject(segmentIdx, maxValue);
+                } else {
+                    resultData.putAnObject(maxValue);
+                }
+
+                udsf.setLastTime(time);
+                udsf.setLastValue(value);
+                return;
+            }
+
+            maxValue = compare(maxValue, value) > 0 ? maxValue : value;
+            data.curIdx++;
+            udsf.setLastTime(time);
+            udsf.setLastValue(value);
+        }
+
+        if (resultData.valueLength - 1 == segmentIdx) {
+            Comparable<?> preValue = resultData.getAnObject(segmentIdx);
+            maxValue = compare(maxValue, preValue) > 0 ? maxValue : preValue;
+            resultData.setAnObject(segmentIdx, maxValue);
+        } else {
+            resultData.putAnObject(maxValue);
         }
     }
 

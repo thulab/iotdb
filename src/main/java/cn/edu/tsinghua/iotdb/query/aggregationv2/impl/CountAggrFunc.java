@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
@@ -135,6 +136,45 @@ public class CountAggrFunc extends AggregateFunction {
                 long preSum = resultData.getLong(resultData.valueLength - 1);
                 resultData.setLong(resultData.valueLength - 1, preSum + valueSum);
             }
+        }
+    }
+
+    @Override
+    public void calcSegmentByAggregation(int segmentIdx, AbstractUDSF udsf, DynamicOneColumnData data) throws ProcessorException {
+        if (resultData.timeLength == segmentIdx) {
+            resultData.putTime(data.getTime(data.curIdx));
+        }
+
+        long valueSum = 0;
+        while (data.curIdx < data.timeLength) {
+            long time = data.getTime(data.curIdx);
+            Comparable<?> value = data.getAnObject(data.curIdx);
+
+            if (udsf.isBreakpoint(time, value)) {
+                resultData.putEmptyTime(udsf.getLastTime());
+                if (resultData.valueLength - 1 == segmentIdx) {
+                    long preSum = resultData.getLong(segmentIdx);
+                    resultData.setLong(segmentIdx, preSum + valueSum);
+                } else {
+                    resultData.putLong(valueSum);
+                }
+
+                udsf.setLastTime(time);
+                udsf.setLastValue(value);
+                return;
+            }
+
+            valueSum++;
+            data.curIdx++;
+            udsf.setLastTime(time);
+            udsf.setLastValue(value);
+        }
+
+        if (resultData.valueLength - 1 == segmentIdx) {
+            long preSum = resultData.getLong(segmentIdx);
+            resultData.setLong(segmentIdx, preSum + valueSum);
+        } else {
+            resultData.putLong(valueSum);
         }
     }
 }

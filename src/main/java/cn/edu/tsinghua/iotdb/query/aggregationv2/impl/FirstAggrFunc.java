@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
@@ -132,5 +133,29 @@ public class FirstAggrFunc extends AggregateFunction{
     // add a place holder
     private void initFirst() {
         resultData.putTime(-1);
+    }
+
+    @Override
+    public void calcSegmentByAggregation(int segmentIdx, AbstractUDSF udsf, DynamicOneColumnData data) throws ProcessorException {
+        if (resultData.timeLength == segmentIdx) {
+            resultData.putTime(data.getTime(data.curIdx));
+            resultData.putAnObject(data.getAnObject(data.curIdx));
+        }
+
+        while (data.curIdx < data.timeLength) {
+            long time = data.getTime(data.curIdx);
+            Comparable<?> value = data.getAnObject(data.curIdx);
+
+            if (udsf.isBreakpoint(time, value)) {
+                resultData.putEmptyTime(udsf.getLastTime());
+                udsf.setLastTime(time);
+                udsf.setLastValue(value);
+                return;
+            }
+
+            data.curIdx++;
+            udsf.setLastTime(time);
+            udsf.setLastValue(value);
+        }
     }
 }

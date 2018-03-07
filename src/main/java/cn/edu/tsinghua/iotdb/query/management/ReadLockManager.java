@@ -7,6 +7,8 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
+import cn.edu.tsinghua.iotdb.query.engine.segmentby.SegmentByEngineNoFilter;
+import cn.edu.tsinghua.iotdb.query.engine.segmentby.SegmentByEngineWithFilter;
 import cn.edu.tsinghua.iotdb.query.reader.FileReaderMap;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
@@ -30,6 +32,15 @@ public class ReadLockManager {
 
     /** ThreadLocal, due to the usage of OverflowQPExecutor **/
     private ThreadLocal<GroupByEngineWithFilter> groupByEngineWithFilterLocal;
+
+    /** represents the execute time of segment by method**/
+    private ThreadLocal<Integer> segmentByCalcTime;
+
+    /** ThreadLocal, due to the usage of OverflowQPExecutor **/
+    private ThreadLocal<SegmentByEngineNoFilter> segmentByEngineNoFilterLocal;
+
+    /** ThreadLocal, due to the usage of OverflowQPExecutor **/
+    private ThreadLocal<SegmentByEngineWithFilter> segmentByEngineWithFilterLocal;
 
     /**
      * this variable represents that whether it is the second execution of aggregation method.
@@ -82,6 +93,16 @@ public class ReadLockManager {
         }
         if (groupByEngineWithFilterLocal != null && groupByEngineWithFilterLocal.get() != null) {
             groupByEngineWithFilterLocal.remove();
+        }
+
+        if (segmentByCalcTime != null && segmentByCalcTime.get() != null) {
+            segmentByCalcTime.remove();
+        }
+        if (segmentByEngineNoFilterLocal != null && segmentByEngineNoFilterLocal.get() != null) {
+            segmentByEngineNoFilterLocal.remove();
+        }
+        if (segmentByEngineWithFilterLocal != null && segmentByEngineWithFilterLocal.get() != null) {
+            segmentByEngineWithFilterLocal.remove();
         }
 
         recordReaderCache.clear();
@@ -140,4 +161,36 @@ public class ReadLockManager {
         this.groupByEngineWithFilterLocal = t;
     }
 
+    public ThreadLocal<Integer> getSegmentByCalcTime() {
+        if (segmentByCalcTime == null) {
+            segmentByCalcTime = new ThreadLocal<>();
+        }
+        return this.segmentByCalcTime;
+    }
+
+    public void setSegmentByCalcTime(ThreadLocal<Integer> t) {
+        this.segmentByCalcTime = t;
+    }
+
+    public ThreadLocal<SegmentByEngineNoFilter> getSegmentByEngineNoFilterLocal() {
+        if (segmentByEngineNoFilterLocal == null) {
+            segmentByEngineNoFilterLocal = new ThreadLocal<>();
+        }
+        return this.segmentByEngineNoFilterLocal;
+    }
+
+    public void setSegmentByEngineNoFilterLocal(ThreadLocal<SegmentByEngineNoFilter> t) {
+        this.segmentByEngineNoFilterLocal = t;
+    }
+
+    public ThreadLocal<SegmentByEngineWithFilter> getSegmentByEngineWithFilterLocal() {
+        if (segmentByEngineWithFilterLocal == null) {
+            segmentByEngineWithFilterLocal = new ThreadLocal<>();
+        }
+        return this.segmentByEngineWithFilterLocal;
+    }
+
+    public void setSegmentByEngineWithFilterLocal(ThreadLocal<SegmentByEngineWithFilter> t) {
+        this.segmentByEngineWithFilterLocal = t;
+    }
 }

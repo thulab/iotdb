@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -135,6 +136,48 @@ public class MeanAggrFunc extends AggregateFunction{
             case BIGDECIMAL:
             default:
                 throw new ProcessorException("Unsupported data type in aggregation MEAN : " + data.dataType);
+        }
+    }
+
+    @Override
+    public void calcSegmentByAggregation(int segmentIdx, AbstractUDSF udsf, DynamicOneColumnData data) throws ProcessorException {
+        if (!(data.getAnObject(data.curIdx) instanceof Number)) {
+            throw new ProcessorException("Unsupported data type in aggregation MEAN : " + data.dataType);
+        }
+
+        if (resultData.timeLength == segmentIdx) {
+            resultData.putTime(data.getTime(data.curIdx));
+        }
+
+        while (data.curIdx < data.timeLength) {
+            long time = data.getTime(data.curIdx);
+            Comparable<?> value = data.getAnObject(data.curIdx);
+
+            if (udsf.isBreakpoint(time, value)) {
+                resultData.putEmptyTime(udsf.getLastTime());
+                if (resultData.valueLength - 1 == segmentIdx) {
+                    resultData.setDouble(segmentIdx, sum / cnt);
+                } else {
+                    resultData.putDouble(sum / cnt);
+                }
+
+                udsf.setLastTime(time);
+                udsf.setLastValue(value);
+                reset();
+                return;
+            }
+
+            sum += ((Number) value).doubleValue();
+            cnt++;
+            data.curIdx++;
+            udsf.setLastTime(time);
+            udsf.setLastValue(value);
+        }
+
+        if (resultData.valueLength - 1 == segmentIdx) {
+            resultData.setDouble(segmentIdx, sum / cnt);
+        } else {
+            resultData.putDouble(sum / cnt);
         }
     }
 

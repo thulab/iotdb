@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.query.aggregationv2.impl;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.v2.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -138,6 +139,47 @@ public class MinValueAggrFunc extends AggregateFunction {
                     resultData.setAnObject(resultData.valueLength - 1, minValue);
                 }
             }
+        }
+    }
+
+    @Override
+    public void calcSegmentByAggregation(int segmentIdx, AbstractUDSF udsf, DynamicOneColumnData data) throws ProcessorException {
+        if (resultData.timeLength == segmentIdx) {
+            resultData.putTime(data.getTime(data.curIdx));
+        }
+
+        Comparable<?> minValue = data.getAnObject(data.curIdx);
+        while (data.curIdx < data.timeLength) {
+            long time = data.getTime(data.curIdx);
+            Comparable<?> value = data.getAnObject(data.curIdx);
+
+            if (udsf.isBreakpoint(time, value)) {
+                resultData.putEmptyTime(udsf.getLastTime());
+                if (resultData.valueLength - 1 == segmentIdx) {
+                    Comparable<?> preValue = resultData.getAnObject(segmentIdx);
+                    minValue = compare(minValue, preValue) < 0 ? minValue : preValue;
+                    resultData.setAnObject(segmentIdx, minValue);
+                } else {
+                    resultData.putAnObject(minValue);
+                }
+
+                udsf.setLastTime(time);
+                udsf.setLastValue(value);
+                return;
+            }
+
+            minValue = compare(minValue, value) < 0 ? minValue : value;
+            data.curIdx++;
+            udsf.setLastTime(time);
+            udsf.setLastValue(value);
+        }
+
+        if (resultData.valueLength - 1 == segmentIdx) {
+            Comparable<?> preValue = resultData.getAnObject(segmentIdx);
+            minValue = compare(minValue, preValue) < 0 ? minValue : preValue;
+            resultData.setAnObject(segmentIdx, minValue);
+        } else {
+            resultData.putAnObject(minValue);
         }
     }
 

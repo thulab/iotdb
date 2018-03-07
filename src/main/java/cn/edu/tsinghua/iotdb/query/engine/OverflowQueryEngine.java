@@ -6,6 +6,8 @@ import cn.edu.tsinghua.iotdb.query.aggregationv2.AggreFuncFactory;
 import cn.edu.tsinghua.iotdb.query.aggregationv2.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
 import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
+import cn.edu.tsinghua.iotdb.query.engine.segmentby.SegmentByEngineNoFilter;
+import cn.edu.tsinghua.iotdb.query.engine.segmentby.SegmentByEngineWithFilter;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
 import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
@@ -13,6 +15,7 @@ import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
 import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -204,6 +207,82 @@ public class OverflowQueryEngine {
                         groupByEngineNoFilterLocal.remove();
                         groupByEngineWithFilterLocal.remove();
                         LOGGER.debug("group by function with filter has no result");
+                    }
+                    return ans;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * segment by function implementation.
+     *
+     * @param aggres aggregation path and corresponding function
+     * @param filterStructures all filters in where clause
+     * @param udsf function used to segment time series
+     * @param fetchSize
+     * @return
+     */
+    public QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+                                  AbstractUDSF udsf, int fetchSize) {
+
+        ThreadLocal<Integer> segmentByCalcTime = ReadLockManager.getInstance().getSegmentByCalcTime();
+        ThreadLocal<SegmentByEngineNoFilter>  segmentByEngineNoFilterLocal = ReadLockManager.getInstance().getSegmentByEngineNoFilterLocal();
+        ThreadLocal<SegmentByEngineWithFilter> segmentByEngineWithFilterLocal = ReadLockManager.getInstance().getSegmentByEngineWithFilterLocal();
+
+        if (segmentByCalcTime.get() == null) {
+            LOGGER.debug("calculate aggregations the 1 time");
+            segmentByCalcTime.set(2);
+
+            List<Pair<Path, AggregateFunction>> aggregations = new ArrayList<>();
+            try {
+                for (Pair<Path, String> pair : aggres) {
+                    TSDataType dataType = MManager.getInstance().getSeriesType(pair.left.getFullPath());
+                    AggregateFunction func = AggreFuncFactory.getAggrFuncByName(pair.right, dataType);
+                    aggregations.add(new Pair<>(pair.left, func));
+                }
+
+                if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
+                    SingleSeriesFilterExpression timeFilter = null;
+                    if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
+                        timeFilter = filterStructures.get(0).getTimeFilter();
+                    }
+                    SegmentByEngineNoFilter segmentByEngineNoFilter = new SegmentByEngineNoFilter(aggregations, timeFilter, udsf, fetchSize);
+                    segmentByEngineNoFilterLocal.set(segmentByEngineNoFilter);
+                    return segmentByEngineNoFilter.groupBy();
+                }  else {
+                    SegmentByEngineWithFilter segmentByEngineWithFilter = new SegmentByEngineWithFilter(aggregations, filterStructures, udsf, fetchSize);
+                    segmentByEngineWithFilterLocal.set(segmentByEngineWithFilter);
+                    return segmentByEngineWithFilter.groupBy();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+
+            LOGGER.debug(String.format("calculate segment by result function the %s time", String.valueOf(segmentByCalcTime.get())));
+
+            segmentByCalcTime.set(segmentByCalcTime.get() + 1);
+            try {
+                if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
+                    QueryDataSet ans = segmentByEngineNoFilterLocal.get().groupBy();
+                    if (!ans.hasNextRecord()) {
+                        segmentByCalcTime.remove();
+                        segmentByEngineNoFilterLocal.remove();
+                        segmentByEngineWithFilterLocal.remove();
+                        LOGGER.debug("segment by function without filter has no result");
+                    }
+                    return ans;
+                } else {
+                    QueryDataSet ans = segmentByEngineWithFilterLocal.get().groupBy();
+                    if (!ans.hasNextRecord()) {
+                        segmentByCalcTime.remove();
+                        segmentByEngineNoFilterLocal.remove();
+                        segmentByEngineWithFilterLocal.remove();
+                        LOGGER.debug("segment by function with filter has no result");
                     }
                     return ans;
                 }
