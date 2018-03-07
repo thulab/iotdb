@@ -166,4 +166,9 @@ public class LocalFileUserAccessor implements IUserAccessor{
         String[] names = userDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
         return Arrays.asList(names != null ? names : new String[0]);
     }
+
+    @Override
+    public void reset() {
+        new File(userDirPath).mkdirs();
+    }
 }

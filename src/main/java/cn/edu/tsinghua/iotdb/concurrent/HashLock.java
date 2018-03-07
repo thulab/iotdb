@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.auth;
+package cn.edu.tsinghua.iotdb.concurrent;
 
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -7,12 +7,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * This class manages an array of locks and use the hash code of an object as an index of the array to find the corresponding lock,
  * so that the operations on the same key (string) can be prevented while the number of locks remain controlled.
  */
-// TODO : find the class a better package
 public class HashLock {
     private static final int DEFAULT_LOCK_NUM = 10;
 
     private ReentrantReadWriteLock[] locks;
-    int lockSize;
+    private int lockSize;
 
     public HashLock() {
         this.lockSize = DEFAULT_LOCK_NUM;

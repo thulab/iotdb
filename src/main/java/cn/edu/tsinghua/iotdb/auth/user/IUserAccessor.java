@@ -38,4 +38,9 @@ public interface IUserAccessor {
      * @return A list that contains names of all users.
      */
     List<String> listAllUsers();
+
+    /**
+     * Re-initialize this object.
+     */
+    void reset();
 }

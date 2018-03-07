@@ -37,4 +37,9 @@ public interface IRoleAccessor {
      * @return A list contains all names of the roles.
      */
     List<String> listAllRoles();
+
+    /**
+     * Re-initialize this object.
+     */
+    void reset();
 }

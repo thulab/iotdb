@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
-public class BasicAuthorizer implements IAuthorizer {
+abstract public class BasicAuthorizer implements IAuthorizer {
 
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthorizer.class);
 
