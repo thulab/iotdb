@@ -49,7 +49,6 @@ import java.util.List;
  *          ...
  *          Int32 role name[m] length
  *          Utf-8 role name[m] bytes
- *      1 Byte user type
  */
 public class LocalFileUserAccessor implements IUserAccessor{
     private static final String TEMP_SUFFIX = ".temp";

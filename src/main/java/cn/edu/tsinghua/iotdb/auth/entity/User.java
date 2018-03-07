@@ -52,12 +52,17 @@ public class User {
     }
 
     public void removePrivilege(String path, int privilgeId) {
+        PathPrivilege emptyPrivilege = null;
         for(PathPrivilege pathPrivilege : privilegeList) {
             if(pathPrivilege.path.equals(path)) {
                 pathPrivilege.privileges.remove(privilgeId);
-                return;
+                if(pathPrivilege.privileges.size() == 0)
+                    emptyPrivilege = pathPrivilege;
+                break;
             }
         }
+        if(emptyPrivilege != null)
+            privilegeList.remove(emptyPrivilege);
     }
 
     public boolean hasRole(String roleName) {
