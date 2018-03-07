@@ -216,17 +216,15 @@ public class TransferData {
 
 	public boolean afterSending(String snapshotPath) {
 		deleteSnapshot(new File(snapshotPath));
+		boolean successOrNot = false;
 		try {
-			if(clientOfServer.afterReceiving())
-				return true;
-			else
-				return false;
+			successOrNot = clientOfServer.afterReceiving();
 		} catch (TException e) {
 			LOGGER.error("IoTDB sender : can not close connection to the receiver because {}", e.getMessage());
 		} finally {
 			transport.close();
 		}
-		return true;
+		return successOrNot;
 	}
 
 	public void deleteSnapshot(File file) {
@@ -320,17 +318,28 @@ public class TransferData {
 				transport.close();
 				return;
 			}
+			System.out.println("wait 5 seconds!");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
 			if (!connection_orElse) {
 				transport.close();
 				return;
 			}
+			System.out.println("wait 5 seconds!");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			if(afterSending(config.SNAPSHOT_PATH)){
 				fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
 				LOGGER.info("IoTDB post back sender : the postBack has finished!");
-			}
-			else {
-				LOGGER.info("IoTDB post back sender : receiver has broken down!");
 			}
 		}
 	}
