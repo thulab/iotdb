@@ -16,6 +16,9 @@ public class User {
     public String password;
     public List<PathPrivilege> privilegeList;
     public List<String> roleList;
+    /**
+     * The latest time when the user is referenced. Reserved to provide session control or LRU mechanism in the future.
+     */
     public long lastActiveTime;
 
     public User() {

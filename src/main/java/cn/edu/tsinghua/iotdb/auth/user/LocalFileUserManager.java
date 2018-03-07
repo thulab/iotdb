@@ -103,6 +103,8 @@ public class LocalFileUserManager implements IUserManager {
 
     @Override
     public boolean deleteUser(String username) throws AuthException {
+        if(ADMIN_NAME.equals(username))
+            throw new AuthException("Default administrator cannot be deleted");
         lock.writeLock(username);
         try {
             if(accessor.deleteUser(username)) {

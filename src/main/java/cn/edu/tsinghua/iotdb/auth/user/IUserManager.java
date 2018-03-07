@@ -33,7 +33,7 @@ public interface IUserManager {
      *
      * @param username the username of the user.
      * @return True if the user is successfully deleted, false if the user does not exists.
-     * @throws AuthException
+     * @throws AuthException When attempting to delete the default administrator.
      */
     boolean deleteUser(String username) throws AuthException;
 
@@ -85,7 +85,7 @@ public interface IUserManager {
      *
      * @param roleName The name of the role to be removed.
      * @param username The name of the user from which the role is removed.
-     * @return True if the role is successfully removed, false if the role already exists.
+     * @return True if the role is successfully removed, false if the role does not exist.
      * @throws AuthException If either the role or the user does not exist.
      */
     boolean revokeRoleFromUser(String roleName, String username) throws AuthException;

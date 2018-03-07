@@ -105,11 +105,19 @@ public class LocalFileAuthorizer implements IAuthorizer {
 
     @Override
     public boolean grantRoleToUser(String roleName, String username) throws AuthException {
+        Role role = roleManager.getRole(roleName);
+        if(role == null) {
+            throw new AuthException(String.format("No such role : %s", roleName));
+        }
         return userManager.grantRoleToUser(roleName, username);
     }
 
     @Override
     public boolean revokeRoleFromUser(String roleName, String username) throws AuthException {
+        Role role = roleManager.getRole(roleName);
+        if(role == null) {
+            throw new AuthException(String.format("No such role : %s", roleName));
+        }
         return userManager.revokeRoleFromUser(roleName, username);
     }
 

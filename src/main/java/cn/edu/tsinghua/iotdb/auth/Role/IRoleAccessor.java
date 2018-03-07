@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface IRoleAccessor {
     /**
-     * Deserialize a role from its role file.
+     * Deserialize a role from lower storage.
      * @param rolename The name of the role to be deserialized.
      * @return The role object or null if no such role.
      * @throws IOException
@@ -18,16 +18,16 @@ public interface IRoleAccessor {
     Role loadRole(String rolename) throws IOException;
 
     /**
-     * Serialize the role object to a temp file, then replace the old role file with the new file.
+     * Serialize the role object to lower storage.
      * @param role The role object that is to be saved.
      * @throws IOException
      */
     void saveRole(Role role) throws IOException;
 
     /**
-     * Delete a role's role file.
+     * Delete a role's in lower storage.
      * @param rolename The name of the role to be deleted.
-     * @return True if the file is successfully deleted, false if the file does not exists.
+     * @return True if the role is successfully deleted, false if the role does not exists.
      * @throws IOException when the file cannot be deleted.
      */
     boolean deleteRole(String rolename) throws IOException;

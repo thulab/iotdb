@@ -22,7 +22,7 @@ public interface IRoleManager {
      *
      * @param rolename is not null or empty
      * @return True if the role is successfully created, false when the role already exists.
-     * @throws AuthException if the given rolename or password is illegal.
+     * @throws AuthException f the given rolename is iIllegal.
      */
     boolean createRole(String rolename) throws AuthException;
 
@@ -63,8 +63,8 @@ public interface IRoleManager {
     void reset();
 
     /**
-     * A list that contains names of all roles.
-     * @return
+     *
+     * @return A list that contains names of all roles.
      */
     List<String> listAllRoles();
 }
