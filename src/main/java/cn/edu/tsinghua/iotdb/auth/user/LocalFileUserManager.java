@@ -5,10 +5,12 @@ import cn.edu.tsinghua.iotdb.auth.HashLock;
 import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -19,22 +21,20 @@ import java.util.Map;
  */
 public class LocalFileUserManager implements IUserManager {
 
-    public static final String ADMIN_NAME = "root";
-    private static final String ADMIN_PW = "root";
     private static final Logger logger = LoggerFactory.getLogger(LocalFileUserManager.class);
 
-    private String userDir;
+    private String userDirPath;
     private Map<String, User> userMap;
     private IUserAccessor accessor;
     private HashLock lock;
 
-    public LocalFileUserManager(String userDir) {
-        this.userDir = userDir;
+    public LocalFileUserManager(String userDirPath) {
+        this.userDirPath = userDirPath;
         this.userMap = new HashMap<>();
-        this.accessor = new LocalFileUserAccessor(userDir);
+        this.accessor = new LocalFileUserAccessor(userDirPath);
         this.lock = new HashLock();
 
-        initAdmin();
+        reset();
     }
 
     /**
@@ -43,7 +43,7 @@ public class LocalFileUserManager implements IUserManager {
     private void initAdmin() {
         User admin;
         try {
-            admin = getUser(ADMIN_NAME);
+            admin = getUser(TsFileDBConstant.ADMIN_NAME);
         } catch (AuthException e) {
             logger.warn("Cannot load admin because {}. Create a new one.", e.getMessage());
             admin = null;
@@ -51,7 +51,7 @@ public class LocalFileUserManager implements IUserManager {
 
         if(admin == null) {
             try {
-                createUser(ADMIN_NAME, ADMIN_PW);
+                createUser(TsFileDBConstant.ADMIN_NAME, TsFileDBConstant.ADMIN_PW);
             } catch (AuthException e) {
                 logger.error("Cannot create admin because {}", e.getMessage());
             }
@@ -103,7 +103,7 @@ public class LocalFileUserManager implements IUserManager {
 
     @Override
     public boolean deleteUser(String username) throws AuthException {
-        if(ADMIN_NAME.equals(username))
+        if(TsFileDBConstant.ADMIN_NAME.equals(username))
             throw new AuthException("Default administrator cannot be deleted");
         lock.writeLock(username);
         try {
@@ -249,6 +249,7 @@ public class LocalFileUserManager implements IUserManager {
 
     @Override
     public void reset() {
+        new File(userDirPath).mkdirs();
         userMap.clear();
         lock.reset();
         initAdmin();

@@ -1,4 +1,6 @@
-package cn.edu.tsinghua.iotdb.auth;
+package cn.edu.tsinghua.iotdb.auth.authorizer;
+import cn.edu.tsinghua.iotdb.auth.AuthException;
+
 import java.util.Set;
 
 /**

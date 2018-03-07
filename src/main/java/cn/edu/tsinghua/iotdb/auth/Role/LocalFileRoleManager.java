@@ -7,6 +7,7 @@ import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -17,15 +18,15 @@ import java.util.Map;
  */
 public class LocalFileRoleManager implements IRoleManager {
 
-    private String roleDirath;
+    private String roleDirPath;
     private Map<String, Role> roleMap;
     private IRoleAccessor accessor;
     private HashLock lock;
 
-    public LocalFileRoleManager(String roleDirath) {
-        this.roleDirath = roleDirath;
+    public LocalFileRoleManager(String roleDirPath) {
+        this.roleDirPath = roleDirPath;
         this.roleMap = new HashMap<>();
-        this.accessor = new LocalFileRoleAccessor(roleDirath);
+        this.accessor = new LocalFileRoleAccessor(roleDirPath);
         this.lock = new HashLock();
     }
 
@@ -137,6 +138,7 @@ public class LocalFileRoleManager implements IRoleManager {
 
     @Override
     public void reset() {
+        new File(roleDirPath).mkdirs();
         roleMap.clear();
         lock.reset();
     }

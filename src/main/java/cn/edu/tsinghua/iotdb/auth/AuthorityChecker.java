@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.auth;
 
-import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.model.Permission;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;

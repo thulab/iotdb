@@ -3,11 +3,11 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.IOUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +31,6 @@ import java.util.List;
  */
 public class LocalFileRoleAccessor implements IRoleAccessor {
 
-    public static final String ROLE_PROFILE_SUFFIX = ".profile";
     private static final String TEMP_SUFFIX = ".temp";
     private static final String STRING_ENCODING = "utf-8";
 
@@ -44,19 +43,18 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     private ThreadLocal<ByteBuffer> encodingBufferLocal = new ThreadLocal<>();
     private ThreadLocal<byte[]> strBufferLocal = new ThreadLocal<>();
 
-    public LocalFileRoleAccessor(String roleDirPath) {
+    LocalFileRoleAccessor(String roleDirPath) {
         this.roleDirPath = roleDirPath;
     }
 
     @Override
     public Role loadRole(String rolename) throws IOException {
-        File roleProfile = new File(roleDirPath + File.separator + rolename + ROLE_PROFILE_SUFFIX);
+        File roleProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX);
         if(!roleProfile.exists() || !roleProfile.isFile()) {
             return null;
         }
         FileInputStream inputStream = new FileInputStream(roleProfile);
-        DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream));
-        try {
+        try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream))) {
             Role role = new Role();
             role.name = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
 
@@ -72,14 +70,12 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             return role;
         } catch (Exception e) {
             throw new IOException(e.getMessage());
-        } finally {
-            dataInputStream.close();
         }
     }
 
     @Override
     public void saveRole(Role role) throws IOException {
-        File roleProfile = new File(roleDirPath + File.separator + role.name + ROLE_PROFILE_SUFFIX + TEMP_SUFFIX);
+        File roleProfile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX + TEMP_SUFFIX);
         BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(roleProfile));
         try {
             IOUtils.writeString(outputStream, role.name, STRING_ENCODING, encodingBufferLocal);
@@ -98,7 +94,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             outputStream.flush();
             outputStream.close();
         }
-        File oldFile = new File(roleDirPath + File.separator + role.name + ROLE_PROFILE_SUFFIX);
+        File oldFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX);
         oldFile.delete();
         if(!roleProfile.renameTo(oldFile)) {
             throw new IOException(String.format("Cannot replace old role file with new one, role : %s", role.name));
@@ -107,7 +103,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
 
     @Override
     public boolean deleteRole(String rolename) throws IOException {
-        File roleProfile = new File(roleDirPath + File.separator + rolename + ROLE_PROFILE_SUFFIX);
+        File roleProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX);
         if(!roleProfile.exists())
             return false;
         if(!roleProfile.delete()) {
@@ -119,7 +115,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     @Override
     public List<String> listAllRoles() {
         File userDir = new File(roleDirPath);
-        String[] names = userDir.list((dir, name) -> name.endsWith(ROLE_PROFILE_SUFFIX));
+        String[] names = userDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
         return Arrays.asList(names != null ? names : new String[0]);
     }
 }

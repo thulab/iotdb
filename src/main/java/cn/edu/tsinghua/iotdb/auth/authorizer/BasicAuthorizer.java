@@ -1,50 +1,30 @@
-package cn.edu.tsinghua.iotdb.auth.impl;
+package cn.edu.tsinghua.iotdb.auth.authorizer;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.Role.IRoleManager;
-import cn.edu.tsinghua.iotdb.auth.Role.LocalFileRoleManager;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.auth.user.IUserManager;
-import cn.edu.tsinghua.iotdb.auth.user.LocalFileUserAccessor;
-import cn.edu.tsinghua.iotdb.auth.user.LocalFileUserManager;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-public class LocalFileAuthorizer implements IAuthorizer {
+public class BasicAuthorizer implements IAuthorizer {
 
-    private static class InstanceHolder {
-        private static LocalFileAuthorizer instance = new LocalFileAuthorizer();
-    }
-
-    public static LocalFileAuthorizer getInstance() {
-        return InstanceHolder.instance;
-    }
-
-    private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-    private String userDirPath;
-    private String roleDirPath;
     private IUserManager userManager;
     private IRoleManager roleManager;
 
-    public LocalFileAuthorizer() {
+    BasicAuthorizer(IUserManager userManager, IRoleManager roleManager) {
+        this.userManager = userManager;
+        this.roleManager = roleManager;
         init();
     }
 
     private void init() {
-        userDirPath = config.dataDir + File.separator + "users" + File.separator;
-        roleDirPath = config.dataDir + File.separator + "roles" + File.separator;
-        new File(userDirPath).mkdirs();
-        new File(roleDirPath).mkdirs();
-
-        userManager = new LocalFileUserManager(userDirPath);
-        roleManager = new LocalFileRoleManager(roleDirPath);
+        userManager.reset();
+        roleManager.reset();
     }
 
     @Override
@@ -86,7 +66,7 @@ public class LocalFileAuthorizer implements IAuthorizer {
         else {
             List<String> users = userManager.listAllUsers();
             for(String user : users) {
-                user = user.replace(LocalFileUserAccessor.USER_PROFILE_SUFFIX,"");
+                user = user.replace(TsFileDBConstant.USER_PROFILE_SUFFIX,"");
                 revokeRoleFromUser(roleName, user);
             }
         }
@@ -144,9 +124,7 @@ public class LocalFileAuthorizer implements IAuthorizer {
 
     @Override
     public boolean checkUserPrivileges(String username, String path, int privilegeId) throws AuthException {
-        if(LocalFileUserManager.ADMIN_NAME.equals(username))
-            return true;
-        return getPrivileges(username, path).contains(privilegeId);
+        return TsFileDBConstant.ADMIN_NAME.equals(username) || getPrivileges(username, path).contains(privilegeId);
     }
 
     @Override

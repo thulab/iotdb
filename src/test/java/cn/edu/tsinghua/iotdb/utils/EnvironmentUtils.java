@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.utils;
 
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
-import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.BasicAuthorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
@@ -119,7 +119,7 @@ public class EnvironmentUtils {
 		config.enableMemMonitor = false;
 		// disable the system monitor
 		config.enableStatMonitor = false;
-		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
+		IAuthorizer authorizer = BasicAuthorizer.getInstance();
 		authorizer.reset();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		MultiFileLogNodeManager.getInstance().start();

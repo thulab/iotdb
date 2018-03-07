@@ -27,4 +27,8 @@ public class TsFileDBConstant {
     public static final String OVERFLOW_LOG_NODE_SUFFIX = "-overflow";
 
     public static final char PATH_SEPARATER = '.';
+    public static final String USER_PROFILE_SUFFIX = ".profile";
+    public static final String ADMIN_NAME = "root";
+    public static final String ADMIN_PW = "root";
+    public static final String PROFILE_SUFFIX = ".profile";
 }

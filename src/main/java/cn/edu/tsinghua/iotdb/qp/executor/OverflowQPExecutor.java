@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.qp.executor;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
-import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;

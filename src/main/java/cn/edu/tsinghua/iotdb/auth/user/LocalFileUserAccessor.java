@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.user;
 import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.IOUtils;
 
 import java.io.*;
@@ -44,7 +45,6 @@ import java.util.List;
  *      1 Byte user type
  */
 public class LocalFileUserAccessor implements IUserAccessor{
-    public static final String USER_PROFILE_SUFFIX = ".profile";
     private static final String TEMP_SUFFIX = ".temp";
     private static final String STRING_ENCODING = "utf-8";
 
@@ -56,7 +56,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
     private ThreadLocal<ByteBuffer> encodingBufferLocal = new ThreadLocal<>();
     private ThreadLocal<byte[]> strBufferLocal = new ThreadLocal<>();
 
-    public LocalFileUserAccessor(String userDirPath) {
+    LocalFileUserAccessor(String userDirPath) {
         this.userDirPath = userDirPath;
     }
 
@@ -67,13 +67,12 @@ public class LocalFileUserAccessor implements IUserAccessor{
      * @throws IOException
      */
     public User loadUser(String username) throws IOException{
-        File userProfile = new File(userDirPath + File.separator + username + USER_PROFILE_SUFFIX);
+        File userProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX);
         if(!userProfile.exists() || !userProfile.isFile()) {
             return null;
         }
         FileInputStream inputStream = new FileInputStream(userProfile);
-        DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream));
-        try {
+        try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream))) {
             User user = new User();
             user.name = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
             user.password = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
@@ -98,8 +97,6 @@ public class LocalFileUserAccessor implements IUserAccessor{
             return user;
         } catch (Exception e) {
             throw new IOException(e.getMessage());
-        } finally {
-            dataInputStream.close();
         }
     }
 
@@ -109,7 +106,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
      * @throws IOException
      */
     public void saveUser(User user) throws IOException{
-        File userProfile = new File(userDirPath + File.separator + user.name + USER_PROFILE_SUFFIX + TEMP_SUFFIX);
+        File userProfile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX + TEMP_SUFFIX);
         BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(userProfile));
         try {
             IOUtils.writeString(outputStream, user.name, STRING_ENCODING, encodingBufferLocal);
@@ -136,7 +133,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
             outputStream.close();
         }
 
-        File oldFile = new File(userDirPath + File.separator + user.name + USER_PROFILE_SUFFIX);
+        File oldFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX);
         oldFile.delete();
         if(!userProfile.renameTo(oldFile)) {
             throw new IOException(String.format("Cannot replace old user file with new one, user : %s", user.name));
@@ -150,7 +147,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
      * @throws IOException when the file cannot be deleted.
      */
     public boolean deleteUser(String username) throws IOException{
-        File userProfile = new File(userDirPath + File.separator + username + USER_PROFILE_SUFFIX);
+        File userProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX);
         if(!userProfile.exists())
             return false;
         if(!userProfile.delete()) {
@@ -162,7 +159,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
     @Override
     public List<String> listAllUsers() {
         File userDir = new File(userDirPath);
-        String[] names = userDir.list((dir, name) -> name.endsWith(USER_PROFILE_SUFFIX));
+        String[] names = userDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
         return Arrays.asList(names != null ? names : new String[0]);
     }
 }

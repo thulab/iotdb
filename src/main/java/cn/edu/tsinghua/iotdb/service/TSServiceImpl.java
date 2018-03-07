@@ -2,8 +2,8 @@ package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.AuthorityChecker;
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
-import cn.edu.tsinghua.iotdb.auth.impl.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;

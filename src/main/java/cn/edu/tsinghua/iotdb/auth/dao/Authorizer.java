@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.dao;
 import java.util.Set;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
-import cn.edu.tsinghua.iotdb.auth.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.model.Role;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 
