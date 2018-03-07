@@ -2,8 +2,6 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.HashLock;
-import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
-import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
@@ -93,15 +91,14 @@ public class LocalFileRoleManager implements IRoleManager {
             if(role == null) {
                 throw new AuthException(String.format("No such role %s", rolename));
             }
-            PathPrivilege pathPrivilege = new PathPrivilege(PrivilegeType.values()[privilegeId], path);
-            if(role.hasPrivilege(pathPrivilege)) {
+            if(role.hasPrivilege(path, privilegeId)) {
                 return false;
             }
-            role.privilegeList.add(pathPrivilege);
+            role.addPrivilege(path, privilegeId);
             try {
                 accessor.saveRole(role);
             } catch (IOException e) {
-                role.privilegeList.remove(pathPrivilege);
+                role.removePrivilege(path, privilegeId);
                 throw new AuthException(e);
             }
             return true;
@@ -119,15 +116,14 @@ public class LocalFileRoleManager implements IRoleManager {
             if(role == null) {
                 throw new AuthException(String.format("No such role %s", rolename));
             }
-            PathPrivilege pathPrivilege = new PathPrivilege(PrivilegeType.values()[privilegeId], path);
-            if(!role.hasPrivilege(pathPrivilege)) {
+            if(!role.hasPrivilege(path, privilegeId)) {
                 return false;
             }
-            role.privilegeList.remove(pathPrivilege);
+            role.removePrivilege(path, privilegeId);
             try {
                 accessor.saveRole(role);
             } catch (IOException e) {
-                role.privilegeList.add(pathPrivilege);
+                role.addPrivilege(path, privilegeId);
                 throw new AuthException(e);
             }
             return true;

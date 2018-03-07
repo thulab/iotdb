@@ -1,17 +1,19 @@
 package cn.edu.tsinghua.iotdb.auth.entity;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class represent a privilege on a specific path. If the privilege is path-free, the path will be null.
  */
 public class PathPrivilege {
-    public PrivilegeType type;
+    public Set<Integer> privileges;
     public String path;
 
-    public PathPrivilege(PrivilegeType type, String path) {
-        this.type = type;
+    public PathPrivilege(String path) {
         this.path = path;
+        this.privileges = new HashSet<>();
     }
 
     @Override
@@ -19,12 +21,12 @@ public class PathPrivilege {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathPrivilege that = (PathPrivilege) o;
-        return type == that.type &&
+        return privileges.equals(that.privileges) &&
                 Objects.equals(path, that.path);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, path);
+        return Objects.hash(privileges, path);
     }
 }

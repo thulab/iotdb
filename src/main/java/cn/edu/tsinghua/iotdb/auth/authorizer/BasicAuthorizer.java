@@ -7,11 +7,15 @@ import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.auth.user.IUserManager;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
 
 public class BasicAuthorizer implements IAuthorizer {
+
+    private static final Logger logger = LoggerFactory.getLogger(BasicAuthorizer.class);
 
     private IUserManager userManager;
     private IRoleManager roleManager;
@@ -25,6 +29,7 @@ public class BasicAuthorizer implements IAuthorizer {
     private void init() {
         userManager.reset();
         roleManager.reset();
+        logger.info("Initialization of Authorizer completes");
     }
 
     @Override
@@ -40,16 +45,22 @@ public class BasicAuthorizer implements IAuthorizer {
 
     @Override
     public boolean deleteUser(String username) throws AuthException {
+        if(TsFileDBConstant.ADMIN_NAME.equals(username))
+            throw new AuthException("Default administrator cannot be deleted");
         return userManager.deleteUser(username);
     }
 
     @Override
     public boolean grantPrivilegeToUser(String username, String path, int privilegeId) throws AuthException {
+        if(TsFileDBConstant.ADMIN_NAME.equals(username))
+            throw new AuthException("Invalid operation, administrator already has all privileges");
         return userManager.grantPrivilegeToUser(username, path, privilegeId);
     }
 
     @Override
     public boolean revokePrivilegeFromUser(String username, String path, int privilegeId) throws AuthException {
+        if(TsFileDBConstant.ADMIN_NAME.equals(username))
+            throw new AuthException("Invalid operation, administrator must have all privileges");
         return userManager.revokePrivilegeFromUser(username, path, privilegeId);
     }
 
@@ -64,10 +75,15 @@ public class BasicAuthorizer implements IAuthorizer {
         if(!success)
             return false;
         else {
+            // proceed to revoke the role in all users
             List<String> users = userManager.listAllUsers();
             for(String user : users) {
                 user = user.replace(TsFileDBConstant.USER_PROFILE_SUFFIX,"");
-                revokeRoleFromUser(roleName, user);
+                try {
+                    userManager.revokeRoleFromUser(roleName, user);
+                } catch (AuthException e) {
+                    logger.warn("Error encountered when revoking a role {} from user {} after deletion, because {}", roleName, user, e);
+                }
             }
         }
         return true;
@@ -107,7 +123,9 @@ public class BasicAuthorizer implements IAuthorizer {
         if(user == null) {
             throw new AuthException("No such user");
         }
+        // get privileges of the user
         Set<Integer> privileges = user.getPrivileges(path);
+        // merge the privileges of the roles of the user
         for(String roleName : user.roleList) {
             Role role = roleManager.getRole(roleName);
             if(role != null) {

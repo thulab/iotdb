@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.auth;
 
 import cn.edu.tsinghua.iotdb.auth.authorizer.BasicAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.model.User;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
@@ -29,7 +30,7 @@ public class AuthorizerTest {
 	@Test
 	public void testAuthorizer() {
 
-		IAuthorizer authorizer = BasicAuthorizer.getInstance();
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		/**
 		 * login
 		 */

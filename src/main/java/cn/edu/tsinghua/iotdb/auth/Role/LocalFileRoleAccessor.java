@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.auth.Role;
 
 import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
-import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.IOUtils;
@@ -20,14 +19,26 @@ import java.util.List;
  *      Int32 path privilege number n
  *          Int32 path[1] length
  *          Utf-8 path[1] bytes
- *          Int32 privilege[1]
+ *          Int32 privilege num k1
+ *              Int32 privilege[1][1]
+ *              Int32 privilege[1][2]
+ *              ...
+ *              Int32 privilege[1][k1]
  *          Int32 path[2] length
  *          Utf-8 path[2] bytes
- *          Int32 privilege[2]
+ *          Int32 privilege num k2
+ *              Int32 privilege[2][1]
+ *              Int32 privilege[2][2]
+ *              ...
+ *              Int32 privilege[2][k2]
  *          ...
  *          Int32 path[n] length
  *          Utf-8 path[n] bytes
- *          Int32 privilege[n]
+ *          Int32 privilege num kn
+ *              Int32 privilege[n][1]
+ *              Int32 privilege[n][2]
+ *              ...
+ *              Int32 privilege[n][kn]
  */
 public class LocalFileRoleAccessor implements IRoleAccessor {
 
@@ -61,9 +72,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             int privilegeNum = dataInputStream.readInt();
             List<PathPrivilege> pathPrivilegeList = new ArrayList<>();
             for (int i = 0; i < privilegeNum; i++) {
-                String path = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
-                PrivilegeType privilegeType = PrivilegeType.values()[dataInputStream.readInt()];
-                pathPrivilegeList.add(new PathPrivilege(privilegeType, path));
+                pathPrivilegeList.add(IOUtils.readPathPrivilege(dataInputStream, STRING_ENCODING, strBufferLocal));
             }
             role.privilegeList = pathPrivilegeList;
 
@@ -84,8 +93,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             IOUtils.writeInt(outputStream, privilegeNum, encodingBufferLocal);
             for(int i = 0; i < privilegeNum; i++) {
                 PathPrivilege pathPrivilege = role.privilegeList.get(i);
-                IOUtils.writeString(outputStream, pathPrivilege.path, STRING_ENCODING, encodingBufferLocal);
-                IOUtils.writeInt(outputStream, pathPrivilege.type.ordinal(), encodingBufferLocal);
+                IOUtils.writePathPrivilege(outputStream, pathPrivilege, STRING_ENCODING, encodingBufferLocal);
             }
 
         } catch (Exception e) {

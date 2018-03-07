@@ -2,8 +2,6 @@ package cn.edu.tsinghua.iotdb.auth.user;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.HashLock;
-import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
-import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
@@ -103,8 +101,6 @@ public class LocalFileUserManager implements IUserManager {
 
     @Override
     public boolean deleteUser(String username) throws AuthException {
-        if(TsFileDBConstant.ADMIN_NAME.equals(username))
-            throw new AuthException("Default administrator cannot be deleted");
         lock.writeLock(username);
         try {
             if(accessor.deleteUser(username)) {
@@ -128,15 +124,14 @@ public class LocalFileUserManager implements IUserManager {
             if(user == null) {
                 throw new AuthException(String.format("No such user %s", username));
             }
-            PathPrivilege pathPrivilege = new PathPrivilege(PrivilegeType.values()[privilegeId], path);
-            if(user.hasPrivilege(pathPrivilege)) {
+            if(user.hasPrivilege(path, privilegeId)) {
                 return false;
             }
-            user.privilegeList.add(pathPrivilege);
+            user.addPrivilege(path, privilegeId);
             try {
                 accessor.saveUser(user);
             } catch (IOException e) {
-                user.privilegeList.remove(pathPrivilege);
+                user.removePrivilege(path, privilegeId);
                 throw new AuthException(e);
             }
             return true;
@@ -154,15 +149,14 @@ public class LocalFileUserManager implements IUserManager {
             if(user == null) {
                 throw new AuthException(String.format("No such user %s", username));
             }
-            PathPrivilege pathPrivilege = new PathPrivilege(PrivilegeType.values()[privilegeId], path);
-            if(!user.hasPrivilege(pathPrivilege)) {
+            if(!user.hasPrivilege(path, privilegeId)) {
                 return false;
             }
-            user.privilegeList.remove(pathPrivilege);
+            user.removePrivilege(path, privilegeId);
             try {
                 accessor.saveUser(user);
             } catch (IOException e) {
-                user.privilegeList.add(pathPrivilege);
+                user.addPrivilege(path, privilegeId);
                 throw new AuthException(e);
             }
             return true;

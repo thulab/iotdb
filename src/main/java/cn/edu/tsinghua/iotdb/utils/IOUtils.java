@@ -1,5 +1,8 @@
 package cn.edu.tsinghua.iotdb.utils;
 
+import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
+import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -66,4 +69,20 @@ public class IOUtils {
         return new String(strBuffer, 0, length, encoding);
     }
 
+    public static PathPrivilege readPathPrivilege(DataInputStream inputStream, String encoding, ThreadLocal<byte[]> strBufferLocal) throws IOException {
+        String path = IOUtils.readString(inputStream, encoding, strBufferLocal);
+        int privilegeNum = inputStream.readInt();
+        PathPrivilege pathPrivilege = new PathPrivilege(path);
+        for(int i = 0; i < privilegeNum; i++)
+            pathPrivilege.privileges.add(inputStream.readInt());
+        return pathPrivilege;
+    }
+
+    public static void writePathPrivilege(OutputStream outputStream, PathPrivilege pathPrivilege, String encoding, ThreadLocal<ByteBuffer> encodingBufferLocal) throws IOException {
+        writeString(outputStream, pathPrivilege.path, encoding, encodingBufferLocal);
+        writeInt(outputStream, pathPrivilege.privileges.size(), encodingBufferLocal);
+        for(Integer i : pathPrivilege.privileges) {
+            writeInt(outputStream, i, encodingBufferLocal);
+        }
+    }
 }

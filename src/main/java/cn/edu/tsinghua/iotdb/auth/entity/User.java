@@ -31,8 +31,33 @@ public class User {
         this.roleList = new ArrayList<>();
     }
 
-    public boolean hasPrivilege(PathPrivilege pathPrivilege) {
-        return privilegeList.contains(pathPrivilege);
+    public boolean hasPrivilege(String path, int privilegeId) {
+        for(PathPrivilege pathPrivilege : privilegeList) {
+            if(pathPrivilege.path.equals(path) && pathPrivilege.privileges.contains(privilegeId))
+                return true;
+        }
+        return false;
+    }
+
+    public void addPrivilege(String path, int privilgeId) {
+        for(PathPrivilege pathPrivilege : privilegeList) {
+            if(pathPrivilege.path.equals(path)) {
+                pathPrivilege.privileges.add(privilgeId);
+                return;
+            }
+        }
+        PathPrivilege pathPrivilege = new PathPrivilege(path);
+        pathPrivilege.privileges.add(privilgeId);
+        privilegeList.add(pathPrivilege);
+    }
+
+    public void removePrivilege(String path, int privilgeId) {
+        for(PathPrivilege pathPrivilege : privilegeList) {
+            if(pathPrivilege.path.equals(path)) {
+                pathPrivilege.privileges.remove(privilgeId);
+                return;
+            }
+        }
     }
 
     public boolean hasRole(String roleName) {
@@ -51,11 +76,11 @@ public class User {
         for(PathPrivilege pathPrivilege : privilegeList) {
             if(path != null){
                 if (pathPrivilege.path != null && ValidateUtils.pathBelongsTo(path, pathPrivilege.path)) {
-                    privileges.add(pathPrivilege.type.ordinal());
+                    privileges.addAll(pathPrivilege.privileges);
                 }
             } else {
                 if (pathPrivilege.path == null) {
-                    privileges.add(pathPrivilege.type.ordinal());
+                    privileges.addAll(pathPrivilege.privileges);
                 }
             }
         }
