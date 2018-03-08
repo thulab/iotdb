@@ -34,6 +34,7 @@ public class OverflowFileStreamManager {
             for (RandomAccessFile randomAccessFile : fileStreamStore.get(jobId).values()) {
                 randomAccessFile.close();
             }
+            fileStreamStore.remove(jobId);
         }
     }
 

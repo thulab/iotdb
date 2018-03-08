@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
 /**
  * Created by zhangjinrui on 2018/1/9.
  */
-public class QueryJob {
+public abstract class QueryJob {
 
     private long jobId;
     private long submitTimestamp;
@@ -13,11 +13,10 @@ public class QueryJob {
     private long endTimestamp;
     private QueryJobStatus status;
     private QueryJobExecutionMessage message;
-
     private String clientId;
 
-    private QueryExpression queryExpression;
-    private QueryJobType type;
+    protected QueryJobType type;
+
 
     public QueryJob(long jobId) {
         this.jobId = jobId;
@@ -82,14 +81,6 @@ public class QueryJob {
         this.clientId = clientId;
     }
 
-    public QueryExpression getQueryExpression() {
-        return queryExpression;
-    }
-
-    public void setQueryExpression(QueryExpression queryExpression) {
-        this.queryExpression = queryExpression;
-    }
-
     public QueryJobExecutionMessage getMessage() {
         return message;
     }
@@ -106,7 +97,30 @@ public class QueryJob {
         return type;
     }
 
-    public void setType(QueryJobType type) {
-        this.type = type;
+    public static class SelectQueryJob extends QueryJob {
+
+        private QueryExpression queryExpression;
+        private int fetchSize;
+
+        public SelectQueryJob(long jobId) {
+            super(jobId);
+            this.type = QueryJobType.SELECT;
+        }
+
+        public QueryExpression getQueryExpression() {
+            return queryExpression;
+        }
+
+        public void setQueryExpression(QueryExpression queryExpression) {
+            this.queryExpression = queryExpression;
+        }
+
+        public int getFetchSize() {
+            return fetchSize;
+        }
+
+        public void setFetchSize(int fetchSize) {
+            this.fetchSize = fetchSize;
+        }
     }
 }
