@@ -45,15 +45,12 @@ public class NoOverflowReadTest {
 
     private IoTDB deamon;
 
-    TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-    private int maxNumberOfPointsInPage;
-    private int pageSizeInByte;
-    private int groupSizeInByte;
-
     @Before
     public void setUp() throws Exception {
         EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
         deamon = IoTDB.getInstance();
+        deamon.stop();
         deamon.active();
         EnvironmentUtils.envSetUp();
     }
