@@ -41,14 +41,14 @@ import java.util.List;
  *              Int32 privilege[n][2]
  *              ...
  *              Int32 privilege[n][kn]
- *      Int32 role name number m
- *          Int32 role name[1] length
- *          Utf-8 role name[1] bytes
- *          Int32 role name[2] length
- *          Utf-8 role name[2] bytes
+ *      Int32 user name number m
+ *          Int32 user name[1] length
+ *          Utf-8 user name[1] bytes
+ *          Int32 user name[2] length
+ *          Utf-8 user name[2] bytes
  *          ...
- *          Int32 role name[m] length
- *          Utf-8 role name[m] bytes
+ *          Int32 user name[m] length
+ *          Utf-8 user name[m] bytes
  */
 public class LocalFileUserAccessor implements IUserAccessor{
     private static final String TEMP_SUFFIX = ".temp";
@@ -75,7 +75,12 @@ public class LocalFileUserAccessor implements IUserAccessor{
     public User loadUser(String username) throws IOException{
         File userProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX);
         if(!userProfile.exists() || !userProfile.isFile()) {
-            return null;
+            // System may crush before a newer file is written, so search for back-up file.
+            File backProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+            if(backProfile.exists() && backProfile.isFile())
+                userProfile = backProfile;
+            else
+                return null;
         }
         FileInputStream inputStream = new FileInputStream(userProfile);
         try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream))) {
@@ -90,13 +95,13 @@ public class LocalFileUserAccessor implements IUserAccessor{
             }
             user.privilegeList = pathPrivilegeList;
 
-            int roleNum = dataInputStream.readInt();
-            List<String> roleList = new ArrayList<>();
-            for (int i = 0; i < roleNum; i++) {
-                String roleName = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
-                roleList.add(roleName);
+            int userNum = dataInputStream.readInt();
+            List<String> userList = new ArrayList<>();
+            for (int i = 0; i < userNum; i++) {
+                String userName = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
+                userList.add(userName);
             }
-            user.roleList = roleList;
+            user.roleList = userList;
 
             return user;
         } catch (Exception e) {
@@ -123,9 +128,9 @@ public class LocalFileUserAccessor implements IUserAccessor{
                 IOUtils.writePathPrivilege(outputStream, pathPrivilege, STRING_ENCODING, encodingBufferLocal);
             }
 
-            int roleNum = user.roleList.size();
-            IOUtils.writeInt(outputStream, roleNum, encodingBufferLocal);
-            for(int i = 0; i < roleNum; i++) {
+            int userNum = user.roleList.size();
+            IOUtils.writeInt(outputStream, userNum, encodingBufferLocal);
+            for(int i = 0; i < userNum; i++) {
                 IOUtils.writeString(outputStream, user.roleList.get(i), STRING_ENCODING, encodingBufferLocal);
             }
 
@@ -137,9 +142,17 @@ public class LocalFileUserAccessor implements IUserAccessor{
         }
 
         File oldFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX);
-        oldFile.delete();
+        File backFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
         if(!userProfile.renameTo(oldFile)) {
-            throw new IOException(String.format("Cannot replace old user file with new one, user : %s", user.name));
+            // some OSs need to delete the old file before renaming to it
+            // in case that crash happened between deletion of the old file and renaming of the new file,
+            // the old file should be backed-up first.
+            backFile.delete();
+            oldFile.renameTo(backFile);
+
+            if (!userProfile.renameTo(oldFile))
+                throw new IOException(String.format("Cannot replace old user file with new one, user : %s", user.name));
+            backFile.delete();
         }
     }
 

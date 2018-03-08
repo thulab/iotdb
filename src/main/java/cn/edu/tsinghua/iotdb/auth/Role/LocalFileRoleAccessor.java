@@ -62,7 +62,12 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     public Role loadRole(String rolename) throws IOException {
         File roleProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX);
         if(!roleProfile.exists() || !roleProfile.isFile()) {
-            return null;
+            // System may crush before a newer file is written, so search for back-up file.
+            File backProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+            if(backProfile.exists() && backProfile.isFile())
+                roleProfile = backProfile;
+            else
+                return null;
         }
         FileInputStream inputStream = new FileInputStream(roleProfile);
         try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(inputStream))) {
@@ -102,10 +107,19 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
             outputStream.flush();
             outputStream.close();
         }
+        
         File oldFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX);
-        oldFile.delete();
+        File backFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
         if(!roleProfile.renameTo(oldFile)) {
-            throw new IOException(String.format("Cannot replace old role file with new one, role : %s", role.name));
+            // some OSs need to delete the old file before renaming to it
+            // in case that crash happened between deletion of the old file and renaming of the new file,
+            // the old file should be backed-up first.
+            backFile.delete();
+            oldFile.renameTo(backFile);
+
+            if (!roleProfile.renameTo(oldFile))
+                throw new IOException(String.format("Cannot replace old role file with new one, role : %s", role.name));
+            backFile.delete();
         }
     }
 
@@ -122,8 +136,8 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
 
     @Override
     public List<String> listAllRoles() {
-        File userDir = new File(roleDirPath);
-        String[] names = userDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
+        File roleDir = new File(roleDirPath);
+        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
         return Arrays.asList(names != null ? names : new String[0]);
     }
 
