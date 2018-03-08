@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.control;
 
 import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob.*;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.TsFileStreamManager;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import org.junit.After;
@@ -37,7 +38,7 @@ public class TsFileStreamManagerTest {
 
     @Test
     public void testOneThread() throws IOException {
-        QueryJob queryJob1 = new QueryJob(1L);
+        QueryJob queryJob1 = new SelectQueryJob(1L);
         ITsRandomAccessFileReader randomAccessFileReader = fileStreamManager.getTsFileStreamReader(queryJob1, PATH);
         ITsRandomAccessFileReader randomAccessFileReader2 = fileStreamManager.getTsFileStreamReader(queryJob1, PATH);
         fileStreamManager.release(queryJob1, PATH);
@@ -65,9 +66,9 @@ public class TsFileStreamManagerTest {
 
     @Test
     public void testMultiThread() throws InterruptedException {
-        Reader reader1 = new Reader(new QueryJob(1L));
-        Reader reader2 = new Reader(new QueryJob(2L));
-        Reader reader3 = new Reader(new QueryJob(3L));
+        Reader reader1 = new Reader(new SelectQueryJob(1L));
+        Reader reader2 = new Reader(new SelectQueryJob(2L));
+        Reader reader3 = new Reader(new SelectQueryJob(3L));
         reader1.start();
         reader2.start();
         reader3.start();
