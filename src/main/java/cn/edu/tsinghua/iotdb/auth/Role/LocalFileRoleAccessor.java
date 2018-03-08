@@ -127,7 +127,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
         File backFile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
         if(!roleProfile.exists() && !backFile.exists())
             return false;
-        if(!roleProfile.delete() && !backFile.delete()) {
+        if((roleProfile.exists() && !roleProfile.delete()) || (backFile.exists() && !backFile.delete())) {
             throw new IOException(String.format("Cannot delete role file of %s", rolename));
         }
         return true;

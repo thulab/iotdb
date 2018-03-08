@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * so that the operations on the same key (string) can be prevented while the number of locks remain controlled.
  */
 public class HashLock {
-    private static final int DEFAULT_LOCK_NUM = 10;
+    private static final int DEFAULT_LOCK_NUM = 100;
 
     private ReentrantReadWriteLock[] locks;
     private int lockSize;

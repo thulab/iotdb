@@ -165,7 +165,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
         File backFile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
         if(!userProfile.exists() && !backFile.exists())
             return false;
-        if(!userProfile.delete() && !backFile.delete()) {
+        if((userProfile.exists() && !userProfile.delete()) || (backFile.exists() && !backFile.delete())) {
             throw new IOException(String.format("Cannot delete user file of %s", username));
         }
         return true;

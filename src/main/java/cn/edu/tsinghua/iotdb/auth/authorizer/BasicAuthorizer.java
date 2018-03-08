@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.auth.authorizer;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.Role.IRoleManager;
+import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.auth.user.IUserManager;
@@ -13,15 +14,24 @@ import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 abstract public class BasicAuthorizer implements IAuthorizer,IService {
 
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthorizer.class);
+    private static final Set<Integer> ADMIN_PRIVILEGES;
+
+    static {
+        ADMIN_PRIVILEGES = new HashSet<>();
+        for(int i = 0; i < PrivilegeType.values().length; i++)
+            ADMIN_PRIVILEGES.add(i);
+    }
 
     private IUserManager userManager;
     private IRoleManager roleManager;
+
 
     BasicAuthorizer(IUserManager userManager, IRoleManager roleManager) {
         this.userManager = userManager;
@@ -107,7 +117,16 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
         if(role == null) {
             throw new AuthException(String.format("No such role : %s", roleName));
         }
-        return userManager.grantRoleToUser(roleName, username);
+        // the role may be deleted before it ts granted to the user, so a double check is necessary.
+        boolean success = userManager.grantRoleToUser(roleName, username);
+        if(success) {
+            role = roleManager.getRole(roleName);
+            if(role == null) {
+                throw new AuthException(String.format("No such role : %s", roleName));
+            } else
+                return true;
+        } else
+            return false;
     }
 
     @Override
@@ -121,9 +140,11 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
 
     @Override
     public Set<Integer> getPrivileges(String username, String path) throws AuthException {
+        if(TsFileDBConstant.ADMIN_NAME.equals(username))
+            return ADMIN_PRIVILEGES;
         User user = userManager.getUser(username);
         if(user == null) {
-            throw new AuthException("No such user");
+            throw new AuthException(String.format("No such user : %s", username));
         }
         // get privileges of the user
         Set<Integer> privileges = user.getPrivileges(path);
