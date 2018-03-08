@@ -217,6 +217,16 @@ public class TsfileDBConfig {
 	 */
 	public int maxLogEntrySize = 4 * 1024 * 1024;
 
+	/**
+	 * IoTDB is a receiver of postback or not
+	 */
+	public boolean IS_POSTBACK_ENABLE = true;
+	
+	/**
+	 * If IoTDB is a receiver of postback, set the server port 
+	 */
+	public int POSTBACK_SERVER_PORT = 5555;
+	
 	public TsfileDBConfig() {}
 
 	public void updateDataPath() {

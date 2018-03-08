@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.postback.conf;
-
+/**
+ * @author lta
+ */
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -75,9 +77,18 @@ public class PostBackDescriptor {
 
 			conf.UPLOAD_CYCLE_IN_SECONDS = Integer.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.UPLOAD_CYCLE_IN_SECONDS+""));
 
-			conf.IS_UPLOAD_ENABLE = Boolean.parseBoolean(properties.getProperty("is_upload_enable", conf.IS_UPLOAD_ENABLE+""));
+			conf.IOTDB_DATA_DIRECTORY = properties.getProperty("iotdb_data_directory", conf.IOTDB_DATA_DIRECTORY);
 			
-			conf.POSTBACK_TYPE = properties.getProperty("postback_type",conf.POSTBACK_TYPE);
+			if(!conf.IOTDB_DATA_DIRECTORY.endsWith(File.separator))
+				conf.IOTDB_DATA_DIRECTORY = conf.IOTDB_DATA_DIRECTORY + File.separator;
+			
+			conf.UUID_PATH = conf.IOTDB_DATA_DIRECTORY + "uuid.txt";
+			conf.LAST_FILE_INFO = conf.IOTDB_DATA_DIRECTORY + "lastLocalFileList.txt";
+			conf.SENDER_FILE_PATH = conf.IOTDB_DATA_DIRECTORY + "delta";
+			conf.SNAPSHOT_PATH = conf.IOTDB_DATA_DIRECTORY + "dataSnapshot";
+			conf.SCHEMA_PATH = conf.IOTDB_DATA_DIRECTORY + "metadata" + File.separator + "mlog.txt";
+			
+			
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file because {}, use default configuration", e.getMessage());
 		} catch (Exception e) {

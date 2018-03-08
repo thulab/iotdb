@@ -1,14 +1,16 @@
 package cn.edu.tsinghua.iotdb.postback.conf;
-
+/**
+ * @author lta
+ */
 import java.io.File;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 
 public class PostBackConfig {                                    
 	
-	public static final String CONFIG_NAME = "iotdb-postback.properties";
+	public static final String CONFIG_NAME = "iotdb-postbackClient.properties";
 	
-	public String IOTDB_DATA_DIRECTORY = new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;
+	public String IOTDB_DATA_DIRECTORY = "D:\\iotdb-v0.4.0\\data\\";//new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;
 	public String UUID_PATH = IOTDB_DATA_DIRECTORY + "uuid.txt";
 	public String LAST_FILE_INFO = IOTDB_DATA_DIRECTORY + "lastLocalFileList.txt";
 	public String SENDER_FILE_PATH = IOTDB_DATA_DIRECTORY + "delta";
@@ -17,6 +19,4 @@ public class PostBackConfig {
 	public String SERVER_IP = "192.168.130.16";
 	public int SERVER_PORT = 5555;
 	public int UPLOAD_CYCLE_IN_SECONDS = 10;
-	public boolean IS_UPLOAD_ENABLE = true;
-	public String POSTBACK_TYPE = "Client";
 }

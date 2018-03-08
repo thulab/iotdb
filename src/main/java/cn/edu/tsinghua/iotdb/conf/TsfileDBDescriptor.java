@@ -119,6 +119,9 @@ public class TsfileDBDescriptor {
 			conf.overflowMetaSizeThreshold = Long.parseLong(properties.getProperty("overflow_meta_size_threshold", conf.overflowMetaSizeThreshold + "").trim());
 			conf.overflowFileSizeThreshold = Long.parseLong(properties.getProperty("overflow_file_size_threshold", conf.overflowFileSizeThreshold + "").trim());
 
+			conf.IS_POSTBACK_ENABLE = Boolean.parseBoolean(properties.getProperty("is_postback_enable", conf.IS_POSTBACK_ENABLE + ""));
+			conf.POSTBACK_SERVER_PORT = Integer.parseInt(properties.getProperty("postback_server_port", conf.POSTBACK_SERVER_PORT + "").trim());
+			
 			if(conf.memThresholdWarning <= 0)
 				conf.memThresholdWarning = TsFileDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;
 			if(conf.memThresholdDangerous < conf.memThresholdWarning)

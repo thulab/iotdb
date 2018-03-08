@@ -1,5 +1,8 @@
 package cn.edu.tsinghua.postback.iotdb.sender;
-
+/**
+ * @author lta
+ * The class is to pick up which files need to postback
+ */
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

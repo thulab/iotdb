@@ -1,4 +1,8 @@
 package cn.edu.tsinghua.postback.iotdb.sender;
+/**
+ * @author lta
+ * The class is to transfer data that needs to postback to receiver. 
+ */
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -44,9 +48,11 @@ public class TransferData {
 	private TTransport transport;
 	private Service.Client clientOfServer;
 	private List<String> schema = new ArrayList<>();
-	private String uuid;
-	private boolean connection_orElse;
+	private String uuid;//Mark the identity of sender
+	private boolean connection_orElse; // Mark whether connection of sender and receiver has broken down or not
 	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
+	private Date lastPostBackTime = new Date(); // Mark the start time of last postback 
+	private boolean PostBackStatus = false; // If true, postback is in execution.
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferData.class);
 
@@ -65,6 +71,11 @@ public class TransferData {
 		this.config = config;
 	}
 
+	/**
+	 * Eatablish a connection between sender and receiver
+	 * @param serverIP
+	 * @param serverPort:it must be same with port receiver set.
+	 */
 	public void connection(String serverIP, int serverPort) {
 		transport = new TSocket(serverIP, serverPort);
 		TProtocol protocol = new TBinaryProtocol(transport);
@@ -78,6 +89,9 @@ public class TransferData {
 		}
 	}
 
+	/**
+	 * UUID marks the identity of sender for receiver. 
+	 */
 	public String transferUUID(String uuidPath) {
 		String uuidOfReceiver = null;
 		File file = new File(uuidPath);
@@ -113,6 +127,9 @@ public class TransferData {
 		return uuidOfReceiver;
 	}
 
+	/**
+	 * Create snapshots for those sending files.
+	 */
 	public void makeFileSnapshot(Set<String> sendingFileList, String snapshotPath, String iotdbPath) {
 		try {
 			if (!new File(snapshotPath).exists())
@@ -209,18 +226,13 @@ public class TransferData {
 		}
 	}
 
-	public void stop() {
-		// TODO Auto-generated method stub
-
-	}
-
 	public boolean afterSending(String snapshotPath) {
 		deleteSnapshot(new File(snapshotPath));
 		boolean successOrNot = false;
 		try {
 			successOrNot = clientOfServer.afterReceiving();
 		} catch (TException e) {
-			LOGGER.error("IoTDB sender : can not close connection to the receiver because {}", e.getMessage());
+			LOGGER.error("IoTDB sender : can not finish postback because postback receiver has broken down!");
 		} finally {
 			transport.close();
 		}
@@ -249,47 +261,49 @@ public class TransferData {
 
 	public static void main(String[] args) {
 		TransferData transferData = new TransferData();
+		Thread monitor = new Thread(new Runnable() {
+			public void run() {
+				transferData.monitorPostbackStatus();
+			}
+		});
+		monitor.start();
 		transferData.timedTask();
 	}
 
-	public void timedTask() {
-		if (!config.IS_UPLOAD_ENABLE) {
-			LOGGER.info(
-					"IoTDB post back sender: the iotdb-postback property IS_UPLOAD_ENABLE is set false, so poatback function is banned. ");
-		} else {
-			postback();
-			Date lastTime = new Date();
+	/**
+	 * Monitor postback status
+	 */
+	void monitorPostbackStatus() {
+		Date oldTime = new Date();
+		while (true) {
 			Date currentTime = new Date();
-			while (true) {
-				currentTime = new Date();
-				if (currentTime.getTime() - lastTime.getTime() > config.UPLOAD_CYCLE_IN_SECONDS * 1000) {
-					postback();
-					lastTime = currentTime;
-				}
+			if (currentTime.getTime() / 1000 == oldTime.getTime() / 1000)
+				continue;
+			if ((currentTime.getTime() - lastPostBackTime.getTime()) % (config.UPLOAD_CYCLE_IN_SECONDS * 1000) == 0) {
+				oldTime = currentTime;
+				if (PostBackStatus)
+					LOGGER.info("IoTDB post back sender : postback is in execution!");
+			}
+		}
+	}
+
+	/**
+	 * Start postback task in a certain time.
+	 */
+	public void timedTask() {
+		postback();
+		lastPostBackTime = new Date();
+		Date currentTime = new Date();
+		while (true) {
+			currentTime = new Date();
+			if (currentTime.getTime() - lastPostBackTime.getTime() > config.UPLOAD_CYCLE_IN_SECONDS * 1000) {
+				lastPostBackTime = currentTime;
+				postback();
 			}
 		}
 	}
 
 	public void postback() {
-//		try {
-//			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-//			Connection connection = null;
-//			try {
-//				connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-//				Statement statement = connection.createStatement();
-//				statement.execute("flush");
-//				statement.execute("merge");
-//				statement.close();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			} finally {
-//				if (connection != null) {
-//					connection.close();
-//				}
-//			}
-//		} catch (ClassNotFoundException | SQLException e) {
-//			LOGGER.error("IoTDB post back sender: cannot execute flush and merge because {}", e.getMessage());
-//		}
 		if (new File(config.SNAPSHOT_PATH).exists() && new File(config.SNAPSHOT_PATH).list().length != 0) {
 			// it means that the last time postback does not succeed! Clear the files and
 			// start to postback again
@@ -304,43 +318,45 @@ public class TransferData {
 		if (sendingList.size() == 0)
 			LOGGER.info("IoTDB post back sender : there has no files to postback !");
 		else {
+			PostBackStatus = true;
 			connection(config.SERVER_IP, config.SERVER_PORT);
-			if (!connection_orElse)
+			if (!connection_orElse) {
+				LOGGER.info("IoTDB post back sender : postback failed!");
+				PostBackStatus = false;
 				return;
+			}
 			transferUUID(config.UUID_PATH);
 			if (!connection_orElse) {
 				transport.close();
+				LOGGER.info("IoTDB post back sender : postback failed!");
+				PostBackStatus = false;
 				return;
 			}
 			makeFileSnapshot(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
 			sendSchema(config.SCHEMA_PATH);
 			if (!connection_orElse) {
 				transport.close();
+				LOGGER.info("IoTDB post back sender : postback failed!");
+				PostBackStatus = false;
 				return;
-			}
-			System.out.println("wait 5 seconds!");
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
 			if (!connection_orElse) {
 				transport.close();
+				LOGGER.info("IoTDB post back sender : postback failed!");
+				PostBackStatus = false;
 				return;
 			}
-			System.out.println("wait 5 seconds!");
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(afterSending(config.SNAPSHOT_PATH)){
+			if (afterSending(config.SNAPSHOT_PATH)) {
 				fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
 				LOGGER.info("IoTDB post back sender : the postBack has finished!");
+			} else {
+				LOGGER.info("IoTDB post back sender : postback failed!");
+				PostBackStatus = false;
+				return;
 			}
 		}
+		PostBackStatus = false;
+		return;
 	}
 }

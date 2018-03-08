@@ -84,6 +84,8 @@ public class SingleClientPostBackTest {
 			"insert into root.test.d0(timestamp,s0,s1) values(34,1007,'1008')",
 			"insert into root.test.d0(timestamp,s1) values(36,'1090')",
 			"insert into root.test.d1.g0(timestamp,s0) values(10,1100)",
+			"merge",
+			"flush",
 			};
 
 	private String[] sqls2 = new String[] { 
@@ -104,6 +106,8 @@ public class SingleClientPostBackTest {
 			"insert into root.test.d0(timestamp,s0,s1) values(80,427,'528')",
 			"insert into root.test.d0(timestamp,s1) values(2,'1209')",
 			"insert into root.test.d1.g0(timestamp,s0) values(4,330)",
+			"merge",
+			"flush",
 			};
 
 	private String[] sqls3 = new String[] { 
@@ -148,6 +152,8 @@ public class SingleClientPostBackTest {
 			"insert into root.test.d0(timestamp,s0,s1) values(700,1307,'1038')",
 			"insert into root.test.d0(timestamp,s1) values(3000,'1309')",
 			"insert into root.test.d1.g0(timestamp,s0) values(400,1050)",
+			"merge",
+			"flush",
 			};
 
 	private boolean testFlag = TestUtils.testFlag;

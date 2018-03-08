@@ -26,7 +26,6 @@ public class IoTDB implements IoTDBMBean{
 	private RegisterManager registerManager = new RegisterManager();
     private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileDBConstant.IOTDB_PACKAGE, TsFileDBConstant.JMX_TYPE, "IoTDB");
 
-    private String postBack_type = PostBackDescriptor.getInstance().getConfig().POSTBACK_TYPE;
 	private ServerManager serverManager = ServerManager.getInstance();
 	
     private static class IoTDBHolder {
@@ -85,7 +84,7 @@ public class IoTDB implements IoTDBMBean{
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
 		
-		if (postBack_type.equals("Server")) {
+		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
 			serverManager.startServer();
 		}
 	}
@@ -97,7 +96,7 @@ public class IoTDB implements IoTDBMBean{
 
 	@Override
 	public void stop() {
-		if (postBack_type.equals("Server")) {
+		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
 			serverManager.closeServer();
 		}
 		deactivate();

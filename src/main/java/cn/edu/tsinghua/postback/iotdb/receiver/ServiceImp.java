@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.postback.iotdb.receiver;
-
+/**
+ * @author lta
+ */
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,18 +63,17 @@ public class ServiceImp implements Service.Iface {
 
 	private ThreadLocal<String> uuid = new ThreadLocal<String>();
 	private ThreadLocal<Map<String, List<String>>> fileNodeMap = new ThreadLocal<>(); // String means Storage Group, List means the set
-																		// of
-																		// new Files(AbsulutePath) in local IoTDB
+																		// of new Files(AbsulutePath) in local IoTDB
 	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeStartTime = new ThreadLocal<>(); // String means AbsulutePath of new
 																				// Files, Map String1 means
-																				// timeseries、 String2 means
+																				// timeseries, String2 means
 																				// startTime
 	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeEndTime = new ThreadLocal<>();// String means AbsulutePath of new
-																				// Files, Map String1 means timeseries、
+																				// Files, Map String1 means timeseries,
 																				// String2 means startTime
 	private ThreadLocal<Map<String, String>> linkFilePath = new ThreadLocal<>();
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
-	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();//config.IOTDB_DATA_DIRECTORY + uuid + File.separator + "mlog.txt";
+	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImp.class);
 	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
@@ -232,10 +233,6 @@ public class ServiceImp implements Service.Iface {
 		}
 	}
 
-	/**
-	 * Close connection of derby database after receiving all files from * sender
-	 * side
-	 */
 	public boolean afterReceiving() throws TException {
 		getFileNodeInfo();
 		mergeData();
@@ -244,6 +241,9 @@ public class ServiceImp implements Service.Iface {
 		return true;
 	}
 	
+	/**
+	 * Release threadLocal variable resources
+	 */
 	public void remove() {
 		uuid.remove();
 		fileNum.remove();
@@ -265,14 +265,10 @@ public class ServiceImp implements Service.Iface {
 			}
 		}
 	}
-
+	
 	/**
-	 * Stop receiving files from sender side
+	 * Get all tsfiles' info which are sent from sender, it is prepare for merging these data 
 	 */
-	public void cancelReceiving() throws TException {
-
-	}
-
 	public void getFileNodeInfo() throws TException {
 		String filePath = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta";
 		File root = new File(filePath);
@@ -475,6 +471,11 @@ public class ServiceImp implements Service.Iface {
 		}
 	}
 
+	/**
+	 * It is to merge data.
+	 * If data in the tsfile is new, append thetsfile to the storage group directly.
+	 * If data in the tsfile is old, call the method "mergeOldData".
+	 */
 	public void mergeData() throws TException {
 		// !!! Attention: before modify .restore file, it is neccessary to execute flush
 		// order and synchronized the thread

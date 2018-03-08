@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.postback.iotdb.receiver;
-
+/**
+ * @author lta
+ */
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
@@ -10,6 +12,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
 
@@ -19,7 +22,6 @@ public class ServerManager {
 	private TProcessor processor;
 	private TThreadPoolServer.Args poolArgs;
 	private TServer poolServer;
-	private PostBackConfig config= PostBackDescriptor.getInstance().getConfig();
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServerManager.class);
 	private static class ServerManagerHolder{
@@ -34,14 +36,14 @@ public class ServerManager {
 
 	public void startServer() {
 		try {
-			serverTransport = new TServerSocket(config.SERVER_PORT);
+			serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().POSTBACK_SERVER_PORT);
 			protocolFactory = new TBinaryProtocol.Factory();
 			processor = new Service.Processor<ServiceImp>(new ServiceImp());
 			poolArgs = new TThreadPoolServer.Args(serverTransport);
 			poolArgs.processor(processor);
 			poolArgs.protocolFactory(protocolFactory);
 			poolServer = new TThreadPoolServer(poolArgs);
-			LOGGER.info("Thrift Server start!");
+			LOGGER.info("Postback server start!");
 			Runnable runnable = new Runnable() {
 				public void run() {
 					poolServer.serve();
@@ -49,13 +51,13 @@ public class ServerManager {
 			};
 			new Thread(runnable).start();
 		} catch (TTransportException e) {
-			LOGGER.error("IoTDB post back receicer: cannot start server because {}", e.getMessage());
+			LOGGER.error("IoTDB post back receicer: cannot start postback server because {}", e.getMessage());
 		}
 	}
 
 	public void closeServer() {
 		poolServer.stop();
-		LOGGER.info("Stop thrift server!");
+		LOGGER.info("Stop postback server!");
 	}
 	
 	public static void main(String[] args) {
