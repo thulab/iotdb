@@ -94,7 +94,6 @@ public class OverflowOperationReaderTest {
         assertEquals(20, updateMem.getInt(1));
         // flush asynchronously
         processor.flush();
-        assertEquals(true, processor.isFlush());
         assertEquals(false, processor.isMerge());
         // write insert data
         OverflowTestUtils.produceInsertData(processor);
