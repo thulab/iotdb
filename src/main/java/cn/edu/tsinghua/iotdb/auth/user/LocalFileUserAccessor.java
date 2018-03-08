@@ -7,9 +7,7 @@ import cn.edu.tsinghua.iotdb.utils.IOUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class loads a user's information from the corresponding file.The user file is a sequential file.
@@ -164,9 +162,10 @@ public class LocalFileUserAccessor implements IUserAccessor{
      */
     public boolean deleteUser(String username) throws IOException{
         File userProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX);
-        if(!userProfile.exists())
+        File backFile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+        if(!userProfile.exists() && !backFile.exists())
             return false;
-        if(!userProfile.delete()) {
+        if(!userProfile.delete() && !backFile.delete()) {
             throw new IOException(String.format("Cannot delete user file of %s", username));
         }
         return true;
@@ -174,9 +173,19 @@ public class LocalFileUserAccessor implements IUserAccessor{
 
     @Override
     public List<String> listAllUsers() {
-        File userDir = new File(userDirPath);
-        String[] names = userDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
-        return Arrays.asList(names != null ? names : new String[0]);
+        File roleDir = new File(userDirPath);
+        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TsFileDBConstant.BACKUP_SUFFIX));
+        List<String> retList = new ArrayList<>();
+        if(names != null) {
+            // in very rare situations, normal file and backup file may exist at the same time
+            // so a set is used to deduplicate
+            Set<String> set = new HashSet<>();
+            for(String fileName : names) {
+                set.add(fileName.replace(TsFileDBConstant.PROFILE_SUFFIX, "").replace(TsFileDBConstant.BACKUP_SUFFIX, ""));
+            }
+            retList.addAll(set);
+        }
+        return retList;
     }
 
     @Override

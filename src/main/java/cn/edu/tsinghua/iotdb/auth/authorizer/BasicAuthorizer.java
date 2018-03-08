@@ -81,7 +81,6 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
             // proceed to revoke the role in all users
             List<String> users = userManager.listAllUsers();
             for(String user : users) {
-                user = user.replace(TsFileDBConstant.USER_PROFILE_SUFFIX,"");
                 try {
                     userManager.revokeRoleFromUser(roleName, user);
                 } catch (AuthException e) {

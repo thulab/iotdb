@@ -7,9 +7,7 @@ import cn.edu.tsinghua.iotdb.utils.IOUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class store each role in a separate sequential file.
@@ -126,9 +124,10 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     @Override
     public boolean deleteRole(String rolename) throws IOException {
         File roleProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX);
-        if(!roleProfile.exists())
+        File backFile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+        if(!roleProfile.exists() && !backFile.exists())
             return false;
-        if(!roleProfile.delete()) {
+        if(!roleProfile.delete() && !backFile.delete()) {
             throw new IOException(String.format("Cannot delete role file of %s", rolename));
         }
         return true;
@@ -137,8 +136,18 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     @Override
     public List<String> listAllRoles() {
         File roleDir = new File(roleDirPath);
-        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX));
-        return Arrays.asList(names != null ? names : new String[0]);
+        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TsFileDBConstant.BACKUP_SUFFIX));
+        List<String> retList = new ArrayList<>();
+        if(names != null) {
+            // in very rare situations, normal file and backup file may exist at the same time
+            // so a set is used to deduplicate
+            Set<String> set = new HashSet<>();
+            for(String fileName : names) {
+                set.add(fileName.replace(TsFileDBConstant.PROFILE_SUFFIX, "").replace(TsFileDBConstant.BACKUP_SUFFIX, ""));
+            }
+            retList.addAll(set);
+        }
+        return retList;
     }
 
     @Override
