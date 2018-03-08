@@ -13,7 +13,6 @@ import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -64,7 +63,7 @@ public class IntervalTree {
 	 */
 	private void insert(TimePair tp) {
 		nodeSize++;
-		calcMemoryUsage(tp);
+		increaseMemoryUsage(tp);
 		if (root == null) {
 			root = new TreeNode(tp.s, tp.e, tp.v, tp.opType);
 		} else {
@@ -135,17 +134,17 @@ public class IntervalTree {
 		if (parentNode == null) {
 			if (currentNode.left == null && currentNode.right == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				root = null;
 				return;
 			} else if (currentNode.left == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				root = currentNode.right;
 				return;
 			} else if (currentNode.right == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				root = currentNode.left;
 				return;
 			}
@@ -154,11 +153,11 @@ public class IntervalTree {
 		if (left) {
 			if (currentNode.left == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				parentNode.left = currentNode.right;
 			} else if (currentNode.right == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				parentNode.left = currentNode.left;
 			} else {
 				if (currentNode.left.fix < currentNode.right.fix) {
@@ -174,11 +173,11 @@ public class IntervalTree {
 		} else {
 			if (currentNode.left == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				parentNode.right = currentNode.right;
 			} else if (currentNode.right == null) {
 				nodeSize--;
-				calcMemoryUsage(currentNode);
+				decreaseMemoryUsage(currentNode);
 				parentNode.right = currentNode.left;
 			} else {
 				if (currentNode.left.fix < currentNode.right.fix) {
@@ -607,7 +606,7 @@ public class IntervalTree {
 		}
 	}
 
-	private void calcMemoryUsage(TimePair tp) {
+	private void increaseMemoryUsage(TimePair tp) {
 		if (tp.opType == OverflowOpType.DELETE) {
 			memoryUsage += 16;
 		} else {
@@ -616,7 +615,7 @@ public class IntervalTree {
 
 	}
 
-	private void calcMemoryUsage(TreeNode node) {
+	private void decreaseMemoryUsage(TreeNode node) {
 		if (node.opType == OverflowOpType.DELETE) {
 			memoryUsage -= 16;
 		} else {

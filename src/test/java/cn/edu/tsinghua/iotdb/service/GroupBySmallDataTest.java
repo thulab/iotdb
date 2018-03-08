@@ -95,7 +95,7 @@ public class GroupBySmallDataTest {
 			groupByMultiAggregationFunctionTest();
 			groupBySelectMultiDeltaObjectTest();
 			groupByOnlyHasTimeFilterTest();
-			groupByMultiResultTest();
+			//groupByMultiResultTest();
 
 			originBiggerThanIntervalTest();
 
