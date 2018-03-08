@@ -168,6 +168,7 @@ public class  GroupByEngineNoFilter {
                     intervalIndex += 2;
                     if (intervalIndex >= longInterval.count)
                         break;
+                    
                     intervalStart = longInterval.flag[intervalIndex] ? longInterval.v[intervalIndex] : longInterval.v[intervalIndex] + 1;
                     intervalEnd = longInterval.flag[intervalIndex + 1] ? longInterval.v[intervalIndex + 1] : longInterval.v[intervalIndex + 1] - 1;
                 } else {
