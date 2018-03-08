@@ -19,25 +19,18 @@ import static org.junit.Assert.assertEquals;
 public class MManagerImproveTest {
 
     private static MManager mManager = null;
-    private final int timeseriesNum = 1000;
+    private static final int TIMESERIES_NUM = 1000;
+    private static final int DEVICE_NUM = 10;
 
     @Before
     public void setUp() throws Exception {
         mManager = MManager.getInstance();
-        for(int i = 0;i < 10;i++){
-            for(int j = 0;j < 10;j++){
-                mManager.setStorageLevelToMTree("root.t" + i + ".v" + j);
-            }
-        }
+        mManager.setStorageLevelToMTree("root.t1.v2");
 
-        for(int i = 0;i < 10;i++){
-            for(int j = 0;j < 10;j++){
-                for(int k = 0;k < 10;k++){
-                    for(int l = 0;l < timeseriesNum;l++){
-                        String p = new StringBuilder().append("root.t").append(i).append(".v").append(j).append(".d").append(k).append(".s").append(l).toString();
-                        mManager.addPathToMTree(p, "TEXT", "RLE", new String[0]);
-                    }
-                }
+        for(int j = 0;j < DEVICE_NUM;j++) {
+            for (int i = 0; i < TIMESERIES_NUM; i++) {
+                String p = new StringBuilder().append("root.t1.v2.d").append(j).append(".s").append(i).toString();
+                mManager.addPathToMTree(p, "TEXT", "RLE", new String[0]);
             }
         }
 
@@ -53,8 +46,8 @@ public class MManagerImproveTest {
     public void checkSetUp(){
         mManager = MManager.getInstance();
 
-        assertEquals(true, mManager.pathExist("root.t0.v0.d0.s0"));
-        assertEquals(true, mManager.pathExist("root.t9.v9.d9.s" + (timeseriesNum-1)));
+        assertEquals(true, mManager.pathExist("root.t1.v2.d3.s5"));
+        assertEquals(false, mManager.pathExist("root.t1.v2.d9.s" + TIMESERIES_NUM));
         assertEquals(false, mManager.pathExist("root.t10"));
     }
 
@@ -210,14 +203,12 @@ public class MManagerImproveTest {
         mManager = MManager.getInstance();
 
         long startTime, endTime;
-        String[] deltaObjectList = new String[100];
-        for(int i = 0;i < 10;i++){
-            for(int j = 0;j < 10;j++){
-                deltaObjectList[i*10+j] = "root.t1.v" + i + ".d" + j;
-            }
+        String[] deltaObjectList = new String[DEVICE_NUM];
+        for(int i = 0;i < DEVICE_NUM;i++){
+            deltaObjectList[i] = "root.t1.v2.d" + i;
         }
         List<String> measurementList = new ArrayList<>();
-        for(int i = 0;i < timeseriesNum;i++){
+        for(int i = 0;i < TIMESERIES_NUM;i++){
             measurementList.add("s" + i);
         }
 
@@ -264,36 +255,9 @@ public class MManagerImproveTest {
         System.out.println("add cache:\t" + (endTime - startTime));
     }
 
-//    @After
-//    public void tearDown() throws Exception {
-//        EnvironmentUtils.cleanEnv();
-//    }
-
-    @org.junit.Test
-    public void test() {
-
-//		try {
-//			// test file name
-//			List<String> fileNames = mManager.getAllFileNames();
-//			assertEquals(2, fileNames.size());
-//			if (fileNames.get(0).equals("root.vehicle.d0")) {
-//				assertEquals(fileNames.get(1), "root.vehicle.d1");
-//			} else {
-//				assertEquals(fileNames.get(1), "root.vehicle.d0");
-//			}
-//			// test filename by path
-//			assertEquals("root.vehicle.d0", mManager.getFileNameByPath("root.vehicle.d0.s1"));
-//			HashMap<String, ArrayList<String>> map = mManager.getAllPathGroupByFileName("root.vehicle.d1.*");
-//			assertEquals(1, map.keySet().size());
-//			assertEquals(6, map.get("root.vehicle.d1").size());
-//			ArrayList<String> paths = mManager.getPaths("root.vehicle.d0");
-//			assertEquals(6, paths.size());
-//			paths = mManager.getPaths("root.vehicle.d2");
-//			assertEquals(0, paths.size());
-//		} catch (PathErrorException e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
+    @After
+    public void tearDown() throws Exception {
+        EnvironmentUtils.cleanEnv();
     }
 
 }
