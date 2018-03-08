@@ -14,9 +14,13 @@ public class IOUtils {
     You may also pass a null to use a local buffer.
      */
     public static void writeString(OutputStream outputStream, String str, String encoding, ThreadLocal<ByteBuffer> encodingBufferLocal) throws IOException {
-        byte[] strBuffer =str.getBytes(encoding);
-        writeInt(outputStream, strBuffer.length, encodingBufferLocal);
-        outputStream.write(strBuffer);
+        if(str != null) {
+            byte[] strBuffer =str.getBytes(encoding);
+            writeInt(outputStream, strBuffer.length, encodingBufferLocal);
+            outputStream.write(strBuffer);
+        } else {
+            writeInt(outputStream, 0, encodingBufferLocal);
+        }
     }
 
     public static void writeInt(OutputStream outputStream, int i, ThreadLocal<ByteBuffer> encodingBufferLocal) throws IOException {
@@ -39,18 +43,21 @@ public class IOUtils {
     public static String readString(DataInputStream inputStream, String encoding, ThreadLocal<byte[]> strBufferLocal) throws IOException {
         byte[] strBuffer;
         int length = inputStream.readInt();
-        if(strBufferLocal != null) {
-            strBuffer = strBufferLocal.get();
-            if(strBuffer == null || length > strBuffer.length) {
+        if(length > 0) {
+            if(strBufferLocal != null) {
+                strBuffer = strBufferLocal.get();
+                if(strBuffer == null || length > strBuffer.length) {
+                    strBuffer = new byte[length];
+                    strBufferLocal.set(strBuffer);
+                }
+            } else {
                 strBuffer = new byte[length];
-                strBufferLocal.set(strBuffer);
             }
-        } else {
-            strBuffer = new byte[length];
-        }
 
-        inputStream.read(strBuffer, 0, length);
-        return new String(strBuffer, 0, length, encoding);
+            inputStream.read(strBuffer, 0, length);
+            return new String(strBuffer, 0, length, encoding);
+        } else
+            return null;
     }
 
     public static PathPrivilege readPathPrivilege(DataInputStream inputStream, String encoding, ThreadLocal<byte[]> strBufferLocal) throws IOException {
