@@ -4,6 +4,8 @@ import cn.edu.tsinghua.iotdb.auth.Role.LocalFileRoleManager;
 import cn.edu.tsinghua.iotdb.auth.user.LocalFileUserManager;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+import cn.edu.tsinghua.iotdb.service.ServiceType;
 
 import java.io.File;
 

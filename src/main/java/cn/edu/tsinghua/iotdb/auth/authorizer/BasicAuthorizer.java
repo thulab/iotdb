@@ -6,6 +6,9 @@ import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.auth.user.IUserManager;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+import cn.edu.tsinghua.iotdb.service.IService;
+import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
-abstract public class BasicAuthorizer implements IAuthorizer {
+abstract public class BasicAuthorizer implements IAuthorizer,IService {
 
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthorizer.class);
 
@@ -26,7 +29,7 @@ abstract public class BasicAuthorizer implements IAuthorizer {
         init();
     }
 
-    private void init() {
+    protected void init() {
         userManager.reset();
         roleManager.reset();
         logger.info("Initialization of Authorizer completes");
@@ -148,5 +151,20 @@ abstract public class BasicAuthorizer implements IAuthorizer {
     @Override
     public void reset() {
         init();
+    }
+
+    @Override
+    public void start() throws StartupException {
+        init();
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public ServiceType getID() {
+        return ServiceType.AUTHORIZATION_SERVICE;
     }
 }

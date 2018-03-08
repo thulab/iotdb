@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.concurrent.HashLock;
+import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * This class read roles from local files through LocalFileRoleAccessor and manages them in a hash map.
  */
-public abstract class BasicRoleManager implements IRoleManager {
+public abstract class BasicRoleManager implements IRoleManager{
 
     private Map<String, Role> roleMap;
     private IRoleAccessor accessor;
