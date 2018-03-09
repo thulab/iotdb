@@ -22,8 +22,8 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -36,7 +36,7 @@ public class SingleClientPostBackTest {
 	private String SENDER_FILE_PATH_TEST = POST_BACK_DIRECTORY_TEST + "delta";
 	private String SNAPSHOT_PATH_TEST = POST_BACK_DIRECTORY_TEST + "dataSnapshot";
 	private String SERVER_IP_TEST = "192.168.130.16";
-	private PostBackConfig config= PostBackDescriptor.getInstance().getConfig();
+	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
 	private Set<String> dataSender = new HashSet<>();
 	private Set<String> dataReceiver = new HashSet<>();
 	TransferData transferData = TransferData.getInstance();
@@ -167,6 +167,7 @@ public class SingleClientPostBackTest {
             deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
+            conf.overflowFileSizeThreshold = 0;
 		}
 		File file = new File(LAST_FILE_INFO_TEST);
 		if (!file.getParentFile().exists()) {

@@ -28,8 +28,8 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.postback.iotdb.receiver.ServerManager;
 
@@ -43,7 +43,7 @@ public class TransferDataTest {
 	private String SNAPSHOT_PATH_TEST = POST_BACK_DIRECTORY_TEST + "dataSnapshot";
 	private String SERVER_IP_TEST = "127.0.0.1";
 	private int SERVER_PORT_TEST = 5555;
-	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
+	private PostBackSenderConfig config = PostBackSenderDescriptor.getInstance().getConfig();
 	ServerManager serverManager = ServerManager.getInstance();
 	TransferData transferData = TransferData.getInstance();
 	FileManager manager = FileManager.getInstance();
@@ -256,52 +256,6 @@ public class TransferDataTest {
 		return md5;
 	}
 	
-	@Test
-	public void testStartSending() throws Exception {
-		Set<String> sendingFileList = new HashSet<>();
- 		Set<String> lastlocalList = new HashSet<>();
- 		Set<String> fileList = new HashSet<>();
- 		
-		transferData.connection(SERVER_IP_TEST, SERVER_PORT_TEST);
-		transferData.transferUUID(UUID_PATH_TEST);
-		
-		Random r = new Random(0);
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 5; j++) {
-				String rand = String.valueOf(r.nextInt(10000));
-				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator + rand;
-				File file = new File(fileName);
-				if (!file.getParentFile().exists()) {
-					file.getParentFile().mkdirs();
-				}
-				if (!file.exists()) {
-					file.createNewFile();
-					FileOutputStream out = new FileOutputStream(file);
-					out.write((i + " " + j).getBytes());
-					out.close();
-				}
-			}
-		}
-		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
-		lastlocalList = manager.getLastLocalFiles();
-		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
-		fileList = manager.getNowLocalFiles();
-		manager.getSendingFileList();
- 		sendingFileList = manager.getSendingFiles();
- 		System.out.println("sending" + sendingFileList);
- 		transferData.makeFileSnapshot(sendingFileList, SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
- 		transferData.startSending(sendingFileList, SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
- 		//compare all md5 of source files and server files
- 		for(String filePath:sendingFileList)
- 		{
- 			String md5OfSource = getMD5(new File(filePath));
- 			filePath = filePath.substring(POST_BACK_DIRECTORY_TEST.length());
- 			String newPath = config.IOTDB_DATA_DIRECTORY + transferData.getUuid() + File.separator + filePath;
- 			String md5OfReceiver = getMD5(new File(newPath));
- 			assert(md5OfSource.equals(md5OfReceiver));
- 		}
-	}
-
 	@Test
 	public void testAfterSending() throws Exception {
 		Set<String> sendingFileList = new HashSet<>();

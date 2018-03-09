@@ -29,6 +29,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessorStatus;
@@ -41,8 +42,8 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TInTimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
@@ -74,26 +75,30 @@ public class ServiceImp implements Service.Iface {
 	private ThreadLocal<Map<String, String>> linkFilePath = new ThreadLocal<>();
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
 	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
+	private String dataPath= new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImp.class);
-	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
 	private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 	private static final MManager mManager = MManager.getInstance();
 	
+	/**
+	 * Init threadLocal variable
+	 */
 	public void init() {
 		fileNum.set(0); 
 		fileNodeMap.set(new HashMap<>());
 		fileNodeStartTime.set(new HashMap<>());
 		fileNodeEndTime.set(new HashMap<>());
 		linkFilePath.set(new HashMap<>());
-		schemaFromSenderPath.set(config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "mlog.txt");
+		schemaFromSenderPath.set(dataPath + uuid.get() + File.separator + "mlog.txt");
 	}
+	
 	public String getUUID(String uuid) throws TException {
 		this.uuid.set(uuid);
 		init();
-		if(new File(config.IOTDB_DATA_DIRECTORY + this.uuid.get()).exists() && new File(config.IOTDB_DATA_DIRECTORY + this.uuid.get()).list().length!=0) {
+		if(new File(dataPath + this.uuid.get()).exists() && new File(dataPath + this.uuid.get()).list().length!=0) {
 			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
-			deleteFile(new File(config.IOTDB_DATA_DIRECTORY + this.uuid.get()));
+			deleteFile(new File(dataPath + this.uuid.get()));
 		}
 		return this.uuid.get();
 	}
@@ -111,7 +116,7 @@ public class ServiceImp implements Service.Iface {
 				filePath = filePath + filePathSplit.get(i) + File.separator;
 			}
 		}
-		filePath = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + filePath;
+		filePath = dataPath + uuid.get() + File.separator + filePath;
 		if (status == 1) // there are still data stream to add
 		{
 			File file = new File(filePath);
@@ -236,7 +241,7 @@ public class ServiceImp implements Service.Iface {
 	public boolean afterReceiving() throws TException {
 		getFileNodeInfo();
 		mergeData();
-		deleteFile(new File(config.IOTDB_DATA_DIRECTORY + uuid.get()));
+		deleteFile(new File(dataPath + uuid.get()));
 		remove();
 		return true;
 	}
@@ -270,15 +275,15 @@ public class ServiceImp implements Service.Iface {
 	 * Get all tsfiles' info which are sent from sender, it is prepare for merging these data 
 	 */
 	public void getFileNodeInfo() throws TException {
-		String filePath = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta";
+		String filePath = dataPath + uuid.get() + File.separator + "delta";
 		File root = new File(filePath);
 		File[] files = root.listFiles();
 		int num = 0;
 		for (File file : files) { 
-			String storageGroupPath = config.IOTDB_DATA_DIRECTORY + "delta" + File.separator + file.getName();
-			String storageGroupPathPB = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta" + File.separator
+			String storageGroupPath = dataPath + "delta" + File.separator + file.getName();
+			String storageGroupPathPB = dataPath + uuid.get() + File.separator + "delta" + File.separator
 					+ file.getName();
-			String digestPath = config.IOTDB_DATA_DIRECTORY + "digest" + File.separator + file.getName();
+			String digestPath = dataPath + "digest" + File.separator + file.getName();
 			File storageGroup = new File(storageGroupPath);
 			File storageGroupPB = new File(storageGroupPathPB);
 			File digest = new File(digestPath);
@@ -511,7 +516,7 @@ public class ServiceImp implements Service.Iface {
 				Map<String, Long> endTimeMap = fileNodeEndTime.get().get(path);
 
 				// create a new fileNode
-				String header = config.IOTDB_DATA_DIRECTORY + uuid.get() + File.separator + "delta" + File.separator;
+				String header = dataPath + uuid.get() + File.separator + "delta" + File.separator;
 				String relativePath = path.substring(header.length());
 				IntervalFileNode fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
 						relativePath);

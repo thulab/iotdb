@@ -14,30 +14,30 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 
-public class PostBackDescriptor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(PostBackDescriptor.class);
+public class PostBackSenderDescriptor {
+	private static final Logger LOGGER = LoggerFactory.getLogger(PostBackSenderDescriptor.class);
 
 	private static class PostBackDescriptorHolder{
-		private static final PostBackDescriptor INSTANCE = new PostBackDescriptor();
+		private static final PostBackSenderDescriptor INSTANCE = new PostBackSenderDescriptor();
 	}
 	
-	private PostBackDescriptor() {
+	private PostBackSenderDescriptor() {
 		loadProps();
 	}
 
-	public static final PostBackDescriptor getInstance() {
+	public static final PostBackSenderDescriptor getInstance() {
 		return PostBackDescriptorHolder.INSTANCE;
 	}
 
-	public PostBackConfig getConfig() {
+	public PostBackSenderConfig getConfig() {
 		return conf;
 	}
 	
-	public void setConfig(PostBackConfig conf) {
+	public void setConfig(PostBackSenderConfig conf) {
 		this.conf = conf;
 	}
 
-	private PostBackConfig conf = new PostBackConfig();
+	private PostBackSenderConfig conf = new PostBackSenderConfig();
 
 	/**
 	 * load an properties file and set TsfileDBConfig variables
@@ -49,13 +49,13 @@ public class PostBackDescriptor {
 		if (url == null) {
 			url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
 			if (url != null) {
-				url = url + File.separatorChar + "conf" + File.separatorChar + PostBackConfig.CONFIG_NAME;
+				url = url + File.separatorChar + "conf" + File.separatorChar + PostBackSenderConfig.CONFIG_NAME;
 			} else {
-				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", PostBackConfig.CONFIG_NAME);
+				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", PostBackSenderConfig.CONFIG_NAME);
 				return;
 			}
 		} else{
-			url += (File.separatorChar + PostBackConfig.CONFIG_NAME);
+			url += (File.separatorChar + PostBackSenderConfig.CONFIG_NAME);
 		}
 		
 		try {

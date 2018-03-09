@@ -6,11 +6,11 @@ import java.io.File;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 
-public class PostBackConfig {                                    
+public class PostBackSenderConfig {                                    
 	
 	public static final String CONFIG_NAME = "iotdb-postbackClient.properties";
 	
-	public String IOTDB_DATA_DIRECTORY = "D:\\iotdb-v0.4.0\\data\\";//new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;
+	public String IOTDB_DATA_DIRECTORY = new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;
 	public String UUID_PATH = IOTDB_DATA_DIRECTORY + "uuid.txt";
 	public String LAST_FILE_INFO = IOTDB_DATA_DIRECTORY + "lastLocalFileList.txt";
 	public String SENDER_FILE_PATH = IOTDB_DATA_DIRECTORY + "delta";

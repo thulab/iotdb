@@ -22,15 +22,15 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 
 public class FileManager {
 	
 	private Set<String> sendingFiles;
 	private Set<String> lastLocalFiles;
 	private Set<String> nowLocalFiles;
-	private PostBackConfig config= PostBackDescriptor.getInstance().getConfig();
+	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileManager.class);
 	private static class FileManagerHolder{

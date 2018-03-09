@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.postback.iotdb.receiver.ServerManager;
 import cn.edu.tsinghua.postback.iotdb.receiver.Service;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackDescriptor;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
+import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 
 public class TransferData {
 
@@ -50,7 +50,7 @@ public class TransferData {
 	private List<String> schema = new ArrayList<>();
 	private String uuid;//Mark the identity of sender
 	private boolean connection_orElse; // Mark whether connection of sender and receiver has broken down or not
-	private PostBackConfig config = PostBackDescriptor.getInstance().getConfig();
+	private PostBackSenderConfig config = PostBackSenderDescriptor.getInstance().getConfig();
 	private Date lastPostBackTime = new Date(); // Mark the start time of last postback 
 	private boolean PostBackStatus = false; // If true, postback is in execution.
 
@@ -67,7 +67,7 @@ public class TransferData {
 		return TransferHolder.INSTANCE;
 	}
 
-	public void setConfig(PostBackConfig config) {
+	public void setConfig(PostBackSenderConfig config) {
 		this.config = config;
 	}
 
