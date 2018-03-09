@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.utils;
 import java.io.File;
 import java.io.IOException;
 
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -60,6 +61,13 @@ public class EnvironmentUtils {
 		// delete all directory
 		cleanAllDir();
 		// FileNodeManager.getInstance().reset();
+		// reset MemController
+		BasicMemController.getInstance().close();
+		try {
+			BasicMemController.getInstance().start();
+		} catch (StartupException e) {
+			LOGGER.error("",e);
+		}
 	}
 
 	private static void cleanAllDir() throws IOException {
