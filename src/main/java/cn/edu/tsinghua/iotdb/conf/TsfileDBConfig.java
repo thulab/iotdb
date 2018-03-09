@@ -141,7 +141,7 @@ public class TsfileDBConfig {
 	 * 0 is RecordMemController, which count the size of every record (tuple).
 	 * 1 is JVMMemController, which use JVM heap memory as threshold.
 	 */
-	public int memControllerType = 0;
+	public int memControllerType = 1;
 
 	/**
 	 * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
