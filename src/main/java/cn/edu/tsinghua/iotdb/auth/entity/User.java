@@ -3,10 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.entity;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class contains all information of a User.
@@ -90,5 +87,23 @@ public class User {
             }
         }
         return privileges;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return lastActiveTime == user.lastActiveTime &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(privilegeList, user.privilegeList) &&
+                Objects.equals(roleList, user.roleList);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, password, privilegeList, roleList, lastActiveTime);
     }
 }

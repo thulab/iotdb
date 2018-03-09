@@ -2,10 +2,7 @@ package cn.edu.tsinghua.iotdb.auth.entity;
 
 import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class contains all information of a role.
@@ -77,5 +74,20 @@ public class Role {
             }
         }
         return privileges;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(name, role.name) &&
+                Objects.equals(privilegeList, role.privilegeList);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, privilegeList);
     }
 }

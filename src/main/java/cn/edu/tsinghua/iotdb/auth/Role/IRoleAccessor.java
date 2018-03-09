@@ -28,7 +28,7 @@ public interface IRoleAccessor {
      * Delete a role's in lower storage.
      * @param rolename The name of the role to be deleted.
      * @return True if the role is successfully deleted, false if the role does not exists.
-     * @throws IOException when the file cannot be deleted.
+     * @throws IOException
      */
     boolean deleteRole(String rolename) throws IOException;
 

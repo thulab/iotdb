@@ -21,12 +21,13 @@ public class PathPrivilege {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathPrivilege that = (PathPrivilege) o;
-        return privileges.equals(that.privileges) &&
+        return Objects.equals(privileges, that.privileges) &&
                 Objects.equals(path, that.path);
     }
 
     @Override
     public int hashCode() {
+
         return Objects.hash(privileges, path);
     }
 }

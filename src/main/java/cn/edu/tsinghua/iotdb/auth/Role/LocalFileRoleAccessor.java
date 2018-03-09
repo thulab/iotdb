@@ -52,7 +52,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     private ThreadLocal<ByteBuffer> encodingBufferLocal = new ThreadLocal<>();
     private ThreadLocal<byte[]> strBufferLocal = new ThreadLocal<>();
 
-    LocalFileRoleAccessor(String roleDirPath) {
+    public LocalFileRoleAccessor(String roleDirPath) {
         this.roleDirPath = roleDirPath;
     }
 

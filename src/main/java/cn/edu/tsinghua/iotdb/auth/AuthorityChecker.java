@@ -2,18 +2,18 @@ package cn.edu.tsinghua.iotdb.auth;
 
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
-import cn.edu.tsinghua.iotdb.auth.model.Permission;
+import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AuthorityChecker {
 
-    private static final String SUPER_USER = "root";
+    private static final String SUPER_USER = TsFileDBConstant.ADMIN_NAME;
     private static final Logger logger = LoggerFactory.getLogger(AuthorityChecker.class);
 
     public static boolean check(String username, List<Path> paths, Operator.OperatorType type) {
@@ -25,43 +25,22 @@ public class AuthorityChecker {
             logger.error("OperateType not found. {}", type);
             return false;
         }
-        for (int i = 0; i < paths.size(); i++) {
-            if (!checkOnePath(username, paths.get(i), permission)) {
+        for (Path path : paths) {
+            if (!checkOnePath(username, path, permission)) {
                 return false;
             }
         }
         return true;
     }
 
-    private static List<String> getAllParentPath(Path path) {
-        List<String> parentPaths = new ArrayList<String>();
-        String fullPath = path.getFullPath();
-        String[] nodes = fullPath.split("\\.");
-
-        for (int i = 0; i < nodes.length; i++) {
-            StringBuilder sb = new StringBuilder();
-            for (int j = 0; j <= i; j++) {
-                sb.append(nodes[j]);
-                if (j < i) {
-                    sb.append(".");
-                }
-            }
-            parentPaths.add(sb.toString());
-        }
-        return parentPaths;
-    }
-
     private static boolean checkOnePath(String username, Path path, int permission) {
-        List<String> parentPaths = getAllParentPath(path);
         IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
-        for (int i = 0; i < parentPaths.size(); i++) {
-            try {
-                if (authorizer.checkUserPrivileges(username, parentPaths.get(i), permission)) {
-                    return true;
-                }
-            } catch (AuthException e) {
-                logger.error("Error occur when checking the path {} for user {}", path, username, e);
+        try {
+            if (authorizer.checkUserPrivileges(username, path.getFullPath(), permission)) {
+                return true;
             }
+        } catch (AuthException e) {
+            logger.error("Error occur when checking the path {} for user {}", path, username, e);
         }
         return false;
     }
@@ -69,21 +48,21 @@ public class AuthorityChecker {
     private static int translateToPermissionId(Operator.OperatorType type) {
         switch (type) {
             case METADATA:
-                return Permission.CREATE;
+                return PrivilegeType.CREATE.ordinal();
             case QUERY:
             case SELECT:
             case FILTER:
             case GROUPBY:
             case SEQTABLESCAN:
             case TABLESCAN:
-                return Permission.READ;
+                return PrivilegeType.READ.ordinal();
             case DELETE:
-                return Permission.DELETE;
+                return PrivilegeType.DELETE.ordinal();
             case INSERT:
             case LOADDATA:
-                return Permission.INSERT;
+                return PrivilegeType.INSERT.ordinal();
             case UPDATE:
-                return Permission.MODIFY;
+                return PrivilegeType.UPDATE.ordinal();
             case AUTHOR:
             case BASIC_FUNC:
             case FILEREAD:
@@ -98,7 +77,6 @@ public class AuthorityChecker {
             case PROPERTY:
             case SFW:
             case UNION:
-
                 return -1;
             default:
                 return -1;

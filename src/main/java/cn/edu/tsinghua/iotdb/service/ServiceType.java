@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.service;
 
 public enum ServiceType {
-	DBDAO_SERVICE("DB Dao",""),
 	FILE_NODE_SERVICE("File Node Service",""),
 	JMX_SERVICE("JMX Service","JMX Service"),
 	JDBC_SERVICE("JDBC Service","JDBCService"),

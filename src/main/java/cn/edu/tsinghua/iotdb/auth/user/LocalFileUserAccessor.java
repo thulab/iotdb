@@ -60,7 +60,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
     private ThreadLocal<ByteBuffer> encodingBufferLocal = new ThreadLocal<>();
     private ThreadLocal<byte[]> strBufferLocal = new ThreadLocal<>();
 
-    LocalFileUserAccessor(String userDirPath) {
+    public LocalFileUserAccessor(String userDirPath) {
         this.userDirPath = userDirPath;
     }
 

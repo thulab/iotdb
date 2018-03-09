@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.auth.dao.DBDao;
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
@@ -69,8 +68,6 @@ public class IoTDB implements IoTDBMBean{
 
 		registerManager.register(FileNodeManager.getInstance());
 		registerManager.register(MultiFileLogNodeManager.getInstance());
-		IService DBDaoService = new DBDao();
-		registerManager.register(DBDaoService);
 		registerManager.register(JMXService.getInstance());
 		registerManager.register(JDBCService.getInstance());
 		registerManager.register(Monitor.INSTANCE);

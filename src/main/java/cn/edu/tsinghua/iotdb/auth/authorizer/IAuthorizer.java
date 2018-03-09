@@ -32,7 +32,7 @@ public interface IAuthorizer {
      *
      * @param username the username of the user.
      * @return True if the user is successfully deleted, false if the user does not exists.
-     * @throws AuthException
+     * @throws AuthException When attempting to delete the default administrator
      */
     boolean deleteUser(String username) throws AuthException;
 
