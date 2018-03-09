@@ -245,6 +245,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			for (String statement : statements) {
 				try {
 					PhysicalPlan physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
+					physicalPlan.setProposer(username.get());
 					if (physicalPlan.isQuery()) {
 						return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "statement is query :" + statement,
 								result);

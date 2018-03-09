@@ -77,6 +77,7 @@ public class AuthorityChecker {
             case PROPERTY:
             case SFW:
             case UNION:
+                logger.error("Illegal operator type authorization : {}", type);
                 return -1;
             default:
                 return -1;
