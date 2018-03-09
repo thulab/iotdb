@@ -471,7 +471,7 @@ public class ServiceImp implements Service.Iface {
 				if(connection!=null)
 					connection.close();
 			} catch (SQLException e) {
-				LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
+				LOGGER.error("IoTDB receiver : Can not close JDBC connection because {}", e.getMessage());
 			}
 		}
 	}
@@ -528,7 +528,7 @@ public class ServiceImp implements Service.Iface {
 						mergeOldData(path);
 					}
 				} catch (FileNodeManagerException e) {
-					LOGGER.error("IoTDB receiver : can not load external file because {}", e.getMessage());
+					LOGGER.error("IoTDB receiver : Can not load external file because {}", e.getMessage());
 				}
 				
 				num++;

@@ -43,7 +43,7 @@ public class ServerManager {
 			poolArgs.processor(processor);
 			poolArgs.protocolFactory(protocolFactory);
 			poolServer = new TThreadPoolServer(poolArgs);
-			LOGGER.info("Postback server start!");
+			LOGGER.info("Postback server has started!");
 			Runnable runnable = new Runnable() {
 				public void run() {
 					poolServer.serve();

@@ -321,14 +321,14 @@ public class TransferData {
 			PostBackStatus = true;
 			connection(config.SERVER_IP, config.SERVER_PORT);
 			if (!connection_orElse) {
-				LOGGER.info("IoTDB post back sender : postback failed!");
+				LOGGER.info("IoTDB post back sender : postback has failed!");
 				PostBackStatus = false;
 				return;
 			}
 			transferUUID(config.UUID_PATH);
 			if (!connection_orElse) {
 				transport.close();
-				LOGGER.info("IoTDB post back sender : postback failed!");
+				LOGGER.info("IoTDB post back sender : postback has failed!");
 				PostBackStatus = false;
 				return;
 			}
@@ -336,14 +336,14 @@ public class TransferData {
 			sendSchema(config.SCHEMA_PATH);
 			if (!connection_orElse) {
 				transport.close();
-				LOGGER.info("IoTDB post back sender : postback failed!");
+				LOGGER.info("IoTDB post back sender : postback has failed!");
 				PostBackStatus = false;
 				return;
 			}
 			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
 			if (!connection_orElse) {
 				transport.close();
-				LOGGER.info("IoTDB post back sender : postback failed!");
+				LOGGER.info("IoTDB post back sender : postback has failed!");
 				PostBackStatus = false;
 				return;
 			}
@@ -351,7 +351,7 @@ public class TransferData {
 				fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
 				LOGGER.info("IoTDB post back sender : the postBack has finished!");
 			} else {
-				LOGGER.info("IoTDB post back sender : postback failed!");
+				LOGGER.info("IoTDB post back sender : postback has failed!");
 				PostBackStatus = false;
 				return;
 			}
