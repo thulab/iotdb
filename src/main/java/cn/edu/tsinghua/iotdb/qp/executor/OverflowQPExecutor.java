@@ -335,27 +335,27 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			switch (authorType) {
 			case UPDATE_USER:
 				if(!proposer.equals(userName))
-					if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.MODIFY_PASSWORD.ordinal()))
+					if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.MODIFY_PASSWORD.ordinal()))
 						throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.updateUserPassword(userName, newPassword);
 			case CREATE_USER:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.CREATE_USER.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.CREATE_USER.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.createUser(userName, password);
 			case CREATE_ROLE:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.CREATE_ROLE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.CREATE_ROLE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.createRole(roleName);
 			case DROP_USER:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.DELETE_USER.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.DELETE_USER.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.deleteUser(userName);
 			case DROP_ROLE:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.CREATE_ROLE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.CREATE_ROLE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.deleteRole(roleName);
 			case GRANT_ROLE:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.GRANT_ROLE_PRIVILEGE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.GRANT_ROLE_PRIVILEGE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.grantPrivilegeToRole(roleName, nodeName.getFullPath(), i))
@@ -363,7 +363,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				}
 				return flag;
 			case GRANT_USER:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.GRANT_USER_PRIVILEGE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.GRANT_USER_PRIVILEGE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.grantPrivilegeToUser(userName, nodeName.getFullPath(), i))
@@ -371,11 +371,11 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				}
 				return flag;
 			case GRANT_ROLE_TO_USER:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.GRANT_USER_ROLE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.GRANT_USER_ROLE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.grantRoleToUser(roleName, userName);
 			case REVOKE_USER:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.REVOKE_USER_PRIVILEGE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.REVOKE_USER_PRIVILEGE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.revokePrivilegeFromUser(userName, nodeName.getFullPath(), i))
@@ -383,7 +383,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				}
 				return flag;
 			case REVOKE_ROLE:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.REVOKE_ROLE_PRIVILEGE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.REVOKE_ROLE_PRIVILEGE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.revokePrivilegeFromRole(roleName, nodeName.getFullPath(), i))
@@ -391,7 +391,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 				}
 				return flag;
 			case REVOKE_ROLE_FROM_USER:
-				if(!authorizer.checkUserPrivileges(userName, null, PrivilegeType.REVOKE_USER_ROLE.ordinal()))
+				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.REVOKE_USER_ROLE.ordinal()))
 					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.revokeRoleFromUser(roleName, userName);
 			default:

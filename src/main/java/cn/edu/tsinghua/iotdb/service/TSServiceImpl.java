@@ -299,6 +299,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			PhysicalPlan physicalPlan;
 			try {
 				physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
+				physicalPlan.setProposer(username.get());
 			} catch (IllegalASTFormatException e) {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS,
 						"Statement format is not right:" + e.getMessage());
@@ -326,6 +327,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 			String statement = req.getStatement();
 			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
+			plan.setProposer(username.get());
 
 			List<Path> paths;
 			paths = plan.getPaths();
@@ -497,6 +499,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		PhysicalPlan physicalPlan;
 		try {
 			physicalPlan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
+			physicalPlan.setProposer(username.get());
 		} catch (QueryProcessorException | ArgsErrorException e) {
 			e.printStackTrace();
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
