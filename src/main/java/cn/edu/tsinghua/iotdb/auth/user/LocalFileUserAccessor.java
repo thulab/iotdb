@@ -4,6 +4,7 @@ import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -141,17 +142,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
 
         File oldFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX);
         File backFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
-        if(!userProfile.renameTo(oldFile)) {
-            // some OSs need to delete the old file before renaming to it
-            // in case that crash happened between deletion of the old file and renaming of the new file,
-            // the old file should be backed-up first.
-            backFile.delete();
-            oldFile.renameTo(backFile);
-
-            if (!userProfile.renameTo(oldFile))
-                throw new IOException(String.format("Cannot replace old user file with new one, user : %s", user.name));
-            backFile.delete();
-        }
+        IOUtils.replaceFile(userProfile, oldFile, backFile);
     }
 
     /**

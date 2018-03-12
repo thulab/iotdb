@@ -16,7 +16,7 @@ public class AuthorityChecker {
     private static final String SUPER_USER = TsFileDBConstant.ADMIN_NAME;
     private static final Logger logger = LoggerFactory.getLogger(AuthorityChecker.class);
 
-    public static boolean check(String username, List<Path> paths, Operator.OperatorType type) {
+    public static boolean check(String username, List<Path> paths, Operator.OperatorType type, String targetUser) {
         if (SUPER_USER.equals(username)) {
             return true;
         }
@@ -24,6 +24,9 @@ public class AuthorityChecker {
         if (permission == -1) {
             logger.error("OperateType not found. {}", type);
             return false;
+        } else if(permission == PrivilegeType.MODIFY_PASSWORD.ordinal() && username.equals(targetUser)) {
+            // a user can modify his own password
+            return true;
         }
         for (Path path : paths) {
             if (!checkOnePath(username, path, permission)) {
@@ -40,12 +43,12 @@ public class AuthorityChecker {
                 return true;
             }
         } catch (AuthException e) {
-            logger.error("Error occur when checking the path {} for user {}", path, username, e);
+            logger.error("Error occurs when checking the path {} for user {}", path, username, e);
         }
         return false;
     }
 
-    private static int translateToPermissionId(Operator.OperatorType type) {
+    public static int translateToPermissionId(Operator.OperatorType type) {
         switch (type) {
             case METADATA:
                 return PrivilegeType.CREATE.ordinal();

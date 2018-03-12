@@ -22,6 +22,7 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
+import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
@@ -328,6 +329,9 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			String statement = req.getStatement();
 			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
 			plan.setProposer(username.get());
+			String targetUser = null;
+			if(plan instanceof AuthorPlan)
+				targetUser = ((AuthorPlan) plan).getUserName();
 
 			List<Path> paths;
 			paths = plan.getPaths();
@@ -345,7 +349,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			}
 
 			// check permissions
-			if (!checkAuthorization(paths, plan.getOperatorType())) {
+			if (!checkAuthorization(paths, plan)) {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this query.");
 			}
 
@@ -465,8 +469,11 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 	private TSExecuteStatementResp ExecuteUpdateStatement(PhysicalPlan plan) throws TException {
 		List<Path> paths = plan.getPaths();
+		String targetUser = null;
+		if (plan instanceof AuthorPlan)
+			targetUser = ((AuthorPlan) plan).getUserName();
 
-		if (!checkAuthorization(paths, plan.getOperatorType())) {
+		if (!checkAuthorization(paths, plan)) {
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
 		}
 		// TODO
@@ -512,7 +519,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		// if operation belongs to add/delete/update
 		List<Path> paths = physicalPlan.getPaths();
 
-		if (!checkAuthorization(paths, physicalPlan.getOperatorType())) {
+		if (!checkAuthorization(paths, physicalPlan)) {
 			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
 		}
 
@@ -570,8 +577,11 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		return username.get() != null;
 	}
 
-	private boolean checkAuthorization(List<Path> paths, Operator.OperatorType type) {
-		return AuthorityChecker.check(username.get(), paths, type);
+	private boolean checkAuthorization(List<Path> paths, PhysicalPlan plan) {
+		String targetUser = null;
+		if(plan instanceof AuthorPlan)
+			targetUser = ((AuthorPlan) plan).getUserName();
+		return AuthorityChecker.check(username.get(), paths, plan.getOperatorType(), targetUser);
 	}
 
 	private TSExecuteStatementResp getTSExecuteStatementResp(TS_StatusCode code, String msg) {

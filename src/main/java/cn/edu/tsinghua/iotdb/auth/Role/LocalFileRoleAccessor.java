@@ -108,17 +108,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
         
         File oldFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX);
         File backFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
-        if(!roleProfile.renameTo(oldFile)) {
-            // some OSs need to delete the old file before renaming to it
-            // in case that crash happened between deletion of the old file and renaming of the new file,
-            // the old file should be backed-up first.
-            backFile.delete();
-            oldFile.renameTo(backFile);
-
-            if (!roleProfile.renameTo(oldFile))
-                throw new IOException(String.format("Cannot replace old role file with new one, role : %s", role.name));
-            backFile.delete();
-        }
+        IOUtils.replaceFile(roleProfile, oldFile, backFile);
     }
 
     @Override

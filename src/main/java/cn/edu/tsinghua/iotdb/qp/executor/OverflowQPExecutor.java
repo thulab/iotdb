@@ -326,7 +326,6 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 		String roleName = author.getRoleName();
 		String password = author.getPassword();
 		String newPassword = author.getNewPassword();
-		String proposer = author.getProposer();
 		Set<Integer> permissions = author.getPermissions();
 		Path nodeName = author.getNodeName();
 		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
@@ -334,65 +333,42 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			boolean flag = true;
 			switch (authorType) {
 			case UPDATE_USER:
-				if(!proposer.equals(userName))
-					if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.MODIFY_PASSWORD.ordinal()))
-						throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.updateUserPassword(userName, newPassword);
 			case CREATE_USER:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.CREATE_USER.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.createUser(userName, password);
 			case CREATE_ROLE:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.CREATE_ROLE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.createRole(roleName);
 			case DROP_USER:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.DELETE_USER.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.deleteUser(userName);
 			case DROP_ROLE:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.CREATE_ROLE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.deleteRole(roleName);
 			case GRANT_ROLE:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.GRANT_ROLE_PRIVILEGE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.grantPrivilegeToRole(roleName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case GRANT_USER:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.GRANT_USER_PRIVILEGE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.grantPrivilegeToUser(userName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
-			case GRANT_ROLE_TO_USER:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.GRANT_USER_ROLE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
+			case GRANT_ROLE_TO_USER: ;
 				return authorizer.grantRoleToUser(roleName, userName);
 			case REVOKE_USER:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.REVOKE_USER_PRIVILEGE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.revokePrivilegeFromUser(userName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case REVOKE_ROLE:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.REVOKE_ROLE_PRIVILEGE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				for (int i : permissions) {
 					if (!authorizer.revokePrivilegeFromRole(roleName, nodeName.getFullPath(), i))
 						flag = false;
 				}
 				return flag;
 			case REVOKE_ROLE_FROM_USER:
-				if(!authorizer.checkUserPrivileges(proposer, null, PrivilegeType.REVOKE_USER_ROLE.ordinal()))
-					throw new ProcessorException("No privilege to " + authorType);
 				return authorizer.revokeRoleFromUser(roleName, userName);
 			default:
 				throw new ProcessorException("Unrecognized operator " + authorType);
