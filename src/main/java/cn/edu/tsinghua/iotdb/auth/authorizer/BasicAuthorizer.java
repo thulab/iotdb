@@ -67,6 +67,8 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     public boolean grantPrivilegeToUser(String username, String path, int privilegeId) throws AuthException {
         if(TsFileDBConstant.ADMIN_NAME.equals(username))
             throw new AuthException("Invalid operation, administrator already has all privileges");
+        if(!PrivilegeType.isPathRelevant(privilegeId))
+            path = TsFileDBConstant.PATH_ROOT;
         return userManager.grantPrivilegeToUser(username, path, privilegeId);
     }
 
@@ -74,6 +76,8 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     public boolean revokePrivilegeFromUser(String username, String path, int privilegeId) throws AuthException {
         if(TsFileDBConstant.ADMIN_NAME.equals(username))
             throw new AuthException("Invalid operation, administrator must have all privileges");
+        if(!PrivilegeType.isPathRelevant(privilegeId))
+            path = TsFileDBConstant.PATH_ROOT;
         return userManager.revokePrivilegeFromUser(username, path, privilegeId);
     }
 
@@ -103,11 +107,15 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
 
     @Override
     public boolean grantPrivilegeToRole(String roleName, String path, int privilegeId) throws AuthException {
+        if(!PrivilegeType.isPathRelevant(privilegeId))
+            path = TsFileDBConstant.PATH_ROOT;
         return roleManager.grantPrivilegeToRole(roleName, path, privilegeId);
     }
 
     @Override
     public boolean revokePrivilegeFromRole(String roleName, String path, int privilegeId) throws AuthException {
+        if(!PrivilegeType.isPathRelevant(privilegeId))
+            path = TsFileDBConstant.PATH_ROOT;
         return roleManager.revokePrivilegeFromRole(roleName, path, privilegeId);
     }
 

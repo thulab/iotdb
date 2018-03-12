@@ -30,7 +30,7 @@ public class User {
 
     public boolean hasPrivilege(String path, int privilegeId) {
         for(PathPrivilege pathPrivilege : privilegeList) {
-            if(pathPrivilege.path.equals(path) && pathPrivilege.privileges.contains(privilegeId))
+            if((pathPrivilege.path == path || pathPrivilege.path.equals(path)) && pathPrivilege.privileges.contains(privilegeId))
                 return true;
         }
         return false;

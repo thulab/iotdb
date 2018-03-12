@@ -28,10 +28,14 @@ public class AuthorityChecker {
             // a user can modify his own password
             return true;
         }
-        for (Path path : paths) {
-            if (!checkOnePath(username, path, permission)) {
-                return false;
+        if(paths.size() > 0) {
+            for (Path path : paths) {
+                if (!checkOnePath(username, path, permission)) {
+                    return false;
+                }
             }
+        } else {
+           return checkOnePath(username, null, permission);
         }
         return true;
     }
@@ -39,7 +43,8 @@ public class AuthorityChecker {
     private static boolean checkOnePath(String username, Path path, int permission) {
         IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
         try {
-            if (authorizer.checkUserPrivileges(username, path.getFullPath(), permission)) {
+            String fullPath = path == null ? TsFileDBConstant.PATH_ROOT : path.getFullPath();
+            if (authorizer.checkUserPrivileges(username, fullPath, permission)) {
                 return true;
             }
         } catch (AuthException e) {
@@ -48,25 +53,56 @@ public class AuthorityChecker {
         return false;
     }
 
-    public static int translateToPermissionId(Operator.OperatorType type) {
+    private static int translateToPermissionId(Operator.OperatorType type) {
         switch (type) {
-            case METADATA:
-                return PrivilegeType.CREATE.ordinal();
+            case GRANT_ROLE_PRIVILEGE:
+                return PrivilegeType.GRANT_ROLE_PRIVILEGE.ordinal();
+            case CREATE_ROLE:
+                return PrivilegeType.CREATE_ROLE.ordinal();
+            case CREATE_USER:
+                return PrivilegeType.CREATE_USER.ordinal();
+            case MODIFY_PASSWORD:
+                return PrivilegeType.MODIFY_PASSWORD.ordinal();
+            case GRANT_USER_PRIVILEGE:
+                return PrivilegeType.GRANT_USER_PRIVILEGE.ordinal();
+            case REVOKE_ROLE_PRIVILEGE:
+                return PrivilegeType.REVOKE_ROLE_PRIVILEGE.ordinal();
+            case REVOKE_USER_PRIVILEGE:
+                return PrivilegeType.REVOKE_USER_PRIVILEGE.ordinal();
+            case GRANT_USER_ROLE:
+                return PrivilegeType.GRANT_USER_ROLE.ordinal();
+            case DELETE_USER:
+                return PrivilegeType.DELETE_USER.ordinal();
+            case DELETE_ROLE:
+                return PrivilegeType.DELETE_ROLE.ordinal();
+            case REVOKE_USER_ROLE:
+                return PrivilegeType.REVOKE_USER_ROLE.ordinal();
+            case CREATE_TIMESERIES:
+                return PrivilegeType.CREATE_TIMESERIES.ordinal();
+            case DELETE_TIMESERIES:
+                return PrivilegeType.DELETE_TIMESERIES.ordinal();
             case QUERY:
             case SELECT:
             case FILTER:
             case GROUPBY:
             case SEQTABLESCAN:
             case TABLESCAN:
-                return PrivilegeType.READ.ordinal();
+            case INDEXQUERY:
+            case MERGEQUERY:
+            case AGGREGATION:
+                return PrivilegeType.READ_TIMESERIES.ordinal();
             case DELETE:
-                return PrivilegeType.DELETE.ordinal();
+                return PrivilegeType.DELETE_TIMESERIES.ordinal();
             case INSERT:
             case LOADDATA:
-                return PrivilegeType.INSERT.ordinal();
+            case INDEX:
+                return PrivilegeType.INSERT_TIMESERIES.ordinal();
             case UPDATE:
-                return PrivilegeType.UPDATE.ordinal();
+                return PrivilegeType.UPDATE_TIMESERIES.ordinal();
+            case LIST_ROLE:
+            case LIST_USER:
             case AUTHOR:
+            case METADATA:
             case BASIC_FUNC:
             case FILEREAD:
             case FROM:

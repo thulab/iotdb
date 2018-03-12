@@ -12,7 +12,7 @@ public class ValidateUtils {
     private static final int MIN_PASSWORD_LENGTH = 4;
     private static final int MIN_USERNAME_LENGTH = 4;
     private static final int MIN_ROLENAME_LENGTH = 4;
-    private static final String ROOT_PREFIX = "root";
+    private static final String ROOT_PREFIX = TsFileDBConstant.PATH_ROOT;
     private static final String ENCRYPT_ALGORITHM = "MD5";
     private static final String STRING_ENCODING = "utf-8";
 
@@ -39,28 +39,34 @@ public class ValidateUtils {
 
     public static void validatePath(String path) throws AuthException {
         if(!path.startsWith(ROOT_PREFIX))
-            throw new AuthException(String.format("Illegal path %s, path should start with \"%\"", path, ROOT_PREFIX));
+            throw new AuthException(String.format("Illegal path %s, path should start with \"%s\"", path, ROOT_PREFIX));
     }
 
     public static void validatePrivilegeOnPath(String path, int privilegeId) throws AuthException {
         validatePrivilege(privilegeId);
         PrivilegeType type = PrivilegeType.values()[privilegeId];
-        if(path != null) {
+        if(!path.equals(TsFileDBConstant.PATH_ROOT)) {
             validatePath(path);
             switch (type) {
-                case READ:
-                case CREATE:
-                case DELETE:
-                case INSERT:
-                case UPDATE:
+                case READ_TIMESERIES:
+                case CREATE_TIMESERIES:
+                case DELETE_TIMESERIES:
+                case INSERT_TIMESERIES:
+                case UPDATE_TIMESERIES:
                     return;
                 default:
                     throw new AuthException(String.format("Illegal privilege %s on path %s", type.toString(), path));
             }
         } else {
             switch (type) {
+                case READ_TIMESERIES:
+                case CREATE_TIMESERIES:
+                case DELETE_TIMESERIES:
+                case INSERT_TIMESERIES:
+                case UPDATE_TIMESERIES:
+                    validatePath(path);
                 default:
-                    throw new AuthException(String.format("Privilege %s requires a path", type.toString()));
+                    return;
             }
         }
     }

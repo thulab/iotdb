@@ -40,7 +40,7 @@ public interface IAuthorizer {
      * Grant a privilege on a path to a user.
      *
      * @param username The username of the user to which the privilege should be added.
-     * @param path  The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be null.
+     * @param path  The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be "root".
      * @param privilegeId An integer that represents a privilege.
      * @return True if the permission is successfully added, false if the permission already exists.
      * @throws AuthException If the user does not exist or the privilege or the path is illegal.
@@ -51,7 +51,7 @@ public interface IAuthorizer {
      * Revoke a privilege on path from a user.
      *
      * @param username The username of the user from which the privilege should be removed.
-     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be null.
+     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be "root".
      * @param privilegeId An integer that represents a privilege.
      * @return True if the permission is successfully revoked, false if the permission does not exists.
      * @throws AuthException If the user does not exist or the privilege or the path is illegal.
@@ -80,7 +80,7 @@ public interface IAuthorizer {
      * Add a privilege on a path to a role.
      *
      * @param roleName The name of the role to which the privilege is added.
-     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be null.
+     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be "root".
      * @param privilegeId An integer that represents a privilege.
      * @return True if the privilege is successfully granted, false if the privilege already exists.
      * @throws AuthException If the role does not exist or the privilege or the path is illegal.
@@ -91,7 +91,7 @@ public interface IAuthorizer {
      * Remove a privilege on a path from a role.
      *
      * @param roleName The name of the role from which the privilege is removed.
-     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be null.
+     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be "root".
      * @param privilegeId An integer that represents a privilege.
      * @return True if the privilege is successfully revoked, false if the privilege does not exists.
      * @throws AuthException If the role does not exist or the privilege or the path is illegal.
@@ -122,7 +122,7 @@ public interface IAuthorizer {
      * Get the all the privileges of a user on a path.
      *
      * @param username The user whose privileges are to be queried.
-     * @param path The path on which the privileges take effect. If the privilege is a path-free privilege, this should be null.
+     * @param path The path on which the privileges take effect. If the privilege is a path-free privilege, this should be "root".
      * @return A set of integers each present a privilege.
      * @throws AuthException
      */
@@ -142,7 +142,7 @@ public interface IAuthorizer {
      * Check if the user have the privilege on the path.
      *
      * @param username The name of the user whose privileges are checked.
-     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be null.
+     * @param path The path on which the privilege takes effect. If the privilege is a path-free privilege, this should be "root".
      * @param privilegeId An integer that represents a privilege.
      * @return  True if the user has such privilege, false if the user does not have such privilege.
      * @throws AuthException If the path or the privilege is illegal.

@@ -77,7 +77,17 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			int result = multiInsert(insert.getDeltaObject(), insert.getTime(), insert.getMeasurements(),
 					insert.getValues());
 			return result > 0;
-		case AUTHOR:
+		case CREATE_ROLE:
+		case DELETE_ROLE:
+		case CREATE_USER:
+		case REVOKE_USER_ROLE:
+		case REVOKE_ROLE_PRIVILEGE:
+		case REVOKE_USER_PRIVILEGE:
+		case GRANT_ROLE_PRIVILEGE:
+		case GRANT_USER_PRIVILEGE:
+		case GRANT_USER_ROLE:
+		case MODIFY_PASSWORD:
+		case DELETE_USER:
 			AuthorPlan author = (AuthorPlan) plan;
 			return operateAuthor(author);
 		case LOADDATA:
@@ -85,6 +95,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 			LoadDataUtils load = new LoadDataUtils();
 			load.loadLocalDataMultiPass(loadData.getInputFilePath(), loadData.getMeasureType(), MManager.getInstance());
 			return true;
+		case DELETE_TIMESERIES:
+		case CREATE_TIMESERIES:
 		case METADATA:
 			MetadataPlan metadata = (MetadataPlan) plan;
 			return operateMetadata(metadata);

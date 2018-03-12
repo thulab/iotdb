@@ -469,12 +469,9 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 	private TSExecuteStatementResp ExecuteUpdateStatement(PhysicalPlan plan) throws TException {
 		List<Path> paths = plan.getPaths();
-		String targetUser = null;
-		if (plan instanceof AuthorPlan)
-			targetUser = ((AuthorPlan) plan).getUserName();
 
 		if (!checkAuthorization(paths, plan)) {
-			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
+			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation " + plan.getOperatorType());
 		}
 		// TODO
 		// In current version, we only return OK/ERROR
@@ -520,7 +517,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		List<Path> paths = physicalPlan.getPaths();
 
 		if (!checkAuthorization(paths, physicalPlan)) {
-			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation");
+			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation " + physicalPlan.getOperatorType());
 		}
 
 		// TODO

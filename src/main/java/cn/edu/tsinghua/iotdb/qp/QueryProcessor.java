@@ -102,6 +102,8 @@ public class QueryProcessor {
         switch (operator.getType()) {
             case AUTHOR:
             case METADATA:
+            case CREATE_TIMESERIES:
+            case DELETE_TIMESERIES:
             case PROPERTY:
             case LOADDATA:
             case INSERT:
