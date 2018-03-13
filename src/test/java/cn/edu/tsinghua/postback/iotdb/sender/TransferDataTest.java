@@ -15,11 +15,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -204,9 +208,9 @@ public class TransferDataTest {
 
 	@Test
 	public void testFileSnapshot() throws Exception {
- 		Set<String> sendingFileList = new HashSet<>();
+ 		Map<String,Set<String>> sendingFileList = new HashMap<>();
  		Set<String> lastlocalList = new HashSet<>();
- 		Set<String> fileList = new HashSet<>();
+ 		Map<String,Set<String>> fileList = new HashMap<>();
 		Random r = new Random(0);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
@@ -226,19 +230,24 @@ public class TransferDataTest {
 		}
 		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
 		lastlocalList = manager.getLastLocalFiles();
+ 		manager.setNowLocalFiles(new HashMap<>());
 		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		fileList = manager.getNowLocalFiles();
 		manager.getSendingFileList();
  		sendingFileList = manager.getSendingFiles();
- 		transferData.makeFileSnapshot(sendingFileList, SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
+ 		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			transferData.makeFileSnapshot(entry.getValue(), SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
+		}
  		//compare all md5 of source files and snapshot files
- 		for(String filePath:sendingFileList)
- 		{
- 			String md5OfSource = getMD5(new File(filePath));
- 			String relativeFilePath = filePath.substring(POST_BACK_DIRECTORY_TEST.length());
- 			String newPath = SNAPSHOT_PATH_TEST + File.separator + relativeFilePath;
- 			String md5OfSnapshot = getMD5(new File(newPath));
- 			assert(md5OfSource.equals(md5OfSnapshot));
+ 		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+	 		for(String filePath:entry.getValue())
+	 		{
+	 			String md5OfSource = getMD5(new File(filePath));
+	 			String relativeFilePath = filePath.substring(POST_BACK_DIRECTORY_TEST.length());
+	 			String newPath = SNAPSHOT_PATH_TEST + File.separator + relativeFilePath;
+	 			String md5OfSnapshot = getMD5(new File(newPath));
+	 			assert(md5OfSource.equals(md5OfSnapshot));
+	 		}
  		}
 	}
 	
@@ -258,9 +267,9 @@ public class TransferDataTest {
 	
 	@Test
 	public void testAfterSending() throws Exception {
-		Set<String> sendingFileList = new HashSet<>();
+		Map<String,Set<String>> sendingFileList = new HashMap<>();
  		Set<String> lastlocalList = new HashSet<>();
- 		Set<String> fileList = new HashSet<>();
+ 		Map<String,Set<String>> fileList = new HashMap<>();
  		
 		transferData.connection(SERVER_IP_TEST, SERVER_PORT_TEST);
 		transferData.transferUUID(UUID_PATH_TEST);
@@ -284,13 +293,16 @@ public class TransferDataTest {
 		}
 		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
 		lastlocalList = manager.getLastLocalFiles();
+ 		manager.setNowLocalFiles(new HashMap<>());
 		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		fileList = manager.getNowLocalFiles();
 		manager.getSendingFileList();
  		sendingFileList = manager.getSendingFiles();
- 		transferData.makeFileSnapshot(sendingFileList, SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
- 		transferData.startSending(sendingFileList, SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
- 		transferData.afterSending(SNAPSHOT_PATH_TEST);
+ 		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			transferData.makeFileSnapshot(entry.getValue(), SNAPSHOT_PATH_TEST, POST_BACK_DIRECTORY_TEST);
+		}
+ 		Thread.sleep(1000);
+ 		transferData.deleteSnapshot(new File(SNAPSHOT_PATH_TEST));
  		assert(new File(SNAPSHOT_PATH_TEST).list().length==0);
 	}
 

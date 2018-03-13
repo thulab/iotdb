@@ -2,9 +2,12 @@ package cn.edu.tsinghua.postback.iotdb.sender;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +24,7 @@ public class FileManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		Thread.sleep(1000);
 		File file =new File(LAST_FILE_INFO_TEST);
 		if (!file.getParentFile().exists()) {
 			file.getParentFile().mkdirs();
@@ -36,6 +40,7 @@ public class FileManagerTest {
 
 	@After
 	public void tearDown() throws Exception {
+		Thread.sleep(1000);
 		delete(new File(POST_BACK_DIRECTORY_TEST));
 		new File(POST_BACK_DIRECTORY_TEST).delete();
 	}
@@ -55,16 +60,18 @@ public class FileManagerTest {
 
 	@Test //It tests two classes : backupNowLocalFileInfo and getLastLocalFileList
 	public void testBackupNowLocalFileInfo() throws IOException {
-		Set<String> allFileList = new HashSet<>();
+		Map<String,Set<String>> allFileList = new HashMap<>();
 		
 		// TODO create some files
 		Random r = new Random(0);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
+				if(!allFileList.containsKey(String.valueOf(i)))
+					allFileList.put(String.valueOf(i), new HashSet<>());
 				String rand = String.valueOf(r.nextInt(10000));
 				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator + rand;
 				File file = new File(fileName);
-				allFileList.add(file.getAbsolutePath());
+				allFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
@@ -85,16 +92,20 @@ public class FileManagerTest {
 		manager.backupNowLocalFileInfo(LAST_FILE_INFO_TEST);
 		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
 		lastFileList = manager.getLastLocalFiles();
-		assert (lastFileList.size() == allFileList.size() && lastFileList.containsAll(allFileList));
+		for(Entry<String, Set<String>> entry:allFileList.entrySet()) {
+			assert(lastFileList.containsAll(entry.getValue()));
+		}
 		
 		//add some files and delete some files
 		r = new Random(1);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
+				if(!allFileList.containsKey(String.valueOf(i)))
+					allFileList.put(String.valueOf(i), new HashSet<>());
 				String rand = String.valueOf(r.nextInt(10000));
 				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator +rand;
 				File file = new File(fileName);
-				allFileList.add(file.getAbsolutePath());
+				allFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
@@ -104,42 +115,51 @@ public class FileManagerTest {
 			}
 		}
 		int count = 0;
-		Set<String> deleteFile = new HashSet<>();
-		for(String path:allFileList){
-			count++;
-			if(count % 3 == 0){
-				deleteFile.add(path);
+		Map<String, Set<String>> deleteFile = new HashMap<>();
+		for(Entry<String, Set<String>> entry:allFileList.entrySet()) {
+			deleteFile.put(entry.getKey(), new HashSet<>());
+			for(String path:entry.getValue()) {
+				count++;
+				if(count % 3 == 0){
+					deleteFile.get(entry.getKey()).add(path);
+				}
 			}
 		}
-		for(String path:deleteFile){
-			new File(path).delete();
-			allFileList.remove(path);				
+		for(Entry<String, Set<String>> entry:deleteFile.entrySet()) {
+			for(String path : entry.getValue()){
+				new File(path).delete();
+				allFileList.get(entry.getKey()).remove(path);				
+			}
 		}
  		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		manager.backupNowLocalFileInfo(LAST_FILE_INFO_TEST);
 		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
 		lastFileList = manager.getLastLocalFiles();
-//		assert (lastFileList.size() == allFileList.size()) && lastFileList.containsAll(allFileList);
+		for(Entry<String, Set<String>> entry:allFileList.entrySet()) {
+			assert(lastFileList.containsAll(entry.getValue()));
+		}
 	}
-
+	
 	@Test
 	public void testGetNowLocalFileList() throws IOException {
-		Set<String> allFileList = new HashSet<>();
- 		Set<String> fileList = new HashSet<>();
+		Map<String, Set<String>> allFileList = new HashMap<>();
+ 		Map<String, Set<String>> fileList = new HashMap<>();
  		
  		//nowLocalList is empty
  		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		fileList = manager.getNowLocalFiles();
-		assert (fileList.isEmpty());
+		assert (isEmpty(fileList));
 		
 		//add some files
 		Random r = new Random(0);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
+				if(!allFileList.containsKey(String.valueOf(i)))
+					allFileList.put(String.valueOf(i), new HashSet<>());
 				String rand = String.valueOf(r.nextInt(10000));
 				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator + rand;
 				File file = new File(fileName);
-				allFileList.add(file.getAbsolutePath());
+				allFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
@@ -150,28 +170,39 @@ public class FileManagerTest {
 		}
 		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		fileList = manager.getNowLocalFiles();
-		assert (allFileList.size() == fileList.size() && fileList.containsAll(allFileList));
+		assert (allFileList.size() == fileList.size());
+		for(Entry<String, Set<String>> entry:fileList.entrySet()) {
+			assert(allFileList.containsKey(entry.getKey()));
+			assert(allFileList.get(entry.getKey()).containsAll(entry.getValue()));
+		}
 		
 		//delete some files and add some files 
 		int count = 0;
-		Set<String> deleteFile = new HashSet<>();
-		for(String path:allFileList){
-			count++;
-			if(count % 3 == 0){
-				deleteFile.add(path);
+		Map<String, Set<String>> deleteFile = new HashMap<>();
+		for(Entry<String, Set<String>> entry:allFileList.entrySet()) {
+			deleteFile.put(entry.getKey(), new HashSet<>());
+			for(String path:entry.getValue()) {
+				count++;
+				if(count % 3 == 0){
+					deleteFile.get(entry.getKey()).add(path);
+				}
 			}
 		}
-		for(String path:deleteFile){
-			new File(path).delete();
-			allFileList.remove(path);				
+		for(Entry<String, Set<String>> entry:deleteFile.entrySet()) {
+			for(String path : entry.getValue()){
+				new File(path).delete();
+				allFileList.get(entry.getKey()).remove(path);				
+			}
 		}
 		r = new Random(1);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
+				if(!allFileList.containsKey(String.valueOf(i)))
+					allFileList.put(String.valueOf(i), new HashSet<>());
 				String rand = String.valueOf(r.nextInt(10000));
 				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator + rand;
 				File file = new File(fileName);
-				allFileList.add(file.getAbsolutePath());
+				allFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
@@ -182,24 +213,32 @@ public class FileManagerTest {
 		}
 		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		fileList = manager.getNowLocalFiles();
-		assert (allFileList.size() == fileList.size()) && fileList.containsAll(allFileList);
+		assert (allFileList.size() == fileList.size());
+		for(Entry<String, Set<String>> entry:fileList.entrySet()) {
+			assert(allFileList.containsKey(entry.getKey()));
+			assert(allFileList.get(entry.getKey()).containsAll(entry.getValue()));
+		}
 	}
 
 	@Test
 	public void testGetSendingFileList() throws IOException {
-		Set<String> allFileList = new HashSet<>();
- 		Set<String> newFileList = new HashSet<>();
- 		Set<String> sendingFileList = new HashSet<>();
+		Map<String,Set<String>> allFileList = new HashMap<>();
+ 		Map<String,Set<String>> newFileList = new HashMap<>();
+ 		Map<String,Set<String>> sendingFileList = new HashMap<>();
  		Set<String> lastlocalList = new HashSet<>();
  		
  		//nowSendingList is empty
+ 		
+ 		manager.setNowLocalFiles(new HashMap<>());
  		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		allFileList = manager.getNowLocalFiles();
  		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
  		lastlocalList = manager.getLastLocalFiles();
  		manager.getSendingFileList();
  		sendingFileList = manager.getSendingFiles();
-		assert (sendingFileList.isEmpty());
+ 		assert(lastlocalList.size()==0);
+		assert (isEmpty(allFileList));
+		assert (isEmpty(sendingFileList));
 		
 		//add some files
 		newFileList.clear();
@@ -207,11 +246,15 @@ public class FileManagerTest {
 		Random r = new Random(0);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
+				if(!allFileList.containsKey(String.valueOf(i)))
+					allFileList.put(String.valueOf(i), new HashSet<>());
+				if(!newFileList.containsKey(String.valueOf(i)))
+					newFileList.put(String.valueOf(i), new HashSet<>());
 				String rand = String.valueOf(r.nextInt(10000));
 				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator + rand;
 				File file = new File(fileName);
-				allFileList.add(file.getAbsolutePath());
-				newFileList.add(file.getAbsolutePath());
+				allFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
+				newFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
@@ -222,35 +265,48 @@ public class FileManagerTest {
 		}
 		manager.getNowLocalFileList(SENDER_FILE_PATH_TEST);
 		allFileList = manager.getNowLocalFiles();
+		manager.backupNowLocalFileInfo(LAST_FILE_INFO_TEST);
  		manager.getLastLocalFileList(LAST_FILE_INFO_TEST);
  		lastlocalList = manager.getLastLocalFiles();
  		manager.getSendingFileList();
  		sendingFileList = manager.getSendingFiles();
-		assert (sendingFileList.size() == newFileList.size()) && sendingFileList.containsAll(newFileList);
+ 		assert (sendingFileList.size() == newFileList.size());
+		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			assert(newFileList.containsKey(entry.getKey()));
+			assert(newFileList.get(entry.getKey()).containsAll(entry.getValue()));
+		}
 		
 		//delete some files and add some files 
 		int count = 0;
-		Set<String> deleteFile = new HashSet<>();
-		for(String path:allFileList){
-			count++;
-			if(count % 3 == 0){
-				deleteFile.add(path);
+		Map<String, Set<String>> deleteFile = new HashMap<>();
+		for(Entry<String, Set<String>> entry:allFileList.entrySet()) {
+			deleteFile.put(entry.getKey(), new HashSet<>());
+			for(String path:entry.getValue()) {
+				count++;
+				if(count % 3 == 0){
+					deleteFile.get(entry.getKey()).add(path);
+				}
 			}
 		}
-		for(String path:deleteFile){
-			new File(path).delete();
-			allFileList.remove(path);
+		for(Entry<String, Set<String>> entry:deleteFile.entrySet()) {
+			for(String path : entry.getValue()){
+				new File(path).delete();
+				allFileList.get(entry.getKey()).remove(path);				
+			}
 		}
 		newFileList.clear();
-		manager.backupNowLocalFileInfo(LAST_FILE_INFO_TEST);
 		r = new Random(1);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 5; j++) {
+				if(!allFileList.containsKey(String.valueOf(i)))
+					allFileList.put(String.valueOf(i), new HashSet<>());
+				if(!newFileList.containsKey(String.valueOf(i)))
+					newFileList.put(String.valueOf(i), new HashSet<>());
 				String rand = String.valueOf(r.nextInt(10000));
 				String fileName = SENDER_FILE_PATH_TEST + File.separator + String.valueOf(i) + File.separator + rand;
 				File file = new File(fileName);
-				allFileList.add(file.getAbsolutePath());
-				newFileList.add(file.getAbsolutePath());
+				allFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
+				newFileList.get(String.valueOf(i)).add(file.getAbsolutePath());
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdirs();
 				}
@@ -265,6 +321,19 @@ public class FileManagerTest {
  		lastlocalList = manager.getLastLocalFiles();
  		manager.getSendingFileList();
  		sendingFileList = manager.getSendingFiles();
-		assert (sendingFileList.size() == newFileList.size()) && sendingFileList.containsAll(newFileList);
+ 		assert (sendingFileList.size() == newFileList.size());
+		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			assert(newFileList.containsKey(entry.getKey()));
+			assert(newFileList.get(entry.getKey()).containsAll(entry.getValue()));
+		}
+	}
+	
+
+	private boolean isEmpty(Map<String,Set<String>> sendingFileList) {
+		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			if(entry.getValue().size()!=0)
+				return false;
+		}
+		return true;
 	}
 }

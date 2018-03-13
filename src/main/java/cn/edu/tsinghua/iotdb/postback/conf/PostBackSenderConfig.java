@@ -19,4 +19,5 @@ public class PostBackSenderConfig {
 	public String SERVER_IP = "192.168.130.16";
 	public int SERVER_PORT = 5555;
 	public int UPLOAD_CYCLE_IN_SECONDS = 10;
+	public boolean IS_CLEAR_ENABLE = false;
 }

@@ -84,18 +84,18 @@ public class ServiceImp implements Service.Iface {
 	/**
 	 * Init threadLocal variable
 	 */
-	public void init() {
+	public void init(String storageGroup) {
+		LOGGER.info("IoTDB post back receicer: postback starts to receive data of storage group {}.",storageGroup);
 		fileNum.set(0); 
 		fileNodeMap.set(new HashMap<>());
 		fileNodeStartTime.set(new HashMap<>());
 		fileNodeEndTime.set(new HashMap<>());
 		linkFilePath.set(new HashMap<>());
-		schemaFromSenderPath.set(dataPath + uuid.get() + File.separator + "mlog.txt");
 	}
 	
 	public String getUUID(String uuid) throws TException {
 		this.uuid.set(uuid);
-		init();
+		schemaFromSenderPath.set(dataPath + this.uuid.get() + File.separator + "mlog.txt");
 		if(new File(dataPath + this.uuid.get()).exists() && new File(dataPath + this.uuid.get()).list().length!=0) {
 			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
 			deleteFile(new File(dataPath + this.uuid.get()));
@@ -237,19 +237,18 @@ public class ServiceImp implements Service.Iface {
 			}
 		}
 	}
-
-	public boolean afterReceiving() throws TException {
+	
+	public boolean merge() throws TException {
 		getFileNodeInfo();
 		mergeData();
 		deleteFile(new File(dataPath + uuid.get()));
-		remove();
 		return true;
 	}
 	
 	/**
 	 * Release threadLocal variable resources
 	 */
-	public void remove() {
+	public void afterReceiving() {
 		uuid.remove();
 		fileNum.remove();
 		fileNodeMap.remove();
@@ -257,6 +256,7 @@ public class ServiceImp implements Service.Iface {
 		fileNodeEndTime.remove();
 		linkFilePath.remove();
 		schemaFromSenderPath.remove();
+		LOGGER.info("IoTDB post back receicer: the postBack has finished!");
 	}
 
 	private void deleteFile(File file) {
@@ -335,8 +335,6 @@ public class ServiceImp implements Service.Iface {
 				for (File fileTF : filesSG) {
 					Map<String, Long> startTimeMap = new HashMap<>();
 					Map<String, Long> endTimeMap = new HashMap<>();
-					endTimeMap.clear();
-					startTimeMap.clear();
 					TsRandomAccessLocalFileReader input = null;
 					try {
 						input = new TsRandomAccessLocalFileReader(fileTF.getAbsolutePath());

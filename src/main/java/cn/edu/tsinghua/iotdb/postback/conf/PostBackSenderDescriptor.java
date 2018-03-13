@@ -79,6 +79,8 @@ public class PostBackSenderDescriptor {
 
 			conf.IOTDB_DATA_DIRECTORY = properties.getProperty("iotdb_data_directory", conf.IOTDB_DATA_DIRECTORY);
 			
+			conf.IS_CLEAR_ENABLE = Boolean.parseBoolean(properties.getProperty("is_clear_enable", conf.IS_CLEAR_ENABLE + ""));
+			
 			if(!conf.IOTDB_DATA_DIRECTORY.endsWith(File.separator))
 				conf.IOTDB_DATA_DIRECTORY = conf.IOTDB_DATA_DIRECTORY + File.separator;
 			
