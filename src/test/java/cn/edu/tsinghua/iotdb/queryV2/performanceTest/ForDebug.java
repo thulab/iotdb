@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2.debug;
+package cn.edu.tsinghua.iotdb.queryV2.performanceTest;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
