@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
@@ -23,6 +24,9 @@ public class QueryOperator extends SFWOperator {
     private long origin;
     private List<Pair<Long, Long>> intervals;
     private boolean isGroupBy = false;
+
+    private AbstractUDSF udsf;
+    private boolean isSegmentBy = false;
 
     private Map<TSDataType, IFill> fillTypes;
     private boolean isFill = false;
@@ -75,4 +79,19 @@ public class QueryOperator extends SFWOperator {
         return intervals;
     }
 
+    public AbstractUDSF getUdsf() {
+        return udsf;
+    }
+
+    public void setUdsf(AbstractUDSF udsf) {
+        this.udsf = udsf;
+    }
+
+    public boolean isSegmentBy() {
+        return isSegmentBy;
+    }
+
+    public void setSegmentBy(boolean segmentBy) {
+        isSegmentBy = segmentBy;
+    }
 }

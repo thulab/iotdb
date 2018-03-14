@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -65,6 +66,12 @@ public class SingleFileQPExecutor extends QueryProcessExecutor {
 	public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
 								long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
 			throws ProcessorException, IOException, PathErrorException {
+		throw new ProcessorException("Do not support");
+	}
+
+	@Override
+	public QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+								  AbstractUDSF udsf, int fetchSize) throws ProcessorException, IOException, PathErrorException {
 		throw new ProcessorException("Do not support");
 	}
 

@@ -108,8 +108,12 @@ public abstract class AbstractClient {
 		ResultSetMetaData resultSetMetaData = res.getMetaData();
 		int colCount = resultSetMetaData.getColumnCount();
 		boolean printTimestamp = true;
+		String colType = "";
 		if (res.getMetaData().getColumnTypeName(0) != null) {
-			printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
+			colType = res.getMetaData().getColumnTypeName(0).toUpperCase();
+			if (colType.equals(NEED_NOT_TO_PRINT_TIMESTAMP) || colType.equals("SEGMENTBY")) {
+				printTimestamp = false;
+			}
 		}
 		boolean printHeader = false;
 
@@ -146,7 +150,11 @@ public abstract class AbstractClient {
 							System.out.printf(formatValue, "null");
 						}
 					} else {
-						System.out.printf(formatValue, String.valueOf(res.getString(i)));
+						if (colType.equals("SEGMENTBY") && (i == 3 || i == 4)) {
+							System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+						} else {
+							System.out.printf(formatValue, String.valueOf(res.getString(i)));
+						}
 					}
 				}
 			}

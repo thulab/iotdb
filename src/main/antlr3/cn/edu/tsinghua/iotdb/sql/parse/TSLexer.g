@@ -28,6 +28,7 @@ KW_NOT : 'NOT' | '!';
 
 KW_ORDER : 'ORDER';
 KW_GROUP : 'GROUP';
+KW_SEGMENT : 'SEGMENT';
 KW_FILL : 'FILL';
 KW_BY : 'BY';
 

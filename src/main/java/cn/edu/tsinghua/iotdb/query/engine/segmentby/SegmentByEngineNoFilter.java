@@ -13,6 +13,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.SegmentQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.*;
 import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.aggregationKey;
 
 /**
- * Group by aggregation implementation without <code>FilterStructure</code>.
+ * Segment by aggregation implementation without <code>FilterStructure</code>.
  */
 public class SegmentByEngineNoFilter {
 
@@ -36,14 +37,14 @@ public class SegmentByEngineNoFilter {
   private int queryFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
   /**
-   * all the group by Path ans its AggregateFunction
+   * all the segment by Path ans its AggregateFunction
    **/
   private List<Pair<Path, AggregateFunction>> aggregations;
 
   private AbstractUDSF udsf;
 
   /**
-   * group by partition fetch size, when result size is reach to partitionSize, the current
+   * segment by partition fetch size, when result size is reach to partitionSize, the current
    * calculation will be terminated.
    * this variable could be set small to test
    */
@@ -59,7 +60,7 @@ public class SegmentByEngineNoFilter {
    **/
   private Set<Integer> duplicatedPaths = new HashSet<>();
 
-  private QueryDataSet groupByResult = new QueryDataSet();
+  private QueryDataSet segmentByResult = new SegmentQueryDataSet();
 
   private SingleSeriesFilterExpression queryTimeFilter;
 
@@ -71,8 +72,8 @@ public class SegmentByEngineNoFilter {
     this.queryPathResult = new HashMap<>();
     for (int i = 0; i < aggregations.size(); i++) {
       String aggregateKey = aggregationKey(aggregations.get(i).right, aggregations.get(i).left);
-      if (!groupByResult.mapRet.containsKey(aggregateKey)) {
-        groupByResult.mapRet.put(aggregateKey,
+      if (!segmentByResult.mapRet.containsKey(aggregateKey)) {
+        segmentByResult.mapRet.put(aggregateKey,
             new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
         queryPathResult.put(aggregateKey, null);
       } else {
@@ -84,10 +85,10 @@ public class SegmentByEngineNoFilter {
     this.partitionFetchSize = partitionFetchSize;
   }
 
-  public QueryDataSet groupBy()
+  public QueryDataSet segmentBy()
       throws IOException, ProcessorException, PathErrorException {
 
-    groupByResult.clear();
+    segmentByResult.clear();
     int segmentCount = 0;
 
     int aggregationOrdinal = 0;
@@ -109,6 +110,9 @@ public class SegmentByEngineNoFilter {
 
       if (data.timeLength == 0) {
         continue;
+      } else {
+        udsf.setLastTime(data.getTime(data.curIdx));
+        udsf.setLastValue(data.getAnObject(data.curIdx));
       }
 
       while (true) {
@@ -145,11 +149,10 @@ public class SegmentByEngineNoFilter {
       cnt++;
       Path path = pair.left;
       AggregateFunction aggregateFunction = pair.right;
-      groupByResult.mapRet
-          .put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
+      segmentByResult.mapRet.put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
     }
 
-    return groupByResult;
+    return segmentByResult;
   }
 
   private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res,

@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.physical.crud;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
@@ -35,6 +36,9 @@ public class MultiQueryPlan extends PhysicalPlan {
     private long unit;
     private long origin;
     private List<Pair<Long, Long>> intervals; // show intervals
+
+    //segment by
+    private AbstractUDSF udsf;
 
     //fill
     private long queryTime;
@@ -93,6 +97,14 @@ public class MultiQueryPlan extends PhysicalPlan {
         this.intervals = intervals;
     }
 
+    public AbstractUDSF getUdsf() {
+        return udsf;
+    }
+
+    public void setUdsf(AbstractUDSF udsf) {
+        this.udsf = udsf;
+    }
+
     public MultiQueryPlan(ArrayList<SingleQueryPlan> selectPlans, List<String> aggregations) {
         super(true, Operator.OperatorType.MERGEQUERY);
         if (selectPlans == null || selectPlans.isEmpty()) {
@@ -132,6 +144,6 @@ public class MultiQueryPlan extends PhysicalPlan {
     }
 
     public enum QueryType {
-        QUERY, AGGREGATION, GROUPBY, INDEXQUERY, FILL
+        QUERY, AGGREGATION, GROUPBY, INDEXQUERY, FILL, SEGMENTBY
     }
 }

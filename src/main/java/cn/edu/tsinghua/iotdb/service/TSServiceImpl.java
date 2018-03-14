@@ -389,6 +389,12 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 						columns.add(p.getFullPath());
 					}
 					break;
+				case SEGMENTBY:
+					columns.add("Aggregation");
+					columns.add("Start Time");
+					columns.add("End Time");
+					columns.add("Result");
+					break;
 				case GROUPBY:
 				case AGGREGATION:
 					List<String> aggregations = plan.getAggregations();

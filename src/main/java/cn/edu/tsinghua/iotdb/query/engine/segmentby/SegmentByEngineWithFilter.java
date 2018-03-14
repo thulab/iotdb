@@ -9,16 +9,13 @@ import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
 import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
-import cn.edu.tsinghua.iotdb.udf.UDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
-import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.SegmentQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +26,7 @@ import java.util.*;
 import static cn.edu.tsinghua.iotdb.query.engine.EngineUtils.aggregationKey;
 
 /**
- * Group by aggregation implementation with <code>FilterStructure</code>.
+ * Segment by aggregation implementation with <code>FilterStructure</code>.
  */
 public class SegmentByEngineWithFilter {
 
@@ -48,19 +45,19 @@ public class SegmentByEngineWithFilter {
   private int crossQueryFetchSize = TsfileDBDescriptor.getInstance().getConfig().fetchSize;
 
   /**
-   * all the group by Path ans its AggregateFunction
+   * all the segment by Path ans its AggregateFunction
    **/
   private List<Pair<Path, AggregateFunction>> aggregations;
 
   private AbstractUDSF udsf;
 
   /**
-   * filter in group by where clause
+   * filter in segment by where clause
    **/
   private List<FilterStructure> filterStructures;
 
   /**
-   * group by partition fetch size, when result size is reach to partitionSize, the current
+   * segment by partition fetch size, when result size is reach to partitionSize, the current
    * calculation will be terminated
    */
   private int partitionFetchSize;
@@ -76,9 +73,9 @@ public class SegmentByEngineWithFilter {
   private Set<Integer> duplicatedPaths = new HashSet<>();
 
   /**
-   * group by result
+   * segment by result
    **/
-  private QueryDataSet groupByResult = new QueryDataSet();
+  private QueryDataSet segmentByResult = new SegmentQueryDataSet();
 
   // variables below are used to calculate the common timestamps of FilterStructures
 
@@ -126,8 +123,8 @@ public class SegmentByEngineWithFilter {
     this.queryPathResult = new HashMap<>();
     for (int i = 0; i < aggregations.size(); i++) {
       String aggregateKey = aggregationKey(aggregations.get(i).right, aggregations.get(i).left);
-      if (!groupByResult.mapRet.containsKey(aggregateKey)) {
-        groupByResult.mapRet.put(aggregateKey,
+      if (!segmentByResult.mapRet.containsKey(aggregateKey)) {
+        segmentByResult.mapRet.put(aggregateKey,
             new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
         queryPathResult.put(aggregateKey, null);
       } else {
@@ -165,7 +162,7 @@ public class SegmentByEngineWithFilter {
       }
     }
 
-    LOG.debug("construct GroupByEngineWithFilter successfully");
+    LOG.debug("construct SegmentByEngineWithFilter successfully");
   }
 
   /**
@@ -173,9 +170,9 @@ public class SegmentByEngineWithFilter {
    * @throws IOException
    * @throws ProcessorException
    */
-  public QueryDataSet groupBy() throws IOException, ProcessorException, PathErrorException {
+  public QueryDataSet segmentBy() throws IOException, ProcessorException, PathErrorException {
 
-    groupByResult.clear();
+    segmentByResult.clear();
     int segmentCount = 0;
 
     if (commonTimeQueue.isEmpty()) {
@@ -204,6 +201,9 @@ public class SegmentByEngineWithFilter {
 
       if (data.timeLength == 0) {
         continue;
+      } else {
+        udsf.setLastTime(data.getTime(data.curIdx));
+        udsf.setLastValue(data.getAnObject(data.curIdx));
       }
 
       while (true) {
@@ -242,11 +242,10 @@ public class SegmentByEngineWithFilter {
       cnt++;
       Path path = pair.left;
       AggregateFunction aggregateFunction = pair.right;
-      groupByResult.mapRet
-          .put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
+      segmentByResult.mapRet.put(aggregationKey(aggregateFunction, path), aggregateFunction.resultData);
     }
 
-    return groupByResult;
+    return segmentByResult;
   }
 
   private void calcAggregateTimestamps()

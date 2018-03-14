@@ -13,6 +13,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -59,6 +60,10 @@ public abstract class QueryProcessExecutor {
 				return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(),
 						mergeQuery.getAggregations(), getFilterStructure(selectPlans),
 						mergeQuery.getUnit(), mergeQuery.getOrigin(), mergeQuery.getIntervals(), this);
+			case SEGMENTBY:
+				return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(),
+						mergeQuery.getAggregations(), getFilterStructure(selectPlans),
+						mergeQuery.getUdsf(), this);
 			case FILL:
 				return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(), mergeQuery.getQueryTime(),
 						 mergeQuery.getFillType(), this);
@@ -99,7 +104,10 @@ public abstract class QueryProcessExecutor {
 										 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
+    public abstract QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+										   AbstractUDSF udsf, int fetchSize) throws ProcessorException, IOException, PathErrorException;
+
+    public abstract QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
 			throws ProcessorException, IOException, PathErrorException;
 
 	public abstract QueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
@@ -107,7 +115,7 @@ public abstract class QueryProcessExecutor {
 
 	/**
 	 * execute update command and return whether the operator is successful.
-	 * 
+	 *
 	 * @param path
 	 *            : update series path
 	 * @param startTime

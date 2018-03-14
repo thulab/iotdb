@@ -29,6 +29,8 @@ TOK_INSERT;
 TOK_QUERY;
 TOK_SELECT;
 TOK_GROUPBY;
+TOK_SEGMENTBY;
+TOK_UDSF;
 TOK_FILL;
 TOK_TYPE;
 TOK_LINEAR;
@@ -107,6 +109,7 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
 
         xlateMap.put("KW_BY", "BY");
         xlateMap.put("KW_GROUP", "GROUP");
+        xlateMap.put("KW_SEGMENT", "SEGMENT");
         xlateMap.put("KW_FILL", "FILL");
         xlateMap.put("KW_LINEAR", "LINEAR");
         xlateMap.put("KW_PREVIOUS", "PREVIOUS");
@@ -442,7 +445,7 @@ queryStatement
 
 specialClause
     :
-    groupbyClause | fillClause
+    groupbyClause | fillClause | segmentbyClause
     ;
 
 authorStatement
@@ -557,6 +560,11 @@ multiValue
 	-> ^(TOK_MULT_VALUE $time numberOrStringWidely*)
 	;
 
+multiArgs
+  :
+  LPAREN numberOrStringWidely (COMMA numberOrStringWidely)* RPAREN
+  -> ^(TOK_MULT_VALUE numberOrStringWidely*)
+  ;
 
 deleteStatement
    :
@@ -672,6 +680,12 @@ groupbyClause
     :
     KW_GROUP KW_BY LPAREN value=Integer unit=Identifier (COMMA timeOrigin=dateFormatWithNumber)? COMMA timeInterval (COMMA timeInterval)* RPAREN
     -> ^(TOK_GROUPBY ^(TOK_TIMEUNIT $value $unit) ^(TOK_TIMEORIGIN $timeOrigin)? ^(TOK_TIMEINTERVAL timeInterval+))
+    ;
+
+segmentbyClause
+    :
+    KW_SEGMENT KW_BY udsf=Identifier multiArgs?
+    -> ^(TOK_SEGMENTBY ^(TOK_UDSF $udsf) multiArgs?)
     ;
 
 fillClause

@@ -622,7 +622,64 @@ public class SQLParserTest {
             i++;
         }
     }
-    
+
+    @Test
+    public void segmentby1() throws ParseException, RecognitionException {
+        // template for test case
+        ArrayList<String> ans = new ArrayList<>(Arrays.asList(
+                "TOK_QUERY", "TOK_SELECT",
+                "TOK_PATH", "TOK_CLUSTER", "TOK_PATH", "s1", "count",
+                "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle", "d1",
+                "TOK_WHERE", "and",
+                "<", "TOK_PATH", "TOK_ROOT", "vehicle", "d1", "s1", "0.32e6",
+                "<=", "TOK_PATH", "time", "TOK_DATETIME", "now",
+                "TOK_SEGMENTBY",
+                "TOK_UDSF", "foobar"));
+        ArrayList<String> rec = new ArrayList<>();
+        ASTNode astTree = ParseGenerator.generateAST(
+                "select count(s1) "
+                        + "from root.vehicle.d1 "
+                        + "where root.vehicle.d1.s1 < 0.32e6 and time <= now() "
+                        + "segment by foobar");
+        astTree = ParseUtils.findRootNonNullToken(astTree);
+        recursivePrintSon(astTree, rec);
+
+        int i = 0;
+        while (i <= rec.size() - 1) {
+            assertEquals(rec.get(i), ans.get(i));
+            i++;
+        }
+    }
+
+    @Test
+    public void segmentby2() throws ParseException, RecognitionException {
+        // template for test case
+        ArrayList<String> ans = new ArrayList<>(Arrays.asList(
+                "TOK_QUERY", "TOK_SELECT",
+                "TOK_PATH", "TOK_CLUSTER", "TOK_PATH", "s1", "count",
+                "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle", "d1",
+                "TOK_WHERE", "and",
+                "<", "TOK_PATH", "TOK_ROOT", "vehicle", "d1", "s1", "0.32e6",
+                "<=", "TOK_PATH", "time", "TOK_DATETIME", "now",
+                "TOK_SEGMENTBY",
+                "TOK_UDSF", "foobar",
+                "TOK_MULT_VALUE", "0", "'foo'"));
+        ArrayList<String> rec = new ArrayList<>();
+        ASTNode astTree = ParseGenerator.generateAST(
+                "select count(s1) "
+                        + "from root.vehicle.d1 "
+                        + "where root.vehicle.d1.s1 < 0.32e6 and time <= now() "
+                        + "segment by foobar(0,'foo')");
+        astTree = ParseUtils.findRootNonNullToken(astTree);
+        recursivePrintSon(astTree, rec);
+
+        int i = 0;
+        while (i <= rec.size() - 1) {
+            assertEquals(rec.get(i), ans.get(i));
+            i++;
+        }
+    }
+
     @Test
     public void fill1() throws ParseException{
     	// template for test case

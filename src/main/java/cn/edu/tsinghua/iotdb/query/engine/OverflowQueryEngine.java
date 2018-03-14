@@ -252,11 +252,11 @@ public class OverflowQueryEngine {
                     }
                     SegmentByEngineNoFilter segmentByEngineNoFilter = new SegmentByEngineNoFilter(aggregations, timeFilter, udsf, fetchSize);
                     segmentByEngineNoFilterLocal.set(segmentByEngineNoFilter);
-                    return segmentByEngineNoFilter.groupBy();
+                    return segmentByEngineNoFilter.segmentBy();
                 }  else {
                     SegmentByEngineWithFilter segmentByEngineWithFilter = new SegmentByEngineWithFilter(aggregations, filterStructures, udsf, fetchSize);
                     segmentByEngineWithFilterLocal.set(segmentByEngineWithFilter);
-                    return segmentByEngineWithFilter.groupBy();
+                    return segmentByEngineWithFilter.segmentBy();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -268,7 +268,7 @@ public class OverflowQueryEngine {
             segmentByCalcTime.set(segmentByCalcTime.get() + 1);
             try {
                 if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
-                    QueryDataSet ans = segmentByEngineNoFilterLocal.get().groupBy();
+                    QueryDataSet ans = segmentByEngineNoFilterLocal.get().segmentBy();
                     if (!ans.hasNextRecord()) {
                         segmentByCalcTime.remove();
                         segmentByEngineNoFilterLocal.remove();
@@ -277,7 +277,7 @@ public class OverflowQueryEngine {
                     }
                     return ans;
                 } else {
-                    QueryDataSet ans = segmentByEngineWithFilterLocal.get().groupBy();
+                    QueryDataSet ans = segmentByEngineWithFilterLocal.get().segmentBy();
                     if (!ans.hasNextRecord()) {
                         segmentByCalcTime.remove();
                         segmentByEngineNoFilterLocal.remove();

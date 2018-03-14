@@ -4,6 +4,7 @@ import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
@@ -28,6 +29,9 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
     private long unit;
     private long origin;
     private List<Pair<Long, Long>> intervals;
+
+    //segment by
+    private AbstractUDSF udsf;
 
     //fill
     private long queryTime;
@@ -73,6 +77,18 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
         this.type = MultiQueryPlan.QueryType.GROUPBY;
     }
 
+    //segment by
+    public QueryDataSetIterator(List<Path> paths, int fetchSize, List<String> aggregations,
+                                List<FilterStructure> filterStructures, AbstractUDSF udsf, QueryProcessExecutor executor) {
+        this.fetchSize = fetchSize;
+        this.executor = executor;
+        this.filterStructures = filterStructures;
+        this.paths = paths;
+        this.aggregations = aggregations;
+        this.udsf = udsf;
+        this.type = MultiQueryPlan.QueryType.SEGMENTBY;
+    }
+
     //slice query fill
     public QueryDataSetIterator(List<Path> paths, int fetchSize, long queryTime, Map<TSDataType, IFill> fillType,
                                 QueryProcessExecutor executor) {
@@ -105,6 +121,9 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
                         break;
                     case GROUPBY:
                         data = executor.groupBy(getAggrePair(), filterStructures, unit, origin, intervals, fetchSize);
+                        break;
+                    case SEGMENTBY:
+                        data = executor.segmentBy(getAggrePair(), filterStructures, udsf, fetchSize);
                         break;
                     case FILL:
                         data = executor.fill(paths, queryTime, fillType);

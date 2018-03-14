@@ -7,11 +7,6 @@ public class AbstractUDSF implements UDSF {
     protected long lastTime;
     protected Comparable<?> lastValue;
 
-    public AbstractUDSF(long lastTime, Comparable<?> lastValue) {
-        this.lastTime = lastTime;
-        this.lastValue = lastValue;
-    }
-
     @Override
     public boolean isBreakpoint(long time, Comparable<?> value) {
         return false;

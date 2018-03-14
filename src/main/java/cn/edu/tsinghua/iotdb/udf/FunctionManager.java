@@ -12,15 +12,14 @@ public class FunctionManager {
 
   private static final Logger logger = LoggerFactory.getLogger(FunctionManager.class);
 
-  private final Map<String, FunctionDesc> functions;
+  private static final Map<String, FunctionDesc> functions;
 
-  public FunctionManager() {
+  static {
     functions = new HashMap<>();
-    // register built-in UDSF
     functions.put("timeSpan", new FunctionDesc("timeSpan", "cn.edu.tsinghua.iotdb.udf.TimeSpan"));
   }
 
-  public void createTemporaryFunction(FunctionDesc desc) {
+  public static void createTemporaryFunction(FunctionDesc desc) {
     try {
       Class<?> udfClass = getUdfClass(desc);
       if (!isLegal(udfClass)) {
@@ -32,16 +31,16 @@ public class FunctionManager {
     }
   }
 
-  public Map<String, FunctionDesc> getFunctions() {
-    return functions;
+  public static FunctionDesc getFunctionDesc(String funcName) {
+    return functions.get(funcName);
   }
 
-  private Class<?> getUdfClass(FunctionDesc desc) throws ClassNotFoundException {
+  private static Class<?> getUdfClass(FunctionDesc desc) throws ClassNotFoundException {
     ClassLoader classLoader = FunctionUtils.getClassLoader();
     return Class.forName(desc.getClassName(), false, classLoader);
   }
 
-  private boolean isLegal(Class<?> udfClass) {
+  private static boolean isLegal(Class<?> udfClass) {
     return udfClass.getSuperclass().getName().equals("UDSF");
   }
 }

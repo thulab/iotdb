@@ -29,6 +29,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
 import cn.edu.tsinghua.iotdb.query.engine.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
 import cn.edu.tsinghua.iotdb.utils.LoadDataUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -184,6 +185,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
             throws ProcessorException, IOException, PathErrorException {
 
         return queryEngine.groupBy(aggres, filterStructures, unit, origin, intervals, fetchSize);
+    }
+
+    @Override
+    public QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+                                  AbstractUDSF udsf, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+        return queryEngine.segmentBy(aggres, filterStructures, udsf, fetchSize);
     }
 
     @Override

@@ -33,6 +33,9 @@ import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
 import cn.edu.tsinghua.iotdb.sql.parse.ASTNode;
 import cn.edu.tsinghua.iotdb.sql.parse.Node;
 import cn.edu.tsinghua.iotdb.sql.parse.TSParser;
+import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
+import cn.edu.tsinghua.iotdb.udf.FunctionDesc;
+import cn.edu.tsinghua.iotdb.udf.FunctionManager;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -45,6 +48,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +106,9 @@ public class LogicalGenerator {
                 return;
             case TSParser.TOK_GROUPBY:
                 analyzeGroupBy(astNode);
+                return;
+            case TSParser.TOK_SEGMENTBY:
+                analyzeSegmentBy(astNode);
                 return;
             case TSParser.TOK_FILL:
                 analyzeFill(astNode);
@@ -554,6 +561,110 @@ public class LogicalGenerator {
             originTime = parseTimeFormat(SQLConstant.START_TIME_STR); 
         }
         ((QueryOperator) initializedOperator).setOrigin(originTime);
+    }
+
+    private void analyzeSegmentBy(ASTNode astNode) throws LogicalOperatorException {
+        SelectOperator selectOp = ((QueryOperator) initializedOperator).getSelectOperator();
+
+        if(selectOp.getSuffixPaths().size() != selectOp.getAggregations().size())
+            throw new LogicalOperatorException("Segment by must bind each path with an aggregation function");
+        ((QueryOperator) initializedOperator).setSegmentBy(true);
+        int childCount = astNode.getChildCount();
+
+        if (childCount == 1) {
+            String udsfName = astNode.getChild(0).getChild(0).getText();
+            FunctionDesc functionDesc = FunctionManager.getFunctionDesc(udsfName);
+            try {
+                AbstractUDSF udsf = (AbstractUDSF)Class.forName(functionDesc.getClassName()).newInstance();
+                ((QueryOperator) initializedOperator).setUdsf(udsf);
+            } catch (Exception e) {
+                LOG.error("Unsupported segment function", e);
+                throw new LogicalOperatorException("Unsupported segment function");
+            }
+        } else {
+            String udsfName = astNode.getChild(0).getChild(0).getText();
+            FunctionDesc functionDesc = FunctionManager.getFunctionDesc(udsfName);
+            List<String> valueList = new ArrayList<>();
+            for (int i = 0; i < astNode.getChild(1).getChildCount(); i++) {
+                valueList.add(astNode.getChild(1).getChild(i).getText());
+            }
+
+            try {
+                Class<?> c = Class.forName(functionDesc.getClassName());
+                Constructor<?>[] constructors = c.getConstructors();
+
+                for (Constructor<?> constructor : constructors) {
+                    Class<?>[] classes = constructor.getParameterTypes();
+                    if (classes.length != valueList.size()) {
+                        continue;
+                    }
+
+                    Object[] parameters = new Object[classes.length];
+                    boolean valid = true;
+                    for (int i = 0; i < classes.length; ++i) {
+                        try {
+                            switch (classes[i].getSimpleName()) {
+                                case "boolean":
+                                    parameters[i] = Boolean.valueOf(valueList.get(i));
+                                    break;
+                                case "byte":
+                                    parameters[i] = Byte.valueOf(valueList.get(i));
+                                    break;
+                                case "char":
+                                    char[] chars = valueList.get(i).toCharArray();
+                                    if (chars.length != 1) {
+                                        valid = false;
+                                        break;
+                                    }
+                                    parameters[i] = chars[0];
+                                    break;
+                                case "short":
+                                    parameters[i] = Short.valueOf(valueList.get(i));
+                                    break;
+                                case "int":
+                                    parameters[i] = Integer.valueOf(valueList.get(i));
+                                    break;
+                                case "long":
+                                    parameters[i] = Long.valueOf(valueList.get(i));
+                                    break;
+                                case "float":
+                                    parameters[i] = Float.valueOf(valueList.get(i));
+                                    break;
+                                case "double":
+                                    parameters[i] = Double.valueOf(valueList.get(i));
+                                    break;
+                                case "String":
+                                    if (valueList.get(i).startsWith("'")) {
+                                        parameters[i] = valueList.get(i).substring(1, valueList.get(i).length() - 1);
+                                    } else if (valueList.get(i).startsWith("\"")) {
+                                        parameters[i] = valueList.get(i).substring(1, valueList.get(i).length() - 1);
+                                    } else {
+                                        valid = false;
+                                    }
+                                    break;
+                                default:
+                                    valid = false;
+                            }
+                        } catch (Exception e) {
+                            valid = false;
+                        }
+
+                        if (!valid) {
+                            break;
+                        }
+                    }
+                    if (valid) {
+                        AbstractUDSF udsf = (AbstractUDSF)constructor.newInstance(parameters);
+                        ((QueryOperator) initializedOperator).setUdsf(udsf);
+                        return;
+                    }
+                }
+                throw new LogicalOperatorException("Wrong arguments for this segment function");
+            } catch (Exception e) {
+                LOG.error("Unsupported segment function: " + e.getMessage(), e);
+                throw new LogicalOperatorException("Unsupported segment function: " + e.getMessage());
+            }
+        }
     }
 
     /**

@@ -259,6 +259,11 @@ public class PhysicalGenerator {
 			multiQueryPlan.setIntervals(queryOperator.getIntervals());
 		}
 
+		if(queryOperator.isSegmentBy()) {
+			multiQueryPlan.setType(MultiQueryPlan.QueryType.SEGMENTBY);
+			multiQueryPlan.setUdsf(queryOperator.getUdsf());
+		}
+
 		if(queryOperator.isFill()) {
 			multiQueryPlan.setType(MultiQueryPlan.QueryType.FILL);
 			FilterOperator timeFilter = queryOperator.getFilterOperator();
