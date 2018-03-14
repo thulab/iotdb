@@ -10,6 +10,7 @@ import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
@@ -17,18 +18,17 @@ import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+
+import static cn.edu.tsinghua.iotdb.queryV2.performanceTest.CreatorUtils.restoreFilePathName;
 
 /**
  * Created by zhangjinrui on 2018/3/13.
@@ -40,9 +40,6 @@ public class ReaderCreator {
     private static final int FOOTER_LENGTH = 4;
     private static final int POS_LENGTH = 8;
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
-    private static final String unseqTsFilePathName = "unseqTsFilec";
-    private static final String restoreFilePathName = ".restore";
-    private static final String fileFolder = "/D/data";
 
     /**
      * Create a reader to merge one series.
@@ -78,7 +75,7 @@ public class ReaderCreator {
      * @return
      * @throws IOException
      */
-    private static TsFileMetaData getTsFileMetadata(ITsRandomAccessFileReader randomAccessFileReader) throws IOException {
+    static TsFileMetaData getTsFileMetadata(ITsRandomAccessFileReader randomAccessFileReader) throws IOException {
         long l = randomAccessFileReader.length();
         randomAccessFileReader.seek(l - MAGIC_LENGTH - FOOTER_LENGTH);
         int fileMetaDataLength = randomAccessFileReader.readInt();
@@ -126,19 +123,19 @@ public class ReaderCreator {
         return pathSet;
     }
 
-    public static Set<String> getAllMeasurements(String fileFolderName) throws IOException {
-        Set<String> measurementSet = new HashSet<>();
+    public static Map<String, TSDataType> getAllMeasurements(String fileFolderName) throws IOException {
+        Map<String, TSDataType> measurementDataTypeMap = new HashMap<>();
 
         File dirFile = new File(fileFolderName);
         if (!dirFile.exists() || (!dirFile.isDirectory())) {
             LOGGER.error("the given folder name {} is wrong", fileFolderName);
-            return measurementSet;
+            return measurementDataTypeMap;
         }
 
         File[] subFiles = dirFile.listFiles();
         if (subFiles == null || subFiles.length == 0) {
             LOGGER.error("the given folder {} has no overflow folder", fileFolderName);
-            return measurementSet;
+            return measurementDataTypeMap;
         }
 
         for (File file : subFiles) {
@@ -146,13 +143,15 @@ public class ReaderCreator {
                 ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(file.getPath());
                 TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
                 for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
-                    measurementSet.add(timeSeriesMetadata.getMeasurementUID());
+                    if (!measurementDataTypeMap.containsKey(timeSeriesMetadata.getMeasurementUID())) {
+                        measurementDataTypeMap.put(timeSeriesMetadata.getMeasurementUID(), timeSeriesMetadata.getType());
+                    }
                 }
                 randomAccessFileReader.close();
             }
         }
 
-        return measurementSet;
+        return measurementDataTypeMap;
     }
 
     private static OverflowSeriesDataSource genDataSource(String unseqTsfilePath, Path path) throws IOException {
