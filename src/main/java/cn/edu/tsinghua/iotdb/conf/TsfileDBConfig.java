@@ -7,7 +7,7 @@ import org.joda.time.DateTimeZone;
 public class TsfileDBConfig {
 
 	public static final String CONFIG_NAME = "iotdb-engine.properties";
-	
+
 	/**
 	 * Port which JDBC server listens to
 	 */
@@ -75,8 +75,8 @@ public class TsfileDBConfig {
 	public String readTmpFileDir = "readTmp";
 
 	/**
-	 * The maximum concurrent thread number for merging overflow.
-	 * When the value<=0 or > CPU core number, use the CPU core number.
+	 * The maximum concurrent thread number for merging overflow. When the value<=0
+	 * or > CPU core number, use the CPU core number.
 	 */
 	public int mergeConcurrentThreads = Runtime.getRuntime().availableProcessors();
 
@@ -102,26 +102,26 @@ public class TsfileDBConfig {
 	public long periodTimeForFlush = 3600;
 
 	/**
-	 * The period time for merge overflow data with tsfile data. The unit is
-	 * second.
+	 * The period time for merge overflow data with tsfile data. The unit is second.
 	 */
 	public long periodTimeForMerge = 7200;
-	
+
 	/**
-	 * When set true, start timing flush and merge service. False, stop timing flush and merge service.
-	 * Default is true.
+	 * When set true, start timing flush and merge service. False, stop timing flush
+	 * and merge service. Default is true.
 	 */
 	public boolean enableTimingCloseAndMerge = true;
-	
+
 	/**
 	 * How many threads can concurrently flush. When <= 0, use CPU core number.
 	 */
 	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
 	public DateTimeZone timeZone = DateTimeZone.getDefault();
-	
+
 	/**
-	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
+	 * BufferWriteProcessor and OverflowProcessor will immediately flush if this
+	 * threshold is reached.
 	 */
 	public long memThresholdWarning = (long) (0.5 * Runtime.getRuntime().maxMemory());
 
@@ -131,38 +131,41 @@ public class TsfileDBConfig {
 	public long memThresholdDangerous = (long) (0.6 * Runtime.getRuntime().maxMemory());
 
 	/**
-	 * MemMonitorThread will check every such interval. If memThresholdWarning is reached, MemMonitorThread
-	 * will inform FileNodeManager to flush.
+	 * MemMonitorThread will check every such interval. If memThresholdWarning is
+	 * reached, MemMonitorThread will inform FileNodeManager to flush.
 	 */
-	public long memMonitorInterval = 1000;  // in ms
+	public long memMonitorInterval = 1000; // in ms
 
 	/**
-	 * Decide how to control memory used by inserting data.
-	 * 0 is RecordMemController, which count the size of every record (tuple).
-	 * 1 is JVMMemController, which use JVM heap memory as threshold.
+	 * Decide how to control memory used by inserting data. 0 is
+	 * RecordMemController, which count the size of every record (tuple). 1 is
+	 * JVMMemController, which use JVM heap memory as threshold.
 	 */
 	public int memControllerType = 0;
 
 	/**
-	 * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
+	 * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is
+	 * forced closed.
 	 */
 	public long bufferwriteMetaSizeThreshold = 200 * 1024 * 1024L;
 
 	/**
-	 * When a bufferwrite's file size (in byte) exceed this, the bufferwrite is forced closed.
+	 * When a bufferwrite's file size (in byte) exceed this, the bufferwrite is
+	 * forced closed.
 	 */
 	public long bufferwriteFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
 
 	/**
-	 * When a overflow's metadata size (in byte) exceed this, the overflow is forced closed.
+	 * When a overflow's metadata size (in byte) exceed this, the overflow is forced
+	 * closed.
 	 */
 	public long overflowMetaSizeThreshold = 20 * 1024 * 1024L;
 
 	/**
-	 * When a overflow's file size (in byte) exceed this, the overflow is forced closed.
+	 * When a overflow's file size (in byte) exceed this, the overflow is forced
+	 * closed.
 	 */
 	public long overflowFileSizeThreshold = 200 * 1024 * 1024L;
-
 
 	/**
 	 * If set false, MemMonitorThread and MemStatisticThread will not be created.
@@ -170,7 +173,8 @@ public class TsfileDBConfig {
 	public boolean enableMemMonitor = false;
 
 	/**
-	 * When set to true, small flush will be triggered periodically even if memory threshold is not exceeded.
+	 * When set to true, small flush will be triggered periodically even if memory
+	 * threshold is not exceeded.
 	 */
 	public boolean enableSmallFlush = false;
 
@@ -180,40 +184,44 @@ public class TsfileDBConfig {
 	public long smallFlushInterval = 60 * 1000;
 
 	/**
-	 * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec secs.
-	 * Default value is 5s.
+	 * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec
+	 * secs. Default value is 5s.
 	 */
 	public int backLoopPeriodSec = 5;
 
 	/**
-	 * Set true to enable statistics monitor service,
-     * false to disable statistics service
+	 * Set true to enable statistics monitor service, false to disable statistics
+	 * service
 	 */
 	public boolean enableStatMonitor = false;
 
 	/**
-	 * Set the time interval when StatMonitor performs delete detection, default value is 600s,
+	 * Set the time interval when StatMonitor performs delete detection, default
+	 * value is 600s,
 	 */
 	public int statMonitorDetectFreqSec = 60 * 10;
 
 	/**
-	 * Set the maximum time to keep monitor statistics information in IoTDB, default value is 600s
+	 * Set the maximum time to keep monitor statistics information in IoTDB, default
+	 * value is 600s
 	 */
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
 	/**
-	 * Threshold for external sort. When using multi-line merging sort, if the count of lines exceed {@code externalSortThreshold}, it will
-	 * trigger external sort.
+	 * Threshold for external sort. When using multi-line merging sort, if the count
+	 * of lines exceed {@code externalSortThreshold}, it will trigger external sort.
 	 */
 	public int externalSortThreshold = 50;
 
 	/**
-	 * Cache size of {@code checkAndGetDataTypeCache} in {@link cn.edu.tsinghua.iotdb.metadata.MManager}
+	 * Cache size of {@code checkAndGetDataTypeCache} in
+	 * {@link cn.edu.tsinghua.iotdb.metadata.MManager}
 	 */
 	public int mManagerCacheSize = 400000;
 
 	/**
-	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
+	 * The maximum size of a single log in byte. If a log exceeds this size, it
+	 * cannot be written to WAL file.
 	 */
 	public int maxLogEntrySize = 4 * 1024 * 1024;
 
@@ -221,18 +229,26 @@ public class TsfileDBConfig {
 	 * IoTDB is a receiver of postback or not
 	 */
 	public boolean IS_POSTBACK_ENABLE = true;
-	
+
 	/**
-	 * If IoTDB is a receiver of postback, set the server port 
+	 * If IoTDB is a receiver of postback, set the server port
 	 */
 	public int POSTBACK_SERVER_PORT = 5555;
-	
-	public TsfileDBConfig() {}
+
+	/**
+	 * It's more likely to update historical data or not for postback, which determines the strategy of merging historical data
+	 * If parameter is true, it's more likely to update historical data.
+	 * If parameter is false, it's more likely not to update historical data or user doesn't know exactly.
+	 */
+	public boolean update_historical_data_possibility = false;
+
+	public TsfileDBConfig() {
+	}
 
 	public void updateDataPath() {
-		if(dataDir == null){
+		if (dataDir == null) {
 			dataDir = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
-			if(dataDir == null){
+			if (dataDir == null) {
 				dataDir = "data";
 			} else {
 				if (dataDir.length() > 0 && !dataDir.endsWith(File.separator)) {

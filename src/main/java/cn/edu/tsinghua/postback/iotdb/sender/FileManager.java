@@ -95,7 +95,7 @@ public class FileManager {
 				}
 			}
 		} catch (IOException e) {
-			LOGGER.error("IoTDB post back sender: cannot get last local file list because {}.", e.getMessage());
+			LOGGER.error("IoTDB post back sender: cannot get last local file list because {}" , e.getMessage());
 		}
 		lastLocalFiles = fileList;
 	}

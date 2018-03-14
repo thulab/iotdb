@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.fudan.dsm.kvmatch.iotdb.common.Interval;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
@@ -625,6 +626,31 @@ public class FileNodeManager implements IStatistic, IService {
 		return true;
 	}
 
+	/**
+	 * get all overlap tsfiles which conflict with the appendFile
+	 * 
+	 * @param fileNodeName
+	 *            the path of storage group
+	 * @param appendFile
+	 *            the appended tsfile information
+	 * @return
+	 * @throws FileNodeManagerException
+	 */
+	public List<String> getOverlapFilesFromFileNode(String fileNodeName, IntervalFileNode appendFile, String snapshotFilePath)
+			throws FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
+		List<String> overlapFiles = new ArrayList<>();
+		try {
+			overlapFiles = fileNodeProcessor.getOverlapFiles(appendFile, snapshotFilePath);
+		} catch (FileNodeProcessorException e) {
+			e.printStackTrace();
+			throw new FileNodeManagerException(e);
+		} finally {
+			fileNodeProcessor.writeUnlock();
+		}
+		return overlapFiles;
+	}
+	
 	public void mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;

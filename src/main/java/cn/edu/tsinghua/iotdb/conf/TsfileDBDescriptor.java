@@ -121,7 +121,8 @@ public class TsfileDBDescriptor {
 
 			conf.IS_POSTBACK_ENABLE = Boolean.parseBoolean(properties.getProperty("is_postback_enable", conf.IS_POSTBACK_ENABLE + ""));
 			conf.POSTBACK_SERVER_PORT = Integer.parseInt(properties.getProperty("postback_server_port", conf.POSTBACK_SERVER_PORT + "").trim());
-			
+			conf.update_historical_data_possibility = Boolean.parseBoolean(properties.getProperty("update_historical_data_possibility", conf.IS_POSTBACK_ENABLE + ""));
+						
 			if(conf.memThresholdWarning <= 0)
 				conf.memThresholdWarning = TsFileDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;
 			if(conf.memThresholdDangerous < conf.memThresholdWarning)
