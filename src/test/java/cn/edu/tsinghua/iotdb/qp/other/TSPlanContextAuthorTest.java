@@ -40,10 +40,10 @@ public class TSPlanContextAuthorTest {
                 {"DROP USER username", emptyPaths},
                 {"CREATE ROLE rolename", emptyPaths},
                 {"DROP ROLE rolename", emptyPaths},
-                {"GRANT USER username PRIVILEGES 'create','insert' ON root.node1.a.b", testPaths},
-                {"REVOKE USER username PRIVILEGES 'create','insert' ON root.node1.a.b", testPaths},
-                {"GRANT ROLE rolename PRIVILEGES 'create','insert' ON root.node1.a.b", testPaths},
-                {"REVOKE ROLE rolename PRIVILEGES 'create','insert' ON root.node1.a.b", testPaths},
+                {"GRANT USER username PRIVILEGES 'CREATE_TIMESERIES','INSERT_TIMESERIES' ON root.node1.a.b", testPaths},
+                {"REVOKE USER username PRIVILEGES 'CREATE_TIMESERIES','INSERT_TIMESERIES' ON root.node1.a.b", testPaths},
+                {"GRANT ROLE rolename PRIVILEGES 'CREATE_TIMESERIES','INSERT_TIMESERIES' ON root.node1.a.b", testPaths},
+                {"REVOKE ROLE rolename PRIVILEGES 'CREATE_TIMESERIES','INSERT_TIMESERIES' ON root.node1.a.b", testPaths},
                 {"GRANT rolename TO username", emptyPaths},
                 {"REVOKE rolename FROM username", emptyPaths}});
     }

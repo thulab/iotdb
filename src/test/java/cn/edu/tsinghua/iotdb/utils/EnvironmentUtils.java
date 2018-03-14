@@ -1,13 +1,13 @@
 package cn.edu.tsinghua.iotdb.utils;
 
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
-import cn.edu.tsinghua.iotdb.auth.authorizer.BasicAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -61,6 +61,13 @@ public class EnvironmentUtils {
 		// delete all directory
 		cleanAllDir();
 		// FileNodeManager.getInstance().reset();
+		// reset MemController
+		BasicMemController.getInstance().close();
+		try {
+			BasicMemController.getInstance().start();
+		} catch (StartupException e) {
+			LOGGER.error("",e);
+		}
 	}
 
 	private static void cleanAllDir() throws IOException {
@@ -105,7 +112,7 @@ public class EnvironmentUtils {
 	public static void closeStatMonitor() {
 		config.enableStatMonitor = false;
 	}
-	
+
 	/**
 	 * disable memory control</br>
 	 * this function should be called before all code in the setup
@@ -115,7 +122,6 @@ public class EnvironmentUtils {
 	}
 
 	public static void envSetUp() throws StartupException {
-		tsfileConfig.duplicateIncompletedPage = true;
 		// disable the memory control
 		config.enableMemMonitor = false;
 		// disable the system monitor
