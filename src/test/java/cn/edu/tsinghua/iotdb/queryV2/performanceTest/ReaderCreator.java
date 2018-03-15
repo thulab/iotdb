@@ -53,14 +53,15 @@ public class ReaderCreator {
      * @throws IOException
      */
     public static TimeValuePairReader createReaderForMerge(String tsfilePath, String unseqTsFilePath, Path path) throws IOException {
-        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
-        TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
-        long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
-        long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
-        System.out.println(String.format("Current query path is %s, deltaObject time range is [%d, %d]", path.getFullPath(), startTime, endTime));
-        if (path.getFullPath().equals("root.ln.wf632814.type4.d632814521._SPIN_DC_Ra_F32_8_MAX_")) {
-            System.out.println("...");
-        }
+//        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
+//        TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
+//        randomAccessFileReader.close();
+//        long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
+//        long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
+//        System.out.println(String.format("Current query path is %s, deltaObject time range is [%d, %d]", path.getFullPath(), startTime, endTime));
+//        if (path.getFullPath().equals("root.ln.wf632814.type4.d632814521._SPIN_DC_Ra_F32_8_MAX_")) {
+//            System.out.println("...");
+//        }
 
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
         TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir = "";
@@ -99,9 +100,9 @@ public class ReaderCreator {
     }
 
     private static OverflowSeriesDataSource genDataSource(String unSeqTsFilePath, Path path) throws IOException {
-        File file = new File(unSeqTsFilePath);
-        OverflowIO overflowIO = new OverflowIO(unSeqTsFilePath, file.length(), true);
         if (unSeqFileMetaData == null) {
+            File file = new File(unSeqTsFilePath);
+            OverflowIO overflowIO = new OverflowIO(unSeqTsFilePath, file.length(), true);
             unSeqFileMetaData = readMetadata(overflowIO);
         }
         OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(path);
