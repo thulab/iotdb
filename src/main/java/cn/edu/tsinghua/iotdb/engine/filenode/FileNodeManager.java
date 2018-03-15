@@ -101,6 +101,12 @@ public class FileNodeManager implements IStatistic, IService {
 	}
 
 	@Override
+	public void fixStatistics() {
+		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name()).decrementAndGet();
+		statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS_SUCCESS.name()).decrementAndGet();
+	}
+
+	@Override
 	public List<String> getAllPathForStatistic() {
 		List<String> list = new ArrayList<>();
 		for (MonitorConstants.FileNodeManagerStatConstants statConstant : MonitorConstants.FileNodeManagerStatConstants

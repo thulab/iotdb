@@ -1,5 +1,8 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
+import cn.edu.tsinghua.iotdb.monitor.IFixStatistics;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
@@ -13,10 +16,12 @@ import java.util.PriorityQueue;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader, SeriesReader {
+public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader, SeriesReader, IFixStatistics {
 
     private List<PriorityTimeValuePairReader> readerList;
     private PriorityQueue<Element> heap;
+
+    private List<FileNodeProcessor> fileNodeProcessorList;
 
     public PriorityMergeSortTimeValuePairReader(PriorityTimeValuePairReader... readers) throws IOException {
         readerList = new ArrayList<>();
@@ -38,6 +43,8 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
                 heap.add(new Element(i, readerList.get(i).next(), readerList.get(i).getPriority()));
             }
         }
+
+        fileNodeProcessorList = new ArrayList<>();
     }
 
     @Override
@@ -53,12 +60,18 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
     }
 
     private void updateHeap(Element top) throws IOException {
+        boolean flag = false;
         while (heap.size() > 0 && heap.peek().timeValuePair.getTimestamp() == top.timeValuePair.getTimestamp()) {
             Element e = heap.poll();
             PriorityTimeValuePairReader priorityTimeValuePairReader = readerList.get(e.index);
             if (priorityTimeValuePairReader.hasNext()) {
                 heap.add(new Element(e.index, priorityTimeValuePairReader.next(), priorityTimeValuePairReader.getPriority()));
             }
+
+            if(flag){
+                fixStatistics();
+            }
+            else flag = true;
         }
     }
 
@@ -74,6 +87,20 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
         for (TimeValuePairReader timeValuePairReader : readerList) {
             timeValuePairReader.close();
         }
+    }
+
+    @Override
+    public void registStatStorageGroup(FileNodeProcessor fileNodeProcessor) {
+        fileNodeProcessorList.add(fileNodeProcessor);
+    }
+
+    @Override
+    public void fixStatistics() {
+        for(FileNodeProcessor fileNodeProcessor : fileNodeProcessorList){
+            fileNodeProcessor.fixStatistics();
+        }
+
+        FileNodeManager.getInstance().fixStatistics();
     }
 
     private class Element implements Comparable<Element> {

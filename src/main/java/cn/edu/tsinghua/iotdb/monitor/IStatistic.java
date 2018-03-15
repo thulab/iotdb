@@ -31,4 +31,6 @@ public interface IStatistic {
      * @return a HashMap contains the names and values of the statistics parameters
      */
     HashMap<String, AtomicLong> getStatParamsHashMap();
+
+    void fixStatistics();
 }

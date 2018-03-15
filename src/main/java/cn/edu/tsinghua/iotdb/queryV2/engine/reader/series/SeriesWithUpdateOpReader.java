@@ -1,32 +1,42 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
+import cn.edu.tsinghua.iotdb.monitor.IFixStatistics;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is used to combine one series with corresponding update operations
  * Created by zhangjinrui on 2018/1/15.
  */
-public class SeriesWithUpdateOpReader implements SeriesReader {
+public class SeriesWithUpdateOpReader implements SeriesReader, IFixStatistics {
 
-    private TimeValuePairReader seriesReader;
+    private PriorityMergeSortTimeValuePairReader seriesReader;
     private OverflowOperationReader overflowOperationReader;
     private OverflowOperation overflowUpdateOperation;
     private boolean hasOverflowUpdateOperation;
 
+    private List<FileNodeProcessor> fileNodeProcessorList;
+
     public SeriesWithUpdateOpReader(TimeValuePairReader seriesReader,
                                     OverflowOperationReader overflowOperationReader) throws IOException {
-        this.seriesReader = seriesReader;
+        this.seriesReader = (PriorityMergeSortTimeValuePairReader)seriesReader;
         this.overflowOperationReader = overflowOperationReader;
         if (overflowOperationReader.hasNext()) {
             overflowUpdateOperation = overflowOperationReader.next();
             hasOverflowUpdateOperation = true;
         }
+
+        fileNodeProcessorList = new ArrayList<>();
     }
 
     @Override
@@ -64,5 +74,19 @@ public class SeriesWithUpdateOpReader implements SeriesReader {
     @Override
     public void close() throws IOException {
         seriesReader.close();
+    }
+
+    @Override
+    public void registStatStorageGroup(FileNodeProcessor fileNodeProcessor) {
+        fileNodeProcessorList.add(fileNodeProcessor);
+        seriesReader.registStatStorageGroup(fileNodeProcessor);
+    }
+
+    @Override
+    public void fixStatistics() {
+//        for(FileNodeProcessor fileNodeProcessor : fileNodeProcessorList){
+//            fileNodeProcessor.fixStatistics();
+//        }
+        seriesReader.fixStatistics();
     }
 }

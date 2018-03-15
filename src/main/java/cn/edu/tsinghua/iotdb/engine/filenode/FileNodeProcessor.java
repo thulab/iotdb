@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithUpdateOpReader;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -131,6 +132,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	public HashMap<String, AtomicLong> getStatParamsHashMap() {
 		return statParamsHashMap;
+	}
+
+	@Override
+	public void fixStatistics() {
+		statParamsHashMap.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_POINTS_SUCCESS.name()).decrementAndGet();
 	}
 
 	@Override
@@ -1364,8 +1370,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						TimeFilter.gtEq(backupIntervalFile.getStartTime(deltaObjectId)),
 						TimeFilter.ltEq(backupIntervalFile.getEndTime(deltaObjectId)));
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
-				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
+				SeriesWithUpdateOpReader seriesReader = (SeriesWithUpdateOpReader)SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
+				seriesReader.registStatStorageGroup(this);
 				try {
 					if (!seriesReader.hasNext()) {
 						LOGGER.debug("The time-series {} has no data with the filter {} in the filenode processor {}",
