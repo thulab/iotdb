@@ -77,19 +77,18 @@ public class WriteSample {
 
     private static void executeMerge() throws IOException, WriteProcessException {
         Pair<Boolean, File[]> validFiles = getValidFiles(fileFolderName);
-        if (!validFiles.left)
+        if (!validFiles.left) {
             LOGGER.info("There exists error in given file folder");
+            return;
+        }
         File[] files = validFiles.right;
 
-        long startTime = System.currentTimeMillis();
-
-        // construct the file reader of unseqTsFile, get the changed time range
-
+        long allFileMergeStartTime = System.currentTimeMillis();
         for (File file : files) {
             if (!file.getName().endsWith(restoreFilePathName) && !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")) {
                 System.out.println(String.format("---- merge process begin, current merge file is %s.", file.getName()));
 
-                long midStartTime = System.currentTimeMillis();
+                long oneFileMergeStartTime = System.currentTimeMillis();
                 ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(file.getPath());
                 TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
 
@@ -102,7 +101,7 @@ public class WriteSample {
                 }
                 TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
-                long writeTimeConsuming = 0;
+                long writeTimeConsuming = 0, tsRecordTimeConsuming = 0;
                 // examine whether this TsFile should be merged
                 for (Map.Entry<String, TsDeltaObject> tsFileEntry : tsFileMetaData.getDeltaObjectMap().entrySet()) {
                     String tsFileDeltaObjectId = tsFileEntry.getKey();
@@ -114,8 +113,16 @@ public class WriteSample {
                                         new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()));
                                 while (reader.hasNext()) {
                                     TimeValuePair tp = reader.next();
+
+                                    // calc time consuming of constructing TsRecord
+                                    long recordStartTime = System.currentTimeMillis();
+                                    TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
+                                    long recordEndTime = System.currentTimeMillis();
+                                    tsRecordTimeConsuming += (recordEndTime - recordStartTime);
+
+                                    // calc time consuming of writing
                                     long writeStartTime = System.currentTimeMillis();
-                                    fileWriter.write(constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID()));
+                                    fileWriter.write(record);
                                     long writeEndTime = System.currentTimeMillis();
                                     writeTimeConsuming += (writeEndTime - writeStartTime);
                                 }
@@ -127,15 +134,16 @@ public class WriteSample {
 
                 randomAccessFileReader.close();
                 fileWriter.close();
-                long midEndTime = System.currentTimeMillis();
-                System.out.println(String.format("All time consuming : %dms, write consuming : %dms, read consuming : %d", (midEndTime - midStartTime),
-                        writeTimeConsuming, (midEndTime - midStartTime - writeTimeConsuming)));
+                long oneFileMergeEndTime = System.currentTimeMillis();
+                System.out.println(String.format("Current file merge time consuming : %dms, write consuming : %dms, " +
+                                "construct record consuming: %dms, read consuming : %d",
+                        (oneFileMergeEndTime - oneFileMergeStartTime), writeTimeConsuming, tsRecordTimeConsuming,
+                        (oneFileMergeEndTime - oneFileMergeStartTime - writeTimeConsuming - tsRecordTimeConsuming)));
             }
         }
 
-        long endTime = System.currentTimeMillis();
-        System.out.println(String.format("All time consuming : %d", endTime - startTime));
-        System.out.println(startTime + "." + endTime);
+        long allFileMergeEndTime = System.currentTimeMillis();
+        System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
     }
 
     private static TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
