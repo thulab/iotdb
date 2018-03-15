@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.IOUtils;
-import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -87,6 +86,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
             user.name = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
             user.password = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
 
+            user.privilegeList.sort(PathPrivilege.referenceDescentSorter);
             int privilegeNum = dataInputStream.readInt();
             List<PathPrivilege> pathPrivilegeList = new ArrayList<>();
             for (int i = 0; i < privilegeNum; i++) {

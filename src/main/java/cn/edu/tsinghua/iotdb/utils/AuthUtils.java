@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -139,8 +140,10 @@ public class AuthUtils {
 
     public static boolean hasPrivilege(String path, int privilegeId, List<PathPrivilege> privilegeList) {
         for(PathPrivilege pathPrivilege : privilegeList) {
-            if(pathPrivilege.path.equals(path) && pathPrivilege.privileges.contains(privilegeId))
+            if(pathPrivilege.path.equals(path) && pathPrivilege.privileges.contains(privilegeId)) {
+                pathPrivilege.referenceCnt.incrementAndGet();
                 return true;
+            }
         }
         return false;
     }
@@ -170,4 +173,5 @@ public class AuthUtils {
         if(emptyPrivilege != null)
             privilegeList.remove(emptyPrivilege);
     }
+
 }

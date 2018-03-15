@@ -1,8 +1,10 @@
 package cn.edu.tsinghua.iotdb.auth.entity;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class represent a privilege on a specific path. If the privilege is path-free, the path will be null.
@@ -10,6 +12,14 @@ import java.util.Set;
 public class PathPrivilege {
     public Set<Integer> privileges;
     public String path;
+
+    /**
+     * This field record how many times this privilege is referenced during a life cycle (from being loaded to being discarded).
+     * When serialized to a file, this determines the order of serialization. The higher this values is, the sooner this privilege will
+     * be serialized.
+     * As a result, the hot privileges will be in the first place so that the hit time will decrease when being queried.
+     */
+    public AtomicInteger referenceCnt = new AtomicInteger(0);
 
     public PathPrivilege(String path) {
         this.path = path;
@@ -30,4 +40,10 @@ public class PathPrivilege {
 
         return Objects.hash(privileges, path);
     }
+
+    /**
+     * Sort PathPrivilege by referenceCnt in descent order.
+     */
+    public static Comparator<PathPrivilege> referenceDescentSorter = (o1, o2) -> -Integer.compare(o1.referenceCnt.get(), o2.referenceCnt.get());
+
 }

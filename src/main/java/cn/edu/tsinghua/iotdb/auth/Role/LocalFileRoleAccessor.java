@@ -92,6 +92,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
         try {
             IOUtils.writeString(outputStream, role.name, STRING_ENCODING, encodingBufferLocal);
 
+            role.privilegeList.sort(PathPrivilege.referenceDescentSorter);
             int privilegeNum = role.privilegeList.size();
             IOUtils.writeInt(outputStream, privilegeNum, encodingBufferLocal);
             for(int i = 0; i < privilegeNum; i++) {

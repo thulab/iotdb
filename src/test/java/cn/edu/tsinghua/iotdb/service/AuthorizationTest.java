@@ -153,6 +153,7 @@ public class AuthorizationTest {
         assertTrue(caught);
 
         // grant privilege to grant
+        caught = false;
         try {
             userStmt.execute("GRANT USER tempuser PRIVILEGES 'DELETE_TIMESERIES' on root.a.b");
         } catch (SQLException e) {
@@ -163,6 +164,7 @@ public class AuthorizationTest {
         userStmt.execute("GRANT USER tempuser PRIVILEGES 'DELETE_TIMESERIES' on root");
 
         // grant privilege to revoke
+        caught = false;
         try {
             userStmt.execute("REVOKE USER tempuser PRIVILEGES 'DELETE_TIMESERIES' on root");
         } catch (SQLException e) {
