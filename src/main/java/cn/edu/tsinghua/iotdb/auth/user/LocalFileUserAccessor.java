@@ -86,7 +86,6 @@ public class LocalFileUserAccessor implements IUserAccessor{
             user.name = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
             user.password = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
 
-            user.privilegeList.sort(PathPrivilege.referenceDescentSorter);
             int privilegeNum = dataInputStream.readInt();
             List<PathPrivilege> pathPrivilegeList = new ArrayList<>();
             for (int i = 0; i < privilegeNum; i++) {
@@ -104,7 +103,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
 
             return user;
         } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            throw new IOException(e);
         }
     }
 
@@ -120,6 +119,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
             IOUtils.writeString(outputStream, user.name, STRING_ENCODING, encodingBufferLocal);
             IOUtils.writeString(outputStream, user.password, STRING_ENCODING, encodingBufferLocal);
 
+            user.privilegeList.sort(PathPrivilege.referenceDescentSorter);
             int privilegeNum = user.privilegeList.size();
             IOUtils.writeInt(outputStream, privilegeNum, encodingBufferLocal);
             for(int i = 0; i < privilegeNum; i++) {
