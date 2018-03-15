@@ -43,9 +43,10 @@ public class WriteSample {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WriteSample.class);
 
-    private static final String tsFileOutPutPath = "/users/zhangjinrui/Desktop/readTest/out";
+    private static final String mergeOutPutFolder = "/Users/beyyes/Desktop/root.ln.wf632814.type4/merge/";
     private static final String fileFolderName = "/Users/beyyes/Desktop/root.ln.wf632814.type4";
     private static final String unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
+
 
     private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> unSeqFileMetaData;
     private static Map<String, Pair<Long, Long>> unSeqFileDeltaObjectTimeRangeMap;
@@ -94,14 +95,14 @@ public class WriteSample {
 
                 // construct file writer for the merge process
                 FileSchema fileSchema = new FileSchema();
-                File outPutFile = new File(file.getParent() + "/merge/" + file.getName());
-                // register measurements
+                File outPutFile = new File(mergeOutPutFolder + file.getName());
                 for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
                     fileSchema.registerMeasurement(new MeasurementDescriptor(timeSeriesMetadata.getMeasurementUID(), timeSeriesMetadata.getType(),
                             getEncodingByDataType(timeSeriesMetadata.getType())));
                 }
                 TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
+                long writeTimeConsuming = 0;
                 // examine whether this TsFile should be merged
                 for (Map.Entry<String, TsDeltaObject> tsFileEntry : tsFileMetaData.getDeltaObjectMap().entrySet()) {
                     String tsFileDeltaObjectId = tsFileEntry.getKey();
@@ -112,7 +113,11 @@ public class WriteSample {
                                 TimeValuePairReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
                                         new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()));
                                 while (reader.hasNext()) {
-                                    fileWriter.write(constructTsRecord(reader.next(), tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID()));
+                                    TimeValuePair tp = reader.next();
+                                    long writeStartTime = System.currentTimeMillis();
+                                    fileWriter.write(constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID()));
+                                    long writeEndTime = System.currentTimeMillis();
+                                    writeTimeConsuming += (writeEndTime - writeStartTime);
                                 }
                                 reader.close();
                             }
@@ -123,7 +128,8 @@ public class WriteSample {
                 randomAccessFileReader.close();
                 fileWriter.close();
                 long midEndTime = System.currentTimeMillis();
-                System.out.println("Time consuming : " + (midEndTime - midStartTime) + "ms");
+                System.out.println(String.format("All time consuming : %dms, write consuming : %dms, read consuming : %d", (midEndTime - midStartTime),
+                        writeTimeConsuming, (midEndTime - midStartTime - writeTimeConsuming)));
             }
         }
 
