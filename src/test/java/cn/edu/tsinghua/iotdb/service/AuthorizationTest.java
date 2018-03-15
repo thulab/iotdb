@@ -4,6 +4,7 @@ import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -378,7 +379,7 @@ public class AuthorizationTest {
         userCon.close();
     }
 
-    @Test
+    @Test @Ignore
     public void authPerformanceTest() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
@@ -421,12 +422,12 @@ public class AuthorizationTest {
         userCon.close();
     }
 
-    public static void main(String[] args) throws Exception {
+    /*public static void main(String[] args) throws Exception {
         for(int i = 0; i < 10; i++) {
             AuthorizationTest test = new AuthorizationTest();
             test.setUp();
             test.authPerformanceTest();
             test.tearDown();
         }
-    }
+    }*/
 }
