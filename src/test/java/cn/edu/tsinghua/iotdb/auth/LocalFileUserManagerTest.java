@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.auth.user.LocalFileUserManager;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
+import cn.edu.tsinghua.iotdb.utils.AuthUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -56,7 +56,7 @@ public class LocalFileUserManagerTest {
         for (User user1 : users) {
             user = manager.getUser(user1.name);
             assertEquals(user1.name, user.name);
-            assertEquals(ValidateUtils.encryptPassword(user1.password), user.password);
+            assertEquals(AuthUtils.encryptPassword(user1.password), user.password);
         }
 
         assertEquals(false, manager.createUser(users[0].name, users[0].password));
@@ -131,7 +131,7 @@ public class LocalFileUserManagerTest {
         assertEquals(true, manager.updateUserPassword(user.name, newPassword));
         assertEquals(false, manager.updateUserPassword(user.name, illegalPW));
         user = manager.getUser(user.name);
-        assertEquals(ValidateUtils.encryptPassword(newPassword), user.password);
+        assertEquals(AuthUtils.encryptPassword(newPassword), user.password);
         caught = false;
         try {
             manager.updateUserPassword("not a user", newPassword);

@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.concurrent.HashLock;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
+import cn.edu.tsinghua.iotdb.utils.AuthUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,15 +77,15 @@ public abstract class BasicUserManager implements IUserManager {
 
     @Override
     public boolean createUser(String username, String password) throws AuthException {
-        ValidateUtils.validateUsername(username);
-        ValidateUtils.validatePassword(password);
+        AuthUtils.validateUsername(username);
+        AuthUtils.validatePassword(password);
 
         User user = getUser(username);
         if(user != null)
             return false;
         lock.writeLock(username);
         try {
-            user = new User(username, ValidateUtils.encryptPassword(password));
+            user = new User(username, AuthUtils.encryptPassword(password));
             accessor.saveUser(user);
             userMap.put(username, user);
             return true;
@@ -114,7 +114,7 @@ public abstract class BasicUserManager implements IUserManager {
 
     @Override
     public boolean grantPrivilegeToUser(String username, String path, int privilegeId) throws AuthException {
-        ValidateUtils.validatePrivilegeOnPath(path, privilegeId);
+        AuthUtils.validatePrivilegeOnPath(path, privilegeId);
         lock.writeLock(username);
         try {
             User user = getUser(username);
@@ -139,7 +139,7 @@ public abstract class BasicUserManager implements IUserManager {
 
     @Override
     public boolean revokePrivilegeFromUser(String username, String path, int privilegeId) throws AuthException {
-        ValidateUtils.validatePrivilegeOnPath(path, privilegeId);
+        AuthUtils.validatePrivilegeOnPath(path, privilegeId);
         lock.writeLock(username);
         try {
             User user = getUser(username);
@@ -165,7 +165,7 @@ public abstract class BasicUserManager implements IUserManager {
     @Override
     public boolean updateUserPassword(String username, String newPassword) throws AuthException {
         try {
-            ValidateUtils.validatePassword(newPassword);
+            AuthUtils.validatePassword(newPassword);
         } catch (AuthException e) {
             return false;
         }
@@ -177,7 +177,7 @@ public abstract class BasicUserManager implements IUserManager {
                 throw new AuthException(String.format("No such user %s", username));
             }
             String oldPassword = user.password;
-            user.password = ValidateUtils.encryptPassword(newPassword);
+            user.password = AuthUtils.encryptPassword(newPassword);
             try {
                 accessor.saveUser(user);
             } catch (IOException e) {

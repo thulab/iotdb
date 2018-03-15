@@ -35,7 +35,7 @@ public class AuthorizationTest {
     public void tearDown() throws Exception {
         if (testFlag) {
             deamon.stop();
-            Thread.sleep(5000);
+            Thread.sleep(2000);
             EnvironmentUtils.cleanEnv();
         }
     }
@@ -374,5 +374,57 @@ public class AuthorizationTest {
 
         adminCon.close();
         userCon.close();
+    }
+
+    @Test
+    public void authPerformanceTest() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Statement adminStmt = adminCon.createStatement();
+
+        adminStmt.execute("CREATE USER tempuser temppw");
+        adminStmt.execute("SET STORAGE GROUP TO root.a");
+        int privilegeCnt = 50;
+        for(int i = 0; i < privilegeCnt; i++) {
+            adminStmt.execute("CREATE TIMESERIES root.a.b" + i + " WITH DATATYPE=INT32,ENCODING=PLAIN");
+            adminStmt.execute("GRANT USER tempuser PRIVILEGES 'INSERT_TIMESERIES' ON root.a.b" + i);
+        }
+
+        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Statement userStmt = userCon.createStatement();
+
+        int insertCnt = 200000;
+        int batchSize = 5000;
+        long time;
+
+        time = System.currentTimeMillis();
+        for(int i = 0; i < insertCnt;) {
+            for(int j = 0; j < batchSize; j++)
+                userStmt.addBatch("INSERT INTO root.a(timestamp, b" + (privilegeCnt - 1) +  ") VALUES (" + (i++ + 1 ) + ", 100)");
+            userStmt.executeBatch();
+            userStmt.clearBatch();
+        }
+        System.out.println("User inserted " + insertCnt + " data points used " + (System.currentTimeMillis() - time) + " ms with " + privilegeCnt + " privileges");
+
+        time = System.currentTimeMillis();
+        for(int i = 0; i < insertCnt;) {
+            for(int j = 0; j < batchSize; j++)
+                adminStmt.addBatch("INSERT INTO root.a(timestamp, b0) VALUES (" + (i++ + 1 + insertCnt) + ", 100)");
+            adminStmt.executeBatch();
+            adminStmt.clearBatch();
+        }
+        System.out.println("admin inserted " + insertCnt + " data points used " + (System.currentTimeMillis() - time) + " ms with " + privilegeCnt + " privileges");
+
+        adminCon.close();
+        userCon.close();
+    }
+
+    public static void main(String[] args) throws Exception {
+        for(int i = 0; i < 10; i++) {
+            AuthorizationTest test = new AuthorizationTest();
+            test.setUp();
+            test.authPerformanceTest();
+            test.tearDown();
+        }
     }
 }

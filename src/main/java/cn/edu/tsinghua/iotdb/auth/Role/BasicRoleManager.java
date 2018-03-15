@@ -3,8 +3,7 @@ package cn.edu.tsinghua.iotdb.auth.Role;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.concurrent.HashLock;
-import cn.edu.tsinghua.iotdb.service.IService;
-import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
+import cn.edu.tsinghua.iotdb.utils.AuthUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,7 +45,7 @@ public abstract class BasicRoleManager implements IRoleManager{
 
     @Override
     public boolean createRole(String rolename) throws AuthException {
-        ValidateUtils.validateRolename(rolename);
+        AuthUtils.validateRolename(rolename);
 
         Role role = getRole(rolename);
         if(role != null)
@@ -82,7 +81,7 @@ public abstract class BasicRoleManager implements IRoleManager{
 
     @Override
     public boolean grantPrivilegeToRole(String rolename, String path, int privilegeId) throws AuthException {
-        ValidateUtils.validatePrivilegeOnPath(path, privilegeId);
+        AuthUtils.validatePrivilegeOnPath(path, privilegeId);
         lock.writeLock(rolename);
         try {
             Role role = getRole(rolename);
@@ -107,7 +106,7 @@ public abstract class BasicRoleManager implements IRoleManager{
 
     @Override
     public boolean revokePrivilegeFromRole(String rolename, String path, int privilegeId) throws AuthException {
-        ValidateUtils.validatePrivilegeOnPath(path, privilegeId);
+        AuthUtils.validatePrivilegeOnPath(path, privilegeId);
         lock.writeLock(rolename);
         try {
             Role role = getRole(rolename);

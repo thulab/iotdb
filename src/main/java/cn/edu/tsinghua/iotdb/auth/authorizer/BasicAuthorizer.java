@@ -10,7 +10,7 @@ import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
-import cn.edu.tsinghua.iotdb.utils.ValidateUtils;
+import cn.edu.tsinghua.iotdb.utils.AuthUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     @Override
     public boolean login(String username, String password) throws AuthException {
         User user = userManager.getUser(username);
-        return user != null && user.password.equals(ValidateUtils.encryptPassword(password));
+        return user != null && user.password.equals(AuthUtils.encryptPassword(password));
     }
 
     @Override
@@ -173,7 +173,23 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
 
     @Override
     public boolean checkUserPrivileges(String username, String path, int privilegeId) throws AuthException {
-        return TsFileDBConstant.ADMIN_NAME.equals(username) || getPrivileges(username, path).contains(privilegeId);
+        if(TsFileDBConstant.ADMIN_NAME.equals(username))
+            return true;
+        User user = userManager.getUser(username);
+        if(user == null) {
+            throw new AuthException(String.format("No such user : %s", username));
+        }
+        // get privileges of the user
+        if(user.checkPrivilege(path, privilegeId))
+            return true;
+        // merge the privileges of the roles of the user
+        for(String roleName : user.roleList) {
+            Role role = roleManager.getRole(roleName);
+            if(role.checkPrivilege(path, privilegeId)) {
+               return true;
+            }
+        }
+        return false;
     }
 
     @Override
