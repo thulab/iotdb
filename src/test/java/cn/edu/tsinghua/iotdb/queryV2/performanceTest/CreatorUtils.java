@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * Created by beyyes on 2018/3/14.
+ * This class encapsulate some constants or static method for TsFile construction.
  */
 public class CreatorUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreatorUtils.class);

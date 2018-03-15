@@ -41,6 +41,8 @@ public class ReaderCreator {
     private static final int POS_LENGTH = 8;
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
 
+    private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> unSeqFileMetaData;
+
     /**
      * Create a reader to merge one series.
      *
@@ -55,15 +57,16 @@ public class ReaderCreator {
         TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
         long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
         long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
-        System.out.println(startTime + " - " + endTime);
+        System.out.println(String.format("Current query path is %s, deltaObject time range is [%d, %d]", path.getFullPath(), startTime, endTime));
+        if (path.getFullPath().equals("root.ln.wf632814.type4.d632814521._SPIN_DC_Ra_F32_8_MAX_")) {
+            System.out.println("...");
+        }
 
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
-
         TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir = "";
         Filter<?> filter = TimeFilter.gtEq(0L);
         SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
         IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
-        System.out.println(intervalFileNode.getFilePath());
         TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
         return reader;
     }
@@ -86,82 +89,25 @@ public class ReaderCreator {
         return new TsFileMetaDataConverter().toTsFileMetadata(ReadWriteThriftFormatUtils.readFileMetaData(metadataInputStream));
     }
 
-    /**
-     * Get all of the timeseries paths of given data folder.
-     *
-     * @param fileFolderName
-     * @return
-     */
-    public static Set<Path> getAllPaths(String fileFolderName) throws IOException {
-        Set<Path> pathSet = new HashSet<>();
-
-        File dirFile = new File(fileFolderName);
-        if (!dirFile.exists() || (!dirFile.isDirectory())) {
-            LOGGER.error("the given folder name {} is wrong", fileFolderName);
-            return pathSet;
-        }
-
-        File[] subFiles = dirFile.listFiles();
-        if (subFiles == null || subFiles.length == 0) {
-            LOGGER.error("the given folder {} has no overflow folder", fileFolderName);
-            return pathSet;
-        }
-
-        for (File file : subFiles) {
-            if (!file.getName().endsWith(restoreFilePathName)) {
-                ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(file.getPath());
-                TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
-                for (String deltaObjectID : tsFileMetaData.getDeltaObjectMap().keySet()) {
-                    for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
-                        pathSet.add(new Path(deltaObjectID + "." + timeSeriesMetadata.getMeasurementUID()));
-                    }
-                }
-                randomAccessFileReader.close();
-            }
-        }
-
-        return pathSet;
-    }
-
-    public static Map<String, TSDataType> getAllMeasurements(String fileFolderName) throws IOException {
-        Map<String, TSDataType> measurementDataTypeMap = new HashMap<>();
-
-        File dirFile = new File(fileFolderName);
-        if (!dirFile.exists() || (!dirFile.isDirectory())) {
-            LOGGER.error("the given folder name {} is wrong", fileFolderName);
-            return measurementDataTypeMap;
-        }
-
-        File[] subFiles = dirFile.listFiles();
-        if (subFiles == null || subFiles.length == 0) {
-            LOGGER.error("the given folder {} has no overflow folder", fileFolderName);
-            return measurementDataTypeMap;
-        }
-
-        for (File file : subFiles) {
-            if (!file.getName().endsWith(restoreFilePathName)) {
-                ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(file.getPath());
-                TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
-                for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
-                    if (!measurementDataTypeMap.containsKey(timeSeriesMetadata.getMeasurementUID())) {
-                        measurementDataTypeMap.put(timeSeriesMetadata.getMeasurementUID(), timeSeriesMetadata.getType());
-                    }
-                }
-                randomAccessFileReader.close();
-            }
-        }
-
-        return measurementDataTypeMap;
-    }
-
-    private static OverflowSeriesDataSource genDataSource(String unseqTsfilePath, Path path) throws IOException {
+    static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> getUnSeqFileMetaData(String unseqTsfilePath) throws IOException {
         File file = new File(unseqTsfilePath);
         OverflowIO overflowIO = new OverflowIO(unseqTsfilePath, file.length(), true);
-        Map<String, Map<String, List<TimeSeriesChunkMetaData>>> metadata = readMetadata(overflowIO);
+        if (unSeqFileMetaData == null) {
+            unSeqFileMetaData = readMetadata(overflowIO);
+        }
+        return unSeqFileMetaData;
+    }
+
+    private static OverflowSeriesDataSource genDataSource(String unSeqTsFilePath, Path path) throws IOException {
+        File file = new File(unSeqTsFilePath);
+        OverflowIO overflowIO = new OverflowIO(unSeqTsFilePath, file.length(), true);
+        if (unSeqFileMetaData == null) {
+            unSeqFileMetaData = readMetadata(overflowIO);
+        }
         OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(path);
         OverflowInsertFile overflowInsertFile = new OverflowInsertFile();
-        overflowInsertFile.setPath(unseqTsfilePath);
-        overflowInsertFile.setTimeSeriesChunkMetaDatas(metadata.get(path.getDeltaObjectToString()).get(path.getMeasurementToString()));
+        overflowInsertFile.setPath(unSeqTsFilePath);
+        overflowInsertFile.setTimeSeriesChunkMetaDatas(unSeqFileMetaData.get(path.getDeltaObjectToString()).get(path.getMeasurementToString()));
         List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
         overflowInsertFileList.add(overflowInsertFile);
         overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFileList);
@@ -169,6 +115,13 @@ public class ReaderCreator {
         return overflowSeriesDataSource;
     }
 
+    /**
+     * Get the overflow metadata map of overflow insert data.
+     *
+     * @param insertIO
+     * @return
+     * @throws IOException
+     */
     private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> readMetadata(OverflowIO insertIO) throws IOException {
 
         Map<String, Map<String, List<TimeSeriesChunkMetaData>>> insertMetadatas = new HashMap<>();
