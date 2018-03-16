@@ -241,6 +241,8 @@ public class TsfileDBConfig {
 	 * If parameter is false, it's more likely not to update historical data or user doesn't know exactly.
 	 */
 	public boolean update_historical_data_possibility = false;
+	
+	public String IP_white_list = "192.168.0.0/16";
 
 	public TsfileDBConfig() {
 	}

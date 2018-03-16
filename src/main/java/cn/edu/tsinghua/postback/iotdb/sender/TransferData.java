@@ -12,6 +12,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -89,12 +91,28 @@ public class TransferData {
 		this.config = config;
 	}
 
+
+	private void getConnection(String serverIP, int serverPort) {
+		connection(serverIP,serverPort);
+		if(!connection_orElse) {
+			return;
+		}
+		else {
+			if(!transferUUID(config.UUID_PATH)) {
+				LOGGER.error("IoTDB post back sender: Sorry! You do not have permission to connect to postback receiver!");
+				connection_orElse = false;
+				return;
+			}
+		}
+		return;
+	}
+	
 	/**
 	 * Eatablish a connection between sender and receiver
 	 * @param serverIP
 	 * @param serverPort:it must be same with port receiver set.
 	 */
-	public void connection(String serverIP, int serverPort) {
+	private void connection(String serverIP, int serverPort) {
 		transport = new TSocket(serverIP, serverPort);
 		TProtocol protocol = new TBinaryProtocol(transport);
 		clientOfServer = new Service.Client(protocol);
@@ -110,8 +128,7 @@ public class TransferData {
 	/**
 	 * UUID marks the identity of sender for receiver. 
 	 */
-	public String transferUUID(String uuidPath) {
-		String uuidOfReceiver = null;
+	private boolean transferUUID(String uuidPath) {
 		File file = new File(uuidPath);
 		BufferedReader bf;
 		FileOutputStream out;
@@ -136,19 +153,23 @@ public class TransferData {
 				connection_orElse = false;
 			}
 		}
+		boolean leagalConnectionOrNot = true;
 		try {
-			uuidOfReceiver = clientOfServer.getUUID(uuid);
+			leagalConnectionOrNot = clientOfServer.getUUID(uuid, InetAddress.getLocalHost().getHostAddress());
 		} catch (TException e) {
 			LOGGER.error("IoTDB sender: cannot send UUID to receiver because {}", e.getMessage());
 			connection_orElse = false;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			leagalConnectionOrNot = false;
 		}
-		return uuidOfReceiver;
+		return leagalConnectionOrNot;
 	}
 
 	/**
 	 * Create snapshots for those sending files.
 	 */
-	public void makeFileSnapshot(Set<String> sendingFileList, String snapshotPath, String iotdbPath) {
+	private void makeFileSnapshot(Set<String> sendingFileList, String snapshotPath, String iotdbPath) {
 		try {
 			if (!new File(snapshotPath).exists())
 				new File(snapshotPath).mkdir();
@@ -168,7 +189,7 @@ public class TransferData {
 		}
 	}
 
-	public void startSending(Set<String> fileList, String snapshotPath, String iotdbPath) {
+	private void startSending(Set<String> fileList, String snapshotPath, String iotdbPath) {
 		try {
 			int num = 0;
 			for (String filePath : fileList) {
@@ -226,7 +247,7 @@ public class TransferData {
 		} 
 	}
 
-	public void sendSchema(String schemaPath) {
+	private void sendSchema(String schemaPath) {
 		try {
 			FileInputStream fis = new FileInputStream(new File(schemaPath));
 			int mBufferSize = 4 * 1024 * 1024;
@@ -248,7 +269,7 @@ public class TransferData {
 		}
 	}
 
-	public boolean afterSending() {
+	private boolean afterSending() {
 		boolean successOrNot = false;
 		try {
 			successOrNot = clientOfServer.merge();
@@ -259,7 +280,7 @@ public class TransferData {
 		return successOrNot;
 	}
 
-	public void deleteSnapshot(File file) {
+	private void deleteSnapshot(File file) {
 		if (file.isFile() || file.list().length == 0) {
 			file.delete();
 		} else {
@@ -274,7 +295,7 @@ public class TransferData {
 	/**
 	 * Delete date after postback of a storage group has finished.
 	 */
-	public void deleteData(Set<String> fileList, String snapshotPath, String iotdbPath) {
+	private void deleteData(Set<String> fileList, String snapshotPath, String iotdbPath) {
 		
 		Connection connection = null;
 		Statement statement = null;
@@ -365,7 +386,7 @@ public class TransferData {
 	/**
 	 * Monitor postback status
 	 */
-	void monitorPostbackStatus() {
+	private void monitorPostbackStatus() {
 		Date oldTime = new Date();
 		while (true) {
 			Date currentTime = new Date();
@@ -401,79 +422,78 @@ public class TransferData {
 			// start to postback again
 			deleteSnapshot(new File(config.SNAPSHOT_PATH));
 		}
+		
+		PostBackStatus = true;
+		connection_orElse = true;
+		
+		//connect to postback server
+		getConnection(config.SERVER_IP, config.SERVER_PORT);
+		if (!connection_orElse) {
+			LOGGER.info("IoTDB post back sender : postback has failed!");
+			PostBackStatus = false;
+			return;
+		}
+
 		FileManager fileManager = FileManager.getInstance();
 		fileManager.init();
 		Map<String,Set<String>> sendingFileList = fileManager.getSendingFiles();
 		Map<String,Set<String>> nowLocalFileList = fileManager.getNowLocalFiles();
-		connection_orElse = true;
-		if (isEmpty(sendingFileList))
+		if (isEmpty(sendingFileList)) {
 			LOGGER.info("IoTDB post back sender : there has no files to postback !");
-		else {
-			PostBackStatus = true;
-			// create snapshot
-			for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
-				makeFileSnapshot(entry.getValue(), config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-			}
-			//connect to postback server
-			connection(config.SERVER_IP, config.SERVER_PORT);
-			if (!connection_orElse) {
-				LOGGER.info("IoTDB post back sender : postback has failed!");
-				PostBackStatus = false;
-				return;
-			}
-			transferUUID(config.UUID_PATH);
-			if (!connection_orElse) {
-				transport.close();
-				LOGGER.info("IoTDB post back sender : postback has failed!");
-				PostBackStatus = false;
-				return;
-			}
-			sendSchema(config.SCHEMA_PATH);
-			if (!connection_orElse) {
-				transport.close();
-				LOGGER.info("IoTDB post back sender : postback has failed!");
-				PostBackStatus = false;
-				return;
-			}
-			for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
-				Set<String> sendingList = entry.getValue();
-				if(sendingList.size() == 0) continue;	
-				LOGGER.info("IoTDB post back sender : postback starts to transfer data of storage group {}.", entry.getKey());
-				try {
-					clientOfServer.init(entry.getKey());
-				} catch (TException e) {
-					e.printStackTrace();
-				}
-				startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-				if (!connection_orElse) {
-					transport.close();
-					LOGGER.info("IoTDB post back sender : postback has failed!");
-					PostBackStatus = false;
-					return;
-				}
-				if (afterSending()) {
-					nowLocalFileList.get(entry.getKey()).addAll(sendingList);
-					fileManager.setNowLocalFiles(nowLocalFileList);
-					fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
-					if(clearOrNot) {
-						deleteData(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-					}
-					LOGGER.info("IoTDB post back sender : the postBack has finished storage group {}.", entry.getKey());
-				} else {
-					LOGGER.info("IoTDB post back sender : postback has failed!");
-					PostBackStatus = false;
-					return;
-				}
-			}
-			deleteSnapshot(new File(config.SNAPSHOT_PATH));
+			PostBackStatus = false;
+			return;
+		}
+		
+		// create snapshot
+		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			makeFileSnapshot(entry.getValue(), config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
+		}
+		
+		sendSchema(config.SCHEMA_PATH);
+		if (!connection_orElse) {
+			transport.close();
+			LOGGER.info("IoTDB post back sender : postback has failed!");
+			PostBackStatus = false;
+			return;
+		}
+		for(Entry<String, Set<String>> entry:sendingFileList.entrySet()) {
+			Set<String> sendingList = entry.getValue();
+			if(sendingList.size() == 0) continue;	
+			LOGGER.info("IoTDB post back sender : postback starts to transfer data of storage group {}.", entry.getKey());
 			try {
-				clientOfServer.afterReceiving();
+				clientOfServer.init(entry.getKey());
 			} catch (TException e) {
 				e.printStackTrace();
 			}
-			transport.close();
-			LOGGER.info("IoTDB post back sender : the postBack has finished!");
+			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
+			if (!connection_orElse) {
+				transport.close();
+				LOGGER.info("IoTDB post back sender : postback has failed!");
+				PostBackStatus = false;
+				return;
+			}
+			if (afterSending()) {
+				nowLocalFileList.get(entry.getKey()).addAll(sendingList);
+				fileManager.setNowLocalFiles(nowLocalFileList);
+				fileManager.backupNowLocalFileInfo(config.LAST_FILE_INFO);
+				if(clearOrNot) {
+					deleteData(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
+				}
+				LOGGER.info("IoTDB post back sender : the postBack has finished storage group {}.", entry.getKey());
+			} else {
+				LOGGER.info("IoTDB post back sender : postback has failed!");
+				PostBackStatus = false;
+				return;
+			}
 		}
+		deleteSnapshot(new File(config.SNAPSHOT_PATH));
+		try {
+			clientOfServer.afterReceiving();
+		} catch (TException e) {
+			e.printStackTrace();
+		}
+		transport.close();
+		LOGGER.info("IoTDB post back sender : the postBack has finished!");
 		PostBackStatus = false;
 		return;
 	}

@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,6 +77,7 @@ public class ServiceImp implements Service.Iface {
 	private ThreadLocal<String> snapshotFilePath = new ThreadLocal<>();   //it is the hardlink directory of overlap tsfiles when merging old data
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
 	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
+	private String IPwhiteList = TsfileDBDescriptor.getInstance().getConfig().IP_white_list;
 	private String dataPath= new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB data directory
 	private boolean update_historical_data_possibility = TsfileDBDescriptor.getInstance().getConfig().update_historical_data_possibility;
 	
@@ -95,14 +97,62 @@ public class ServiceImp implements Service.Iface {
 		snapshotFilePath.set(dataPath + uuid.get() + File.separator + "Snapshot");
 	}
 	
-	public String getUUID(String uuid) throws TException {
+	/**
+	 * Verify IP address of sender
+	 */
+	public boolean getUUID(String uuid, String IPaddress) throws TException {
 		this.uuid.set(uuid);
 		schemaFromSenderPath.set(dataPath + this.uuid.get() + File.separator + "mlog.txt");
 		if(new File(dataPath + this.uuid.get()).exists() && new File(dataPath + this.uuid.get()).list().length!=0) {
 			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
 			deleteFile(new File(dataPath + this.uuid.get()));
 		}
-		return this.uuid.get();
+		boolean legalOrNOt = verifyIPSegment(IPwhiteList, IPaddress);
+		return legalOrNOt;
+	}
+	
+	/**
+	 * Verify IP address with IP white list which contains more than one IP segment.
+	 * @param IPwhiteList
+	 * @param IPaddress
+	 * @return
+	 */
+	public boolean verifyIPSegment(String IPwhiteList, String IPaddress) {
+		String[] IPsegments = IPwhiteList.split(",");
+		for(String IPsegment:IPsegments) {
+			int subnetMask = Integer.parseInt(IPsegment.substring(IPsegment.indexOf("/") + 1));
+			IPsegment = IPsegment.substring(0, IPsegment.indexOf("/"));
+			if(verifyIP(IPsegment, IPaddress, subnetMask))
+				return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Verify IP address with IP segment.
+	 * @param IPsegment
+	 * @param IPaddress
+	 * @param subnetMark
+	 * @return
+	 */
+	public boolean verifyIP(String IPsegment, String IPaddress, int subnetMark) {
+		String IPsegmentBinary = "";
+		String IPaddressBinary = "";
+		String[] IPsplits = IPsegment.split("\\.");
+		DecimalFormat df=new DecimalFormat("00000000");
+		for(String IPsplit:IPsplits) {
+			IPsegmentBinary = IPsegmentBinary + String.valueOf(df.format(Integer.parseInt(Integer.toBinaryString(Integer.parseInt(IPsplit)))));
+		}
+		IPsegmentBinary = IPsegmentBinary.substring(0, subnetMark);
+		IPsplits = IPaddress.split("\\.");
+		for(String IPsplit:IPsplits) {
+			IPaddressBinary = IPaddressBinary + String.valueOf(df.format(Integer.parseInt(Integer.toBinaryString(Integer.parseInt(IPsplit)))));
+		}
+		IPaddressBinary = IPaddressBinary.substring(0, subnetMark);
+		if(IPaddressBinary.equals(IPsegmentBinary))
+			return true;
+		else
+			return false;
 	}
 
 	public String startReceiving(String md5, List<String> filePathSplit, ByteBuffer dataToReceive, int status)

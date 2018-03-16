@@ -5,13 +5,19 @@ package cn.edu.tsinghua.postback.iotdb.receiver;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
@@ -22,6 +28,7 @@ public class ServerManager {
 	private TProcessor processor;
 	private TThreadPoolServer.Args poolArgs;
 	private TServer poolServer;
+	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServerManager.class);
 	private static class ServerManagerHolder{
@@ -36,7 +43,14 @@ public class ServerManager {
 
 	public void startServer() {
 		try {
-			serverTransport = new TServerSocket(TsfileDBDescriptor.getInstance().getConfig().POSTBACK_SERVER_PORT);
+			if(conf.IP_white_list == null) {
+				LOGGER.error("IoTDB post back receicer: Postback server failed to start because IP white list is null, please set IP white list!");
+				return;
+			}
+			else {
+				conf.IP_white_list = conf.IP_white_list.replaceAll(" ", "");
+			}
+			serverTransport = new TServerSocket(conf.POSTBACK_SERVER_PORT);
 			protocolFactory = new TBinaryProtocol.Factory();
 			processor = new Service.Processor<ServiceImp>(new ServiceImp());
 			poolArgs = new TThreadPoolServer.Args(serverTransport);
@@ -49,7 +63,8 @@ public class ServerManager {
 					poolServer.serve();
 				}
 			};
-			new Thread(runnable).start();
+			Thread thread = new Thread(runnable);
+			thread.start();
 		} catch (TTransportException e) {
 			LOGGER.error("IoTDB post back receicer: cannot start postback server because {}", e.getMessage());
 		}
@@ -57,6 +72,7 @@ public class ServerManager {
 
 	public void closeServer() {
 		poolServer.stop();
+		serverTransport.close();
 		LOGGER.info("Stop postback server!");
 	}
 	

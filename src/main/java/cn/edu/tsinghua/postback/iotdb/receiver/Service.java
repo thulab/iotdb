@@ -36,7 +36,7 @@ public class Service {
 
   public interface Iface {
 
-    public String getUUID(String uuid) throws org.apache.thrift.TException;
+    public boolean getUUID(String uuid, String address) throws org.apache.thrift.TException;
 
     public String startReceiving(String md5, List<String> filename, ByteBuffer buff, int status) throws org.apache.thrift.TException;
 
@@ -58,7 +58,7 @@ public class Service {
 
   public interface AsyncIface {
 
-    public void getUUID(String uuid, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getUUID(String uuid, String address, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void startReceiving(String md5, List<String> filename, ByteBuffer buff, int status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -98,20 +98,21 @@ public class Service {
       super(iprot, oprot);
     }
 
-    public String getUUID(String uuid) throws org.apache.thrift.TException
+    public boolean getUUID(String uuid, String address) throws org.apache.thrift.TException
     {
-      send_getUUID(uuid);
+      send_getUUID(uuid, address);
       return recv_getUUID();
     }
 
-    public void send_getUUID(String uuid) throws org.apache.thrift.TException
+    public void send_getUUID(String uuid, String address) throws org.apache.thrift.TException
     {
       getUUID_args args = new getUUID_args();
       args.setUuid(uuid);
+      args.setAddress(address);
       sendBase("getUUID", args);
     }
 
-    public String recv_getUUID() throws org.apache.thrift.TException
+    public boolean recv_getUUID() throws org.apache.thrift.TException
     {
       getUUID_result result = new getUUID_result();
       receiveBase(result, "getUUID");
@@ -305,29 +306,32 @@ public class Service {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void getUUID(String uuid, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getUUID(String uuid, String address, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getUUID_call method_call = new getUUID_call(uuid, resultHandler, this, ___protocolFactory, ___transport);
+      getUUID_call method_call = new getUUID_call(uuid, address, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getUUID_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String uuid;
-      public getUUID_call(String uuid, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String address;
+      public getUUID_call(String uuid, String address, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.uuid = uuid;
+        this.address = address;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getUUID", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getUUID_args args = new getUUID_args();
         args.setUuid(uuid);
+        args.setAddress(address);
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public String getResult() throws org.apache.thrift.TException {
+      public boolean getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -633,7 +637,8 @@ public class Service {
 
       public getUUID_result getResult(I iface, getUUID_args args) throws org.apache.thrift.TException {
         getUUID_result result = new getUUID_result();
-        result.success = iface.getUUID(args.uuid);
+        result.success = iface.getUUID(args.uuid, args.address);
+        result.setSuccessIsSet(true);
         return result;
       }
     }
@@ -824,7 +829,7 @@ public class Service {
       return processMap;
     }
 
-    public static class getUUID<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getUUID_args, String> {
+    public static class getUUID<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getUUID_args, Boolean> {
       public getUUID() {
         super("getUUID");
       }
@@ -833,12 +838,13 @@ public class Service {
         return new getUUID_args();
       }
 
-      public AsyncMethodCallback<String> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<Boolean> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<String>() { 
-          public void onComplete(String o) {
+        return new AsyncMethodCallback<Boolean>() { 
+          public void onComplete(Boolean o) {
             getUUID_result result = new getUUID_result();
             result.success = o;
+            result.setSuccessIsSet(true);
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -870,8 +876,8 @@ public class Service {
         return false;
       }
 
-      public void start(I iface, getUUID_args args, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws TException {
-        iface.getUUID(args.uuid,resultHandler);
+      public void start(I iface, getUUID_args args, org.apache.thrift.async.AsyncMethodCallback<Boolean> resultHandler) throws TException {
+        iface.getUUID(args.uuid, args.address,resultHandler);
       }
     }
 
@@ -1284,6 +1290,7 @@ public class Service {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getUUID_args");
 
     private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField ADDRESS_FIELD_DESC = new org.apache.thrift.protocol.TField("address", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1292,10 +1299,12 @@ public class Service {
     }
 
     public String uuid; // required
+    public String address; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      UUID((short)1, "uuid");
+      UUID((short)1, "uuid"),
+      ADDRESS((short)2, "address");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -1312,6 +1321,8 @@ public class Service {
         switch(fieldId) {
           case 1: // UUID
             return UUID;
+          case 2: // ADDRESS
+            return ADDRESS;
           default:
             return null;
         }
@@ -1357,6 +1368,8 @@ public class Service {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.ADDRESS, new org.apache.thrift.meta_data.FieldMetaData("address", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getUUID_args.class, metaDataMap);
     }
@@ -1365,10 +1378,12 @@ public class Service {
     }
 
     public getUUID_args(
-      String uuid)
+      String uuid,
+      String address)
     {
       this();
       this.uuid = uuid;
+      this.address = address;
     }
 
     /**
@@ -1377,6 +1392,9 @@ public class Service {
     public getUUID_args(getUUID_args other) {
       if (other.isSetUuid()) {
         this.uuid = other.uuid;
+      }
+      if (other.isSetAddress()) {
+        this.address = other.address;
       }
     }
 
@@ -1387,6 +1405,7 @@ public class Service {
     @Override
     public void clear() {
       this.uuid = null;
+      this.address = null;
     }
 
     public String getUuid() {
@@ -1413,6 +1432,30 @@ public class Service {
       }
     }
 
+    public String getAddress() {
+      return this.address;
+    }
+
+    public getUUID_args setAddress(String address) {
+      this.address = address;
+      return this;
+    }
+
+    public void unsetAddress() {
+      this.address = null;
+    }
+
+    /** Returns true if field address is set (has been assigned a value) and false otherwise */
+    public boolean isSetAddress() {
+      return this.address != null;
+    }
+
+    public void setAddressIsSet(boolean value) {
+      if (!value) {
+        this.address = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case UUID:
@@ -1423,6 +1466,14 @@ public class Service {
         }
         break;
 
+      case ADDRESS:
+        if (value == null) {
+          unsetAddress();
+        } else {
+          setAddress((String)value);
+        }
+        break;
+
       }
     }
 
@@ -1430,6 +1481,9 @@ public class Service {
       switch (field) {
       case UUID:
         return getUuid();
+
+      case ADDRESS:
+        return getAddress();
 
       }
       throw new IllegalStateException();
@@ -1444,6 +1498,8 @@ public class Service {
       switch (field) {
       case UUID:
         return isSetUuid();
+      case ADDRESS:
+        return isSetAddress();
       }
       throw new IllegalStateException();
     }
@@ -1467,6 +1523,15 @@ public class Service {
         if (!(this_present_uuid && that_present_uuid))
           return false;
         if (!this.uuid.equals(that.uuid))
+          return false;
+      }
+
+      boolean this_present_address = true && this.isSetAddress();
+      boolean that_present_address = true && that.isSetAddress();
+      if (this_present_address || that_present_address) {
+        if (!(this_present_address && that_present_address))
+          return false;
+        if (!this.address.equals(that.address))
           return false;
       }
 
@@ -1496,6 +1561,16 @@ public class Service {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetAddress()).compareTo(other.isSetAddress());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetAddress()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.address, other.address);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -1521,6 +1596,14 @@ public class Service {
         sb.append("null");
       } else {
         sb.append(this.uuid);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("address:");
+      if (this.address == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.address);
       }
       first = false;
       sb.append(")");
@@ -1574,6 +1657,14 @@ public class Service {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 2: // ADDRESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.address = iprot.readString();
+                struct.setAddressIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -1592,6 +1683,11 @@ public class Service {
         if (struct.uuid != null) {
           oprot.writeFieldBegin(UUID_FIELD_DESC);
           oprot.writeString(struct.uuid);
+          oprot.writeFieldEnd();
+        }
+        if (struct.address != null) {
+          oprot.writeFieldBegin(ADDRESS_FIELD_DESC);
+          oprot.writeString(struct.address);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -1615,19 +1711,29 @@ public class Service {
         if (struct.isSetUuid()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetAddress()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetUuid()) {
           oprot.writeString(struct.uuid);
+        }
+        if (struct.isSetAddress()) {
+          oprot.writeString(struct.address);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getUUID_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.uuid = iprot.readString();
           struct.setUuidIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.address = iprot.readString();
+          struct.setAddressIsSet(true);
         }
       }
     }
@@ -1637,7 +1743,7 @@ public class Service {
   public static class getUUID_result implements org.apache.thrift.TBase<getUUID_result, getUUID_result._Fields>, java.io.Serializable, Cloneable, Comparable<getUUID_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getUUID_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.BOOL, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1645,7 +1751,7 @@ public class Service {
       schemes.put(TupleScheme.class, new getUUID_resultTupleSchemeFactory());
     }
 
-    public String success; // required
+    public boolean success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -1706,11 +1812,13 @@ public class Service {
     }
 
     // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getUUID_result.class, metaDataMap);
     }
@@ -1719,19 +1827,19 @@ public class Service {
     }
 
     public getUUID_result(
-      String success)
+      boolean success)
     {
       this();
       this.success = success;
+      setSuccessIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public getUUID_result(getUUID_result other) {
-      if (other.isSetSuccess()) {
-        this.success = other.success;
-      }
+      __isset_bitfield = other.__isset_bitfield;
+      this.success = other.success;
     }
 
     public getUUID_result deepCopy() {
@@ -1740,31 +1848,31 @@ public class Service {
 
     @Override
     public void clear() {
-      this.success = null;
+      setSuccessIsSet(false);
+      this.success = false;
     }
 
-    public String getSuccess() {
+    public boolean isSuccess() {
       return this.success;
     }
 
-    public getUUID_result setSuccess(String success) {
+    public getUUID_result setSuccess(boolean success) {
       this.success = success;
+      setSuccessIsSet(true);
       return this;
     }
 
     public void unsetSuccess() {
-      this.success = null;
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
     }
 
     /** Returns true if field success is set (has been assigned a value) and false otherwise */
     public boolean isSetSuccess() {
-      return this.success != null;
+      return EncodingUtils.testBit(__isset_bitfield, __SUCCESS_ISSET_ID);
     }
 
     public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -1773,7 +1881,7 @@ public class Service {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((String)value);
+          setSuccess((Boolean)value);
         }
         break;
 
@@ -1783,7 +1891,7 @@ public class Service {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return getSuccess();
+        return Boolean.valueOf(isSuccess());
 
       }
       throw new IllegalStateException();
@@ -1815,12 +1923,12 @@ public class Service {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
+      boolean this_present_success = true;
+      boolean that_present_success = true;
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
-        if (!this.success.equals(that.success))
+        if (this.success != that.success)
           return false;
       }
 
@@ -1871,11 +1979,7 @@ public class Service {
       boolean first = true;
 
       sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
+      sb.append(this.success);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -1896,6 +2000,8 @@ public class Service {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -1921,8 +2027,8 @@ public class Service {
           }
           switch (schemeField.id) {
             case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.success = iprot.readString();
+              if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+                struct.success = iprot.readBool();
                 struct.setSuccessIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1943,9 +2049,9 @@ public class Service {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.success != null) {
+        if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          oprot.writeString(struct.success);
+          oprot.writeBool(struct.success);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -1971,7 +2077,7 @@ public class Service {
         }
         oprot.writeBitSet(optionals, 1);
         if (struct.isSetSuccess()) {
-          oprot.writeString(struct.success);
+          oprot.writeBool(struct.success);
         }
       }
 
@@ -1980,7 +2086,7 @@ public class Service {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.success = iprot.readString();
+          struct.success = iprot.readBool();
           struct.setSuccessIsSet(true);
         }
       }
