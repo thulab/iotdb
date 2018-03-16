@@ -72,7 +72,7 @@ public class PhysicalGenerator {
 			} catch (AuthException e) {
 				throw new QueryProcessorException(e.getMessage());
 			}
-			case LOADDATA:
+		case LOADDATA:
 			LoadDataOperator loadData = (LoadDataOperator) operator;
 			return new LoadDataPlan(loadData.getInputFilePath(), loadData.getMeasureType());
 		case CREATE_TIMESERIES:

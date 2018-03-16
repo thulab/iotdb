@@ -1,6 +1,9 @@
 package cn.edu.tsinghua.iotdb.auth.authorizer;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
+import cn.edu.tsinghua.iotdb.auth.entity.Role;
+import cn.edu.tsinghua.iotdb.auth.entity.User;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -153,4 +156,30 @@ public interface IAuthorizer {
      * Reset the Authorizer to initiative status.
      */
     void reset();
+
+    /**
+     *
+     * @return A list contains all usernames.
+     */
+    List<String> listAllUsers();
+
+    /**
+     *
+     * @return A list contains all roleNames.
+     */
+    List<String> listAllRoles();
+
+    /**
+     *
+     * @param roleName
+     * @return A role whose name is roleName or null if such role does not exist.
+     */
+    Role getRole(String roleName) throws AuthException;
+
+    /**
+     *
+     * @param username
+     * @return A user whose name is username or null if such user does not exist.
+     */
+    User getUser(String username) throws AuthException;
 }

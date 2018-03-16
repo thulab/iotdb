@@ -100,7 +100,13 @@ public class AuthorityChecker {
             case UPDATE:
                 return PrivilegeType.UPDATE_TIMESERIES.ordinal();
             case LIST_ROLE:
+            case LIST_ROLE_USERS:
+            case LIST_ROLE_PRIVILEGE:
+                return PrivilegeType.LIST_ROLE.ordinal();
             case LIST_USER:
+            case LIST_USER_ROLES:
+            case LIST_USER_PRIVILEGE:
+                return PrivilegeType.LIST_USER.ordinal();
             case AUTHOR:
             case METADATA:
             case BASIC_FUNC:

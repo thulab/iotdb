@@ -211,4 +211,24 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     public ServiceType getID() {
         return ServiceType.AUTHORIZATION_SERVICE;
     }
+
+    @Override
+    public List<String> listAllUsers() {
+        return userManager.listAllUsers();
+    }
+
+    @Override
+    public List<String> listAllRoles() {
+        return roleManager.listAllRoles();
+    }
+
+    @Override
+    public Role getRole(String roleName) throws AuthException {
+        return roleManager.getRole(roleName);
+    }
+
+    @Override
+    public User getUser(String username) throws AuthException {
+        return userManager.getUser(username);
+    }
 }

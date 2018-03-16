@@ -46,4 +46,14 @@ public class PathPrivilege {
      */
     public static Comparator<PathPrivilege> referenceDescentSorter = (o1, o2) -> -Integer.compare(o1.referenceCnt.get(), o2.referenceCnt.get());
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(path);
+        builder.append(" :");
+        for(Integer privilegeId : privileges) {
+            builder.append(" ").append(PrivilegeType.values()[privilegeId]);
+        }
+        builder.append("\n");
+        return builder.toString();
+    }
 }

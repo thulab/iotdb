@@ -532,7 +532,7 @@ listStmt
     | KW_LIST KW_PRIVILEGES KW_ROLE roleName = Identifier KW_ON prefixPath
     -> ^(TOK_LIST TOK_PRIVILEGES ^(TOK_ROLE $roleName) prefixPath)
     | KW_LIST KW_USER KW_PRIVILEGE username = Identifier
-    -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_ROLE $username))
+    -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_USER $username))
     | KW_LIST KW_ROLE KW_PRIVILEGE roleName = Identifier
     -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_ROLE $roleName))
     | KW_LIST KW_ALL KW_ROLE KW_OF KW_USER username = Identifier

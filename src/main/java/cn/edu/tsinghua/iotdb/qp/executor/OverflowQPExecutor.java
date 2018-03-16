@@ -3,7 +3,10 @@ package cn.edu.tsinghua.iotdb.qp.executor;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
+import cn.edu.tsinghua.iotdb.auth.entity.Role;
+import cn.edu.tsinghua.iotdb.auth.entity.User;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
@@ -32,6 +35,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
+import cn.edu.tsinghua.iotdb.utils.AuthUtils;
 import cn.edu.tsinghua.iotdb.utils.LoadDataUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -90,6 +94,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
             case GRANT_USER_ROLE:
             case MODIFY_PASSWORD:
             case DELETE_USER:
+            case LIST_ROLE:
+            case LIST_USER:
+            case LIST_ROLE_PRIVILEGE:
+            case LIST_ROLE_USERS:
+            case LIST_USER_PRIVILEGE:
+            case LIST_USER_ROLES:
                 AuthorPlan author = (AuthorPlan) plan;
                 return operateAuthor(author);
             case LOADDATA:
@@ -347,8 +357,10 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
         Set<Integer> permissions = author.getPermissions();
         Path nodeName = author.getNodeName();
         IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
+        StringBuilder msg;
+        List<String> roleList;
+        List<String> userList;
         try {
-            boolean flag = true;
             switch (authorType) {
                 case UPDATE_USER:
                     if(!authorizer.updateUserPassword(userName, newPassword))
@@ -403,14 +415,90 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     if(!authorizer.revokeRoleFromUser(roleName, userName))
                         throw new ProcessorException("User " + userName + " does not have role " + roleName);
                     return true;
+                case LIST_ROLE:
+                    roleList = authorizer.listAllRoles();
+                    msg = new StringBuilder("Roles are : [ \n");
+                    for(String role : roleList)
+                        msg.append(role).append("\n");
+                    msg.append("]");
+                    // TODO : use a more elegant way to pass message.
+                    throw new ProcessorException(msg.toString());
+                case LIST_USER:
+                    userList = authorizer.listAllRoles();
+                    msg = new StringBuilder("Users are : [ \n");
+                    for(String user : userList)
+                        msg.append(user).append("\n");
+                    msg.append("]");
+                    throw new ProcessorException(msg.toString());
+                case LIST_ROLE_USERS:
+                    Role role = authorizer.getRole(roleName);
+                    if(role == null) {
+                        throw new ProcessorException("No such role : " + roleName);
+                    }
+                    userList = authorizer.listAllUsers();
+                    msg = new StringBuilder("Users are : [ \n");
+                    for(String userN : userList) {
+                        User userObj = authorizer.getUser(userN);
+                        if(userObj != null && userObj.hasRole(roleName))
+                            msg.append(userN).append("\n");
+                    }
+                    msg.append("]");
+                    throw new ProcessorException(msg.toString());
+                case LIST_USER_ROLES:
+                    msg = new StringBuilder("Roles are : [ \n");
+                    User user = authorizer.getUser(userName);
+                    if(user != null) {
+                        for(String roleN : user.roleList) {
+                            msg.append(roleN).append("\n");
+                        }
+                    } else {
+                        throw new ProcessorException("No such user : " + userName);
+                    }
+                    msg.append("]");
+                    throw new ProcessorException(msg.toString());
+                case LIST_ROLE_PRIVILEGE:
+                    msg = new StringBuilder("Privileges are : [ \n");
+                    role = authorizer.getRole(roleName);
+                    if(role != null) {
+                        for(PathPrivilege pathPrivilege : role.privilegeList) {
+                            if(nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
+                                msg.append(pathPrivilege.toString());
+                        }
+                    } else {
+                        throw new ProcessorException("No such role : " + roleName);
+                    }
+                    msg.append("]");
+                    throw new ProcessorException(msg.toString());
+                case LIST_USER_PRIVILEGE:
+                    user = authorizer.getUser(userName);
+                    if(user == null)
+                        throw new ProcessorException("No such user : " + userName);
+                    msg = new StringBuilder("Privileges are : [ \n");
+                    msg.append("From itself : {\n");
+                    for(PathPrivilege pathPrivilege : user.privilegeList) {
+                        if(nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
+                            msg.append(pathPrivilege.toString());
+                    }
+                    msg.append("}");
+                    for(String roleN : user.roleList) {
+                        role = authorizer.getRole(roleN);
+                        if(role != null) {
+                            msg.append("From role ").append(roleN).append(" : {\n");
+                            for(PathPrivilege pathPrivilege : role.privilegeList) {
+                                if(nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
+                                    msg.append(pathPrivilege.toString());
+                            }
+                            msg.append("}");
+                        }
+                    }
+                    msg.append("]");
+                    throw new ProcessorException(msg.toString());
                 default:
-                    break;
-
+                   throw new ProcessorException("Unsupported operation " + authorType);
             }
         } catch (AuthException e) {
             throw new ProcessorException(e.getMessage());
         }
-        return false;
     }
 
     private boolean operateMetadata(MetadataPlan metadataPlan) throws ProcessorException {
