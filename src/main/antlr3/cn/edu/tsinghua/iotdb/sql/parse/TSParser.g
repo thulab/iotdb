@@ -53,6 +53,8 @@ TOK_DELETE;
 TOK_INDEX_KV;
 TOK_FUNC;
 TOK_SELECT_INDEX;
+TOK_LIST;
+TOK_ALL;
 
 /*
   BELOW IS THE METADATA TOKEN
@@ -520,7 +522,24 @@ privileges
     -> ^(TOK_PRIVILEGES StringLiteral+)
     ;
 
-
+listStmt
+    : KW_LIST KW_USER
+    -> ^(TOK_LIST TOK_USER)
+    | KW_LIST KW_ROLE
+    -> ^(TOK_LIST TOK_ROLE)
+    | KW_LIST KW_PRIVILEGES KW_USER username = Identifier KW_ON prefixPath
+    -> ^(TOK_LIST TOK_PRIVILEGES ^(TOK_USER $username) prefixPath)
+    | KW_LIST KW_PRIVILEGES KW_ROLE roleName = Identifier KW_ON prefixPath
+    -> ^(TOK_LIST TOK_PRIVILEGES ^(TOK_ROLE $roleName) prefixPath)
+    | KW_LIST KW_USER KW_PRIVILEGE username = Identifier
+    -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_ROLE $username))
+    | KW_LIST KW_ROLE KW_PRIVILEGE roleName = Identifier
+    -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_ROLE $roleName))
+    | KW_LIST KW_ALL KW_ROLE KW_OF KW_USER username = Identifier
+    -> ^(TOK_LIST TOK_ROLE TOK_ALL ^(TOK_USER $username))
+    | KW_LIST KW_ALL KW_USER KW_OF KW_ROLE roleName = Identifier
+    -> ^(TOK_LIST TOK_USER TOK_ALL ^(TOK_ROLE $roleName))
+    ;
 
 prefixPath
     : KW_ROOT (DOT nodeName)*

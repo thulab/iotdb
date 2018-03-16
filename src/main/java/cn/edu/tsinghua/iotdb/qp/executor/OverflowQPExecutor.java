@@ -3,6 +3,8 @@ package cn.edu.tsinghua.iotdb.qp.executor;
 import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
+import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -349,43 +351,58 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
             boolean flag = true;
             switch (authorType) {
                 case UPDATE_USER:
-                    return authorizer.updateUserPassword(userName, newPassword);
+                    if(!authorizer.updateUserPassword(userName, newPassword))
+                        throw new ProcessorException("password " + newPassword + " is illegal");
+                    return true;
                 case CREATE_USER:
-                    return authorizer.createUser(userName, password);
+                    if(!authorizer.createUser(userName, password))
+                        throw new ProcessorException("User " + userName + " already exists");
+                    return true;
                 case CREATE_ROLE:
-                    return authorizer.createRole(roleName);
+                    if(!authorizer.createRole(roleName))
+                        throw new ProcessorException("Role " + roleName + " already exists");
+                    return true;
                 case DROP_USER:
-                    return authorizer.deleteUser(userName);
+                    if(!authorizer.deleteUser(userName))
+                        throw new ProcessorException("User " + userName + " does not exist");
+                    return true;
                 case DROP_ROLE:
-                    return authorizer.deleteRole(roleName);
+                    if(!authorizer.deleteRole(roleName))
+                        throw new ProcessorException("Role " + roleName + " does not exist");
+                    return true;
                 case GRANT_ROLE:
                     for (int i : permissions) {
-                        if (!authorizer.grantPrivilegeToRole(roleName, nodeName.getFullPath(), i))
-                            flag = false;
+                        if (!authorizer.grantPrivilegeToRole(roleName, nodeName.getFullPath(), i)) {
+                            throw new ProcessorException("Role " + roleName + " already has " + PrivilegeType.values()[i] + " on " + nodeName.getFullPath());
+                        }
                     }
-                    return flag;
+                    return true;
                 case GRANT_USER:
                     for (int i : permissions) {
                         if (!authorizer.grantPrivilegeToUser(userName, nodeName.getFullPath(), i))
-                            flag = false;
+                            throw new ProcessorException("User " + userName + " already has " + PrivilegeType.values()[i] + " on " + nodeName.getFullPath());
                     }
-                    return flag;
+                    return true;
                 case GRANT_ROLE_TO_USER:
-                    return authorizer.grantRoleToUser(roleName, userName);
+                    if(!authorizer.grantRoleToUser(roleName, userName))
+                        throw new ProcessorException("User " + userName + " already has role " + roleName);
+                    return true;
                 case REVOKE_USER:
                     for (int i : permissions) {
                         if (!authorizer.revokePrivilegeFromUser(userName, nodeName.getFullPath(), i))
-                            flag = false;
+                            throw new ProcessorException("User " + userName + " does not have " + PrivilegeType.values()[i] + " on " + nodeName);
                     }
-                    return flag;
+                    return true;
                 case REVOKE_ROLE:
                     for (int i : permissions) {
                         if (!authorizer.revokePrivilegeFromRole(roleName, nodeName.getFullPath(), i))
-                            flag = false;
+                            throw new ProcessorException("Role " + roleName + " does not have " + PrivilegeType.values()[i] + " on " + nodeName);
                     }
-                    return flag;
+                    return true;
                 case REVOKE_ROLE_FROM_USER:
-                    return authorizer.revokeRoleFromUser(roleName, userName);
+                    if(!authorizer.revokeRoleFromUser(roleName, userName))
+                        throw new ProcessorException("User " + userName + " does not have role " + roleName);
+                    return true;
                 default:
                     break;
 

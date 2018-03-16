@@ -67,6 +67,8 @@ KW_LABEL: 'LABEL' ;
 KW_LINK: 'LINK' ;
 KW_UNLINK: 'UNLINK';
 KW_USING: 'USING';
+KW_LIST: 'LIST';
+KW_OF: 'OF';
 
 
 QUOTE : '\'' ;
