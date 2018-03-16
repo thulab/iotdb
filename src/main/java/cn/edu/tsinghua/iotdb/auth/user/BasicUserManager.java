@@ -248,7 +248,9 @@ public abstract class BasicUserManager implements IUserManager {
 
     @Override
     public List<String> listAllUsers() {
-        return accessor.listAllUsers();
+        List<String> rtlist = accessor.listAllUsers();
+        rtlist.sort(null);
+        return rtlist;
     }
 
 }

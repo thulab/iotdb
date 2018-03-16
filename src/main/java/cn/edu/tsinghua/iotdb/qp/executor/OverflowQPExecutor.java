@@ -7,7 +7,6 @@ import cn.edu.tsinghua.iotdb.auth.entity.PathPrivilege;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.auth.entity.Role;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
-import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
@@ -108,7 +107,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                 load.loadLocalDataMultiPass(loadData.getInputFilePath(), loadData.getMeasureType(), MManager.getInstance());
                 return true;
             case DELETE_TIMESERIES:
-            case CREATE_TIMESERIES:
+            case SET_STORAGE_GROUP:
             case METADATA:
                 MetadataPlan metadata = (MetadataPlan) plan;
                 return operateMetadata(metadata);
@@ -424,7 +423,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     // TODO : use a more elegant way to pass message.
                     throw new ProcessorException(msg.toString());
                 case LIST_USER:
-                    userList = authorizer.listAllRoles();
+                    userList = authorizer.listAllUsers();
                     msg = new StringBuilder("Users are : [ \n");
                     for(String user : userList)
                         msg.append(user).append("\n");
@@ -479,7 +478,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                         if(nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
                             msg.append(pathPrivilege.toString());
                     }
-                    msg.append("}");
+                    msg.append("}\n");
                     for(String roleN : user.roleList) {
                         role = authorizer.getRole(roleN);
                         if(role != null) {
@@ -488,7 +487,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                                 if(nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
                                     msg.append(pathPrivilege.toString());
                             }
-                            msg.append("}");
+                            msg.append("}\n");
                         }
                     }
                     msg.append("]");

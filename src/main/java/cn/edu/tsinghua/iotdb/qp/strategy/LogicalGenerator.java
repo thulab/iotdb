@@ -187,7 +187,7 @@ public class LogicalGenerator {
             case TSParser.TOK_SELECT_INDEX:
                 analyzeIndexSelect(astNode);
                 return;
-            case TSParser.KW_LIST:
+            case TSParser.TOK_LIST:
                 analyzeList(astNode);
                 return;
             default:
@@ -203,50 +203,53 @@ public class LogicalGenerator {
             int tokenType = astNode.getChild(0).getType();
             if(tokenType == TSParser.TOK_USER) {
                 // list all users
-                initializedOperator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_USER);
+                initializedOperator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_USER);
             } else if(tokenType == TSParser.TOK_ROLE) {
                 // list all roles
-                initializedOperator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_ROLE);
+                initializedOperator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_ROLE);
             }
         } else if(childrenSize == 3) {
             int tokenType = astNode.getChild(1).getType();
             if(tokenType == TSParser.TOK_USER) {
                 // list user privileges on path
-                AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_USER_PRIVILEGE);
+                AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_USER_PRIVILEGE);
                 initializedOperator = operator;
                 operator.setUserName(astNode.getChild(1).getChild(0).getText());
-                operator.setNodeNameList(parsePath(astNode.getChild(2).getChild(0)));
+                operator.setNodeNameList(parsePath(astNode.getChild(2)));
             } else if(tokenType == TSParser.TOK_ROLE) {
                 // list role privileges on path
-                AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_USER_PRIVILEGE);
+                AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_ROLE_PRIVILEGE);
                 initializedOperator = operator;
                 operator.setRoleName(astNode.getChild(1).getChild(0).getText());
-                operator.setNodeNameList(parsePath(astNode.getChild(2).getChild(0)));
+                operator.setNodeNameList(parsePath(astNode.getChild(2)));
             } else if(tokenType == TSParser.TOK_ALL) {
-                tokenType = astNode.getChild(2).getType();
-                if(tokenType == TSParser.TOK_USER) {
-                    // list all privileges of a user
-                    AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_USER_PRIVILEGE);
-                    initializedOperator = operator;
-                    operator.setUserName(astNode.getChild(2).getChild(0).getText());
-                } else if (tokenType == TSParser.TOK_ROLE) {
-                    // list all privileges of a role
-                    AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_ROLE_PRIVILEGE);
-                    initializedOperator = operator;
-                    operator.setRoleName(astNode.getChild(2).getChild(0).getText());
-                }
-            } else {
                 tokenType = astNode.getChild(0).getType();
-                if(tokenType == TSParser.TOK_USER) {
-                    // list all roles of a user
-                    AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_USER_ROLES);
-                    initializedOperator = operator;
-                    operator.setUserName(astNode.getChild(2).getChild(0).getText());
-                } else if(tokenType == TSParser.TOK_ROLE) {
-                    // list all users of a role
-                    AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, Operator.OperatorType.LIST_ROLE_USERS);
-                    initializedOperator = operator;
-                    operator.setRoleName(astNode.getChild(2).getChild(0).getText());
+                if(tokenType == TSParser.TOK_PRIVILEGES) {
+                    tokenType = astNode.getChild(2).getType();
+                    if(tokenType == TSParser.TOK_USER) {
+                        // list all privileges of a user
+                        AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_USER_PRIVILEGE);
+                        initializedOperator = operator;
+                        operator.setUserName(astNode.getChild(2).getChild(0).getText());
+                    } else if (tokenType == TSParser.TOK_ROLE) {
+                        // list all privileges of a role
+                        AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_ROLE_PRIVILEGE);
+                        initializedOperator = operator;
+                        operator.setRoleName(astNode.getChild(2).getChild(0).getText());
+                    }
+                } else {
+                    tokenType = astNode.getChild(2).getType();
+                    if(tokenType == TSParser.TOK_USER) {
+                        // list all roles of a user
+                        AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_USER_ROLES);
+                        initializedOperator = operator;
+                        operator.setUserName(astNode.getChild(2).getChild(0).getText());
+                    } else if(tokenType == TSParser.TOK_ROLE) {
+                        // list all users of a role
+                        AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_ROLE_USERS);
+                        initializedOperator = operator;
+                        operator.setRoleName(astNode.getChild(2).getChild(0).getText());
+                    }
                 }
             }
         }

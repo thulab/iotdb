@@ -8,7 +8,6 @@ import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +53,7 @@ public class AuthUtils {
             validatePath(path);
             switch (type) {
                 case READ_TIMESERIES:
-                case CREATE_TIMESERIES:
+                case SET_STORAGE_GROUP:
                 case DELETE_TIMESERIES:
                 case INSERT_TIMESERIES:
                 case UPDATE_TIMESERIES:
@@ -65,7 +64,7 @@ public class AuthUtils {
         } else {
             switch (type) {
                 case READ_TIMESERIES:
-                case CREATE_TIMESERIES:
+                case SET_STORAGE_GROUP:
                 case DELETE_TIMESERIES:
                 case INSERT_TIMESERIES:
                 case UPDATE_TIMESERIES:

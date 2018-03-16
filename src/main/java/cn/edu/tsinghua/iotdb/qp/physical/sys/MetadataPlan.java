@@ -70,7 +70,7 @@ public class MetadataPlan extends PhysicalPlan {
 		switch (namespaceType){
 			case SET_FILE_LEVEL:
 			case ADD_PATH:
-				setOperatorType(Operator.OperatorType.CREATE_TIMESERIES);
+				setOperatorType(Operator.OperatorType.SET_STORAGE_GROUP);
 				break;
 			case DELETE_PATH:
 				setOperatorType(Operator.OperatorType.DELETE_TIMESERIES);

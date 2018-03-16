@@ -75,7 +75,7 @@ public class PhysicalGenerator {
 		case LOADDATA:
 			LoadDataOperator loadData = (LoadDataOperator) operator;
 			return new LoadDataPlan(loadData.getInputFilePath(), loadData.getMeasureType());
-		case CREATE_TIMESERIES:
+		case SET_STORAGE_GROUP:
 		case DELETE_TIMESERIES:
 		case METADATA:
 			MetadataOperator metadata = (MetadataOperator) operator;

@@ -155,6 +155,7 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
         xlateMap.put("KW_KEY", "KEY");
         xlateMap.put("KW_ENABLE", "ENABLE");
         xlateMap.put("KW_DISABLE", "DISABLE");
+        xlateMap.put("KW_ALL", "ALL");
 
         // Operators
         xlateMap.put("DOT", ".");
@@ -176,6 +177,7 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
         xlateMap.put("GREATERTHAN", ">");
 
         xlateMap.put("CharSetLiteral", "\\'");
+        xlateMap.put("KW_LIST", "LIST");
     }
 
     public static Collection<String> getKeywords() {
@@ -302,6 +304,7 @@ execStatement
 //    | loadStatement
     | indexStatement
     | quitStatement
+    | listStatement
     ;
 
 
@@ -522,7 +525,7 @@ privileges
     -> ^(TOK_PRIVILEGES StringLiteral+)
     ;
 
-listStmt
+listStatement
     : KW_LIST KW_USER
     -> ^(TOK_LIST TOK_USER)
     | KW_LIST KW_ROLE
@@ -531,9 +534,9 @@ listStmt
     -> ^(TOK_LIST TOK_PRIVILEGES ^(TOK_USER $username) prefixPath)
     | KW_LIST KW_PRIVILEGES KW_ROLE roleName = Identifier KW_ON prefixPath
     -> ^(TOK_LIST TOK_PRIVILEGES ^(TOK_ROLE $roleName) prefixPath)
-    | KW_LIST KW_USER KW_PRIVILEGE username = Identifier
+    | KW_LIST KW_USER KW_PRIVILEGES username = Identifier
     -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_USER $username))
-    | KW_LIST KW_ROLE KW_PRIVILEGE roleName = Identifier
+    | KW_LIST KW_ROLE KW_PRIVILEGES roleName = Identifier
     -> ^(TOK_LIST TOK_PRIVILEGES TOK_ALL ^(TOK_ROLE $roleName))
     | KW_LIST KW_ALL KW_ROLE KW_OF KW_USER username = Identifier
     -> ^(TOK_LIST TOK_ROLE TOK_ALL ^(TOK_USER $username))

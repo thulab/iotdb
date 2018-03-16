@@ -3,11 +3,13 @@ package cn.edu.tsinghua.iotdb.auth;
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.entity.User;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -271,4 +273,62 @@ public class LocalFileAuthorizerTest {
 		}
 	}
 
+	@Test
+	public void testListUser() throws AuthException {
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
+		List<String> userList = authorizer.listAllUsers();
+		assertEquals(1, userList.size());
+		assertEquals(TsFileDBConstant.ADMIN_NAME, userList.get(0));
+
+		int userCnt = 10;
+		for(int i = 0; i < userCnt; i++) {
+			authorizer.createUser("newUser" + i, "password" + i);
+		}
+		userList = authorizer.listAllUsers();
+		assertEquals(11, userList.size());
+		for(int i = 0; i < userCnt; i++) {
+			assertEquals("newUser" + i, userList.get(i));
+		}
+
+		for(int i = 0; i < userCnt; i++) {
+			if(i % 2 == 0) {
+				authorizer.deleteUser("newUser" + i);
+			}
+		}
+		userList = authorizer.listAllUsers();
+		assertEquals(6, userList.size());
+		for(int i = 0; i < userCnt; i++) {
+			if(i % 2 == 1)
+				assertEquals("newUser" + i, userList.get(i / 2));
+		}
+	}
+
+	@Test
+	public void testListRole() throws AuthException {
+		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
+		List<String> roleList = authorizer.listAllRoles();
+		assertEquals(0, roleList.size());
+
+		int roleCnt = 10;
+		for(int i = 0; i < roleCnt; i++) {
+			authorizer.createRole("newRole" + i);
+		}
+		roleList = authorizer.listAllRoles();
+		assertEquals(10, roleList.size());
+		for(int i = 0; i < roleCnt; i++) {
+			assertEquals("newRole" + i, roleList.get(i));
+		}
+
+		for(int i = 0; i < roleCnt; i++) {
+			if(i % 2 == 0) {
+				authorizer.deleteRole("newRole" + i);
+			}
+		}
+		roleList = authorizer.listAllRoles();
+		assertEquals(5, roleList.size());
+		for(int i = 0; i < roleCnt; i++) {
+			if(i % 2 == 1)
+				assertEquals("newRole" + i, roleList.get(i / 2));
+		}
+	}
 }

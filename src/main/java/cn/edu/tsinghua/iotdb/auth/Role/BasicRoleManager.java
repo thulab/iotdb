@@ -138,6 +138,8 @@ public abstract class BasicRoleManager implements IRoleManager{
 
     @Override
     public List<String> listAllRoles() {
-        return accessor.listAllRoles();
+        List<String> rtlist = accessor.listAllRoles();
+        rtlist.sort(null);
+        return rtlist;
     }
 }
