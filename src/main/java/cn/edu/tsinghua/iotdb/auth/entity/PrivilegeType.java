@@ -8,10 +8,6 @@ public enum PrivilegeType {
     CREATE_USER, DELETE_USER, MODIFY_PASSWORD, LIST_USER, GRANT_USER_PRIVILEGE, REVOKE_USER_PRIVILEGE, GRANT_USER_ROLE, REVOKE_USER_ROLE,
     CREATE_ROLE, DELETE_ROLE, LIST_ROLE, GRANT_ROLE_PRIVILEGE, REVOKE_ROLE_PRIVILEGE;
 
-    public static boolean isPathRelevant(PrivilegeType type) {
-        return type.ordinal() <= DELETE_TIMESERIES.ordinal();
-    }
-
     public static boolean isPathRelevant(int type) {
         return type <= DELETE_TIMESERIES.ordinal();
     }

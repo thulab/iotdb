@@ -198,7 +198,7 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     }
 
     @Override
-    public void start() throws StartupException {
+    public void start() {
         init();
     }
 
