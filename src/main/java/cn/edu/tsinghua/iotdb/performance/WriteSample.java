@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2.performanceTest;
+package cn.edu.tsinghua.iotdb.performance;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
@@ -24,17 +24,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static cn.edu.tsinghua.iotdb.queryV2.performanceTest.CreatorUtils.getValidFiles;
-import static cn.edu.tsinghua.iotdb.queryV2.performanceTest.CreatorUtils.restoreFilePathName;
-import static cn.edu.tsinghua.iotdb.queryV2.performanceTest.CreatorUtils.unseqTsFilePathName;
-import static cn.edu.tsinghua.iotdb.queryV2.performanceTest.ReaderCreator.getTsFileMetadata;
-import static cn.edu.tsinghua.iotdb.queryV2.performanceTest.ReaderCreator.getUnSeqFileMetaData;
+import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.getValidFiles;
+import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.restoreFilePathName;
+import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.unseqTsFilePathName;
+import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getTsFileMetadata;
+import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getUnSeqFileMetaData;
 
 /**
  * Created by zhangjinrui on 2018/3/13.
@@ -43,9 +41,9 @@ public class WriteSample {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WriteSample.class);
 
-    private static String mergeOutPutFolder = "/Users/beyyes/Desktop/root.ln.wf632814.type4/merge/";
-    private static String fileFolderName = "/Users/beyyes/Desktop/root.ln.wf632814.type4";
-    private static final String unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
+    private static String mergeOutPutFolder;
+    private static String fileFolderName;
+    private static String unSeqFilePath;
 
 
     private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> unSeqFileMetaData;
@@ -53,7 +51,8 @@ public class WriteSample {
 
     public static void main(String args[]) throws WriteProcessException, IOException {
         fileFolderName = args[0];
-        mergeOutPutFolder = fileFolderName + "/merge";
+        mergeOutPutFolder = fileFolderName + "/merge/";
+        unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
 
         unSeqFileMetaData = getUnSeqFileMetaData(unSeqFilePath);
 
@@ -87,7 +86,8 @@ public class WriteSample {
 
         long allFileMergeStartTime = System.currentTimeMillis();
         for (File file : files) {
-            if (!file.getName().endsWith(restoreFilePathName) && !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")) {
+            if (!file.isDirectory() && !file.getName().endsWith(restoreFilePathName) &&
+                    !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")) {
                 System.out.println(String.format("---- merge process begin, current merge file is %s.", file.getName()));
 
                 long oneFileMergeStartTime = System.currentTimeMillis();
