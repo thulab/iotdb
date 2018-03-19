@@ -18,6 +18,7 @@ import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
@@ -54,7 +55,7 @@ public class ReaderCreator {
      * @return TimeValuePairReader
      * @throws IOException
      */
-    public static TimeValuePairReader createReaderForMerge(String tsfilePath, String unseqTsFilePath, Path path) throws IOException {
+    public static TimeValuePairReader createReaderForMerge(String tsfilePath, String unseqTsFilePath, Path path, long startTime, long endTime) throws IOException {
 //        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
 //        TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
 //        randomAccessFileReader.close();
@@ -67,7 +68,7 @@ public class ReaderCreator {
 
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
         TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir = "";
-        Filter<?> filter = TimeFilter.gtEq(0L);
+        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
         SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
         IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
         TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);

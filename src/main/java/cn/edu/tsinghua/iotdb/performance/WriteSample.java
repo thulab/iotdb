@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.performance;
 
+import cn.edu.tsinghua.aop.Cost;
+import cn.edu.tsinghua.aop.CostResult;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -55,13 +57,18 @@ public class WriteSample {
         unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
 
         unSeqFileMetaData = getUnSeqFileMetaData(unSeqFilePath);
+        WriteSample writeSample = new WriteSample();
+        writeSample.initUnSeqFileStatistics();
 
-        initUnSeqFileStatistics();
+        CostResult.getInstance().startRecord();
 
-        executeMerge();
+        writeSample.executeMerge();
+
+        //System.out.println("oooooo");
+        //System.out.println("true:" + CostResult.getInstance().getTotalTimeCost("cn/edu/tsinghua/iotdb/performance/WriteSmaple", "constructTsRecord"));
     }
 
-    private static void initUnSeqFileStatistics() {
+    private void initUnSeqFileStatistics() {
         unSeqFileDeltaObjectTimeRangeMap = new HashMap<>();
         for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : unSeqFileMetaData.entrySet()) {
             String unSeqDeltaObjectId = entry.getKey();
@@ -76,7 +83,7 @@ public class WriteSample {
         }
     }
 
-    private static void executeMerge() throws IOException, WriteProcessException {
+    private void executeMerge() throws IOException, WriteProcessException {
         Pair<Boolean, File[]> validFiles = getValidFiles(fileFolderName);
         if (!validFiles.left) {
             LOGGER.info("There exists error in given file folder");
@@ -107,12 +114,16 @@ public class WriteSample {
                 // examine whether this TsFile should be merged
                 for (Map.Entry<String, TsDeltaObject> tsFileEntry : tsFileMetaData.getDeltaObjectMap().entrySet()) {
                     String tsFileDeltaObjectId = tsFileEntry.getKey();
+                    long tsFileDeltaObjectStartTime = tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).startTime;
+                    long tsFileDeltaObjectEndTime = tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).endTime;
                     if (unSeqFileMetaData.containsKey(tsFileDeltaObjectId) &&
-                            unSeqFileDeltaObjectTimeRangeMap.get(tsFileDeltaObjectId).left <= tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).endTime) {
+                            unSeqFileDeltaObjectTimeRangeMap.get(tsFileDeltaObjectId).left <= tsFileDeltaObjectStartTime
+                            && unSeqFileDeltaObjectTimeRangeMap.get(tsFileDeltaObjectId).right >= tsFileDeltaObjectStartTime) {
                         for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
                             if (unSeqFileMetaData.get(tsFileDeltaObjectId).containsKey(timeSeriesMetadata.getMeasurementUID())) {
                                 TimeValuePairReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
-                                        new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()));
+                                        new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
+                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
                                 while (reader.hasNext()) {
                                     TimeValuePair tp = reader.next();
 
@@ -148,14 +159,16 @@ public class WriteSample {
         System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
     }
 
-    private static TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
+    //@Cost
+    private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
         TSRecord record = new TSRecord(timeValuePair.getTimestamp(), deltaObjectId);
         record.addTuple(DataPoint.getDataPoint(timeValuePair.getValue().getDataType(), measurementId,
                 timeValuePair.getValue().getValue().toString()));
         return record;
     }
 
-    private static TSEncoding getEncodingByDataType(TSDataType dataType) {
+    //@Cost
+    private TSEncoding getEncodingByDataType(TSDataType dataType) {
         switch (dataType) {
             case TEXT:
                 return TSEncoding.PLAIN;
