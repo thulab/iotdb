@@ -199,7 +199,6 @@ public class ImportCsv extends AbstractCsvTool{
                 bw.write(e.getMessage());
                 bw.newLine();
                 errorFlag = false;
-                System.out.println("ERROR6");
             }
 
         } catch (FileNotFoundException e) {
