@@ -175,9 +175,9 @@ public class FileNodeManager implements IStatistic, IService {
 
 		// TsFileConf.duplicateIncompletedPage = true;
 		if (TsFileDBConf.enableStatMonitor) {
-			StatMonitor statMonitor = StatMonitor.getInstance();
-			registStatMetadata();
-			statMonitor.registStatistics(statStorageDeltaName, this);
+//			StatMonitor statMonitor = StatMonitor.getInstance();
+//			registStatMetadata();
+//			statMonitor.registStatistics(statStorageDeltaName, this);
 		}
 	}
 

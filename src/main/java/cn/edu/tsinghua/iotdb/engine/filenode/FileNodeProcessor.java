@@ -16,6 +16,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.MonitorV2.Event.CoverStatEvent;
+import cn.edu.tsinghua.iotdb.MonitorV2.Event.FlushStatEvent;
+import cn.edu.tsinghua.iotdb.MonitorV2.EventConstants;
+import cn.edu.tsinghua.iotdb.MonitorV2.Event.StatEvent;
+import cn.edu.tsinghua.iotdb.MonitorV2.StatEventListener;
+import cn.edu.tsinghua.iotdb.MonitorV2.StatEventProducer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithUpdateOpReader;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -66,9 +72,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -77,7 +81,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
 
-public class FileNodeProcessor extends Processor implements IStatistic {
+public class FileNodeProcessor extends Processor implements IStatistic, StatEventProducer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -120,6 +124,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	private final String statStorageDeltaName;
 
 	private FileSchema fileSchema;
+
+	private List<StatEventListener> listeners = new ArrayList<>();
 
 	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
 		{
@@ -334,9 +340,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		// RegistStatService
 		if (TsFileDBConf.enableStatMonitor) {
-			StatMonitor statMonitor = StatMonitor.getInstance();
-			registStatMetadata();
-			statMonitor.registStatistics(statStorageDeltaName, this);
+//			StatMonitor statMonitor = StatMonitor.getInstance();
+//			registStatMetadata();
+//			statMonitor.registStatistics(statStorageDeltaName, this);
 		}
 	}
 
@@ -897,6 +903,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		//
 		LOGGER.info("The filenode processor {} begins to merge.", getProcessorName());
 		prepareForMerge();
+		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 100));
 		//
 		// change status from overflowed to no overflowed
 		//
@@ -998,6 +1005,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							(int) (((numOfMergeFiles - 1) / (float) allNeedMergeFiles) * 100));
 					long startTime = System.currentTimeMillis();
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
+					cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new CoverStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 100, 50));
 					long endTime = System.currentTimeMillis();
 					long timeConsume = endTime - startTime;
 					DateTime startDateTime = new DateTime(startTime,
@@ -1513,6 +1521,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	@Override
 	public boolean flush() throws IOException {
+		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), baseDirPath.substring(baseDirPath.lastIndexOf("/")), 1000));
 		if (bufferWriteProcessor != null) {
 			bufferWriteProcessor.flush();
 		}
@@ -1601,6 +1610,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	@Override
 	public void close() throws FileNodeProcessorException {
+		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 1000));
 		closeBufferWrite();
 		closeOverflow();
 	}
@@ -1666,5 +1676,17 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	public String getFileNodeRestoreFilePath() {
 		return fileNodeRestoreFilePath;
+	}
+
+	@Override
+	public void registerListener(StatEventListener listener) {
+		listeners.add(listener);
+	}
+
+	@Override
+	public void produceEvent(StatEvent event) {
+		for(StatEventListener listener : listeners){
+			listener.addEvent(event);
+		}
 	}
 }
