@@ -6,6 +6,7 @@ tokenVocab=TSLexer;
 output=AST;
 ASTLabelType=CommonTree;
 backtrack=true;
+memoize=true;
 k=3;
 }
 
