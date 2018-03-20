@@ -38,7 +38,6 @@ classname=cn.edu.tsinghua.iotdb.service.IoTDB
 launch_service()
 {
 	class="$1"
-	echo $class
 	iotdb_parms="-Dlogback.configurationFile=${IOTDB_CONF}/logback.xml"
 	iotdb_parms="$iotdb_parms -DIOTDB_HOME=${IOTDB_HOME}"
 	iotdb_parms="$iotdb_parms -DTSFILE_HOME=${IOTDB_HOME}"
