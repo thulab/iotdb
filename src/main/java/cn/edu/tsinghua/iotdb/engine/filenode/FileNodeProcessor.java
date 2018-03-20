@@ -1005,7 +1005,7 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 							(int) (((numOfMergeFiles - 1) / (float) allNeedMergeFiles) * 100));
 					long startTime = System.currentTimeMillis();
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
-					cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new CoverStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 100, 50));
+//					cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new CoverStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 100, 50));
 					long endTime = System.currentTimeMillis();
 					long timeConsume = endTime - startTime;
 					DateTime startDateTime = new DateTime(startTime,
@@ -1415,6 +1415,10 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 						}
 					}
 				} finally {
+					cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor statMonitor = cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance();
+					CoverStatEvent event = new CoverStatEvent(System.currentTimeMillis(), path.getFullPath(), seriesReader.getPointCoverNum(), 0);
+					statMonitor.addEvent(event);
+
 					seriesReader.close();
 				}
 			}

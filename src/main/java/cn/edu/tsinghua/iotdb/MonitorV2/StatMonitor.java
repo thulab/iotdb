@@ -70,12 +70,17 @@ public class StatMonitor implements StatEventListener, IService {
     public void dealWithEvent(StatEvent event) {
         if(event == null)return;
 
-        FileNodeManager fManager = FileNodeManager.getInstance();
         StatisticTSRecord record = event.convertToStatTSRecord();
-        updateStatistics(record);
+        updateStatisticMap(record);
+        updateStatisticInDB();
+    }
 
+    private void updateStatisticInDB(){
+        FileNodeManager fManager = FileNodeManager.getInstance();
+        long current_time = System.currentTimeMillis();
         for (Map.Entry<String, StatisticTSRecord> entry : statistics.entrySet()) {
             try {
+                entry.getValue().time = current_time;
                 fManager.insert(entry.getValue(), true);
             } catch (FileNodeManagerException e) {
                 statistics.get(MonitorConstants.statStorageGroupPrefix).addOneStatistic(StatisticTSRecord.StatisticConstants.TOTAL_REQ_FAIL, 1);
@@ -84,7 +89,7 @@ public class StatMonitor implements StatEventListener, IService {
         }
     }
 
-    private void updateStatistics(StatisticTSRecord record){
+    private void updateStatisticMap(StatisticTSRecord record){
         String path = record.deltaObjectId;
         do{
             if(statistics.containsKey(path)){

@@ -89,4 +89,9 @@ public class SeriesWithUpdateOpReader implements SeriesReader, IFixStatistics {
 //        }
         seriesReader.fixStatistics();
     }
+
+    public long getPointCoverNum(){
+        if(seriesReader == null)return 0;
+        else return seriesReader.getPointCoverNum();
+    }
 }

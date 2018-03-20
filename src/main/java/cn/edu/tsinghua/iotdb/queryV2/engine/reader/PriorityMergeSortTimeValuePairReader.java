@@ -20,6 +20,7 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
 
     private List<PriorityTimeValuePairReader> readerList;
     private PriorityQueue<Element> heap;
+    private long point_cover_num;
 
     private List<FileNodeProcessor> fileNodeProcessorList;
 
@@ -45,6 +46,7 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
         }
 
         fileNodeProcessorList = new ArrayList<>();
+        point_cover_num = 0;
     }
 
     @Override
@@ -69,7 +71,8 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
             }
 
             if(flag){
-                fixStatistics();
+//                fixStatistics();
+                point_cover_num++;
             }
             else flag = true;
         }
@@ -87,6 +90,8 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
         for (TimeValuePairReader timeValuePairReader : readerList) {
             timeValuePairReader.close();
         }
+
+        point_cover_num = 0;
     }
 
     @Override
@@ -120,5 +125,9 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
                     this.timeValuePair.getTimestamp() < o.timeValuePair.getTimestamp() ? -1 :
                             o.priority.compareTo(this.priority);
         }
+    }
+
+    public long getPointCoverNum(){
+        return point_cover_num;
     }
 }
