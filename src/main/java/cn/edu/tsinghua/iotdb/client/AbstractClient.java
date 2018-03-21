@@ -175,11 +175,11 @@ public abstract class AbstractClient {
 
 	protected static Options createOptions() {
 		Options options = new Options();
-		Option help = new Option(HELP_ARGS, false, "Display help information");
+		Option help = new Option(HELP_ARGS, false, "Display help information(optional)");
 		help.setRequired(false);
 		options.addOption(help);
 
-		Option timeFormat = new Option(ISO8601_ARGS, false, "Display timestamp in number");
+		Option timeFormat = new Option(ISO8601_ARGS, false, "Display timestamp in number(optional)");
 		timeFormat.setRequired(false);
 		options.addOption(timeFormat);
 
