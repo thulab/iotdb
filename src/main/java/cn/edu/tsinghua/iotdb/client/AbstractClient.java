@@ -189,7 +189,7 @@ public abstract class AbstractClient {
 		Option port = Option.builder(PORT_ARGS).argName(PORT_NAME).hasArg().desc("Port (optional, default 6667)").build();
 		options.addOption(port);
 
-		Option username = Option.builder(USERNAME_ARGS).argName(USERNAME_NAME).hasArg().desc("User name (required)").build();
+		Option username = Option.builder(USERNAME_ARGS).argName(USERNAME_NAME).hasArg().desc("User name (required)").required().build();
 		options.addOption(username);
 
 		Option password = Option.builder(PASSWORD_ARGS).argName(PASSWORD_NAME).hasArg().desc("password (optional)").build();
