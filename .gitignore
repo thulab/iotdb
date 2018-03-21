@@ -39,4 +39,6 @@ filenode/
 metadata/
 overflow/
 src/test/resources/logback.xml
+iotdb/bin/start-postBackTest.sh
+iotdb/bin/stop-postBackTest.sh
 

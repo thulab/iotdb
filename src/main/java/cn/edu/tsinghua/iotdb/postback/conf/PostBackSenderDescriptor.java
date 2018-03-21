@@ -74,6 +74,8 @@ public class PostBackSenderDescriptor {
 			conf.SERVER_IP = properties.getProperty("server_ip",conf.SERVER_IP);
 			
 			conf.SERVER_PORT = Integer.parseInt(properties.getProperty("server_port", conf.SERVER_PORT+""));
+			
+			conf.CLIENT_PORT = Integer.parseInt(properties.getProperty("client_port", conf.SERVER_PORT+""));
 
 			conf.UPLOAD_CYCLE_IN_SECONDS = Integer.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.UPLOAD_CYCLE_IN_SECONDS+""));
 

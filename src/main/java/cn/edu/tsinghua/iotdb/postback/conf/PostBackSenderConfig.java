@@ -18,6 +18,7 @@ public class PostBackSenderConfig {
 	public String SCHEMA_PATH = IOTDB_DATA_DIRECTORY + "metadata" + File.separator + "mlog.txt";
 	public String SERVER_IP = "192.168.130.16";
 	public int SERVER_PORT = 5555;
+	public int CLIENT_PORT = 6666;
 	public int UPLOAD_CYCLE_IN_SECONDS = 10;
 	public boolean IS_CLEAR_ENABLE = false;
 }
