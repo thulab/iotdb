@@ -1,7 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,8 +69,9 @@ public class MemTableFlushUtil {
 		return count;
 	}
 
-	public static void flushMemTable(FileSchema fileSchema, TsFileIOWriter tsFileIOWriter, IMemTable iMemTable)
+	public static Map<String, Long> flushMemTable(FileSchema fileSchema, TsFileIOWriter tsFileIOWriter, IMemTable iMemTable)
 			throws IOException {
+		Map<String, Long> report = new HashMap<>();
 		for (String deltaObjectId : iMemTable.getMemTableMap().keySet()) {
 			long startPos = tsFileIOWriter.getPos();
 			long recordCount = 0;
@@ -81,9 +84,14 @@ public class MemTableFlushUtil {
 						pageSizeThreshold);
 				recordCount += writeOneSeries(series.getSortedTimeValuePairList(), seriesWriter, desc.getType());
 				seriesWriter.writeToFileWriter(tsFileIOWriter);
+
+				String path = deltaObjectId + "." + measurementId;
+				report.put(path, recordCount);
+				recordCount = 0;
 			}
 			long memSize = tsFileIOWriter.getPos() - startPos;
 			tsFileIOWriter.endRowGroup(memSize, recordCount);
 		}
+		return report;
 	}
 }

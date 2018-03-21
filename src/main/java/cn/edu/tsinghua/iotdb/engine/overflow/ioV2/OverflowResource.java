@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.MonitorV2.Event.FlushStatEvent;
+import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -245,7 +247,14 @@ public class OverflowResource {
 		if (memTable != null && !memTable.isEmpty()) {
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
-			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
+			Map<String, Long> report;
+			report = MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
+			StatMonitor statMonitor = StatMonitor.getInstance();
+			long timestamp = System.currentTimeMillis();
+			for(Map.Entry<String, Long> entry : report.entrySet()){
+				FlushStatEvent event = new FlushStatEvent(timestamp, entry.getKey(), entry.getValue());
+				statMonitor.addEvent(event);
+			}
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
 			appendInsertMetadatas.addAll(rowGroupMetaDatas);
 			if (!rowGroupMetaDatas.isEmpty()) {

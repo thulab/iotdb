@@ -903,7 +903,7 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 		//
 		LOGGER.info("The filenode processor {} begins to merge.", getProcessorName());
 		prepareForMerge();
-		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 100));
+//		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 100));
 		//
 		// change status from overflowed to no overflowed
 		//
@@ -1525,7 +1525,7 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 
 	@Override
 	public boolean flush() throws IOException {
-		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), baseDirPath.substring(baseDirPath.lastIndexOf("/")), 1000));
+//		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), baseDirPath.substring(baseDirPath.lastIndexOf("/")), 1000));
 		if (bufferWriteProcessor != null) {
 			bufferWriteProcessor.flush();
 		}
@@ -1614,7 +1614,7 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 
 	@Override
 	public void close() throws FileNodeProcessorException {
-		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 1000));
+//		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().addEvent(new FlushStatEvent(System.currentTimeMillis(), cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants.convertToStatisticPath(baseDirPath), 1000));
 		closeBufferWrite();
 		closeOverflow();
 	}
