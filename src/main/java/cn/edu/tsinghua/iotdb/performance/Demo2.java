@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.performance;
 
 import cn.edu.tsinghua.aop.CostResult;
 
+
 public class Demo2 {
 
     public static void main(String[] args) {

@@ -62,9 +62,6 @@ public class ReaderCreator {
 //        long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
 //        long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
 //        System.out.println(String.format("Current query path is %s, deltaObject time range is [%d, %d]", path.getFullPath(), startTime, endTime));
-//        if (path.getFullPath().equals("root.ln.wf632814.type4.d632814521._SPIN_DC_Ra_F32_8_MAX_")) {
-//            System.out.println("...");
-//        }
 
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
         TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir = "";
