@@ -126,7 +126,9 @@ public abstract class AbstractClient {
                 }
                 if (cnt < maxPrintRowCount) {
                     System.out.print("|");
-                    System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
+					if (printTimestamp) {
+						System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
+					}
 
                     for (int i = 2; i <= colCount; i++) {
                         boolean flag = false;
