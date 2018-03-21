@@ -61,7 +61,7 @@ public class Client extends AbstractClient {
 
 		if (args == null || args.length == 0) {
 			System.out.println("Require more params input, eg. ./start-client.sh(start-client.bat if Windows) -h xxx.xxx.xxx.xxx -p xxxx -u xxx.");
-			System.out.println("For more infomation, please check the following hint.");
+			System.out.println("For more information, please check the following hint.");
 			hf.printHelp(SCRIPT_HINT, options, true);
 			return;
 		}
@@ -86,7 +86,7 @@ public class Client extends AbstractClient {
 			}
 		} catch (ParseException e) {
 			System.out.println("Require more params input, eg. ./start-client.sh(start-client.bat if Windows) -h xxx.xxx.xxx.xxx -p xxxx -u xxx.");
-			System.out.println("For more infomation, please check the following hint.");
+			System.out.println("For more information, please check the following hint.");
 			hf.printHelp(IOTDB_CLI_PREFIX, options, true);
 			return;
 		}
@@ -110,7 +110,6 @@ public class Client extends AbstractClient {
 					password = reader.readLine("please input your password:", '\0');
 				}
 				try {
-					System.out.println(String.format("%s,%s,%s,%s", host,port,username,password));
 					connection = (TsfileConnection) DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
 				} catch (SQLException e) {
 					System.out.println(String.format("%s> %s. Host is %s, port is %s.", IOTDB_CLI_PREFIX, e.getMessage(), host, port));
