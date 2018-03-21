@@ -107,11 +107,9 @@ public class LimitSlimitTest {
         insertSQL();
 
         SelectTest();
-        //GroupByTest();
-        //FuncTest();
-        //FillTest();
-
-
+        GroupByTest();
+        FuncTest();
+        FillTest();
 
     }
 
@@ -261,7 +259,7 @@ public class LimitSlimitTest {
                             }
                             result += '\n';
                         }
-                        System.out.println(result);
+                        //System.out.println(result);
                         cmp = true;
 //                Assert.assertEquals();
                     }
