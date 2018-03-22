@@ -61,7 +61,7 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
         File roleProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX);
         if(!roleProfile.exists() || !roleProfile.isFile()) {
             // System may crush before a newer file is written, so search for back-up file.
-            File backProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+            File backProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TEMP_SUFFIX);
             if(backProfile.exists() && backProfile.isFile())
                 roleProfile = backProfile;
             else
@@ -108,14 +108,13 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
         }
         
         File oldFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX);
-        File backFile = new File(roleDirPath + File.separator + role.name + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
-        IOUtils.replaceFile(roleProfile, oldFile, backFile);
+        IOUtils.replaceFile(roleProfile, oldFile);
     }
 
     @Override
     public boolean deleteRole(String rolename) throws IOException {
         File roleProfile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX);
-        File backFile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+        File backFile = new File(roleDirPath + File.separator + rolename + TsFileDBConstant.PROFILE_SUFFIX + TEMP_SUFFIX);
         if(!roleProfile.exists() && !backFile.exists())
             return false;
         if((roleProfile.exists() && !roleProfile.delete()) || (backFile.exists() && !backFile.delete())) {
@@ -127,14 +126,14 @@ public class LocalFileRoleAccessor implements IRoleAccessor {
     @Override
     public List<String> listAllRoles() {
         File roleDir = new File(roleDirPath);
-        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TsFileDBConstant.BACKUP_SUFFIX));
+        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TEMP_SUFFIX));
         List<String> retList = new ArrayList<>();
         if(names != null) {
             // in very rare situations, normal file and backup file may exist at the same time
             // so a set is used to deduplicate
             Set<String> set = new HashSet<>();
             for(String fileName : names) {
-                set.add(fileName.replace(TsFileDBConstant.PROFILE_SUFFIX, "").replace(TsFileDBConstant.BACKUP_SUFFIX, ""));
+                set.add(fileName.replace(TsFileDBConstant.PROFILE_SUFFIX, "").replace(TEMP_SUFFIX, ""));
             }
             retList.addAll(set);
         }

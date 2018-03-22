@@ -79,26 +79,16 @@ public class IOUtils {
 
     /**
      * Replace newFile with oldFile.
-     * If the file system does not support atomic file replacement.
-     * 1. Delete backFile (whether it exists or not).
-     * 2. Rename oldFile to backFile.
-     * 3. Rename newFile to oldFile.
-     * 4. Delete backFile.
+     * If the file system does not support atomic file replacement then delete the old file first.
      * @param newFile
      * @param oldFile
-     * @param backFile
      */
-    public static void replaceFile(File newFile, File oldFile, File backFile) throws IOException {
+    public static void replaceFile(File newFile, File oldFile) throws IOException {
         if(!newFile.renameTo(oldFile)) {
             // some OSs need to delete the old file before renaming to it
-            // in case that crash happens between deletion of the old file and renaming of the new file,
-            // the old file should be backed-up first.
-            backFile.delete();
-            oldFile.renameTo(backFile);
-
+            oldFile.delete();
             if (!newFile.renameTo(oldFile))
                 throw new IOException(String.format("Cannot replace old user file with new one : %s", newFile.getPath()));
-            backFile.delete();
         }
     }
 }

@@ -73,11 +73,12 @@ public class LocalFileUserAccessor implements IUserAccessor{
     public User loadUser(String username) throws IOException{
         File userProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX);
         if(!userProfile.exists() || !userProfile.isFile()) {
-            // System may crush before a newer file is written, so search for back-up file.
-            File backProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
-            if(backProfile.exists() && backProfile.isFile())
-                userProfile = backProfile;
-            else
+            // System may crush before a newer file is renamed.
+            File newProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TEMP_SUFFIX);
+            if(newProfile.exists() && newProfile.isFile()) {
+                newProfile.renameTo(userProfile);
+                userProfile = newProfile;
+            } else
                 return null;
         }
         FileInputStream inputStream = new FileInputStream(userProfile);
@@ -141,8 +142,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
         }
 
         File oldFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX);
-        File backFile = new File(userDirPath + File.separator + user.name + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
-        IOUtils.replaceFile(userProfile, oldFile, backFile);
+        IOUtils.replaceFile(userProfile, oldFile);
     }
 
     /**
@@ -153,7 +153,7 @@ public class LocalFileUserAccessor implements IUserAccessor{
      */
     public boolean deleteUser(String username) throws IOException{
         File userProfile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX);
-        File backFile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TsFileDBConstant.BACKUP_SUFFIX);
+        File backFile = new File(userDirPath + File.separator + username + TsFileDBConstant.PROFILE_SUFFIX + TEMP_SUFFIX);
         if(!userProfile.exists() && !backFile.exists())
             return false;
         if((userProfile.exists() && !userProfile.delete()) || (backFile.exists() && !backFile.delete())) {
@@ -165,14 +165,14 @@ public class LocalFileUserAccessor implements IUserAccessor{
     @Override
     public List<String> listAllUsers() {
         File roleDir = new File(userDirPath);
-        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TsFileDBConstant.BACKUP_SUFFIX));
+        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TEMP_SUFFIX));
         List<String> retList = new ArrayList<>();
         if(names != null) {
             // in very rare situations, normal file and backup file may exist at the same time
             // so a set is used to deduplicate
             Set<String> set = new HashSet<>();
             for(String fileName : names) {
-                set.add(fileName.replace(TsFileDBConstant.PROFILE_SUFFIX, "").replace(TsFileDBConstant.BACKUP_SUFFIX, ""));
+                set.add(fileName.replace(TsFileDBConstant.PROFILE_SUFFIX, "").replace(TEMP_SUFFIX, ""));
             }
             retList.addAll(set);
         }
