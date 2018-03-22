@@ -1,15 +1,8 @@
 package cn.edu.tsinghua.iotdb.MonitorV2.Event;
 
-import cn.edu.tsinghua.iotdb.MonitorV2.EventConstants;
 import cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants;
+import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
 import cn.edu.tsinghua.iotdb.MonitorV2.StatisticTSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class StatEvent {
 
@@ -49,16 +42,10 @@ public class StatEvent {
     }
 
     public StatisticTSRecord convertToStatTSRecord(){
-        String suffix = getPath().substring(getPath().indexOf(MonitorConstants.StorageGroupPrefix) + MonitorConstants.StorageGroupPrefix.length() + 1);
-        String path = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR + suffix;
-        StatisticTSRecord record = new StatisticTSRecord(timestamp, path);
+
+        String stat_path = MonitorConstants.convertStorageGroupPathToStatisticPath(path);
+        StatisticTSRecord record = new StatisticTSRecord(timestamp, stat_path);
         record.addOneStatistic(StatisticTSRecord.StatisticConstants.TOTAL_POINTS_SUCCESS, value);
-//        tsRecord.dataPointList = new ArrayList<DataPoint>() {{
-//            for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
-//                AtomicLong value = (AtomicLong) entry.getValue();
-//                add(new LongDataPoint(entry.getKey(), value.get()));
-//            }
-//        }};
         return record;
     }
 }

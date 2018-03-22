@@ -44,7 +44,7 @@ public class StatisticTSRecord extends TSRecord {
     public static List<String> getAllPaths(String prefix){
         List<String> paths = new ArrayList<>();
         for(StatisticConstants statistic : StatisticConstants.values()){
-            paths.add(prefix + MonitorConstants.MONITOR_PATH_SEPERATOR + statistic.name());
+            paths.add(prefix + MonitorConstants.STATISTIC_PATH_SEPERATOR + statistic.name());
         }
         return paths;
     }

@@ -216,12 +216,12 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	public void flush(FileSchema fileSchema, IMemTable memTable,
+	public long flush(FileSchema fileSchema, IMemTable memTable,
 			Map<String, Map<String, OverflowSeriesImpl>> overflowTrees, String processorName) throws IOException {
 		// insert data
 		long startPos = insertIO.getPos();
 		long startTime = System.currentTimeMillis();
-		flush(fileSchema, memTable);
+		long report = flush(fileSchema, memTable);
 		long timeInterval = System.currentTimeMillis() - startTime;
 		timeInterval = timeInterval == 0 ? 1 : timeInterval;
 		long insertSize = insertIO.getPos() - startPos;
@@ -241,20 +241,14 @@ public class OverflowResource {
 				processorName, MemUtils.bytesCntToStr(updateSize), timeInterval,
 				MemUtils.bytesCntToStr(updateSize / timeInterval * 1000));
 		writePositionInfo(insertIO.getPos(), updateDeleteIO.getPos());
+		return report;
 	}
 
-	public void flush(FileSchema fileSchema, IMemTable memTable) throws IOException {
+	public long flush(FileSchema fileSchema, IMemTable memTable) throws IOException {
 		if (memTable != null && !memTable.isEmpty()) {
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
-			Map<String, Long> report;
-			report = MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
-			StatMonitor statMonitor = StatMonitor.getInstance();
-			long timestamp = System.currentTimeMillis();
-			for(Map.Entry<String, Long> entry : report.entrySet()){
-				FlushStatEvent event = new FlushStatEvent(timestamp, entry.getKey(), entry.getValue());
-				statMonitor.addEvent(event);
-			}
+			long report = MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
 			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
 			appendInsertMetadatas.addAll(rowGroupMetaDatas);
 			if (!rowGroupMetaDatas.isEmpty()) {
@@ -268,7 +262,9 @@ public class OverflowResource {
 				// clear the meta-data of insert IO
 				insertIO.clearRowGroupMetadatas();
 			}
+			return report;
 		}
+		return 0;
 	}
 
 	public void flush(Map<String, Map<String, OverflowSeriesImpl>> overflowTrees) throws IOException {

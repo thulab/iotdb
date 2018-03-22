@@ -69,9 +69,9 @@ public class MemTableFlushUtil {
 		return count;
 	}
 
-	public static Map<String, Long> flushMemTable(FileSchema fileSchema, TsFileIOWriter tsFileIOWriter, IMemTable iMemTable)
+	public static long flushMemTable(FileSchema fileSchema, TsFileIOWriter tsFileIOWriter, IMemTable iMemTable)
 			throws IOException {
-		Map<String, Long> report = new HashMap<>();
+		long report = 0;
 		for (String deltaObjectId : iMemTable.getMemTableMap().keySet()) {
 			long startPos = tsFileIOWriter.getPos();
 			long recordCount = 0;
@@ -84,13 +84,10 @@ public class MemTableFlushUtil {
 						pageSizeThreshold);
 				recordCount += writeOneSeries(series.getSortedTimeValuePairList(), seriesWriter, desc.getType());
 				seriesWriter.writeToFileWriter(tsFileIOWriter);
-
-				String path = deltaObjectId + "." + measurementId;
-				report.put(path, recordCount);
-				recordCount = 0;
 			}
 			long memSize = tsFileIOWriter.getPos() - startPos;
 			tsFileIOWriter.endRowGroup(memSize, recordCount);
+			report += recordCount;
 		}
 		return report;
 	}

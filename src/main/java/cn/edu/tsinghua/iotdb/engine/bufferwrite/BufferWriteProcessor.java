@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import cn.edu.tsinghua.iotdb.MonitorV2.Event.FlushStatEvent;
+import cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants;
 import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
@@ -550,14 +551,11 @@ public class BufferWriteProcessor extends Processor {
 			long startFlushDataTime = System.currentTimeMillis();
 			long startPos = bufferIOWriter.getPos();
 			// TODO : FLUSH DATA
-			Map<String, Long> report;
-			report = MemTableFlushUtil.flushMemTable(fileSchema, bufferIOWriter, flushMemTable);
+			long report = MemTableFlushUtil.flushMemTable(fileSchema, bufferIOWriter, flushMemTable);
 			StatMonitor statMonitor = StatMonitor.getInstance();
-			long timestamp = System.currentTimeMillis();
-			for(Map.Entry<String, Long> entry : report.entrySet()){
-				FlushStatEvent event = new FlushStatEvent(timestamp, entry.getKey(), entry.getValue());
-				statMonitor.addEvent(event);
-			}
+			FlushStatEvent event = new FlushStatEvent(System.currentTimeMillis(), getProcessorName(), report);
+			statMonitor.addEvent(event);
+
 			long flushDataSize = bufferIOWriter.getPos() - startPos;
 			long timeInterval = System.currentTimeMillis() - startFlushDataTime;
 			if (timeInterval == 0) {

@@ -1352,6 +1352,7 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 		TsFileWriter recordWriter = null;
 		String outputPath = null;
 		String fileName = null;
+		long report = 0;
 		for (String deltaObjectId : backupIntervalFile.getStartTimeMap().keySet()) {
 			// query one deltaObjectId
 			List<Path> pathList = new ArrayList<>();
@@ -1415,14 +1416,16 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 						}
 					}
 				} finally {
-					cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor statMonitor = cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance();
-					CoverStatEvent event = new CoverStatEvent(System.currentTimeMillis(), path.getFullPath(), seriesReader.getPointCoverNum(), 0);
-					statMonitor.addEvent(event);
-
+					report += seriesReader.getPointCoverNum();
 					seriesReader.close();
 				}
 			}
 		}
+
+		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor statMonitor = cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance();
+		CoverStatEvent event = new CoverStatEvent(System.currentTimeMillis(), getProcessorName(), report, 0);
+		statMonitor.addEvent(event);
+
 		if (recordWriter != null) {
 			recordWriter.close();
 		}

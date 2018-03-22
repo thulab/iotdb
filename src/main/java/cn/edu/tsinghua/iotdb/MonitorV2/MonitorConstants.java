@@ -6,7 +6,8 @@ public class MonitorConstants {
     public static final String DataType = "INT64";
     public static final String FILENODE_PROCESSOR_CONST = "FILENODE_PROCESSOR_CONST";
     public static final String FILENODE_MANAGER_CONST = "FILENODE_MANAGER_CONST";
-    public static final String MONITOR_PATH_SEPERATOR = ".";
+    public static final String STATISTIC_PATH_SEPERATOR = ".";
+    public static final String STORAGEGROUP_PATH_SEPERATOR = ".";
     public static final String statStorageGroupPrefix = "root.stats";
     public static final String StorageGroupPrefix = "root";
 
@@ -38,8 +39,17 @@ public class MonitorConstants {
         return hashMap;
     }
 
-    public static String convertToStatisticPath(String path){
-        path = path.substring(path.lastIndexOf("root."));
+    public static String convertStorageGroupPathToStatisticPath(String path){
+        if(path.equals("root"))return "root.stats";
+
+        path = path.substring((StorageGroupPrefix + STORAGEGROUP_PATH_SEPERATOR).length());
+        path = statStorageGroupPrefix + STATISTIC_PATH_SEPERATOR + path;
+        return path;
+    }
+
+    public static String convertStatisticPathToStorageGroupPath(String path){
+        path = path.substring(path.lastIndexOf(statStorageGroupPrefix + STATISTIC_PATH_SEPERATOR));
+        path += StorageGroupPrefix + STORAGEGROUP_PATH_SEPERATOR + path;
         return path;
     }
 

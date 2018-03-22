@@ -10,6 +10,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import cn.edu.tsinghua.iotdb.MonitorV2.Event.FlushStatEvent;
+import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
@@ -495,8 +497,13 @@ public class OverflowProcessor extends Processor {
 		try {
 			LOGGER.info("The overflow processor {} starts flushing {}.", getProcessorName(), flushFunction);
 			// flush data
-			workResource.flush(fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap(),
+			long report = workResource.flush(fileSchema, flushSupport.getMemTabale(), flushSupport.getOverflowSeriesMap(),
 					getProcessorName());
+
+			StatMonitor statMonitor = StatMonitor.getInstance();
+			FlushStatEvent event = new FlushStatEvent(System.currentTimeMillis(), getProcessorName(), report);
+			statMonitor.addEvent(event);
+
 			filenodeFlushAction.act();
 			// write-ahead log
 			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {

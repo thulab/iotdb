@@ -11,21 +11,27 @@ import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
+import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
+import cn.edu.tsinghua.iotdb.queryV2.engine.impl.QueryEngineImpl;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
+import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class StatMonitor implements StatEventListener, IService {
 
@@ -68,11 +74,16 @@ public class StatMonitor implements StatEventListener, IService {
 
     @Override
     public void dealWithEvent(StatEvent event) {
-        if(event == null)return;
+        if (event == null)return;
+        if (isStatisticPath(event.getPath()))return;
 
         StatisticTSRecord record = event.convertToStatTSRecord();
         updateStatisticMap(record);
         updateStatisticInDB();
+    }
+
+    private boolean isStatisticPath(String path){
+        return path.startsWith(MonitorConstants.statStorageGroupPrefix);
     }
 
     private void updateStatisticInDB(){
@@ -108,8 +119,47 @@ public class StatMonitor implements StatEventListener, IService {
                 }
             }
 
-            path = path.substring(0, path.lastIndexOf(MonitorConstants.MONITOR_PATH_SEPERATOR));
-        }while (path.contains(MonitorConstants.MONITOR_PATH_SEPERATOR));
+            path = path.substring(0, path.lastIndexOf(MonitorConstants.STATISTIC_PATH_SEPERATOR));
+        }while (path.contains(MonitorConstants.STATISTIC_PATH_SEPERATOR));
+    }
+
+    public void recovery(){
+        OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
+        List<Pair<Path, String>> pairList = new ArrayList<>();
+        List<String> stringList = new ArrayList<>();
+        stringList.add("root.stats.d1.TOTAL_POINTS_SUCCESS");
+        for (String string : stringList) {
+            Path path = new Path(string);
+            pairList.add(new Pair<>(path, StatisticConstant.LAST));
+        }
+        try {
+            cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet queryDataSet;
+            queryDataSet = overflowQueryEngine.aggregate(pairList, null);
+            ReadLockManager.getInstance().unlockForOneRequest();
+            RowRecord rowRecord = queryDataSet.getNextRecord();
+
+            if (rowRecord!=null) {
+                FileNodeManager fManager = FileNodeManager.getInstance();
+                HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
+                List<Field> list = rowRecord.fields;
+                for (Field field: list) {
+                    String statMeasurement = field.measurementId.substring(0,field.measurementId.length() - 1);
+                    if (statParamsHashMap.containsKey(statMeasurement)) {
+                        if (field.isNull()) {
+                            continue;
+                        }
+                        long lastValue = field.getLongV();
+                        statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
+                    }
+                }
+            }
+        } catch (ProcessorException e) {
+            LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
+        } catch (PathErrorException e) {
+            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path does not exist,", e);
+        } catch (IOException e) {
+            LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
+        }
     }
 
     public static StatMonitor getInstance() {
@@ -147,7 +197,17 @@ public class StatMonitor implements StatEventListener, IService {
     }
 
     public void close() {
+
+        if (service == null || service.isShutdown()) {
+            return;
+        }
         statistics.clear();
+        service.shutdown();
+        try {
+            service.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("StatMonitor timing service could not be shutdown.", e);
+        }
     }
 
     @Override
@@ -159,7 +219,7 @@ public class StatMonitor implements StatEventListener, IService {
         public void run() {
             while(true){
                 while (events.isEmpty()) try {
-                    Thread.sleep(10000);
+                    Thread.sleep(backLoopPeriod);
                     continue;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -170,15 +230,5 @@ public class StatMonitor implements StatEventListener, IService {
                 dealWithEvent(event);
             }
         }
-    }
-
-    public static void main(String[] args){
-        StatisticTSRecord record = new StatisticTSRecord(1000, "root");
-        StatisticTSRecord record1 = new StatisticTSRecord(record, "root1");
-        System.out.println(record);
-        System.out.println(record1);
-        record.addOneStatistic(StatisticTSRecord.StatisticConstants.TOTAL_POINTS_SUCCESS, 100);
-        System.out.println(record);
-        System.out.println(record1);
     }
 }
