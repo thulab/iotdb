@@ -164,8 +164,8 @@ public class LocalFileUserAccessor implements IUserAccessor{
 
     @Override
     public List<String> listAllUsers() {
-        File roleDir = new File(userDirPath);
-        String[] names = roleDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TEMP_SUFFIX));
+        File userDir = new File(userDirPath);
+        String[] names = userDir.list((dir, name) -> name.endsWith(TsFileDBConstant.PROFILE_SUFFIX) || name.endsWith(TEMP_SUFFIX));
         List<String> retList = new ArrayList<>();
         if(names != null) {
             // in very rare situations, normal file and backup file may exist at the same time

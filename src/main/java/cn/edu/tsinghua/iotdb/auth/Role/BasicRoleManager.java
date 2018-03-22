@@ -135,11 +135,4 @@ public abstract class BasicRoleManager implements IRoleManager{
         roleMap.clear();
         lock.reset();
     }
-
-    @Override
-    public List<String> listAllRoles() {
-        List<String> rtlist = accessor.listAllRoles();
-        rtlist.sort(null);
-        return rtlist;
-    }
 }

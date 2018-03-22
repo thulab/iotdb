@@ -49,7 +49,7 @@ public class HashLock {
     }
 
     /**
-     * This method will unlock all locks.
+     * This method will unlock all locks. Only for test convenience.
      */
     public void reset() {
         for(int i = 0; i < lockSize; i++) {
