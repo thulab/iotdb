@@ -14,7 +14,7 @@ public class PathPrivilege {
     public String path;
 
     /**
-     * This field record how many times this privilege is referenced during a life cycle (from being loaded to being discarded).
+     * This field records how many times this privilege is referenced during a life cycle (from being loaded to being discarded).
      * When serialized to a file, this determines the order of serialization. The higher this values is, the sooner this privilege will
      * be serialized.
      * As a result, the hot privileges will be in the first place so that the hit time will decrease when being queried.
