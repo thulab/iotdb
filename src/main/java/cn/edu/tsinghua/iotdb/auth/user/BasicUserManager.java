@@ -24,7 +24,7 @@ public abstract class BasicUserManager implements IUserManager {
     private IUserAccessor accessor;
     private HashLock lock;
 
-    public BasicUserManager(IUserAccessor accessor) {
+    public BasicUserManager(IUserAccessor accessor) throws AuthException {
         this.userMap = new HashMap<>();
         this.accessor = accessor;
         this.lock = new HashLock();
@@ -35,7 +35,7 @@ public abstract class BasicUserManager implements IUserManager {
     /**
      * Try to load admin. If it doesn't exist, automatically create one.
      */
-    private void initAdmin() {
+    private void initAdmin() throws AuthException {
         User admin;
         try {
             admin = getUser(TsFileDBConstant.ADMIN_NAME);
@@ -45,11 +45,7 @@ public abstract class BasicUserManager implements IUserManager {
         }
 
         if(admin == null) {
-            try {
-                createUser(TsFileDBConstant.ADMIN_NAME, TsFileDBConstant.ADMIN_PW);
-            } catch (AuthException e) {
-                logger.error("Cannot create admin because {}", e.getMessage());
-            }
+            createUser(TsFileDBConstant.ADMIN_NAME, TsFileDBConstant.ADMIN_PW);
         }
         logger.info("Admin initialized");
     }
@@ -239,7 +235,7 @@ public abstract class BasicUserManager implements IUserManager {
     }
 
     @Override
-    public void reset() {
+    public void reset() throws AuthException {
         accessor.reset();
         userMap.clear();
         lock.reset();

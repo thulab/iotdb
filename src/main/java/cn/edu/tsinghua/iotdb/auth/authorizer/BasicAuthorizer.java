@@ -33,13 +33,13 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     private IRoleManager roleManager;
 
 
-    BasicAuthorizer(IUserManager userManager, IRoleManager roleManager) {
+    BasicAuthorizer(IUserManager userManager, IRoleManager roleManager) throws AuthException {
         this.userManager = userManager;
         this.roleManager = roleManager;
         init();
     }
 
-    protected void init() {
+    protected void init() throws AuthException {
         userManager.reset();
         roleManager.reset();
         logger.info("Initialization of Authorizer completes");
@@ -193,13 +193,17 @@ abstract public class BasicAuthorizer implements IAuthorizer,IService {
     }
 
     @Override
-    public void reset() {
+    public void reset() throws AuthException {
         init();
     }
 
     @Override
-    public void start() {
-        init();
+    public void start() throws StartupException {
+        try {
+            init();
+        } catch (AuthException e) {
+            throw new StartupException(e.getMessage());
+        }
     }
 
     @Override

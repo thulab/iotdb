@@ -385,7 +385,7 @@ public class AuthorizationTest {
 
         adminStmt.execute("CREATE USER tempuser temppw");
         adminStmt.execute("SET STORAGE GROUP TO root.a");
-        int privilegeCnt = 50;
+        int privilegeCnt = 500;
         for (int i = 0; i < privilegeCnt; i++) {
             adminStmt.execute("CREATE TIMESERIES root.a.b" + i + " WITH DATATYPE=INT32,ENCODING=PLAIN");
             adminStmt.execute("GRANT USER tempuser PRIVILEGES 'INSERT_TIMESERIES' ON root.a.b" + i);

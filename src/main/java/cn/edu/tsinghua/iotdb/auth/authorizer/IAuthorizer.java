@@ -155,7 +155,7 @@ public interface IAuthorizer {
     /**
      * Reset the Authorizer to initiative status.
      */
-    void reset();
+    void reset() throws AuthException;
 
     /**
      *

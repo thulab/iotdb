@@ -66,7 +66,12 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
 		boolean status;
-		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
+		IAuthorizer authorizer = null;
+		try {
+			authorizer = LocalFileAuthorizer.getInstance();
+		} catch (AuthException e) {
+			throw new TException(e);
+		}
 		try {
 			status = authorizer.login(req.getUsername(), req.getPassword());
 		} catch (AuthException e) {
@@ -470,8 +475,12 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	private TSExecuteStatementResp ExecuteUpdateStatement(PhysicalPlan plan) throws TException {
 		List<Path> paths = plan.getPaths();
 
-		if (!checkAuthorization(paths, plan)) {
-			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation " + plan.getOperatorType());
+		try {
+			if (!checkAuthorization(paths, plan)) {
+                return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation " + plan.getOperatorType());
+            }
+		} catch (AuthException e) {
+			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Uninitialized authorizer " + e.getMessage());
 		}
 		// TODO
 		// In current version, we only return OK/ERROR
@@ -516,9 +525,13 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		// if operation belongs to add/delete/update
 		List<Path> paths = physicalPlan.getPaths();
 
-		if (!checkAuthorization(paths, physicalPlan)) {
-			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation " + physicalPlan.getOperatorType());
-		}
+		try {
+			if (!checkAuthorization(paths, physicalPlan)) {
+                return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "No permissions for this operation " + physicalPlan.getOperatorType());
+            }
+		} catch (AuthException e) {
+			return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Uninitialized authorizer : " + e.getMessage());
+	}
 
 		// TODO
 		// In current version, we only return OK/ERROR
@@ -574,7 +587,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		return username.get() != null;
 	}
 
-	private boolean checkAuthorization(List<Path> paths, PhysicalPlan plan) {
+	private boolean checkAuthorization(List<Path> paths, PhysicalPlan plan) throws AuthException {
 		String targetUser = null;
 		if(plan instanceof AuthorPlan)
 			targetUser = ((AuthorPlan) plan).getUserName();

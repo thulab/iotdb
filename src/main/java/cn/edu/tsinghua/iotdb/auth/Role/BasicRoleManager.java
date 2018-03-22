@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class read roles from local files through LocalFileRoleAccessor and manages them in a hash map.
+ * This class reads roles from local files through LocalFileRoleAccessor and manages them in a hash map.
  */
 public abstract class BasicRoleManager implements IRoleManager{
 

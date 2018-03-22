@@ -29,7 +29,7 @@ public class LocalFileAuthorizerTest {
 	}
 
 	@Test
-	public void testAuthorizer() {
+	public void testAuthorizer() throws AuthException {
 
 		IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
 		/*

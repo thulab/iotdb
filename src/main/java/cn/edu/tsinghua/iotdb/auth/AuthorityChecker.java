@@ -16,7 +16,7 @@ public class AuthorityChecker {
     private static final String SUPER_USER = TsFileDBConstant.ADMIN_NAME;
     private static final Logger logger = LoggerFactory.getLogger(AuthorityChecker.class);
 
-    public static boolean check(String username, List<Path> paths, Operator.OperatorType type, String targetUser) {
+    public static boolean check(String username, List<Path> paths, Operator.OperatorType type, String targetUser) throws AuthException {
         if (SUPER_USER.equals(username)) {
             return true;
         }
@@ -40,7 +40,7 @@ public class AuthorityChecker {
         return true;
     }
 
-    private static boolean checkOnePath(String username, Path path, int permission) {
+    private static boolean checkOnePath(String username, Path path, int permission) throws AuthException {
         IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
         try {
             String fullPath = path == null ? TsFileDBConstant.PATH_ROOT : path.getFullPath();

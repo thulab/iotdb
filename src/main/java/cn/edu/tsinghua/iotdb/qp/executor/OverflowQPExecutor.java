@@ -355,7 +355,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
         String newPassword = author.getNewPassword();
         Set<Integer> permissions = author.getPermissions();
         Path nodeName = author.getNodeName();
-        IAuthorizer authorizer = LocalFileAuthorizer.getInstance();
+        IAuthorizer authorizer = null;
+        try {
+            authorizer = LocalFileAuthorizer.getInstance();
+        } catch (AuthException e) {
+            throw new ProcessorException(e);
+        }
         StringBuilder msg;
         List<String> roleList;
         List<String> userList;

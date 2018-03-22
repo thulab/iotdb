@@ -129,6 +129,7 @@ public class AuthorPlan extends PhysicalPlan {
 				if(s.equalsIgnoreCase(privilegeType.name())) {
 					result.add(privilegeType.ordinal());
 					legal = true;
+					break;
 				}
 			}
 			if(!legal) {

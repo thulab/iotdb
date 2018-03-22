@@ -93,7 +93,7 @@ public interface IUserManager {
     /**
      * Re-initialize this object.
      */
-    void reset();
+    void reset() throws AuthException;
 
     /**
      *
