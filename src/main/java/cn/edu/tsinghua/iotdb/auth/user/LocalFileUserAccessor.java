@@ -93,13 +93,13 @@ public class LocalFileUserAccessor implements IUserAccessor{
             }
             user.privilegeList = pathPrivilegeList;
 
-            int userNum = dataInputStream.readInt();
-            List<String> userList = new ArrayList<>();
-            for (int i = 0; i < userNum; i++) {
+            int roleNum = dataInputStream.readInt();
+            List<String> roleList = new ArrayList<>();
+            for (int i = 0; i < roleNum; i++) {
                 String userName = IOUtils.readString(dataInputStream, STRING_ENCODING, strBufferLocal);
-                userList.add(userName);
+                roleList.add(userName);
             }
-            user.roleList = userList;
+            user.roleList = roleList;
 
             return user;
         } catch (Exception e) {
