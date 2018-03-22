@@ -189,14 +189,6 @@ public class LogicalGenerator {
             case TSParser.TOK_SELECT_INDEX:
                 analyzeIndexSelect(astNode);
                 return;
-            case TSParser.TOK_LIMIT:
-                return;
-            case TSParser.TOK_OFFSET:
-                return;
-            case TSParser.TOK_SLIMIT:
-                return;
-            case TSParser.TOK_SOFFSET:
-                return;
             default:
                 throw new QueryProcessorException("Not supported TSParser type" + tokenIntType);
         }

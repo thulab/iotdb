@@ -830,8 +830,7 @@ public class SQLParserTest {
                 "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle",
                 "TOK_WHERE", "and",
                 "not", "<", "TOK_PATH", "TOK_ROOT", "laptop", "device_1", "sensor_1", "2000",
-                ">", "TOK_PATH", "TOK_ROOT", "laptop", "device_2", "sensor_2", "1000",
-                "TOK_LIMIT", "0"));
+                ">", "TOK_PATH", "TOK_ROOT", "laptop", "device_2", "sensor_2", "1000"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST("SELECT device_1.sensor_1,device_2.sensor_2 FROM root.vehicle WHERE not(root.laptop.device_1.sensor_1 < 2000) " +
                 "and root.laptop.device_2.sensor_2 > 1000 LIMIT 0");
@@ -841,6 +840,7 @@ public class SQLParserTest {
         int i = 0;
         while (i <= rec.size() - 1) {
             assertEquals(rec.get(i), ans.get(i));
+            //System.out.println(rec.get(i));
             i++;
         }
     }
@@ -862,9 +862,7 @@ public class SQLParserTest {
                 "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle",
                 "TOK_WHERE", "and",
                 "not", "<", "TOK_PATH", "TOK_ROOT", "laptop", "device_1", "sensor_1", "2000",
-                ">", "TOK_PATH", "TOK_ROOT", "laptop", "device_2", "sensor_2", "1000",
-                "TOK_LIMIT", "10",
-                "TOK_OFFSET", "2"));
+                ">", "TOK_PATH", "TOK_ROOT", "laptop", "device_2", "sensor_2", "1000"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST("SELECT device_1.sensor_1,device_2.sensor_2 FROM root.vehicle WHERE not(root.laptop.device_1.sensor_1 < 2000) " +
                 "and root.laptop.device_2.sensor_2 > 1000 LIMIT 10 OFFSET 2");
@@ -895,8 +893,7 @@ public class SQLParserTest {
                 "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle",
                 "TOK_WHERE", "&&",
                 "<", "TOK_PATH", "TOK_ROOT", "laptop", "device_1", "sensor_1", "-2.2E10",
-                ">", "TOK_PATH", "time", "TOK_DATETIME" ,"now",
-                "TOK_SLIMIT","10"));
+                ">", "TOK_PATH", "time", "TOK_DATETIME" ,"now"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST("SELECT device_1.sensor_1,device_2.* FROM root.vehicle " +
                 "WHERE root.laptop.device_1.sensor_1 < -2.2E10 && time > now() SLIMIT 10");
@@ -928,9 +925,7 @@ public class SQLParserTest {
                 "TOK_FROM", "TOK_PATH", "TOK_ROOT", "*",
                 "TOK_WHERE", "&&",
                 "<", "TOK_PATH", "TOK_ROOT", "laptop", "device_1", "sensor_1", "-2.2E10",
-                ">", "TOK_PATH", "time", "TOK_DATETIME" ,"now",
-                "TOK_SLIMIT","10",
-                "TOK_SOFFSET", "3"));
+                ">", "TOK_PATH", "time", "TOK_DATETIME" ,"now"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST("SELECT device_1.sensor_1,device_2.sensor_2 FROM root.* " +
                 "WHERE root.laptop.device_1.sensor_1 < -2.2E10 && time > now() SLIMIT 10 SOFFSET 3");
@@ -963,11 +958,7 @@ public class SQLParserTest {
                 "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle",
                 "TOK_WHERE", "&&",
                 "<", "TOK_PATH", "TOK_ROOT", "laptop", "device_1", "sensor_1", "-2.2E10",
-                ">", "TOK_PATH", "time", "TOK_DATETIME" ,"now",
-                "TOK_LIMIT","100",
-                "TOK_OFFSET","1",
-                "TOK_SLIMIT","10",
-                "TOK_SOFFSET", "3"));
+                ">", "TOK_PATH", "time", "TOK_DATETIME" ,"now"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST("SELECT device_1.*,device_2.* FROM root.vehicle " +
                 "WHERE root.laptop.device_1.sensor_1 < -2.2E10 && time > now() LIMIT 100 OFFSET 1 SLIMIT 10 SOFFSET 3");
@@ -1004,11 +995,7 @@ public class SQLParserTest {
                 "TOK_TIMEORIGIN", "44",
                 "TOK_TIMEINTERVAL",
                 "TOK_TIMEINTERVALPAIR", "1", "3",
-                "TOK_TIMEINTERVALPAIR", "4", "5",
-                "TOK_SLIMIT","1",
-                "TOK_SOFFSET","1",
-                "TOK_LIMIT","11",
-                "TOK_OFFSET","3"));
+                "TOK_TIMEINTERVALPAIR", "4", "5"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST(
                 "select count(s1),max_time(s2) "
@@ -1045,9 +1032,7 @@ public class SQLParserTest {
                 "TOK_FROM", "TOK_PATH", "TOK_ROOT", "vehicle", "d1",
                 "TOK_WHERE", "=", "TOK_PATH", "time", "1234567",
                 "TOK_FILL",
-                "TOK_TYPE", "float", "TOK_PREVIOUS", "TOK_TIMEUNIT", "11", "h",
-                "TOK_SLIMIT","15",
-                "TOK_SOFFSET","50"));
+                "TOK_TYPE", "float", "TOK_PREVIOUS", "TOK_TIMEUNIT", "11", "h"));
         ArrayList<String> rec = new ArrayList<>();
         ASTNode astTree = ParseGenerator.generateAST(
                 "select * "
