@@ -113,11 +113,11 @@ public abstract class AbstractClient {
 		}
 		boolean printHeader = false;
 
-		// Output values
-		while (res.next()) {
+        // Output values
+        while (res.next()) {
 
-			// Output Labels
-            if(printToConsole) {
+            // Output Labels
+            if (printToConsole) {
                 if (!printHeader) {
                     printBlockLine(printTimestamp, colCount, res);
                     printName(printTimestamp, colCount, res);
@@ -133,7 +133,7 @@ public abstract class AbstractClient {
                     for (int i = 2; i <= colCount; i++) {
                         boolean flag = false;
                         for (String timeStr : AGGREGRATE_TIME_LIST) {
-                            if (resultSetMetaData.getColumnLabel(i).toUpperCase().indexOf(timeStr.toUpperCase()) != -1) {
+                            if (resultSetMetaData.getColumnLabel(i).toUpperCase().contains(timeStr.toUpperCase())) {
                                 flag = true;
                                 break;
                             }
