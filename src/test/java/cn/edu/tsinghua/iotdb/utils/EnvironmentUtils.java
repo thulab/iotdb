@@ -48,6 +48,7 @@ public class EnvironmentUtils {
 			throw new IOException(e);
 		}
 		StatMonitor.getInstance().close();
+		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
 		MultiFileLogNodeManager.getInstance().stop();

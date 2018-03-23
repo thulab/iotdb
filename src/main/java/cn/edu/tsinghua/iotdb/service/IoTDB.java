@@ -65,7 +65,7 @@ public class IoTDB implements IoTDBMBean{
 		// Warn: registMonitor() method should be called after systemDataRecovery()
 		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
 //			StatMonitor.getInstance().recovery();
-			cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().start();
+			cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().recovery();
 		}
 
 		registerManager.register(FileNodeManager.getInstance());
@@ -99,7 +99,7 @@ public class IoTDB implements IoTDBMBean{
 
 	/**
 	 * Recover data using system log.
-	 * @throws RecoverException 
+	 * @throws RecoverException
 	 *
 	 * @throws IOException
 	 */

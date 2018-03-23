@@ -6,6 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class StatisticTSRecord extends TSRecord {
 
@@ -20,6 +21,13 @@ public class StatisticTSRecord extends TSRecord {
         super(record.time, path);
         for(DataPoint dataPoint : record.dataPointList){
             addTuple(new LongDataPoint(dataPoint.getMeasurementId(), (long)dataPoint.getValue()));
+        }
+    }
+
+    public StatisticTSRecord(long timestamp, String path, Map<String, Long> stats){
+        this(timestamp, path);
+        for(Map.Entry<String, Long> stat : stats.entrySet()){
+            addOneStatistic(StatisticConstants.valueOf(stat.getKey()), stat.getValue());
         }
     }
 

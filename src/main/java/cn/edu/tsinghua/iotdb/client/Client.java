@@ -59,6 +59,8 @@ public class Client extends AbstractClient {
 		CommandLine commandLine = null;
 		CommandLineParser parser = new DefaultParser();
 
+		args = new String[]{"-h", "127.0.0.1", "-p", "6667", "-u", "root", "-pw"};
+
 		if (args == null || args.length == 0) {
 			System.out.println("Require more params input, please check the following hint.");
 			hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);

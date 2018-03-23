@@ -33,6 +33,7 @@ public class MonitorTest {
     private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
 
     private IoTDB deamon;
+    private StatMonitor statMonitor;
 
     private List<String> storagegroupList = new ArrayList<String>() {
         {
@@ -63,6 +64,7 @@ public class MonitorTest {
         tsdbconfig.backLoopPeriodSec = 1;
         deamon = IoTDB.getInstance();
         deamon.active();
+        statMonitor = StatMonitor.getInstance();
         EnvironmentUtils.envSetUp();
 
         Thread.sleep(2000);
@@ -71,7 +73,6 @@ public class MonitorTest {
     @After
     public void tearDown() throws Exception {
         tsdbconfig.enableStatMonitor = false;
-        StatMonitor.getInstance().close();
         deamon.stop();
         Thread.sleep(2000);
         EnvironmentUtils.cleanEnv();
@@ -233,7 +234,6 @@ public class MonitorTest {
             insertDataByTimestamp(START_TIME, END_TIME / 2, 0);
             merge();
             Thread.sleep(10000);
-            StatMonitor monitor = StatMonitor.getInstance();
             statistics = getStatisticInDB();
             Assert.assertEquals((END_TIME - START_TIME + 1) * 2 + END_TIME_SHIFT * 1, (long)statistics.get(MonitorConstants.convertStorageGroupPathToStatisticPath(storagegroupList.get(0)) + "." + STATISTIC_NAME));
             Assert.assertEquals((END_TIME - START_TIME + 1) * 1 + END_TIME_SHIFT * 2, (long)statistics.get(MonitorConstants.convertStorageGroupPathToStatisticPath(storagegroupList.get(1)) + "." + STATISTIC_NAME));

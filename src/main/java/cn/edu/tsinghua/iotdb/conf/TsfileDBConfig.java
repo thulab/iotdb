@@ -16,7 +16,7 @@ public class TsfileDBConfig {
 	/**
 	 * Is write ahead log enable
 	 */
-	public boolean enableWal = false;
+	public boolean enableWal = true;
 
 	/**
 	 * When a certain amount of write ahead log is reached, it will be flushed to
@@ -161,7 +161,8 @@ public class TsfileDBConfig {
 	/**
 	 * When a overflow's file size (in byte) exceed this, the overflow is forced closed.
 	 */
-	public long overflowFileSizeThreshold = 200 * 1024 * 1024L;
+//	public long overflowFileSizeThreshold = 200 * 1024 * 1024L;
+	public long overflowFileSizeThreshold = 0L;
 
 
 	/**
@@ -183,13 +184,13 @@ public class TsfileDBConfig {
 	 * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec secs.
 	 * Default value is 5s.
 	 */
-	public int backLoopPeriodSec = 5;
+	public int backLoopPeriodSec = 1000;
 
 	/**
 	 * Set true to enable statistics monitor service,
      * false to disable statistics service
 	 */
-	public boolean enableStatMonitor = false;
+	public boolean enableStatMonitor = true;
 
 	/**
 	 * Set the time interval when StatMonitor performs delete detection, default value is 600s,
