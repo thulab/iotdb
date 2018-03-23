@@ -59,8 +59,12 @@ public class BasicDaoImpl implements BasicDao {
         Long to = zonedCovertToLong(timeRange.right);
         String sql = "SELECT " + s.substring(s.lastIndexOf('.')+1) + " FROM root." + s.substring(0, s.lastIndexOf('.')) + " WHERE time > " + from + " and time < " + to;
         logger.info(sql);
-        List<TimeValues> rows = jdbcTemplate.query(sql, new TimeValuesRowMapper("root."+s));
-        //System.out.println(rows);
+        List<TimeValues> rows = null;
+		try {
+			rows = jdbcTemplate.query(sql, new TimeValuesRowMapper("root." + s));
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
         return rows;
     }
 
