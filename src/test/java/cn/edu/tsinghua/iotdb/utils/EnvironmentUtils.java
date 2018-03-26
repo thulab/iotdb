@@ -3,7 +3,6 @@ package cn.edu.tsinghua.iotdb.utils;
 import java.io.File;
 import java.io.IOException;
 
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -47,7 +46,6 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e);
 		}
-		StatMonitor.getInstance().close();
 		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal

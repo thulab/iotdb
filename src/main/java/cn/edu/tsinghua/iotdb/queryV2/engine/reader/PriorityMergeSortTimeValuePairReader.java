@@ -2,7 +2,6 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
-import cn.edu.tsinghua.iotdb.monitor.IFixStatistics;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
@@ -16,7 +15,7 @@ import java.util.PriorityQueue;
 /**
  * Created by zhangjinrui on 2018/1/11.
  */
-public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader, SeriesReader, IFixStatistics {
+public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader, SeriesReader {
 
     private List<PriorityTimeValuePairReader> readerList;
     private PriorityQueue<Element> heap;
@@ -91,21 +90,7 @@ public class PriorityMergeSortTimeValuePairReader implements TimeValuePairReader
             timeValuePairReader.close();
         }
 
-        point_cover_num = 0;
-    }
 
-    @Override
-    public void registStatStorageGroup(FileNodeProcessor fileNodeProcessor) {
-        fileNodeProcessorList.add(fileNodeProcessor);
-    }
-
-    @Override
-    public void fixStatistics() {
-        for(FileNodeProcessor fileNodeProcessor : fileNodeProcessorList){
-            fileNodeProcessor.fixStatistics();
-        }
-
-        FileNodeManager.getInstance().fixStatistics();
     }
 
     private class Element implements Comparable<Element> {

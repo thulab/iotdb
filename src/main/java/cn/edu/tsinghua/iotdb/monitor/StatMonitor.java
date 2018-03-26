@@ -127,44 +127,44 @@ public class StatMonitor implements IService{
         }
     }
 
-    public void recovery() {
-        // restore the FildeNode Manager TOTAL_POINTS statistics info
-        OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
-        List<Pair<Path, String>> pairList = new ArrayList<>();
-        List<String> stringList = FileNodeManager.getInstance().getAllPathForStatistic();
-        for (String string : stringList) {
-            Path path = new Path(string);
-            pairList.add(new Pair<>(path, StatisticConstant.LAST));
-        }
-        try {
-            QueryDataSet queryDataSet;
-            queryDataSet = overflowQueryEngine.aggregate(pairList, null);
-            ReadLockManager.getInstance().unlockForOneRequest();
-            RowRecord rowRecord = queryDataSet.getNextRecord();
-
-            if (rowRecord!=null) {
-                FileNodeManager fManager = FileNodeManager.getInstance();
-                HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
-                List<Field> list = rowRecord.fields;
-                for (Field field: list) {
-                    String statMeasurement = field.measurementId.substring(0,field.measurementId.length() - 1);
-                    if (statParamsHashMap.containsKey(statMeasurement)) {
-                        if (field.isNull()) {
-                            continue;
-                        }
-                        long lastValue = field.getLongV();
-                        statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
-                    }
-                }
-            }
-        } catch (ProcessorException e) {
-            LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
-        } catch (PathErrorException e) {
-            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path does not exist,", e);
-        } catch (IOException e) {
-            LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
-        }
-    }
+//    public void recovery() {
+//        // restore the FildeNode Manager TOTAL_POINTS statistics info
+//        OverflowQueryEngine overflowQueryEngine = new OverflowQueryEngine();
+//        List<Pair<Path, String>> pairList = new ArrayList<>();
+//        List<String> stringList = FileNodeManager.getInstance().getAllPathForStatistic();
+//        for (String string : stringList) {
+//            Path path = new Path(string);
+//            pairList.add(new Pair<>(path, StatisticConstant.LAST));
+//        }
+//        try {
+//            QueryDataSet queryDataSet;
+//            queryDataSet = overflowQueryEngine.aggregate(pairList, null);
+//            ReadLockManager.getInstance().unlockForOneRequest();
+//            RowRecord rowRecord = queryDataSet.getNextRecord();
+//
+//            if (rowRecord!=null) {
+//                FileNodeManager fManager = FileNodeManager.getInstance();
+//                HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();
+//                List<Field> list = rowRecord.fields;
+//                for (Field field: list) {
+//                    String statMeasurement = field.measurementId.substring(0,field.measurementId.length() - 1);
+//                    if (statParamsHashMap.containsKey(statMeasurement)) {
+//                        if (field.isNull()) {
+//                            continue;
+//                        }
+//                        long lastValue = field.getLongV();
+//                        statParamsHashMap.put(statMeasurement, new AtomicLong(lastValue));
+//                    }
+//                }
+//            }
+//        } catch (ProcessorException e) {
+//            LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
+//        } catch (PathErrorException e) {
+//            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path does not exist,", e);
+//        } catch (IOException e) {
+//            LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
+//        }
+//    }
 
     public void activate() {
 

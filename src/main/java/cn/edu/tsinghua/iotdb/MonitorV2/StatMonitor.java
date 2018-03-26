@@ -3,30 +3,28 @@ package cn.edu.tsinghua.iotdb.MonitorV2;
 import cn.edu.tsinghua.iotdb.MonitorV2.Event.StatEvent;
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.management.ReadLockManager;
-import cn.edu.tsinghua.iotdb.queryV2.engine.impl.QueryEngineImpl;
 import cn.edu.tsinghua.iotdb.service.IService;
-import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.service.JMXService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,17 +33,20 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
-public class StatMonitor implements StatEventListener, IService {
+public class StatMonitor implements StatEventListener, IService, StatMonitorMBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
 
-    private Map<String, StatisticTSRecord> statistics;
+    private final String MBEAN_NAME = String.format("%s:%s=%s", TsFileDBConstant.IOTDB_PACKAGE, TsFileDBConstant.JMX_TYPE, getID().getJmxName());
+
+    private Map<String, StatTSRecord> statistics;
     private ScheduledExecutorService service;
+    private final int waitPeriodMilSecond;
     private final int backLoopPeriod;
-    private final int statMonitorDetectFreqSec;
-    private final int statMonitorRetainIntervalSec;
+    private final int deleteFreqSec;
+    private final int retainIntervalSec;
+    private long lastDeleteTimeMilli = System.currentTimeMillis();
 
     private Queue<StatEvent> events;
 
@@ -55,9 +56,10 @@ public class StatMonitor implements StatEventListener, IService {
 
         MManager mManager = MManager.getInstance();
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        statMonitorDetectFreqSec = config.statMonitorDetectFreqSec;
-        statMonitorRetainIntervalSec = config.statMonitorRetainIntervalSec;
         backLoopPeriod = config.backLoopPeriodSec;
+        waitPeriodMilSecond = config.statMonitorDealEventWaitPeriodMilSec;
+        deleteFreqSec = config.statMonitorDeleteStatFreqSec;
+        retainIntervalSec = config.statMonitorRetainIntervalSec;
         if (config.enableStatMonitor){
             try {
                 String prefix = MonitorConstants.statStorageGroupPrefix;
@@ -71,6 +73,9 @@ public class StatMonitor implements StatEventListener, IService {
     }
 
     @Override
+    public int getEventQueueLength(){return events.size();}
+
+    @Override
     public void addEvent(StatEvent event) {
         events.add(event);
         LOGGER.info(String.format("Receive event from %s, type is %s, value is %s.", event.getPath(), event.getClass().getSimpleName(), event.getValue()));
@@ -81,7 +86,7 @@ public class StatMonitor implements StatEventListener, IService {
         if (event == null)return;
         if (isStatisticPath(event.getPath()))return;
 
-        StatisticTSRecord record = event.convertToStatTSRecord();
+        StatTSRecord record = event.convertToStatTSRecord();
         updateStatisticMap(record);
         updateStatisticInDB();
     }
@@ -99,26 +104,25 @@ public class StatMonitor implements StatEventListener, IService {
     private void updateStatisticInDB(){
         FileNodeManager fManager = FileNodeManager.getInstance();
         long current_time = System.currentTimeMillis();
-        for (Map.Entry<String, StatisticTSRecord> entry : statistics.entrySet()) {
+        for (Map.Entry<String, StatTSRecord> entry : statistics.entrySet()) {
             try {
                 entry.getValue().time = current_time;
                 fManager.insert(entry.getValue(), true);
             } catch (FileNodeManagerException e) {
-                statistics.get(MonitorConstants.statStorageGroupPrefix).addOneStatistic(StatisticTSRecord.StatisticConstants.TOTAL_REQ_FAIL, 1);
                 LOGGER.error("Inserting stat points error.",  e);
             }
         }
     }
 
-    private void updateStatisticMap(StatisticTSRecord record){
+    private void updateStatisticMap(StatTSRecord record){
         String path = record.deltaObjectId;
         do{
             if(statistics.containsKey(path)){
-                statistics.get(path).addOneStatistic(StatisticTSRecord.StatisticConstants.TOTAL_POINTS_SUCCESS, record);
+                statistics.get(path).addOneStatistic(MonitorConstants.StatisticConstants.TOTAL_POINTS_SUCCESS, record);
             }else{
-                StatisticTSRecord newRecord = new StatisticTSRecord(record, path);
+                StatTSRecord newRecord = new StatTSRecord(record, path);
                 statistics.put(path, newRecord);
-                List<String> paths = StatisticTSRecord.getAllPaths(path);
+                List<String> paths = StatTSRecord.getAllPaths(path);
                 MManager mManager = MManager.getInstance();
                 for(String p : paths){
                     try {
@@ -159,10 +163,9 @@ public class StatMonitor implements StatEventListener, IService {
             }
 
             for(Map.Entry<String, Map<String, Long>> entry : stats.entrySet()){
-                StatisticTSRecord tsRecord = new StatisticTSRecord(currenttime, entry.getKey(), entry.getValue());
+                StatTSRecord tsRecord = new StatTSRecord(currenttime, entry.getKey(), entry.getValue());
                 statistics.put(entry.getKey(), tsRecord);
             }
-            updateStatisticInDB();
         } catch (PathErrorException e) {
             e.printStackTrace();
         }
@@ -179,7 +182,7 @@ public class StatMonitor implements StatEventListener, IService {
                 else statPathSet.add(storagegroup);
 
                 String statpath = MonitorConstants.convertStorageGroupPathToStatisticPath(storagegroup);
-                for (StatisticTSRecord.StatisticConstants constants : StatisticTSRecord.StatisticConstants.values())
+                for (MonitorConstants.StatisticConstants constants : MonitorConstants.StatisticConstants.values())
                     statPaths.add(statpath + MonitorConstants.STATISTIC_PATH_SEPERATOR + constants.name());
 
                 if (!storagegroup.contains(MonitorConstants.STORAGEGROUP_PATH_SEPERATOR)) break;
@@ -221,6 +224,27 @@ public class StatMonitor implements StatEventListener, IService {
         return res;
     }
 
+    private void checkShouldDelete(){
+        long currentTimeMillis = System.currentTimeMillis();
+        long seconds = (currentTimeMillis - lastDeleteTimeMilli) / 1000;
+        if (seconds - deleteFreqSec >= 0) {
+            lastDeleteTimeMilli = currentTimeMillis;
+            // delete time-series data
+            FileNodeManager fManager = FileNodeManager.getInstance();
+            try {
+                for (Map.Entry<String, StatTSRecord> entry : statistics.entrySet()) {
+                    StatTSRecord record = entry.getValue();
+                    for(DataPoint dataPoint : record.dataPointList){
+                        fManager.delete(record.deltaObjectId, dataPoint.getMeasurementId(), currentTimeMillis - retainIntervalSec * 1000, dataPoint.getType());
+                    }
+                }
+            } catch (FileNodeManagerException e) {
+                LOGGER.error("Error occurred when deleting statistics information periodically, because", e);
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static StatMonitor getInstance() {
         return StatMonitorHolder.INSTANCE;
     }
@@ -234,6 +258,8 @@ public class StatMonitor implements StatEventListener, IService {
         try {
             if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
                 activate();
+
+                JMXService.registerMBean(getInstance(), MBEAN_NAME);
             }
         } catch (Exception e) {
             String errorMessage = String.format("Failed to start %s because of %s", this.getID().getName(), e.getMessage());
@@ -277,8 +303,10 @@ public class StatMonitor implements StatEventListener, IService {
     class statBackLoop implements Runnable {
         public void run() {
             while(true){
+                checkShouldDelete();
+
                 while (events.isEmpty()) try {
-                    Thread.sleep(backLoopPeriod);
+                    Thread.sleep(waitPeriodMilSecond);
                     continue;
                 } catch (InterruptedException e) {
                     e.printStackTrace();

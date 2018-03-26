@@ -1,15 +1,13 @@
 package cn.edu.tsinghua.iotdb.MonitorV2.Event;
 
 import cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants;
-import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
-import cn.edu.tsinghua.iotdb.MonitorV2.StatisticTSRecord;
+import cn.edu.tsinghua.iotdb.MonitorV2.StatTSRecord;
 
 public class StatEvent {
 
     private long timestamp;
     private String path;
-    private MonitorConstants.FileNodeManagerStatConstants type;
-    private long value;
+    private long value; //positive value means adding value, negative value means deleting value
 
     public StatEvent(long timestamp, String path, long value) {
         this.timestamp = timestamp;
@@ -25,14 +23,6 @@ public class StatEvent {
         this.path = path;
     }
 
-    public MonitorConstants.FileNodeManagerStatConstants getType() {
-        return type;
-    }
-
-    public void setType(MonitorConstants.FileNodeManagerStatConstants type) {
-        this.type = type;
-    }
-
     public long getValue() {
         return value;
     }
@@ -41,11 +31,11 @@ public class StatEvent {
         this.value = value;
     }
 
-    public StatisticTSRecord convertToStatTSRecord(){
+    public StatTSRecord convertToStatTSRecord(){
 
         String stat_path = MonitorConstants.convertStorageGroupPathToStatisticPath(path);
-        StatisticTSRecord record = new StatisticTSRecord(timestamp, stat_path);
-        record.addOneStatistic(StatisticTSRecord.StatisticConstants.TOTAL_POINTS_SUCCESS, value);
+        StatTSRecord record = new StatTSRecord(timestamp, stat_path);
+        record.addOneStatistic(MonitorConstants.StatisticConstants.TOTAL_POINTS_SUCCESS, value);
         return record;
     }
 }

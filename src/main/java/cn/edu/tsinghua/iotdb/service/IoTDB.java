@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.service;
 
 import java.io.IOException;
 
+import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,6 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
@@ -64,8 +64,7 @@ public class IoTDB implements IoTDBMBean{
 		// When registering statMonitor, we should start recovering some statistics with latest values stored
 		// Warn: registMonitor() method should be called after systemDataRecovery()
 		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
-//			StatMonitor.getInstance().recovery();
-			cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().recovery();
+			StatMonitor.getInstance().recovery();
 		}
 
 		registerManager.register(FileNodeManager.getInstance());
@@ -76,8 +75,7 @@ public class IoTDB implements IoTDBMBean{
 		registerManager.register(JDBCService.getInstance());
 		registerManager.register(Monitor.INSTANCE);
 		registerManager.register(CloseMergeService.getInstance());
-//		registerManager.register(StatMonitor.getInstance());
-		registerManager.register(cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance());
+		registerManager.register(StatMonitor.getInstance());
 		registerManager.register(BasicMemController.getInstance());
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);

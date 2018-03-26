@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
-import cn.edu.tsinghua.iotdb.monitor.IFixStatistics;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
@@ -18,7 +17,7 @@ import java.util.List;
  * This class is used to combine one series with corresponding update operations
  * Created by zhangjinrui on 2018/1/15.
  */
-public class SeriesWithUpdateOpReader implements SeriesReader, IFixStatistics {
+public class SeriesWithUpdateOpReader implements SeriesReader {
 
     private PriorityMergeSortTimeValuePairReader seriesReader;
     private OverflowOperationReader overflowOperationReader;
@@ -74,20 +73,6 @@ public class SeriesWithUpdateOpReader implements SeriesReader, IFixStatistics {
     @Override
     public void close() throws IOException {
         seriesReader.close();
-    }
-
-    @Override
-    public void registStatStorageGroup(FileNodeProcessor fileNodeProcessor) {
-        fileNodeProcessorList.add(fileNodeProcessor);
-        seriesReader.registStatStorageGroup(fileNodeProcessor);
-    }
-
-    @Override
-    public void fixStatistics() {
-//        for(FileNodeProcessor fileNodeProcessor : fileNodeProcessorList){
-//            fileNodeProcessor.fixStatistics();
-//        }
-        seriesReader.fixStatistics();
     }
 
     public long getPointCoverNum(){

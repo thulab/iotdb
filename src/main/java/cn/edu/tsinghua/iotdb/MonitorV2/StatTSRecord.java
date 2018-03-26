@@ -8,30 +8,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class StatisticTSRecord extends TSRecord {
+public class StatTSRecord extends TSRecord {
 
-    public StatisticTSRecord(long timestamp, String path) {
+    public StatTSRecord(long timestamp, String path) {
         super(timestamp, path);
-        for(StatisticConstants type : StatisticConstants.values()){
+        for(MonitorConstants.StatisticConstants type : MonitorConstants.StatisticConstants.values()){
             addTuple(new LongDataPoint(type.name(), 0));
         }
     }
 
-    public StatisticTSRecord(StatisticTSRecord record, String path){
+    public StatTSRecord(StatTSRecord record, String path){
         super(record.time, path);
         for(DataPoint dataPoint : record.dataPointList){
             addTuple(new LongDataPoint(dataPoint.getMeasurementId(), (long)dataPoint.getValue()));
         }
     }
 
-    public StatisticTSRecord(long timestamp, String path, Map<String, Long> stats){
+    public StatTSRecord(long timestamp, String path, Map<String, Long> stats){
         this(timestamp, path);
         for(Map.Entry<String, Long> stat : stats.entrySet()){
-            addOneStatistic(StatisticConstants.valueOf(stat.getKey()), stat.getValue());
+            addOneStatistic(MonitorConstants.StatisticConstants.valueOf(stat.getKey()), stat.getValue());
         }
     }
 
-    public void addOneStatistic(StatisticConstants type, StatisticTSRecord record){
+    public void addOneStatistic(MonitorConstants.StatisticConstants type, StatTSRecord record){
         for(int i = 0;i < dataPointList.size();i++){
             if(dataPointList.get(i).getMeasurementId().equals(type.name())){
                 long old_value = (long)dataPointList.get(i).getValue();
@@ -40,7 +40,7 @@ public class StatisticTSRecord extends TSRecord {
         }
     }
 
-    public void addOneStatistic(StatisticConstants type, long value){
+    public void addOneStatistic(MonitorConstants.StatisticConstants type, long value){
         for(int i = 0;i < dataPointList.size();i++){
             if(dataPointList.get(i).getMeasurementId().equals(type.name())){
                 long old_value = (long)dataPointList.get(i).getValue();
@@ -51,25 +51,20 @@ public class StatisticTSRecord extends TSRecord {
 
     public static List<String> getAllPaths(String prefix){
         List<String> paths = new ArrayList<>();
-        for(StatisticConstants statistic : StatisticConstants.values()){
+        for(MonitorConstants.StatisticConstants statistic : MonitorConstants.StatisticConstants.values()){
             paths.add(prefix + MonitorConstants.STATISTIC_PATH_SEPERATOR + statistic.name());
         }
         return paths;
     }
 
-    public enum StatisticConstants {
-        TOTAL_REQ_SUCCESS, TOTAL_REQ_FAIL,
-        TOTAL_POINTS_SUCCESS, TOTAL_POINTS_FAIL,
-    }
-
-    public int getConstantIndex(StatisticConstants constants){
+    public int getConstantIndex(MonitorConstants.StatisticConstants constants){
         for(int i = 0;i < dataPointList.size();i++){
             if(dataPointList.get(i).getMeasurementId().equals(constants.name()))return i;
         }
         return -1;
     }
 
-    public Object getConstantValue(StatisticConstants constants){
+    public Object getConstantValue(MonitorConstants.StatisticConstants constants){
         int index = getConstantIndex(constants);
         if(index == -1)return null;
         else return dataPointList.get(index).getValue();

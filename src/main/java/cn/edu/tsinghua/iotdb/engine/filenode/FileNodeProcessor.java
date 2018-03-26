@@ -53,9 +53,6 @@ import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.monitor.IStatistic;
-import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -81,7 +78,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
 
-public class FileNodeProcessor extends Processor implements IStatistic, StatEventProducer {
+public class FileNodeProcessor extends Processor implements StatEventProducer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -121,70 +118,10 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 	private boolean shouldRecovery = false;
 	// statistic monitor parameters
 	private Map<String, Object> parameters = null;
-	private final String statStorageDeltaName;
 
 	private FileSchema fileSchema;
 
 	private List<StatEventListener> listeners = new ArrayList<>();
-
-	private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
-		{
-			for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
-					.values()) {
-				put(statConstant.name(), new AtomicLong(0));
-			}
-		}
-	};
-
-	public HashMap<String, AtomicLong> getStatParamsHashMap() {
-		return statParamsHashMap;
-	}
-
-	@Override
-	public void fixStatistics() {
-		statParamsHashMap.get(MonitorConstants.FileNodeProcessorStatConstants.TOTAL_POINTS_SUCCESS.name()).decrementAndGet();
-	}
-
-	@Override
-	public void registStatMetadata() {
-		HashMap<String, String> hashMap = new HashMap<String, String>() {
-			{
-				for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
-						.values()) {
-					put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(),
-							MonitorConstants.DataType);
-				}
-			}
-		};
-		StatMonitor.getInstance().registStatStorageGroup(hashMap);
-	}
-
-	@Override
-	public List<String> getAllPathForStatistic() {
-		List<String> list = new ArrayList<>();
-		for (MonitorConstants.FileNodeProcessorStatConstants statConstant : MonitorConstants.FileNodeProcessorStatConstants
-				.values()) {
-			list.add(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
-		}
-		return list;
-	}
-
-	@Override
-	public HashMap<String, TSRecord> getAllStatisticsValue() {
-		Long curTime = System.currentTimeMillis();
-		HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-		TSRecord tsRecord = new TSRecord(curTime, statStorageDeltaName);
-		HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
-		tsRecord.dataPointList = new ArrayList<DataPoint>() {
-			{
-				for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
-					add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
-				}
-			}
-		};
-		tsRecordHashMap.put(statStorageDeltaName, tsRecord);
-		return tsRecordHashMap;
-	}
 
 	private Action flushFileNodeProcessorAction = new Action() {
 
@@ -288,9 +225,6 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 
 	public FileNodeProcessor(String fileNodeDirPath, String processorName) throws FileNodeProcessorException {
 		super(processorName);
-		statStorageDeltaName = MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
-				+ MonitorConstants.fileNodePath + MonitorConstants.MONITOR_PATH_SEPERATOR
-				+ processorName.replaceAll("\\.", "_");
 
 		this.parameters = new HashMap<>();
 		if (fileNodeDirPath.length() > 0
@@ -1381,7 +1315,6 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
 				SeriesWithUpdateOpReader seriesReader = (SeriesWithUpdateOpReader)SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
-				seriesReader.registStatStorageGroup(this);
 				try {
 					if (!seriesReader.hasNext()) {
 						LOGGER.debug("The time-series {} has no data with the filter {} in the filenode processor {}",
@@ -1623,11 +1556,6 @@ public class FileNodeProcessor extends Processor implements IStatistic, StatEven
 	}
 
 	public void delete() throws ProcessorException {
-		if (TsFileDBConf.enableStatMonitor) {
-			// remove the monitor
-			LOGGER.info("Deregister the filenode processor: {} from monitor.", getProcessorName());
-			StatMonitor.getInstance().deregistStatistics(statStorageDeltaName);
-		}
 		closeBufferWrite();
 		closeOverflow();
 	}

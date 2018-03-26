@@ -193,6 +193,16 @@ public class TsfileDBConfig {
 	public boolean enableStatMonitor = true;
 
 	/**
+	 * Set the time interval when StatMonitor waits because event-queue is empty, default value is 1000ms,
+	 */
+	public int statMonitorDealEventWaitPeriodMilSec = 1000;
+
+	/**
+	 * Set the time interval when StatMonitor performs delete detection, default value is 600s,
+	 */
+	public int statMonitorDeleteStatFreqSec = 60 * 10;
+
+	/**
 	 * Set the time interval when StatMonitor performs delete detection, default value is 600s,
 	 */
 	public int statMonitorDetectFreqSec = 60 * 10;

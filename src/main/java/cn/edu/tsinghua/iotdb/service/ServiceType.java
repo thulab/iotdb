@@ -6,7 +6,7 @@ public enum ServiceType {
 	JMX_SERVICE("JMX Service","JMX Service"),
 	JDBC_SERVICE("JDBC Service","JDBCService"),
 	MONITOR_SERVICE("Monitor Service","Monitor"),
-	STAT_MONITOR_SERVICE("Statistics Service",""),
+	STAT_MONITOR_SERVICE("Statistics Service","StatMonitor"),
 	WAL_SERVICE("WAL Service",""),
 	CLOSE_MERGE_SERVICE("Close&Merge Service",""),
 	JVM_MEM_CONTROL_SERVICE("Memory Controller","");

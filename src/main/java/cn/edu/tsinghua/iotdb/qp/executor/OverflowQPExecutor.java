@@ -12,7 +12,6 @@ import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.metadata.MNode;
-import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.MetadataOperator;
@@ -456,9 +455,6 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                             for (String eachSubPath : subPaths) {
                                 String filenodeName = mManager.getFileNameByPath(eachSubPath);
 
-                                if (MonitorConstants.statStorageGroupPrefix.equals(filenodeName)) {
-                                    continue;
-                                }
                                 newSubPaths.add(eachSubPath);
                             }
                             pathSet.addAll(newSubPaths);
