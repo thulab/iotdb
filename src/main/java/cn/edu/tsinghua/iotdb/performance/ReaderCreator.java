@@ -55,14 +55,8 @@ public class ReaderCreator {
      * @return TimeValuePairReader
      * @throws IOException
      */
-    public static TimeValuePairReader createReaderForMerge(String tsfilePath, String unseqTsFilePath, Path path, long startTime, long endTime) throws IOException {
-//        ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
-//        TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
-//        randomAccessFileReader.close();
-//        long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
-//        long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
-//        System.out.println(String.format("Current query path is %s, deltaObject time range is [%d, %d]", path.getFullPath(), startTime, endTime));
-
+    public static TimeValuePairReader createReaderForMerge(String tsfilePath, String unseqTsFilePath,
+                                                           Path path, long startTime, long endTime) throws IOException {
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
         TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir = "";
         Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));

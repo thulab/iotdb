@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.performance;
 
-import cn.edu.tsinghua.aop.Cost;
-import cn.edu.tsinghua.aop.CostResult;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -11,7 +9,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.performance.CostFramework;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
@@ -40,9 +37,9 @@ import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getUnSeqFileMetaDa
 /**
  * Created by zhangjinrui on 2018/3/13.
  */
-public class WriteSample {
+public class WriteAnalysis {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WriteSample.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WriteAnalysis.class);
 
     private static String mergeOutPutFolder;
     private static String fileFolderName;
@@ -52,21 +49,18 @@ public class WriteSample {
     private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> unSeqFileMetaData;
     private static Map<String, Pair<Long, Long>> unSeqFileDeltaObjectTimeRangeMap;
 
-    public static void main(String args[]) throws WriteProcessException, IOException {
+    public static void main(String args[]) throws WriteProcessException, IOException, InterruptedException {
         fileFolderName = args[0];
         mergeOutPutFolder = fileFolderName + "/merge/";
         unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
 
         unSeqFileMetaData = getUnSeqFileMetaData(unSeqFilePath);
-        WriteSample writeSample = new WriteSample();
-        writeSample.initUnSeqFileStatistics();
+        WriteAnalysis writeAnalysis = new WriteAnalysis();
+        writeAnalysis.initUnSeqFileStatistics();
 
-        CostResult.getInstance().startRecord();
+        Thread.sleep(10000);
 
-        writeSample.executeMerge();
-
-        //System.out.println("oooooo");
-        //System.out.println("true:" + CostResult.getInstance().getTotalTimeCost("cn/edu/tsinghua/iotdb/performance/WriteSmaple", "constructTsRecord"));
+        writeAnalysis.executeMerge();
     }
 
     private void initUnSeqFileStatistics() {
@@ -96,9 +90,9 @@ public class WriteSample {
         int cnt = 0;
         for (File file : files) {
             cnt ++;
-            if (cnt == 10) {
-                break;
-            }
+//            if (cnt == 10) {
+//                break;
+//            }
             if (!file.isDirectory() && !file.getName().endsWith(restoreFilePathName) &&
                     !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")) {
                 System.out.println(String.format("---- merge process begin, current merge file is %s.", file.getName()));
@@ -142,17 +136,17 @@ public class WriteSample {
                                 while (reader.hasNext()) {
                                     TimeValuePair tp = reader.next();
 
-//                                    // calc time consuming of constructing TsRecord
-//                                    long recordStartTime = System.currentTimeMillis();
-//                                    TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
-//                                    long recordEndTime = System.currentTimeMillis();
-//                                    tsRecordTimeConsuming += (recordEndTime - recordStartTime);
-//
-//                                    // calc time consuming of writing
-//                                    long writeStartTime = System.currentTimeMillis();
-//                                    fileWriter.write(record);
-//                                    long writeEndTime = System.currentTimeMillis();
-//                                    writeTimeConsuming += (writeEndTime - writeStartTime);
+                                    // calc time consuming of constructing TsRecord
+                                    long recordStartTime = System.currentTimeMillis();
+                                    TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
+                                    long recordEndTime = System.currentTimeMillis();
+                                    tsRecordTimeConsuming += (recordEndTime - recordStartTime);
+
+                                    // calc time consuming of writing
+                                    long writeStartTime = System.currentTimeMillis();
+                                    fileWriter.write(record);
+                                    long writeEndTime = System.currentTimeMillis();
+                                    writeTimeConsuming += (writeEndTime - writeStartTime);
                                 }
 
                                 long hasNextCalcEndTime = System.currentTimeMillis();
@@ -166,9 +160,6 @@ public class WriteSample {
                 randomAccessFileReader.close();
                 fileWriter.close();
                 long oneFileMergeEndTime = System.currentTimeMillis();
-                for (Map.Entry<String, Long> entry : CostFramework.getInstance().getExecutingTimeMap().entrySet()) {
-                    System.out.println(entry.getKey() + "===" + entry.getValue());
-                }
                 System.out.println(String.format("Current file merge time consuming : %dms," +
                                 "write consuming : %dms, construct record consuming: %dms," +
                                 "stream load consuming : %dms, calc next consuming : %dms",
