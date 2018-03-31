@@ -161,11 +161,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		TSFetchMetadataResp resp = new TSFetchMetadataResp();
 		switch (req.getType()) {
 			case "SHOW_TIMESERIES":
-				//String metadataInJson = MManager.getInstance().getMetadataInString();
-				// resp.setMetadataInJson(metadataInJson);
 				String path = req.getColumnPath();
-				//TODO 解析出完整paths,并且如果path有错要在这里报错
-				//TODO 遍历paths得到对应的所有leaves的timeseries名称、storage group、dataType、encoding
 				List<List<String>> showTimeseriesList = new ArrayList<>();
 				try {
 					List<String> paths = MManager.getInstance().getPaths(path);
@@ -173,7 +169,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 						String apath = paths.get(i);
 						List<String> tsRow = new ArrayList<>();
 						tsRow.add(apath);
-						// storage group、dataType、encoding
+						// name、storage group、dataType、encoding
 						MNode leafNode = MManager.getInstance().getNodeByPath(apath);
 						if (leafNode.isLeaf()) {
 							ColumnSchema columnSchema = leafNode.getSchema();

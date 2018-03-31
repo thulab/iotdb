@@ -104,77 +104,94 @@ public abstract class AbstractClient {
 	}
 
 	public static void output(ResultSet res, boolean printToConsole, String statement, DateTimeZone timeZone) throws SQLException {
+		int cnt = 0;
+		int displayCnt = 0;
+		boolean printTimestamp = true;
+		boolean printHeader = false;
+		ResultSetMetaData resultSetMetaData = null;
+		int colCount;
+
 		boolean isShowTs = res instanceof TsfileMetadataResultSet;
-		if(isShowTs) {
-			System.out.println("trust me");
-		}
-		else {
-			int cnt = 0;
-			int displayCnt = 0;
-			ResultSetMetaData resultSetMetaData = res.getMetaData();
-			int colCount = resultSetMetaData.getColumnCount();
-			boolean printTimestamp = true;
+		if (isShowTs) { // show timeseries
+			colCount = 4;
+		} else { // query
+			resultSetMetaData = res.getMetaData();
+			colCount = resultSetMetaData.getColumnCount();
 			if (res.getMetaData().getColumnTypeName(0) != null) {
 				printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
 			}
-			boolean printHeader = false;
+		}
 
-			// Output values
-			while (res.next()) {
-
-				// Output Labels
+		// Output values
+		while (res.next()) {
+			// Output Labels
+			if (printToConsole) {
 				if (!printHeader) {
-					printBlockLine(printTimestamp, colCount, res);
-					printName(printTimestamp, colCount, res);
-					printBlockLine(printTimestamp, colCount, res);
+					printBlockLine(printTimestamp, colCount, res, isShowTs);
+					printName(printTimestamp, colCount, res, isShowTs);
+					printBlockLine(printTimestamp, colCount, res, isShowTs);
 					printHeader = true;
 				}
 				if (cnt < maxPrintRowCount) {
 					System.out.print("|");
-					if (printTimestamp) {
-						System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
-					}
-				}
-
-				for (int i = 2; i <= colCount; i++) {
-					if (printToConsole && cnt < maxPrintRowCount) {
-						boolean flag = false;
-						for (String timeStr : AGGREGRATE_TIME_LIST) {
-							if (resultSetMetaData.getColumnLabel(i).toUpperCase().indexOf(timeStr.toUpperCase()) != -1) {
-								flag = true;
-								break;
-							}
-						}
-						if (flag) {
-							try {
-								System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
-							} catch (Exception e) {
-								System.out.printf(formatValue, "null");
-							}
-						} else {
+					if (isShowTs) {
+						for (int i = 1; i <= colCount; i++) {
 							System.out.printf(formatValue, String.valueOf(res.getString(i)));
 						}
+					} else {
+						if (printTimestamp) {
+							System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
+						}
+						for (int i = 2; i <= colCount; i++) {
+							boolean flag = false;
+							for (String timeStr : AGGREGRATE_TIME_LIST) {
+								if (resultSetMetaData.getColumnLabel(i).toUpperCase().contains(timeStr.toUpperCase())) {
+									flag = true;
+									break;
+								}
+							}
+							if (flag) {
+								try {
+									System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+								} catch (Exception e) {
+									System.out.printf(formatValue, "null");
+								}
+							} else {
+								System.out.printf(formatValue, String.valueOf(res.getString(i)));
+							}
+						}
 					}
-				}
 
-				if (printToConsole && cnt < maxPrintRowCount) {
 					System.out.printf("\n");
 					displayCnt++;
 				}
-				cnt++;
+			}
 
-				if (!printToConsole && cnt % 10000 == 0) {
-					System.out.println(cnt);
-				}
+			cnt++;
+
+			if (!printToConsole && cnt % 10000 == 0) {
+				System.out.println(cnt);
 			}
+		}
+
+		if (printToConsole) {
 			if (!printHeader) {
-				printBlockLine(printTimestamp, colCount, res);
-				printName(printTimestamp, colCount, res);
-				printBlockLine(printTimestamp, colCount, res);
+				printBlockLine(printTimestamp, colCount, res, isShowTs);
+				printName(printTimestamp, colCount, res, isShowTs);
+				printBlockLine(printTimestamp, colCount, res, isShowTs);
+			} else {
+				printBlockLine(printTimestamp, colCount, res, isShowTs);
 			}
-			printBlockLine(printTimestamp, colCount, res);
-			System.out.println(String.format("Display the first %s lines", displayCnt));
-			System.out.println(StringUtils.repeat('-', 40));
+
+			if (displayCnt == maxPrintRowCount) {
+				System.out.println(String.format("Reach maxPrintRowCount = %s lines", maxPrintRowCount));
+			}
+		}
+
+		System.out.println(StringUtils.repeat('-', 40));
+		if (isShowTs) {
+			System.out.println("timeseries number = " + cnt);
+		} else {
 			System.out.println("Total line number = " + cnt);
 		}
 	}
@@ -265,33 +282,48 @@ public abstract class AbstractClient {
 		}
 	}
 
-	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSet res) throws SQLException {
+	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
 		StringBuilder blockLine = new StringBuilder();
-		int tmp = Integer.MIN_VALUE;
-		for (int i = 1; i <= colCount; i++) {
-			int len = res.getMetaData().getColumnLabel(i).length();
-			tmp = tmp > len ? tmp : len;
-		}
-		maxValueLength = tmp;
-		if (printTimestamp) {
-			blockLine.append("+").append(StringUtils.repeat('-', maxTimeLength)).append("+");
-		} else {
+		if (isShowTs) {
+			maxValueLength = 30; //TODO
 			blockLine.append("+");
-		}
-		for (int i = 0; i < colCount - 1; i++) {
-			blockLine.append(StringUtils.repeat('-', maxValueLength)).append("+");
+			for (int i = 0; i < colCount; i++) {
+				blockLine.append(StringUtils.repeat('-', maxValueLength)).append("+");
+			}
+		} else {
+			int tmp = Integer.MIN_VALUE;
+			for (int i = 1; i <= colCount; i++) {
+				int len = res.getMetaData().getColumnLabel(i).length();
+				tmp = tmp > len ? tmp : len;
+			}
+			maxValueLength = tmp;
+			if (printTimestamp) {
+				blockLine.append("+").append(StringUtils.repeat('-', maxTimeLength)).append("+");
+			} else {
+				blockLine.append("+");
+			}
+			for (int i = 0; i < colCount - 1; i++) {
+				blockLine.append(StringUtils.repeat('-', maxValueLength)).append("+");
+			}
 		}
 		System.out.println(blockLine);
 	}
 
-	protected static void printName(boolean printTimestamp, int colCount, ResultSet res) throws SQLException {
+	protected static void printName(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
 		System.out.print("|");
 		formatValue = "%" + maxValueLength + "s|";
-		if (printTimestamp) {
-			System.out.printf(formatTime, TIMESTAMP_STR);
-		}
-		for (int i = 2; i <= colCount; i++) {
-			System.out.printf(formatValue, res.getMetaData().getColumnLabel(i));
+		if (isShowTs) {
+			String[] showTsLabels = new String[]{"Timeseries", "Storage Group", "DataType", "Encoding"};
+			for (int i = 0; i < colCount; i++) {
+				System.out.printf(formatValue, showTsLabels[i]);
+			}
+		} else {
+			if (printTimestamp) {
+				System.out.printf(formatTime, TIMESTAMP_STR);
+			}
+			for (int i = 2; i <= colCount; i++) {
+				System.out.printf(formatValue, res.getMetaData().getColumnLabel(i));
+			}
 		}
 		System.out.printf("\n");
 	}
@@ -448,8 +480,7 @@ public abstract class AbstractClient {
 
 			if (hasResultSet) {
 				ResultSet resultSet = statement.getResultSet();
-				//output(resultSet, printToConsole, cmd.trim(), timeZone);
-				System.out.println(resultSet.getString(1));
+				output(resultSet, printToConsole, cmd.trim(), timeZone);
 			}
 			System.out.println("Execute successfully.");
 		} catch (Exception e) {
