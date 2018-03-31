@@ -113,7 +113,7 @@ public abstract class AbstractClient {
 
 		boolean isShowTs = res instanceof TsfileMetadataResultSet;
 		if (isShowTs) { // show timeseries
-			colCount = 4;
+			colCount = ((TsfileMetadataResultSet)res).getColCount();
 		} else { // query
 			resultSetMetaData = res.getMetaData();
 			colCount = resultSetMetaData.getColumnCount();
@@ -136,6 +136,7 @@ public abstract class AbstractClient {
 					System.out.print("|");
 					if (isShowTs) {
 						for (int i = 1; i <= colCount; i++) {
+							formatValue = "%" + ((TsfileMetadataResultSet)res).getMaxValueLength(i) + "s|";
 							System.out.printf(formatValue, String.valueOf(res.getString(i)));
 						}
 					} else {
@@ -285,10 +286,9 @@ public abstract class AbstractClient {
 	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
 		StringBuilder blockLine = new StringBuilder();
 		if (isShowTs) {
-			maxValueLength = 30; //TODO
 			blockLine.append("+");
-			for (int i = 0; i < colCount; i++) {
-				blockLine.append(StringUtils.repeat('-', maxValueLength)).append("+");
+			for (int i = 1; i <= colCount; i++) {
+				blockLine.append(StringUtils.repeat('-', ((TsfileMetadataResultSet)res).getMaxValueLength(i))).append("+");
 			}
 		} else {
 			int tmp = Integer.MIN_VALUE;
@@ -311,13 +311,13 @@ public abstract class AbstractClient {
 
 	protected static void printName(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
 		System.out.print("|");
-		formatValue = "%" + maxValueLength + "s|";
 		if (isShowTs) {
-			String[] showTsLabels = new String[]{"Timeseries", "Storage Group", "DataType", "Encoding"};
-			for (int i = 0; i < colCount; i++) {
-				System.out.printf(formatValue, showTsLabels[i]);
+			for (int i = 1; i <= colCount; i++) {
+				formatValue = "%" + ((TsfileMetadataResultSet)res).getMaxValueLength(i) + "s|";
+				System.out.printf(formatValue, TsfileMetadataResultSet.getShowTsLabels()[i-1]);
 			}
 		} else {
+			formatValue = "%" + maxValueLength + "s|";
 			if (printTimestamp) {
 				System.out.printf(formatTime, TIMESTAMP_STR);
 			}

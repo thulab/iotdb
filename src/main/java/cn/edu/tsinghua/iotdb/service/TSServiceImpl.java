@@ -165,11 +165,18 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				List<List<String>> showTimeseriesList = new ArrayList<>();
 				try {
 					List<String> paths = MManager.getInstance().getPaths(path);
+					if(paths.size()==0) {
+						// check path exists
+						status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+						status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: Timeseries does not exist.", req.getColumnPath()));
+						resp.setStatus(status);
+						return resp;
+					}
 					for (int i = 0; i < paths.size(); i++) {
 						String apath = paths.get(i);
 						List<String> tsRow = new ArrayList<>();
 						tsRow.add(apath);
-						// name、storage group、dataType、encoding
+						// get [name,storage group,dataType,encoding]
 						MNode leafNode = MManager.getInstance().getNodeByPath(apath);
 						if (leafNode.isLeaf()) {
 							ColumnSchema columnSchema = leafNode.getSchema();
