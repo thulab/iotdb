@@ -55,16 +55,6 @@ public class ForDebug {
     private static final int POS_LENGTH = 8;
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
 
-<<<<<<< HEAD
-    //FilePath of TsFile
-    String tsfilePath = "/users/zhangjinrui/Desktop/readTest/tsfile";
-    //FilePath of UnseqTsFile
-    String unseqTsfilePath = "/users/zhangjinrui/Desktop/readTest/unseqTsfile";
-    //Selected Series represented by Path
-    Path path = new Path("root.performf.group_7.d_725.s_1");
-
-    public void test() throws IOException {
-=======
     String tsfilePath = "/users/zhangjinrui/Desktop/readTest/tsfile";
     String unseqTsfilePath = "/users/zhangjinrui/Desktop/readTest/unseqTsfile";
 
@@ -72,7 +62,6 @@ public class ForDebug {
 
     public void test() throws IOException {
 
->>>>>>> master
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
         TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
         long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
@@ -135,10 +124,7 @@ public class ForDebug {
                 System.out.println(i);
             }
         }
-<<<<<<< HEAD
-=======
 
->>>>>>> master
         System.out.println("Time used:" + (System.currentTimeMillis() - startTime) + "ms");
     }
 
@@ -216,41 +202,23 @@ public class ForDebug {
         return record;
     }
 
-
-<<<<<<< HEAD
-    /**
-     * Print the max and min timestamps for one Series in TsFile.
-     * @throws IOException
-     */
-    @Test
-=======
->>>>>>> master
     public void readTsFile() throws IOException {
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
         SeriesReader reader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
 
         int i = 0;
-<<<<<<< HEAD
-        TimeValuePair timeValuePair = null;
-        while (reader.hasNext()) {
-=======
         TimeValuePair lastTimeValuePair = null;
         TimeValuePair timeValuePair = null;
         while (reader.hasNext()) {
             lastTimeValuePair = timeValuePair;
->>>>>>> master
             timeValuePair = reader.next();
             if (i == 0) {
                 System.out.println("Min: " + timeValuePair.getTimestamp());
             }
             i++;
         }
-<<<<<<< HEAD
-        System.out.println("Max: " + timeValuePair.getTimestamp());
-=======
         System.out.println("Max:" + lastTimeValuePair.getTimestamp());
         System.out.println("Max:" + timeValuePair.getTimestamp());
->>>>>>> master
         System.out.println("Count = " + i);
     }
 
