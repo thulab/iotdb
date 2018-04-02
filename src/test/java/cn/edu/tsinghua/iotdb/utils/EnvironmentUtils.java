@@ -1,8 +1,17 @@
 package cn.edu.tsinghua.iotdb.utils;
 
-import java.io.File;
-import java.io.IOException;
-
+import cn.edu.tsinghua.iotdb.auth.AuthException;
+import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
+import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -10,15 +19,8 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.auth.dao.Authorizer;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
-import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.StartupException;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * <p>
@@ -60,6 +62,13 @@ public class EnvironmentUtils {
 		// delete all directory
 		cleanAllDir();
 		// FileNodeManager.getInstance().reset();
+		// reset MemController
+		BasicMemController.getInstance().close();
+		try {
+			BasicMemController.getInstance().start();
+		} catch (StartupException e) {
+			LOGGER.error("",e);
+		}
 	}
 
 	private static void cleanAllDir() throws IOException {
@@ -118,7 +127,17 @@ public class EnvironmentUtils {
 		config.enableMemMonitor = false;
 		// disable the system monitor
 		config.enableStatMonitor = false;
-		Authorizer.reset();
+		IAuthorizer authorizer = null;
+		try {
+			authorizer = LocalFileAuthorizer.getInstance();
+		} catch (AuthException e) {
+			throw new StartupException(e.getMessage());
+		}
+		try {
+			authorizer.reset();
+		} catch (AuthException e) {
+			throw new StartupException(e.getMessage());
+		}
 		FileNodeManager.getInstance().resetFileNodeManager();
 		MultiFileLogNodeManager.getInstance().start();
 	}

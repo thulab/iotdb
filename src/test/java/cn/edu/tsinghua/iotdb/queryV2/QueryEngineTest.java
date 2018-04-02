@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.queryV2;
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryJobDispatcher;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.executor.QueryJobExecutor;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob.*;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFuture;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobStatus;
 import cn.edu.tsinghua.iotdb.queryV2.engine.impl.QueryEngineImpl;
@@ -68,7 +69,7 @@ public class QueryEngineTest {
     public void testProcessEndByFinish() throws InterruptedException {
         initQueryEngine(1);
 
-        QueryJob queryJob = new QueryJob(1000L);
+        QueryJob queryJob = new SelectQueryJob(1000L);
         QueryJobFuture queryJobFuture = queryEngine.submit(queryJob);
         queryJobFuture.waitToFinished();
         Assert.assertEquals(QueryJobStatus.FINISHED, queryJob.getStatus());
@@ -81,7 +82,7 @@ public class QueryEngineTest {
         int count = 100;
         List<QueryJobFuture> queryJobFutureList = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            QueryJobFuture queryJobFuture = queryEngine.submit(new QueryJob(i));
+            QueryJobFuture queryJobFuture = queryEngine.submit(new SelectQueryJob(i));
             queryJobFutureList.add(queryJobFuture);
         }
         for (int i = 0; i < count; i++) {
@@ -94,7 +95,7 @@ public class QueryEngineTest {
     @Test
     public void testTerminateQueryJob() throws InterruptedException {
         initQueryEngine(3);
-        QueryJob queryJob = new QueryJob(1001L);
+        QueryJob queryJob = new SelectQueryJob(1001L);
         QueryJobFuture queryJobFuture = queryEngine.submit(queryJob);
         queryJobFuture.terminateCurrentJob();
         QueryJobStatus status = queryJob.getStatus();

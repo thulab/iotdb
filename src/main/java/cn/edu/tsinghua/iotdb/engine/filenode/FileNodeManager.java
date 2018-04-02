@@ -15,7 +15,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import cn.edu.fudan.dsm.kvmatch.iotdb.common.Interval;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
@@ -650,7 +649,7 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 		return overlapFiles;
 	}
-	
+
 	public void mergeAll() throws FileNodeManagerException {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.MERGE;
@@ -1090,16 +1089,12 @@ public class FileNodeManager implements IStatistic, IService {
 			return null;
 	}
 
-	public void recoverFileNode(String filenodeName) throws FileNodeProcessorException, FileNodeManagerException {
-		FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
-		if (fileNodeProcessor.shouldRecovery()) {
-			LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
-					fileNodeProcessor.getFileNodeProcessorStatus());
-			fileNodeProcessor.fileNodeRecovery();
-		} else {
-			fileNodeProcessor.writeUnlock();
-		}
-		// add index check sum
-		fileNodeProcessor.rebuildIndex();
-	}
+    public void recoverFileNode(String filenodeName) throws FileNodeProcessorException, FileNodeManagerException {
+        FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
+        LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
+                fileNodeProcessor.getFileNodeProcessorStatus());
+        fileNodeProcessor.fileNodeRecovery();
+        // add index check sum
+        fileNodeProcessor.rebuildIndex();
+    }
 }
