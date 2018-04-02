@@ -357,8 +357,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	/**
-	 * if overflow insert, update and delete write into this filenode processor,
-	 * set <code>isOverflowed</code> to true,
+	 * if overflow insert, update and delete write into this filenode processor, set
+	 * <code>isOverflowed</code> to true,
 	 */
 	public void setOverflowed(boolean isOverflowed) {
 		if (this.isOverflowed != isOverflowed) {
@@ -759,7 +759,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			throw new FileNodeProcessorException(e);
 		}
 	}
-	
+
 	/**
 	 * get overlap tsfiles which conflict with the appendFile
 	 * 
@@ -769,25 +769,27 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 *            the path of snapshot files of overlap tsfiles
 	 * @throws FileNodeProcessorException
 	 */
-	public List<String> getOverlapFiles(IntervalFileNode appendFile, String snapshotFilePath) throws FileNodeProcessorException {
+	public List<String> getOverlapFiles(IntervalFileNode appendFile, String snapshotFilePath)
+			throws FileNodeProcessorException {
 		List<String> overlapFiles = new ArrayList<>();
 		try {
-			for(IntervalFileNode intervalFileNode:newFileNodes) {
+			for (IntervalFileNode intervalFileNode : newFileNodes) {
 				for (Entry<String, Long> entry : appendFile.getStartTimeMap().entrySet()) {
 					if (!intervalFileNode.getStartTimeMap().containsKey(entry.getKey())) {
 						continue;
-					}
-					else {
-						if(intervalFileNode.getEndTime(entry.getKey())>=entry.getValue()) {
-							if(intervalFileNode.getStartTime(entry.getKey())<=appendFile.getEndTime(entry.getKey())) {
-								String relativeFilePath = intervalFileNode.getFilePath();
+					} else {
+						if (intervalFileNode.getEndTime(entry.getKey()) >= entry.getValue()) {
+							if (intervalFileNode.getStartTime(entry.getKey()) <= appendFile
+									.getEndTime(entry.getKey())) {
+								String relativeFilePath = intervalFileNode.getRelativePath();
 								String snapshotPath = snapshotFilePath + File.separator + relativeFilePath;
 								File newfile = new File(snapshotPath);
 								if (!newfile.getParentFile().exists()) {
 									newfile.getParentFile().mkdirs();
 								}
 								java.nio.file.Path link = FileSystems.getDefault().getPath(snapshotPath);
-								java.nio.file.Path target = FileSystems.getDefault().getPath(new File(relativeFilePath).getAbsolutePath());
+								java.nio.file.Path target = FileSystems.getDefault()
+										.getPath(intervalFileNode.getFilePath());
 								Files.createLink(link, target);
 								overlapFiles.add(snapshotPath);
 								break;
@@ -829,8 +831,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * submit the merge task to the <code>MergePool</code>
 	 * 
 	 * @return null -can't submit the merge task, because this filenode is not
-	 *         overflowed or it is merging now. Future<?> - submit the merge
-	 *         task successfully.
+	 *         overflowed or it is merging now. Future<?> - submit the merge task
+	 *         successfully.
 	 */
 	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {
