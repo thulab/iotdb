@@ -13,7 +13,7 @@ import java.sql.Statement;
 /*
   test 'SHOW TIMESERIES <PATH>'
  */
-public class ShowTimeseriesTest {
+public class ShowTimeseriesAndStorageGroupTest {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -38,7 +38,8 @@ public class ShowTimeseriesTest {
                     "show timeseries root.a.b", // nonexistent timeseries
                     "show timeseries root.ln,root.ln", // SHOW TIMESERIES <PATH> only accept single path
                     "show timeseries  root.ln  root.ln.wf01", // SHOW TIMESERIES <PATH> only accept single path
-                    "show timeseries"}; // not supported in jdbc
+                    "show timeseries", // not supported in jdbc
+                    "show storage group"};
             for (String sql : sqls) {
                 System.out.println("sql:" + sql);
                 try {

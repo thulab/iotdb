@@ -111,9 +111,9 @@ public abstract class AbstractClient {
 		ResultSetMetaData resultSetMetaData = null;
 		int colCount;
 
-		boolean isShowTs = res instanceof TsfileMetadataResultSet;
-		if (isShowTs) { // show timeseries
-			colCount = ((TsfileMetadataResultSet)res).getColCount();
+		boolean isShow = res instanceof TsfileMetadataResultSet;
+		if (isShow) { // show timeseries or storage group
+			colCount = ((TsfileMetadataResultSet) res).getColCount();
 		} else { // query
 			resultSetMetaData = res.getMetaData();
 			colCount = resultSetMetaData.getColumnCount();
@@ -127,16 +127,16 @@ public abstract class AbstractClient {
 			// Output Labels
 			if (printToConsole) {
 				if (!printHeader) {
-					printBlockLine(printTimestamp, colCount, res, isShowTs);
-					printName(printTimestamp, colCount, res, isShowTs);
-					printBlockLine(printTimestamp, colCount, res, isShowTs);
+					printBlockLine(printTimestamp, colCount, res, isShow);
+					printName(printTimestamp, colCount, res, isShow);
+					printBlockLine(printTimestamp, colCount, res, isShow);
 					printHeader = true;
 				}
 				if (cnt < maxPrintRowCount) {
 					System.out.print("|");
-					if (isShowTs) {
+					if (isShow) {
 						for (int i = 1; i <= colCount; i++) {
-							formatValue = "%" + ((TsfileMetadataResultSet)res).getMaxValueLength(i) + "s|";
+							formatValue = "%" + ((TsfileMetadataResultSet) res).getMaxValueLength(i) + "s|";
 							System.out.printf(formatValue, String.valueOf(res.getString(i)));
 						}
 					} else {
@@ -177,11 +177,11 @@ public abstract class AbstractClient {
 
 		if (printToConsole) {
 			if (!printHeader) {
-				printBlockLine(printTimestamp, colCount, res, isShowTs);
-				printName(printTimestamp, colCount, res, isShowTs);
-				printBlockLine(printTimestamp, colCount, res, isShowTs);
+				printBlockLine(printTimestamp, colCount, res, isShow);
+				printName(printTimestamp, colCount, res, isShow);
+				printBlockLine(printTimestamp, colCount, res, isShow);
 			} else {
-				printBlockLine(printTimestamp, colCount, res, isShowTs);
+				printBlockLine(printTimestamp, colCount, res, isShow);
 			}
 
 			if (displayCnt == maxPrintRowCount) {
@@ -190,8 +190,13 @@ public abstract class AbstractClient {
 		}
 
 		System.out.println(StringUtils.repeat('-', 40));
-		if (isShowTs) {
-			System.out.println("timeseries number = " + cnt);
+		if (isShow) {
+			int type = ((TsfileMetadataResultSet) res).getType();
+			if (type == 0) { // storage group
+				System.out.println("storage group number = " + cnt);
+			} else if (type == 2) { // show timeseries
+				System.out.println("timeseries number = " + cnt);
+			}
 		} else {
 			System.out.println("Total line number = " + cnt);
 		}
@@ -288,7 +293,7 @@ public abstract class AbstractClient {
 		if (isShowTs) {
 			blockLine.append("+");
 			for (int i = 1; i <= colCount; i++) {
-				blockLine.append(StringUtils.repeat('-', ((TsfileMetadataResultSet)res).getMaxValueLength(i))).append("+");
+				blockLine.append(StringUtils.repeat('-', ((TsfileMetadataResultSet) res).getMaxValueLength(i))).append("+");
 			}
 		} else {
 			int tmp = Integer.MIN_VALUE;
@@ -312,9 +317,10 @@ public abstract class AbstractClient {
 	protected static void printName(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
 		System.out.print("|");
 		if (isShowTs) {
+			TsfileMetadataResultSet metaRes = (TsfileMetadataResultSet) res;
 			for (int i = 1; i <= colCount; i++) {
-				formatValue = "%" + ((TsfileMetadataResultSet)res).getMaxValueLength(i) + "s|";
-				System.out.printf(formatValue, TsfileMetadataResultSet.getShowTsLabels()[i-1]);
+				formatValue = "%" + metaRes.getMaxValueLength(i) + "s|";
+				System.out.printf(formatValue, metaRes.getShowLabels()[i - 1]);
 			}
 		} else {
 			formatValue = "%" + maxValueLength + "s|";
