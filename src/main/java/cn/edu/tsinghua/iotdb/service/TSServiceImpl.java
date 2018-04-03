@@ -180,9 +180,9 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 						MNode leafNode = MManager.getInstance().getNodeByPath(apath);
 						if (leafNode.isLeaf()) {
 							ColumnSchema columnSchema = leafNode.getSchema();
+							tsRow.add(leafNode.getDataFileName());
 							tsRow.add(columnSchema.dataType.toString());
 							tsRow.add(columnSchema.encoding.toString());
-							tsRow.add(leafNode.getDataFileName());
 						}
 						showTimeseriesList.add(tsRow);
 					}
