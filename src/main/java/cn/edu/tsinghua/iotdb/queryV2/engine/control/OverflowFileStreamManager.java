@@ -1,7 +1,10 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.control;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,11 +18,24 @@ public class OverflowFileStreamManager {
 
     private ConcurrentHashMap<Long, Map<String, RandomAccessFile>> fileStreamStore;
 
+    private ConcurrentHashMap<String, MappedByteBuffer> memoryStreamStore = new ConcurrentHashMap<>();
+
     private OverflowFileStreamManager() {
         fileStreamStore = new ConcurrentHashMap<>();
     }
 
+    // Using MMap to replace RandomAccessFile
+    public MappedByteBuffer get(String path) throws IOException {
+        if (!memoryStreamStore.containsKey(path)) {
+            RandomAccessFile randomAccessFile = new RandomAccessFile(path, "r");
+            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
+            memoryStreamStore.put(path, mappedByteBuffer);
+        }
+        return memoryStreamStore.get(path);
+    }
+
     public RandomAccessFile get(Long jobId, String path) throws IOException {
+
         if (!fileStreamStore.containsKey(jobId)) {
             fileStreamStore.put(jobId, new HashMap<>());
         }

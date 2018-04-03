@@ -87,10 +87,10 @@ public class ReadAnalysis {
         long allFileMergeStartTime = System.currentTimeMillis();
         int cnt = 0;
         for (File file : files) {
-            cnt ++;
-            if (cnt == 10) {
-                break;
-            }
+//            cnt ++;
+//            if (cnt == 10) {
+//                break;
+//            }
             if (!file.isDirectory() && !file.getName().endsWith(restoreFilePathName) &&
                     !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")) {
                 System.out.println(String.format("---- merge process begin, current merge file is %s.", file.getName()));

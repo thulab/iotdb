@@ -14,10 +14,9 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-/**
- * Created by zhangjinrui on 2018/1/15.
- */
-public class SegmentInputStreamTest {
+public class SegmentInputStreamWithMMapTest {
+
+
     private static final String PATH = "fileStreamManagerTestFile";
     private static int count = 10000;
     private static byte[] bytes;
@@ -40,23 +39,23 @@ public class SegmentInputStreamTest {
     }
 
     @Test
-    public void testNoMMap() throws IOException {
+    public void testWithMMap() throws IOException {
         RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
-        //testOneSegmentNoMMap(randomAccessFile, 0, 1000);
-        testOneSegmentNoMMap(randomAccessFile, 20, 1000);
-        testOneSegmentNoMMap(randomAccessFile, 30, 1000);
-        testOneSegmentNoMMap(randomAccessFile, 1000, 1000);
 
+        MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
+        testOneSegmentWithMMap(buffer1, 0, 1000);
+        testOneSegmentWithMMap(buffer1, 20, 1000);
+        testOneSegmentWithMMap(buffer1, 30, 1000);
+        testOneSegmentWithMMap(buffer1, 1000, 1000);
         randomAccessFile.close();
     }
 
-
-    private void testOneSegmentNoMMap(RandomAccessFile randomAccessFile, int offset, int size) throws IOException {
-        SegmentInputStream segmentInputStream = new SegmentInputStream(randomAccessFile, offset, size);
+    private void testOneSegmentWithMMap(MappedByteBuffer buffer, int offset, int size) throws IOException {
+        SegmentInputStreamWithMMap segmentInputStream = new SegmentInputStreamWithMMap(buffer, offset, size);
         int b;
         int index = offset;
         while ((b = segmentInputStream.read()) != -1) {
-            System.out.println(bytes[index] + " " + (byte) b);
+            //System.out.println(bytes[index] + " " + (byte) b);
             Assert.assertEquals(bytes[index], (byte) b);
             index++;
         }
@@ -69,20 +68,7 @@ public class SegmentInputStreamTest {
         segmentInputStream.skip(startPos);
         segmentInputStream.read(ret);
         for (int i = startPos; i < len; i++) {
-            System.out.println(bytes[i + offset]);
             Assert.assertEquals(bytes[i + offset], ret[i - startPos]);
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
