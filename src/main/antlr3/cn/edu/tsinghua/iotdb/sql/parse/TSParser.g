@@ -5,7 +5,8 @@ options
 tokenVocab=TSLexer;
 output=AST;
 ASTLabelType=CommonTree;
-backtrack=false;
+backtrack=true;
+memoize=true;
 k=3;
 }
 
@@ -55,6 +56,7 @@ TOK_FUNC;
 TOK_SELECT_INDEX;
 TOK_LIST;
 TOK_ALL;
+
 
 /*
   BELOW IS THE METADATA TOKEN
@@ -114,6 +116,11 @@ ArrayList<ParseError> errors = new ArrayList<ParseError>();
         xlateMap.put("KW_PREVIOUS", "PREVIOUS");
         xlateMap.put("KW_WHERE", "WHERE");
         xlateMap.put("KW_FROM", "FROM");
+
+        xlateMap.put("KW_LIMIT","LIMIT");
+        xlateMap.put("KW_OFFSET","OFFSET");
+        xlateMap.put("KW_SLIMIT","SLIMIT");
+        xlateMap.put("KW_SOFFSET","SOFFSET");
 
         xlateMap.put("KW_SELECT", "SELECT");
         xlateMap.put("KW_INSERT", "INSERT");
@@ -280,8 +287,13 @@ statement
 	: execStatement (SEMICOLON)? EOF
 	;
 
+integer
+    : NegativeInteger
+    | NonNegativeInteger
+    ;
+
 number
-    : Integer | Float | Boolean
+    : integer | Float | Boolean
     ;
 
 numberOrString // identifier is string or integer
@@ -316,7 +328,7 @@ dateFormat
 
 dateFormatWithNumber
     : dateFormat -> dateFormat
-    | Integer -> Integer
+    | integer -> integer
     ;
 
 
@@ -437,19 +449,6 @@ quitStatement
     -> ^(TOK_QUIT)
     ;
 
-queryStatement
-   :
-   selectClause
-   whereClause?
-   specialClause?
-   -> ^(TOK_QUERY selectClause whereClause? specialClause?)
-   ;
-
-specialClause
-    :
-    groupbyClause | fillClause
-    ;
-
 authorStatement
     : createUser
     | dropUser
@@ -544,19 +543,43 @@ listStatement
     -> ^(TOK_LIST TOK_USER TOK_ALL ^(TOK_ROLE $roleName))
     ;
 
+nodeName
+    : identifier
+    | STAR
+    ;
+
 prefixPath
     : KW_ROOT (DOT nodeName)*
     -> ^(TOK_PATH ^(TOK_ROOT nodeName*))
     ;
+
+prefixWithoutStarPath
+    : KW_ROOT (DOT identifier)*
+    -> ^(TOK_PATH ^(TOK_ROOT identifier*))
+    ;
+
+prefixWithStarPath
+    : (KW_ROOT DOT (identifier DOT)* STAR)=> KW_ROOT DOT (identifier DOT)* STAR (DOT nodeName)*
+    -> ^(TOK_PATH ^(TOK_ROOT identifier* STAR nodeName*))
+    ;
+
 
 suffixPath
     : nodeName (DOT nodeName)*
       -> ^(TOK_PATH nodeName+)
     ;
 
-nodeName
-    : identifier
-    | STAR
+suffixWithStarPath
+    :
+    STAR (DOT nodeName)*
+    -> ^(TOK_PATH STAR nodeName*)
+    |(identifier (DOT identifier)* DOT STAR)=>identifier (DOT identifier)* DOT STAR (DOT nodeName)*
+    -> ^(TOK_PATH identifier+ STAR nodeName*)
+    ;
+
+suffixWithoutStarPath
+    : identifier (DOT identifier)*
+      -> ^(TOK_PATH identifier+)
     ;
 
 insertStatement
@@ -629,7 +652,7 @@ indexWithClause
     ;
 
 indexWithEqualExpression
-    : k=Identifier EQUAL v=Integer
+    : k=Identifier EQUAL v=integer
     -> ^(TOK_INDEX_KV $k $v)
     ;
 
@@ -644,6 +667,42 @@ dropIndexStatement
     -> ^(TOK_DROP ^(TOK_INDEX $p ^(TOK_FUNC $func)))
     ;
 
+
+
+/*
+****
+*************
+Query Statment
+*************
+****
+*/
+
+queryStatement
+   :
+   selectWithStarClause whereClause? specialClause?
+   -> ^(TOK_QUERY selectWithStarClause whereClause? specialClause?)
+   |selectWithoutStarClause whereClause? specialWithoutSlimitClause?
+   -> ^(TOK_QUERY selectWithoutStarClause whereClause? specialWithoutSlimitClause?)
+   ;
+
+
+specialClause
+    :
+    groupbyClause limitClause slimitClause? -> groupbyClause
+    |groupbyClause slimitClause limitClause? -> groupbyClause
+    |fillClause slimitClause? -> fillClause
+    |limitClause slimitClause? ->
+    |slimitClause limitClause? ->
+    ;
+
+specialWithoutSlimitClause
+    :
+    groupbyClause limitClause? -> groupbyClause
+    |fillClause -> fillClause
+    |limitClause ->
+    ;
+
+
 /*
 ****
 *************
@@ -652,10 +711,9 @@ Basic Blocks
 ****
 */
 
-
 identifier
     :
-    Identifier | Integer
+    Identifier | integer
     ;
 
 //selectClause
@@ -672,6 +730,20 @@ selectClause
     -> ^(TOK_SELECT clusteredPath+) fromClause
     ;
 
+selectWithoutStarClause
+    :KW_SELECT KW_INDEX func=Identifier LPAREN p1=timeseries COMMA p2=timeseries COMMA n1=dateFormatWithNumber COMMA n2=dateFormatWithNumber COMMA epsilon=Float (COMMA alpha=Float COMMA beta=Float)? RPAREN (fromClause)?
+    -> ^(TOK_SELECT_INDEX $func $p1 $p2 $n1 $n2 $epsilon ($alpha $beta)?) fromClause?
+    |KW_SELECT clusteredWithoutStarPath (COMMA clusteredWithoutStarPath)* (fromWithoutStarClause)=>fromWithoutStarClause
+    -> ^(TOK_SELECT clusteredWithoutStarPath+) fromWithoutStarClause
+    ;
+
+selectWithStarClause
+    :KW_SELECT clusteredPath (COMMA clusteredPath)* (fromWithStarClause)=>fromWithStarClause
+    -> ^(TOK_SELECT clusteredPath+) fromWithStarClause
+    |(KW_SELECT (clusteredWithoutStarPath COMMA)* clusteredWithStarPath)=>KW_SELECT (clusteredWithoutStarPath COMMA)* clusteredWithStarPath (COMMA clusteredPath)* fromClause
+    -> ^(TOK_SELECT clusteredWithoutStarPath* clusteredWithStarPath clusteredPath*) fromClause
+    ;
+
 clusteredPath
 	: clstcmd = identifier LPAREN suffixPath RPAREN
 	-> ^(TOK_PATH ^(TOK_CLUSTER suffixPath $clstcmd) )
@@ -679,9 +751,36 @@ clusteredPath
 	-> suffixPath
 	;
 
+clusteredWithoutStarPath
+    : clstcmd = identifier LPAREN suffixWithoutStarPath RPAREN
+    -> ^(TOK_PATH ^(TOK_CLUSTER suffixWithoutStarPath $clstcmd) )
+    | suffixWithoutStarPath
+    -> suffixWithoutStarPath
+    ;
+
+clusteredWithStarPath
+    : clstcmd = identifier LPAREN suffixWithStarPath RPAREN
+    -> ^(TOK_PATH ^(TOK_CLUSTER suffixWithStarPath $clstcmd) )
+    | suffixWithStarPath
+    -> suffixWithStarPath
+    ;
+
 fromClause
     :
-    KW_FROM prefixPath (COMMA prefixPath)* -> ^(TOK_FROM prefixPath+)
+    KW_FROM prefixPath (COMMA prefixPath)*
+    -> ^(TOK_FROM prefixPath+)
+    ;
+
+fromWithStarClause
+    :
+    (KW_FROM (prefixWithoutStarPath COMMA)* prefixWithStarPath)=> KW_FROM (prefixWithoutStarPath COMMA)* prefixWithStarPath (COMMA prefixPath)*
+    -> ^(TOK_FROM prefixWithoutStarPath* prefixWithStarPath prefixPath*)
+    ;
+
+fromWithoutStarClause
+    :
+    KW_FROM prefixWithoutStarPath (COMMA prefixWithoutStarPath)*
+    -> ^(TOK_FROM prefixWithoutStarPath+)
     ;
 
 
@@ -692,7 +791,7 @@ whereClause
 
 groupbyClause
     :
-    KW_GROUP KW_BY LPAREN value=Integer unit=Identifier (COMMA timeOrigin=dateFormatWithNumber)? COMMA timeInterval (COMMA timeInterval)* RPAREN
+    KW_GROUP KW_BY LPAREN value=integer unit=Identifier (COMMA timeOrigin=dateFormatWithNumber)? COMMA timeInterval (COMMA timeInterval)* RPAREN
     -> ^(TOK_GROUPBY ^(TOK_TIMEUNIT $value $unit) ^(TOK_TIMEORIGIN $timeOrigin)? ^(TOK_TIMEINTERVAL timeInterval+))
     ;
 
@@ -702,6 +801,26 @@ fillClause
     -> ^(TOK_FILL typeClause+)
     ;
 
+limitClause
+    :
+    KW_LIMIT N=NonNegativeInteger offsetClause?
+    ;
+
+offsetClause
+    :
+    KW_OFFSET OFFSETValue=NonNegativeInteger
+    ;
+
+slimitClause
+    :
+    KW_SLIMIT SN=NonNegativeInteger soffsetClause?
+    ;
+
+soffsetClause
+    :
+    KW_SOFFSET SOFFSETValue=NonNegativeInteger
+    ;
+
 typeClause
     : type=Identifier LSQUARE c=interTypeClause RSQUARE
     -> ^(TOK_TYPE $type $c)
@@ -709,10 +828,10 @@ typeClause
 
 interTypeClause
     :
-    KW_LINEAR (COMMA value1=Integer unit1=Identifier COMMA value2=Integer unit2=Identifier)?
+    KW_LINEAR (COMMA value1=integer unit1=Identifier COMMA value2=integer unit2=Identifier)?
     -> ^(TOK_LINEAR (^(TOK_TIMEUNIT $value1 $unit1) ^(TOK_TIMEUNIT $value2 $unit2))?)
     |
-    KW_PREVIOUS (COMMA value1=Integer unit1=Identifier)?
+    KW_PREVIOUS (COMMA value1=integer unit1=Identifier)?
     -> ^(TOK_PREVIOUS ^(TOK_TIMEUNIT $value1 $unit1)?)
     ;
 

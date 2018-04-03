@@ -113,61 +113,69 @@ public abstract class AbstractClient {
 		}
 		boolean printHeader = false;
 
-		// Output values
-		while (res.next()) {
+        // Output values
+        while (res.next()) {
 
-			// Output Labels
-			if (!printHeader) {
-				printBlockLine(printTimestamp, colCount, res);
-				printName(printTimestamp, colCount, res);
-				printBlockLine(printTimestamp, colCount, res);
-				printHeader = true;
-			}
-			if (cnt < maxPrintRowCount) {
-				System.out.print("|");
-				if (printTimestamp) {
-					System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
-				}
-			}
-
-			for (int i = 2; i <= colCount; i++) {
-				if (printToConsole && cnt < maxPrintRowCount) {
-					boolean flag = false;
-					for(String timeStr : AGGREGRATE_TIME_LIST) {
-						if(resultSetMetaData.getColumnLabel(i).toUpperCase().indexOf(timeStr.toUpperCase()) != -1){
-					 		flag = true;
-					 		break;
-					 	}
+            // Output Labels
+            if (printToConsole) {
+                if (!printHeader) {
+                    printBlockLine(printTimestamp, colCount, res);
+                    printName(printTimestamp, colCount, res);
+                    printBlockLine(printTimestamp, colCount, res);
+                    printHeader = true;
+                }
+                if (cnt < maxPrintRowCount) {
+                    System.out.print("|");
+					if (printTimestamp) {
+						System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
 					}
-					if (flag) {
-						try {
-							System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
-						} catch (Exception e) {
-							System.out.printf(formatValue, "null");
-						}
-					} else {
-						System.out.printf(formatValue, String.valueOf(res.getString(i)));
-					}
-				}
-			}
 
-			if (printToConsole && cnt < maxPrintRowCount) {
-				System.out.printf("\n");
-				displayCnt++;
-			}
+                    for (int i = 2; i <= colCount; i++) {
+                        boolean flag = false;
+                        for (String timeStr : AGGREGRATE_TIME_LIST) {
+                            if (resultSetMetaData.getColumnLabel(i).toUpperCase().contains(timeStr.toUpperCase())) {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (flag) {
+                            try {
+                                System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+                            } catch (Exception e) {
+                                System.out.printf(formatValue, "null");
+                            }
+                        } else {
+                            System.out.printf(formatValue, String.valueOf(res.getString(i)));
+                        }
+                    }
+
+                    System.out.printf("\n");
+                    displayCnt++;
+                }
+            }
+
 			cnt++;
 
 			if (!printToConsole && cnt % 10000 == 0) {
 				System.out.println(cnt);
 			}
 		}
-		if (!printHeader) {
-			printBlockLine(printTimestamp, colCount, res);
-			printName(printTimestamp, colCount, res);
-			printBlockLine(printTimestamp, colCount, res);
+
+		if (printToConsole) {
+			if(!printHeader) {
+				printBlockLine(printTimestamp, colCount, res);
+				printName(printTimestamp, colCount, res);
+				printBlockLine(printTimestamp, colCount, res);
+			}
+			else {
+				printBlockLine(printTimestamp, colCount, res);
+			}
+
+			if(displayCnt == maxPrintRowCount) {
+				System.out.println(String.format("Reach maxPrintRowCount = %s lines", maxPrintRowCount));
+			}
 		}
-		printBlockLine(printTimestamp, colCount, res);
-		System.out.println(String.format("Display the first %s lines", displayCnt));
+
 		System.out.println(StringUtils.repeat('-', 40));
 		System.out.println("Total line number = " + cnt);
 	}
