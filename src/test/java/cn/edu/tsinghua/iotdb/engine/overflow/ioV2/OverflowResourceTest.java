@@ -42,70 +42,70 @@ public class OverflowResourceTest {
 		EnvironmentUtils.cleanDir(filePath);
 	}
 
-//	@Test
-//	public void testOverflowUpdate() throws IOException {
-//		OverflowTestUtils.produceUpdateData(support);
-//		work.flush(null, null, support.getOverflowSeriesMap(), "processorName");
-//		work.appendMetadatas();
-//		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-//				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
-//		assertEquals(true, chunkMetaDatas.isEmpty());
-//		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-//				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
-//		assertEquals(1, chunkMetaDatas.size());
-//		TimeSeriesChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
-//		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
-//		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
-//		// close
-//		work.close();
-//		// append file
-//		long originlength = updateFile.length();
-//		FileOutputStream fileOutputStream = new FileOutputStream(updateFile, true);
-//		fileOutputStream.write(new byte[20]);
-//		fileOutputStream.close();
-//		assertEquals(originlength + 20, updateFile.length());
-//		work = new OverflowResource(filePath, dataPath);
-//		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-//				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
-//		assertEquals(true, chunkMetaDatas.isEmpty());
-//		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-//				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
-//		assertEquals(1, chunkMetaDatas.size());
-//		chunkMetaData = chunkMetaDatas.get(0);
-//		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
-//		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
-//		assertEquals(originlength, updateFile.length());
-//	}
-//
-//	@Test
-//	public void testOverflowInsert() throws IOException {
-//		OverflowTestUtils.produceInsertData(support);
-//		work.flush(OverflowTestUtils.getFileSchema(), support.getMemTabale(), null, "processorName");
-//		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1,
-//				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
-//		assertEquals(0, chunkMetaDatas.size());
-//		work.appendMetadatas();
-//		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
-//				OverflowTestUtils.dataType1);
-//		assertEquals(1, chunkMetaDatas.size());
-//		TimeSeriesChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
-//		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
-//		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
-//		// close
-//		work.close();
-//		// append file
-//		long originlength = insertFile.length();
-//		FileOutputStream fileOutputStream = new FileOutputStream(insertFile, true);
-//		fileOutputStream.write(new byte[20]);
-//		fileOutputStream.close();
-//		assertEquals(originlength + 20, insertFile.length());
-//		work = new OverflowResource(filePath, dataPath);
-//		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
-//				OverflowTestUtils.dataType1);
-//		assertEquals(1, chunkMetaDatas.size());
-//		chunkMetaData = chunkMetaDatas.get(0);
-//		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
-//		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
-//		assertEquals(originlength, insertFile.length());
-//	}
+	@Test
+	public void testOverflowUpdate() throws IOException {
+		OverflowTestUtils.produceUpdateData(support);
+		work.flush(null, null, support.getOverflowSeriesMap(), "processorName");
+		work.appendMetadatas();
+		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
+				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
+		assertEquals(true, chunkMetaDatas.isEmpty());
+		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
+				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
+		assertEquals(1, chunkMetaDatas.size());
+		TimeSeriesChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
+		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
+		// close
+		work.close();
+		// append file
+		long originlength = updateFile.length();
+		FileOutputStream fileOutputStream = new FileOutputStream(updateFile, true);
+		fileOutputStream.write(new byte[20]);
+		fileOutputStream.close();
+		assertEquals(originlength + 20, updateFile.length());
+		work = new OverflowResource(filePath, dataPath);
+		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
+				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
+		assertEquals(true, chunkMetaDatas.isEmpty());
+		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
+				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
+		assertEquals(1, chunkMetaDatas.size());
+		chunkMetaData = chunkMetaDatas.get(0);
+		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
+		assertEquals(originlength, updateFile.length());
+	}
+
+	@Test
+	public void testOverflowInsert() throws IOException {
+		OverflowTestUtils.produceInsertData(support);
+		work.flush(OverflowTestUtils.getFileSchema(), support.getMemTabale(), null, "processorName");
+		List<TimeSeriesChunkMetaData> chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1,
+				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
+		assertEquals(0, chunkMetaDatas.size());
+		work.appendMetadatas();
+		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+				OverflowTestUtils.dataType1);
+		assertEquals(1, chunkMetaDatas.size());
+		TimeSeriesChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
+		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
+		// close
+		work.close();
+		// append file
+		long originlength = insertFile.length();
+		FileOutputStream fileOutputStream = new FileOutputStream(insertFile, true);
+		fileOutputStream.write(new byte[20]);
+		fileOutputStream.close();
+		assertEquals(originlength + 20, insertFile.length());
+		work = new OverflowResource(filePath, dataPath);
+		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+				OverflowTestUtils.dataType1);
+		assertEquals(1, chunkMetaDatas.size());
+		chunkMetaData = chunkMetaDatas.get(0);
+		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getProperties().getMeasurementUID());
+		assertEquals(originlength, insertFile.length());
+	}
 }
