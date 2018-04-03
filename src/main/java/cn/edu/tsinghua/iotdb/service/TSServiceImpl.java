@@ -195,6 +195,15 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
+			case "SHOW_STORAGE_GROUP":
+				try {
+					HashSet<String> storageGroups = MManager.getInstance().getAllStorageGroup();
+					resp.setShowStorageGroups(storageGroups);
+				} catch (PathErrorException e) {
+					//LOGGER.error("cannot get delta object map", e);
+				}
+				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
+				break;
 			case "METADATA_IN_JSON":
 				String metadataInJson = MManager.getInstance().getMetadataInString();
 				resp.setMetadataInJson(metadataInJson);
