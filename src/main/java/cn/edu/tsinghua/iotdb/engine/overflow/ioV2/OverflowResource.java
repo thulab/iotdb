@@ -154,6 +154,8 @@ public class OverflowResource {
 			insertIO.getReader().seek(position - FOOTER_LENGTH);
 			int metadataLength = insertIO.getReader().readInt();
 			byte[] buf = new byte[metadataLength];
+			System.out.println(122222);
+			LOGGER.info("pos {}, metadata {}, length{}",position, metadataLength, insertIO.getReader().length());
 			insertIO.getReader().seek(position - FOOTER_LENGTH - metadataLength);
 			insertIO.getReader().read(buf, 0, buf.length);
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(buf);
