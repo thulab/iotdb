@@ -132,18 +132,6 @@ public class ReadAnalysis {
                                 long hasNextCalcStartTime = System.currentTimeMillis();
                                 while (reader.hasNext()) {
                                     TimeValuePair tp = reader.next();
-
-//                                    // calc time consuming of constructing TsRecord
-//                                    long recordStartTime = System.currentTimeMillis();
-//                                    TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
-//                                    long recordEndTime = System.currentTimeMillis();
-//                                    tsRecordTimeConsuming += (recordEndTime - recordStartTime);
-//
-//                                    // calc time consuming of writing
-//                                    long writeStartTime = System.currentTimeMillis();
-//                                    fileWriter.write(record);
-//                                    long writeEndTime = System.currentTimeMillis();
-//                                    writeTimeConsuming += (writeEndTime - writeStartTime);
                                 }
 
                                 long hasNextCalcEndTime = System.currentTimeMillis();
