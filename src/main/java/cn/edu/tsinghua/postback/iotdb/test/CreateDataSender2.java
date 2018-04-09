@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+
 public class CreateDataSender2 {
 
     public static final int TIME_INTERVAL = 0;
@@ -170,8 +172,9 @@ public class CreateDataSender2 {
         Connection connection = null;
         Statement statement = null;
 
-        HashMap timeseriesMap = generateTimeseriesMapFromFile("/home/hadoop/xuyi/iotdb/CreateTimeseries2.txt");
-
+        String path = System.getProperty(TsFileDBConstant.IOTDB_HOME, null) + File.separator + "test" + File.separator + "CreateTimeseries2.txt";
+        HashMap timeseriesMap = generateTimeseriesMapFromFile(path);
+        
         ArrayList<String> storageGroupList = new ArrayList();
         storageGroupList.add("root.vehicle_history");
         storageGroupList.add("root.vehicle_alarm");

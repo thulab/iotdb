@@ -831,13 +831,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * submit the merge task to the <code>MergePool</code>
 	 * 
 	 * @return null -can't submit the merge task, because this filenode is not
-<<<<<<< HEAD
-	 *         overflowed or it is merging now. Future<?> - submit the merge task
-	 *         successfully.
-=======
 	 *         overflowed or it is merging now. Future<?> - submit the merge
 	 *         task successfully.
->>>>>>> master
 	 */
 	public Future<?> submitToMerge() {
 		if (lastMergeTime > 0) {

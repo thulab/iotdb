@@ -33,15 +33,7 @@ tsfile-jdbc/src/main/resources/output/queryRes.csv
 *.gz
 *.tar.gz
 *.tar
-<<<<<<< HEAD
-*.txt
-data/
-filenode/
-metadata/
-overflow/
-=======
 /data/
->>>>>>> master
 src/test/resources/logback.xml
 iotdb/bin/start-postBackTest.sh
 iotdb/bin/stop-postBackTest.sh
