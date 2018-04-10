@@ -52,29 +52,15 @@ public class SegmentInputStreamWithMMap extends SegmentInputStream {
         int b = mmap.get((int)position);
         position += 1;
         return b;
-
-
-
-//        if (position >= offset + size) {
-//            return -1;
-//        }
-//        randomAccessFile.seek(position);
-//        int b = randomAccessFile.read();
-//        position += 1;
-//        return b;
     }
 
     @Override
     public int read(byte[] b, int offset, int length) throws IOException {
         checkPosition();
 
-        //mmap.get(b, (int) (position + offset), length);
-
-        //if (offset + length > )
         for (int i = 0; i < length; i++) {
             b[i] = mmap.get((int) position + offset + i);
         }
-        // mmap.get(b);
 
         if (mmap.hasRemaining()) {
             position += length;
@@ -124,7 +110,5 @@ public class SegmentInputStreamWithMMap extends SegmentInputStream {
         if (position >= offset + size) {
             throw new IOException("no available byte in current stream");
         }
-
-        // randomAccessFile.seek(position);
     }
 }

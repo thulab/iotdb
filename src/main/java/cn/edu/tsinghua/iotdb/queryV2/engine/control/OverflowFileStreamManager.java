@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.control;
 
+import sun.nio.ch.DirectBuffer;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -32,6 +34,15 @@ public class OverflowFileStreamManager {
             memoryStreamStore.put(path, mappedByteBuffer);
         }
         return memoryStreamStore.get(path);
+    }
+
+    public void removeMappedByteBuffer(String path) {
+        if (!memoryStreamStore.containsKey(path)) {
+            return;
+        } else {
+            MappedByteBuffer buffer = memoryStreamStore.get(path);
+            ((DirectBuffer)buffer).cleaner().clean();
+        }
     }
 
     public RandomAccessFile get(Long jobId, String path) throws IOException {

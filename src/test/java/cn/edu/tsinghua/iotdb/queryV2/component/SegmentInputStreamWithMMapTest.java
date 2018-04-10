@@ -55,7 +55,6 @@ public class SegmentInputStreamWithMMapTest {
         int b;
         int index = offset;
         while ((b = segmentInputStream.read()) != -1) {
-            //System.out.println(bytes[index] + " " + (byte) b);
             Assert.assertEquals(bytes[index], (byte) b);
             index++;
         }

@@ -1017,6 +1017,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						getProcessorName(), backupIntervalFile.getRelativePath());
 			}
 		}
+
 		//
 		// change status from merge to wait
 		//

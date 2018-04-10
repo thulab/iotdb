@@ -27,6 +27,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.getValidFiles;
 import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.restoreFilePathName;
@@ -49,18 +52,24 @@ public class WriteAnalysis {
     private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> unSeqFileMetaData;
     private static Map<String, Pair<Long, Long>> unSeqFileDeltaObjectTimeRangeMap;
 
+    private static long max = -1;
+
     public static void main(String args[]) throws WriteProcessException, IOException, InterruptedException {
         fileFolderName = args[0];
         mergeOutPutFolder = fileFolderName + "/merge/";
         unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
 
+        ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
+        timer.scheduleAtFixedRate(new MaxMemory(), 1000, 3000, TimeUnit.MILLISECONDS);
+
         unSeqFileMetaData = getUnSeqFileMetaData(unSeqFilePath);
         WriteAnalysis writeAnalysis = new WriteAnalysis();
         writeAnalysis.initUnSeqFileStatistics();
 
-        Thread.sleep(10000);
+        //Thread.sleep(10000);
 
         writeAnalysis.executeMerge();
+        System.out.println("max memory:" + max);
     }
 
     private void initUnSeqFileStatistics() {
@@ -173,7 +182,6 @@ public class WriteAnalysis {
         System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
     }
 
-    //@Cost
     private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
         TSRecord record = new TSRecord(timeValuePair.getTimestamp(), deltaObjectId);
         record.addTuple(DataPoint.getDataPoint(timeValuePair.getValue().getDataType(), measurementId,
@@ -181,7 +189,6 @@ public class WriteAnalysis {
         return record;
     }
 
-    //@Cost
     private TSEncoding getEncodingByDataType(TSDataType dataType) {
         switch (dataType) {
             case TEXT:
@@ -191,4 +198,10 @@ public class WriteAnalysis {
         }
     }
 
+    public static class MaxMemory implements Runnable {
+        @Override
+        public void run() {
+            max = Math.max(max, Runtime.getRuntime().totalMemory());
+        }
+    }
 }
