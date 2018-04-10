@@ -164,14 +164,15 @@ public class AggregateRecordReader extends RecordReader{
         TsDigest digest = valueReader.getDigest();
         DigestForFilter valueDigest = new DigestForFilter(digest.getStatistics().get(AggregationConstant.MIN_VALUE),
                 digest.getStatistics().get(AggregationConstant.MAX_VALUE), dataType);
-        logger.debug("calculate aggregation without filter : series digest min and max is: "
-                + valueDigest.getMinValue() + " --- " + valueDigest.getMaxValue());
+        logger.debug(String.format("calculate aggregation without filter : series time range is [%s, %s], value range is [%s, %s]",
+                valueReader.getStartTime(), valueReader.getEndTime(), valueDigest.getMinValue(), valueDigest.getMaxValue()));
         DigestVisitor valueDigestVisitor = new DigestVisitor();
 
         // skip the current series chunk according to time filter
         IntervalTimeVisitor seriesTimeVisitor = new IntervalTimeVisitor();
         if (queryTimeFilter != null && !seriesTimeVisitor.satisfy(queryTimeFilter, valueReader.getStartTime(), valueReader.getEndTime())) {
-            logger.debug("calculate aggregation without filter, series time digest does not satisfy time filter");
+            logger.debug(String.format("calculate aggregation without filter, series time does not satisfy time filter, time filter is [%s].",
+                    queryTimeFilter.toString()));
             usedPageOffset = -1;
             return;
         }
@@ -180,7 +181,8 @@ public class AggregateRecordReader extends RecordReader{
         if (queryValueFilter != null && !valueDigestVisitor.satisfy(valueDigest, queryValueFilter)) {
             if ((!overflowOperationReaderCopy.hasNext() || overflowOperationReaderCopy.getCurrentOperation().getLeftBound() > valueReader.getEndTime()) &&
                     (!insertMemoryData.hasNext() || insertMemoryData.getCurrentMinTime() > valueReader.getEndTime())) {
-                logger.debug("calculate aggregation without filter, series value digest does not satisfy value filter");
+                logger.debug(String.format("calculate aggregation without filter, series value digest does not satisfy value filter, value filter is [%s].",
+                        queryValueFilter.toString()));
                 usedPageOffset = -1;
                 return;
             }
@@ -218,20 +220,21 @@ public class AggregateRecordReader extends RecordReader{
             InputStream page = pageReader.getNextPage();
             usedPageOffset += lastAvailable - bis.available();
 
-            // whether this page is changed by overflow info
-            boolean hasOverflowDataInThisPage = checkDataChanged(pageMinTime, pageMaxTime, insertMemoryData);
-
-            // there is no overflow data in this page
-            if (!hasOverflowDataInThisPage) {
-                func.calculateValueFromPageHeader(pageHeader);
-            } else {
+//            // whether this page is changed by overflow info
+//            boolean hasOverflowDataInThisPage = checkDataChanged(pageMinTime, pageMaxTime, insertMemoryData);
+//
+//            // there is no overflow data in this page
+//            // TODO there has a bug, need to examine that all the page data are satisfied with filter
+//            if (!hasOverflowDataInThisPage) {
+//                func.calculateValueFromPageHeader(pageHeader);
+//            } else {
                 long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
                 valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
                 result = ReaderUtils.readOnePage(dataType, timestamps, valueReader.decoder, page, result,
                         queryTimeFilter, queryValueFilter, insertMemoryData, overflowOperationReaderCopy);
                 func.calculateValueFromDataPage(result);
                 result.clearData();
-            }
+//            }
         }
     }
 
