@@ -73,12 +73,10 @@ public class RecordReader {
     /** series time filter, this filter is the filter **/
     protected SingleSeriesFilterExpression queryTimeFilter;
     protected SingleValueVisitor<?> singleTimeVisitor;
-    protected Interval timeInterval;
 
     /** series value filter **/
     protected SingleSeriesFilterExpression queryValueFilter;
     protected SingleValueVisitor<?> singleValueVisitor;
-    protected Interval valueInterval;
 
     /** memRawSeriesChunk + overflowSeriesInsertReader + overflowOperationReader **/
     protected InsertDynamicData insertMemoryData;
