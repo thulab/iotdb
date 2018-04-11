@@ -15,6 +15,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.utils.Interval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
@@ -72,10 +73,12 @@ public class RecordReader {
     /** series time filter, this filter is the filter **/
     protected SingleSeriesFilterExpression queryTimeFilter;
     protected SingleValueVisitor<?> singleTimeVisitor;
+    protected Interval timeInterval;
 
     /** series value filter **/
     protected SingleSeriesFilterExpression queryValueFilter;
     protected SingleValueVisitor<?> singleValueVisitor;
+    protected Interval valueInterval;
 
     /** memRawSeriesChunk + overflowSeriesInsertReader + overflowOperationReader **/
     protected InsertDynamicData insertMemoryData;

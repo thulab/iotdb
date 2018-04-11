@@ -220,21 +220,22 @@ public class AggregateRecordReader extends RecordReader{
             InputStream page = pageReader.getNextPage();
             usedPageOffset += lastAvailable - bis.available();
 
+
 //            // whether this page is changed by overflow info
-//            boolean hasOverflowDataInThisPage = checkDataChanged(pageMinTime, pageMaxTime, insertMemoryData);
+//            boolean hasOverflowDataInThisPage = couldCalcAggregationUsingHeader(pageMinTime, pageMaxTime, insertMemoryData);
 //
 //            // there is no overflow data in this page
 //            // TODO there has a bug, need to examine that all the page data are satisfied with filter
-//            if (!hasOverflowDataInThisPage) {
-//                func.calculateValueFromPageHeader(pageHeader);
-//            } else {
+            if (couldCalcAggregationUsingHeader(pageMinTime, pageMaxTime, pageValueDigest, insertMemoryData)) {
+                func.calculateValueFromPageHeader(pageHeader);
+            } else {
                 long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
                 valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
                 result = ReaderUtils.readOnePage(dataType, timestamps, valueReader.decoder, page, result,
                         queryTimeFilter, queryValueFilter, insertMemoryData, overflowOperationReaderCopy);
                 func.calculateValueFromDataPage(result);
                 result.clearData();
-//            }
+            }
         }
     }
 
@@ -327,24 +328,43 @@ public class AggregateRecordReader extends RecordReader{
         return timestampsUsedIndex;
     }
 
-    private boolean checkDataChanged(long pageMinTime, long pageMaxTime, InsertDynamicData insertMemoryData) throws IOException {
+    /**
+     * Examine whether the page header could be used to calculate the aggregation.
+     *
+     * Notice that: the process could be optimized, if the query time filer and value filter contains the time and value of this page completely,
+     * the aggregation calculation could also use the page header.
+     * e.g. time filter is "time > 20 and time < 100", page time min and max is [50, 60], so the calculation could use the page header and no need
+     * to decompress the page.
+     *
+     * @param pageMinTime
+     * @param pageMaxTime
+     * @param pageValueDigest
+     * @param insertMemoryData
+     * @return
+     * @throws IOException
+     */
+    private boolean couldCalcAggregationUsingHeader(long pageMinTime, long pageMaxTime, DigestForFilter pageValueDigest,
+                                                    InsertDynamicData insertMemoryData) throws IOException {
 
         while (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getRightBound() < pageMinTime)
             overflowOperationReaderCopy.next();
 
+        // this page is changed by overflow update operation
         if (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getLeftBound() <= pageMaxTime) {
-            return true;
+            return false;
         }
 
+        // this page is changed by overflow insert operation
         if (insertMemoryData.hasNext()) {
-            if (pageMinTime <= insertMemoryData.getCurrentMinTime() && insertMemoryData.getCurrentMinTime() <= pageMaxTime) {
-                return true;
-            }
-            if (pageMaxTime < insertMemoryData.getCurrentMinTime()) {
+            if (pageMinTime <= insertMemoryData.getCurrentMinTime() && insertMemoryData.getCurrentMinTime() <= pageMaxTime)
                 return false;
-            }
-            return true;
+            if (insertMemoryData.getCurrentMinTime() < pageMinTime)
+                return false;
         }
+
+        // no time filter and value filter
+        if (queryTimeFilter == null && queryValueFilter == null)
+            return true;
 
         return false;
     }
