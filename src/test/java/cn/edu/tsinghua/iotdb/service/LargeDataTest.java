@@ -113,7 +113,6 @@ public class LargeDataTest {
             allNullSeriesAggregationTest();
             negativeValueAggTest();
 
-
             // group by test
             groupByTest();
             allNullSeriesGroupByTest();
