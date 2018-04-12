@@ -9,6 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
@@ -26,8 +27,8 @@ public class OverflowSeriesChunkLoader {
     }
 
     public SeriesChunk getMemSeriesChunk(Long jobId, EncodedSeriesChunkDescriptor scDescriptor) throws IOException {
-        if (overflowFileStreamManager.contains(scDescriptor.getFilePath()) ||
-                overflowFileStreamManager.getMappedByteBufferUsage().get() + scDescriptor.getLengthOfBytes() < Integer.MAX_VALUE) {
+        if (overflowFileStreamManager.contains(scDescriptor.getFilePath()) || (new File(scDescriptor.getFilePath()).length() +
+                overflowFileStreamManager.getMappedByteBufferUsage().get()  < Integer.MAX_VALUE)) {
             MappedByteBuffer buffer = overflowFileStreamManager.get(scDescriptor.getFilePath());
             return new BufferedSeriesChunk(
                     new SegmentInputStreamWithMMap(buffer, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
