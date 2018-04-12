@@ -10,6 +10,8 @@ import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Manager all file streams opened by overflow. Every overflow's read job has a unique ID which is saved in corresponding
@@ -21,6 +23,8 @@ public class OverflowFileStreamManager {
     private ConcurrentHashMap<Long, Map<String, RandomAccessFile>> fileStreamStore;
 
     private ConcurrentHashMap<String, MappedByteBuffer> memoryStreamStore = new ConcurrentHashMap<>();
+
+    private AtomicInteger mappedByteBufferUsage = new AtomicInteger();
 
     private OverflowFileStreamManager() {
         fileStreamStore = new ConcurrentHashMap<>();
@@ -36,17 +40,28 @@ public class OverflowFileStreamManager {
         return memoryStreamStore.get(path);
     }
 
+    public boolean contains(String path) {
+        return memoryStreamStore.containsKey(path);
+    }
+
+    /**
+     * Remove the MMap usage of given path.
+     *
+     * @param path
+     */
     public void removeMappedByteBuffer(String path) {
-        if (!memoryStreamStore.containsKey(path)) {
-            return;
-        } else {
+        if (memoryStreamStore.containsKey(path)) {
             MappedByteBuffer buffer = memoryStreamStore.get(path);
-            ((DirectBuffer)buffer).cleaner().clean();
+            ((DirectBuffer) buffer).cleaner().clean();
+            mappedByteBufferUsage.addAndGet(buffer.limit());
         }
     }
 
-    public RandomAccessFile get(Long jobId, String path) throws IOException {
+    public AtomicInteger getMappedByteBufferUsage() {
+        return this.mappedByteBufferUsage;
+    }
 
+    public RandomAccessFile get(Long jobId, String path) throws IOException {
         if (!fileStreamStore.containsKey(jobId)) {
             fileStreamStore.put(jobId, new HashMap<>());
         }

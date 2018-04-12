@@ -69,7 +69,8 @@ public class WriteAnalysis {
         //Thread.sleep(10000);
 
         writeAnalysis.executeMerge();
-        System.out.println("max memory:" + max);
+        System.out.println("max memory usage:" + max);
+        timer.shutdown();
     }
 
     private void initUnSeqFileStatistics() {

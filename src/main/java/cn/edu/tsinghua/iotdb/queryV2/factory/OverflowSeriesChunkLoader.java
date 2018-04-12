@@ -26,14 +26,17 @@ public class OverflowSeriesChunkLoader {
     }
 
     public SeriesChunk getMemSeriesChunk(Long jobId, EncodedSeriesChunkDescriptor scDescriptor) throws IOException {
-
-//        MappedByteBuffer buffer = overflowFileStreamManager.get(scDescriptor.getFilePath());
-//        return new BufferedSeriesChunk(
-//                new SegmentInputStreamWithMMap(buffer, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
-//                scDescriptor);
-        RandomAccessFile randomAccessFile = overflowFileStreamManager.get(jobId, scDescriptor.getFilePath());
-        return new BufferedSeriesChunk(
-                new SegmentInputStream(randomAccessFile, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
-                scDescriptor);
+        if (overflowFileStreamManager.contains(scDescriptor.getFilePath()) ||
+                overflowFileStreamManager.getMappedByteBufferUsage().get() + scDescriptor.getLengthOfBytes() < Integer.MAX_VALUE) {
+            MappedByteBuffer buffer = overflowFileStreamManager.get(scDescriptor.getFilePath());
+            return new BufferedSeriesChunk(
+                    new SegmentInputStreamWithMMap(buffer, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
+                    scDescriptor);
+        } else {
+            RandomAccessFile randomAccessFile = overflowFileStreamManager.get(jobId, scDescriptor.getFilePath());
+            return new BufferedSeriesChunk(
+                    new SegmentInputStream(randomAccessFile, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
+                    scDescriptor);
+        }
     }
 }
