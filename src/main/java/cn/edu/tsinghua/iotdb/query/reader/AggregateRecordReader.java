@@ -224,7 +224,7 @@ public class AggregateRecordReader extends RecordReader {
             InputStream page = pageReader.getNextPage();
             usedPageOffset += lastAvailable - bis.available();
 
-            if (couldCalcAggregationUsingHeader(pageMinTime, pageMaxTime, insertMemoryData)) {
+            if (canCalcAggregationUsingHeader(pageMinTime, pageMaxTime, insertMemoryData)) {
                 func.calculateValueFromPageHeader(pageHeader);
             } else {
                 long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
@@ -327,11 +327,11 @@ public class AggregateRecordReader extends RecordReader {
     }
 
     /**
-     * Examine whether the page header could be used to calculate the aggregation.
+     * Examine whether the page header can be used to calculate the aggregation.
      * <p>
-     * Notice that: the process could be optimized, if the query time filer and value filter contains the time and value of this page completely,
-     * the aggregation calculation could also use the page header.
-     * e.g. time filter is "time > 20 and time < 100", page time min and max is [50, 60], so the calculation could use the page header and no need
+     * Notice that: the process could be optimized, if the query time filer and value filter contain the time and value of this page completely,
+     * the aggregation calculation can also use the page header.
+     * e.g. time filter is "time > 20 and time < 100", page time min and max is [50, 60], so the calculation can use the page header and does not need
      * to decompress the page.
      *
      * @param pageMinTime
@@ -340,7 +340,7 @@ public class AggregateRecordReader extends RecordReader {
      * @return
      * @throws IOException
      */
-    private boolean couldCalcAggregationUsingHeader(long pageMinTime, long pageMaxTime, InsertDynamicData insertMemoryData) throws IOException {
+    private boolean canCalcAggregationUsingHeader(long pageMinTime, long pageMaxTime, InsertDynamicData insertMemoryData) throws IOException {
 
         while (overflowOperationReaderCopy.hasNext() && overflowOperationReaderCopy.getCurrentOperation().getRightBound() < pageMinTime)
             overflowOperationReaderCopy.next();
@@ -362,18 +362,19 @@ public class AggregateRecordReader extends RecordReader {
         if (queryTimeFilter == null && queryValueFilter == null)
             return true;
 
+        // represents that whether the time data of this page are satisfied with the time filter
         boolean timeEligible = false;
 
         if (queryTimeFilter != null) {
             LongInterval timeInterval = (LongInterval) singleTimeVisitor.getInterval();
             for (int i = 0; i < timeInterval.count; i += 2) {
-                if (timeInterval.v[i] > pageMaxTime) break;
-                if (timeInterval.v[i] <= pageMinTime && timeInterval.v[i + 1] >= pageMaxTime)
+                if (timeInterval.v[i] > pageMaxTime)
+                    break;
+
+                long startTime = timeInterval.flag[i] ? timeInterval.v[i] : timeInterval.v[i] + 1;
+                long endTime = timeInterval.flag[i+1] ? timeInterval.v[i+1] : timeInterval.v[i] - 1;
+                if (startTime <= pageMinTime && endTime >= pageMaxTime)
                     timeEligible = true;
-                if (timeInterval.v[i] == pageMinTime && !timeInterval.flag[i])
-                    timeEligible = false;
-                if (timeInterval.v[i + 1] == pageMaxTime && !timeInterval.flag[i + 1])
-                    timeEligible = false;
             }
         } else {
             timeEligible = true;
