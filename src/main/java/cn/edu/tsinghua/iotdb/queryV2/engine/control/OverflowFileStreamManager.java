@@ -31,11 +31,12 @@ public class OverflowFileStreamManager {
     }
 
     // Using MMap to replace RandomAccessFile
-    public MappedByteBuffer get(String path) throws IOException {
+    public synchronized MappedByteBuffer get(String path) throws IOException {
         if (!memoryStreamStore.containsKey(path)) {
             RandomAccessFile randomAccessFile = new RandomAccessFile(path, "r");
             MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
             memoryStreamStore.put(path, mappedByteBuffer);
+            mappedByteBufferUsage.set(mappedByteBufferUsage.get() + (int)randomAccessFile.length());
         }
         return memoryStreamStore.get(path);
     }
@@ -49,11 +50,11 @@ public class OverflowFileStreamManager {
      *
      * @param path
      */
-    public void removeMappedByteBuffer(String path) {
+    public synchronized void removeMappedByteBuffer(String path) {
         if (memoryStreamStore.containsKey(path)) {
             MappedByteBuffer buffer = memoryStreamStore.get(path);
+            mappedByteBufferUsage.set(mappedByteBufferUsage.get() - buffer.limit());
             ((DirectBuffer) buffer).cleaner().clean();
-            mappedByteBufferUsage.addAndGet(buffer.limit());
         }
     }
 

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1018,6 +1019,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 		}
 
+		OverflowFileStreamManager.getInstance().removeMappedByteBuffer(overflowProcessor.getWorkResource().getInsertFilePath());
 		//
 		// change status from merge to wait
 		//

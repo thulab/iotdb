@@ -685,4 +685,8 @@ public class OverflowProcessor extends Processor {
 	public WriteLogNode getLogNode() {
 		return logNode;
 	}
+
+	public OverflowResource getWorkResource() {
+		return workResource;
+	}
 }
