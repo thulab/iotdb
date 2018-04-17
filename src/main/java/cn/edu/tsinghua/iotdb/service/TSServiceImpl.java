@@ -165,8 +165,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				List<List<String>> showTimeseriesList = new ArrayList<>();
 				try {
 					List<String> paths = MManager.getInstance().getPaths(path);
-					if(paths.size()==0) {
-						// check path exists
+					if(paths.size()==0) { // check path exists
 						status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 						status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: Timeseries does not exist.", req.getColumnPath()));
 						resp.setStatus(status);
@@ -176,9 +175,8 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 						String apath = paths.get(i);
 						List<String> tsRow = new ArrayList<>();
 						tsRow.add(apath);
-						// get [name,storage group,dataType,encoding]
 						MNode leafNode = MManager.getInstance().getNodeByPath(apath);
-						if (leafNode.isLeaf()) {
+						if (leafNode.isLeaf()) { // get [name,storage group,dataType,encoding]
 							ColumnSchema columnSchema = leafNode.getSchema();
 							tsRow.add(leafNode.getDataFileName());
 							tsRow.add(columnSchema.dataType.toString());
@@ -200,7 +198,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 					HashSet<String> storageGroups = MManager.getInstance().getAllStorageGroup();
 					resp.setShowStorageGroups(storageGroups);
 				} catch (PathErrorException e) {
-					//LOGGER.error("cannot get delta object map", e);
+					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+					status.setErrorMessage(String.format("Failed to fetch storage groups' metadata because: %s", e));
+					resp.setStatus(status);
+					return resp;
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
@@ -217,6 +218,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 					resp.setDeltaObjectMap(deltaObjectMap);
 				} catch (PathErrorException e) {
 					//LOGGER.error("cannot get delta object map", e);
+					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+					status.setErrorMessage(String.format("Failed to get delta object map because: %s", e));
+					resp.setStatus(status);
+					return resp;
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
@@ -224,6 +229,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				try {
 					resp.setDataType(MManager.getInstance().getSeriesType(req.getColumnPath()).toString());
 				} catch (PathErrorException e) {
+					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+					status.setErrorMessage(String.format("Failed to fetch column %s's metadata because: %s", req.getColumnPath(), e));
+					resp.setStatus(status);
+					return resp;
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
@@ -231,6 +240,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				try {
 					resp.setAllColumns(MManager.getInstance().getPaths(req.getColumnPath()));
 				} catch (PathErrorException e) {
+					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+					status.setErrorMessage(String.format("Failed to fetch path %s's all columns because: %s", req.getColumnPath(), e));
+					resp.setStatus(status);
+					return resp;
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
