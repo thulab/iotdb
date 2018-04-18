@@ -255,7 +255,6 @@ public class MManagerImproveTest {
         System.out.println("add cache:\t" + (endTime - startTime));
     }
 
-
     @After
     public void tearDown() throws Exception {
         EnvironmentUtils.cleanEnv();
