@@ -103,7 +103,7 @@ public class RecordReader {
             for (TimeSeriesChunkMetaData tscMetaData : unsealedTsFile.getTimeSeriesChunkMetaDatas()) {
                 if (tscMetaData.getVInTimeSeriesChunkMetaData() != null) {
                     TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(globalSortedSeriesDataSource.getUnsealedTsFile().getFilePath());
-                    
+
                     ValueReader valueReader = new ValueReader(tscMetaData.getProperties().getFileOffset(),
                             tscMetaData.getTotalByteSize(),
                             tscMetaData.getVInTimeSeriesChunkMetaData().getDataType(),

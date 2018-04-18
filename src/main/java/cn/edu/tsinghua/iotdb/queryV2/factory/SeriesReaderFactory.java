@@ -67,6 +67,7 @@ public class SeriesReaderFactory {
                 SeriesChunkReader seriesChunkReader = new SeriesChunkReaderWithFilterImpl(seriesChunk.getSeriesChunkBodyStream(),
                         seriesChunkDescriptor.getDataType(),
                         seriesChunkDescriptor.getCompressionTypeName(), filter);
+                seriesChunkReader.setMaxTombstoneTime(seriesChunkDescriptor.getMaxTombstoneTime());
                 PriorityTimeValuePairReader priorityTimeValuePairReader = new PriorityTimeValuePairReader(seriesChunkReader,
                         new PriorityTimeValuePairReader.Priority(priorityValue));
                 timeValuePairReaders.add(priorityTimeValuePairReader);
@@ -103,6 +104,7 @@ public class SeriesReaderFactory {
             SeriesChunkReader seriesChunkReader = new SeriesChunkReaderWithoutFilterImpl(seriesChunk.getSeriesChunkBodyStream(),
                     seriesChunkDescriptor.getDataType(),
                     seriesChunkDescriptor.getCompressionTypeName());
+            seriesChunkReader.setMaxTombstoneTime(seriesChunkDescriptor.getMaxTombstoneTime());
             PriorityTimeValuePairReader priorityTimeValuePairReader = new PriorityTimeValuePairReader(seriesChunkReader,
                     new PriorityTimeValuePairReader.Priority(priorityValue));
             timeValuePairReaders.add(priorityTimeValuePairReader);

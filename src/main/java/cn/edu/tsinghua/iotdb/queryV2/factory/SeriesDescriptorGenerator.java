@@ -34,6 +34,7 @@ public class SeriesDescriptorGenerator {
                     timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime(),
                     timeSeriesChunkMetaData.getNumRows(),
                     timeSeriesChunkMetaData.getVInTimeSeriesChunkMetaData().getEnumValues());
+            encodedSeriesChunkDescriptor.setMaxTombstoneTime(timeSeriesChunkMetaData.getMaxTombstoneTime());
             seriesChunkDescriptors.add(encodedSeriesChunkDescriptor);
         }
         return seriesChunkDescriptors;
