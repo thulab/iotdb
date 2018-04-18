@@ -388,8 +388,8 @@ public class OverflowResource {
 		return insertMetadatas.containsKey(deltaObjectId) && insertMetadatas.get(deltaObjectId).containsKey(measurementId);
 	}
 
-	public void  appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
-		getTombstoneFile().append(new Tombstone(deltaObjectId + TsFileDBConstant.PATH_SEPARATER + measurementId, timestamp, System.currentTimeMillis()));
+	public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
+		getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
 	}
 
 }

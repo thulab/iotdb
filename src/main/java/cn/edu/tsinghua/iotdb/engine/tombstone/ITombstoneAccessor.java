@@ -11,7 +11,7 @@ public interface ITombstoneAccessor {
 
     void append(List<Tombstone> tombstones) throws IOException;
 
-    void append(String seriesName, long deleteTimestamp, long executeTimestamp) throws IOException;
+    void append(String deltaObjectName, String measurementName, long deleteTimestamp, long executeTimestamp) throws IOException;
 
     void close() throws IOException;
 }

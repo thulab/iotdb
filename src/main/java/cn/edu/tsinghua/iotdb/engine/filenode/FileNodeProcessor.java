@@ -1705,7 +1705,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 	continue;
 				// this file may contain this series, append a tombstone for it
 				TombstoneFile tombstoneFile = intervalFileNode.getTombstoneFile();
-				tombstoneFile.append(new Tombstone(deltaObjectId + TsFileDBConstant.PATH_SEPARATER + measurementId, timestamp, System.currentTimeMillis()));
+				tombstoneFile.append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
             	intervalFileNode.closeTombstoneFile();
 			}
 		} catch (IOException e) {

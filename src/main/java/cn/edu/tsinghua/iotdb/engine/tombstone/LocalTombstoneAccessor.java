@@ -8,8 +8,10 @@ import java.util.List;
 /**
  * File structure :
  * Sequential tombstones, each one consists of:
- *      int timeseriesLength
- *      byte[] timeseriesBytes
+ *      int deltaObjectLength
+ *      byte[] deltaObjectBytes
+ *      int measurementLength
+ *      byte[] measurementBytes
  *      long deleteTimestamp
  */
 public class LocalTombstoneAccessor implements ITombstoneAccessor {
@@ -27,19 +29,23 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     public List<Tombstone> readAll() throws IOException {
         List<Tombstone> tombstones = new ArrayList<>();
         while(raf.getFilePointer() + 4 < raf.length()) {
-            int nameLength = raf.readInt();
-            byte[] seriesNameBytes = new byte[nameLength];
-            raf.readFully(seriesNameBytes);
+            int deltaObjectLength = raf.readInt();
+            byte[] deltaObjectBytes = new byte[deltaObjectLength];
+            raf.readFully(deltaObjectBytes);
+            int measurementLength = raf.readInt();
+            byte[] measurementBytes = new byte[measurementLength];
+            raf.readFully(measurementBytes);
             long deleteTimestamp = raf.readLong();
             long executeTimestamp = raf.readLong();
-            tombstones.add(new Tombstone(new String(seriesNameBytes, ENCODING), deleteTimestamp, executeTimestamp));
+            tombstones.add(new Tombstone(new String(deltaObjectBytes, ENCODING), new String(measurementBytes, ENCODING),
+                    deleteTimestamp, executeTimestamp));
         }
         return tombstones;
     }
 
     @Override
     public void append(Tombstone tombstone) throws IOException {
-        append(tombstone.seriesName, tombstone.deleteTimestamp, tombstone.executeTimestamp);
+        append(tombstone.deltaObjectId, tombstone.measurementId, tombstone.deleteTimestamp, tombstone.executeTimestamp);
     }
 
     @Override
@@ -50,11 +56,14 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     }
 
     @Override
-    public void append(String seriesName, long deleteTimestamp, long executeTimestamp) throws IOException {
+    public void append(String deltaObjectName, String measurementName, long deleteTimestamp, long executeTimestamp) throws IOException {
         raf.seek(raf.length());
-        byte[] seriesNameBytes = seriesName.getBytes(ENCODING);
-        raf.writeInt(seriesNameBytes.length);
-        raf.write(seriesNameBytes);
+        byte[] deltaObjectNameBytes = deltaObjectName.getBytes(ENCODING);
+        raf.writeInt(deltaObjectNameBytes.length);
+        raf.write(deltaObjectNameBytes);
+        byte[] measurementNameBytes = measurementName.getBytes(ENCODING);
+        raf.writeInt(measurementNameBytes.length);
+        raf.write(measurementNameBytes);
         raf.writeLong(deleteTimestamp);
         raf.writeLong(executeTimestamp);
     }
