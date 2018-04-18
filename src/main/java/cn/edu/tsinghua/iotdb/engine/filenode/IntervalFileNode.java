@@ -241,7 +241,7 @@ public class IntervalFileNode implements Serializable {
 
 	public TombstoneFile getTombstoneFile() throws IOException {
 		if (tombstoneFile == null) {
-			tombstoneFile = new LocalTombstoneFile(this.relativePath + TombstoneFile.TOMBSTONE_SUFFIX);
+			tombstoneFile = new LocalTombstoneFile(baseDir + File.separator + this.relativePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
 		return tombstoneFile;
 	}

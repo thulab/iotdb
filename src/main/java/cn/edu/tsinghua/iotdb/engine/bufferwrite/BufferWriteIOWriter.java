@@ -29,8 +29,7 @@ public class BufferWriteIOWriter extends TsFileIOWriter {
 
 	/**
 	 * This is just used to restore a tsfile from the middle of the file
-	 * 
-	 * @param schema
+	 *
 	 * @param output
 	 * @param rowGroups
 	 * @throws IOException
@@ -90,5 +89,20 @@ public class BufferWriteIOWriter extends TsFileIOWriter {
 			}
 		}
 		return chunkMetaDatas;
+	}
+
+	public boolean hasTimeseries(String deltaObjectId, String measurementId, long timestamp) {
+		for (RowGroupMetaData rowGroupMetaData : backUpList) {
+			// TODO-DELETE : use timestamp to filter RowGroup
+			if (rowGroupMetaData.getDeltaObjectID().equals(deltaObjectId)) {
+				for (TimeSeriesChunkMetaData chunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
+					// filter data-type and measurementId
+					if (chunkMetaData.getProperties().getMeasurementUID().equals(measurementId)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 }

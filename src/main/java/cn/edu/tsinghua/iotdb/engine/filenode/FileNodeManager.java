@@ -464,81 +464,28 @@ public class FileNodeManager implements IStatistic, IService {
 	public void delete(String deltaObjectId, String measurementId, long timestamp, TSDataType type)
 			throws FileNodeManagerException {
 
+		// get overflow processor
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+		String filenodeName = fileNodeProcessor.getProcessorName();
+		OverflowProcessor overflowProcessor;
 		try {
-			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
-			// no tsfile data, the delete operation is invalid
-			if (lastUpdateTime == -1) {
-				LOGGER.warn("The last update time is -1, delete overflow is invalid, the filenode processor is {}",
-						fileNodeProcessor.getProcessorName());
-			} else {
-				if (timestamp > lastUpdateTime) {
-					timestamp = lastUpdateTime;
-				}
-				String filenodeName = fileNodeProcessor.getProcessorName();
-				// get overflow processor
-				OverflowProcessor overflowProcessor;
-				try {
-					overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
-				} catch (IOException e) {
-					LOGGER.error("Get the overflow processor failed, the filenode is {}, delete time is {}.",
-							filenodeName, timestamp);
-					throw new FileNodeManagerException(e);
-				}
-				overflowProcessor.delete(deltaObjectId, measurementId, timestamp, type);
-				// change the type of tsfile to overflowed
-				fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
-				fileNodeProcessor.setOverflowed(true);
-				// if (shouldMerge) {
-				// LOGGER.info(
-				// "The overflow file or metadata reaches the threshold,
-				// merge the filenode processor {}",
-				// filenodeName);
-				// fileNodeProcessor.submitToMerge();
-				// }
-				fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
-				fileNodeProcessor.setOverflowed(true);
-
-				// write wal
-				try {
-					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-						overflowProcessor.getLogNode()
-								.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
-					}
-				} catch (IOException e) {
-					throw new FileNodeManagerException(e);
-				}
+			overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
+			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+				overflowProcessor.getLogNode()
+						.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
 			}
+		} catch (IOException e) {
+			fileNodeProcessor.writeUnlock();
+			throw new FileNodeManagerException(e.getMessage());
+		}
+
+		try {
+			fileNodeProcessor.delete(deltaObjectId, measurementId, timestamp);
+		} catch (FileNodeProcessorException e) {
+			throw new FileNodeManagerException(e.getMessage());
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
-	}
-
-	public void deleteV2(String deltaObjectId, String measurementId, long timestamp, TSDataType type)
-			throws FileNodeManagerException, FileNodeProcessorException {
-			// get overflow processor
-			FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
-			String filenodeName = fileNodeProcessor.getProcessorName();
-			OverflowProcessor overflowProcessor;
-			try {
-				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
-					overflowProcessor.getLogNode()
-							.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
-				}
-			} catch (IOException e) {
-				throw new FileNodeManagerException(e);
-			}  finally {
-				fileNodeProcessor.writeUnlock();
-			}
-
-			try {
-				fileNodeProcessor.delete(deltaObjectId, measurementId, timestamp);
-			} catch (FileNodeProcessorException e) {
-				throw new FileNodeManagerException(e);
-			} finally {
-				fileNodeProcessor.writeUnlock();
-			}
 	}
 
 	public int beginQuery(String deltaObjectId) throws FileNodeManagerException {

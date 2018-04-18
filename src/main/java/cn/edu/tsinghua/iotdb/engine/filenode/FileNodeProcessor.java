@@ -1696,9 +1696,21 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 
 		// append tombstone to tsfile
+		// append to current file
+		if(bwProcessor != null) {
+			try {
+				bwProcessor.appendTombstone(deltaObjectId, measurementId, timestamp);
+			} catch (IOException e) {
+				throw new FileNodeProcessorException(e);
+			}
+		}
+
+		// append to closed files
 		try {
 			// find files that contain this series
 			for(IntervalFileNode intervalFileNode : newFileNodes) {
+				if(intervalFileNode == currentIntervalFileNode)
+					continue;
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(intervalFileNode.getFilePath());
                 // TODO-DELETE: use deleteTimestamp to narrow the scope
                 if(!tsFileMetaData.containsDeltaObject(deltaObjectId) || !tsFileMetaData.containsMeasurement(measurementId))

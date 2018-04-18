@@ -17,6 +17,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
@@ -96,6 +99,8 @@ public class BufferWriteProcessor extends Processor {
 	private AtomicLong memSize = new AtomicLong();
 
 	private WriteLogNode logNode;
+
+	private TombstoneFile tombstoneFile;
 
 	public BufferWriteProcessor(String processorName, String fileName, Map<String, Object> parameters,
 			FileSchema fileSchema) throws BufferWriteProcessorException {
@@ -691,6 +696,10 @@ public class BufferWriteProcessor extends Processor {
 			DateTime startDateTime = new DateTime(closeStartTime,
 					TsfileDBDescriptor.getInstance().getConfig().timeZone);
 			DateTime endDateTime = new DateTime(closeEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+			if(tombstoneFile != null) {
+				tombstoneFile.close();
+				tombstoneFile = null;
+			}
 			LOGGER.info(
 					"Close bufferwrite processor {}, the file name is {}, start time is {}, end time is {}, time consumption is {}ms",
 					getProcessorName(), fileName, startDateTime, endDateTime, closeInterval);
@@ -728,8 +737,20 @@ public class BufferWriteProcessor extends Processor {
 		return bufferwriteRestoreFilePath;
 	}
 
+	public TombstoneFile getTombstoneFile() throws IOException {
+		if(tombstoneFile == null) {
+			tombstoneFile = new LocalTombstoneFile(bufferwriteOutputFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
+		}
+		return tombstoneFile;
+	}
+
 	public void deleteInMem(String deltaObjectId, String measurementId, long timestamp) {
 		workMemTable.delete(deltaObjectId, measurementId, timestamp);
 	}
 
+	public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
+		if(bufferIOWriter.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
+			getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+		}
+	}
 }

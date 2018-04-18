@@ -300,7 +300,8 @@ public class AggregationLargeDataTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0)
                         + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2);
-                //System.out.println(ans);
+
+                System.out.println(ans);
             }
             statement.close();
         } catch (Exception e) {
