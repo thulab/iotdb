@@ -5,6 +5,10 @@ import java.util.*;
 
 import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.query.reader.IoTRowGroupReader;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
@@ -33,6 +37,9 @@ public class ReaderManager {
     /** key: deltaObjectUID **/
     private Map<String, List<RowGroupReader>> rowGroupReaderMap = new LinkedHashMap<>();
 
+    /** Map of (tsfile path, tombstones)**/
+    private Map<String, List<Tombstone>> tombstoneMap = new HashMap<>();
+
     /**
      *
      * @param sealedFilePathList fileInputStreamList
@@ -50,6 +57,10 @@ public class ReaderManager {
             // to examine whether sealed file has data
             for (String path : sealedFilePathList) {
                 TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(path);
+
+                // get tome stones of this file
+                List<Tombstone> tombstones = getTombStone(path, deltaObjectUID);
+
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
                 if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
 
@@ -63,18 +74,20 @@ public class ReaderManager {
                     for (RowGroupMetaData meta : tsRowGroupBlockMetaData.getRowGroups()) {
                         //TODO parallelism could be used to speed up
 
-                        RowGroupReader reader = new RowGroupReader(meta, fileReader);
+                        RowGroupReader reader = new IoTRowGroupReader(meta, fileReader, tombstones);
                         rowGroupReaderList.add(reader);
                     }
                 }
             }
 
             if (unSealedFilePath != null) {
+                // get tome stones of this file
+                List<Tombstone> tombstones = getTombStone(unSealedFilePath, deltaObjectUID);
                 TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(unSealedFilePath);
                 for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
                     //TODO parallelism could be used to speed up
 
-                    RowGroupReader reader = new RowGroupReader(meta, fileReader);
+                    RowGroupReader reader = new IoTRowGroupReader(meta, fileReader, tombstones);
                     rowGroupReaderList.add(reader);
                 }
             }
@@ -95,5 +108,24 @@ public class ReaderManager {
 
     public void clearReaderMaps() {
         rowGroupReaderMap.clear();
+    }
+
+    public List<Tombstone> getTombStone(String path, String deltaObjectUID) throws IOException {
+        List<Tombstone> tombstones = tombstoneMap.get(path);
+        if(tombstones == null) {
+            TombstoneFile tombstoneFile = new LocalTombstoneFile(path + TombstoneFile.TOMBSTONE_SUFFIX);
+            try {
+                tombstones = tombstoneFile.getTombstones();
+                tombstoneMap.put(path, tombstones);
+            } finally {
+                tombstoneFile.close();
+            }
+        }
+        List<Tombstone> deltaObjectTombstones = new ArrayList<>();
+        for (Tombstone tombstone : tombstones) {
+            if(deltaObjectUID.equals(tombstone.deltaObjectId))
+                deltaObjectTombstones.add(tombstone);
+        }
+        return  deltaObjectTombstones;
     }
 }

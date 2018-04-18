@@ -708,6 +708,10 @@ public class BufferWriteProcessor extends Processor {
 		return memSize.get();
 	}
 
+	public long getMetaSize() {
+		return 0;
+	}
+
 	/**
 	 * @return The file size of the TsFile corresponding to this processor.
 	 * @throws IOException
@@ -727,4 +731,5 @@ public class BufferWriteProcessor extends Processor {
 	public void deleteInMem(String deltaObjectId, String measurementId, long timestamp) {
 		workMemTable.delete(deltaObjectId, measurementId, timestamp);
 	}
+
 }

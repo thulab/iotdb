@@ -333,7 +333,8 @@ public class OverflowResource {
 		updateDeleteMetadatas.clear();
 		insertIO.close();
 		updateDeleteIO.close();
-		tombstoneFile.close();
+		if(tombstoneFile != null)
+			tombstoneFile.close();
 	}
 
 	public void deleteResource() throws IOException {

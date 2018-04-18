@@ -4,6 +4,10 @@ import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
@@ -25,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 
@@ -93,11 +98,12 @@ public class RecordReader {
         this.tsFileReaderManager = new ReaderManager(sealedFilePathList);
 
         valueReaders = new ArrayList<>();
-        if (globalSortedSeriesDataSource.getUnsealedTsFile() != null) {
-            for (TimeSeriesChunkMetaData tscMetaData : globalSortedSeriesDataSource.getUnsealedTsFile().getTimeSeriesChunkMetaDatas()) {
+        UnsealedTsFile unsealedTsFile = globalSortedSeriesDataSource.getUnsealedTsFile();
+        if (unsealedTsFile != null) {
+            for (TimeSeriesChunkMetaData tscMetaData : unsealedTsFile.getTimeSeriesChunkMetaDatas()) {
                 if (tscMetaData.getVInTimeSeriesChunkMetaData() != null) {
                     TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(globalSortedSeriesDataSource.getUnsealedTsFile().getFilePath());
-
+                    
                     ValueReader valueReader = new ValueReader(tscMetaData.getProperties().getFileOffset(),
                             tscMetaData.getTotalByteSize(),
                             tscMetaData.getVInTimeSeriesChunkMetaData().getDataType(),
