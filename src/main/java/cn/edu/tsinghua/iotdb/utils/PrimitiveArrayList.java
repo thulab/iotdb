@@ -11,6 +11,7 @@ public class PrimitiveArrayList {
 
     private static final int MAX_SIZE_OF_ONE_ARRAY = 512;
     private static final int INITIAL_SIZE = 1;
+    public static final long TIMESTAMP_FOR_DELETE = -1;
 
     private Class clazz;
     private List<Object> values;
@@ -112,5 +113,15 @@ public class PrimitiveArrayList {
         Object cloneArray = Array.newInstance(clazz, Array.getLength(array));
         System.arraycopy(array, 0, cloneArray, 0, Array.getLength(array));
         return cloneArray;
+    }
+
+    public void delete(long timestamp) {
+        for(long[] longs : timestamps) {
+            for(int i = 0; i < longs.length; i++) {
+                if(longs[i] < timestamp) {
+                    longs[i] = TIMESTAMP_FOR_DELETE;
+                }
+            }
+        }
     }
 }

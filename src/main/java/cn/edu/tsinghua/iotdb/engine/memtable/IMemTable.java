@@ -28,5 +28,6 @@ public interface IMemTable {
     
     boolean isEmpty();
 
+    void delete(String deltaObjectId, String measurementId, long timestamp);
 }
 

@@ -30,4 +30,6 @@ public interface IMemSeries extends TimeValuePairSorter{
     void reset();
 
     int size();
+
+    void delete(long timestamp);
 }

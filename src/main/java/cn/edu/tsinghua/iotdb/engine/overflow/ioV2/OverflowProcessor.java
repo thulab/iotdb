@@ -14,6 +14,7 @@ import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
@@ -684,5 +685,18 @@ public class OverflowProcessor extends Processor {
 
 	public WriteLogNode getLogNode() {
 		return logNode;
+	}
+
+    public void deleteInMem(String deltaObjectId, String measurementId, long timestamp) {
+		workSupport.getMemTabale().delete(deltaObjectId, measurementId, timestamp);
+    }
+
+    public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
+		if(workResource != null && workResource.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
+			workResource.appendTombstone(deltaObjectId, measurementId, timestamp);
+		}
+		if(mergeResource != null && mergeResource.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
+			mergeResource.appendTombstone(deltaObjectId, measurementId, timestamp);
+		}
 	}
 }

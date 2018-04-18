@@ -28,7 +28,8 @@ public class PrimitiveMemSeriesLazyIterable implements Iterable<TimeValuePair>{
         int length = list.size();
         TreeMap<Long, TsPrimitiveType> treeMap = new TreeMap<>();
         for (int i = 0; i < length; i++) {
-            treeMap.put(list.getTimestamp(i), TsPrimitiveType.getByType(dataType, list.getValue(i)));
+            if (list.getTimestamp(i) != PrimitiveArrayList.TIMESTAMP_FOR_DELETE)
+                treeMap.put(list.getTimestamp(i), TsPrimitiveType.getByType(dataType, list.getValue(i)));
         }
         List<TimeValuePair> ret = new ArrayList<>();
         treeMap.forEach((k, v) -> {

@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is used to store one bufferwrite file status.<br>
@@ -19,6 +24,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 public class IntervalFileNode implements Serializable {
 
 	private static final long serialVersionUID = -4309683416067212549L;
+	private static final Logger logger = LoggerFactory.getLogger(IntervalFileNode.class);
 	private String relativePath;
 	public OverflowChangeType overflowChangeType;
 
@@ -26,6 +32,8 @@ public class IntervalFileNode implements Serializable {
 	private Map<String, Long> endTimeMap;
 	private Set<String> mergeChanged = new HashSet<>();
 	private static String baseDir = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir;
+
+	private TombstoneFile tombstoneFile;
 
 	public IntervalFileNode(Map<String, Long> startTimeMap, Map<String, Long> endTimeMap, OverflowChangeType type,
 			String relativePath) {
@@ -35,7 +43,6 @@ public class IntervalFileNode implements Serializable {
 
 		this.startTimeMap = startTimeMap;
 		this.endTimeMap = endTimeMap;
-
 	}
 
 	/**
@@ -136,6 +143,13 @@ public class IntervalFileNode implements Serializable {
 		mergeChanged.clear();
 		overflowChangeType = OverflowChangeType.NO_CHANGE;
 		relativePath = null;
+		if (tombstoneFile != null) {
+			try {
+				tombstoneFile.close();
+			} catch (IOException e) {
+				logger.error("Cannot close tombstone file for {}", relativePath);
+			}
+		}
 	}
 
 	public void changeTypeToChanged(FileNodeProcessorStatus fileNodeProcessorState) {
@@ -223,5 +237,19 @@ public class IntervalFileNode implements Serializable {
 		return String.format(
 				"IntervalFileNode [relativePath=%s,overflowChangeType=%s, startTimeMap=%s, endTimeMap=%s, mergeChanged=%s]",
 				relativePath, overflowChangeType, startTimeMap, endTimeMap, mergeChanged);
+	}
+
+	public TombstoneFile getTombstoneFile() throws IOException {
+		if (tombstoneFile == null) {
+			tombstoneFile = new LocalTombstoneFile(this.relativePath + TombstoneFile.TOMBSTONE_SUFFIX);
+		}
+		return tombstoneFile;
+	}
+
+	public void closeTombstoneFile() throws IOException {
+		if(tombstoneFile != null) {
+			tombstoneFile.close();
+			tombstoneFile = null;
+		}
 	}
 }

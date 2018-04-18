@@ -16,6 +16,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1659,5 +1667,58 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	public String getFileNodeRestoreFilePath() {
 		return fileNodeRestoreFilePath;
+	}
+
+	/**
+	 * Delete data in MemTable and create tombstones for every ts file.
+	 * @param deltaObjectId
+	 * @param measurementId
+	 * @param timestamp
+	 */
+	public void delete(String deltaObjectId, String measurementId, long timestamp) throws FileNodeProcessorException {
+		BufferWriteProcessor bwProcessor = null;
+		try {
+			bwProcessor = getBufferWriteProcessor();
+		} catch (FileNodeProcessorException ignored) {
+		}
+		OverflowProcessor ofProcessor = null;
+		try {
+			ofProcessor = getOverflowProcessor();
+		} catch (Exception ignored) {
+		}
+
+		// delete in MemTable
+		if (bwProcessor != null) {
+			bwProcessor.deleteInMem(deltaObjectId, measurementId, timestamp);
+		}
+		if (ofProcessor != null) {
+			ofProcessor.deleteInMem(deltaObjectId, measurementId, timestamp);
+		}
+
+		// append tombstone to tsfile
+		try {
+			// find files that contain this series
+			for(IntervalFileNode intervalFileNode : newFileNodes) {
+                TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(intervalFileNode.getFilePath());
+                // TODO-DELETE: use deleteTimestamp to narrow the scope
+                if(!tsFileMetaData.containsDeltaObject(deltaObjectId) || !tsFileMetaData.containsMeasurement(measurementId))
+                	continue;
+				// this file may contain this series, append a tombstone for it
+				TombstoneFile tombstoneFile = intervalFileNode.getTombstoneFile();
+				tombstoneFile.append(new Tombstone(deltaObjectId + TsFileDBConstant.PATH_SEPARATER + measurementId, timestamp, System.currentTimeMillis()));
+            	intervalFileNode.closeTombstoneFile();
+			}
+		} catch (IOException e) {
+			throw new FileNodeProcessorException(e);
+		}
+
+		// append tombstone to overflow
+		if(ofProcessor != null) {
+			try {
+				ofProcessor.appendTombstone(deltaObjectId, measurementId, timestamp);
+			} catch (IOException e) {
+				throw new FileNodeProcessorException(e);
+			}
+		}
 	}
 }

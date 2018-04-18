@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +59,8 @@ public class OverflowResource {
 
 	private List<RowGroupMetaData> appendInsertMetadatas;
 	private List<OFRowGroupListMetadata> appendUpdateDeleteMetadats;
+
+	private TombstoneFile tombstoneFile;
 
 	public OverflowResource(String parentPath, String dataPath) throws IOException {
 		this.insertMetadatas = new HashMap<>();
@@ -327,6 +333,7 @@ public class OverflowResource {
 		updateDeleteMetadatas.clear();
 		insertIO.close();
 		updateDeleteIO.close();
+		tombstoneFile.close();
 	}
 
 	public void deleteResource() throws IOException {
@@ -368,4 +375,21 @@ public class OverflowResource {
 		}
 		updateDeleteMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
 	}
+
+	public TombstoneFile getTombstoneFile() throws IOException {
+		if(tombstoneFile == null) {
+			tombstoneFile = new LocalTombstoneFile(insertFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
+		}
+		return tombstoneFile;
+	}
+
+	public boolean hasTimeseries(String deltaObjectId, String measurementId, long timestamp) {
+		// TODO-DELETE: use timestamp to filter series？
+		return insertMetadatas.containsKey(deltaObjectId) && insertMetadatas.get(deltaObjectId).containsKey(measurementId);
+	}
+
+	public void  appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
+		getTombstoneFile().append(new Tombstone(deltaObjectId + TsFileDBConstant.PATH_SEPARATER + measurementId, timestamp, System.currentTimeMillis()));
+	}
+
 }

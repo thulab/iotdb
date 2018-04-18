@@ -90,6 +90,8 @@ public class PrimitiveMemSeries implements IMemSeries {
         int length = list.size();
         TreeMap<Long, TsPrimitiveType> treeMap = new TreeMap<>();
         for (int i = 0; i < length; i++) {
+            if (list.getTimestamp(i) == PrimitiveArrayList.TIMESTAMP_FOR_DELETE)
+                continue;
             treeMap.put(list.getTimestamp(i), TsPrimitiveType.getByType(dataType, list.getValue(i)));
         }
         List<TimeValuePair> ret = new ArrayList<>();
@@ -107,6 +109,11 @@ public class PrimitiveMemSeries implements IMemSeries {
     @Override
     public int size() {
         return list.size();
+    }
+
+    @Override
+    public void delete(long timestamp) {
+        list.delete(timestamp);
     }
 
     private TsPrimitiveType genTsPrimitiveType(TSDataType dataType, Object v) {

@@ -709,50 +709,11 @@ public class BufferWriteProcessor extends Processor {
 	}
 
 	/**
-	 * @return The sum of all timeseries's metadata size within this file.
-	 */
-	public long getMetaSize() {
-		// TODO : [MemControl] implement this
-		return 0;
-	}
-
-	/**
 	 * @return The file size of the TsFile corresponding to this processor.
 	 * @throws IOException
 	 */
 	public long getFileSize() {
 		return bufferwriteOutputFile.length() + memoryUsage();
-	}
-
-	/**
-	 * Close current TsFile and open a new one for future writes. Block new
-	 * writes and wait until current writes finish.
-	 */
-	public void rollToNewFile() {
-		// TODO : [MemControl] implement this
-	}
-
-	/**
-	 * Check if this TsFile has too big metadata or file. If true, close current
-	 * file and open a new one.
-	 * 
-	 * @throws IOException
-	 */
-	private boolean checkSize() throws IOException {
-		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-		long metaSize = getMetaSize();
-		long fileSize = getFileSize();
-		if (metaSize >= config.bufferwriteMetaSizeThreshold || fileSize >= config.bufferwriteFileSizeThreshold) {
-			LOGGER.info(
-					"The bufferwrite processor {}, size({}) of the file {} reaches threshold {}, size({}) of metadata reaches threshold {}.",
-					getProcessorName(), MemUtils.bytesCntToStr(fileSize), this.fileName,
-					MemUtils.bytesCntToStr(config.bufferwriteFileSizeThreshold), MemUtils.bytesCntToStr(metaSize),
-					MemUtils.bytesCntToStr(config.bufferwriteFileSizeThreshold));
-
-			rollToNewFile();
-			return true;
-		}
-		return false;
 	}
 
 	public WriteLogNode getLogNode() {
@@ -761,5 +722,9 @@ public class BufferWriteProcessor extends Processor {
 
 	public String getBufferwriteRestoreFilePath() {
 		return bufferwriteRestoreFilePath;
+	}
+
+	public void deleteInMem(String deltaObjectId, String measurementId, long timestamp) {
+		workMemTable.delete(deltaObjectId, measurementId, timestamp);
 	}
 }

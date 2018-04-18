@@ -140,4 +140,9 @@ public class TreeSetMemSeries implements IMemSeries {
         //TODO: this implement just returns the number of data points in the tree set.
         return treeSet.size();
     }
+
+    @Override
+    public void delete(long timestamp) {
+        throw new UnsupportedOperationException("Method unimplemented");
+    }
 }
