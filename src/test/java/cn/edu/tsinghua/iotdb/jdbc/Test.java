@@ -23,14 +23,14 @@ public class Test {
 //				System.out.println(String.format("column %s, type %s", resultSet.getString("COLUMN_NAME"), resultSet.getString("COLUMN_TYPE")));
 //				System.out.println(String.format("column %s, type %s", resultSet.getString(1), resultSet.getString(2)));
 //			}
-			
+
 //			ResultSet resultSet = databaseMetaData.getColumns(null, null, "root.*", null);
 //			while(resultSet.next()){
 //				//System.out.println(String.format("column %s, type %s", resultSet.getString("COLUMN_NAME"), resultSet.getString("COLUMN_TYPE")));
 //				System.out.println(String.format("column %s", resultSet.getString(1)));
 //				System.out.println(String.format("column %s", resultSet.getString("DELTA_OBJECT")));
 //			}
-			
+
 			Statement statement = connection.createStatement();
 			statement.execute("SET STORAGE GROUP TO root.ln.wf01.wt01");
 			statement.execute("CREATE TIMESERIES root.ln.wf01.wt01.status WITH DATATYPE=BOOLEAN, ENCODING=PLAIN");
@@ -51,35 +51,35 @@ public class Test {
 //				System.out.println(builder);
 //			}
 			statement.close();
-			
+
 			PreparedStatement preparedStatement = connection.prepareStatement("insert into root.ln.wf01.wt01(timestamp,status,temperature) values(?,?,?)");
 			preparedStatement.setLong(1, 1509465600000L);
 			preparedStatement.setBoolean(2, true);
 			preparedStatement.setFloat(3, 25.957603f);
 			preparedStatement.execute();
 			preparedStatement.clearParameters();
-			
+
 			preparedStatement.setLong(1, 1509465660000L);
 			preparedStatement.setBoolean(2, true);
 			preparedStatement.setFloat(3, 24.359503f);
 			preparedStatement.execute();
 			preparedStatement.clearParameters();
-			
+
 			preparedStatement.setLong(1, 1509465720000L);
 			preparedStatement.setBoolean(2, false);
 			preparedStatement.setFloat(3, 20.092794f);
 			preparedStatement.execute();
 			preparedStatement.clearParameters();
-			
-			
+
+
 			preparedStatement.setTimestamp(1, Timestamp.valueOf("2017-11-01 00:03:00"));
 			preparedStatement.setBoolean(2, false);
 			preparedStatement.setFloat(3, 20.092794f);
 			preparedStatement.execute();
 			preparedStatement.clearParameters();
-						
+
 			preparedStatement.close();
-			
+
 			ResultSet resultSet = preparedStatement.executeQuery("select * from root");
 			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 			while(resultSet.next()){
@@ -91,10 +91,41 @@ public class Test {
 			}
 			preparedStatement.close();
 
-			
+
 //			for(int i = 1; i <= resultSetMetaData.getColumnCount();i++) {
 //				System.out.println(resultSetMetaData.getColumnType(i)+"-"+resultSetMetaData.getColumnName(i));
 //			}
+
+			PreparedStatement preparedStatement2=connection.prepareStatement("show timeseries root");
+			boolean  hasResultSet2 = preparedStatement2.execute();
+			if(hasResultSet2) {
+				ResultSet resultSet2 = preparedStatement2.getResultSet();
+				ResultSetMetaData resultSetMetaData2 = resultSet2.getMetaData();
+				while (resultSet2.next()) {
+					StringBuilder builder = new StringBuilder();
+					for (int i = 1; i <= resultSetMetaData2.getColumnCount(); i++) {
+						builder.append(resultSet2.getString(i)).append(",");
+					}
+					System.out.println(builder);
+				}
+			}
+			preparedStatement2.close();
+
+			PreparedStatement preparedStatement3 = connection.prepareStatement("show storage group");
+			boolean hasResultSet3 = preparedStatement3.execute();
+			if (hasResultSet3) {
+				ResultSet resultSet3 = preparedStatement3.getResultSet();
+				ResultSetMetaData resultSetMetaData3 = resultSet3.getMetaData();
+				while (resultSet3.next()) {
+					StringBuilder builder = new StringBuilder();
+					for (int i = 1; i <= resultSetMetaData3.getColumnCount(); i++) {
+						builder.append(resultSet3.getString(i)).append(",");
+					}
+					System.out.println(builder);
+				}
+			}
+			preparedStatement3.close();
+
 		} finally {
 			connection.close();
 		}

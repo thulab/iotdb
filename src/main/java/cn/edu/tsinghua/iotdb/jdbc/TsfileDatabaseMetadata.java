@@ -5,9 +5,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.thrift.TException;
 
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
@@ -22,6 +21,86 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 	public TsfileDatabaseMetadata(TsfileConnection connection, TSIService.Iface client) {
 		this.connection = connection;
 		this.client = client;
+	}
+
+	/**
+	 * the entrance of the call of client.fetchMetadata for cmd 'SHOW TIMESERIES PATH'
+	 *
+	 * @param path a full or abstract path
+	 * @return TsfileMetadataResultSet
+	 */
+	public ResultSet getShowTimeseries(String path) throws SQLException {
+		try {
+			return getShowTimeseriesFunc(path);
+		} catch (TException e) {
+			boolean flag = connection.reconnect();
+			this.client = connection.client;
+			if (flag) {
+				try {
+					return getShowTimeseriesFunc(path);
+				} catch (TException e2) {
+					throw new SQLException(String.format(
+							"Fail to get the metadata of the queried timeseries %s"
+									+ " after reconnecting. please check server status", path));
+				}
+			} else {
+				throw new SQLException(String.format(
+						"Fail to reconnect to server when getting the metadata of the queried timeseries %s"
+								+ " after reconnecting. please check server status", path));
+			}
+		}
+	}
+
+	private ResultSet getShowTimeseriesFunc(String path) throws TException, SQLException {
+		TSFetchMetadataReq req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_SHOW_TIMESERIES_REQ);
+		req.setColumnPath(path);
+		TSFetchMetadataResp resp;
+		try {
+			resp = client.fetchMetadata(req);
+			Utils.verifySuccess(resp.getStatus());
+			List<List<String>> showTsList = resp.getShowTimeseriesList();
+			return new TsfileMetadataResultSet(showTsList);
+		} catch (TException e) {
+			throw new TException("Conncetion error when fetching timeseries metadata", e);
+		}
+	}
+
+	/**
+	 * the entrance of the call of client.fetchMetadata for cmd 'SHOW STORAGE GROUP'
+	 *
+	 * @return TsfileMetadataResultSet
+	 */
+	public ResultSet getShowStorageGroups() throws SQLException {
+		try {
+			return getShowStorageGroupsFunc();
+		} catch (TException e) {
+			boolean flag = connection.reconnect();
+			this.client = connection.client;
+			if (flag) {
+				try {
+					return getShowStorageGroupsFunc();
+				} catch (TException e2) {
+					throw new SQLException("Fail to get storage groups info"
+							+ " after reconnecting. please check server status");
+				}
+			} else {
+				throw new SQLException("Fail to reconnect to server when getting storage groups info"
+						+ " after reconnecting. please check server status");
+			}
+		}
+	}
+
+	private ResultSet getShowStorageGroupsFunc() throws TException, SQLException {
+		TSFetchMetadataReq req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_SHOW_STORAGE_GROUP_REQ);
+		TSFetchMetadataResp resp;
+		try {
+			resp = client.fetchMetadata(req);
+			Utils.verifySuccess(resp.getStatus());
+			Set<String> showStorageGroup = resp.getShowStorageGroups();
+			return new TsfileMetadataResultSet(null, null, showStorageGroup);
+		} catch (TException e) {
+			throw new TException("Conncetion error when fetching timeseries metadata", e);
+		}
 	}
 
 	/**
@@ -56,16 +135,16 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 
 	private ResultSet getColumnsOrDeltaObject(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern) throws TException, SQLException{
 		if(deltaObjectPattern != null && !deltaObjectPattern.trim().equals("")){
-			TSFetchMetadataReq req = new TSFetchMetadataReq("DELTA_OBEJECT");
+			TSFetchMetadataReq req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_DELTA_OBJECT_REQ);
 			TSFetchMetadataResp resp;
 			try {
 				resp = client.fetchMetadata(req);
 				Utils.verifySuccess(resp.getStatus());
 				Map<String, List<String>> deltaObjectList = resp.getDeltaObjectMap();
-				if(deltaObjectList == null || !deltaObjectList.containsKey(deltaObjectPattern)){
-					new TsfileMetadataResultSet(null, new ArrayList<>());
+				if (deltaObjectList == null || !deltaObjectList.containsKey(deltaObjectPattern)) {
+					return new TsfileMetadataResultSet(null, new ArrayList<>(),null);
 				}
-				return new TsfileMetadataResultSet(null, deltaObjectList.get(deltaObjectPattern));
+				return new TsfileMetadataResultSet(null, deltaObjectList.get(deltaObjectPattern),null);
 			} catch (TException e) {
 				throw new TException("Conncetion error when fetching delta object metadata", e);
 			}
@@ -75,7 +154,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 		if(columnPattern != null && !columnPattern.trim().equals("")){
 			TSFetchMetadataReq req;
 			if(!columnPattern.endsWith("*")){
-				req = new TSFetchMetadataReq("COLUMN");
+				req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_COLUMN_REQ);
 				req.setColumnPath(columnPattern);
 				try {
 					TSFetchMetadataResp resp = client.fetchMetadata(req);
@@ -86,12 +165,12 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 								TSDataType.valueOf(resp.getDataType()),
 								null));
 					}
-					return new TsfileMetadataResultSet(columnSchemaNew, null);
+					return new TsfileMetadataResultSet(columnSchemaNew, null,null);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column data type", e);
 				}
 			} else{
-				req = new TSFetchMetadataReq("ALL_COLUMNS");
+				req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_ALL_COLUMNS_REQ);
 				req.setColumnPath(columnPattern);
 				try {
 					TSFetchMetadataResp resp = client.fetchMetadata(req);
@@ -102,7 +181,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 							columnSchemaNew.add(new ColumnSchema(path, null, null));
 						}
 					}
-					return new TsfileMetadataResultSet(columnSchemaNew, null);
+					return new TsfileMetadataResultSet(columnSchemaNew, null,null);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column data type", e);
 				}
