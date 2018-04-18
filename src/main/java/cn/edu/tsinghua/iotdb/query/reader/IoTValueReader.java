@@ -36,7 +36,7 @@ public class IoTValueReader extends ValueReader {
     @Override
     public DynamicOneColumnData readOneColumnUseFilter(DynamicOneColumnData res, int fetchSize, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter) throws IOException {
         // convert tombstone to a filter
-        if (maxTombstoneTime > this.getStartTime()) {
+        if (maxTombstoneTime >= this.getStartTime()) {
             if(timeFilter == null) {
                 timeFilter = new GtEq<Long>(new LongFilterSeries(deltaObjectId, measurementId, TSDataType.INT64, FilterSeriesType.TIME_FILTER),
                         maxTombstoneTime, true);
@@ -54,7 +54,7 @@ public class IoTValueReader extends ValueReader {
         if(maxTombstoneTime > 0) {
             List<Long> timeList = new ArrayList<>();
             for(long time : timestamps) {
-                if(time >= maxTombstoneTime) {
+                if(time > maxTombstoneTime) {
                     timeList.add(time);
                 }
             }
