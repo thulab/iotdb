@@ -118,7 +118,7 @@ public class PrimitiveArrayList {
     public void delete(long timestamp) {
         for(long[] longs : timestamps) {
             for(int i = 0; i < longs.length; i++) {
-                if(longs[i] < timestamp) {
+                if(longs[i] <= timestamp) {
                     longs[i] = TIMESTAMP_FOR_DELETE;
                 }
             }

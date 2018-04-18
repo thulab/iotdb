@@ -39,10 +39,10 @@ public class IoTValueReader extends ValueReader {
         if (maxTombstoneTime >= this.getStartTime()) {
             if(timeFilter == null) {
                 timeFilter = new GtEq<Long>(new LongFilterSeries(deltaObjectId, measurementId, TSDataType.INT64, FilterSeriesType.TIME_FILTER),
-                        maxTombstoneTime, true);
+                        maxTombstoneTime, false);
             } else {
                 timeFilter = new And(timeFilter, new GtEq<Long>(new LongFilterSeries(deltaObjectId, measurementId, TSDataType.INT64, FilterSeriesType.TIME_FILTER),
-                        maxTombstoneTime, true));
+                        maxTombstoneTime, false));
             }
         }
         return super.readOneColumnUseFilter(res, fetchSize, timeFilter, freqFilter, valueFilter);
