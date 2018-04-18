@@ -184,7 +184,7 @@ public class TsfileDBConfig {
 	 * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec secs.
 	 * Default value is 5s.
 	 */
-	public int backLoopPeriodSec = 1000;
+	public int backLoopPeriodSec = 5000;
 
 	/**
 	 * Set true to enable statistics monitor service,
