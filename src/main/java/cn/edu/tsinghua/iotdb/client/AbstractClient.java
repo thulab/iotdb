@@ -489,9 +489,7 @@ public abstract class AbstractClient {
 			DateTimeZone timeZone = DateTimeZone.forID(connection.getTimeZone());
 			statement = connection.createStatement();
 			statement.setFetchSize(fetchSize);
-
 			boolean hasResultSet = statement.execute(cmd.trim());
-
 			if (hasResultSet) {
 				ResultSet resultSet = statement.getResultSet();
 				output(resultSet, printToConsole, cmd.trim(), timeZone);
