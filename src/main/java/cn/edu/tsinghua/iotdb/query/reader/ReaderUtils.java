@@ -66,7 +66,7 @@ public class ReaderUtils {
     public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimestamps,
                                                    Decoder decoder, InputStream page, DynamicOneColumnData res,
                                                    SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
-                                                   InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader)
+                                                   InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader, long maxTombstoneTime)
             throws IOException {
         SingleValueVisitor<?> singleTimeVisitor = null;
         if (queryTimeFilter != null) {
@@ -114,7 +114,8 @@ public class ReaderUtils {
                     }
 
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                            (queryValueFilter == null || singleValueVisitor.verify(pageIntValues[timeIdx]))) {
+                            (queryValueFilter == null || singleValueVisitor.verify(pageIntValues[timeIdx])) &&
+                            pageTimestamps[timeIdx] > maxTombstoneTime) {
                         res.putTime(pageTimestamps[timeIdx]);
                         if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                             res.putInt(updateOperationReader.getCurrentOperation().getValue().getInt());
@@ -160,7 +161,8 @@ public class ReaderUtils {
                     }
 
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                            (queryValueFilter == null || singleValueVisitor.satisfyObject(pageBooleanValues[timeIdx], queryValueFilter))) {
+                            (queryValueFilter == null || singleValueVisitor.satisfyObject(pageBooleanValues[timeIdx], queryValueFilter)) &&
+                            pageTimestamps[timeIdx] > maxTombstoneTime) {
                         res.putTime(pageTimestamps[timeIdx]);
                         if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                             res.putBoolean(updateOperationReader.getCurrentOperation().getValue().getBoolean());
@@ -206,7 +208,8 @@ public class ReaderUtils {
                     }
 
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                            (queryValueFilter == null || singleValueVisitor.verify(pageLongValues[timeIdx]))) {
+                            (queryValueFilter == null || singleValueVisitor.verify(pageLongValues[timeIdx])) &&
+                            pageTimestamps[timeIdx] > maxTombstoneTime) {
                         res.putTime(pageTimestamps[timeIdx]);
                         if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                             res.putLong(updateOperationReader.getCurrentOperation().getValue().getLong());
@@ -251,7 +254,8 @@ public class ReaderUtils {
                     }
 
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                            (queryValueFilter == null || singleValueVisitor.verify(pageFloatValues[timeIdx]))) {
+                            (queryValueFilter == null || singleValueVisitor.verify(pageFloatValues[timeIdx])) &&
+                            pageTimestamps[timeIdx] > maxTombstoneTime) {
                         res.putTime(pageTimestamps[timeIdx]);
                         if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                             res.putFloat(updateOperationReader.getCurrentOperation().getValue().getFloat());
@@ -297,7 +301,8 @@ public class ReaderUtils {
                     }
 
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                            (queryValueFilter == null || singleValueVisitor.verify(pageDoubleValues[timeIdx]))) {
+                            (queryValueFilter == null || singleValueVisitor.verify(pageDoubleValues[timeIdx])) &&
+                            pageTimestamps[timeIdx] > maxTombstoneTime) {
                         res.putTime(pageTimestamps[timeIdx]);
                         if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                             res.putDouble(updateOperationReader.getCurrentOperation().getValue().getDouble());
@@ -343,7 +348,8 @@ public class ReaderUtils {
                         }
                     }
                     if ((queryTimeFilter == null || singleTimeVisitor.verify(pageTimestamps[timeIdx])) &&
-                            (queryValueFilter == null || singleValueVisitor.satisfyObject(pageTextValues[timeIdx], queryValueFilter))) {
+                            (queryValueFilter == null || singleValueVisitor.satisfyObject(pageTextValues[timeIdx], queryValueFilter)) &&
+                            pageTimestamps[timeIdx] > maxTombstoneTime) {
                         res.putTime(pageTimestamps[timeIdx]);
                         if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
                             res.putBinary(updateOperationReader.getCurrentOperation().getValue().getBinary());
@@ -379,7 +385,7 @@ public class ReaderUtils {
     public static Pair<DynamicOneColumnData, Integer> readOnePageUsingCommonTime(TSDataType dataType, long[] pageTimestamps,
                 Decoder decoder, InputStream page,
                 SingleSeriesFilterExpression queryTimeFilter, List<Long> commonTimestamps, int commonTimestampsIndex,
-                InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader) throws IOException {
+                InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader, long maxTombstoneTime) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check
 
@@ -443,9 +449,9 @@ public class ReaderUtils {
                             if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[pageTimeIndex])) {
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putInt(updateOperationReader.getCurrentOperation().getValue().getInt());
-                            } else {
-                                aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
-                                aggregateResult.putInt(pageIntValues[pageTimeIndex]);
+                            } else if(pageTimestamps[pageTimeIndex] > maxTombstoneTime){
+                                    aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
+                                    aggregateResult.putInt(pageIntValues[pageTimeIndex]);
                             }
                             commonTimestampsIndex += 1;
                             pageTimeIndex += 1;
@@ -512,7 +518,7 @@ public class ReaderUtils {
                             if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[pageTimeIndex])) {
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putBoolean(updateOperationReader.getCurrentOperation().getValue().getBoolean());
-                            } else {
+                            } else if(pageTimestamps[pageTimeIndex] > maxTombstoneTime){
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putBoolean(pageBooleanValues[pageTimeIndex]);
                             }
@@ -581,7 +587,7 @@ public class ReaderUtils {
                             if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[pageTimeIndex])) {
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putLong(updateOperationReader.getCurrentOperation().getValue().getLong());
-                            } else {
+                            } else if(pageTimestamps[pageTimeIndex] > maxTombstoneTime){
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putLong(pageLongValues[pageTimeIndex]);
                             }
@@ -650,7 +656,7 @@ public class ReaderUtils {
                             if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[pageTimeIndex])) {
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putFloat(updateOperationReader.getCurrentOperation().getValue().getFloat());
-                            } else {
+                            } else if(pageTimestamps[pageTimeIndex] > maxTombstoneTime){
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putFloat(pageFloatValues[pageTimeIndex]);
                             }
@@ -719,7 +725,7 @@ public class ReaderUtils {
                             if (updateOperationReader.hasNext() && updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[pageTimeIndex])) {
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putDouble(updateOperationReader.getCurrentOperation().getValue().getDouble());
-                            } else {
+                            } else if(pageTimestamps[pageTimeIndex] > maxTombstoneTime){
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putDouble(pageDoubleValues[pageTimeIndex]);
                             }
@@ -788,7 +794,7 @@ public class ReaderUtils {
                             if (updateOperationReader.getCurrentOperation().verifyTime(pageTimestamps[pageTimeIndex])) {
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putBinary(updateOperationReader.getCurrentOperation().getValue().getBinary());
-                            } else {
+                            } else if(pageTimestamps[pageTimeIndex] > maxTombstoneTime){
                                 aggregateResult.putTime(pageTimestamps[pageTimeIndex]);
                                 aggregateResult.putBinary(pageTextValues[pageTimeIndex]);
                             }

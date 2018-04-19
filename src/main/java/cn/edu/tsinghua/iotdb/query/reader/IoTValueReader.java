@@ -9,6 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSe
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.LongFilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
+import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
@@ -31,6 +32,10 @@ public class IoTValueReader extends ValueReader {
         this.maxTombstoneTime = maxTombstoneTime;
         this.deltaObjectId = deltaObjectId;
         this.measurementId = measurementId;
+    }
+
+    public long getMaxTombstoneTime() {
+        return maxTombstoneTime;
     }
 
     @Override
@@ -63,5 +68,15 @@ public class IoTValueReader extends ValueReader {
                 timestamps[i] = timeList.get(i);
         }
         return super.getValuesForGivenValues(timestamps);
+    }
+
+    @Override
+    public boolean columnSatisfied(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression timeFilter) {
+        return getEndTime() > maxTombstoneTime && super.columnSatisfied(valueFilter, freqFilter, timeFilter);
+    }
+
+    @Override
+    public boolean pageSatisfied(DigestForFilter timeDigestFF, DigestForFilter valueDigestFF, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter) {
+        return (Long) timeDigestFF.getMaxValue() > maxTombstoneTime && super.pageSatisfied(timeDigestFF, valueDigestFF, timeFilter, valueFilter, freqFilter);
     }
 }

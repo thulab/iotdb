@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.query.fill;
 
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
+import cn.edu.tsinghua.iotdb.query.reader.IoTValueReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
@@ -60,6 +61,7 @@ public class FillProcessor {
 
         TSDataType dataType = valueReader.getDataType();
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;
+        long maxTombstoneTime = ((IoTValueReader) valueReader).getMaxTombstoneTime();
 
         long offset = valueReader.getFileOffset();
         while ((offset - valueReader.getFileOffset()) < valueReader.totalSize) {
@@ -97,7 +99,8 @@ public class FillProcessor {
                         int v = valueReader.decoder.readInt(page);
 
                         // this branch need to be covered by test case for overflow delete operation
-                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(curTime)) ||
+                                maxTombstoneTime >= curTime) {
                             continue;
                         }
 
@@ -135,7 +138,8 @@ public class FillProcessor {
 
                         long v = valueReader.decoder.readLong(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(curTime)) ||
+                                maxTombstoneTime >= curTime) {
                             continue;
                         }
 
@@ -173,7 +177,8 @@ public class FillProcessor {
 
                         float v = valueReader.decoder.readFloat(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(curTime)) ||
+                                maxTombstoneTime >= curTime) {
                             continue;
                         }
 
@@ -211,7 +216,8 @@ public class FillProcessor {
 
                         double v = valueReader.decoder.readDouble(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(curTime)) ||
+                                maxTombstoneTime >= curTime) {
                             continue;
                         }
 
@@ -249,7 +255,8 @@ public class FillProcessor {
 
                         boolean v = valueReader.decoder.readBoolean(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(curTime)) ||
+                                maxTombstoneTime >= curTime) {
                             continue;
                         }
 
@@ -287,7 +294,8 @@ public class FillProcessor {
 
                         Binary v = valueReader.decoder.readBinary(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(curTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(curTime)) ||
+                                maxTombstoneTime >= curTime) {
                             continue;
                         }
 
@@ -467,6 +475,7 @@ public class FillProcessor {
 
         TSDataType dataType = valueReader.getDataType();
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;
+        long maxTombstoneTime = ((IoTValueReader) valueReader).getMaxTombstoneTime();
 
         long offset = valueReader.getFileOffset();
         while ((offset - valueReader.getFileOffset()) < valueReader.totalSize) {
@@ -508,7 +517,8 @@ public class FillProcessor {
                         int v = valueReader.decoder.readInt(page);
 
                         // TODO this branch need to be covered by test case for overflow delete operation
-                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(currentTime)) ||
+                                currentTime <= maxTombstoneTime) {
                             continue;
                         }
 
@@ -562,7 +572,8 @@ public class FillProcessor {
 
                         long v = valueReader.decoder.readLong(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(currentTime)) ||
+                                currentTime <= maxTombstoneTime) {
                             continue;
                         }
 
@@ -613,7 +624,8 @@ public class FillProcessor {
 
                         float v = valueReader.decoder.readFloat(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(currentTime)) ||
+                                currentTime <= maxTombstoneTime) {
                             continue;
                         }
 
@@ -664,7 +676,8 @@ public class FillProcessor {
 
                         double v = valueReader.decoder.readDouble(page);
 
-                        if (timeFilter != null && !singleValueVisitor.verify(currentTime)) {
+                        if ((timeFilter != null && !singleValueVisitor.verify(currentTime)) ||
+                                currentTime <= maxTombstoneTime) {
                             continue;
                         }
 

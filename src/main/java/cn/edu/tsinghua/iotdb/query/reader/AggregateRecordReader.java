@@ -194,6 +194,7 @@ public class AggregateRecordReader extends RecordReader {
 
         ByteArrayInputStream bis = valueReader.initBAISForOnePage(usedPageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
+        long maxTombstoneTime = ((IoTValueReader) valueReader).getMaxTombstoneTime();
 
         while ((usedPageOffset - valueReader.fileOffset) < valueReader.totalSize) {
             int lastAvailable = bis.available();
@@ -230,7 +231,7 @@ public class AggregateRecordReader extends RecordReader {
                 long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
                 valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
                 result = ReaderUtils.readOnePage(dataType, timestamps, valueReader.decoder, page, result,
-                        queryTimeFilter, queryValueFilter, insertMemoryData, overflowOperationReaderCopy);
+                        queryTimeFilter, queryValueFilter, insertMemoryData, overflowOperationReaderCopy, maxTombstoneTime);
                 func.calculateValueFromDataPage(result);
                 result.clearData();
             }
@@ -275,6 +276,7 @@ public class AggregateRecordReader extends RecordReader {
         DigestVisitor digestVisitor = new DigestVisitor();
         ByteArrayInputStream bis = valueReader.initBAISForOnePage(usedPageOffset);
         PageReader pageReader = new PageReader(bis, valueReader.compressionTypeName);
+        long maxTombstoneTime = ((IoTValueReader) valueReader).getMaxTombstoneTime();
 
         // still has unread data
         while ((usedPageOffset - valueReader.fileOffset) < valueReader.totalSize) {
@@ -305,7 +307,8 @@ public class AggregateRecordReader extends RecordReader {
 
             Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePageUsingCommonTime(
                     dataType, pageTimestamps, valueReader.decoder, page,
-                    queryTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, overflowOperationReaderCopy);
+                    queryTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, overflowOperationReaderCopy,
+                    maxTombstoneTime);
 
             if (pageData.left != null && pageData.left.valueLength > 0)
                 aggregateFunction.calculateValueFromDataPage(pageData.left);

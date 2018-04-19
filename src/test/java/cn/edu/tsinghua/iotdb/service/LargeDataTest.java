@@ -95,7 +95,7 @@ public class LargeDataTest {
         //System.setOut(ps);
 
         if (testFlag) {
-            Thread.sleep(5000);
+            // Thread.sleep(5000);
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
@@ -267,7 +267,6 @@ public class LargeDataTest {
     }
 
     private void aggregationWithoutFilterTest() throws ClassNotFoundException, SQLException {
-
         String sql = "select count(s0),mean(s0),first(s0),sum(s0)," +
                 "count(s1),mean(s1),first(s1),sum(s1) from root.vehicle.d0";
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
