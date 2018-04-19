@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-
 public class OverflowQPExecutor extends QueryProcessExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(OverflowQPExecutor.class);
