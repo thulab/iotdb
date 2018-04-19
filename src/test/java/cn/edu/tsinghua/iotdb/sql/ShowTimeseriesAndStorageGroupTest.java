@@ -3,7 +3,6 @@ package cn.edu.tsinghua.iotdb.sql;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
