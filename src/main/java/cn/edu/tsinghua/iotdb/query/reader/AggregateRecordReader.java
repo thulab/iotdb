@@ -368,13 +368,14 @@ public class AggregateRecordReader extends RecordReader {
         if (queryTimeFilter != null) {
             LongInterval timeInterval = (LongInterval) singleTimeVisitor.getInterval();
             for (int i = 0; i < timeInterval.count; i += 2) {
-                if (timeInterval.v[i] > pageMaxTime)
-                    break;
 
                 long startTime = timeInterval.flag[i] ? timeInterval.v[i] : timeInterval.v[i] + 1;
-                long endTime = timeInterval.flag[i+1] ? timeInterval.v[i+1] : timeInterval.v[i] - 1;
-                if (startTime <= pageMinTime && endTime >= pageMaxTime)
-                    timeEligible = true;
+                if (startTime > pageMaxTime)
+                    break;
+                long endTime = timeInterval.flag[i+1] ? timeInterval.v[i+1] : timeInterval.v[i+1] - 1;
+                if (startTime <= pageMinTime && endTime >= pageMaxTime) {
+                    return true;
+                }
             }
         } else {
             timeEligible = true;
