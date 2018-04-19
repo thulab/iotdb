@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.test;
+package cn.edu.tsinghua.iotdb.postback.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +11,7 @@ import java.util.*;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 
-public class CreateDataSender2 {
+public class CreateDataSender1 {
 
     public static final int TIME_INTERVAL = 0;
     public static final int TOTAL_DATA = 2000000;
@@ -77,7 +77,6 @@ public class CreateDataSender2 {
     }
 
     public static void setStorageGroup(Statement statement, ArrayList<String> storageGroupList) throws SQLException {
-
     	try {
 	        String setStorageGroupSql = "SET STORAGE GROUP TO <prefixpath>";
 	        for (String str : storageGroupList) {
@@ -98,11 +97,11 @@ public class CreateDataSender2 {
         int abnormalFlag = 1;
 
         int sqlCount = 0;
-        
+
         for (int i = 0; i < TOTAL_DATA; i++) {
 
         	long time = System.currentTimeMillis();
-
+        	
             if (i % ABNORMAL_FREQUENCY == 250) {
                 abnormalFlag = 0;
             }
@@ -145,6 +144,7 @@ public class CreateDataSender2 {
                         .replace("<value>", "\"" + value+"\"");
                 }
 
+                //TODO: other data type
                 statement.addBatch(sql);
                 sqlCount++;
                 if (sqlCount >= BATCH_SQL) {
@@ -172,9 +172,9 @@ public class CreateDataSender2 {
         Connection connection = null;
         Statement statement = null;
 
-        String path = System.getProperty(TsFileDBConstant.IOTDB_HOME, null) + File.separator + "test" + File.separator + "CreateTimeseries2.txt";
+        String path = System.getProperty(TsFileDBConstant.IOTDB_HOME, null) + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries1.txt";
         HashMap timeseriesMap = generateTimeseriesMapFromFile(path);
-        
+
         ArrayList<String> storageGroupList = new ArrayList();
         storageGroupList.add("root.vehicle_history");
         storageGroupList.add("root.vehicle_alarm");
@@ -185,13 +185,14 @@ public class CreateDataSender2 {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");
             connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
             statement = connection.createStatement();
-            
+
             setStorageGroup(statement, storageGroupList);
             System.out.println("Finish set storage group.");
             createTimeseries(statement, timeseriesMap);
             System.out.println("Finish create timeseries.");
             while(true) {
             randomInsertData(statement, timeseriesMap);
+
             }
             
         } catch (Exception e) {

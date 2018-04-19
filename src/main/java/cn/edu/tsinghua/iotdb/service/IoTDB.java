@@ -19,9 +19,9 @@ import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
+import cn.edu.tsinghua.iotdb.postback.receiver.ServerManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
-import cn.edu.tsinghua.postback.iotdb.receiver.ServerManager;
 
 public class IoTDB implements IoTDBMBean{
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
@@ -54,6 +54,9 @@ public class IoTDB implements IoTDBMBean{
 			LOGGER.error("{} exit", TsFileDBConstant.GLOBAL_DB_NAME);
 			return;
 		}
+		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
+			serverManager.startServer();
+		}
 		LOGGER.info("{} has started.", TsFileDBConstant.GLOBAL_DB_NAME);
 	}
 	
@@ -83,22 +86,16 @@ public class IoTDB implements IoTDBMBean{
 		registerManager.register(BasicMemController.getInstance());
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
-		
-		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
-			serverManager.startServer();
-		}
 	}
 
 	public void deactivate(){
+		serverManager.closeServer();
 		registerManager.deregisterAll();
 		JMXService.deregisterMBean(MBEAN_NAME);
 	}
 
 	@Override
 	public void stop() {
-		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
-			serverManager.closeServer();
-		}
 		deactivate();
 	}
 

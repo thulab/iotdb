@@ -777,24 +777,21 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				for (Entry<String, Long> entry : appendFile.getStartTimeMap().entrySet()) {
 					if (!intervalFileNode.getStartTimeMap().containsKey(entry.getKey())) {
 						continue;
-					} else {
-						if (intervalFileNode.getEndTime(entry.getKey()) >= entry.getValue()) {
-							if (intervalFileNode.getStartTime(entry.getKey()) <= appendFile
-									.getEndTime(entry.getKey())) {
-								String relativeFilePath = intervalFileNode.getRelativePath();
-								String snapshotPath = snapshotFilePath + File.separator + relativeFilePath;
-								File newfile = new File(snapshotPath);
-								if (!newfile.getParentFile().exists()) {
-									newfile.getParentFile().mkdirs();
-								}
-								java.nio.file.Path link = FileSystems.getDefault().getPath(snapshotPath);
-								java.nio.file.Path target = FileSystems.getDefault()
-										.getPath(intervalFileNode.getFilePath());
-								Files.createLink(link, target);
-								overlapFiles.add(snapshotPath);
-								break;
-							}
+					}
+					if (intervalFileNode.getEndTime(entry.getKey()) >= entry.getValue() && intervalFileNode.getStartTime(entry.getKey()) <= appendFile
+								.getEndTime(entry.getKey())) {
+						String relativeFilePath = intervalFileNode.getRelativePath();
+						String snapshotPath = snapshotFilePath + File.separator + relativeFilePath;
+						File newfile = new File(snapshotPath);
+						if (!newfile.getParentFile().exists()) {
+							newfile.getParentFile().mkdirs();
 						}
+						java.nio.file.Path link = FileSystems.getDefault().getPath(snapshotPath);
+						java.nio.file.Path target = FileSystems.getDefault()
+								.getPath(intervalFileNode.getFilePath());
+						Files.createLink(link, target);
+						overlapFiles.add(snapshotPath);
+						break;
 					}
 				}
 			}

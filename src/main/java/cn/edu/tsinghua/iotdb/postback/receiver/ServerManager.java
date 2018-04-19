@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.receiver;
+package cn.edu.tsinghua.iotdb.postback.receiver;
 /**
  * @author lta
  */
@@ -71,13 +71,10 @@ public class ServerManager {
 	}
 
 	public void closeServer() {
-		poolServer.stop();
-		serverTransport.close();
-		LOGGER.info("Stop postback server!");
-	}
-	
-	public static void main(String[] args) {
-		ServerManager serverManager = ServerManager.getInstance();
-		serverManager.startServer();
+		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
+			poolServer.stop();
+			serverTransport.close();
+			LOGGER.info("Stop postback server!");
+		}
 	}
 }

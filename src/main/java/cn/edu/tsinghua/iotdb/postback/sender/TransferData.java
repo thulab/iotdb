@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.sender;
+package cn.edu.tsinghua.iotdb.postback.sender;
 /**
  * @author lta
  * The class is to transfer data that needs to postback to receiver. 
@@ -46,8 +46,6 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Configurable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.postback.iotdb.receiver.ServerManager;
-import cn.edu.tsinghua.postback.iotdb.receiver.Service;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TInTimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
@@ -64,6 +62,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
+import cn.edu.tsinghua.iotdb.postback.receiver.ServerManager;
+import cn.edu.tsinghua.iotdb.postback.receiver.Service;
 
 public class TransferData {
 
@@ -71,10 +71,10 @@ public class TransferData {
 	private Service.Client clientOfServer;
 	private List<String> schema = new ArrayList<>();
 	private String uuid;// Mark the identity of sender
-	private boolean connection_orElse; // Mark whether connection of sender and receiver has broken down or not
+	private boolean connectionOrElse; // Mark whether connection of sender and receiver has broken down or not
 	private PostBackSenderConfig config = PostBackSenderDescriptor.getInstance().getConfig();
 	private Date lastPostBackTime = new Date(); // Mark the start time of last postback
-	private boolean PostBackStatus = false; // If true, postback is in execution.
+	private boolean postBackStatus = false; // If true, postback is in execution.
 	private boolean clearOrNot = config.IS_CLEAR_ENABLE; // Clear data after postback has finished or not
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransferData.class);
@@ -96,13 +96,13 @@ public class TransferData {
 
 	private void getConnection(String serverIP, int serverPort) {
 		connection(serverIP, serverPort);
-		if (!connection_orElse) {
+		if (!connectionOrElse) {
 			return;
 		} else {
 			if (!transferUUID(config.UUID_PATH)) {
 				LOGGER.error(
 						"IoTDB post back sender: Sorry! You do not have permission to connect to postback receiver!");
-				connection_orElse = false;
+				connectionOrElse = false;
 				return;
 			}
 		}
@@ -125,7 +125,7 @@ public class TransferData {
 		} catch (TTransportException e) {
 			LOGGER.error("IoTDB post back sender: IoTDB post back sender: cannot connect to server because {}",
 					e.getMessage());
-			connection_orElse = false;
+			connectionOrElse = false;
 		}
 	}
 
@@ -145,7 +145,7 @@ public class TransferData {
 				out.close();
 			} catch (Exception e) {
 				LOGGER.error("IoTDB post back sender: cannot write UUID to file because {}", e.getMessage());
-				connection_orElse = false;
+				connectionOrElse = false;
 			}
 		} else {
 			try {
@@ -154,7 +154,7 @@ public class TransferData {
 				bf.close();
 			} catch (IOException e) {
 				LOGGER.error("IoTDB post back sender: cannot read UUID from file because {}", e.getMessage());
-				connection_orElse = false;
+				connectionOrElse = false;
 			}
 		}
 		boolean leagalConnectionOrNot = true;
@@ -162,7 +162,7 @@ public class TransferData {
 			leagalConnectionOrNot = clientOfServer.getUUID(uuid, InetAddress.getLocalHost().getHostAddress());
 		} catch (TException e) {
 			LOGGER.error("IoTDB sender: cannot send UUID to receiver because {}", e.getMessage());
-			connection_orElse = false;
+			connectionOrElse = false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			leagalConnectionOrNot = false;
@@ -248,11 +248,11 @@ public class TransferData {
 			}
 		} catch (TException e) {
 			LOGGER.error("IoTDB sender: cannot sending data because receiver has broken down.");
-			connection_orElse = false;
+			connectionOrElse = false;
 			return;
 		} catch (Exception e) {
 			LOGGER.error("IoTDB sender: cannot sending data because {}", e.getMessage());
-			connection_orElse = false;
+			connectionOrElse = false;
 			return;
 		}
 	}
@@ -272,14 +272,14 @@ public class TransferData {
 				bos.write(buffer, 0, n);
 				ByteBuffer buffToSend = ByteBuffer.wrap(bos.toByteArray());
 				bos.reset();
-				clientOfServer.getSchema(buffToSend, 1);
+				clientOfServer.getSchema(buffToSend, 1); //1 represents there are still schema buffer to send
 			}
 			bos.close();
 			fis.close();
-			clientOfServer.getSchema(null, 0);
+			clientOfServer.getSchema(null, 0); //0 represents schema file has transfered completely.
 		} catch (Exception e) {
 			LOGGER.error("IoTDB sender : cannot send schema from mlog.txt because {}", e.getMessage());
-			connection_orElse = false;
+			connectionOrElse = false;
 		}
 	}
 
@@ -333,8 +333,8 @@ public class TransferData {
 				while (it.hasNext()) {
 					String key = it.next().toString(); // key represent device
 					TsDeltaObject deltaObj = deltaObjectMap.get(key);
-					String SQL = String.format(deleteFormat, key, deltaObj.endTime);
-					statement.addBatch(SQL);
+					String sql = String.format(deleteFormat, key, deltaObj.endTime);
+					statement.addBatch(sql);
 					count++;
 					if (count > 100) {
 						statement.executeBatch();
@@ -442,7 +442,7 @@ public class TransferData {
 				continue;
 			if ((currentTime.getTime() - lastPostBackTime.getTime()) % (config.UPLOAD_CYCLE_IN_SECONDS * 1000) == 0) {
 				oldTime = currentTime;
-				if (PostBackStatus)
+				if (postBackStatus)
 					LOGGER.info("IoTDB post back sender : postback is in execution!");
 			}
 		}
@@ -474,14 +474,14 @@ public class TransferData {
 			deleteSnapshot(new File(config.SNAPSHOT_PATH));
 		}
 
-		PostBackStatus = true;
-		connection_orElse = true;
+		postBackStatus = true;
+		connectionOrElse = true;
 
 		// connect to postback server
 		getConnection(config.SERVER_IP, config.SERVER_PORT);
-		if (!connection_orElse) {
+		if (!connectionOrElse) {
 			LOGGER.info("IoTDB post back sender : postback has failed!");
-			PostBackStatus = false;
+			postBackStatus = false;
 			return;
 		}
 
@@ -491,7 +491,7 @@ public class TransferData {
 		Map<String, Set<String>> nowLocalFileList = fileManager.getNowLocalFiles();
 		if (isEmpty(sendingFileList)) {
 			LOGGER.info("IoTDB post back sender : there has no file to postback !");
-			PostBackStatus = false;
+			postBackStatus = false;
 			return;
 		}
 
@@ -501,10 +501,10 @@ public class TransferData {
 		}
 
 		sendSchema(config.SCHEMA_PATH);
-		if (!connection_orElse) {
+		if (!connectionOrElse) {
 			transport.close();
 			LOGGER.info("IoTDB post back sender : postback has failed!");
-			PostBackStatus = false;
+			postBackStatus = false;
 			return;
 		}
 		for (Entry<String, Set<String>> entry : sendingFileList.entrySet()) {
@@ -519,10 +519,10 @@ public class TransferData {
 				e.printStackTrace();
 			}
 			startSending(sendingList, config.SNAPSHOT_PATH, config.IOTDB_DATA_DIRECTORY);
-			if (!connection_orElse) {
+			if (!connectionOrElse) {
 				transport.close();
 				LOGGER.info("IoTDB post back sender : postback has failed!");
-				PostBackStatus = false;
+				postBackStatus = false;
 				return;
 			}
 			if (afterSending()) {
@@ -535,7 +535,7 @@ public class TransferData {
 				LOGGER.info("IoTDB post back sender : the postBack has finished storage group {}.", entry.getKey());
 			} else {
 				LOGGER.info("IoTDB post back sender : postback has failed!");
-				PostBackStatus = false;
+				postBackStatus = false;
 				return;
 			}
 		}
@@ -547,7 +547,7 @@ public class TransferData {
 		}
 		transport.close();
 		LOGGER.info("IoTDB post back sender : the postBack has finished!");
-		PostBackStatus = false;
+		postBackStatus = false;
 		return;
 	}
 }

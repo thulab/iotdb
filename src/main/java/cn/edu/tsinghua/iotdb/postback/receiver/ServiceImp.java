@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.receiver;
+package cn.edu.tsinghua.iotdb.postback.receiver;
 /**
  * @author lta
  */
@@ -155,6 +155,12 @@ public class ServiceImp implements Service.Iface {
 			return false;
 	}
 
+	/**
+	 * start receiving tsfile from sender
+	 * @param status
+	 * status = 0 : finish receiveing one tsfile
+	 * status = 1 : a tsfile has not received completely.
+	 */
 	public String startReceiving(String md5, List<String> filePathSplit, ByteBuffer dataToReceive, int status)
 			throws TException {
 		String md5OfReceiver = "";
@@ -213,6 +219,12 @@ public class ServiceImp implements Service.Iface {
 		return md5OfReceiver;
 	}
 
+	/**
+	 * Get schema from sender
+	 * @param status: 0 or 1
+	 * status = 0 : finish receiveing schema file, start to insert schema to IoTDB through jdbc
+	 * status = 1 : the schema file has not received completely.
+	 */
 	public void getSchema(ByteBuffer schema, int status) throws TException {
 		FileOutputStream fos = null;
 		FileChannel channel = null;

@@ -35,7 +35,5 @@ tsfile-jdbc/src/main/resources/output/queryRes.csv
 *.tar
 /data/
 src/test/resources/logback.xml
-iotdb/bin/start-postBackTest.sh
-iotdb/bin/stop-postBackTest.sh
 
 

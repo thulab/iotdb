@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.sender;
+package cn.edu.tsinghua.iotdb.postback.sender;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.postback.iotdb.sender.FileManager;
+import cn.edu.tsinghua.iotdb.postback.sender.FileManager;
 
 public class FileManagerTest {
 

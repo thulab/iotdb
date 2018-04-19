@@ -2,7 +2,7 @@
  * The test is to run a complete postback fuction
  * Before you run the test, make sure receiver has been cleaned up and inited.
  */
-package cn.edu.tsinghua.postback.iotdb.sender;
+package cn.edu.tsinghua.iotdb.postback.sender;
 
 import static org.junit.Assert.*;
 
@@ -24,6 +24,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
+import cn.edu.tsinghua.iotdb.postback.sender.TransferData;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;

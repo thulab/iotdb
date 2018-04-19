@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.sender;
+package cn.edu.tsinghua.iotdb.postback.sender;
 /**
  * @author lta
  * The class is to pick up which files need to postback
@@ -65,7 +65,7 @@ public class FileManager {
 		LOGGER.info("IoTDB sender : Sender has got list of sending files.");
 		for(Entry<String, Set<String>> entry:sendingFiles.entrySet()) {
 			for(String path:entry.getValue()) {
-				System.out.println(path);
+				LOGGER.info(path);
 				nowLocalFiles.get(entry.getKey()).remove(path);
 			}
 		}

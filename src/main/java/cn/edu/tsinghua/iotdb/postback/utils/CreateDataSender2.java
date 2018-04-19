@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.test;
+package cn.edu.tsinghua.iotdb.postback.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +11,7 @@ import java.util.*;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 
-public class CreateDataSender3 {
+public class CreateDataSender2 {
 
     public static final int TIME_INTERVAL = 0;
     public static final int TOTAL_DATA = 2000000;
@@ -48,7 +48,7 @@ public class CreateDataSender3 {
 
     }
 
-    public static void createTimeseries(Statement statement,Statement statement1, HashMap<String, String> timeseriesMap) throws SQLException{
+    public static void createTimeseries(Statement statement, HashMap<String, String> timeseriesMap) throws SQLException{
 
     	try {
 	        String createTimeseriesSql = "CREATE TIMESERIES <timeseries> WITH DATATYPE=<datatype>, ENCODING=<encode>";
@@ -60,42 +60,37 @@ public class CreateDataSender3 {
 	            String sql = createTimeseriesSql.replace("<timeseries>", key)
 	                    .replace("<datatype>", Utils.getType(properties))
 	                    .replace("<encode>", Utils.getEncode(properties));
-
+	
 	            statement.addBatch(sql);
-	            statement1.addBatch(sql);
 	            sqlCount++;
 	            if (sqlCount >= BATCH_SQL) {
 	                statement.executeBatch();
 	                statement.clearBatch();
-	                statement1.executeBatch();
-	                statement1.clearBatch();
 	                sqlCount = 0;
 	            }
 	        }
 	        statement.executeBatch();
 	        statement.clearBatch();
-            statement1.executeBatch();
-            statement1.clearBatch();
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
     }
 
-    public static void setStorageGroup(Statement statement,Statement statement1, ArrayList<String> storageGroupList) throws SQLException {
+    public static void setStorageGroup(Statement statement, ArrayList<String> storageGroupList) throws SQLException {
+
     	try {
 	        String setStorageGroupSql = "SET STORAGE GROUP TO <prefixpath>";
 	        for (String str : storageGroupList) {
 	            String sql = setStorageGroupSql.replace("<prefixpath>", str);
-	            statement.execute(sql);       
-	            statement1.execute(sql);
-        }
+	            statement.execute(sql);
+	        }
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
     }
 
 
-    public static void randomInsertData(Statement statement,Statement statement1, HashMap<String, String> timeseriesMap) throws Exception {
+    public static void randomInsertData(Statement statement, HashMap<String, String> timeseriesMap) throws Exception {
 
         String insertDataSql = "INSERT INTO <path> (timestamp, <sensor>) VALUES (<time>, <value>)";
         RandomNum r = new RandomNum();
@@ -103,11 +98,11 @@ public class CreateDataSender3 {
         int abnormalFlag = 1;
 
         int sqlCount = 0;
-
+        
         for (int i = 0; i < TOTAL_DATA; i++) {
 
         	long time = System.currentTimeMillis();
-        	
+
             if (i % ABNORMAL_FREQUENCY == 250) {
                 abnormalFlag = 0;
             }
@@ -150,15 +145,11 @@ public class CreateDataSender3 {
                         .replace("<value>", "\"" + value+"\"");
                 }
 
-                //TODO: other data type
                 statement.addBatch(sql);
-                statement1.addBatch(sql);
                 sqlCount++;
                 if (sqlCount >= BATCH_SQL) {
                     statement.executeBatch();
                     statement.clearBatch();
-                    statement1.executeBatch();
-                    statement1.clearBatch();
                     sqlCount = 0;
                 }
             }
@@ -174,40 +165,33 @@ public class CreateDataSender3 {
         }
         statement.executeBatch();
         statement.clearBatch();
-        statement1.executeBatch();
-        statement1.clearBatch();
     }
 
     public static void main(String[] args) throws Exception {
 
-    	Connection connection = null;
+        Connection connection = null;
         Statement statement = null;
-        Connection connection1 = null;
-        Statement statement1 = null;
 
-        String path = System.getProperty(TsFileDBConstant.IOTDB_HOME, null) + File.separator + "test" + File.separator + "CreateTimeseries3.txt";
+        String path = System.getProperty(TsFileDBConstant.IOTDB_HOME, null) + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries2.txt";
         HashMap timeseriesMap = generateTimeseriesMapFromFile(path);
         
         ArrayList<String> storageGroupList = new ArrayList();
-        storageGroupList.add("root.vehicle_history2");
-        storageGroupList.add("root.vehicle_alarm2");
-        storageGroupList.add("root.vehicle_temp2");
-        storageGroupList.add("root.range_event2");
+        storageGroupList.add("root.vehicle_history");
+        storageGroupList.add("root.vehicle_alarm");
+        storageGroupList.add("root.vehicle_temp");
+        storageGroupList.add("root.range_event");
 
         try {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");
             connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
             statement = connection.createStatement();
-            connection1 = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
-            statement1 = connection1.createStatement();
-
-            setStorageGroup(statement, statement1, storageGroupList);
+            
+            setStorageGroup(statement, storageGroupList);
             System.out.println("Finish set storage group.");
-            createTimeseries(statement, statement1, timeseriesMap);
+            createTimeseries(statement, timeseriesMap);
             System.out.println("Finish create timeseries.");
             while(true) {
-            randomInsertData(statement, statement1, timeseriesMap);
-
+            randomInsertData(statement, timeseriesMap);
             }
             
         } catch (Exception e) {
@@ -218,12 +202,6 @@ public class CreateDataSender3 {
             }
             if(connection != null){
                 connection.close();
-            }
-            if(statement1 != null){
-                statement1.close();
-            }
-            if(connection1 != null){
-                connection1.close();
             }
         }
     }

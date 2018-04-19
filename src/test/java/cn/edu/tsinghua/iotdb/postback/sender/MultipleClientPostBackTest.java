@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.postback.iotdb.sender;
+package cn.edu.tsinghua.iotdb.postback.sender;
 
 import static org.junit.Assert.*;
 

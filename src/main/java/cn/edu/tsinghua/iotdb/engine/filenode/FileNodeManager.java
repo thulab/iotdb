@@ -642,7 +642,6 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			overlapFiles = fileNodeProcessor.getOverlapFiles(appendFile, snapshotFilePath);
 		} catch (FileNodeProcessorException e) {
-			e.printStackTrace();
 			throw new FileNodeManagerException(e);
 		} finally {
 			fileNodeProcessor.writeUnlock();
