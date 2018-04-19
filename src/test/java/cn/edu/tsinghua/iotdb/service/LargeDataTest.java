@@ -99,7 +99,9 @@ public class LargeDataTest {
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-
+            verifyTest();
+            if(true)
+                return;
             // select test
             selectAllTest();
             selectOneSeriesWithValueFilterTest();
@@ -289,6 +291,35 @@ public class LargeDataTest {
                 cnt++;
             }
             assertEquals(1, cnt);
+            statement.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private void verifyTest() throws ClassNotFoundException, SQLException {
+
+        String sql = "select count(s1) from root.vehicle.d0";
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            boolean hasResultSet = statement.execute(sql);
+            Assert.assertTrue(hasResultSet);
+            ResultSet resultSet = statement.getResultSet();
+            int cnt = 0;
+            while (resultSet.next()) {
+                String ans = resultSet.getString(TIMESTAMP_STR)
+                        + "," + resultSet.getString(count(d0s1));
+                System.out.println(ans);
+            }
             statement.close();
 
         } catch (Exception e) {

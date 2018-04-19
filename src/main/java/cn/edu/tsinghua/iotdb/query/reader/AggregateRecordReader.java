@@ -225,7 +225,7 @@ public class AggregateRecordReader extends RecordReader {
             InputStream page = pageReader.getNextPage();
             usedPageOffset += lastAvailable - bis.available();
 
-            if (canCalcAggregationUsingHeader(pageMinTime, pageMaxTime, insertMemoryData)) {
+            if (canCalcAggregationUsingHeader(pageMinTime, pageMaxTime, insertMemoryData) && pageMinTime > maxTombstoneTime) {
                 func.calculateValueFromPageHeader(pageHeader);
             } else {
                 long[] timestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
