@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFileFactory;
 import cn.edu.tsinghua.iotdb.query.reader.IoTRowGroupReader;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
@@ -113,7 +114,7 @@ public class ReaderManager {
     public List<Tombstone> getTombStone(String path, String deltaObjectUID) throws IOException {
         List<Tombstone> tombstones = tombstoneMap.get(path);
         if(tombstones == null) {
-            TombstoneFile tombstoneFile = new LocalTombstoneFile(path + TombstoneFile.TOMBSTONE_SUFFIX);
+            TombstoneFile tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(path + TombstoneFile.TOMBSTONE_SUFFIX);
             try {
                 tombstones = tombstoneFile.getTombstones();
                 tombstoneMap.put(path, tombstones);

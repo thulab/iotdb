@@ -14,6 +14,7 @@ import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFileFactory;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -398,7 +399,7 @@ public class OverflowResource {
 
 	public TombstoneFile getTombstoneFile() throws IOException {
 		if(tombstoneFile == null) {
-			tombstoneFile = new LocalTombstoneFile(insertFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
+			tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(insertFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
 		return tombstoneFile;
 	}

@@ -20,6 +20,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFileFactory;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
@@ -739,7 +740,7 @@ public class BufferWriteProcessor extends Processor {
 
 	public TombstoneFile getTombstoneFile() throws IOException {
 		if(tombstoneFile == null) {
-			tombstoneFile = new LocalTombstoneFile(bufferwriteOutputFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
+			tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(bufferwriteOutputFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
 		return tombstoneFile;
 	}

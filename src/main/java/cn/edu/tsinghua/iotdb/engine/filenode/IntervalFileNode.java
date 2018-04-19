@@ -11,6 +11,7 @@ import java.util.Set;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -241,7 +242,7 @@ public class IntervalFileNode implements Serializable {
 
 	public TombstoneFile getTombstoneFile() throws IOException {
 		if (tombstoneFile == null) {
-			tombstoneFile = new LocalTombstoneFile(baseDir + File.separator + this.relativePath + TombstoneFile.TOMBSTONE_SUFFIX);
+			tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(baseDir + File.separator + this.relativePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
 		return tombstoneFile;
 	}
