@@ -133,14 +133,14 @@ public abstract class AbstractClient {
 					printBlockLine(printTimestamp, colCount, res, isShow);
 					printHeader = true;
 				}
-				if (displayCnt < maxPrintRowCount) {
-					System.out.print("|");
-					if (isShow) {
-						for (int i = 1; i <= colCount; i++) {
-							formatValue = "%" + ((TsfileMetadataResultSet) res).getMaxValueLength(i) + "s|";
-							System.out.printf(formatValue, String.valueOf(res.getString(i)));
-						}
-					} else {
+				System.out.print("|");
+				if (isShow) {
+					for (int i = 1; i <= colCount; i++) {
+						formatValue = "%" + ((TsfileMetadataResultSet) res).getMaxValueLength(i) + "s|";
+						System.out.printf(formatValue, String.valueOf(res.getString(i)));
+					}
+				} else {
+					if (displayCnt < maxPrintRowCount) {
 						if (printTimestamp) {
 							System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
 						}
@@ -163,10 +163,9 @@ public abstract class AbstractClient {
 							}
 						}
 					}
-
-					System.out.printf("\n");
 					displayCnt++;
 				}
+				System.out.printf("\n");
 			}
 
 			cnt++;
