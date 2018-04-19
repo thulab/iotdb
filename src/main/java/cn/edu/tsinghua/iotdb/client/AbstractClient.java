@@ -133,7 +133,7 @@ public abstract class AbstractClient {
 					printBlockLine(printTimestamp, colCount, res, isShow);
 					printHeader = true;
 				}
-				if (cnt < maxPrintRowCount) {
+				if (displayCnt < maxPrintRowCount) {
 					System.out.print("|");
 					if (isShow) {
 						for (int i = 1; i <= colCount; i++) {
