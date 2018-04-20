@@ -1,5 +1,9 @@
 package cn.edu.tsinghua.iotdb.postback.utils;
-
+/**
+ * @author lta
+ * The class is to generate data of another half timeseries (simulating jilian scene) which is different to those
+ * in CreateDataSender2 to test stability of postback function.
+ */
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -185,7 +189,7 @@ public class CreateDataSender3 {
         Connection connection1 = null;
         Statement statement1 = null;
 
-        String path = System.getProperty(TsFileDBConstant.IOTDB_HOME, null) + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries3.txt";
+        String path = new File(System.getProperty(TsFileDBConstant.IOTDB_HOME, null)).getParent() + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries3.txt";
         HashMap timeseriesMap = generateTimeseriesMapFromFile(path);
         
         ArrayList<String> storageGroupList = new ArrayList();

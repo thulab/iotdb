@@ -79,19 +79,19 @@ public class PostBackSenderDescriptor {
 
 			conf.UPLOAD_CYCLE_IN_SECONDS = Integer.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.UPLOAD_CYCLE_IN_SECONDS+""));
 
-			conf.IOTDB_DATA_DIRECTORY = properties.getProperty("iotdb_data_directory", conf.IOTDB_DATA_DIRECTORY);
+			conf.IOTDB_BUFFERWRITE_DIRECTORY = properties.getProperty("iotdb_bufferWrite_directory", conf.IOTDB_BUFFERWRITE_DIRECTORY);
+			
+			conf.SCHEMA_PATH = properties.getProperty("iotdb_schema_directory", conf.SCHEMA_PATH);
 			
 			conf.IS_CLEAR_ENABLE = Boolean.parseBoolean(properties.getProperty("is_clear_enable", conf.IS_CLEAR_ENABLE + ""));
 			
-			if(!conf.IOTDB_DATA_DIRECTORY.endsWith(File.separator))
-				conf.IOTDB_DATA_DIRECTORY = conf.IOTDB_DATA_DIRECTORY + File.separator;
+			if(!conf.IOTDB_BUFFERWRITE_DIRECTORY.endsWith(File.separator))
+				conf.IOTDB_BUFFERWRITE_DIRECTORY = conf.IOTDB_BUFFERWRITE_DIRECTORY + File.separator;
 			
-			conf.UUID_PATH = conf.IOTDB_DATA_DIRECTORY + "uuid.txt";
-			conf.LAST_FILE_INFO = conf.IOTDB_DATA_DIRECTORY + "lastLocalFileList.txt";
-			conf.SENDER_FILE_PATH = conf.IOTDB_DATA_DIRECTORY + "delta";
-			conf.SNAPSHOT_PATH = conf.IOTDB_DATA_DIRECTORY + "dataSnapshot";
-			conf.SCHEMA_PATH = conf.IOTDB_DATA_DIRECTORY + "metadata" + File.separator + "mlog.txt";
-			
+			conf.DATA_DIRECTORY = new File(conf.IOTDB_BUFFERWRITE_DIRECTORY).getParent() + File.separator;
+			conf.UUID_PATH = conf.DATA_DIRECTORY + "postback" + File.separator + "uuid.txt";
+			conf.LAST_FILE_INFO = conf.DATA_DIRECTORY + "postback" + File.separator + "lastLocalFileList.txt";
+			conf.SNAPSHOT_PATH = conf.DATA_DIRECTORY + "postback" + File.separator + "dataSnapshot";		
 			
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file because {}, use default configuration", e.getMessage());

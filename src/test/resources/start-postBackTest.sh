@@ -1,7 +1,8 @@
 #!/bin/sh
 
 if [ -z "${IOTDB_HOME}" ]; then
-  export IOTDB_HOME="$(cd "`dirname "$0"`"/..; pwd)"
+  export IOTDB_HOME="$(cd "`dirname "$0"`"/..;cd ".."; cd ".."; cd "iotdb" ;pwd)"
+  echo $IOTDB_HOME
 fi
 
 IOTDB_CONF=${IOTDB_HOME}/conf

@@ -9,18 +9,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +43,7 @@ public class FileManager {
 		lastLocalFiles.clear();
 		nowLocalFiles.clear();
 		getLastLocalFileList(config.LAST_FILE_INFO);
-		getNowLocalFileList(config.SENDER_FILE_PATH);
+		getNowLocalFileList(config.IOTDB_BUFFERWRITE_DIRECTORY);
 		getSendingFileList();
 	}
 	

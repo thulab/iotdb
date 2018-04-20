@@ -251,7 +251,7 @@ public class TsfileDBConfig {
 	 */
 	public boolean update_historical_data_possibility = false;
 	
-	public String IP_white_list = "192.168.0.0/16";
+	public String IP_white_list = "0.0.0.0/0";
 
 	public TsfileDBConfig() {
 	}

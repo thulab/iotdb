@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,23 +29,15 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessorStatus;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessorStore;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.filenode.OverflowChangeType;
-import cn.edu.tsinghua.iotdb.engine.filenode.SerializeUtil;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
-import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TInTimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkProperties;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
@@ -78,8 +68,11 @@ public class ServiceImp implements Service.Iface {
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
 	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
 	private String IPwhiteList = TsfileDBDescriptor.getInstance().getConfig().IP_white_list;
-	private String dataPath= new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB data directory
-	private boolean update_historical_data_possibility = TsfileDBDescriptor.getInstance().getConfig().update_historical_data_possibility;
+	private TsfileDBConfig tsfileDBconfig= TsfileDBDescriptor.getInstance().getConfig();
+	private String dataPath= new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB data directory
+	private String postbackPath;
+	private String bufferWritePath= new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB bufferWrite directory
+	private TsfileDBConfig tsfileDBConfig = TsfileDBDescriptor.getInstance().getConfig();
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImp.class);
 	private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
@@ -94,7 +87,7 @@ public class ServiceImp implements Service.Iface {
 		fileNodeMap.set(new HashMap<>());
 		fileNodeStartTime.set(new HashMap<>());
 		fileNodeEndTime.set(new HashMap<>());
-		snapshotFilePath.set(dataPath + uuid.get() + File.separator + "Snapshot");
+		snapshotFilePath.set(dataPath + "postback" + File.separator + uuid.get() + File.separator + "Snapshot");
 	}
 	
 	/**
@@ -102,10 +95,11 @@ public class ServiceImp implements Service.Iface {
 	 */
 	public boolean getUUID(String uuid, String IPaddress) throws TException {
 		this.uuid.set(uuid);
-		schemaFromSenderPath.set(dataPath + this.uuid.get() + File.separator + "mlog.txt");
+		postbackPath = dataPath + "postback" + File.separator;
+		schemaFromSenderPath.set(postbackPath + this.uuid.get() + File.separator + "mlog.txt");
 		if(new File(dataPath + this.uuid.get()).exists() && new File(dataPath + this.uuid.get()).list().length!=0) {
 			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
-			deleteFile(new File(dataPath + this.uuid.get()));
+			deleteFile(new File(postbackPath + this.uuid.get()));
 		}
 		boolean legalOrNOt = verifyIPSegment(IPwhiteList, IPaddress);
 		return legalOrNOt;
@@ -174,7 +168,7 @@ public class ServiceImp implements Service.Iface {
 				filePath = filePath + filePathSplit.get(i) + File.separator;
 			}
 		}
-		filePath = dataPath + uuid.get() + File.separator + filePath;
+		filePath = postbackPath + uuid.get() + File.separator + filePath;
 		if (status == 1) // there are still data stream to add
 		{
 			File file = new File(filePath);
@@ -233,7 +227,7 @@ public class ServiceImp implements Service.Iface {
 			Statement statement = null;
 			try {
 				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-				connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+				connection = DriverManager.getConnection("jdbc:tsfile://localhost:" + tsfileDBConfig.rpcPort + "/", "root", "root");
 				statement = connection.createStatement();
 				
 				BufferedReader bf;
@@ -261,8 +255,7 @@ public class ServiceImp implements Service.Iface {
 					}
 					bf.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOGGER.error("IoTDB post back receiver: cannot insert schema to IoTDB because {}", e.getMessage());
 				}
 
 				statement.executeBatch();
@@ -276,7 +269,7 @@ public class ServiceImp implements Service.Iface {
 					if(connection!=null)
 						connection.close();
 				} catch (SQLException e) {
-					LOGGER.error("IoTDB receiver : can not close JDBC connection because {}", e.getMessage());
+					LOGGER.error("IoTDB post back receiver : can not close JDBC connection because {}", e.getMessage());
 				}
 			}
 		}
@@ -305,7 +298,7 @@ public class ServiceImp implements Service.Iface {
 	public boolean merge() throws TException {
 		getFileNodeInfo();
 		mergeData();
-		deleteFile(new File(dataPath + uuid.get()));
+		deleteFile(new File(postbackPath + uuid.get()));
 		return true;
 	}
 	
@@ -339,18 +332,16 @@ public class ServiceImp implements Service.Iface {
 	 * Get all tsfiles' info which are sent from sender, it is prepare for merging these data 
 	 */
 	public void getFileNodeInfo() throws TException {
-		String filePath = dataPath + uuid.get() + File.separator + "delta";
+		String filePath = postbackPath + uuid.get() + File.separator + "data";
 		File root = new File(filePath);
 		File[] files = root.listFiles();
 		int num = 0;
 		for (File file : files) { 
-			String storageGroupPath = dataPath + "delta" + File.separator + file.getName();
-			String storageGroupPathPB = dataPath + uuid.get() + File.separator + "delta" + File.separator
+			String storageGroupPath = bufferWritePath + File.separator + file.getName();
+			String storageGroupPathPB = filePath + File.separator
 					+ file.getName();
-			String digestPath = dataPath + "digest" + File.separator + file.getName();
 			File storageGroup = new File(storageGroupPath);
 			File storageGroupPB = new File(storageGroupPathPB);
-			File digest = new File(digestPath);
 			if (!storageGroup.exists()) // the first type: new storage group
 			{
 				List<String> filesPath = new ArrayList<>();
@@ -374,7 +365,7 @@ public class ServiceImp implements Service.Iface {
 							endTimeMap.put(key, deltaObj.endTime);
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						LOGGER.error("IoTDB post back receiver: unable to read tsfile {} because {}", fileTF.getAbsolutePath(), e.getMessage());
 					} finally {
 						try {
 							input.close();
@@ -411,7 +402,7 @@ public class ServiceImp implements Service.Iface {
 							endTimeMap.put(key, deltaObj.endTime);
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						LOGGER.error("IoTDB post back receiver: unable to read tsfile {} because {}", fileTF.getAbsolutePath(), e.getMessage());
 					} finally {
 						try {
 							input.close();
@@ -442,7 +433,7 @@ public class ServiceImp implements Service.Iface {
 		Statement statement = null;
 		try {
 			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+			connection = DriverManager.getConnection("jdbc:tsfile://localhost:" + tsfileDBConfig.rpcPort + "/", "root", "root");
 			statement = connection.createStatement();
 			int count = 0;
 			
@@ -547,7 +538,7 @@ public class ServiceImp implements Service.Iface {
 		Statement statement = null;
 		try {
 			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-			connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+			connection = DriverManager.getConnection("jdbc:tsfile://localhost:" + tsfileDBConfig.rpcPort + "/", "root", "root");
 			statement = connection.createStatement();
 			int count = 0;
 			
@@ -624,6 +615,7 @@ public class ServiceImp implements Service.Iface {
 								}
 							}
 						}catch(IOException e) {
+							LOGGER.error("IoTDB post back receiver: unable to read tsfile {} because {}", overlapFile, e.getMessage());
 						}finally {
 							try {
 								inputOverlap.close();
@@ -724,7 +716,7 @@ public class ServiceImp implements Service.Iface {
 				Map<String, Long> endTimeMap = fileNodeEndTime.get().get(path);
 
 				// create a new fileNode
-				String header = dataPath + uuid.get() + File.separator + "delta" + File.separator;
+				String header = postbackPath + uuid.get() + File.separator + "data" + File.separator;
 				String relativePath = path.substring(header.length());
 				IntervalFileNode fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
 						relativePath);
@@ -733,7 +725,7 @@ public class ServiceImp implements Service.Iface {
 				try {
 					if(!fileNodeManager.appendFileToFileNode(storageGroup, fileNode, path)) {
 						//it is a file with overflow data
-						if(update_historical_data_possibility)
+						if(tsfileDBConfig.update_historical_data_possibility)
 							mergeOldData(path);
 						else {
 							if(!new File(snapshotFilePath.get()).exists()) {

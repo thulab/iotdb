@@ -31,10 +31,12 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 public class SingleClientPostBackTest {
 
-	private String POST_BACK_DIRECTORY_TEST = new File("data").getAbsolutePath() + File.separator;
+	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
+	
+	private String POST_BACK_DIRECTORY_TEST = new File("data").getAbsolutePath() + File.separator + "postback" + File.separator;
 	private String UUID_PATH_TEST = POST_BACK_DIRECTORY_TEST + "uuid.txt";
 	private String LAST_FILE_INFO_TEST = POST_BACK_DIRECTORY_TEST + "lastLocalFileList.txt";
-	private String SENDER_FILE_PATH_TEST = POST_BACK_DIRECTORY_TEST + "delta";
+	private String SENDER_FILE_PATH_TEST = conf.bufferWriteDir;
 	private String SNAPSHOT_PATH_TEST = POST_BACK_DIRECTORY_TEST + "dataSnapshot";
 	private String SERVER_IP_TEST = "192.168.130.16";
 	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
@@ -43,11 +45,8 @@ public class SingleClientPostBackTest {
 	TransferData transferData = TransferData.getInstance();
 
 	private IoTDB deamon;
-
-	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
 	
 	public void setConfig() {
-		config.IOTDB_DATA_DIRECTORY = POST_BACK_DIRECTORY_TEST;
 		config.UUID_PATH = UUID_PATH_TEST;
 		config.LAST_FILE_INFO = LAST_FILE_INFO_TEST;
 		config.SNAPSHOT_PATH = SNAPSHOT_PATH_TEST;
