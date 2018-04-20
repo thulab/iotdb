@@ -31,17 +31,6 @@ public class MultipleClientPostBackTest {
 	private Set<String> dataSender = new HashSet<>();
 	private Set<String> dataReceiver = new HashSet<>();
 	
-	@Before
-	public void setUp() throws Exception {
-		
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		
-	}
-	
-	@Test
 	public void testPostback() throws IOException {
 		
 		timeseriesList1.put("root.vehicle_history",new ArrayList<String>());
@@ -202,5 +191,10 @@ public class MultipleClientPostBackTest {
             	System.out.println(count2);
         	}
         }
+	}
+	
+	public static void main(String[] args) throws IOException {
+		MultipleClientPostBackTest multipleClientPostBackTest = new MultipleClientPostBackTest();
+		multipleClientPostBackTest.testPostback();
 	}
 }

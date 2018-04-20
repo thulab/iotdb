@@ -42,6 +42,7 @@ public class SingleClientPostBackTest {
 	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
 	private Set<String> dataSender = new HashSet<>();
 	private Set<String> dataReceiver = new HashSet<>();
+	private boolean success = true;
 	TransferData transferData = TransferData.getInstance();
 
 	private IoTDB deamon;
@@ -158,7 +159,6 @@ public class SingleClientPostBackTest {
 
 	private boolean testFlag = TestUtils.testFlag;
 
-	@Before
 	public void setUp() throws Exception {
 		setConfig();
 		if (testFlag) {
@@ -182,16 +182,18 @@ public class SingleClientPostBackTest {
 		}
 	}
 
-	@After
 	public void tearDown() throws Exception {
 		if (testFlag) {
 			deamon.stop();
 			Thread.sleep(2000);
 			EnvironmentUtils.cleanEnv();
 		}
+		if(success)
+			System.out.println("Test succeed!");
+		else
+			System.out.println("Test failed!");
 	}
 	
-	@Test
 	public void testPostback() {
 		if (testFlag) {
 			// the first time to postback
@@ -314,7 +316,10 @@ public class SingleClientPostBackTest {
 			System.out.println(dataReceiver.size());
 			System.out.println(dataSender);
 			System.out.println(dataReceiver);
-			assert((dataSender.size()==dataReceiver.size()) && dataSender.containsAll(dataReceiver));
+			if(!(dataSender.size()==dataReceiver.size() && dataSender.containsAll(dataReceiver))){
+				success = false;
+				return;
+			}
 			
 			// the second time to postback
 			System.out.println("It's the second time to post back!");
@@ -435,7 +440,10 @@ public class SingleClientPostBackTest {
 			System.out.println(dataReceiver.size());
 			System.out.println(dataSender);
 			System.out.println(dataReceiver);
-			assert((dataSender.size()==dataReceiver.size()) && dataSender.containsAll(dataReceiver));
+			if(!(dataSender.size()==dataReceiver.size() && dataSender.containsAll(dataReceiver))){
+				success = false;
+				return;
+			}
 			
 			// the third time to postback
 			System.out.println("It's the third time to post back!");
@@ -598,7 +606,18 @@ public class SingleClientPostBackTest {
 			System.out.println(dataReceiver.size());
 			System.out.println(dataSender);
 			System.out.println(dataReceiver);
-			assert((dataSender.size()==dataReceiver.size()) && dataSender.containsAll(dataReceiver));
+			if(!(dataSender.size()==dataReceiver.size() && dataSender.containsAll(dataReceiver))){
+				success = false;
+				return;
+			}
 		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		SingleClientPostBackTest singleClientPostBackTest = new SingleClientPostBackTest();
+		singleClientPostBackTest.setUp();
+		singleClientPostBackTest.testPostback();
+		singleClientPostBackTest.tearDown();
+		System.exit(0);
 	}
 }
