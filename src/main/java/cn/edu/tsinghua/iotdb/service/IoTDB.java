@@ -54,9 +54,6 @@ public class IoTDB implements IoTDBMBean{
 			LOGGER.error("{} exit", TsFileDBConstant.GLOBAL_DB_NAME);
 			return;
 		}
-		if (TsfileDBDescriptor.getInstance().getConfig().IS_POSTBACK_ENABLE) {
-			serverManager.startServer();
-		}
 		LOGGER.info("{} has started.", TsFileDBConstant.GLOBAL_DB_NAME);
 	}
 	
@@ -86,6 +83,8 @@ public class IoTDB implements IoTDBMBean{
 		registerManager.register(BasicMemController.getInstance());
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
+		
+		serverManager.startServer();
 	}
 
 	public void deactivate(){

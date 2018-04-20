@@ -35,6 +35,9 @@ public class ServerManager {
 	}
 
 	public void startServer() {
+		if (!conf.IS_POSTBACK_ENABLE) {
+			return;
+		}
 		try {
 			if(conf.IP_white_list == null) {
 				LOGGER.error("IoTDB post back receicer: Postback server failed to start because IP white list is null, please set IP white list!");
