@@ -364,7 +364,6 @@ public class AggregateRecordReader extends RecordReader {
 
         // represents that whether the time data of this page are satisfied with the time filter
         boolean timeEligible = false;
-
         if (queryTimeFilter != null) {
             LongInterval timeInterval = (LongInterval) singleTimeVisitor.getInterval();
             for (int i = 0; i < timeInterval.count; i += 2) {
