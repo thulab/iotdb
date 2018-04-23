@@ -66,6 +66,18 @@ public class ReaderCreator {
         return reader;
     }
 
+
+    public static TimeValuePairReader createReaderOnlyForOverflowInsert(String unseqTsFilePath,
+                                                                        Path path, long startTime, long endTime) throws IOException {
+        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
+        TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir = "";
+        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
+        SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
+        TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource,
+                filter);
+        return reader;
+    }
+
     /**
      * Get the metadata of given file path.
      *

@@ -71,7 +71,8 @@ public class WriteAnalysis {
         unSeqFileMetaData = getUnSeqFileMetaData(unSeqFilePath);
         WriteAnalysis writeAnalysis = new WriteAnalysis();
         writeAnalysis.initUnSeqFileStatistics();
-        writeAnalysis.tsFileReadPerformance();
+        writeAnalysis.unTsFileReadPerformance();
+        //writeAnalysis.tsFileReadPerformance();
         //writeAnalysis.executeMerge();
         System.out.println("max memory usage:" + max);
         timer.shutdown();
@@ -104,7 +105,7 @@ public class WriteAnalysis {
         int cnt = 0;
         for (File file : files) {
             cnt++;
-//            if (cnt == 10) break;
+            // if (cnt == 10) break;
             if (!file.isDirectory() && !file.getName().endsWith(restoreFilePathName) &&
                     !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")
                     && !file.getName().equals("unseqTsFile")) {
@@ -138,12 +139,9 @@ public class WriteAnalysis {
                             if (unSeqFileMetaData.get(tsFileDeltaObjectId).containsKey(timeSeriesMetadata.getMeasurementUID())) {
 
                                 // calc file stream load time
-                                //long streamLoadTimeStart = System.currentTimeMillis();
                                 TimeValuePairReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
                                         new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
                                         tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
-                                //long streamLoadTimeEnd = System.currentTimeMillis();
-                                //readStreamLoadTime += (streamLoadTimeEnd - streamLoadTimeStart);
 
                                 // calc hasnext method executing time
                                 //long hasNextCalcStartTime = System.currentTimeMillis();
@@ -151,15 +149,10 @@ public class WriteAnalysis {
                                     TimeValuePair tp = reader.next();
                                     count ++;
                                     // calc time consuming of writing
-                                    //long writeStartTime = System.currentTimeMillis();
-                                    TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
-                                    fileWriter.write(record);
-                                    //long writeEndTime = System.currentTimeMillis();
-                                    //writeTimeConsuming += (writeEndTime - writeStartTime);
+                                    //TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
+                                    //fileWriter.write(record);
                                 }
 
-                                //long hasNextCalcEndTime = System.currentTimeMillis();
-                                //hasNextCalculationTime += (hasNextCalcEndTime - hasNextCalcStartTime);
                                 reader.close();
                             }
                         }
@@ -167,7 +160,7 @@ public class WriteAnalysis {
                 }
 
                 randomAccessFileReader.close();
-                //fileWriter.close();
+                fileWriter.close();
                 long oneFileMergeEndTime = System.currentTimeMillis();
                 System.out.println(String.format("Current file merge time consuming : %sms, record number: %s," +
                                 "original file size is %d",
@@ -179,6 +172,12 @@ public class WriteAnalysis {
         System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
     }
 
+    /**
+     * Test the reading performance of TsFile.
+     *
+     * @throws IOException
+     * @throws WriteProcessException
+     */
     private void tsFileReadPerformance() throws IOException, WriteProcessException {
         Pair<Boolean, File[]> validFiles = getValidFiles(fileFolderName);
         if (!validFiles.left) {
@@ -246,10 +245,6 @@ public class WriteAnalysis {
                         }
                     }
                 }
-//                long tmp = 0;
-//                for (long v : seriesPoints.values())
-//                    tmp += v;
-//                System.out.println("number :" + tmp);
                 seriesPoints.clear();
 
                 long oneFileReadEndTime = System.currentTimeMillis();
@@ -260,6 +255,108 @@ public class WriteAnalysis {
 
         long allFileMergeEndTime = System.currentTimeMillis();
         System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
+    }
+
+    /**
+     * Test the reading performance of UnSeqTsFile.
+     *
+     * @throws IOException
+     * @throws WriteProcessException
+     */
+    private void unTsFileReadPerformance() throws IOException {
+
+        Pair<Boolean, File[]> validFiles = getValidFiles(fileFolderName);
+        if (!validFiles.left) {
+            LOGGER.info("There exists error in given file folder");
+            return;
+        }
+        File[] files = validFiles.right;
+
+        int cnt = 0;
+        for (File file : files) {
+            cnt++;
+            // if (cnt == 10) break;
+            if (!file.isDirectory() && !file.getName().endsWith(restoreFilePathName) &&
+                    !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")
+                    && !file.getName().equals("unseqTsFile")) {
+                System.out.println(String.format("---- merge process begin, current merge file is %s.", file.getName()));
+
+                long count = 0;
+                long oneFileMergeStartTime = System.currentTimeMillis();
+                ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(file.getPath());
+                TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
+
+                //examine whether this TsFile should be merged
+                for (Map.Entry<String, TsDeltaObject> tsFileEntry : tsFileMetaData.getDeltaObjectMap().entrySet()) {
+                    String tsFileDeltaObjectId = tsFileEntry.getKey();
+                    long tsFileDeltaObjectStartTime = tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).startTime;
+                    long tsFileDeltaObjectEndTime = tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).endTime;
+                    if (unSeqFileMetaData.containsKey(tsFileDeltaObjectId) &&
+                            unSeqFileDeltaObjectTimeRangeMap.get(tsFileDeltaObjectId).left <= tsFileDeltaObjectStartTime
+                            && unSeqFileDeltaObjectTimeRangeMap.get(tsFileDeltaObjectId).right >= tsFileDeltaObjectStartTime) {
+                        for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
+                            if (unSeqFileMetaData.get(tsFileDeltaObjectId).containsKey(timeSeriesMetadata.getMeasurementUID())) {
+                                String measurementId = timeSeriesMetadata.getMeasurementUID();
+                                Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
+                                Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
+                                SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
+                                TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+                                while (tsFileReader.hasNext()) {
+                                    TimeValuePair tp = tsFileReader.next();
+                                    count ++;
+                                }
+                                tsFileReader.close();
+
+
+//                                TimeValuePairReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
+//                                        new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
+//                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
+//                                while (overflowInsertReader.hasNext()) {
+//                                    TimeValuePair tp = overflowInsertReader.next();
+//                                    count ++;
+//                                }
+//                                overflowInsertReader.close();
+                            }
+                        }
+                    }
+                }
+
+                randomAccessFileReader.close();
+                long oneFileMergeEndTime = System.currentTimeMillis();
+                System.out.println(String.format("Current file merge time consuming : %sms, record number: %s," +
+                                "original file size is %d",
+                        (oneFileMergeEndTime - oneFileMergeStartTime), count, file.length()));
+            }
+        }
+
+//        long allFileMergeEndTime = System.currentTimeMillis();
+//        System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
+//
+//        long testStartTime = System.currentTimeMillis();
+//        long recordCount = 0;
+//
+//        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : unSeqFileMetaData.entrySet()) {
+//            String deltaObjectId = entry.getKey();
+//            Pair<Long, Long> pair = unSeqFileDeltaObjectTimeRangeMap.get(deltaObjectId);
+//            long startTime = pair.left;
+//            long endTime = pair.right;
+//            for (Map.Entry<String, List<TimeSeriesChunkMetaData>> deltaEntry : entry.getValue().entrySet()) {
+//                String measurementId = deltaEntry.getKey();
+//                TimeValuePairReader reader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
+//                        new Path(deltaObjectId + "." + measurementId),
+//                        startTime, endTime);
+//
+//                while (reader.hasNext()) {
+//                    TimeValuePair tp = reader.next();
+//                    recordCount ++;
+//                }
+//            }
+//
+//        }
+//
+//        long testEndTime = System.currentTimeMillis();
+//        System.out.println(String.format("Read UnSeqTsFile consuming : %dms, read records number : %d",
+//                testEndTime - testStartTime, recordCount));
     }
 
     private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {

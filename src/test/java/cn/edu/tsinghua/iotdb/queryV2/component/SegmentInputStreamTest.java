@@ -56,7 +56,7 @@ public class SegmentInputStreamTest {
         int b;
         int index = offset;
         while ((b = segmentInputStream.read()) != -1) {
-            System.out.println(bytes[index] + " " + (byte) b);
+            //System.out.println(bytes[index] + " " + (byte) b);
             Assert.assertEquals(bytes[index], (byte) b);
             index++;
         }
@@ -69,7 +69,7 @@ public class SegmentInputStreamTest {
         segmentInputStream.skip(startPos);
         segmentInputStream.read(ret);
         for (int i = startPos; i < len; i++) {
-            System.out.println(bytes[i + offset]);
+            //System.out.println(bytes[i + offset]);
             Assert.assertEquals(bytes[i + offset], ret[i - startPos]);
         }
     }
