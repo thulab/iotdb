@@ -8,4 +8,9 @@ public class LocalTombstoneFile extends TombstoneFile {
         this.filePath = filePath;
         this.accessor = new LocalTombstoneAccessor(filePath);
     }
+
+    @Override
+    public boolean isEmpty() throws IOException {
+        return accessor.isEmpty();
+    }
 }

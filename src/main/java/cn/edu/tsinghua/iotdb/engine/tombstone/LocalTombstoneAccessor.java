@@ -28,6 +28,7 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     @Override
     public List<Tombstone> readAll() throws IOException {
         List<Tombstone> tombstones = new ArrayList<>();
+        raf.seek(0);
         while(raf.getFilePointer() + 4 < raf.length()) {
             int deltaObjectLength = raf.readInt();
             byte[] deltaObjectBytes = new byte[deltaObjectLength];
@@ -71,5 +72,10 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     @Override
     public void close() throws IOException {
         raf.close();
+    }
+
+    @Override
+    public boolean isEmpty() throws IOException {
+        return raf.length() != 0;
     }
 }

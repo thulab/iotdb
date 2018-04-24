@@ -14,4 +14,6 @@ public interface ITombstoneAccessor {
     void append(String deltaObjectName, String measurementName, long deleteTimestamp, long executeTimestamp) throws IOException;
 
     void close() throws IOException;
+
+    boolean isEmpty() throws IOException;
 }

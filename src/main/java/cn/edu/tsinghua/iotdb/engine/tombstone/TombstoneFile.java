@@ -24,6 +24,9 @@ public abstract class TombstoneFile {
 
     public void append(Tombstone tombstone) throws IOException {
         accessor.append(tombstone);
-        getTombstones().add(tombstone);
+        if(tombstones != null)
+            getTombstones().add(tombstone);
     }
+
+    public abstract boolean isEmpty() throws IOException;
 }
