@@ -173,10 +173,11 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 					}
 					for (int i = 0; i < paths.size(); i++) {
 						String apath = paths.get(i);
-						List<String> tsRow = new ArrayList<>();
+//						// get [name,storage group,dataType,encoding]
+						List<String> tsRow = new ArrayList<>(4);
 						tsRow.add(apath);
 						MNode leafNode = MManager.getInstance().getNodeByPath(apath);
-						if (leafNode.isLeaf()) { // get [name,storage group,dataType,encoding]
+						if (leafNode.isLeaf()) {
 							ColumnSchema columnSchema = leafNode.getSchema();
 							tsRow.add(leafNode.getDataFileName());
 							tsRow.add(columnSchema.dataType.toString());
