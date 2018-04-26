@@ -34,18 +34,18 @@ public class TsFileReadPerformanceTest {
             String tsFileDeltaObjectId = tsFileEntry.getKey();
             long tsFileDeltaObjectStartTime = tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).startTime;
             long tsFileDeltaObjectEndTime = tsFileMetaData.getDeltaObject(tsFileDeltaObjectId).endTime;
-                for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
-                        String measurementId = timeSeriesMetadata.getMeasurementUID();
-                        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
-                        Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
-                        SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-                        TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(inputFilePath, seriesFilter);
-                        while (tsFileReader.hasNext()) {
-                            TimeValuePair tp = tsFileReader.next();
-                            recordCount ++;
-                        }
-                        tsFileReader.close();
+            for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
+                String measurementId = timeSeriesMetadata.getMeasurementUID();
+                Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
+                Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
+                SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
+                TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(inputFilePath, seriesFilter);
+                while (tsFileReader.hasNext()) {
+                    TimeValuePair tp = tsFileReader.next();
+                    recordCount++;
                 }
+                tsFileReader.close();
+            }
 
         }
         long endTime = System.currentTimeMillis();

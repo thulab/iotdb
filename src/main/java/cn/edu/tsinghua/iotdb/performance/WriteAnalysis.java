@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -37,15 +36,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.getValidFiles;
-import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.restoreFilePathName;
-import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.unseqTsFilePathName;
+import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.*;
 import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getTsFileMetadata;
 import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getUnSeqFileMetaData;
 
-/**
- * Created by zhangjinrui on 2018/3/13.
- */
 public class WriteAnalysis {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WriteAnalysis.class);
@@ -60,7 +54,7 @@ public class WriteAnalysis {
 
     private static long max = -1;
 
-    public static void main(String args[]) throws WriteProcessException, IOException, InterruptedException {
+    public static void main(String args[]) throws WriteProcessException, IOException {
         fileFolderName = args[0];
         mergeOutPutFolder = fileFolderName + "/merge/";
         unSeqFilePath = fileFolderName + "/" + unseqTsFilePathName;
@@ -71,9 +65,9 @@ public class WriteAnalysis {
         unSeqFileMetaData = getUnSeqFileMetaData(unSeqFilePath);
         WriteAnalysis writeAnalysis = new WriteAnalysis();
         writeAnalysis.initUnSeqFileStatistics();
-        writeAnalysis.unTsFileReadPerformance();
+        //writeAnalysis.unTsFileReadPerformance();
         //writeAnalysis.tsFileReadPerformance();
-        //writeAnalysis.executeMerge();
+        writeAnalysis.executeMerge();
         System.out.println("max memory usage:" + max);
         timer.shutdown();
     }
@@ -125,8 +119,6 @@ public class WriteAnalysis {
                 }
                 TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
-                long writeTimeConsuming = 0;
-                //int readStreamLoadTime = 0, hasNextCalculationTime = 0;
                 //examine whether this TsFile should be merged
                 for (Map.Entry<String, TsDeltaObject> tsFileEntry : tsFileMetaData.getDeltaObjectMap().entrySet()) {
                     String tsFileDeltaObjectId = tsFileEntry.getKey();
@@ -138,19 +130,17 @@ public class WriteAnalysis {
                         for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
                             if (unSeqFileMetaData.get(tsFileDeltaObjectId).containsKey(timeSeriesMetadata.getMeasurementUID())) {
 
-                                // calc file stream load time
                                 TimeValuePairReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
                                         new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
                                         tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 
                                 // calc hasnext method executing time
-                                //long hasNextCalcStartTime = System.currentTimeMillis();
                                 while (reader.hasNext()) {
                                     TimeValuePair tp = reader.next();
-                                    count ++;
+                                    //count ++;
                                     // calc time consuming of writing
-                                    //TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
-                                    //fileWriter.write(record);
+                                    TSRecord record = constructTsRecord(tp, tsFileEntry.getKey(), timeSeriesMetadata.getMeasurementUID());
+                                    fileWriter.write(record);
                                 }
 
                                 reader.close();
@@ -163,8 +153,8 @@ public class WriteAnalysis {
                 fileWriter.close();
                 long oneFileMergeEndTime = System.currentTimeMillis();
                 System.out.println(String.format("Current file merge time consuming : %sms, record number: %s," +
-                                "original file size is %d",
-                        (oneFileMergeEndTime - oneFileMergeStartTime), count, file.length()));
+                                "original file size is %d, current file size is %d",
+                        (oneFileMergeEndTime - oneFileMergeStartTime), count, file.length(), outPutFile.length()));
             }
         }
 
@@ -188,7 +178,7 @@ public class WriteAnalysis {
 
         long allFileMergeStartTime = System.currentTimeMillis();
         for (File file : files) {
-            Map<String, Map<String, Long>> seriesPoints = new HashMap<>();
+            //Map<String, Map<String, Long>> seriesPoints = new HashMap<>();
             if (!file.isDirectory() && !file.getName().endsWith(restoreFilePathName) &&
                     !file.getName().equals(unseqTsFilePathName) && !file.getName().endsWith("Store")
                     && !file.getName().equals("unseqTsFile")) {
@@ -219,33 +209,33 @@ public class WriteAnalysis {
                         for (TimeSeriesMetadata timeSeriesMetadata : tsFileMetaData.getTimeSeriesList()) {
                             String measurementId = timeSeriesMetadata.getMeasurementUID();
                             Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
-                            Path seriesPath = new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID());
+                            Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
                             SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
                             TimeValuePairReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 
-                            long tmpRecordCount = 0;
+                            //long tmpRecordCount = 0;
                             while (reader.hasNext()) {
                                 TimeValuePair tp = reader.next();
-                                TSRecord record = constructTsRecord(tp, tsFileDeltaObjectId, timeSeriesMetadata.getMeasurementUID());
+                                TSRecord record = constructTsRecord(tp, tsFileDeltaObjectId, measurementId);
                                 fileWriter.write(record);
-                                tmpRecordCount++;
+                                //tmpRecordCount++;
                             }
-                            if (seriesPoints.containsKey(tsFileDeltaObjectId) && seriesPoints.get(tsFileDeltaObjectId).containsKey(measurementId)) {
-                                long originalCount = seriesPoints.get(tsFileDeltaObjectId).get(measurementId);
-                                seriesPoints.get(tsFileDeltaObjectId).put(measurementId, originalCount + tmpRecordCount);
-                            } else {
-                                if (!seriesPoints.containsKey(tsFileDeltaObjectId)) {
-                                    seriesPoints.put(tsFileDeltaObjectId, new HashMap<>());
-                                }
-                                seriesPoints.get(tsFileDeltaObjectId).put(measurementId, tmpRecordCount);
-                            }
+//                            if (seriesPoints.containsKey(tsFileDeltaObjectId) && seriesPoints.get(tsFileDeltaObjectId).containsKey(measurementId)) {
+//                                long originalCount = seriesPoints.get(tsFileDeltaObjectId).get(measurementId);
+//                                seriesPoints.get(tsFileDeltaObjectId).put(measurementId, originalCount + tmpRecordCount);
+//                            } else {
+//                                if (!seriesPoints.containsKey(tsFileDeltaObjectId)) {
+//                                    seriesPoints.put(tsFileDeltaObjectId, new HashMap<>());
+//                                }
+//                                seriesPoints.get(tsFileDeltaObjectId).put(measurementId, tmpRecordCount);
+//                            }
                             //System.out.println(String.format("%s.%s: %d", tsFileDeltaObjectId, timeSeriesMetadata.getMeasurementUID(), tmpRecordCount));
-                            allRecordCount += tmpRecordCount;
+                            //allRecordCount += tmpRecordCount;
                             reader.close();
                         }
                     }
                 }
-                seriesPoints.clear();
+                //seriesPoints.clear();
 
                 long oneFileReadEndTime = System.currentTimeMillis();
                 System.out.println(String.format("current file read time: %sms, record number : %s", oneFileReadEndTime - oneFileReadStartTime, allRecordCount));
@@ -328,35 +318,6 @@ public class WriteAnalysis {
                         (oneFileMergeEndTime - oneFileMergeStartTime), count, file.length()));
             }
         }
-
-//        long allFileMergeEndTime = System.currentTimeMillis();
-//        System.out.println(String.format("All file merge time consuming : %dms", allFileMergeEndTime - allFileMergeStartTime));
-//
-//        long testStartTime = System.currentTimeMillis();
-//        long recordCount = 0;
-//
-//        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : unSeqFileMetaData.entrySet()) {
-//            String deltaObjectId = entry.getKey();
-//            Pair<Long, Long> pair = unSeqFileDeltaObjectTimeRangeMap.get(deltaObjectId);
-//            long startTime = pair.left;
-//            long endTime = pair.right;
-//            for (Map.Entry<String, List<TimeSeriesChunkMetaData>> deltaEntry : entry.getValue().entrySet()) {
-//                String measurementId = deltaEntry.getKey();
-//                TimeValuePairReader reader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
-//                        new Path(deltaObjectId + "." + measurementId),
-//                        startTime, endTime);
-//
-//                while (reader.hasNext()) {
-//                    TimeValuePair tp = reader.next();
-//                    recordCount ++;
-//                }
-//            }
-//
-//        }
-//
-//        long testEndTime = System.currentTimeMillis();
-//        System.out.println(String.format("Read UnSeqTsFile consuming : %dms, read records number : %d",
-//                testEndTime - testStartTime, recordCount));
     }
 
     private TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {

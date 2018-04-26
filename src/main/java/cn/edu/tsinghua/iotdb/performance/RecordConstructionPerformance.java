@@ -3,6 +3,8 @@ package cn.edu.tsinghua.iotdb.performance;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
@@ -12,14 +14,17 @@ import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TsFileWritePerformanceTest {
+public class RecordConstructionPerformance {
 
     private static final String outPutFilePath = "src/main/resources/output";
 
     public static void main(String[] args) throws WriteProcessException, IOException {
-        writeMultiSeriesTest();
-        writeSingleSeriesTest();
+        //writeMultiSeriesTest();
+        //writeSingleSeriesTestWithMultiRecordConstruction();
+        writeSingleSeriesTestWithOneRecordConstruction();
     }
 
     private static void writeMultiSeriesTest() throws WriteProcessException, IOException {
@@ -45,7 +50,7 @@ public class TsFileWritePerformanceTest {
         System.out.println(String.format("write multi series time cost %dms", endTime - startTime));
     }
 
-    private static void writeSingleSeriesTest() throws WriteProcessException, IOException {
+    private static void writeSingleSeriesTestWithMultiRecordConstruction() throws WriteProcessException, IOException {
         long startTime = System.currentTimeMillis();
 
         FileSchema fileSchema = new FileSchema();
@@ -61,5 +66,31 @@ public class TsFileWritePerformanceTest {
 
         long endTime = System.currentTimeMillis();
         System.out.println(String.format("write single series time cost %dms", endTime - startTime));
+    }
+
+    private static final int size = 50000000;
+    private static void writeSingleSeriesTestWithOneRecordConstruction() {
+
+        List<TimeValuePair> values = new ArrayList<>();
+        for (long i = 1; i <= size; i++) {
+            TimeValuePair tp = new TimeValuePair(i, new TsPrimitiveType.TsFloat(i));
+            values.add(tp);
+        }
+
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < size; i++) {
+            TSRecord record = constructTsRecord(values.get(i), "d1", "s1");
+            //fileWriter.write(record);
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println(String.format("write single series time cost %dms", endTime - startTime));
+    }
+
+    private static TSRecord constructTsRecord(TimeValuePair timeValuePair, String deltaObjectId, String measurementId) {
+        TSRecord record = new TSRecord(timeValuePair.getTimestamp(), deltaObjectId);
+        record.addTuple(DataPoint.getDataPoint(timeValuePair.getValue().getDataType(), measurementId,
+                timeValuePair.getValue().getValue().toString()));
+        return record;
     }
 }
