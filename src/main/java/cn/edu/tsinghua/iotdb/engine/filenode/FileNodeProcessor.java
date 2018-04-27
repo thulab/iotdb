@@ -18,8 +18,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
+import cn.edu.tsinghua.iotdb.engine.overflow.utils.MergeStatus;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneMergeTask;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneMerger;
 import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
@@ -381,6 +384,15 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	public void fileNodeRecovery() throws FileNodeProcessorException {
+		// replace old file with files after tombstone merge
+			File[] files = new File(baseDirPath).listFiles();
+			for(File file : files) {
+				if(file.getName().contains(TombstoneMerger.COMPLETE_SUFFIX)) {
+					File oldFile = new File(file.getPath().replace(TombstoneMerger.COMPLETE_SUFFIX, ""));
+					oldFile.delete();
+					file.renameTo(oldFile);
+				}
+			}
 		// restore bufferwrite
 		if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 			//
@@ -1346,7 +1358,18 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		TsFileWriter recordWriter = null;
 		String outputPath = null;
 		String fileName = null;
+		TombstoneFile tombstoneFile = backupIntervalFile.getTombstoneFile();
+		List<Tombstone> TSTombstones = tombstoneFile.getTombstones();
+		tombstoneFile.close();
+		List<Tombstone> deltaObjectTombstones = new ArrayList<>();
+		List<Tombstone> seriesTombstones = new ArrayList<>();
 		for (String deltaObjectId : backupIntervalFile.getStartTimeMap().keySet()) {
+			// query tombstone
+			deltaObjectTombstones.clear();
+			for (Tombstone tombstone : TSTombstones) {
+				if(tombstone.deltaObjectId.equals(deltaObjectId))
+					deltaObjectTombstones.add(tombstone);
+			}
 			// query one deltaObjectId
 			List<Path> pathList = new ArrayList<>();
 			try {
@@ -1364,6 +1387,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			long startTime = -1;
 			long endTime = -1;
 			for (Path path : pathList) {
+				// query tombstone
+				seriesTombstones.clear();
+				for(Tombstone tombstone : deltaObjectTombstones) {
+					if(tombstone.measurementId.equals(path.getMeasurementToString()))
+						seriesTombstones.add(tombstone);
+				}
 				// query one measurenment in the special deltaObjectId
 				TSDataType dataType = mManager.getSeriesType(path.getFullPath());
 				OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.queryMerge(deltaObjectId,
@@ -1373,7 +1402,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						TimeFilter.ltEq(backupIntervalFile.getEndTime(deltaObjectId)));
 				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
 				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
-						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
+						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter, seriesTombstones);
 				try {
 					if (!seriesReader.hasNext()) {
 						LOGGER.debug("The time-series {} has no data with the filter {} in the filenode processor {}",
@@ -1717,8 +1746,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 	continue;
 				// this file may contain this series, append a tombstone for it
 				TombstoneFile tombstoneFile = intervalFileNode.getTombstoneFile();
-				tombstoneFile.append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
-            	intervalFileNode.closeTombstoneFile();
+				tombstoneFile.lock();
+				try {
+					tombstoneFile.append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+				} finally {
+					tombstoneFile.unlock();
+				}
+				intervalFileNode.closeTombstoneFile();
 			}
 		} catch (IOException e) {
 			throw new FileNodeProcessorException(e);
@@ -1732,5 +1766,16 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				throw new FileNodeProcessorException(e);
 			}
 		}
+	}
+
+	public TombstoneMergeTask getTombstoneMergeTask() throws IOException {
+		if(isMerging.equals(MergeStatus.MERGING))
+			return null;
+		List<TombstoneMerger> mergers = new ArrayList<>();
+		for(IntervalFileNode fileNode : newFileNodes) {
+			if(fileNode.isClosed() && !fileNode.getTombstoneFile().isEmpty())
+				mergers.add(new TombstoneMerger(fileNode, fileSchema));
+		}
+		return mergers.size() > 0 ? new TombstoneMergeTask(mergers) : null;
 	}
 }

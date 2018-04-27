@@ -11,6 +11,13 @@ public class LocalTombstoneFile extends TombstoneFile {
 
     @Override
     public boolean isEmpty() throws IOException {
-        return accessor.isEmpty();
+        return getAccessor().isEmpty();
+    }
+
+    @Override
+    public ITombstoneAccessor getAccessor() throws IOException {
+        if(this.accessor != null)
+            return this.accessor;
+        return this.accessor = new LocalTombstoneAccessor(filePath);
     }
 }

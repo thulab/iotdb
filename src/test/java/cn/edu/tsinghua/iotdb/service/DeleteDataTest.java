@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
@@ -33,9 +34,12 @@ public class DeleteDataTest {
 
     private boolean testFlag = TestUtils.testFlag;
 
+
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
+
+            TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval = 5000;
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
             deamon = IoTDB.getInstance();
@@ -214,7 +218,7 @@ public class DeleteDataTest {
     }
 
     @Test
-    public void mergeCleanTombstoneTest() throws SQLException, InterruptedException {
+    public void overflowMergeTombstoneTest() throws SQLException, InterruptedException {
         long threshold = TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold;
         TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold = 1;
         try {
@@ -235,6 +239,7 @@ public class DeleteDataTest {
             // check that tomb stone file exist
             File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
             String[] filenames = storageGroupDir.list();
+            assertTrue(filenames != null);
             boolean exists = false;
             for(String filename : filenames)
                 if(filename.contains("tombstone"))
@@ -245,13 +250,87 @@ public class DeleteDataTest {
 
             Thread.sleep(2000);
             filenames = storageGroupDir.list();
+            assertTrue(filenames != null);
             exists = false;
             for(String filename : filenames)
                 if(filename.contains("tombstone"))
                     exists = true;
             assertTrue(!exists);
+
+            // query and check
+            Map<String, List<Object>> result = query();
+            List<Object> s0Data = result.get(s[0]);
+            List<Object> s1Data = result.get(s[1]);
+            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
+            for (int i = 0; i < 250; i++) {
+                int s0 = (int) s0Data.get(i);
+                double s1 = (double) s1Data.get(i);
+                assertEquals(i + deleteTime + 1, s0);
+                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
+            }
         } finally {
             TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold = threshold;
+        }
+    }
+
+    @Test
+    public void tombstoneMergeTest() throws SQLException, InterruptedException {
+        // this test delete data and wait until the tombstone is merged
+        // prepare data
+        long tombstoneMergeInterval;
+        tombstoneMergeInterval = TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval;
+        FileNodeManager.getInstance().restartTombstoneMergeManager();
+        try {
+            int dataSize = 500, offset = 0;
+            prepareData(dataSize, offset);
+            flush();
+            // delete half of the data
+            int deleteTime = 250;
+            exeDelete(deleteTime);
+            // query and check
+            Map<String, List<Object>> result = query();
+            List<Object> s0Data = result.get(s[0]);
+            List<Object> s1Data = result.get(s[1]);
+            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
+            for (int i = 0; i < 250; i++) {
+                int s0 = (int) s0Data.get(i);
+                double s1 = (double) s1Data.get(i);
+                assertEquals(i + deleteTime + 1, s0);
+                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
+            }
+            // ensure that the tombstone file no longer exists
+            File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
+            String[] filenames = storageGroupDir.list();
+            assertTrue(filenames != null);
+            boolean exists = false;
+            for(String filename : filenames)
+                if(filename.contains("tombstone"))
+                    exists = true;
+            assertTrue(exists);
+
+            Thread.sleep(10000);
+
+            filenames = storageGroupDir.list();
+            assertTrue(filenames != null);
+            exists = false;
+            for(String filename : filenames)
+                if(filename.contains("tombstone"))
+                    exists = true;
+            assertTrue(!exists);
+
+            // query and check again
+            result = query();
+            s0Data = result.get(s[0]);
+            s1Data = result.get(s[1]);
+            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
+            for (int i = 0; i < 250; i++) {
+                int s0 = (int) s0Data.get(i);
+                double s1 = (double) s1Data.get(i);
+                assertEquals(i + deleteTime + 1, s0);
+                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
+            }
+        } finally {
+            TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval = tombstoneMergeInterval;
         }
     }
 

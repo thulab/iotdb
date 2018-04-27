@@ -80,7 +80,7 @@ public class ForDebug {
         SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
         IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
         System.out.println(intervalFileNode.getFilePath());
-        TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
+        TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter, new ArrayList<>());
 
         int count = 0;
         while (reader.hasNext()) {
@@ -179,7 +179,7 @@ public class ForDebug {
                 String sensorId = "s_" + j;
 
                 SeriesFilter<Long> seriesFilter = new SeriesFilter<>(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
-                SeriesReader seriesInTsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(tsfilePath, seriesFilter);
+                SeriesReader seriesInTsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(tsfilePath, seriesFilter, new ArrayList<>());
 
 
                 while (seriesInTsFileReader.hasNext()) {

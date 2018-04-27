@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.factory;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.ExternalSortJobEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.SimpleExternalSortEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
@@ -30,7 +31,6 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSing
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,10 +120,10 @@ public class SeriesReaderFactory {
     }
 
     public SeriesReader createSeriesReaderForMerge(
-            IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SeriesFilter<?> seriesFilter)
+            IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SeriesFilter<?> seriesFilter, List<Tombstone> tombstones)
             throws IOException {
         logger.debug("create seriesReader for merge. SeriesFilter = {}. TsFilePath = {}", seriesFilter, intervalFileNode.getFilePath());
-        SeriesReader seriesInTsFileReader = genTsFileSeriesReader(intervalFileNode.getFilePath(), seriesFilter);
+        SeriesReader seriesInTsFileReader = genTsFileSeriesReader(intervalFileNode.getFilePath(), seriesFilter, tombstones);
 
         SeriesReader overflowInsertDataReader = createSeriesReaderForOverflowInsert(overflowSeriesDataSource, seriesFilter.getFilter());
         PriorityTimeValuePairReader priorityTimeValuePairReaderForTsFile = new PriorityTimeValuePairReader(seriesInTsFileReader,
@@ -137,9 +137,9 @@ public class SeriesReaderFactory {
         return seriesWithUpdateOpReader;
     }
 
-    public SeriesReader genTsFileSeriesReader(String filePath, SeriesFilter<?> seriesFilter) throws IOException {
+    public SeriesReader genTsFileSeriesReader(String filePath, SeriesFilter<?> seriesFilter, List<Tombstone> tombstones) throws IOException {
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(filePath);
-        List<EncodedSeriesChunkDescriptor> seriesChunkDescriptors = getMetadataQuerier(filePath)
+        List<EncodedSeriesChunkDescriptor> seriesChunkDescriptors = new TombstoneMetadataQuerier(filePath, tombstones)
                 .getSeriesChunkDescriptorList(seriesFilter.getSeriesPath());
         SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader,
                 new SeriesChunkLoaderImpl(randomAccessFileReader), seriesChunkDescriptors, seriesFilter.getFilter());

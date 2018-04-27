@@ -400,7 +400,7 @@ public class OverflowResource {
 		updateDeleteMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
 	}
 
-	public TombstoneFile getTombstoneFile() throws IOException {
+	public synchronized TombstoneFile getTombstoneFile() throws IOException {
 		if(tombstoneFile == null) {
 			tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(insertFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
@@ -413,7 +413,12 @@ public class OverflowResource {
 	}
 
 	public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
-		getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+		getTombstoneFile().lock();
+		try {
+			getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+		} catch (IOException e) {
+			getTombstoneFile().unlock();
+		}
 	}
 
 }

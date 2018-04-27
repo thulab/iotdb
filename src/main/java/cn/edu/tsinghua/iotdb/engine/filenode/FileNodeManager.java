@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneMergeManager;
+import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneMergeTask;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -76,6 +78,11 @@ public class FileNodeManager implements IStatistic, IService {
 	 */
 	private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
 			+ MonitorConstants.MONITOR_PATH_SEPERATOR + MonitorConstants.fileNodeManagerPath;
+
+	/**
+	 * A thread that periodically merge tsfile with tombstone file.
+	 */
+	private TombstoneMergeManager tombstoneMergeManager;
 
 	// There is no need to add concurrently
 	private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
@@ -173,6 +180,9 @@ public class FileNodeManager implements IStatistic, IService {
 			registStatMetadata();
 			statMonitor.registStatistics(statStorageDeltaName, this);
 		}
+
+		tombstoneMergeManager = new TombstoneMergeManager();
+		tombstoneMergeManager.start();
 	}
 
 	private FileNodeProcessor constructNewProcessor(String filenodeName) throws FileNodeManagerException {
@@ -1020,10 +1030,13 @@ public class FileNodeManager implements IStatistic, IService {
 	public void stop() {
 		try {
 			closeAll();
+			stopTombstoneMergeManager();
 		} catch (FileNodeManagerException e) {
 			LOGGER.error("Failed to close file node manager because {}.", e.getMessage());
-		}
-	}
+		} catch (InterruptedException e) {
+            LOGGER.error("Unexpected interruption when stopping TombstoneMergeManager");
+        }
+    }
 
 	@Override
 	public ServiceType getID() {
@@ -1045,5 +1058,30 @@ public class FileNodeManager implements IStatistic, IService {
         fileNodeProcessor.fileNodeRecovery();
         // add index check sum
         fileNodeProcessor.rebuildIndex();
+    }
+
+    public List<TombstoneMergeTask> getTombstoneMergeTasks() throws IOException {
+		List<TombstoneMergeTask> mergeTasks = new ArrayList<>();
+		for(FileNodeProcessor processor : processorMap.values()) {
+			TombstoneMergeTask task = processor.getTombstoneMergeTask();
+			if (task != null) {
+				mergeTasks.add(task);
+			}
+		}
+		return mergeTasks;
+	}
+
+    /**
+     * Pure test methods.
+     */
+	public void restartTombstoneMergeManager() throws InterruptedException {
+        stopTombstoneMergeManager();
+        tombstoneMergeManager = new TombstoneMergeManager();
+        tombstoneMergeManager.start();
+    }
+
+    public void stopTombstoneMergeManager() throws InterruptedException {
+	    tombstoneMergeManager.interrupt();
+        Thread.sleep(3000);
     }
 }

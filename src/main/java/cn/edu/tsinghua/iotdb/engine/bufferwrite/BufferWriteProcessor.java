@@ -738,7 +738,7 @@ public class BufferWriteProcessor extends Processor {
 		return bufferwriteRestoreFilePath;
 	}
 
-	public TombstoneFile getTombstoneFile() throws IOException {
+	public synchronized TombstoneFile getTombstoneFile() throws IOException {
 		if(tombstoneFile == null) {
 			tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(bufferwriteOutputFilePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
@@ -751,7 +751,12 @@ public class BufferWriteProcessor extends Processor {
 
 	public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
 		if(bufferIOWriter.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
-			getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+			getTombstoneFile().lock();
+			try {
+				getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+			} catch (IOException e) {
+				getTombstoneFile().unlock();
+			}
 		}
 	}
 }

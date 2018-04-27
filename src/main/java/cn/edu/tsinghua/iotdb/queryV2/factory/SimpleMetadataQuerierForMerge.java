@@ -28,7 +28,7 @@ public class SimpleMetadataQuerierForMerge implements MetadataQuerier {
 
     private String filePath;
     private TsFileMetaData fileMetaData;
-    private LRUCache<String, List<RowGroupMetaData>> rowGroupMetadataCache;
+    protected LRUCache<String, List<RowGroupMetaData>> rowGroupMetadataCache;
 
     public SimpleMetadataQuerierForMerge(String filePath) throws IOException {
         this.filePath = filePath;
@@ -98,7 +98,7 @@ public class SimpleMetadataQuerierForMerge implements MetadataQuerier {
         }
     }
 
-    private EncodedSeriesChunkDescriptor generateSeriesChunkDescriptorByMetadata(TimeSeriesChunkMetaData timeSeriesChunkMetaData) {
+    protected EncodedSeriesChunkDescriptor generateSeriesChunkDescriptorByMetadata(TimeSeriesChunkMetaData timeSeriesChunkMetaData) {
         EncodedSeriesChunkDescriptor encodedSeriesChunkDescriptor = new EncodedSeriesChunkDescriptor(
                 filePath,
                 timeSeriesChunkMetaData.getProperties().getFileOffset(),

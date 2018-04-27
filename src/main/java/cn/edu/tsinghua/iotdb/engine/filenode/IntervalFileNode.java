@@ -3,10 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
@@ -34,7 +31,7 @@ public class IntervalFileNode implements Serializable {
 	private Set<String> mergeChanged = new HashSet<>();
 	private static String baseDir = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir;
 
-	private TombstoneFile tombstoneFile;
+	transient private TombstoneFile tombstoneFile;
 
 	public IntervalFileNode(Map<String, Long> startTimeMap, Map<String, Long> endTimeMap, OverflowChangeType type,
 			String relativePath) {
@@ -250,7 +247,10 @@ public class IntervalFileNode implements Serializable {
 	public void closeTombstoneFile() throws IOException {
 		if(tombstoneFile != null) {
 			tombstoneFile.close();
-			tombstoneFile = null;
 		}
+	}
+
+	public Collection<String> listDeltaObjects() {
+		return startTimeMap.keySet();
 	}
 }

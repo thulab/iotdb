@@ -16,4 +16,6 @@ public interface ITombstoneAccessor {
     void close() throws IOException;
 
     boolean isEmpty() throws IOException;
+
+    boolean delete() throws IOException;
 }

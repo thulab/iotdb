@@ -228,6 +228,16 @@ public class TsfileDBConfig {
 	 */
 	public int maxLogEntrySize = 4 * 1024 * 1024;
 
+	/**
+	 * How many threads can run tombstone merge task concurrently.
+	 */
+	public int maxTombstoneThread = (int) (Runtime.getRuntime().availableProcessors() * 0.5 )> 0 ? (int) (Runtime.getRuntime().availableProcessors() * 0.5) : 1;
+
+	/**
+	 * The interval between two attempts of merging tombstone.
+	 */
+	public long tombstoneMergeInterval = 60 * 60 * 1000;
+
 	public TsfileDBConfig() {}
 
 	public void updatePath() {

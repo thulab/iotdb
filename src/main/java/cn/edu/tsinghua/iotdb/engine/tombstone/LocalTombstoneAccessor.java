@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.tombstone;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -20,9 +21,11 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     private static final String ENCODING = "utf-8";
 
     private RandomAccessFile raf;
+    private String filePath;
 
     public LocalTombstoneAccessor(String filePath) throws IOException {
-        raf = new RandomAccessFile(filePath, OPEN_MODE);
+        this.raf = new RandomAccessFile(filePath, OPEN_MODE);
+        this.filePath = filePath;
     }
 
     @Override
@@ -76,6 +79,12 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
 
     @Override
     public boolean isEmpty() throws IOException {
-        return raf.length() != 0;
+        return raf.length() == 0;
+    }
+
+    @Override
+    public boolean delete() throws IOException {
+        raf.close();
+        return new File(this.filePath).delete();
     }
 }
