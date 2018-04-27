@@ -34,8 +34,10 @@ public abstract class TombstoneFile {
 
     public abstract boolean isEmpty() throws IOException;
 
-    public void delete() throws IOException {
-        getAccessor().delete();
+    public boolean delete() throws IOException {
+        boolean state = getAccessor().delete();
+        accessor = null;
+       return state;
     }
 
     public void lock() {

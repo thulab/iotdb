@@ -33,14 +33,14 @@ public class TombstoneMergeManager extends Thread {
                 LOGGER.info("Tombstone merge manager exits...");
                 return;
             }
-            if(((ThreadPoolExecutor) mergePool).getActiveCount() >= 0.5 * config.maxTombstoneThread) {
-                LOGGER.info("Half of last tombstone merges are ongoing, wait for their completion.");
+            if(((ThreadPoolExecutor) mergePool).getActiveCount() > 0) {
+                LOGGER.info("Last tombstone merges are ongoing, wait for their completion.");
             }
             List<TombstoneMergeTask> mergeTaskList;
             try {
                 mergeTaskList = FileNodeManager.getInstance().getTombstoneMergeTasks();
             } catch (IOException e) {
-                LOGGER.error("Cannot get tombstone merge tasks because {}", e.getMessage());
+                LOGGER.error("Cannot get tombstone merge tasks because ", e);
                 continue;
             }
             for(TombstoneMergeTask task : mergeTaskList) {

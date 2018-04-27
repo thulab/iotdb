@@ -1773,9 +1773,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			return null;
 		List<TombstoneMerger> mergers = new ArrayList<>();
 		for(IntervalFileNode fileNode : newFileNodes) {
-			if(fileNode.isClosed() && !fileNode.getTombstoneFile().isEmpty())
-				mergers.add(new TombstoneMerger(fileNode, fileSchema));
+			if(fileNode.isClosed()) {
+				if(!fileNode.getTombstoneFile().isEmpty())
+					mergers.add(new TombstoneMerger(fileNode, fileSchema));
+				fileNode.getTombstoneFile().close();
+			}
 		}
-		return mergers.size() > 0 ? new TombstoneMergeTask(mergers) : null;
+		return mergers.size() > 0 ? new TombstoneMergeTask(mergers, this) : null;
 	}
 }

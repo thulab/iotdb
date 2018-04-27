@@ -1,6 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.tombstone;
 
+import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
+import cn.edu.tsinghua.iotdb.engine.filenode.OverflowChangeType;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.TombstoneMergeException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -95,6 +97,7 @@ public class TombstoneMerger {
                 Map<String, Long> startTimeMap = new HashMap<>();
                 Map<String, Long> endTimeMap = new HashMap<>();
                 for (Path path : pathList) {
+                    int dataCnt = 0;
                     // query tombstones of this series
                     seriesTombstones.clear();
                     for (Tombstone tombstone : deltaObjectTombstones) {
@@ -122,6 +125,7 @@ public class TombstoneMerger {
                             TSRecord record = constructTsRecord(timeValuePair, deltaObjectId,
                                     path.getMeasurementToString());
                             recordWriter.write(record);
+                            dataCnt ++;
                             startTime = endTime = timeValuePair.getTimestamp();
                             if (!startTimeMap.containsKey(deltaObjectId) || startTimeMap.get(deltaObjectId) > startTime) {
                                 startTimeMap.put(deltaObjectId, startTime);
@@ -134,6 +138,7 @@ public class TombstoneMerger {
                                         path.getMeasurementToString());
                                 endTime = record.time;
                                 recordWriter.write(record);
+                                dataCnt ++;
                             }
                             if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                                 endTimeMap.put(deltaObjectId, endTime);
@@ -148,12 +153,16 @@ public class TombstoneMerger {
                             LOGGER.error("Cannot close series reader when merging {}, because {}", tsFile.getFilePath(), e.getMessage());
                         }
                     }
-                    LOGGER.debug("Write out a series {} in {}", path, tsFile.getFilePath());
+                    LOGGER.debug("Write out a series {} in {} size {}", path, tsFile.getFilePath(), dataCnt);
                 }
+                tsFile.setStartTimeMap(startTimeMap);
+                tsFile.setEndTimeMap(endTimeMap);
             }
+            TsFileMetaDataCache.getInstance().remove(tsFile.getFilePath());
             if (recordWriter != null) {
                 try {
                     recordWriter.close();
+                    LOGGER.debug("New file written, file size {}", tempFile.length());
                 } catch (IOException e) {
                     LOGGER.error("Cannot close record writer after tombstone merge of {}", tsFile.getFilePath());
                 }
@@ -177,9 +186,10 @@ public class TombstoneMerger {
                         if(tsF.delete()) {
                             completeFile.renameTo(tsF);
                             try {
-                                tombstoneFile.delete();
+                                if(!tombstoneFile.delete())
+                                    LOGGER.error("Cannot delete tombstone file when merging tombstones of {}", tsFile.getFilePath());
                             } catch (IOException e) {
-                                LOGGER.error("Cannot delete tombstone file when merging tombstones of {}", tsFile.getFilePath());
+                                LOGGER.error("Cannot delete tombstone file when merging tombstones of {}, because ", tsFile.getFilePath(), e);
                             }
                             LOGGER.debug("Replace old file succeeded");
                             return;
