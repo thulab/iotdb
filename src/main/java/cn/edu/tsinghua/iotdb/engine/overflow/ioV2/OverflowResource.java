@@ -154,9 +154,6 @@ public class OverflowResource {
 				}
 			}
 		}
-		// read tombstones
-		List<Tombstone> tombstones = getTombstoneFile().getTombstones();
-		Map<String, List<Tombstone>> deltaObjectTombstoneMap = new HashMap<>();
 		// read insert meta-data
 		insertIO.toTail();
 		position = insertIO.getPos();
@@ -176,22 +173,7 @@ public class OverflowResource {
 			insertIO.getReader().read(bytesPosition, 0, POS_LENGTH);
 			position = BytesUtils.bytesToLong(bytesPosition);
 			for (RowGroupMetaData rowGroupMetaData : blockMeta.getRowGroups()) {
-				// get tombstones of this deltaObject
 				String deltaObjectId = rowGroupMetaData.getDeltaObjectID();
-				List<Tombstone> deltaObjectTombstones = deltaObjectTombstoneMap.get(deltaObjectId);
-				if(deltaObjectTombstones == null) {
-					deltaObjectTombstones = new ArrayList<>();
-					for(Tombstone tombstone : tombstones)
-						if(tombstone.deltaObjectId.equals(deltaObjectId))
-							deltaObjectTombstones.add(tombstone);
-					deltaObjectTombstoneMap.put(deltaObjectId, deltaObjectTombstones);
-				}
-				// find tombstone that is valid to this RowGroup with the most time stamp
-				long maxTombstoneTime = 0;
-				for(Tombstone tombstone : deltaObjectTombstones)
-					if(tombstone.executeTimestamp > rowGroupMetaData.getWrittenTime())
-						maxTombstoneTime = maxTombstoneTime > tombstone.deleteTimestamp ? maxTombstoneTime : tombstone.deleteTimestamp;
-
 				if (!insertMetadatas.containsKey(deltaObjectId)) {
 					insertMetadatas.put(deltaObjectId, new HashMap<>());
 				}
@@ -200,7 +182,7 @@ public class OverflowResource {
 					if (!insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
 						insertMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
 					}
-					chunkMetaData.setMaxTombstoneTime(maxTombstoneTime);
+					chunkMetaData.setWrittenTime(rowGroupMetaData.getWrittenTime());
 					insertMetadatas.get(deltaObjectId).get(measurementId).add(0, chunkMetaData);
 				}
 			}
@@ -212,9 +194,30 @@ public class OverflowResource {
 		List<TimeSeriesChunkMetaData> chunkMetaDatas = new ArrayList<>();
 		if (insertMetadatas.containsKey(deltaObjectId)) {
 			if (insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
+				// read tombstones
+				List<Tombstone> tombstones = null;
+				try {
+					tombstones = getTombstoneFile().getTombstones();
+				} catch (IOException e) {
+					LOGGER.error("Cannot read tombstones when querying {}.{}, because {}", deltaObjectId, measurementId, e.getMessage());
+				}
+				// get tombstones of this series
+				List<Tombstone> seriesTombstones = new ArrayList<>();
+				if (tombstones != null) {
+					for(Tombstone tombstone : tombstones)
+						if(tombstone.deltaObjectId.equals(deltaObjectId) && tombstone.measurementId.equals(measurementId))
+							seriesTombstones.add(tombstone);
+				}
+
 				for (TimeSeriesChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
 					// filter
 					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
+						// find the tombstone that is valid to this chunk and has the largest deleteTime
+						long maxTombstoneTime = 0;
+						for(Tombstone tombstone : seriesTombstones)
+							if(tombstone.executeTimestamp > chunkMetaData.getWrittenTime() && measurementId.equals(tombstone.measurementId))
+								maxTombstoneTime = maxTombstoneTime > tombstone.deleteTimestamp ? maxTombstoneTime : tombstone.deleteTimestamp;
+						chunkMetaData.setMaxTombstoneTime(maxTombstoneTime);
 						chunkMetaDatas.add(chunkMetaData);
 					}
 				}

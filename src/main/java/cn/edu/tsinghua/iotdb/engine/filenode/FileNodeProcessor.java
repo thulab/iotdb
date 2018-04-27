@@ -1709,7 +1709,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		try {
 			// find files that contain this series
 			for(IntervalFileNode intervalFileNode : newFileNodes) {
-				if(intervalFileNode == currentIntervalFileNode)
+				if(!intervalFileNode.isClosed())
 					continue;
                 TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(intervalFileNode.getFilePath());
                 // TODO-DELETE: use deleteTimestamp to narrow the scope
