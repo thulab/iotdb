@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.MonitorV2;
+package cn.edu.tsinghua.iotdb.monitor;
 
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;

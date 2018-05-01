@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.MonitorV2;
+package cn.edu.tsinghua.iotdb.monitor;
 
 public interface StatMonitorMBean {
     int getEventQueueLength();

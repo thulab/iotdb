@@ -46,7 +46,7 @@ public class EnvironmentUtils {
 		} catch (FileNodeManagerException e) {
 			throw new IOException(e);
 		}
-		cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor.getInstance().close();
+		cn.edu.tsinghua.iotdb.monitor.StatMonitor.getInstance().close();
 		FileNodeManager.getInstance().resetFileNodeManager();
 		// clean wal
 		MultiFileLogNodeManager.getInstance().stop();

@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.monitorV2;
 
-import cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants;
-import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.sql.*;
 import java.util.*;
 

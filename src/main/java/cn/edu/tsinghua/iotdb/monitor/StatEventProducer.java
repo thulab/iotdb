@@ -1,6 +1,6 @@
-package cn.edu.tsinghua.iotdb.MonitorV2;
+package cn.edu.tsinghua.iotdb.monitor;
 
-import cn.edu.tsinghua.iotdb.MonitorV2.Event.StatEvent;
+import cn.edu.tsinghua.iotdb.monitor.Event.StatEvent;
 
 public interface StatEventProducer {
 

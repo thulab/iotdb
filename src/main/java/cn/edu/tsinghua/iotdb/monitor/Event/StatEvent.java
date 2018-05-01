@@ -1,7 +1,7 @@
-package cn.edu.tsinghua.iotdb.MonitorV2.Event;
+package cn.edu.tsinghua.iotdb.monitor.Event;
 
-import cn.edu.tsinghua.iotdb.MonitorV2.MonitorConstants;
-import cn.edu.tsinghua.iotdb.MonitorV2.StatTSRecord;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
+import cn.edu.tsinghua.iotdb.monitor.StatTSRecord;
 
 public class StatEvent {
 
@@ -32,7 +32,6 @@ public class StatEvent {
     }
 
     public StatTSRecord convertToStatTSRecord(){
-
         String stat_path = MonitorConstants.convertStorageGroupPathToStatisticPath(path);
         StatTSRecord record = new StatTSRecord(timestamp, stat_path);
         record.addOneStatistic(MonitorConstants.StatisticConstants.TOTAL_POINTS_SUCCESS, value);

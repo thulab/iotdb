@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
@@ -89,9 +90,8 @@ public class FileNodeManager implements IService {
 
 		// TsFileConf.duplicateIncompletedPage = true;
 		if (TsFileDBConf.enableStatMonitor) {
-//			StatMonitor statMonitor = StatMonitor.getInstance();
-//			registStatMetadata();
-//			statMonitor.registStatistics(statStorageDeltaName, this);
+			StatMonitor statMonitor = StatMonitor.getInstance();
+			statMonitor.init();
 		}
 	}
 

@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.service;
 
 import java.io.IOException;
 
-import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

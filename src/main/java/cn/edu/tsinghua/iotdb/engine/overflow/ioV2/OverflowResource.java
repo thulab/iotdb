@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.iotdb.MonitorV2.Event.FlushStatEvent;
-import cn.edu.tsinghua.iotdb.MonitorV2.StatMonitor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
