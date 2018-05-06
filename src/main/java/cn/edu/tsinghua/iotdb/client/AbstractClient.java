@@ -451,7 +451,6 @@ public abstract class AbstractClient {
 			}
 			System.out.println("Execute successfully.");
 		} catch (Exception e) {
-			e.printStackTrace();
 			System.out.println("Msg: " + e.getMessage());
 		} finally {
 			if (statement != null) {
