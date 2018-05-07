@@ -15,11 +15,11 @@ import java.io.IOException;
 
 public class TsFileWritePerformanceTest {
 
-    private static final String outPutFilePath = "src/main/resources/output";
+    private static final String outPutFilePath = "output";
 
     public static void main(String[] args) throws WriteProcessException, IOException {
         writeMultiSeriesTest();
-        writeSingleSeriesTest();
+        //writeSingleSeriesTest();
     }
 
     private static void writeMultiSeriesTest() throws WriteProcessException, IOException {
@@ -58,7 +58,7 @@ public class TsFileWritePerformanceTest {
             record.addTuple(DataPoint.getDataPoint(TSDataType.FLOAT, "s0" , String.valueOf(4.0)));
             fileWriter.write(record);
         }
-
+        fileWriter.close();
         long endTime = System.currentTimeMillis();
         System.out.println(String.format("write single series time cost %dms", endTime - startTime));
     }

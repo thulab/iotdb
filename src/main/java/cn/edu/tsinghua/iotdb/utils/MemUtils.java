@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.utils;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.*;
@@ -19,7 +20,26 @@ public class MemUtils {
 		}
 		return memSize;
 	}
-
+	
+	public static long getTimeValuePairSize(TimeValuePair timeValue){
+		switch (timeValue.getValue().getDataType()) {
+		case INT32:
+			return 12;
+		case INT64:
+			return 16;
+		case FLOAT:
+			return 16;
+		case DOUBLE:
+			return 16;
+		case BOOLEAN:
+			return 9;
+		case TEXT:
+			return 8+timeValue.getValue().getBinary().getLength();
+		default:
+			return 8+8;
+		}
+	}
+	
 	private static long getPointSize(DataPoint dataPoint) {
 		switch (dataPoint.getType()) {
 		case INT32:
