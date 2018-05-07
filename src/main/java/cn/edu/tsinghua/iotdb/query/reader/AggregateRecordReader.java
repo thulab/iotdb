@@ -232,7 +232,8 @@ public class AggregateRecordReader extends RecordReader {
                 valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType));
                 result = ReaderUtils.readOnePage(dataType, timestamps, valueReader.decoder, page, result,
                         queryTimeFilter, queryValueFilter, insertMemoryData, overflowOperationReaderCopy, maxTombstoneTime);
-                func.calculateValueFromDataPage(result);
+                if (result.valueLength > 0)
+                    func.calculateValueFromDataPage(result);
                 result.clearData();
             }
         }
@@ -367,17 +368,17 @@ public class AggregateRecordReader extends RecordReader {
 
         // represents that whether the time data of this page are satisfied with the time filter
         boolean timeEligible = false;
-
         if (queryTimeFilter != null) {
             LongInterval timeInterval = (LongInterval) singleTimeVisitor.getInterval();
             for (int i = 0; i < timeInterval.count; i += 2) {
-                if (timeInterval.v[i] > pageMaxTime)
-                    break;
 
                 long startTime = timeInterval.flag[i] ? timeInterval.v[i] : timeInterval.v[i] + 1;
-                long endTime = timeInterval.flag[i+1] ? timeInterval.v[i+1] : timeInterval.v[i] - 1;
-                if (startTime <= pageMinTime && endTime >= pageMaxTime)
-                    timeEligible = true;
+                if (startTime > pageMaxTime)
+                    break;
+                long endTime = timeInterval.flag[i+1] ? timeInterval.v[i+1] : timeInterval.v[i+1] - 1;
+                if (startTime <= pageMinTime && endTime >= pageMaxTime) {
+                    return true;
+                }
             }
         } else {
             timeEligible = true;
