@@ -342,84 +342,44 @@ public class ServiceImp implements Service.Iface {
 					+ file.getName();
 			File storageGroup = new File(storageGroupPath);
 			File storageGroupPB = new File(storageGroupPathPB);
-			if (!storageGroup.exists()) // the first type: new storage group
+			if (!storageGroup.exists()) // new storage group
 			{
-				List<String> filesPath = new ArrayList<>();
-				filesPath.clear();
 				storageGroup.mkdirs();
-				// copy the storage group
-				File[] filesSG = storageGroupPB.listFiles();
-				for (File fileTF : filesSG) { // file means TsFiles
-					Map<String, Long> startTimeMap = new HashMap<>();
-					Map<String, Long> endTimeMap = new HashMap<>();
-					TsRandomAccessLocalFileReader input = null;
-					try {
-						input = new TsRandomAccessLocalFileReader(fileTF.getAbsolutePath());
-						FileReader reader = new FileReader(input);
-						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
-						Iterator<String> it = deltaObjectMap.keySet().iterator();
-						while (it.hasNext()) {
-							String key = it.next().toString(); // key represent device
-							TsDeltaObject deltaObj = deltaObjectMap.get(key);
-							startTimeMap.put(key, deltaObj.startTime);
-							endTimeMap.put(key, deltaObj.endTime);
-						}
-					} catch (Exception e) {
-						LOGGER.error("IoTDB post back receiver: unable to read tsfile {} because {}", fileTF.getAbsolutePath(), e.getMessage());
-					} finally {
-						try {
-							input.close();
-						} catch (IOException e) {
-							LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
-									fileTF.getAbsolutePath(), e.getMessage());
-						}
-					}
-					fileNodeStartTime.get().put(fileTF.getAbsolutePath(), startTimeMap);
-					fileNodeEndTime.get().put(fileTF.getAbsolutePath(), endTimeMap);
-					filesPath.add(fileTF.getAbsolutePath());
-					num++;
-					LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
-				}
-				fileNodeMap.get().put(file.getName(), filesPath);
-			} else
-			{				
-				List<String> filesPath = new ArrayList<>();
-				
-				File[] filesSG = storageGroupPB.listFiles();
-				for (File fileTF : filesSG) {
-					Map<String, Long> startTimeMap = new HashMap<>();
-					Map<String, Long> endTimeMap = new HashMap<>();
-					TsRandomAccessLocalFileReader input = null;
-					try {
-						input = new TsRandomAccessLocalFileReader(fileTF.getAbsolutePath());
-						FileReader reader = new FileReader(input);
-						Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
-						Iterator<String> it = deltaObjectMap.keySet().iterator();
-						while (it.hasNext()) {
-							String key = it.next().toString(); // key represent device
-							TsDeltaObject deltaObj = deltaObjectMap.get(key);
-							startTimeMap.put(key, deltaObj.startTime);
-							endTimeMap.put(key, deltaObj.endTime);
-						}
-					} catch (Exception e) {
-						LOGGER.error("IoTDB post back receiver: unable to read tsfile {} because {}", fileTF.getAbsolutePath(), e.getMessage());
-					} finally {
-						try {
-							input.close();
-						} catch (IOException e) {
-							LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
-									fileTF.getAbsolutePath(), e.getMessage());
-						}
-					}
-					String sourceFilePath = fileTF.getAbsolutePath();
-					fileNodeStartTime.get().put(sourceFilePath, startTimeMap);
-					fileNodeEndTime.get().put(sourceFilePath, endTimeMap);
-					filesPath.add(sourceFilePath);
-					num++;
-					LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
-				}
-				fileNodeMap.get().put(file.getName(), filesPath);
 			}
+			List<String> filesPath = new ArrayList<>();
+			File[] filesSG = storageGroupPB.listFiles();
+			for (File fileTF : filesSG) { // fileTF means TsFiles
+				Map<String, Long> startTimeMap = new HashMap<>();
+				Map<String, Long> endTimeMap = new HashMap<>();
+				TsRandomAccessLocalFileReader input = null;
+				try {
+					input = new TsRandomAccessLocalFileReader(fileTF.getAbsolutePath());
+					FileReader reader = new FileReader(input);
+					Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
+					Iterator<String> it = deltaObjectMap.keySet().iterator();
+					while (it.hasNext()) {
+						String key = it.next().toString(); // key represent device
+						TsDeltaObject deltaObj = deltaObjectMap.get(key);
+						startTimeMap.put(key, deltaObj.startTime);
+						endTimeMap.put(key, deltaObj.endTime);
+					}
+				} catch (Exception e) {
+					LOGGER.error("IoTDB post back receiver: unable to read tsfile {} because {}", fileTF.getAbsolutePath(), e.getMessage());
+				} finally {
+					try {
+						input.close();
+					} catch (IOException e) {
+						LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}",
+								fileTF.getAbsolutePath(), e.getMessage());
+					}
+				}
+				fileNodeStartTime.get().put(fileTF.getAbsolutePath(), startTimeMap);
+				fileNodeEndTime.get().put(fileTF.getAbsolutePath(), endTimeMap);
+				filesPath.add(fileTF.getAbsolutePath());
+				num++;
+				LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
+			}
+			fileNodeMap.get().put(file.getName(), filesPath);
 		}
 	}
 
@@ -732,7 +692,7 @@ public class ServiceImp implements Service.Iface {
 								new File(snapshotFilePath.get()).mkdirs();
 							}
 							List<String> overlapFiles = fileNodeManager.getOverlapFilesFromFileNode(storageGroup, fileNode, snapshotFilePath.get());
-							if(overlapFiles.size()==0) {
+							if(overlapFiles.size() == 0) {
 								mergeOldData(path);
 							}else {
 								mergeOldData(path,overlapFiles);
