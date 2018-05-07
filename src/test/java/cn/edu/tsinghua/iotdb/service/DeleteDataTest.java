@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -217,13 +218,14 @@ public class DeleteDataTest {
         }
     }
 
+
     @Test
     public void overflowMergeTombstoneTest() throws SQLException, InterruptedException {
         long threshold = TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold;
         TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold = 1;
         try {
             // this test deletes data in both overflow data and normal tsfile data
-            // then call merge to clean tombstone file
+            // then calls merge to clean tombstone file
             // prepare data in tsfile
             int dataSize = 1000, offset = 0;
             prepareData(dataSize, offset);
@@ -236,7 +238,7 @@ public class DeleteDataTest {
             // delete half of the data in tsfile and all data in overflow
             int deleteTime = 750;
             exeDelete(deleteTime);
-            // check that tomb stone file exist
+            // check that tombstone file exists
             File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
             File[] files = storageGroupDir.listFiles();
             assertTrue(files != null);
@@ -246,6 +248,7 @@ public class DeleteDataTest {
                     exists = true;
             assertTrue(exists);
 
+            merge();
             Thread.sleep(10000);
 
             files = storageGroupDir.listFiles();
@@ -287,16 +290,16 @@ public class DeleteDataTest {
             int deleteTime = 250;
             exeDelete(deleteTime);
             // query and check
-//            Map<String, List<Object>> result = query();
-//            List<Object> s0Data = result.get(s[0]);
-//            List<Object> s1Data = result.get(s[1]);
-//            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
-//            for (int i = 0; i < 250; i++) {
-//                int s0 = (int) s0Data.get(i);
-//                double s1 = (double) s1Data.get(i);
-//                assertEquals(i + deleteTime + 1, s0);
-//                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
-//            }
+            Map<String, List<Object>> result = query();
+            List<Object> s0Data = result.get(s[0]);
+            List<Object> s1Data = result.get(s[1]);
+            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
+            for (int i = 0; i < 250; i++) {
+                int s0 = (int) s0Data.get(i);
+                double s1 = (double) s1Data.get(i);
+                assertEquals(i + deleteTime + 1, s0);
+                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
+            }
             // ensure that the tombstone file no longer exists
             File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
             File[] files = storageGroupDir.listFiles();
@@ -317,18 +320,16 @@ public class DeleteDataTest {
                     exists = true;
             assertTrue(!exists);
 
-            // query and check again
-            query();
-//            result = query();
-//            s0Data = result.get(s[0]);
-//            s1Data = result.get(s[1]);
-//            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
-//            for (int i = 0; i < 250; i++) {
-//                int s0 = (int) s0Data.get(i);
-//                double s1 = (double) s1Data.get(i);
-//                assertEquals(i + deleteTime + 1, s0);
-//                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
-//            }
+            result = query();
+            s0Data = result.get(s[0]);
+            s1Data = result.get(s[1]);
+            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
+            for (int i = 0; i < 250; i++) {
+                int s0 = (int) s0Data.get(i);
+                double s1 = (double) s1Data.get(i);
+                assertEquals(i + deleteTime + 1, s0);
+                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
+            }
         } finally {
             TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval = tombstoneMergeInterval;
         }
