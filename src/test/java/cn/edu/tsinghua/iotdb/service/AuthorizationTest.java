@@ -49,6 +49,7 @@ public class AuthorizationTest {
         userCon.close();
 
         adminStmt.execute("UPDATE USER tempuser SET PASSWORD newpw");
+
         boolean caught = false;
         try {
             userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
@@ -58,6 +59,9 @@ public class AuthorizationTest {
         assertTrue(caught);
 
         userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "newpw");
+
+        userCon.close();
+        adminCon.close();
     }
 
     @Test
@@ -193,6 +197,9 @@ public class AuthorizationTest {
         assertTrue(caught);
         adminStmt.execute("GRANT USER tempuser PRIVILEGES 'REVOKE_USER_PRIVILEGE' on root");
         userStmt.execute("REVOKE USER tempuser PRIVILEGES 'DELETE_TIMESERIES' on root");
+
+        userCon.close();
+        adminCon.close();
     }
 
     @Test
