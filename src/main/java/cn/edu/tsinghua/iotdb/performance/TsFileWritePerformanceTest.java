@@ -18,15 +18,18 @@ public class TsFileWritePerformanceTest {
     private static final String outPutFilePath = "output";
 
     public static void main(String[] args) throws WriteProcessException, IOException {
-        writeMultiSeriesTest();
-        //writeSingleSeriesTest();
+//        writeMultiSeriesTest();
+        writeSingleSeriesTest();
     }
 
     private static void writeMultiSeriesTest() throws WriteProcessException, IOException {
         long startTime = System.currentTimeMillis();
-
+        
         FileSchema fileSchema = new FileSchema();
         File outPutFile = new File(outPutFilePath);
+        if(outPutFile.exists()){
+        	outPutFile.delete();
+        }
         for (int i = 1; i <= 100; i++)
             fileSchema.registerMeasurement(new MeasurementDescriptor("s" + i, TSDataType.FLOAT, TSEncoding.RLE));
         TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
@@ -40,7 +43,7 @@ public class TsFileWritePerformanceTest {
                 }
             }
         }
-
+        fileWriter.close();
         long endTime = System.currentTimeMillis();
         System.out.println(String.format("write multi series time cost %dms", endTime - startTime));
     }
@@ -50,6 +53,9 @@ public class TsFileWritePerformanceTest {
 
         FileSchema fileSchema = new FileSchema();
         File outPutFile = new File(outPutFilePath);
+        if(outPutFile.exists()){
+        	outPutFile.delete();
+        }
         fileSchema.registerMeasurement(new MeasurementDescriptor("s0", TSDataType.FLOAT, TSEncoding.RLE));
         TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 

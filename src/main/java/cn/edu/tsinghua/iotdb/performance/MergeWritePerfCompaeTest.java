@@ -27,8 +27,8 @@ public class MergeWritePerfCompaeTest {
 	private static TsFileIOWriter writer;
 
 	public static void main(String[] args) throws WriteProcessException, IOException {
-		writeMultiSeriesTest();
-		//writeSingleSeriesTest();
+//		writeMultiSeriesTest();
+		 writeSingleSeriesTest();
 	}
 
 	private static void writeMultiSeriesTest() throws WriteProcessException, IOException {
@@ -51,12 +51,17 @@ public class MergeWritePerfCompaeTest {
 					workMemTable.write(record.deltaObjectId, record.dataPointList.get(0).getMeasurementId(),
 							record.dataPointList.get(0).getType(), record.time,
 							record.dataPointList.get(0).getValue().toString());
-				
+
 					long mem = memSize.addAndGet(MemUtils.getRecordSize(record));
-					//System.out.println(MemUtils.bytesCntToStr(mem));
+					// System.out.println(MemUtils.bytesCntToStr(mem));
 					if (mem > memThreshold) {
+						long flushStartTime = System.currentTimeMillis();
+						long posStart = writer.getPos();
 						MemTableFlushUtil.flushMemTable(fileSchema, writer, workMemTable);
+						workMemTable = new PrimitiveMemTable();
 						memSize.set(0);
+						System.out.println(System.currentTimeMillis() - flushStartTime + " size: "
+								+ MemUtils.bytesCntToStr(writer.getPos() - posStart));
 					}
 				}
 			}
@@ -69,6 +74,7 @@ public class MergeWritePerfCompaeTest {
 	private static void writeSingleSeriesTest() throws WriteProcessException, IOException {
 		FileSchema fileSchema = new FileSchema();
 		File outPutFile = new File(outPutFilePath);
+		outPutFile.delete();
 		fileSchema.registerMeasurement(new MeasurementDescriptor("s0", TSDataType.FLOAT, TSEncoding.RLE));
 		// TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema,
 		// TSFileDescriptor.getInstance().getConfig());
@@ -83,10 +89,14 @@ public class MergeWritePerfCompaeTest {
 					record.dataPointList.get(0).getType(), record.time,
 					record.dataPointList.get(0).getValue().toString());
 			long mem = memSize.addAndGet(MemUtils.getRecordSize(record));
-			System.out.println(MemUtils.bytesCntToStr(mem));
 			if (mem > memThreshold) {
+				long flushStartTime = System.currentTimeMillis();
+				long posStart = writer.getPos();
 				MemTableFlushUtil.flushMemTable(fileSchema, writer, workMemTable);
+				workMemTable = new PrimitiveMemTable();
 				memSize.set(0);
+				System.out.println(System.currentTimeMillis() - flushStartTime + " size: "
+						+ MemUtils.bytesCntToStr(writer.getPos() - posStart));
 			}
 		}
 		writer.endFile(fileSchema);
