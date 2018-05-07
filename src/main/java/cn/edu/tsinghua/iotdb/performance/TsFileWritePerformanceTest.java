@@ -12,60 +12,63 @@ import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 public class TsFileWritePerformanceTest {
 
-    private static final String outPutFilePath = "output";
+	private static final String outPutFilePath = "output";
+	private static Random random = new Random(System.currentTimeMillis());
 
-    public static void main(String[] args) throws WriteProcessException, IOException {
-//        writeMultiSeriesTest();
-        writeSingleSeriesTest();
-    }
+	public static void main(String[] args) throws WriteProcessException, IOException {
+		writeMultiSeriesTest();
+//		writeSingleSeriesTest();
+	}
 
-    private static void writeMultiSeriesTest() throws WriteProcessException, IOException {
-        long startTime = System.currentTimeMillis();
-        
-        FileSchema fileSchema = new FileSchema();
-        File outPutFile = new File(outPutFilePath);
-        if(outPutFile.exists()){
-        	outPutFile.delete();
-        }
-        for (int i = 1; i <= 100; i++)
-            fileSchema.registerMeasurement(new MeasurementDescriptor("s" + i, TSDataType.FLOAT, TSEncoding.RLE));
-        TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
+	private static void writeMultiSeriesTest() throws WriteProcessException, IOException {
+		long startTime = System.currentTimeMillis();
 
-        for (int i = 1; i <= 500; i++) {
-            for (int j = 1; j <= 100; j++) {
-                for (long time = 1; time <= 2257; time++) {
-                    TSRecord record = new TSRecord(time, "d" + i);
-                    record.addTuple(DataPoint.getDataPoint(TSDataType.FLOAT, "s" + j, String.valueOf(4.0)));
-                    fileWriter.write(record);
-                }
-            }
-        }
-        fileWriter.close();
-        long endTime = System.currentTimeMillis();
-        System.out.println(String.format("write multi series time cost %dms", endTime - startTime));
-    }
+		FileSchema fileSchema = new FileSchema();
+		File outPutFile = new File(outPutFilePath);
+		if (outPutFile.exists()) {
+			outPutFile.delete();
+		}
+		for (int i = 1; i <= 100; i++)
+			fileSchema.registerMeasurement(new MeasurementDescriptor("s" + i, TSDataType.INT32, TSEncoding.RLE));
+		TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
-    private static void writeSingleSeriesTest() throws WriteProcessException, IOException {
-        long startTime = System.currentTimeMillis();
+		for (int i = 1; i <= 500; i++) {
+			for (int j = 1; j <= 100; j++) {
+				for (long time = 1; time <= 2257; time++) {
+					TSRecord record = new TSRecord(time, "d" + i);
+					record.addTuple(DataPoint.getDataPoint(TSDataType.INT32, "s" + j,
+							String.valueOf(1000 + random.nextInt(100))));
+					fileWriter.write(record);
+				}
+			}
+		}
+		fileWriter.close();
+		long endTime = System.currentTimeMillis();
+		System.out.println(String.format("write multi series time cost %dms", endTime - startTime));
+	}
 
-        FileSchema fileSchema = new FileSchema();
-        File outPutFile = new File(outPutFilePath);
-        if(outPutFile.exists()){
-        	outPutFile.delete();
-        }
-        fileSchema.registerMeasurement(new MeasurementDescriptor("s0", TSDataType.FLOAT, TSEncoding.RLE));
-        TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
+	private static void writeSingleSeriesTest() throws WriteProcessException, IOException {
+		long startTime = System.currentTimeMillis();
 
-        for (int i = 1; i <= 112850000; i++) {
-            TSRecord record = new TSRecord(i, "d0");
-            record.addTuple(DataPoint.getDataPoint(TSDataType.FLOAT, "s0" , String.valueOf(4.0)));
-            fileWriter.write(record);
-        }
-        fileWriter.close();
-        long endTime = System.currentTimeMillis();
-        System.out.println(String.format("write single series time cost %dms", endTime - startTime));
-    }
+		FileSchema fileSchema = new FileSchema();
+		File outPutFile = new File(outPutFilePath);
+		if (outPutFile.exists()) {
+			outPutFile.delete();
+		}
+		fileSchema.registerMeasurement(new MeasurementDescriptor("s0", TSDataType.INT32, TSEncoding.RLE));
+		TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
+
+		for (int i = 1; i <= 112850000; i++) {
+			TSRecord record = new TSRecord(i, "d0");
+			record.addTuple(DataPoint.getDataPoint(TSDataType.INT32, "s0", String.valueOf(1000 + random.nextInt(100))));
+			fileWriter.write(record);
+		}
+		fileWriter.close();
+		long endTime = System.currentTimeMillis();
+		System.out.println(String.format("write single series time cost %dms", endTime - startTime));
+	}
 }
