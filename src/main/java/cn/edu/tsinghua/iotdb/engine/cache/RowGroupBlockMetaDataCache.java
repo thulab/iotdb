@@ -105,4 +105,11 @@ public class RowGroupBlockMetaDataCache {
 			LRUCache.clear();
 		}
 	}
+
+	public void removeFile(String path) {
+		for(String jointPath : LRUCache.keySet()) {
+			if(jointPath.contains(path))
+				LRUCache.remove(jointPath);
+		}
+	}
 }

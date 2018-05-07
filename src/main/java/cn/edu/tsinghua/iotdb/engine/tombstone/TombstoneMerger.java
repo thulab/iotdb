@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.tombstone;
 
+import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.filenode.OverflowChangeType;
@@ -159,6 +160,7 @@ public class TombstoneMerger {
                 tsFile.setEndTimeMap(endTimeMap);
             }
             TsFileMetaDataCache.getInstance().remove(tsFile.getFilePath());
+            RowGroupBlockMetaDataCache.getInstance().removeFile(tsFile.getFilePath());
             if (recordWriter != null) {
                 try {
                     recordWriter.close();
