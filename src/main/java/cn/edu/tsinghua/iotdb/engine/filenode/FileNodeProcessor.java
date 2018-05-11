@@ -803,21 +803,22 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		lastMergeTime = System.currentTimeMillis();
 
+		boolean shouldMergeTombstone = shouldMergeTombstone();
 		if (overflowProcessor != null) {
 			if (overflowProcessor
-					.getFileSize() < TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold) {
+					.getFileSize() < TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold && !shouldMergeTombstone) {
 				LOGGER.info(
 						"Skip this merge taks submission, because the size{} of overflow processor {} does not reaches the threshold {}.",
 						MemUtils.bytesCntToStr(overflowProcessor.getFileSize()), getProcessorName(),
 						MemUtils.bytesCntToStr(TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold));
 				return null;
 			}
-		} else {
+		} else if(!shouldMergeTombstone) {
 			LOGGER.info("Skip this merge taks submission, because the filenode processor {} has no overflow processor.",
 					getProcessorName());
 			return null;
 		}
-		if (isOverflowed && isMerging == FileNodeProcessorStatus.NONE) {
+		if ((isOverflowed || shouldMergeTombstone) && isMerging == FileNodeProcessorStatus.NONE) {
 			Runnable MergeThread;
 			MergeThread = () -> {
 				try {
@@ -1429,6 +1430,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (recordWriter != null) {
 			recordWriter.close();
 		}
+		backupIntervalFile.getTombstoneFile().delete();
 		backupIntervalFile.setRelativePath(fileName);
 		backupIntervalFile.overflowChangeType = OverflowChangeType.NO_CHANGE;
 		backupIntervalFile.setStartTimeMap(startTimeMap);
@@ -1738,6 +1740,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					tombstoneFile.unlock();
 				}
 				intervalFileNode.closeTombstoneFile();
+				if(intervalFileNode.overflowChangeType == OverflowChangeType.NO_CHANGE)
+					intervalFileNode.overflowChangeType = OverflowChangeType.CHANGED;
 			}
 		} catch (IOException e) {
 			throw new FileNodeProcessorException(e);
@@ -1751,6 +1755,46 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				throw new FileNodeProcessorException(e);
 			}
 		}
+		setOverflowed(true);
 	}
 
+	private boolean shouldMergeTombstone() {
+	    if (emptyIntervalFileNode != null) {
+            try {
+                boolean hasTombstone = !emptyIntervalFileNode.getTombstoneFile().isEmpty();
+                emptyIntervalFileNode.getTombstoneFile().close();
+                if (hasTombstone)
+                    return true;
+            } catch (IOException e) {
+                LOGGER.error("Cannot access tombstone file of {}", emptyIntervalFileNode.getFilePath());
+                return false;
+            }
+        }
+
+        if (currentIntervalFileNode != null) {
+            try {
+                boolean hasTombstone = !currentIntervalFileNode.getTombstoneFile().isEmpty();
+                currentIntervalFileNode.getTombstoneFile().close();
+                if (hasTombstone)
+                    return true;
+            } catch (IOException e) {
+                LOGGER.error("Cannot access tombstone file of {}", currentIntervalFileNode.getFilePath());
+                return false;
+            }
+        }
+
+        for (IntervalFileNode fileNode : newFileNodes) {
+            try {
+                boolean hasTombstone = !fileNode.getTombstoneFile().isEmpty();
+                fileNode.getTombstoneFile().close();
+                if (hasTombstone)
+                    return true;
+            } catch (IOException e) {
+                LOGGER.error("Cannot access tombstone file of {}", fileNode.getFilePath());
+                return false;
+            }
+        }
+
+        return false;
+    }
 }

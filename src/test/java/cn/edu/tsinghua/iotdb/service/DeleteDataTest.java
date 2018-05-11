@@ -278,59 +278,43 @@ public class DeleteDataTest {
     public void tombstoneMergeTest() throws SQLException, InterruptedException {
         // this test delete data and wait until the tombstone is merged
         // prepare data
-        long tombstoneMergeInterval;
-        tombstoneMergeInterval = TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval;
-        FileNodeManager.getInstance().restartTombstoneMergeManager();
-        try {
-            int dataSize = 500, offset = 0;
-            prepareData(dataSize, offset);
-            flush();
-            // delete half of the data
-            int deleteTime = 250;
-            exeDelete(deleteTime);
-            // query and check
-            Map<String, List<Object>> result = query();
-            List<Object> s0Data = result.get(s[0]);
-            List<Object> s1Data = result.get(s[1]);
-            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
-            for (int i = 0; i < 250; i++) {
-                int s0 = (int) s0Data.get(i);
-                double s1 = (double) s1Data.get(i);
-                assertEquals(i + deleteTime + 1, s0);
-                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
-            }
-            // ensure that the tombstone file no longer exists
-            File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
-            File[] files = storageGroupDir.listFiles();
-            assertTrue(files != null);
-            boolean exists = false;
-            for(File file : files)
-                if(file.getName().contains("tombstone") && file.length() > 0)
-                    exists = true;
-            assertTrue(exists);
+        int dataSize = 1000, offset = 0;
+        prepareData(dataSize, offset);
+        flush();
+        // delete half of the data in tsfile
+        int deleteTime = 500;
+        exeDelete(deleteTime);
+        // check that tombstone file exists
+        File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
+        File[] files = storageGroupDir.listFiles();
+        assertTrue(files != null);
+        boolean exists = false;
+        for(File file : files)
+            if(file.getName().contains("tombstone") && file.length() > 0)
+                exists = true;
+        assertTrue(exists);
 
-            Thread.sleep(10000);
+        merge();
+        Thread.sleep(10000);
 
-            files = storageGroupDir.listFiles();
-            assertTrue(files != null);
-            exists = false;
-            for(File file : files)
-                if(file.getName().contains("tombstone") && file.length() > 0)
-                    exists = true;
-            assertTrue(!exists);
+        files = storageGroupDir.listFiles();
+        assertTrue(files != null);
+        exists = false;
+        for(File file : files)
+            if(file.getName().contains("tombstone") && file.length() > 0)
+                exists = true;
+        assertTrue(!exists);
 
-            result = query();
-            s0Data = result.get(s[0]);
-            s1Data = result.get(s[1]);
-            assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 250);
-            for (int i = 0; i < 250; i++) {
-                int s0 = (int) s0Data.get(i);
-                double s1 = (double) s1Data.get(i);
-                assertEquals(i + deleteTime + 1, s0);
-                assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
-            }
-        } finally {
-            TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval = tombstoneMergeInterval;
+        // query and check
+        Map<String, List<Object>> result = query();
+        List<Object> s0Data = result.get(s[0]);
+        List<Object> s1Data = result.get(s[1]);
+        assertTrue(s0Data.size() == s1Data.size() && s1Data.size() == 500);
+        for (int i = 0; i < 500; i++) {
+            int s0 = (int) s0Data.get(i);
+            double s1 = (double) s1Data.get(i);
+            assertEquals(i + deleteTime + 1, s0);
+            assertEquals((i + deleteTime + 1) * 1.0, s1, 0.000000001);
         }
     }
 
