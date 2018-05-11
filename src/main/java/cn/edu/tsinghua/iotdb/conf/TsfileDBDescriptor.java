@@ -136,9 +136,6 @@ public class TsfileDBDescriptor {
 			conf.externalSortThreshold = Integer.parseInt(properties.getProperty("external_sort_threshold", conf.externalSortThreshold + "").trim());
 			conf.mManagerCacheSize = Integer.parseInt(properties.getProperty("schema_manager_cache_size", conf.mManagerCacheSize + "").trim());
 
-			conf.maxTombstoneThread = Integer.parseInt(properties.getProperty("max_tombstone_thread", conf.maxTombstoneThread+"").trim());
-			conf.tombstoneMergeInterval = Integer.parseInt(properties.getProperty("tombstone_merge_interval", conf.tombstoneMergeInterval+"").trim());
-
 			int maxLogEntrySize = Integer.parseInt(properties.getProperty("max_log_entry_size", conf.maxLogEntrySize + "").trim());
 			conf.maxLogEntrySize = maxLogEntrySize > 0 ? maxLogEntrySize : conf.maxLogEntrySize;
 

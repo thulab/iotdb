@@ -5,9 +5,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
-import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
-import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
-import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
@@ -19,7 +16,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.Interval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
@@ -29,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 import static cn.edu.tsinghua.iotdb.query.reader.ReaderUtils.getSingleValueVisitorByDataType;
 

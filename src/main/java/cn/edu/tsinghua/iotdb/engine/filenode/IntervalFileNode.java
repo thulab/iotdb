@@ -31,6 +31,9 @@ public class IntervalFileNode implements Serializable {
 	private Set<String> mergeChanged = new HashSet<>();
 	private static String baseDir = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir;
 
+	/**
+	 * The tombstone file that is associated to this TsFile.
+	 */
 	transient private TombstoneFile tombstoneFile;
 
 	public IntervalFileNode(Map<String, Long> startTimeMap, Map<String, Long> endTimeMap, OverflowChangeType type,

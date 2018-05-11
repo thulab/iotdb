@@ -61,6 +61,9 @@ public class OverflowResource {
 	private List<RowGroupMetaData> appendInsertMetadatas;
 	private List<OFRowGroupListMetadata> appendUpdateDeleteMetadats;
 
+	/**
+	 * The tombstone file that is associated to this overflow.
+	 */
 	private TombstoneFile tombstoneFile;
 
 	public OverflowResource(String parentPath, String dataPath) throws IOException {
