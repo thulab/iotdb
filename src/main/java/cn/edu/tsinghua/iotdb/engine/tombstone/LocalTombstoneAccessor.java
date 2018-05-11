@@ -20,7 +20,13 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     private static final String OPEN_MODE = "rw";
     private static final String ENCODING = "utf-8";
 
+    /**
+     * Reader and writer of tombstones.
+     */
     private RandomAccessFile raf;
+    /**
+     * The path of raf, not necessary to be absolute.
+     */
     private String filePath;
 
     public LocalTombstoneAccessor(String filePath) throws IOException {

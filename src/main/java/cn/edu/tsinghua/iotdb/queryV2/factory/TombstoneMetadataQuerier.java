@@ -13,6 +13,9 @@ import java.util.List;
 
 public class TombstoneMetadataQuerier extends SimpleMetadataQuerierForMerge {
 
+    /**
+     * Tombstones of this file.
+     */
     private List<Tombstone> tombstones;
 
     public TombstoneMetadataQuerier(String filePath, List<Tombstone> tombstoneList) throws IOException {
@@ -20,6 +23,12 @@ public class TombstoneMetadataQuerier extends SimpleMetadataQuerierForMerge {
         this.tombstones = tombstoneList;
     }
 
+    /**
+     * Compute the maxTombstoneTime of each series and put it into every EncodedSeriesChunkDescriptor.
+     * @param path
+     * @return
+     * @throws IOException
+     */
     @Override
     public List<EncodedSeriesChunkDescriptor> getSeriesChunkDescriptorList(Path path) throws IOException {
         long maxTombstoneTime;

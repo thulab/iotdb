@@ -11,9 +11,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * This class use the tombstones of this RowGroup to construct IoTValueReader.
+ */
 public class IoTRowGroupReader extends RowGroupReader {
 
+    /**
+     * The tombstones of this RowGroup.
+     */
     private List<Tombstone> tombstones;
+    /**
+     * The time when this RowGroup is written.
+     */
     private long writtenTime;
 
     public IoTRowGroupReader(RowGroupMetaData rowGroupMetaData, ITsRandomAccessFileReader raf, List<Tombstone> tombstoneList) {
@@ -28,6 +37,10 @@ public class IoTRowGroupReader extends RowGroupReader {
         initValueReaders(rowGroupMetaData);
     }
 
+    /**
+     * For every series, find the max deletion time of its tombstone and use this to construct an IoTValueReader.
+     * @param rowGroupMetaData
+     */
     @Override
     public void initValueReaders(RowGroupMetaData rowGroupMetaData) {
         for (TimeSeriesChunkMetaData tscMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {

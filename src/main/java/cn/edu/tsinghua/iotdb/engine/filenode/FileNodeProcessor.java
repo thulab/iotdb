@@ -16,17 +16,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.MergeStatus;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
-import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneMergeTask;
-import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneMerger;
-import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
-import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -76,7 +70,6 @@ import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
@@ -384,15 +377,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	public void fileNodeRecovery() throws FileNodeProcessorException {
-		// replace old file with files after tombstone merge
-			File[] files = new File(baseDirPath).listFiles();
-			for(File file : files) {
-				if(file.getName().contains(TombstoneMerger.COMPLETE_SUFFIX)) {
-					File oldFile = new File(file.getPath().replace(TombstoneMerger.COMPLETE_SUFFIX, ""));
-					oldFile.delete();
-					file.renameTo(oldFile);
-				}
-			}
 		// restore bufferwrite
 		if (!newFileNodes.isEmpty() && !newFileNodes.get(newFileNodes.size() - 1).isClosed()) {
 			//
@@ -1769,17 +1753,4 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 	}
 
-	public TombstoneMergeTask getTombstoneMergeTask() throws IOException {
-		if(isMerging.equals(MergeStatus.MERGING))
-			return null;
-		List<TombstoneMerger> mergers = new ArrayList<>();
-		for(IntervalFileNode fileNode : newFileNodes) {
-			if(fileNode.isClosed()) {
-				if(!fileNode.getTombstoneFile().isEmpty())
-					mergers.add(new TombstoneMerger(fileNode, fileSchema));
-				fileNode.getTombstoneFile().close();
-			}
-		}
-		return mergers.size() > 0 ? new TombstoneMergeTask(mergers, this) : null;
-	}
 }

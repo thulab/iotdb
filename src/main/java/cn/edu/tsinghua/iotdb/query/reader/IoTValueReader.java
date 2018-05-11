@@ -19,8 +19,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This class is an extension of ValueReader that will use the tombstone as an additional filter.
+ */
 public class IoTValueReader extends ValueReader {
 
+    /**
+     * The max deletion time of the tombstones that has effect on this timeseries.
+     */
     private long maxTombstoneTime;
     private String deltaObjectId;
     private String measurementId;
@@ -38,8 +44,21 @@ public class IoTValueReader extends ValueReader {
         return maxTombstoneTime;
     }
 
+    /**
+     * Construct an additional filter using maxTombstoneTime.
+     * @param res
+     * @param fetchSize
+     * @param timeFilter
+     * @param freqFilter
+     * @param valueFilter
+     * @return
+     * @throws IOException
+     */
     @Override
-    public DynamicOneColumnData readOneColumnUseFilter(DynamicOneColumnData res, int fetchSize, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter) throws IOException {
+    public DynamicOneColumnData readOneColumnUseFilter(DynamicOneColumnData res, int fetchSize,
+                                                       SingleSeriesFilterExpression timeFilter,
+                                                       SingleSeriesFilterExpression freqFilter,
+                                                       SingleSeriesFilterExpression valueFilter) throws IOException {
         // convert tombstone to a filter
         if (maxTombstoneTime >= this.getStartTime()) {
             if(timeFilter == null) {
@@ -53,6 +72,12 @@ public class IoTValueReader extends ValueReader {
         return super.readOneColumnUseFilter(res, fetchSize, timeFilter, freqFilter, valueFilter);
     }
 
+    /**
+     * Additionally remove timestamps that is less than or equal to maxTombstoneTime.
+     * @param timestamps
+     * @return
+     * @throws IOException
+     */
     @Override
     public DynamicOneColumnData getValuesForGivenValues(long[] timestamps) throws IOException {
         // remove time stamps less than maxTombstoneTime
@@ -70,13 +95,32 @@ public class IoTValueReader extends ValueReader {
         return super.getValuesForGivenValues(timestamps);
     }
 
+    /**
+     * First judge with maxTombstoneTime, then call super method.
+     * @param valueFilter
+     * @param freqFilter
+     * @param timeFilter
+     * @return
+     */
     @Override
-    public boolean columnSatisfied(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression timeFilter) {
+    public boolean columnSatisfied(SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
+                                   SingleSeriesFilterExpression timeFilter) {
         return getEndTime() > maxTombstoneTime && super.columnSatisfied(valueFilter, freqFilter, timeFilter);
     }
 
+    /**
+     * First judge with maxTombstoneTime, then call super method.
+     * @param timeDigestFF
+     * @param valueDigestFF
+     * @param timeFilter
+     * @param valueFilter
+     * @param freqFilter
+     * @return
+     */
     @Override
-    public boolean pageSatisfied(DigestForFilter timeDigestFF, DigestForFilter valueDigestFF, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter) {
+    public boolean pageSatisfied(DigestForFilter timeDigestFF, DigestForFilter valueDigestFF,
+                                 SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                                 SingleSeriesFilterExpression freqFilter) {
         return (Long) timeDigestFF.getMaxValue() > maxTombstoneTime && super.pageSatisfied(timeDigestFF, valueDigestFF, timeFilter, valueFilter, freqFilter);
     }
 }
