@@ -64,12 +64,13 @@ public class AggregateRecordReader extends RecordReader {
      * @throws IOException        TsFile read exception
      */
     public AggregateFunction aggregate(AggregateFunction aggregateFunction) throws ProcessorException, IOException {
-        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
 
+        // "max_time" and "last" aggregation optimization
         if (aggregateFunction instanceof MaxTimeAggrFunc || aggregateFunction instanceof LastAggrFunc) {
             if (valueReaders.size() > 0 && valueReaders.get(valueReaders.size() - 1).getDataType().equals(dataType)) {
                 aggregate(valueReaders.get(valueReaders.size() - 1), aggregateFunction);
             } else {
+                List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
                 for (int i = rowGroupReaderList.size() - 1; i >= 0; i--) {
                     RowGroupReader rowGroupReader = rowGroupReaderList.get(i);
                     if (rowGroupReader.getValueReaders().containsKey(measurementId)
@@ -87,7 +88,8 @@ public class AggregateRecordReader extends RecordReader {
             return aggregateFunction;
         }
 
-
+        // aggregation calculation except for "max_time" and "last"
+        List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
