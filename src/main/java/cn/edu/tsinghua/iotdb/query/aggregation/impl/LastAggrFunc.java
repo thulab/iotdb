@@ -93,7 +93,6 @@ public class LastAggrFunc extends AggregateFunction {
                 break;
             }
         }
-
         return insertMemoryData.hasNext();
     }
 
