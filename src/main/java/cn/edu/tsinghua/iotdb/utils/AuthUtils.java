@@ -6,7 +6,6 @@ import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
