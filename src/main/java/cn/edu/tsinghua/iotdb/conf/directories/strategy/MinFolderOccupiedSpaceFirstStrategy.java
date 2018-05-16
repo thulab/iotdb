@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-public class MinDirOccupiedSpaceFirstStrategy extends DirectoryStrategy {
+public class MinFolderOccupiedSpaceFirstStrategy extends DirectoryStrategy {
 
     // directory space is measured by MB
     private final long DATA_SIZE_SHIFT = 1024 * 1024;
