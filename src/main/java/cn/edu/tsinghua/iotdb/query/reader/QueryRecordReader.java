@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.List;
 
 public class QueryRecordReader extends RecordReader {
@@ -519,9 +518,8 @@ public class QueryRecordReader extends RecordReader {
 
             if (overflowOperationReaderCopy.hasNext()) {
                 if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                            || (queryValueFilter != null &&
-                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getLong(), queryValueFilter))) {
+                    if (queryValueFilter != null &&
+                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getLong(), queryValueFilter)) {
                         continue;
                     } else {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -570,9 +568,8 @@ public class QueryRecordReader extends RecordReader {
 
             if (overflowOperationReaderCopy.hasNext()) {
                 if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                            || (queryValueFilter != null &&
-                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getFloat(), queryValueFilter))) {
+                    if (queryValueFilter != null &&
+                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getFloat(), queryValueFilter)) {
                         continue;
                     } else {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -621,9 +618,8 @@ public class QueryRecordReader extends RecordReader {
 
             if (overflowOperationReaderCopy.hasNext()) {
                 if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                            || (queryValueFilter != null &&
-                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getDouble(), queryValueFilter))) {
+                    if (queryValueFilter != null &&
+                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getDouble(), queryValueFilter)) {
                         continue;
                     } else {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -671,9 +667,8 @@ public class QueryRecordReader extends RecordReader {
 
             if (overflowOperationReaderCopy.hasNext()) {
                 if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                            || (queryValueFilter != null &&
-                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getBoolean(), queryValueFilter))) {
+                    if (queryValueFilter != null &&
+                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getBoolean(), queryValueFilter)) {
                         continue;
                     } else {
                         res.putTime(pageTimestamps[timeIdx]);
@@ -722,9 +717,8 @@ public class QueryRecordReader extends RecordReader {
 
             if (overflowOperationReaderCopy.hasNext()) {
                 if (overflowOperationReaderCopy.getCurrentOperation().verifyTime(pageTimestamps[timeIdx])) {
-                    if (overflowOperationReaderCopy.getCurrentOperation().getType() == OverflowOperation.OperationType.DELETE
-                            || (queryValueFilter != null &&
-                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getBinary(), queryValueFilter))) {
+                    if (queryValueFilter != null &&
+                            !singleValueVisitor.satisfyObject(overflowOperationReaderCopy.getCurrentOperation().getValue().getBinary(), queryValueFilter)) {
                         continue;
                     } else {
                         res.putTime(pageTimestamps[timeIdx]);
