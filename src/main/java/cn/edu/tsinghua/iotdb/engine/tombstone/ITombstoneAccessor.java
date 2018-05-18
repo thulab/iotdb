@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.tombstone;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This interface provides write and read methods of tombstones from lower storage.
@@ -12,7 +13,7 @@ public interface ITombstoneAccessor {
      * @return All tombstones in lower storage
      * @throws IOException
      */
-    List<Tombstone> readAll() throws IOException;
+    Map<String, Map<String, List<Tombstone>>> readAll() throws IOException;
 
     /**
      * Append a new tombstone to the lower storage.

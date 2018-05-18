@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +31,7 @@ public class LocalTombstoneFileTest {
             for (Tombstone tombstone : tombstones) {
                 tombstoneFile.append(tombstone);
             }
-            List<Tombstone> tombstoneList = tombstoneFile.getTombstones();
+            List<Tombstone> tombstoneList = tombstoneFile.getTombstonesList();
             assertEquals(tombstones.size(), tombstoneList.size());
             for(int i = 0; i < tombstones.size(); i++) {
                 assertEquals(tombstones.get(i), tombstoneList.get(i));
@@ -43,7 +42,7 @@ public class LocalTombstoneFileTest {
             Tombstone tombstone = new Tombstone("d2", "s0", 5444, System.currentTimeMillis());
             tombstoneFile.append(tombstone);
             tombstones.add(tombstone);
-            tombstoneList = tombstoneFile.getTombstones();
+            tombstoneList = tombstoneFile.getTombstonesList();
             assertEquals(tombstones.size(), tombstoneList.size());
             for(int i = 0; i < tombstones.size(); i++) {
                 assertEquals(tombstones.get(i), tombstoneList.get(i));

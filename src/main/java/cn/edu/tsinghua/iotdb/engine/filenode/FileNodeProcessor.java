@@ -17,7 +17,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
-import cn.edu.tsinghua.iotdb.engine.overflow.utils.MergeStatus;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
@@ -1345,17 +1344,13 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		String outputPath = null;
 		String fileName = null;
 		TombstoneFile tombstoneFile = backupIntervalFile.getTombstoneFile();
-		List<Tombstone> TSTombstones = tombstoneFile.getTombstones();
+		Map<String, Map<String, List<Tombstone>>> TSTombstones = tombstoneFile.getTombstonesMap();
 		tombstoneFile.close();
-		List<Tombstone> deltaObjectTombstones = new ArrayList<>();
-		List<Tombstone> seriesTombstones = new ArrayList<>();
+		Map<String, List<Tombstone>> deltaObjectTombstones = null;
+		List<Tombstone> seriesTombstones = null;
 		for (String deltaObjectId : backupIntervalFile.getStartTimeMap().keySet()) {
 			// query tombstone
-			deltaObjectTombstones.clear();
-			for (Tombstone tombstone : TSTombstones) {
-				if(tombstone.deltaObjectId.equals(deltaObjectId))
-					deltaObjectTombstones.add(tombstone);
-			}
+			deltaObjectTombstones = TSTombstones.get(deltaObjectId);
 			// query one deltaObjectId
 			List<Path> pathList = new ArrayList<>();
 			try {
@@ -1374,11 +1369,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			long endTime = -1;
 			for (Path path : pathList) {
 				// query tombstone
-				seriesTombstones.clear();
-				for(Tombstone tombstone : deltaObjectTombstones) {
-					if(tombstone.measurementId.equals(path.getMeasurementToString()))
-						seriesTombstones.add(tombstone);
-				}
+                if (deltaObjectTombstones != null) {
+                    seriesTombstones = deltaObjectTombstones.get(path.getMeasurementToString());
+                }
 				// query one measurenment in the special deltaObjectId
 				TSDataType dataType = mManager.getSeriesType(path.getFullPath());
 				OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.queryMerge(deltaObjectId,

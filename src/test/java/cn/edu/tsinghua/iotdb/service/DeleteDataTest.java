@@ -38,8 +38,6 @@ public class DeleteDataTest {
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
-
-            TsfileDBDescriptor.getInstance().getConfig().tombstoneMergeInterval = 5000;
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
             deamon = IoTDB.getInstance();

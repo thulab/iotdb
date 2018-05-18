@@ -6,10 +6,12 @@ import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
+import com.sun.corba.se.impl.oa.toa.TOA;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class use the tombstones of this RowGroup to construct IoTValueReader.
@@ -19,20 +21,20 @@ public class IoTRowGroupReader extends RowGroupReader {
     /**
      * The tombstones of this RowGroup.
      */
-    private List<Tombstone> tombstones;
+    private Map<String, List<Tombstone>> tombstones;
     /**
      * The time when this RowGroup is written.
      */
     private long writtenTime;
 
-    public IoTRowGroupReader(RowGroupMetaData rowGroupMetaData, ITsRandomAccessFileReader raf, List<Tombstone> tombstoneList) {
+    public IoTRowGroupReader(RowGroupMetaData rowGroupMetaData, ITsRandomAccessFileReader raf, Map<String, List<Tombstone>> tombstoneMap) {
         seriesDataTypeMap = new HashMap<>();
         deltaObjectUID = rowGroupMetaData.getDeltaObjectID();
         measurementIds = new ArrayList<>();
         this.totalByteSize = rowGroupMetaData.getTotalByteSize();
         this.raf = raf;
         this.writtenTime = rowGroupMetaData.getWrittenTime();
-        this.tombstones = tombstoneList;
+        this.tombstones = tombstoneMap;
 
         initValueReaders(rowGroupMetaData);
     }
@@ -52,9 +54,14 @@ public class IoTRowGroupReader extends RowGroupReader {
 
                 // get the max tombstone of this series
                 long maxTombstoneTime = 0;
-                for(Tombstone tombstone : tombstones) {
-                    if(measurementId.equals(tombstone.measurementId) && writtenTime < tombstone.executeTimestamp)
-                        maxTombstoneTime = tombstone.deleteTimestamp > maxTombstoneTime ? tombstone.deleteTimestamp : maxTombstoneTime;
+                if (tombstones != null) {
+                    List<Tombstone> seriesTombstones = tombstones.get(measurementId);
+                    if (seriesTombstones != null) {
+                        for(Tombstone tombstone : seriesTombstones) {
+                            if( writtenTime < tombstone.executeTimestamp)
+                                maxTombstoneTime = tombstone.deleteTimestamp > maxTombstoneTime ? tombstone.deleteTimestamp : maxTombstoneTime;
+                        }
+                    }
                 }
 
                 ValueReader si = new IoTValueReader(tscMetaData.getProperties().getFileOffset(),

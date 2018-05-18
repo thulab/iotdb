@@ -38,9 +38,11 @@ public class TombstoneMetadataQuerier extends SimpleMetadataQuerierForMerge {
             for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDataList) {
                 // find max tombstone time of this rowgroup
                 maxTombstoneTime = 0;
-                for(Tombstone tombstone : tombstones) {
-                    if(tombstone.executeTimestamp > rowGroupMetaData.getWrittenTime())
-                        maxTombstoneTime = maxTombstoneTime > tombstone.deleteTimestamp ? maxTombstoneTime : tombstone.deleteTimestamp;
+                if (tombstones != null) {
+                    for(Tombstone tombstone : tombstones) {
+                        if(tombstone.executeTimestamp > rowGroupMetaData.getWrittenTime())
+                            maxTombstoneTime = maxTombstoneTime > tombstone.deleteTimestamp ? maxTombstoneTime : tombstone.deleteTimestamp;
+                    }
                 }
                 List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataListInOneRowGroup = rowGroupMetaData.getTimeSeriesChunkMetaDataList();
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataListInOneRowGroup) {

@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.engine.tombstone.LocalTombstoneFile;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFile;
 import cn.edu.tsinghua.iotdb.engine.tombstone.TombstoneFileFactory;
@@ -198,18 +196,17 @@ public class OverflowResource {
 		if (insertMetadatas.containsKey(deltaObjectId)) {
 			if (insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
 				// read tombstones
-				List<Tombstone> tombstones = null;
+				Map<String, Map<String, List<Tombstone>>> tombstones = null;
 				try {
-					tombstones = getTombstoneFile().getTombstones();
+					tombstones = getTombstoneFile().getTombstonesMap();
 				} catch (IOException e) {
 					LOGGER.error("Cannot read tombstones when querying {}.{}, because {}", deltaObjectId, measurementId, e.getMessage());
 				}
 				// get tombstones of this series
-				List<Tombstone> seriesTombstones = new ArrayList<>();
-				if (tombstones != null) {
-					for(Tombstone tombstone : tombstones)
-						if(tombstone.deltaObjectId.equals(deltaObjectId) && tombstone.measurementId.equals(measurementId))
-							seriesTombstones.add(tombstone);
+				Map<String, List<Tombstone>> deltaObjTombstones = tombstones.get(deltaObjectId);
+				List<Tombstone> seriesTombstones = null;
+				if (deltaObjTombstones != null) {
+					seriesTombstones = deltaObjTombstones.get(measurementId);
 				}
 
 				for (TimeSeriesChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
@@ -217,9 +214,11 @@ public class OverflowResource {
 					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
 						// find the tombstone that is valid to this chunk and has the largest deleteTime
 						long maxTombstoneTime = 0;
-						for(Tombstone tombstone : seriesTombstones)
-							if(tombstone.executeTimestamp > chunkMetaData.getWrittenTime() && measurementId.equals(tombstone.measurementId))
-								maxTombstoneTime = maxTombstoneTime > tombstone.deleteTimestamp ? maxTombstoneTime : tombstone.deleteTimestamp;
+						if (seriesTombstones != null) {
+							for(Tombstone tombstone : seriesTombstones)
+								if(tombstone.executeTimestamp > chunkMetaData.getWrittenTime())
+									maxTombstoneTime = maxTombstoneTime > tombstone.deleteTimestamp ? maxTombstoneTime : tombstone.deleteTimestamp;
+						}
 						chunkMetaData.setMaxTombstoneTime(maxTombstoneTime);
 						chunkMetaDatas.add(chunkMetaData);
 					}

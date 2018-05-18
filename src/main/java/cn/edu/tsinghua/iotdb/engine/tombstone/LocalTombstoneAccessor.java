@@ -3,8 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.tombstone;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * File structure :
@@ -35,8 +34,8 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     }
 
     @Override
-    public List<Tombstone> readAll() throws IOException {
-        List<Tombstone> tombstones = new ArrayList<>();
+    public Map<String, Map<String, List<Tombstone>>> readAll() throws IOException {
+        Map<String, Map<String, List<Tombstone>>> tombstones = new HashMap<>();
         raf.seek(0);
         while (raf.getFilePointer() + 4 < raf.length()) {
             int deltaObjectLength = raf.readInt();
@@ -47,8 +46,15 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
             raf.readFully(measurementBytes);
             long deleteTimestamp = raf.readLong();
             long executeTimestamp = raf.readLong();
-            tombstones.add(new Tombstone(new String(deltaObjectBytes, ENCODING), new String(measurementBytes, ENCODING),
-                    deleteTimestamp, executeTimestamp));
+
+            String deltaObj = new String(deltaObjectBytes, ENCODING);
+            String measurement =  new String(measurementBytes, ENCODING);
+            Tombstone tombstone = new Tombstone(deltaObj, measurement,
+                    deleteTimestamp, executeTimestamp);
+
+            Map<String, List<Tombstone>> deltaObjTombstones = tombstones.computeIfAbsent(deltaObj, k -> new HashMap<>());
+            List<Tombstone> seriesTombstones = deltaObjTombstones.computeIfAbsent(measurement, k -> new ArrayList<>());
+            seriesTombstones.add(tombstone);
         }
         return tombstones;
     }

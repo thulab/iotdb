@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.tombstone;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -18,7 +18,7 @@ public abstract class TombstoneFile {
     /**
      * All tombstones maintained in this file.
      */
-    protected List<Tombstone> tombstones;
+    protected Map<String, Map<String, List<Tombstone>>> tombstones;
     /**
      * Storage accessor for writing and reading.
      */
@@ -30,14 +30,32 @@ public abstract class TombstoneFile {
 
     /**
      *
-     * @return All tombstones in this file.
+     * @return All tombstones in this file as a Map(deltaObjectId, Map(deltaObjectId, List(Tombstone))).
      * @throws IOException
      */
-    public List<Tombstone> getTombstones() throws IOException {
+    public Map<String, Map<String, List<Tombstone>>> getTombstonesMap() throws IOException {
         if (this.tombstones != null && this.accessor != null) {
-            return this.tombstones;
+            return Collections.unmodifiableMap(this.tombstones);
         }
-        return this.tombstones = getAccessor().readAll();
+        return Collections.unmodifiableMap(this.tombstones = getAccessor().readAll());
+    }
+
+    /**
+     *
+     * @return All tombstones in this file as a List.
+     * @throws IOException
+     */
+    public List<Tombstone> getTombstonesList() throws IOException {
+        if (this.tombstones == null || this.accessor == null) {
+            this.tombstones = getAccessor().readAll();
+        }
+        List<Tombstone> retList = new ArrayList<>();
+        for (Map<String, List<Tombstone>> deltaObjTombstones : this.tombstones.values()) {
+            for (List<Tombstone> seriesTombstones : deltaObjTombstones.values()) {
+                retList.addAll(seriesTombstones);
+            }
+        }
+        return retList;
     }
 
     /**
@@ -57,8 +75,13 @@ public abstract class TombstoneFile {
      */
     public void append(Tombstone tombstone) throws IOException {
         getAccessor().append(tombstone);
-        if(tombstones != null)
-            getTombstones().add(tombstone);
+        if(tombstones == null) {
+            getTombstonesMap();
+        } else {
+            Map<String, List<Tombstone>> deltaObjTombstones = tombstones.computeIfAbsent(tombstone.deltaObjectId, k -> new HashMap<>());
+            List<Tombstone> seriesTombstones = deltaObjTombstones.computeIfAbsent(tombstone.measurementId, k -> new ArrayList<>());
+            seriesTombstones.add(tombstone);
+        }
     }
 
     /**
