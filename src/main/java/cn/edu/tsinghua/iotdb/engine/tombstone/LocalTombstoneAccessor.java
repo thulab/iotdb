@@ -9,11 +9,11 @@ import java.util.List;
 /**
  * File structure :
  * Sequential tombstones, each one consists of:
- *      int deltaObjectLength
- *      byte[] deltaObjectBytes
- *      int measurementLength
- *      byte[] measurementBytes
- *      long deleteTimestamp
+ * int deltaObjectLength
+ * byte[] deltaObjectBytes
+ * int measurementLength
+ * byte[] measurementBytes
+ * long deleteTimestamp
  */
 public class LocalTombstoneAccessor implements ITombstoneAccessor {
 
@@ -38,7 +38,7 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
     public List<Tombstone> readAll() throws IOException {
         List<Tombstone> tombstones = new ArrayList<>();
         raf.seek(0);
-        while(raf.getFilePointer() + 4 < raf.length()) {
+        while (raf.getFilePointer() + 4 < raf.length()) {
             int deltaObjectLength = raf.readInt();
             byte[] deltaObjectBytes = new byte[deltaObjectLength];
             raf.readFully(deltaObjectBytes);
@@ -60,7 +60,7 @@ public class LocalTombstoneAccessor implements ITombstoneAccessor {
 
     @Override
     public void append(List<Tombstone> tombstones) throws IOException {
-        for(Tombstone tombstone : tombstones) {
+        for (Tombstone tombstone : tombstones) {
             append(tombstone);
         }
     }

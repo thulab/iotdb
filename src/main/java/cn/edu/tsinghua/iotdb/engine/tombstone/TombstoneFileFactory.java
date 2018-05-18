@@ -13,7 +13,7 @@ public class TombstoneFileFactory {
         return inUseFactory;
     }
 
-    private static class LocalTombstoneFileFactory implements ITombstoneFileFactory{
+    private static class LocalTombstoneFileFactory implements ITombstoneFileFactory {
 
         @Override
         public TombstoneFile getTombstoneFile(String filePath) throws IOException {

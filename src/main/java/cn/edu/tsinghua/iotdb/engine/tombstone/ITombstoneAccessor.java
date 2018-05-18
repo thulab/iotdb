@@ -9,7 +9,6 @@ import java.util.List;
 public interface ITombstoneAccessor {
 
     /**
-     *
      * @return All tombstones in lower storage
      * @throws IOException
      */
@@ -17,6 +16,7 @@ public interface ITombstoneAccessor {
 
     /**
      * Append a new tombstone to the lower storage.
+     *
      * @param tombstone
      * @throws IOException
      */
@@ -24,6 +24,7 @@ public interface ITombstoneAccessor {
 
     /**
      * Append all given tombstones to the lower storage.
+     *
      * @param tombstones
      * @throws IOException
      */
@@ -31,6 +32,7 @@ public interface ITombstoneAccessor {
 
     /**
      * Create a tombstone with given params and append it to the lower storage.
+     *
      * @param deltaObjectName
      * @param measurementName
      * @param deleteTimestamp
@@ -41,12 +43,12 @@ public interface ITombstoneAccessor {
 
     /**
      * Close file stream or other resources.
+     *
      * @throws IOException
      */
     void close() throws IOException;
 
     /**
-     *
      * @return If lower storage do contain any tombstone.
      * @throws IOException
      */
@@ -54,6 +56,7 @@ public interface ITombstoneAccessor {
 
     /**
      * Remove the tombstone file from lower storage.
+     *
      * @return
      * @throws IOException
      */

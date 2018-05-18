@@ -19,7 +19,7 @@ public class LocalTombstoneFile extends TombstoneFile {
 
     @Override
     public ITombstoneAccessor getAccessor() throws IOException {
-        if(this.accessor != null)
+        if (this.accessor != null)
             return this.accessor;
         synchronized (this) {
             // prevent multiple threads from creating different accessors
