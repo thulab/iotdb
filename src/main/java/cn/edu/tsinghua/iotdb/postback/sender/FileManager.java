@@ -18,6 +18,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 
@@ -26,7 +28,8 @@ public class FileManager {
 	private Map<String, Set<String>> sendingFiles = new HashMap<>();
 	private Set<String> lastLocalFiles = new HashSet<>();
 	private Map<String, Set<String>> nowLocalFiles = new HashMap<>();
-	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
+	private PostBackSenderConfig postbackConfig= PostBackSenderDescriptor.getInstance().getConfig();
+	private TsfileDBConfig tsfileConfig= TsfileDBDescriptor.getInstance().getConfig();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileManager.class);
 	private static class FileManagerHolder{
@@ -42,8 +45,8 @@ public class FileManager {
 		sendingFiles.clear();
 		lastLocalFiles.clear();
 		nowLocalFiles.clear();
-		getLastLocalFileList(config.LAST_FILE_INFO);
-		getNowLocalFileList(config.IOTDB_BUFFERWRITE_DIRECTORY);
+		getLastLocalFileList(postbackConfig.lastFileInfo);
+		getNowLocalFileList(tsfileConfig.getBufferWriteDirs());
 		getSendingFileList();
 	}
 	
@@ -80,7 +83,7 @@ public class FileManager {
 					}
 					bf.close();
 				} catch (IOException e) {
-					LOGGER.error("IoTDB post back sender: cannot get last local file list when reading file {} because {}.", config.LAST_FILE_INFO, e.getMessage());
+					LOGGER.error("IoTDB post back sender: cannot get last local file list when reading file {} because {}.", postbackConfig.lastFileInfo, e.getMessage());
 				} finally {
 					if(bf != null) {
 						bf.close();
@@ -93,23 +96,25 @@ public class FileManager {
 		lastLocalFiles = fileList;
 	}
 
-	public void getNowLocalFileList(String path) {
-	
-		if(!new File(path).exists()) {
-			LOGGER.info("IoTDB post back sender: cannot get the list of now local files because {} doesn't exist!", path);
-			return;
-		}
-		File[] SGs = new File(path).listFiles();
-		for(File storageGroup:SGs) {
-			if(storageGroup.isDirectory()) {
-				nowLocalFiles.put(storageGroup.getName(), new HashSet<String>());
-				sendingFiles.put(storageGroup.getName(), new HashSet<String>());
-				File[] files = storageGroup.listFiles();
-				for(File file:files)
-				{
-					if (!file.getAbsolutePath().endsWith(".restore")) {
-						if(!new File(file.getAbsolutePath() + ".restore").exists())
-							nowLocalFiles.get(storageGroup.getName()).add(file.getAbsolutePath());
+	public void getNowLocalFileList(String[] paths) {
+		for(String path : paths) {
+			if(!new File(path).exists()) {
+//				LOGGER.info("IoTDB post back sender: cannot get the list of now local files because {} doesn't exist!", path);
+//				return;
+				continue;
+			}
+			File[] SGs = new File(path).listFiles();
+			for(File storageGroup:SGs) {
+				if(storageGroup.isDirectory()) {
+					nowLocalFiles.put(storageGroup.getName(), new HashSet<String>());
+					sendingFiles.put(storageGroup.getName(), new HashSet<String>());
+					File[] files = storageGroup.listFiles();
+					for(File file:files)
+					{
+						if (!file.getAbsolutePath().endsWith(".restore")) {
+							if(!new File(file.getAbsolutePath() + ".restore").exists())
+								nowLocalFiles.get(storageGroup.getName()).add(file.getAbsolutePath());
+						}
 					}
 				}
 			}

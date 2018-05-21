@@ -10,15 +10,15 @@ public class PostBackSenderConfig {
 	
 	public static final String CONFIG_NAME = "iotdb-postbackClient.properties";
 	
-	public String IOTDB_BUFFERWRITE_DIRECTORY = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir).getAbsolutePath() + File.separator;
-	public String UUID_PATH;
-	public String LAST_FILE_INFO;
-	public String DATA_DIRECTORY;
-	public String SNAPSHOT_PATH;
-	public String SCHEMA_PATH = new File(TsfileDBDescriptor.getInstance().getConfig().metadataDir).getAbsolutePath() + File.separator + "mlog.txt";
-	public String SERVER_IP = "127.0.0.1";
-	public int SERVER_PORT = 5555;
-	public int CLIENT_PORT = 6666;
-	public int UPLOAD_CYCLE_IN_SECONDS = 10;
-	public boolean IS_CLEAR_ENABLE = false;
+	public String[] iotdbBufferwriteDirectory = TsfileDBDescriptor.getInstance().getConfig().getBufferWriteDirs();
+	public String dataDirectory = new File(TsfileDBDescriptor.getInstance().getConfig().dataDir).getAbsolutePath() + File.separator;
+	public String uuidPath;
+	public String lastFileInfo;
+	public String[] snapshotPaths;
+	public String schemaPath = new File(TsfileDBDescriptor.getInstance().getConfig().metadataDir).getAbsolutePath() + File.separator + "mlog.txt";
+	public String serverIp = "127.0.0.1";
+	public int serverPort = 5555;
+	public int clientPort = 6666;
+	public int uploadCycleInSeconds = 10;
+	public boolean isClearEnable = false;
 }

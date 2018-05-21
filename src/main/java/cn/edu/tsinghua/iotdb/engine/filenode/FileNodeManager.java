@@ -8,13 +8,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
@@ -59,6 +59,7 @@ public class FileNodeManager implements IStatistic, IService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
 	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
+	private static final Directories directories = Directories.getInstance();
 	private final String baseDir;
 	/**
 	 * This map is used to manage all filenode processor,<br>
@@ -338,9 +339,10 @@ public class FileNodeManager implements IStatistic, IService {
 				// Add a new interval file to newfilelist
 				if (bufferWriteProcessor.isNewProcessor()) {
 					bufferWriteProcessor.setNewProcessor(false);
+					String bufferwriteBaseDir = bufferWriteProcessor.getBaseDir();
 					String bufferwriteRelativePath = bufferWriteProcessor.getFileRelativePath();
 					try {
-						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteRelativePath);
+						fileNodeProcessor.addIntervalFileNode(timestamp, bufferwriteBaseDir, bufferwriteRelativePath);
 					} catch (Exception e) {
 						if (!isMonitor) {
 							updateStatHashMapWhenFail(tsRecord);
@@ -635,12 +637,12 @@ public class FileNodeManager implements IStatistic, IService {
 	 * @return
 	 * @throws FileNodeManagerException
 	 */
-	public List<String> getOverlapFilesFromFileNode(String fileNodeName, IntervalFileNode appendFile, String snapshotFilePath)
+	public List<String> getOverlapFilesFromFileNode(String fileNodeName, IntervalFileNode appendFile, String uuid)
 			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
 		List<String> overlapFiles = new ArrayList<>();
 		try {
-			overlapFiles = fileNodeProcessor.getOverlapFiles(appendFile, snapshotFilePath);
+			overlapFiles = fileNodeProcessor.getOverlapFiles(appendFile, uuid);
 		} catch (FileNodeProcessorException e) {
 			throw new FileNodeManagerException(e);
 		} finally {
@@ -776,9 +778,11 @@ public class FileNodeManager implements IStatistic, IService {
 				fileNodePath = standardizeDir(fileNodePath) + processorName;
 				FileUtils.deleteDirectory(new File(fileNodePath));
 
-				String bufferwritePath = TsFileDBConf.bufferWriteDir;
-				bufferwritePath = standardizeDir(bufferwritePath) + processorName;
-				FileUtils.deleteDirectory(new File(bufferwritePath));
+				List<String> bufferwritePathList = directories.getAllTsFileFolders();
+				for(String bufferwritePath : bufferwritePathList) {
+					bufferwritePath = standardizeDir(bufferwritePath) + processorName;
+					FileUtils.deleteDirectory(new File(bufferwritePath));
+				}
 
 				String overflowPath = TsFileDBConf.overflowDataDir;
 				overflowPath = standardizeDir(overflowPath) + processorName;

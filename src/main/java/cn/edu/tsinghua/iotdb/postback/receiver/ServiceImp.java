@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.filenode.OverflowChangeType;
@@ -64,14 +65,12 @@ public class ServiceImp implements Service.Iface {
 	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeEndTime = new ThreadLocal<>();// String means AbsulutePath of new
 																				// Files, Map String1 means timeseries,
 																				// String2 means startTime
-	private ThreadLocal<String> snapshotFilePath = new ThreadLocal<>();   //it is the hardlink directory of overlap tsfiles when merging old data
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
 	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
-	private String IPwhiteList = TsfileDBDescriptor.getInstance().getConfig().IP_white_list;
 	private TsfileDBConfig tsfileDBconfig= TsfileDBDescriptor.getInstance().getConfig();
-	private String dataPath= new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB data directory
 	private String postbackPath;
-	private String bufferWritePath= new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB bufferWrite directory
+	private String dataPath= new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator;  //Absolute path of IoTDB data directory
+	private String[] bufferWritePaths= tsfileDBconfig.getBufferWriteDirs();  //Absolute paths of IoTDB bufferWrite directory
 	private TsfileDBConfig tsfileDBConfig = TsfileDBDescriptor.getInstance().getConfig();
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImp.class);
@@ -87,7 +86,6 @@ public class ServiceImp implements Service.Iface {
 		fileNodeMap.set(new HashMap<>());
 		fileNodeStartTime.set(new HashMap<>());
 		fileNodeEndTime.set(new HashMap<>());
-		snapshotFilePath.set(dataPath + "postback" + File.separator + uuid.get() + File.separator + "Snapshot");
 	}
 	
 	/**
@@ -97,58 +95,19 @@ public class ServiceImp implements Service.Iface {
 		this.uuid.set(uuid);
 		postbackPath = dataPath + "postback" + File.separator;
 		schemaFromSenderPath.set(postbackPath + this.uuid.get() + File.separator + "mlog.txt");
-		if(new File(dataPath + this.uuid.get()).exists() && new File(dataPath + this.uuid.get()).list().length!=0) {
-			// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
-			deleteFile(new File(postbackPath + this.uuid.get()));
+		if(new File(postbackPath + this.uuid.get()).exists() && new File(postbackPath + this.uuid.get()).list().length!=0)
+			Utils.deleteFile(new File(postbackPath + this.uuid.get()));
+		for(String bufferWritePath: bufferWritePaths) {
+			String backupPath = bufferWritePath + "postback" + File.separator ;
+			if(new File(backupPath + this.uuid.get()).exists() && new File(backupPath + this.uuid.get()).list().length!=0) {
+				// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
+				Utils.deleteFile(new File(backupPath + this.uuid.get()));
+			}	
 		}
-		boolean legalOrNOt = verifyIPSegment(IPwhiteList, IPaddress);
+		boolean legalOrNOt = Utils.verifyIPSegment(tsfileDBConfig.ipWhiteList, IPaddress);
 		return legalOrNOt;
 	}
 	
-	/**
-	 * Verify IP address with IP white list which contains more than one IP segment.
-	 * @param IPwhiteList
-	 * @param IPaddress
-	 * @return
-	 */
-	public boolean verifyIPSegment(String IPwhiteList, String IPaddress) {
-		String[] IPsegments = IPwhiteList.split(",");
-		for(String IPsegment:IPsegments) {
-			int subnetMask = Integer.parseInt(IPsegment.substring(IPsegment.indexOf("/") + 1));
-			IPsegment = IPsegment.substring(0, IPsegment.indexOf("/"));
-			if(verifyIP(IPsegment, IPaddress, subnetMask))
-				return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Verify IP address with IP segment.
-	 * @param IPsegment
-	 * @param IPaddress
-	 * @param subnetMark
-	 * @return
-	 */
-	public boolean verifyIP(String IPsegment, String IPaddress, int subnetMark) {
-		String IPsegmentBinary = "";
-		String IPaddressBinary = "";
-		String[] IPsplits = IPsegment.split("\\.");
-		DecimalFormat df=new DecimalFormat("00000000");
-		for(String IPsplit:IPsplits) {
-			IPsegmentBinary = IPsegmentBinary + String.valueOf(df.format(Integer.parseInt(Integer.toBinaryString(Integer.parseInt(IPsplit)))));
-		}
-		IPsegmentBinary = IPsegmentBinary.substring(0, subnetMark);
-		IPsplits = IPaddress.split("\\.");
-		for(String IPsplit:IPsplits) {
-			IPaddressBinary = IPaddressBinary + String.valueOf(df.format(Integer.parseInt(Integer.toBinaryString(Integer.parseInt(IPsplit)))));
-		}
-		IPaddressBinary = IPaddressBinary.substring(0, subnetMark);
-		if(IPaddressBinary.equals(IPsegmentBinary))
-			return true;
-		else
-			return false;
-	}
-
 	/**
 	 * start receiving tsfile from sender
 	 * @param status
@@ -298,7 +257,14 @@ public class ServiceImp implements Service.Iface {
 	public boolean merge() throws TException {
 		getFileNodeInfo();
 		mergeData();
-		deleteFile(new File(postbackPath + uuid.get()));
+		Utils.deleteFile(new File(postbackPath + this.uuid.get()));
+		for(String bufferWritePath: bufferWritePaths) {
+			String backupPath = bufferWritePath + "postback" + File.separator ;
+			if(new File(backupPath + this.uuid.get()).exists() && new File(backupPath + this.uuid.get()).list().length!=0) {
+				// if does not exist, it means that the last time postback failed, clear uuid data and receive the data again
+				Utils.deleteFile(new File(backupPath + this.uuid.get()));
+			}	
+		}
 		return true;
 	}
 	
@@ -311,21 +277,8 @@ public class ServiceImp implements Service.Iface {
 		fileNodeMap.remove();
 		fileNodeStartTime.remove();
 		fileNodeEndTime.remove();
-		snapshotFilePath.remove();
 		schemaFromSenderPath.remove();
 		LOGGER.info("IoTDB post back receicer: the postBack has finished!");
-	}
-
-	private void deleteFile(File file) {
-		if (file.isFile() || file.list().length == 0) {
-			file.delete();
-		} else {
-			File[] files = file.listFiles();
-			for (File f : files) {
-				deleteFile(f);
-				f.delete();
-			}
-		}
 	}
 	
 	/**
@@ -337,15 +290,15 @@ public class ServiceImp implements Service.Iface {
 		File[] files = root.listFiles();
 		int num = 0;
 		for (File file : files) { 
-			String storageGroupPath = bufferWritePath + File.separator + file.getName();
+//			String storageGroupPath = bufferWritePath + File.separator + file.getName();
 			String storageGroupPathPB = filePath + File.separator
 					+ file.getName();
-			File storageGroup = new File(storageGroupPath);
+//			File storageGroup = new File(storageGroupPath);
 			File storageGroupPB = new File(storageGroupPathPB);
-			if (!storageGroup.exists()) // new storage group
-			{
-				storageGroup.mkdirs();
-			}
+//			if (!storageGroup.exists()) // new storage group
+//			{
+//				storageGroup.mkdirs();
+//			}
 			List<String> filesPath = new ArrayList<>();
 			File[] filesSG = storageGroupPB.listFiles();
 			for (File fileTF : filesSG) { // fileTF means TsFiles
@@ -679,8 +632,7 @@ public class ServiceImp implements Service.Iface {
 				String header = postbackPath + uuid.get() + File.separator + "data" + File.separator;
 				String relativePath = path.substring(header.length());
 				IntervalFileNode fileNode = new IntervalFileNode(startTimeMap, endTimeMap, OverflowChangeType.NO_CHANGE,
-						relativePath);
-
+						Directories.getInstance().getNextFolderIndexForTsFile(), relativePath);
 				// call interface of load external file
 				try {
 					if(!fileNodeManager.appendFileToFileNode(storageGroup, fileNode, path)) {
@@ -688,15 +640,11 @@ public class ServiceImp implements Service.Iface {
 						if(tsfileDBConfig.update_historical_data_possibility)
 							mergeOldData(path);
 						else {
-							if(!new File(snapshotFilePath.get()).exists()) {
-								new File(snapshotFilePath.get()).mkdirs();
-							}
-							List<String> overlapFiles = fileNodeManager.getOverlapFilesFromFileNode(storageGroup, fileNode, snapshotFilePath.get());
+							List<String> overlapFiles = fileNodeManager.getOverlapFilesFromFileNode(storageGroup, fileNode, uuid.get());
 							if(overlapFiles.size() == 0) {
 								mergeOldData(path);
 							}else {
 								mergeOldData(path,overlapFiles);
-								deleteFile(new File(snapshotFilePath.get()));
 							}
 						}
 					}

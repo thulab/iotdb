@@ -71,27 +71,28 @@ public class PostBackSenderDescriptor {
 		try {
 			properties.load(inputStream);
 			
-			conf.SERVER_IP = properties.getProperty("server_ip",conf.SERVER_IP);
+			conf.serverIp = properties.getProperty("server_ip",conf.serverIp);
 			
-			conf.SERVER_PORT = Integer.parseInt(properties.getProperty("server_port", conf.SERVER_PORT+""));
+			conf.serverPort = Integer.parseInt(properties.getProperty("server_port", conf.serverPort+""));
 			
-			conf.CLIENT_PORT = Integer.parseInt(properties.getProperty("client_port", conf.SERVER_PORT+""));
+			conf.clientPort = Integer.parseInt(properties.getProperty("client_port", conf.clientPort+""));
 
-			conf.UPLOAD_CYCLE_IN_SECONDS = Integer.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.UPLOAD_CYCLE_IN_SECONDS+""));
-
-			conf.IOTDB_BUFFERWRITE_DIRECTORY = properties.getProperty("iotdb_bufferWrite_directory", conf.IOTDB_BUFFERWRITE_DIRECTORY);
+			conf.uploadCycleInSeconds = Integer.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.uploadCycleInSeconds+""));
 			
-			conf.SCHEMA_PATH = properties.getProperty("iotdb_schema_directory", conf.SCHEMA_PATH);
+			conf.schemaPath = properties.getProperty("iotdb_schema_directory", conf.schemaPath);
 			
-			conf.IS_CLEAR_ENABLE = Boolean.parseBoolean(properties.getProperty("is_clear_enable", conf.IS_CLEAR_ENABLE + ""));
+			conf.isClearEnable = Boolean.parseBoolean(properties.getProperty("is_clear_enable", conf.isClearEnable + ""));
 			
-			if(!conf.IOTDB_BUFFERWRITE_DIRECTORY.endsWith(File.separator))
-				conf.IOTDB_BUFFERWRITE_DIRECTORY = conf.IOTDB_BUFFERWRITE_DIRECTORY + File.separator;
-			
-			conf.DATA_DIRECTORY = new File(conf.IOTDB_BUFFERWRITE_DIRECTORY).getParent() + File.separator;
-			conf.UUID_PATH = conf.DATA_DIRECTORY + "postback" + File.separator + "uuid.txt";
-			conf.LAST_FILE_INFO = conf.DATA_DIRECTORY + "postback" + File.separator + "lastLocalFileList.txt";
-			conf.SNAPSHOT_PATH = conf.DATA_DIRECTORY + "postback" + File.separator + "dataSnapshot";		
+			conf.uuidPath = conf.dataDirectory + "postback" + File.separator + "uuid.txt";
+			conf.lastFileInfo = conf.dataDirectory + "postback" + File.separator + "lastLocalFileList.txt";
+			String[] snapshots = new String[conf.iotdbBufferwriteDirectory.length];
+			for(int i = 0; i < conf.iotdbBufferwriteDirectory.length; i++) {
+				if(!conf.iotdbBufferwriteDirectory[i].endsWith(File.separator)) {
+					conf.iotdbBufferwriteDirectory[i] = conf.iotdbBufferwriteDirectory[i] + File.separator;
+				}
+				snapshots[i] = conf.iotdbBufferwriteDirectory[i] + "postback" + File.separator + "dataSnapshot" + File.separator;
+			}
+			conf.snapshotPaths = snapshots;		
 			
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file because {}, use default configuration", e.getMessage());

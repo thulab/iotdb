@@ -36,7 +36,7 @@ public class SingleClientPostBackTest {
 	private String POST_BACK_DIRECTORY_TEST = new File("data").getAbsolutePath() + File.separator + "postback" + File.separator;
 	private String UUID_PATH_TEST = POST_BACK_DIRECTORY_TEST + "uuid.txt";
 	private String LAST_FILE_INFO_TEST = POST_BACK_DIRECTORY_TEST + "lastLocalFileList.txt";
-	private String SENDER_FILE_PATH_TEST = conf.bufferWriteDir;
+	private String SENDER_FILE_PATH_TEST = (conf.getBufferWriteDirs())[0];
 	private String SNAPSHOT_PATH_TEST = POST_BACK_DIRECTORY_TEST + "dataSnapshot";
 	private String SERVER_IP_TEST = "192.168.130.16";
 	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
@@ -48,10 +48,9 @@ public class SingleClientPostBackTest {
 	private IoTDB deamon;
 	
 	public void setConfig() {
-		config.UUID_PATH = UUID_PATH_TEST;
-		config.LAST_FILE_INFO = LAST_FILE_INFO_TEST;
-		config.SNAPSHOT_PATH = SNAPSHOT_PATH_TEST;
-		config.SERVER_IP = SERVER_IP_TEST;
+		config.uuidPath = UUID_PATH_TEST;
+		config.lastFileInfo = LAST_FILE_INFO_TEST;
+		config.serverIp = SERVER_IP_TEST;
 		transferData.setConfig(config);
 	}
 	
