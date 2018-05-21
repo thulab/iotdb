@@ -99,15 +99,15 @@ public class FileManager {
 	public void getNowLocalFileList(String[] paths) {
 		for(String path : paths) {
 			if(!new File(path).exists()) {
-//				LOGGER.info("IoTDB post back sender: cannot get the list of now local files because {} doesn't exist!", path);
-//				return;
 				continue;
 			}
 			File[] SGs = new File(path).listFiles();
 			for(File storageGroup:SGs) {
-				if(storageGroup.isDirectory()) {
-					nowLocalFiles.put(storageGroup.getName(), new HashSet<String>());
-					sendingFiles.put(storageGroup.getName(), new HashSet<String>());
+				if(storageGroup.isDirectory() && !storageGroup.getName().equals("postback")) {
+					if(!nowLocalFiles.containsKey(storageGroup.getName()))
+						nowLocalFiles.put(storageGroup.getName(), new HashSet<String>());
+					if(!sendingFiles.containsKey(storageGroup.getName()))
+						sendingFiles.put(storageGroup.getName(), new HashSet<String>());
 					File[] files = storageGroup.listFiles();
 					for(File file:files)
 					{

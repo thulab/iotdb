@@ -290,15 +290,9 @@ public class ServiceImp implements Service.Iface {
 		File[] files = root.listFiles();
 		int num = 0;
 		for (File file : files) { 
-//			String storageGroupPath = bufferWritePath + File.separator + file.getName();
 			String storageGroupPathPB = filePath + File.separator
 					+ file.getName();
-//			File storageGroup = new File(storageGroupPath);
 			File storageGroupPB = new File(storageGroupPathPB);
-//			if (!storageGroup.exists()) // new storage group
-//			{
-//				storageGroup.mkdirs();
-//			}
 			List<String> filesPath = new ArrayList<>();
 			File[] filesSG = storageGroupPB.listFiles();
 			for (File fileTF : filesSG) { // fileTF means TsFiles

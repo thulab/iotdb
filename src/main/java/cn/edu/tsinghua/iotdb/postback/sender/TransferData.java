@@ -166,8 +166,8 @@ public class TransferData {
 	 * Create snapshots for those sending files.
 	 */
 	private Set<String> makeFileSnapshot(Set<String> sendingFileList) {
+		Set<String> sendingSnapshotFileList = new HashSet<>();
 		try {
-			Set<String> sendingSnapshotFileList = new HashSet<>();
 			for (String filePath : sendingFileList) {
 				String snapshotFilePath = Utils.getSnapshotFilePath(filePath);
 				sendingSnapshotFileList.add(snapshotFilePath);
@@ -182,7 +182,7 @@ public class TransferData {
 		} catch (IOException e) {
 			LOGGER.error("IoTDB post back sender: can not make fileSnapshot because {}", e.getMessage());
 		}
-		return sendingFileList;
+		return sendingSnapshotFileList;
 	}
 
 	/**
