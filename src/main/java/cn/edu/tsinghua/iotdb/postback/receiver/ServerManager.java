@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.postback.receiver;
-/**
- * @author lta
- */
+
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
@@ -15,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 
+/**
+ * @author lta
+ */
 public class ServerManager {
 	private TServerSocket serverTransport;
 	private Factory protocolFactory;
@@ -22,13 +23,15 @@ public class ServerManager {
 	private TThreadPoolServer.Args poolArgs;
 	private TServer poolServer;
 	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServerManager.class);
-	private static class ServerManagerHolder{
+
+	private static class ServerManagerHolder {
 		private static final ServerManager INSTANCE = new ServerManager();
 	}
-	
-	private ServerManager() {}
+
+	private ServerManager() {
+	}
 
 	public static final ServerManager getInstance() {
 		return ServerManagerHolder.INSTANCE;
@@ -39,14 +42,15 @@ public class ServerManager {
 			return;
 		}
 		try {
-			if(conf.ipWhiteList == null) {
-				LOGGER.error("IoTDB post back receicer: Postback server failed to start because IP white list is null, please set IP white list!");
+			if (conf.ipWhiteList == null) {
+				LOGGER.error(
+						"IoTDB post back receicer: Postback server failed to start because IP white list is null, please set IP white list!");
 				return;
 			}
 			conf.ipWhiteList = conf.ipWhiteList.replaceAll(" ", "");
 			serverTransport = new TServerSocket(conf.postbackServerPort);
 			protocolFactory = new TBinaryProtocol.Factory();
-			processor = new Service.Processor<ServiceImp>(new ServiceImp());
+			processor = new Service.Processor<ServiceImpl>(new ServiceImpl());
 			poolArgs = new TThreadPoolServer.Args(serverTransport);
 			poolArgs.processor(processor);
 			poolArgs.protocolFactory(protocolFactory);

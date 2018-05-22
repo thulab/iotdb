@@ -773,12 +773,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	/**
-	 * get overlap tsfiles which conflict with the appendFile
+	 * get overlap tsfiles which are conflict with the appendFile
 	 * 
 	 * @param appendFile
 	 *            the appended tsfile information
-	 * @param snapshotFilePath
-	 *            the path of snapshot files of overlap tsfiles
 	 * @throws FileNodeProcessorException
 	 */
 	public List<String> getOverlapFiles(IntervalFileNode appendFile, String uuid)
@@ -792,9 +790,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					}
 					if (intervalFileNode.getEndTime(entry.getKey()) >= entry.getValue() && intervalFileNode.getStartTime(entry.getKey()) <= appendFile
 								.getEndTime(entry.getKey())) {
-						String relativeFilePath = intervalFileNode.getRelativePath();
-						String rear = "postback" + File.separator + uuid + File.separator + "backup" + File.separator;
-						File newFile = new File(Directories.getInstance().getTsFileFolder(intervalFileNode.getBaseDirIndex()), rear + relativeFilePath);
+						String relativeFilePath = "postback" + File.separator + uuid + File.separator + "backup" + File.separator + intervalFileNode.getRelativePath();
+						File newFile = new File(Directories.getInstance().getTsFileFolder(intervalFileNode.getBaseDirIndex()), relativeFilePath);
 						if (!newFile.getParentFile().exists()) {
 							newFile.getParentFile().mkdirs();
 						}

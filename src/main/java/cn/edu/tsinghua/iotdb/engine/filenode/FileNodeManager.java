@@ -628,7 +628,7 @@ public class FileNodeManager implements IStatistic, IService {
 	}
 
 	/**
-	 * get all overlap tsfiles which conflict with the appendFile
+	 * get all overlap tsfiles which are conflict with the appendFile
 	 * 
 	 * @param fileNodeName
 	 *            the path of storage group

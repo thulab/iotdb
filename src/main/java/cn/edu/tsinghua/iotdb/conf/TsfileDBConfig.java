@@ -61,7 +61,7 @@ public class TsfileDBConfig {
 	/**
 	 * Data directory of bufferWrite data
 	 */
-	public String[] bufferWriteDirs = {"settled1", "settled2", "settled3"};
+	public String[] bufferWriteDirs = { "settled1", "settled2", "settled3" };
 
 	/**
 	 * Strategy of multiple directories
@@ -94,8 +94,8 @@ public class TsfileDBConfig {
 	public String readTmpFileDir = "readTmp";
 
 	/**
-	 * The maximum concurrent thread number for merging overflow.
-	 * When the value<=0 or > CPU core number, use the CPU core number.
+	 * The maximum concurrent thread number for merging overflow. When the value<=0
+	 * or > CPU core number, use the CPU core number.
 	 */
 	public int mergeConcurrentThreads = Runtime.getRuntime().availableProcessors();
 
@@ -227,18 +227,20 @@ public class TsfileDBConfig {
 	public int statMonitorRetainIntervalSec = 60 * 10;
 
 	/**
-	 * Threshold for external sort. When using multi-line merging sort, if the count of lines exceed {@code externalSortThreshold}, it will
-	 * trigger external sort.
+	 * Threshold for external sort. When using multi-line merging sort, if the count
+	 * of lines exceed {@code externalSortThreshold}, it will trigger external sort.
 	 */
 	public int externalSortThreshold = 50;
 
 	/**
-	 * Cache size of {@code checkAndGetDataTypeCache} in {@link cn.edu.tsinghua.iotdb.metadata.MManager}
+	 * Cache size of {@code checkAndGetDataTypeCache} in
+	 * {@link cn.edu.tsinghua.iotdb.metadata.MManager}
 	 */
 	public int mManagerCacheSize = 400000;
 
 	/**
-	 * The maximum size of a single log in byte. If a log exceeds this size, it cannot be written to WAL file.
+	 * The maximum size of a single log in byte. If a log exceeds this size, it
+	 * cannot be written to WAL file.
 	 */
 	public int maxLogEntrySize = 4 * 1024 * 1024;
 
@@ -253,12 +255,12 @@ public class TsfileDBConfig {
 	public int postbackServerPort = 5555;
 
 	/**
-	 * It's more likely to update historical data or not for postback, which determines the strategy of merging historical data
-	 * If parameter is true, it's more likely to update historical data.
-	 * If parameter is false, it's more likely not to update historical data or user doesn't know exactly.
+	 * Choose a postBack strategy of merging historical data: 1. It's more likely to
+	 * update historical data, choose "true". 2. It's more likely not to update
+	 * historical data or you don't know exactly, choose "false".
 	 */
 	public boolean update_historical_data_possibility = false;
-	
+
 	public String ipWhiteList = "0.0.0.0/0";
 
 	public TsfileDBConfig() {
@@ -275,11 +277,12 @@ public class TsfileDBConfig {
 		}
 		overflowDataDir = dataDir + overflowDataDir;
 
-		if(bufferWriteDirs == null || bufferWriteDirs.length == 0){
-			bufferWriteDirs = new String[]{default_tsfile_dir};
+		if (bufferWriteDirs == null || bufferWriteDirs.length == 0) {
+			bufferWriteDirs = new String[] { default_tsfile_dir };
 		}
-		for(int i = 0;i < bufferWriteDirs.length;i++){
-			if(new File(bufferWriteDirs[i]).isAbsolute())continue;
+		for (int i = 0; i < bufferWriteDirs.length; i++) {
+			if (new File(bufferWriteDirs[i]).isAbsolute())
+				continue;
 
 			bufferWriteDirs[i] = dataDir + bufferWriteDirs[i];
 		}
@@ -301,41 +304,38 @@ public class TsfileDBConfig {
 		indexFileDir = dataDir + indexFileDir;
 	}
 
-    /*
-     First, if dataDir is null, dataDir will be assigned the default value(i.e.,"data"+File.separatorChar+"data".
-     Then, if dataDir is absolute, leave dataDir as it is. If dataDir is relative,
-     dataDir will be converted to the complete version using non-empty %IOTDB_HOME%.
-     e.g. for windows platform,
-     |    IOTDB_HOME   |   dataDir before   |       dataDir  after      |
-     |-----------------|--------------------|---------------------------|
-     | D:\\iotdb\iotdb | null               | D:\\iotdb\iotdb\data\data |
-     | D:\\iotdb\iotdb | dataDir            | D:\\iotdb\iotdb\dataDir   |
-     | D:\\iotdb\iotdb | C:\\dataDir        | C:\\dataDir               |
-     | D:\\iotdb\iotdb | ""                 | D:\\iotdb\iotdb\          |
-
-     First, if sysDir is null, sysDir will be assigned the default value(i.e.,"data"+File.separatorChar+"system".
-     Then, if sysDir is absolute, leave sysDir as it is. If sysDir is relative,
-     sysDir will be converted to the complete version using non-empty %IOTDB_HOME%.
-     e.g. for windows platform,
-     |    IOTDB_HOME   |   sysDir before    |       sysDir  after         |
-     |-----------------|--------------------|-----------------------------|
-     | D:\\iotdb\iotdb | null               | D:\\iotdb\iotdb\data\system |
-     | D:\\iotdb\iotdb | sysDir             | D:\\iotdb\iotdb\sysDir      |
-     | D:\\iotdb\iotdb | C:\\sysDir         | C:\\sysDir                  |
-     | D:\\iotdb\iotdb | ""                 | D:\\iotdb\iotdb\            |
-
-     First, if walDir is null, walDir will be assigned the default value(i.e.,"data"+File.separatorChar+"data".
-     Then, if walDir is absolute, leave walDir as it is. If walDir is relative,
-     walDir will be converted to the complete version using non-empty %IOTDB_HOME%.
-     e.g. for windows platform,
-     |    IOTDB_HOME   |   walDir before    |       walDir  after         |
-     |-----------------|--------------------|-----------------------------|
-     | D:\\iotdb\iotdb | null               | D:\\iotdb\iotdb\data\wal    |
-     | D:\\iotdb\iotdb | walDir             | D:\\iotdb\iotdb\walDir      |
-     | D:\\iotdb\iotdb | C:\\walDir         | C:\\walDir                  |
-     | D:\\iotdb\iotdb | ""                 | D:\\iotdb\iotdb\            |
-
-     */
+	/*
+	 * First, if dataDir is null, dataDir will be assigned the default
+	 * value(i.e.,"data"+File.separatorChar+"data". Then, if dataDir is absolute,
+	 * leave dataDir as it is. If dataDir is relative, dataDir will be converted to
+	 * the complete version using non-empty %IOTDB_HOME%. e.g. for windows platform,
+	 * | IOTDB_HOME | dataDir before | dataDir after |
+	 * |-----------------|--------------------|---------------------------| |
+	 * D:\\iotdb\iotdb | null | D:\\iotdb\iotdb\data\data | | D:\\iotdb\iotdb |
+	 * dataDir | D:\\iotdb\iotdb\dataDir | | D:\\iotdb\iotdb | C:\\dataDir |
+	 * C:\\dataDir | | D:\\iotdb\iotdb | "" | D:\\iotdb\iotdb\ |
+	 * 
+	 * First, if sysDir is null, sysDir will be assigned the default
+	 * value(i.e.,"data"+File.separatorChar+"system". Then, if sysDir is absolute,
+	 * leave sysDir as it is. If sysDir is relative, sysDir will be converted to the
+	 * complete version using non-empty %IOTDB_HOME%. e.g. for windows platform, |
+	 * IOTDB_HOME | sysDir before | sysDir after |
+	 * |-----------------|--------------------|-----------------------------| |
+	 * D:\\iotdb\iotdb | null | D:\\iotdb\iotdb\data\system | | D:\\iotdb\iotdb |
+	 * sysDir | D:\\iotdb\iotdb\sysDir | | D:\\iotdb\iotdb | C:\\sysDir | C:\\sysDir
+	 * | | D:\\iotdb\iotdb | "" | D:\\iotdb\iotdb\ |
+	 * 
+	 * First, if walDir is null, walDir will be assigned the default
+	 * value(i.e.,"data"+File.separatorChar+"data". Then, if walDir is absolute,
+	 * leave walDir as it is. If walDir is relative, walDir will be converted to the
+	 * complete version using non-empty %IOTDB_HOME%. e.g. for windows platform, |
+	 * IOTDB_HOME | walDir before | walDir after |
+	 * |-----------------|--------------------|-----------------------------| |
+	 * D:\\iotdb\iotdb | null | D:\\iotdb\iotdb\data\wal | | D:\\iotdb\iotdb |
+	 * walDir | D:\\iotdb\iotdb\walDir | | D:\\iotdb\iotdb | C:\\walDir | C:\\walDir
+	 * | | D:\\iotdb\iotdb | "" | D:\\iotdb\iotdb\ |
+	 * 
+	 */
 
 	public void preUpdatePath() {
 		if (dataDir == null) {
@@ -376,11 +376,11 @@ public class TsfileDBConfig {
 		walDir = dirs.get(2);
 	}
 
-	public void confirmMultDirStrategy(){
-		if(multDirStrategyClassName == null){
+	public void confirmMultDirStrategy() {
+		if (multDirStrategyClassName == null) {
 			multDirStrategyClassName = default_mult_dir_strategy;
 		}
-		if(!multDirStrategyClassName.contains(".")){
+		if (!multDirStrategyClassName.contains(".")) {
 			multDirStrategyClassName = mult_dir_strategy_prefix + multDirStrategyClassName;
 		}
 
@@ -391,5 +391,7 @@ public class TsfileDBConfig {
 		}
 	}
 
-	public String[] getBufferWriteDirs(){return bufferWriteDirs;}
+	public String[] getBufferWriteDirs() {
+		return bufferWriteDirs;
+	}
 }

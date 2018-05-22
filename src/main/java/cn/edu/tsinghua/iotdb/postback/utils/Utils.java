@@ -5,16 +5,6 @@ package cn.edu.tsinghua.iotdb.postback.utils;
 
 public class Utils {
 
-//    private static String[] typeAndEncode = new String[2];
-//    private static String[] pathAndSensor = new String[2];
-
-//    private static void splitPathAndSensor(String timeseries) {
-//
-//        int lastPointIndex = timeseries.indexOf("s");
-//        pathAndSensor[0] = timeseries.substring(0, lastPointIndex - 1);
-//        pathAndSensor[1] = timeseries.substring(lastPointIndex);
-//    }
-
     public static String getType(String properties) {
         return properties.split(",")[0];
     }
@@ -35,10 +25,7 @@ public class Utils {
 
     public static void main(String[] argc) {
 
-        String test = "INT32,RLE";
         String test2 = "root.excavator.Beijing.d1.s1";
-        //System.out.println(splitPathAndSensor(test)[0] + " " + splitPathAndSensor(test)[1]);
-        //System.out.println(getType(test) + " " + getEncode(test));
         System.out.println(getPath(test2) + " " + getSensor(test2));
 
     }
