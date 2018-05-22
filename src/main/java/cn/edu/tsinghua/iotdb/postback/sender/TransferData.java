@@ -51,9 +51,10 @@ import cn.edu.tsinghua.iotdb.postback.receiver.Service;
 import cn.edu.tsinghua.iotdb.utils.PostbackUtils;
 
 /**
- * @author lta The class is to transfer data that needs to postback to receiver.
+ * The class is to transfer tsfiles that needs to postback to receiver.
+ * @author lta 
  */
-public class TransferData {
+public class TransferData implements FileSender{
 
 	private TTransport transport;
 	private Service.Client clientOfServer;
@@ -89,8 +90,7 @@ public class TransferData {
 			return;
 		} else {
 			if (!transferUUID(config.uuidPath)) {
-				LOGGER.error(
-						"IoTDB post back sender: Sorry! You do not have permission to connect to postback receiver!");
+				LOGGER.error("IoTDB post back sender: Sorry! You do not have permission to connect to postback receiver!");
 				connectionOrElse = false;
 				return;
 			}
@@ -99,14 +99,14 @@ public class TransferData {
 	}
 
 	/**
-	 * Eatablish a connection between sender and receiver
+	 * Establish a connection between sender and receiver
 	 * 
 	 * @param serverIP
 	 * @param serverPort:it
 	 *            must be same with port receiver set.
 	 */
-	private void connection(String serverIP, int serverPort) {
-		transport = new TSocket(serverIP, serverPort);
+	public void connection(String serverIp, int serverPort) {
+		transport = new TSocket(serverIp, serverPort);
 		TProtocol protocol = new TBinaryProtocol(transport);
 		clientOfServer = new Service.Client(protocol);
 		try {
@@ -121,7 +121,7 @@ public class TransferData {
 	/**
 	 * UUID marks the identity of sender for receiver.
 	 */
-	private boolean transferUUID(String uuidPath) {
+	public boolean transferUUID(String uuidPath) {
 		File file = new File(uuidPath);
 		BufferedReader bf;
 		FileOutputStream out;
@@ -165,7 +165,7 @@ public class TransferData {
 	/**
 	 * Create snapshots for those sending files.
 	 */
-	private Set<String> makeFileSnapshot(Set<String> sendingFileList) {
+	public Set<String> makeFileSnapshot(Set<String> sendingFileList) {
 		Set<String> sendingSnapshotFileList = new HashSet<>();
 		try {
 			for (String filePath : sendingFileList) {
@@ -193,7 +193,7 @@ public class TransferData {
 	 * @param snapshotPath
 	 * @param iotdbPath
 	 */
-	private void startSending(Set<String> fileSnapshotList) {
+	public void startSending(Set<String> fileSnapshotList) {
 		try {
 			int num = 0;
 			for (String snapshotFilePath : fileSnapshotList) {
@@ -256,7 +256,7 @@ public class TransferData {
 	 * 
 	 * @param schemaPath
 	 */
-	private void sendSchema(String schemaPath) {
+	public void sendSchema(String schemaPath) {
 		try {
 			FileInputStream fis = new FileInputStream(new File(schemaPath));
 			int mBufferSize = 4 * 1024 * 1024;
@@ -278,7 +278,7 @@ public class TransferData {
 		}
 	}
 
-	private boolean afterSending() {
+	public boolean afterSending() {
 		boolean successOrNot = false;
 		try {
 			successOrNot = clientOfServer.merge();
@@ -441,7 +441,7 @@ public class TransferData {
 	}
 
 	/**
-	 * Exceute a postback task.
+	 * Execute a postback task.
 	 */
 	public void postback() {
 

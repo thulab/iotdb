@@ -59,27 +59,19 @@ public class ServiceImpl implements Service.Iface {
 
 	private ThreadLocal<String> uuid = new ThreadLocal<String>();
 	private ThreadLocal<Map<String, List<String>>> fileNodeMap = new ThreadLocal<>(); // String means Storage Group,
-																						// List means the set
-	// of new Files(AbsulutePath) in local IoTDB
-	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeStartTime = new ThreadLocal<>(); // String means
-																									// AbsulutePath of
-																									// new
-	// Files, Map String1 means
-	// timeseries, String2 means
-	// startTime
-	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeEndTime = new ThreadLocal<>();// String means
-																								// AbsulutePath of new
-	// Files, Map String1 means timeseries,
-	// String2 means endTime
+																					// List means the set of new Files(AbsulutePath) in local IoTDB
+	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeStartTime = new ThreadLocal<>(); // String means AbsulutePath of new Files
+																								//Map String1 means timeseries
+																								//String2 means startTime
+	private ThreadLocal<Map<String, Map<String, Long>>> fileNodeEndTime = new ThreadLocal<>();// String means AbsulutePath of new Files
+																							//Map String1 means timeseries
+																							// String2 means endTime
 	private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
 	private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
 	private TsfileDBConfig tsfileDBconfig = TsfileDBDescriptor.getInstance().getConfig();
 	private String postbackPath;
-	private String dataPath = new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator; // Absolute path of
-																									// IoTDB data
-																									// directory
-	private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs(); // Absolute paths of IoTDB bufferWrite
-																				// directory
+	private String dataPath = new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator; // Absolute path of IoTDB data directory	
+	private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs(); // Absolute paths of IoTDB bufferWrite directory
 	private TsfileDBConfig tsfileDBConfig = TsfileDBDescriptor.getInstance().getConfig();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImpl.class);
@@ -174,8 +166,7 @@ public class ServiceImpl implements Service.Iface {
 				fis.close();
 				if (md5.equals(md5OfReceiver)) {
 					fileNum.set(fileNum.get() + 1);
-					LOGGER.info("IoTDB post back receicer : Receiver has received " + fileNum.get()
-							+ " files from sender!");
+					LOGGER.info("IoTDB post back receicer : Receiver has received " + fileNum.get() + " files from sender!");
 				}
 			} catch (Exception e) {
 				LOGGER.error("IoTDB post back receicer: cannot generate md5 because {}", e.getMessage());

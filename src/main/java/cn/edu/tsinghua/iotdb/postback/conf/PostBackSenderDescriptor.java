@@ -52,9 +52,7 @@ public class PostBackSenderDescriptor {
 			if (url != null) {
 				url = url + File.separatorChar + "conf" + File.separatorChar + PostBackSenderConfig.CONFIG_NAME;
 			} else {
-				LOGGER.warn(
-						"Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration",
-						PostBackSenderConfig.CONFIG_NAME);
+				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", PostBackSenderConfig.CONFIG_NAME);
 				return;
 			}
 		} else {
@@ -73,23 +71,17 @@ public class PostBackSenderDescriptor {
 		Properties properties = new Properties();
 		try {
 			properties.load(inputStream);
-
+			
 			conf.serverIp = properties.getProperty("server_ip", conf.serverIp);
-
 			conf.serverPort = Integer.parseInt(properties.getProperty("server_port", conf.serverPort + ""));
-
+			
 			conf.clientPort = Integer.parseInt(properties.getProperty("client_port", conf.clientPort + ""));
-
-			conf.uploadCycleInSeconds = Integer
-					.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.uploadCycleInSeconds + ""));
-
+			conf.uploadCycleInSeconds = Integer.parseInt(properties.getProperty("upload_cycle_in_seconds", conf.uploadCycleInSeconds + ""));
 			conf.schemaPath = properties.getProperty("iotdb_schema_directory", conf.schemaPath);
-
-			conf.isClearEnable = Boolean
-					.parseBoolean(properties.getProperty("is_clear_enable", conf.isClearEnable + ""));
-
+			conf.isClearEnable = Boolean.parseBoolean(properties.getProperty("is_clear_enable", conf.isClearEnable + ""));
 			conf.uuidPath = conf.dataDirectory + "postback" + File.separator + "uuid.txt";
 			conf.lastFileInfo = conf.dataDirectory + "postback" + File.separator + "lastLocalFileList.txt";
+			
 			String[] snapshots = new String[conf.iotdbBufferwriteDirectory.length];
 			for (int i = 0; i < conf.iotdbBufferwriteDirectory.length; i++) {
 				if (!conf.iotdbBufferwriteDirectory[i].endsWith(File.separator)) {
@@ -99,7 +91,6 @@ public class PostBackSenderDescriptor {
 						+ File.separator;
 			}
 			conf.snapshotPaths = snapshots;
-
 		} catch (IOException e) {
 			LOGGER.warn("Cannot load config file because {}, use default configuration", e.getMessage());
 		} catch (Exception e) {

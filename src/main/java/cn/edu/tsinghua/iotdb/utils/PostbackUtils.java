@@ -7,12 +7,16 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
-
+/**
+ * @author lta
+ */
 public class PostbackUtils {
 	private static String[] snapshotPaths = PostBackSenderDescriptor.getInstance().getConfig().snapshotPaths;
 
 	/**
-	 * 
+	 * This method is to get a snapshot file path according to a tsfile path.
+	 * Due to multiple directories, it's necessary to make a snapshot in the same disk.
+	 * It's used by postback sender.
 	 * @param filePath
 	 * @return
 	 */
@@ -42,6 +46,7 @@ public class PostbackUtils {
 
 	/**
 	 * Verify sending list is empty or not
+	 * It's used by postback sender.
 	 * 
 	 * @param sendingFileList
 	 * @return
@@ -56,6 +61,7 @@ public class PostbackUtils {
 	
 	/**
 	 * Verify IP address with IP white list which contains more than one IP segment.
+	 * It's used by postback sender.
 	 * 
 	 * @param IPwhiteList
 	 * @param IPaddress

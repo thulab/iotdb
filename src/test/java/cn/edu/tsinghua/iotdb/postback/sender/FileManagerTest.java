@@ -211,11 +211,20 @@ public class FileManagerTest {
 				}
 			}
 		}
+		manager.setNowLocalFiles(new HashMap<>());
 		manager.getNowLocalFileList(new String[] {SENDER_FILE_PATH_TEST});
 		fileList = manager.getNowLocalFiles();
 		assert (allFileList.size() == fileList.size());
 		for(Entry<String, Set<String>> entry:fileList.entrySet()) {
 			assert(allFileList.containsKey(entry.getKey()));
+			System.out.println("allFileList");
+			for(String a: allFileList.get(entry.getKey())) {
+				System.out.println(a);
+			}
+			System.out.println("FileList");
+			for(String a: entry.getValue()) {
+				System.out.println(a);
+			}
 			assert(allFileList.get(entry.getKey()).containsAll(entry.getValue()));
 		}
 	}

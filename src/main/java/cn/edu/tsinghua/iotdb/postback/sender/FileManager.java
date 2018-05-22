@@ -21,7 +21,8 @@ import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 
 /**
- * @author lta The class is to pick up which files need to postback
+ * The class is to pick up which files need to postback.
+ * @author lta 
  */
 public class FileManager {
 
@@ -87,8 +88,7 @@ public class FileManager {
 					bf.close();
 				} catch (IOException e) {
 					LOGGER.error(
-							"IoTDB post back sender: cannot get last local file list when reading file {} because {}.",
-							postbackConfig.lastFileInfo, e.getMessage());
+							"IoTDB post back sender: cannot get last local file list when reading file {} because {}.", postbackConfig.lastFileInfo, e.getMessage());
 				} finally {
 					if (bf != null) {
 						bf.close();
@@ -142,8 +142,7 @@ public class FileManager {
 					bufferedWriter.close();
 				} catch (IOException e) {
 					LOGGER.error(
-							"IoTDB post back sender: cannot close stream after backing up now local file info because {}",
-							e);
+							"IoTDB post back sender: cannot close stream after backing up now local file info because {}", e);
 				}
 			}
 		}
