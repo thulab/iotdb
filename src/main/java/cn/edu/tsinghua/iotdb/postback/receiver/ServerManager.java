@@ -69,7 +69,7 @@ public class ServerManager {
 	}
 
 	public void closeServer() {
-		if (conf.isPostbackEnable) {
+		if (conf.isPostbackEnable && poolServer != null) {
 			poolServer.stop();
 			serverTransport.close();
 			LOGGER.info("Stop postback server.");
