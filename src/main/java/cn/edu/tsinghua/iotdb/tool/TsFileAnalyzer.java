@@ -17,6 +17,9 @@ import javafx.util.Pair;
 import java.io.*;
 import java.util.*;
 
+/**
+ * @author East
+ */
 public class TsFileAnalyzer {
 
     private static final int FOOTER_LENGTH = 4;
@@ -39,9 +42,8 @@ public class TsFileAnalyzer {
     private List<Integer> pageSizeList;
     private List<Integer> pageContentList;
 
-    private int mainIndex = 0;
-    private int subIndex = 0;
     private FileWriter outputWriter;
+    private int tageNum = 0;
 
     public TsFileAnalyzer(String tsFilePath) throws IOException {
         this.tsFilePath = tsFilePath;
@@ -120,28 +122,47 @@ public class TsFileAnalyzer {
         }
     }
 
-    private void writeMainTitle(String content) throws IOException {
-        mainIndex++;
-        subIndex = 0;
-        outputWriter.write("\n");
-        outputWriter.write(mainIndex + "." + content + "\n");
+    private void writeTag() throws IOException {
+        for(int i = 0;i < tageNum;i++)
+            outputWriter.write("\t");
     }
 
-    private void writeSubTitle(String content) throws IOException {
-        subIndex++;
-        outputWriter.write(mainIndex + "." + subIndex + "." + content + "\n");
+    private void writeBeginTag(String key) throws IOException {
+        writeTag();
+        outputWriter.write("<" + key + ">\n");
+        tageNum++;
     }
 
-    private void writeContent(String content) throws IOException {
-        outputWriter.write("\t" + content + "\n");
+    private void writeEndTag(String key) throws IOException {
+        tageNum--;
+        writeTag();
+        outputWriter.write("</" + key + ">\n");
+    }
+
+    private void writeContent(int content, String key) throws IOException {
+        writeTag();
+        outputWriter.write("<" + key + ">");
+        outputWriter.write("" + content);
+        outputWriter.write("</" + key + ">\n");
+    }
+
+    private void writeContent(double content, String key) throws IOException {
+        writeTag();
+        outputWriter.write("<" + key + ">");
+        outputWriter.write("" + content);
+        outputWriter.write("</" + key + ">\n");
+    }
+
+    private void writeContent(String content, String key) throws IOException {
+        writeTag();
+        outputWriter.write("<" + key + ">");
+        outputWriter.write(content);
+        outputWriter.write("</" + key + ">\n");
     }
 
     private void writeOneBox(int start, int end, int num, float rate) throws IOException {
-        writeContent("\t" + start + " ~ " + (end - 1) + "（" + (end - start) + "）: " + num + "，占" + rate * 100 + "%");
-    }
-
-    private void writeOneBox(int key, int num, float rate) throws IOException {
-        writeContent("\t" + key + ": " + num + "，" + rate * 100 + "%");
+        writeTag();
+        writeContent(start + "~" + Math.max(end - 1, start) + "(" + (end - start) + "):" + num + "," + rate * 100 + "%", "box");
     }
 
     private List<Long> getSimpleStatistics(List<Integer> dataList){
@@ -163,9 +184,22 @@ public class TsFileAnalyzer {
         return res;
     }
 
-    private void writeDistribution(List<Integer> dataList) throws IOException {
-        Collections.sort(dataList);
+    private void writeStatistics(List<Integer> dataList, String name, String cate) throws IOException {
+        List<Long> statistics = getSimpleStatistics(dataList);
+        writeBeginTag(name + "_metadata_" + cate);
+        writeTag();
+        writeContent(statistics.get(2) / (float)dataList.size(), "average");
+        writeTag();
+        writeContent(statistics.get(0),"min");
+        writeTag();
+        writeContent(statistics.get(1),"max");
+        writeEndTag(name + "_metadata_" + cate);
+    }
 
+    private void writeDistribution(List<Integer> dataList, String name, String cate) throws IOException {
+        writeBeginTag(name + "_metadata_" + cate);
+
+        Collections.sort(dataList);
         int scalesize = (int) (dataList.size() * SCALE);
         int min  = dataList.get(0);
         int max = dataList.get(dataList.size() - 1);
@@ -190,102 +224,78 @@ public class TsFileAnalyzer {
             boxes.put(lastdata, count);
 
             for(int i = min;i <= max;i++){
-                if(boxes.containsKey(i))writeOneBox(i, boxes.get(i), boxes.get(i) / (float)dataList.size());
+                if(boxes.containsKey(i))writeOneBox(i, i + 1, boxes.get(i), boxes.get(i) / (float)dataList.size());
             }
+        }
+        else {
+            writeOneBox(min, start, scalesize, scalesize / (float) dataList.size());
+            int index = scalesize;
+            while (start < end) {
+                int count = 0;
+                while (index < dataList.size() && dataList.get(index) < start + shift && dataList.get(index) < end) {
+                    index++;
+                    count++;
+                }
 
-            return;
+                writeOneBox(start, Math.min(start + shift, end), count, count / (float) dataList.size());
+                start += shift;
+            }
+            writeOneBox(end, max, scalesize, scalesize / (float) dataList.size());
         }
 
-        writeOneBox(min, start, scalesize, scalesize / (float)dataList.size());
-        int index = scalesize;
-        while(start < end){
-            int count = 0;
-            while (index < dataList.size() && dataList.get(index) < start + shift && dataList.get(index) < end){
-                index++;
-                count++;
-            }
-
-            writeOneBox(start, Math.min(start + shift, end), count, count / (float)dataList.size());
-            start += shift;
-        }
-        writeOneBox(end, max, scalesize, scalesize / (float)dataList.size());
+        writeEndTag(name + "_metadata_" + cate);
     }
 
     public void output(String filename) throws IOException {
         outputWriter = new FileWriter(filename);
-        List<Long> statistics;
 
-        outputWriter.write("TsFile文件结构分析\n");
-        writeMainTitle("文件概述");
-        writeSubTitle("文件路径");
-        writeContent(tsFilePath + "。");
-        writeSubTitle("文件大小");
-        writeContent(fileSize + "字节（" + (fileSize/Math.pow(1024, 3)) + "GB）。");
+        // file
+        writeContent(tsFilePath, "file_path");
+        writeContent(fileSize, "file_size");
+        writeContent(fileSize/Math.pow(1024, 3), "file_size_GB");
 
-        writeMainTitle("FileMetaData");
-        writeContent("FileMetaData全文件只有一个，" +
-                "大小为" + fileMetadataSize + "字节，" +
-                "指向了" + rowGroupBlockMetaDataSizeList.size() + "个RowGroupBlockMetaData。");
+        // file metadata
+        writeBeginTag("FileMetaData");
+        writeContent(1, "file_metadata_num");
+        writeContent(fileMetadataSize, "file_metadata_size");
+        writeContent(rowGroupBlockMetaDataSizeList.size(), "file_metadata_children_num");
+        writeEndTag("FileMetaData");
 
-        writeMainTitle("RowGroupsOfDeltaObjectMetaData");
-        writeContent("RowGroupsOfDeltaObjectMetaData全文件有" + rowGroupBlockMetaDataSizeList.size() + "个。");
-        writeSubTitle("大小");
-        statistics = getSimpleStatistics(rowGroupBlockMetaDataSizeList);
-        writeContent("RowGroupsOfDeltaObjectMetaData的平均大小为" + (statistics.get(2) / (float)rowGroupBlockMetaDataSizeList.size()) + "字节，" +
-                "最小为" + statistics.get(0) + "字节，最大为" + statistics.get(1) + "字节。" +
-                "其中具体分布统计如下（单位为字节）。");
-        writeDistribution(rowGroupBlockMetaDataSizeList);
-        writeSubTitle("内部结构");
-        statistics = getSimpleStatistics(rowGroupBlockMetaDataContentList);
-        writeContent("每个RowGroupsOfDeltaObjectMetaData平均指向" + (statistics.get(2) / (float)rowGroupBlockMetaDataContentList.size()) + "个RowGroup，" +
-                "最少指向" + statistics.get(0) + "个，最多" + statistics.get(1) + "个。" +
-                "其中具体分布统计如下（单位为个）。");
-        writeDistribution(rowGroupBlockMetaDataContentList);
+        // row groups of deltaobject metadata
+        writeBeginTag("RowGroupsOfDeltaObjectMetaData");
+        writeContent(rowGroupBlockMetaDataSizeList.size(), "rowgroupsofdeltaobject_metadata_num");
+        writeStatistics(rowGroupBlockMetaDataSizeList, "rowgroupsofdeltaobject", "size");
+        writeDistribution(rowGroupBlockMetaDataSizeList, "rowgroupsofdeltaobject", "size_distribution");
+        writeStatistics(rowGroupBlockMetaDataSizeList, "rowgroupsofdeltaobject", "children_num");
+        writeDistribution(rowGroupBlockMetaDataContentList, "rowgroupsofdeltaobject", "children_num_distribution");
+        writeEndTag("RowGroupsOfDeltaObjectMetaData");
 
-        writeMainTitle("RowGroup");
-        writeContent("RowGroup全文件有" + rowGroupMetaDataSizeList.size() + "个。");
-        writeSubTitle("大小");
-        statistics = getSimpleStatistics(rowGroupMetaDataSizeList);
-        writeContent("RowGroup的平均大小为" + (statistics.get(2) / (float)rowGroupMetaDataSizeList.size()) + "字节，" +
-                "最小为" + statistics.get(0) + "字节，最大为" + statistics.get(1) + "字节。" +
-                "其中具体分布统计如下（单位为字节）。");
-        writeDistribution(rowGroupMetaDataSizeList);
-        writeSubTitle("内部结构");
-        statistics = getSimpleStatistics(rowGroupMetaDataContentList);
-        writeContent("每个RowGroup平均包含" + (statistics.get(2) / (float)rowGroupMetaDataContentList.size()) + "个TimeSeriesChunk，" +
-                "最少包含" + statistics.get(0) + "个，最多" + statistics.get(1) + "个。" +
-                "其中具体分布统计如下（单位为个）。");
-        writeDistribution(rowGroupMetaDataContentList);
+        // row group metadata
+        writeBeginTag("RowGroup");
+        writeContent(rowGroupMetaDataSizeList.size(), "rowgroup_metadata_num");
+        writeStatistics(rowGroupMetaDataSizeList, "rowgroup", "size");
+        writeDistribution(rowGroupMetaDataSizeList, "rowgroup", "size_distribution");
+        writeStatistics(rowGroupMetaDataContentList, "rowgroup", "children_num");
+        writeDistribution(rowGroupMetaDataContentList, "rowgroup", "children_num_distribution");
+        writeEndTag("RowGroup");
 
-        writeMainTitle("TimeSeriesChunk");
-        writeContent("TimeSeriesChunk全文件有" + timeSeriesChunkMetaDataSizeList.size() + "个。");
-        writeSubTitle("大小");
-        statistics = getSimpleStatistics(timeSeriesChunkMetaDataSizeList);
-        writeContent("TimeSeriesChunk的平均大小为" + (statistics.get(2) / (float)timeSeriesChunkMetaDataSizeList.size()) + "字节，" +
-                "最小为" + statistics.get(0) + "字节，最大为" + statistics.get(1) + "字节。" +
-                "其中具体分布统计如下（单位为字节）。");
-        writeDistribution(timeSeriesChunkMetaDataSizeList);
-        writeSubTitle("内部结构");
-        statistics = getSimpleStatistics(timeSeriesChunkMetaDataContentList);
-        writeContent("每个TimeSeriesChunk平均包含" + (statistics.get(2) / (float)timeSeriesChunkMetaDataContentList.size()) + "个Page，" +
-                "最少包含" + statistics.get(0) + "个，最多" + statistics.get(1) + "个。" +
-                "其中具体分布统计如下（单位为个）。");
-        writeDistribution(timeSeriesChunkMetaDataContentList);
+        // time series chunk metadata
+        writeBeginTag("TimeSeriesChunk");
+        writeContent(timeSeriesChunkMetaDataSizeList.size(), "timeserieschunk_metadata_num");
+        writeStatistics(timeSeriesChunkMetaDataSizeList, "timeserieschunk", "size");
+        writeDistribution(timeSeriesChunkMetaDataSizeList, "timeserieschunk", "size_distribution");
+        writeStatistics(timeSeriesChunkMetaDataContentList, "timeserieschunk", "children_num");
+        writeDistribution(timeSeriesChunkMetaDataContentList, "timeserieschunk", "children_num_distribution");
+        writeEndTag("TimeSeriesChunk");
 
-        writeMainTitle("Page");
-        writeContent("Page全文件有" + pageSizeList.size() + "个。");
-        writeSubTitle("大小");
-        statistics = getSimpleStatistics(pageSizeList);
-        writeContent("Page的平均大小为" + (statistics.get(2) / (float)pageSizeList.size()) + "字节，" +
-                "最小为" + statistics.get(0) + "字节，最大为" + statistics.get(1) + "字节。" +
-                "其中具体分布统计如下（单位为字节）。");
-        writeDistribution(pageSizeList);
-        writeSubTitle("内部结构");
-        statistics = getSimpleStatistics(pageContentList);
-        writeContent("每个Page平均存储" + (statistics.get(2) / (float)pageContentList.size()) + "个数据点，" +
-                "最少存储" + statistics.get(0) + "个，最多" + statistics.get(1) + "个。" +
-                "其中具体分布统计如下（单位为个）。");
-        writeDistribution(pageContentList);
+        // page
+        writeBeginTag("Page");
+        writeContent(pageSizeList.size(), "page_metadata_num");
+        writeStatistics(pageSizeList, "page", "size");
+        writeDistribution(pageSizeList, "page", "size_distribution");
+        writeStatistics(pageContentList, "page", "children_num");
+        writeDistribution(pageContentList, "page", "children_num_distribution");
+        writeEndTag("Page");
 
         outputWriter.close();
     }
