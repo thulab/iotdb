@@ -50,7 +50,7 @@ public class ServerManager {
 			conf.ipWhiteList = conf.ipWhiteList.replaceAll(" ", "");
 			serverTransport = new TServerSocket(conf.postbackServerPort);
 			protocolFactory = new TBinaryProtocol.Factory();
-			processor = new Service.Processor<ServiceImpl>(new ServiceImpl());
+			processor = new ServerService.Processor<ServerServiceImpl>(new ServerServiceImpl());
 			poolArgs = new TThreadPoolServer.Args(serverTransport);
 			poolArgs.processor(processor);
 			poolArgs.protocolFactory(protocolFactory);

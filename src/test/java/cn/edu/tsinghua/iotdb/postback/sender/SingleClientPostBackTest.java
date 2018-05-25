@@ -1,7 +1,3 @@
-/**
- * The test is to run a complete postback fuction
- * Before you run the test, make sure receiver has been cleaned up and inited.
- */
 package cn.edu.tsinghua.iotdb.postback.sender;
 
 import static org.junit.Assert.*;
@@ -15,20 +11,19 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
-import cn.edu.tsinghua.iotdb.postback.sender.TransferData;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
+/**
+ * The test is to run a complete postback function
+ * Before you run the test, make sure receiver has been cleaned up and inited.
+ */
 public class SingleClientPostBackTest {
 
 	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
@@ -43,7 +38,7 @@ public class SingleClientPostBackTest {
 	private Set<String> dataSender = new HashSet<>();
 	private Set<String> dataReceiver = new HashSet<>();
 	private boolean success = true;
-	TransferData transferData = TransferData.getInstance();
+	FileSenderImpl fileSenderImpl = FileSenderImpl.getInstance();
 
 	private IoTDB deamon;
 	
@@ -51,7 +46,7 @@ public class SingleClientPostBackTest {
 		config.uuidPath = UUID_PATH_TEST;
 		config.lastFileInfo = LAST_FILE_INFO_TEST;
 		config.serverIp = SERVER_IP_TEST;
-		transferData.setConfig(config);
+		fileSenderImpl.setConfig(config);
 	}
 	
 	private String[] sqls1 = new String[] { 
@@ -220,7 +215,7 @@ public class SingleClientPostBackTest {
 				fail(e.getMessage());
 			}
 			
-			transferData.postback();
+			fileSenderImpl.postback();
 
 			// Compare data of sender and receiver
 			dataSender.clear();
@@ -345,7 +340,7 @@ public class SingleClientPostBackTest {
 				fail(e.getMessage());
 			}
 			
-			transferData.postback();
+			fileSenderImpl.postback();
 			
 			// Compare data of sender and receiver
 			dataSender.clear();
@@ -469,7 +464,7 @@ public class SingleClientPostBackTest {
 				fail(e.getMessage());
 			}
 
-			transferData.postback();
+			fileSenderImpl.postback();
 	
 			// Compare data of sender and receiver
 			dataSender.clear();

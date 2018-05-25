@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
 
+import cn.edu.tsinghua.iotdb.postback.receiver.ServerService;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -47,17 +48,16 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
-import cn.edu.tsinghua.iotdb.postback.receiver.Service;
 import cn.edu.tsinghua.iotdb.utils.PostbackUtils;
 
 /**
  * The class is to transfer tsfiles that needs to postback to receiver.
  * @author lta 
  */
-public class TransferData implements FileSender{
+public class FileSenderImpl implements FileSender{
 
 	private TTransport transport;
-	private Service.Client clientOfServer;
+	private ServerService.Client clientOfServer;
 	private List<String> schema = new ArrayList<>();
 	private String uuid;// Mark the identity of sender
 	private boolean connectionOrElse; // Mark whether connection of sender and receiver has broken down or not
@@ -67,16 +67,16 @@ public class TransferData implements FileSender{
 	private boolean clearOrNot = config.isClearEnable; // Clear data after postback has finished or not
 	private Map<String, Set<String>> sendingFileSnapshotList = new HashMap<>();
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TransferData.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileSenderImpl.class);
 
 	private static class TransferHolder {
-		private static final TransferData INSTANCE = new TransferData();
+		private static final FileSenderImpl INSTANCE = new FileSenderImpl();
 	}
 
-	private TransferData() {
+	private FileSenderImpl() {
 	}
 
-	public static final TransferData getInstance() {
+	public static final FileSenderImpl getInstance() {
 		return TransferHolder.INSTANCE;
 	}
 
@@ -85,7 +85,7 @@ public class TransferData implements FileSender{
 	}
 
 	private void getConnection(String serverIP, int serverPort) {
-		connection(serverIP, serverPort);
+		connectToReceiver(serverIP, serverPort);
 		if (!connectionOrElse) {
 			return;
 		} else {
@@ -95,7 +95,6 @@ public class TransferData implements FileSender{
 				return;
 			}
 		}
-		return;
 	}
 
 	/**
@@ -104,10 +103,11 @@ public class TransferData implements FileSender{
 	 * @param serverIp
 	 * @param serverPort:it must be same with port receiver set.
 	 */
-	public void connection(String serverIp, int serverPort) {
+	@Override
+	public void connectToReceiver(String serverIp, int serverPort) {
 		transport = new TSocket(serverIp, serverPort);
 		TProtocol protocol = new TBinaryProtocol(transport);
-		clientOfServer = new Service.Client(protocol);
+		clientOfServer = new ServerService.Client(protocol);
 		try {
 			transport.open();
 		} catch (TTransportException e) {
@@ -120,6 +120,7 @@ public class TransferData implements FileSender{
 	/**
 	 * UUID marks the identity of sender for receiver.
 	 */
+	@Override
 	public boolean transferUUID(String uuidPath) {
 		File file = new File(uuidPath);
 		BufferedReader bf;
@@ -148,22 +149,23 @@ public class TransferData implements FileSender{
 				connectionOrElse = false;
 			}
 		}
-		boolean leagalConnectionOrNot = true;
+		boolean legalConnectionOrNot = true;
 		try {
-			leagalConnectionOrNot = clientOfServer.getUUID(uuid, InetAddress.getLocalHost().getHostAddress());
+			legalConnectionOrNot = clientOfServer.getUUID(uuid, InetAddress.getLocalHost().getHostAddress());
 		} catch (TException e) {
 			LOGGER.error("IoTDB post back sender: cannot send UUID to receiver because {}", e.getMessage());
 			connectionOrElse = false;
 		} catch (UnknownHostException e) {
 			LOGGER.error("IoTDB post back sender: unable to get local host because {}", e.getMessage());
-			leagalConnectionOrNot = false;
+			legalConnectionOrNot = false;
 		}
-		return leagalConnectionOrNot;
+		return legalConnectionOrNot;
 	}
 
 	/**
 	 * Create snapshots for those sending files.
 	 */
+	@Override
 	public Set<String> makeFileSnapshot(Set<String> sendingFileList) {
 		Set<String> sendingSnapshotFileList = new HashSet<>();
 		try {
@@ -190,6 +192,7 @@ public class TransferData implements FileSender{
 	 * @param fileSnapshotList: list of sending snapshot files in a storage group.
 	 *
 	 */
+	@Override
 	public void startSending(Set<String> fileSnapshotList) {
 		try {
 			int num = 0;
@@ -244,7 +247,6 @@ public class TransferData implements FileSender{
 		} catch (Exception e) {
 			LOGGER.error("IoTDB post back sender: cannot sending data because {}", e.getMessage());
 			connectionOrElse = false;
-			return;
 		}
 	}
 
@@ -253,6 +255,7 @@ public class TransferData implements FileSender{
 	 * 
 	 * @param schemaPath
 	 */
+	@Override
 	public void sendSchema(String schemaPath) {
 		try {
 			FileInputStream fis = new FileInputStream(new File(schemaPath));
@@ -275,19 +278,20 @@ public class TransferData implements FileSender{
 		}
 	}
 
+	@Override
 	public boolean afterSending() {
 		boolean successOrNot = false;
 		try {
 			successOrNot = clientOfServer.merge();
 		} catch (TException e) {
-			LOGGER.error("IoTDB post back sender : can not finish postback because postback receiver has broken down.");
+			LOGGER.error("IoTDB post back sender : can not finish postback process because postback receiver has broken down.");
 			transport.close();
 		}
 		return successOrNot;
 	}
 
 	/**
-	 * Delete date of a storage group after postback has finished.
+	 * Delete date of a storage group after postback process has finished.
 	 */
 	private void deleteData(Set<String> snapshotFileList) {
 
@@ -304,14 +308,13 @@ public class TransferData implements FileSender{
 			int count = 0;
 
 			for (String filePath : snapshotFileList) {
-				List<String> deleteSQL = new ArrayList<>();
 				input = new TsRandomAccessLocalFileReader(filePath);
 				cn.edu.tsinghua.tsfile.timeseries.read.FileReader reader = new cn.edu.tsinghua.tsfile.timeseries.read.FileReader(
 						input);
 				Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
 				Iterator<String> it = deltaObjectMap.keySet().iterator();
 				while (it.hasNext()) {
-					String key = it.next().toString(); // key represent device
+					String key = it.next(); // key represent device
 					TsDeltaObject deltaObj = deltaObjectMap.get(key);
 					String sql = String.format(deleteFormat, key, deltaObj.endTime);
 					statement.addBatch(sql);
@@ -350,20 +353,16 @@ public class TransferData implements FileSender{
 		return schema;
 	}
 
-	public String getUuid() {
-		return uuid;
-	}
-
 	public static void main(String[] args) {
-		TransferData transferData = new TransferData();
-		transferData.verifyPort();
+		FileSenderImpl fileSenderImpl = new FileSenderImpl();
+		fileSenderImpl.verifyPort();
 		Thread monitor = new Thread(new Runnable() {
 			public void run() {
-				transferData.monitorPostbackStatus();
+				fileSenderImpl.monitorPostbackStatus();
 			}
 		});
 		monitor.start();
-		transferData.timedTask();
+		fileSenderImpl.timedTask();
 	}
 
 	/**
@@ -411,7 +410,7 @@ public class TransferData implements FileSender{
 			if ((currentTime.getTime() - lastPostBackTime.getTime()) % (config.uploadCycleInSeconds * 1000) == 0) {
 				oldTime = currentTime;
 				if (postBackStatus)
-					LOGGER.info("IoTDB post back sender : postback is in execution!");
+					LOGGER.info("IoTDB post back sender : postback process is in execution!");
 			}
 		}
 	}
@@ -422,7 +421,7 @@ public class TransferData implements FileSender{
 	public void timedTask() {
 		postback();
 		lastPostBackTime = new Date();
-		Date currentTime = new Date();
+		Date currentTime;
 		while (true) {
 			try {
 				Thread.sleep(2000);
@@ -440,11 +439,12 @@ public class TransferData implements FileSender{
 	/**
 	 * Execute a postback task.
 	 */
+	@Override
 	public void postback() {
 
 		for (String snapshotPath : config.snapshotPaths) {
 			if (new File(snapshotPath).exists() && new File(snapshotPath).list().length != 0) {
-				// it means that the last time postback does not succeed! Clear the files and
+				// it means that the last task of postback does not succeed! Clear the files and
 				// start to postback again
 				PostbackUtils.deleteFile(new File(snapshotPath));
 			}
@@ -456,7 +456,7 @@ public class TransferData implements FileSender{
 		// connect to postback server
 		getConnection(config.serverIp, config.serverPort);
 		if (!connectionOrElse) {
-			LOGGER.info("IoTDB post back sender : postback has failed!");
+			LOGGER.info("IoTDB post back sender : postback process has failed!");
 			postBackStatus = false;
 			return;
 		}
@@ -479,7 +479,7 @@ public class TransferData implements FileSender{
 		sendSchema(config.schemaPath);
 		if (!connectionOrElse) {
 			transport.close();
-			LOGGER.info("IoTDB post back sender : postback has failed!");
+			LOGGER.info("IoTDB post back sender : postback process has failed!");
 			postBackStatus = false;
 			return;
 		}
@@ -488,7 +488,7 @@ public class TransferData implements FileSender{
 			Set<String> sendingSnapshotList = sendingFileSnapshotList.get(entry.getKey());
 			if (sendingSnapshotList.size() == 0)
 				continue;
-			LOGGER.info("IoTDB post back sender : postback starts to transfer data of storage group {}.",
+			LOGGER.info("IoTDB post back sender : postback process starts to transfer data of storage group {}.",
 					entry.getKey());
 			try {
 				clientOfServer.init(entry.getKey());
@@ -498,14 +498,14 @@ public class TransferData implements FileSender{
 			}
 			if (!connectionOrElse) {
 				transport.close();
-				LOGGER.info("IoTDB post back sender : postback has failed!");
+				LOGGER.info("IoTDB post back sender : postback process has failed!");
 				postBackStatus = false;
 				return;
 			}
 			startSending(sendingSnapshotList);
 			if (!connectionOrElse) {
 				transport.close();
-				LOGGER.info("IoTDB post back sender : postback has failed!");
+				LOGGER.info("IoTDB post back sender : postback process has failed!");
 				postBackStatus = false;
 				return;
 			}
@@ -518,7 +518,7 @@ public class TransferData implements FileSender{
 				}
 				LOGGER.info("IoTDB post back sender : the postBack has finished storage group {}.", entry.getKey());
 			} else {
-				LOGGER.info("IoTDB post back sender : postback has failed!");
+				LOGGER.info("IoTDB post back sender : postback process has failed!");
 				postBackStatus = false;
 				return;
 			}
@@ -533,12 +533,12 @@ public class TransferData implements FileSender{
 		}
 		if (!connectionOrElse) {
 			transport.close();
-			LOGGER.info("IoTDB post back sender : postback has failed!");
+			LOGGER.info("IoTDB post back sender : postback process has failed!");
 			postBackStatus = false;
 			return;
 		}
 		transport.close();
-		LOGGER.info("IoTDB post back sender : the postBack has finished!");
+		LOGGER.info("IoTDB post back sender : postback process has finished!");
 		postBackStatus = false;
 		return;
 	}

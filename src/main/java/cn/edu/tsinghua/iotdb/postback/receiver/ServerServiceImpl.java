@@ -13,7 +13,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +35,6 @@ import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.filenode.OverflowChangeType;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkProperties;
@@ -55,7 +53,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 /**
  * @author lta
  */
-public class ServiceImpl implements Service.Iface {
+public class ServerServiceImpl implements ServerService.Iface {
 
 	private ThreadLocal<String> uuid = new ThreadLocal<String>();
 	private ThreadLocal<Map<String, List<String>>> fileNodeMap = new ThreadLocal<>(); // String means Storage Group,
@@ -74,14 +72,15 @@ public class ServiceImpl implements Service.Iface {
 	private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs(); // Absolute paths of IoTDB bufferWrite directory
 	private TsfileDBConfig tsfileDBConfig = TsfileDBDescriptor.getInstance().getConfig();
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
 	private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
 	/**
 	 * Init threadLocal variable
 	 */
+	@Override
 	public void init(String storageGroup) {
-		LOGGER.info("IoTDB post back receiver: postback starts to receive data of storage group {}.", storageGroup);
+		LOGGER.info("IoTDB post back receiver: postback process starts to receive data of storage group {}.", storageGroup);
 		fileNum.set(0);
 		fileNodeMap.set(new HashMap<>());
 		fileNodeStartTime.set(new HashMap<>());
@@ -91,6 +90,7 @@ public class ServiceImpl implements Service.Iface {
 	/**
 	 * Verify IP address of sender
 	 */
+	@Override
 	public boolean getUUID(String uuid, String IPaddress) throws TException {
 		this.uuid.set(uuid);
 		postbackPath = dataPath + "postback" + File.separator;
@@ -118,6 +118,7 @@ public class ServiceImpl implements Service.Iface {
 	 * status = 0 : finish receiving one tsfile status = 1 : a tsfile has not received completely.
 	 *
 	 */
+	@Override
 	public String startReceiving(String md5, List<String> filePathSplit, ByteBuffer dataToReceive, int status)
 			throws TException {
 		String md5OfReceiver = "";
@@ -182,6 +183,7 @@ public class ServiceImpl implements Service.Iface {
 	 *  schema to IoTDB through jdbc status = 1 : the schema file has not received completely.
 	 *
 	 */
+	@Override
 	public void getSchema(ByteBuffer schema, int status) throws TException {
 		FileOutputStream fos = null;
 		FileChannel channel = null;
@@ -258,6 +260,7 @@ public class ServiceImpl implements Service.Iface {
 		}
 	}
 
+	@Override
 	public boolean merge() throws TException {
 		getFileNodeInfo();
 		mergeData();
@@ -266,7 +269,7 @@ public class ServiceImpl implements Service.Iface {
 			String backupPath = bufferWritePath + "postback" + File.separator;
 			if (new File(backupPath + this.uuid.get()).exists()
 					&& new File(backupPath + this.uuid.get()).list().length != 0) {
-				// if does not exist, it means that the last time postback failed, clear uuid
+				// if does not exist, it means that the last time postback process failed, clear uuid
 				// data and receive the data again
 				PostbackUtils.deleteFile(new File(backupPath + this.uuid.get()));
 			}
@@ -277,6 +280,7 @@ public class ServiceImpl implements Service.Iface {
 	/**
 	 * Release threadLocal variable resources
 	 */
+	@Override
 	public void afterReceiving() {
 		uuid.remove();
 		fileNum.remove();
@@ -291,6 +295,7 @@ public class ServiceImpl implements Service.Iface {
 	 * Get all tsfiles' info which are sent from sender, it is prepare for merging these data
 	 *
 	 */
+	@Override
 	public void getFileNodeInfo() throws TException {
 		String filePath = postbackPath + uuid.get() + File.separator + "data";
 		File root = new File(filePath);
@@ -340,6 +345,7 @@ public class ServiceImpl implements Service.Iface {
 	/**
 	 * Insert all data in the tsfile into IoTDB.
 	 */
+	@Override
 	public void mergeOldData(String filePath) throws TException {
 		Set<String> timeseries = new HashSet<>();
 		TsRandomAccessLocalFileReader input = null;
@@ -602,6 +608,7 @@ public class ServiceImpl implements Service.Iface {
 	 * storage group directly. If data in the tsfile is old, it has two strategy to
 	 * merge.It depends on the possibility of updating historical data.
 	 */
+	@Override
 	public void mergeData() throws TException {
 		int num = 0;
 		for (String storageGroup : fileNodeMap.get().keySet()) {
