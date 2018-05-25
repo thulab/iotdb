@@ -29,7 +29,14 @@ public class TsFileAnalyzer {
 
     private String tsFilePath;
     private ITsRandomAccessFileReader randomAccessFileReader;
+
     private long fileSize;
+    private long dataSize;
+    private long metadataSize;
+    private int fileRowNum;
+    private long file_timestamp_min;
+    private long file_timestamp_max;
+
     private int fileMetadataSize;
     private TsFileMetaData fileMetaData;
     private List<Integer> rowGroupBlockMetaDataSizeList;
@@ -47,8 +54,12 @@ public class TsFileAnalyzer {
 
     public TsFileAnalyzer(String tsFilePath) throws IOException {
         this.tsFilePath = tsFilePath;
-        this.randomAccessFileReader = new TsRandomAccessLocalFileReader(tsFilePath);
 
+        dataSize = 0;
+        metadataSize = 0;
+        fileRowNum = 0;
+        file_timestamp_min = -1;
+        file_timestamp_max = -1;
         rowGroupBlockMetaDataSizeList = new ArrayList<>();
         rowGroupBlockMetaDataContentList = new ArrayList<>();
         rowGroupMetaDataSizeList = new ArrayList<>();
@@ -61,6 +72,8 @@ public class TsFileAnalyzer {
     }
 
     public void analyze() throws IOException {
+        this.randomAccessFileReader = new TsRandomAccessLocalFileReader(tsFilePath);
+
         fileSize = randomAccessFileReader.length();
         randomAccessFileReader.seek(fileSize - MAGIC_LENGTH - FOOTER_LENGTH);
         fileMetadataSize = randomAccessFileReader.readInt();
@@ -72,7 +85,7 @@ public class TsFileAnalyzer {
         fileMetaData = new TsFileMetaDataConverter().toTsFileMetadata(ReadWriteThriftFormatUtils.readFileMetaData(metadataInputStream));
 
         int rgbCount = 0;
-        System.out.println(fileMetaData.getDeltaObjectMap().size());
+        int totalCount = fileMetaData.getDeltaObjectMap().size();
         for(Map.Entry<String, TsDeltaObject> entry : fileMetaData.getDeltaObjectMap().entrySet()) {
             TsDeltaObject deltaObject = entry.getValue();
             TsRowGroupBlockMetaData rowGroupBlockMetaData = new TsRowGroupBlockMetaData();
@@ -84,8 +97,19 @@ public class TsFileAnalyzer {
             for(RowGroupMetaData rowGroupMetaData : rowGroupBlockMetaData.getRowGroups()) {
                 rowGroupMetaDataSizeList.add((int)rowGroupMetaData.getTotalByteSize());
                 rowGroupMetaDataContentList.add(rowGroupMetaData.getTimeSeriesChunkMetaDataList().size());
+                fileRowNum += rowGroupMetaData.getNumOfRows();
 
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
+                    if(file_timestamp_min < 0 && file_timestamp_max < 0){
+                        file_timestamp_min = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime();
+                        file_timestamp_max = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime();
+                    }else{
+                        if(file_timestamp_min > timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime())
+                            file_timestamp_min = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime();
+                        if(file_timestamp_max < timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime())
+                            file_timestamp_max = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime();
+                    }
+
                     int size = (int) timeSeriesChunkMetaData.getTotalByteSize();
                     long offset = timeSeriesChunkMetaData.getProperties().getFileOffset();
                     byte[] bytes = new byte[size];
@@ -118,8 +142,14 @@ public class TsFileAnalyzer {
                 }
             }
             rgbCount++;
-            System.out.println(rgbCount);
+            System.out.println(rgbCount / (float)totalCount);
         }
+
+        for(int size : pageSizeList)
+            dataSize += size;
+        metadataSize = fileSize - dataSize;
+
+        randomAccessFileReader.close();
     }
 
     private void writeTag() throws IOException {
@@ -161,8 +191,7 @@ public class TsFileAnalyzer {
     }
 
     private void writeOneBox(int start, int end, int num, float rate) throws IOException {
-        writeTag();
-        writeContent(start + "~" + Math.max(end - 1, start) + "(" + (end - start) + "):" + num + "," + rate * 100 + "%", "box");
+        writeContent(start + "~" + end + "(" + (end - start + 1) + "):" + num + "," + rate * 100 + "%", "box");
     }
 
     private List<Long> getSimpleStatistics(List<Integer> dataList){
@@ -187,60 +216,77 @@ public class TsFileAnalyzer {
     private void writeStatistics(List<Integer> dataList, String name, String cate) throws IOException {
         List<Long> statistics = getSimpleStatistics(dataList);
         writeBeginTag(name + "_metadata_" + cate);
-        writeTag();
         writeContent(statistics.get(2) / (float)dataList.size(), "average");
-        writeTag();
         writeContent(statistics.get(0),"min");
-        writeTag();
         writeContent(statistics.get(1),"max");
         writeEndTag(name + "_metadata_" + cate);
+    }
+
+    private List<Integer> getCountList(List<Integer> dataList, List<Integer> boxList){
+        List<Integer> counts = new ArrayList<>();
+
+        int index = 0;
+        int count = 0;
+        for(int box : boxList){
+            while(index < dataList.size() && box > dataList.get(index)){
+                index++;
+                count++;
+            }
+
+            counts.add(count);
+            count = 0;
+        }
+
+        return counts;
+    }
+
+    private List<Integer> getBoxList(List<Integer> dataList){
+        List<Integer> boxList = new ArrayList<>();
+
+        int scalesize = (int) (dataList.size() * SCALE);
+        int max = dataList.get(dataList.size() - 1);
+        int start = dataList.get(0);
+        int end = dataList.get(dataList.size() - scalesize);
+        int shift = (end - start) / BOX_NUM;
+        if(shift <= 0)shift = 1;
+
+        if(max - start + 1 <= BOX_NUM){
+            for(int i = start + 1;i <= max + 1;i++){
+                boxList.add(i);
+            }
+        }else if(end - start + 1 <= BOX_NUM){
+            for(int i = start + 1;i <= end;i++){
+                boxList.add(i);
+            }
+            if(max > end)boxList.add(max);
+
+            int temp = boxList.remove(boxList.size() - 1);
+            boxList.add(temp + 1);
+        }else{
+            for(int i = 1;i < BOX_NUM;i++){
+                boxList.add(start + shift * i);
+            }
+            boxList.add(end);
+            if(end < max)boxList.add(max);
+
+            int temp = boxList.remove(boxList.size() - 1);
+            boxList.add(temp + 1);
+        }
+
+        return boxList;
     }
 
     private void writeDistribution(List<Integer> dataList, String name, String cate) throws IOException {
         writeBeginTag(name + "_metadata_" + cate);
 
         Collections.sort(dataList);
-        int scalesize = (int) (dataList.size() * SCALE);
-        int min  = dataList.get(0);
-        int max = dataList.get(dataList.size() - 1);
-        int start = dataList.get(scalesize);
-        int end = dataList.get(dataList.size() - scalesize);
-        int shift = (end - start) / BOX_NUM;
-        if(shift <= 0)shift = 1;
+        List<Integer> boxList = getBoxList(dataList);
+        List<Integer> countList = getCountList(dataList, boxList);
 
-        if(max - min < BOX_NUM){
-            Map<Integer, Integer> boxes = new HashMap<>();
-
-            int count = 0;
-            int lastdata = dataList.get(0);
-            for(int data : dataList){
-                if(lastdata == data)count++;
-                else{
-                    boxes.put(lastdata, count);
-                    lastdata = data;
-                    count = 1;
-                }
-            }
-            boxes.put(lastdata, count);
-
-            for(int i = min;i <= max;i++){
-                if(boxes.containsKey(i))writeOneBox(i, i + 1, boxes.get(i), boxes.get(i) / (float)dataList.size());
-            }
-        }
-        else {
-            writeOneBox(min, start, scalesize, scalesize / (float) dataList.size());
-            int index = scalesize;
-            while (start < end) {
-                int count = 0;
-                while (index < dataList.size() && dataList.get(index) < start + shift && dataList.get(index) < end) {
-                    index++;
-                    count++;
-                }
-
-                writeOneBox(start, Math.min(start + shift, end), count, count / (float) dataList.size());
-                start += shift;
-            }
-            writeOneBox(end, max, scalesize, scalesize / (float) dataList.size());
+        int start = dataList.get(0);
+        for(int i = 0;i < Math.min(countList.size(), boxList.size());i++){
+            writeOneBox(start, boxList.get(i) - 1, countList.get(i), countList.get(i) / (float)dataList.size());
+            start = boxList.get(i);
         }
 
         writeEndTag(name + "_metadata_" + cate);
@@ -250,9 +296,18 @@ public class TsFileAnalyzer {
         outputWriter = new FileWriter(filename);
 
         // file
+        writeBeginTag("File");
         writeContent(tsFilePath, "file_path");
         writeContent(fileSize, "file_size");
         writeContent(fileSize/Math.pow(1024, 3), "file_size_GB");
+        writeContent(dataSize, "data_size");
+        writeContent(metadataSize, "metadata_size");
+        writeContent(dataSize / (double)fileSize, "data_rate");
+        writeContent(fileMetaData.getTimeSeriesList().size(), "file_timeseries_num");
+        writeContent(fileRowNum, "file_row_num");
+        writeContent("" + file_timestamp_min, "file_timestamp_min");
+        writeContent("" + file_timestamp_max, "file_timestamp_max");
+        writeEndTag("File");
 
         // file metadata
         writeBeginTag("FileMetaData");
