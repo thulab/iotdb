@@ -139,7 +139,7 @@ public class ServiceImpl implements Service.Iface {
 					file.getParentFile().mkdirs();
 					file.createNewFile();
 				} catch (IOException e) {
-					LOGGER.error("IoTDB post back receicer: cannot make file because {}", e.getMessage());
+					LOGGER.error("IoTDB post back receiver: cannot make file because {}", e.getMessage());
 				}
 			}
 			try {
@@ -149,7 +149,7 @@ public class ServiceImpl implements Service.Iface {
 				channel.close();
 				fos.close();
 			} catch (Exception e) {
-				LOGGER.error("IoTDB post back receicer: cannot write data to file because {}", e.getMessage());
+				LOGGER.error("IoTDB post back receiver: cannot write data to file because {}", e.getMessage());
 			}
 		} else { // all data in the same file has received successfully
 			try {
@@ -166,10 +166,10 @@ public class ServiceImpl implements Service.Iface {
 				fis.close();
 				if (md5.equals(md5OfReceiver)) {
 					fileNum.set(fileNum.get() + 1);
-					LOGGER.info("IoTDB post back receicer : Receiver has received " + fileNum.get() + " files from sender!");
+					LOGGER.info("IoTDB post back receiver : Receiver has received " + fileNum.get() + " files from sender!");
 				}
 			} catch (Exception e) {
-				LOGGER.error("IoTDB post back receicer: cannot generate md5 because {}", e.getMessage());
+				LOGGER.error("IoTDB post back receiver: cannot generate md5 because {}", e.getMessage());
 			}
 		}
 		return md5OfReceiver;
@@ -178,7 +178,7 @@ public class ServiceImpl implements Service.Iface {
 	/**
 	 * Get schema from sender
 	 * 
-	 * @param status: 0 or 1. status = 0 : finish receiveing schema file, start to insert
+	 * @param status: 0 or 1. status = 0 : finish receiving schema file, start to insert
 	 *  schema to IoTDB through jdbc status = 1 : the schema file has not received completely.
 	 *
 	 */
@@ -225,7 +225,7 @@ public class ServiceImpl implements Service.Iface {
 				statement.executeBatch();
 				statement.clearBatch();
 			} catch (SQLException | ClassNotFoundException e) {
-				LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+				LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}", e.getMessage());
 			} finally {
 				try {
 					if (statement != null)
@@ -243,7 +243,7 @@ public class ServiceImpl implements Service.Iface {
 					file.getParentFile().mkdirs();
 					file.createNewFile();
 				} catch (IOException e) {
-					LOGGER.error("IoTDB post back receicer: cannot make schema file because {}", e.getMessage());
+					LOGGER.error("IoTDB post back receiver: cannot make schema file because {}", e.getMessage());
 				}
 			}
 			try {
@@ -253,7 +253,7 @@ public class ServiceImpl implements Service.Iface {
 				channel.close();
 				fos.close();
 			} catch (Exception e) {
-				LOGGER.error("IoTDB post back receicer: cannot write data to file because {}", e.getMessage());
+				LOGGER.error("IoTDB post back receiver: cannot write data to file because {}", e.getMessage());
 			}
 		}
 	}
@@ -284,7 +284,7 @@ public class ServiceImpl implements Service.Iface {
 		fileNodeStartTime.remove();
 		fileNodeEndTime.remove();
 		schemaFromSenderPath.remove();
-		LOGGER.info("IoTDB post back receicer: the postBack has finished!");
+		LOGGER.info("IoTDB post back receiver: the postBack has finished!");
 	}
 
 	/**
@@ -421,7 +421,7 @@ public class ServiceImpl implements Service.Iface {
 		} catch (IOException e) {
 			LOGGER.error("IoTDB receiver can not parse tsfile into SQL because{}", e.getMessage());
 		} catch (SQLException | ClassNotFoundException e) {
-			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+			LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}", e.getMessage());
 		} finally {
 			try {
 				input.close();
@@ -579,7 +579,7 @@ public class ServiceImpl implements Service.Iface {
 		} catch (IOException e) {
 			LOGGER.error("IoTDB receiver can not parse tsfile into SQL because{}", e.getMessage());
 		} catch (SQLException | ClassNotFoundException e) {
-			LOGGER.error("IoTDB post back receicer: jdbc cannot connect to IoTDB because {}", e.getMessage());
+			LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}", e.getMessage());
 		} finally {
 			try {
 				input.close();

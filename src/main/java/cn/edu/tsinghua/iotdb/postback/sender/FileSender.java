@@ -27,7 +27,7 @@ public interface FileSender {
 
 	/**
 	 * For each file in fileList, send it to receiver side
-	 * @param fileList:file list to send
+	 * @param fileSnapshotList:snapshot file list to send
 	 */
 	public void startSending(Set<String> fileSnapshotList); 
 
