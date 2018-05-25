@@ -21,7 +21,7 @@ public class ShowTimeseriesAndStorageGroupTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             /*
-            prepartions:
+            preparations:
             SET STORAGE GROUP TO root.ln.wf01.wt01
             CREATE TIMESERIES root.ln.wf01.wt01.status WITH DATATYPE = BOOLEAN, ENCODING = PLAIN
             CREATE TIMESERIES root.ln.wf01.wt01.temperature WITH
