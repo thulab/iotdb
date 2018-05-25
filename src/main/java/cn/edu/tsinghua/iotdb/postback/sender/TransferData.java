@@ -101,9 +101,8 @@ public class TransferData implements FileSender{
 	/**
 	 * Establish a connection between sender and receiver
 	 * 
-	 * @param serverIP
-	 * @param serverPort:it
-	 *            must be same with port receiver set.
+	 * @param serverIp
+	 * @param serverPort:it must be same with port receiver set.
 	 */
 	public void connection(String serverIp, int serverPort) {
 		transport = new TSocket(serverIp, serverPort);
@@ -171,9 +170,9 @@ public class TransferData implements FileSender{
 			for (String filePath : sendingFileList) {
 				String snapshotFilePath = PostbackUtils.getSnapshotFilePath(filePath);
 				sendingSnapshotFileList.add(snapshotFilePath);
-				File newfile = new File(snapshotFilePath);
-				if (!newfile.getParentFile().exists()) {
-					newfile.getParentFile().mkdirs();
+				File newFile = new File(snapshotFilePath);
+				if (!newFile.getParentFile().exists()) {
+					newFile.getParentFile().mkdirs();
 				}
 				Path link = FileSystems.getDefault().getPath(snapshotFilePath);
 				Path target = FileSystems.getDefault().getPath(filePath);
@@ -188,10 +187,8 @@ public class TransferData implements FileSender{
 	/**
 	 * Transfer data of a storage group to receiver.
 	 * 
-	 * @param fileList
-	 *            : list of sending snapshot files in a storage group.
-	 * @param snapshotPath
-	 * @param iotdbPath
+	 * @param fileSnapshotList: list of sending snapshot files in a storage group.
+	 *
 	 */
 	public void startSending(Set<String> fileSnapshotList) {
 		try {

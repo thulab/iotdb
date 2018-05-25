@@ -112,11 +112,11 @@ public class ServiceImpl implements Service.Iface {
 	}
 
 	/**
-	 * start receiving tsfile from sender
+	 * Start receiving tsfile from sender
 	 * 
 	 * @param status
-	 *            status = 0 : finish receiving one tsfile status = 1 : a tsfile has
-	 *            not received completely.
+	 * status = 0 : finish receiving one tsfile status = 1 : a tsfile has not received completely.
+	 *
 	 */
 	public String startReceiving(String md5, List<String> filePathSplit, ByteBuffer dataToReceive, int status)
 			throws TException {
@@ -178,10 +178,9 @@ public class ServiceImpl implements Service.Iface {
 	/**
 	 * Get schema from sender
 	 * 
-	 * @param status:
-	 *            0 or 1 status = 0 : finish receiveing schema file, start to insert
-	 *            schema to IoTDB through jdbc status = 1 : the schema file has not
-	 *            received completely.
+	 * @param status: 0 or 1. status = 0 : finish receiveing schema file, start to insert
+	 *  schema to IoTDB through jdbc status = 1 : the schema file has not received completely.
+	 *
 	 */
 	public void getSchema(ByteBuffer schema, int status) throws TException {
 		FileOutputStream fos = null;
@@ -289,8 +288,8 @@ public class ServiceImpl implements Service.Iface {
 	}
 
 	/**
-	 * Get all tsfiles' info which are sent from sender, it is prepare for merging
-	 * these data
+	 * Get all tsfiles' info which are sent from sender, it is prepare for merging these data
+	 *
 	 */
 	public void getFileNodeInfo() throws TException {
 		String filePath = postbackPath + uuid.get() + File.separator + "data";
@@ -444,8 +443,7 @@ public class ServiceImpl implements Service.Iface {
 	 * Insert those valid data in the tsfile into IoTDB
 	 * 
 	 * @param filePath
-	 * @param overlapFiles:files
-	 *            conflict with the postback file
+	 * @param overlapFiles:files which are conflict with the postback file
 	 * @throws TException
 	 */
 	public void mergeOldData(String filePath, List<String> overlapFiles) throws TException {
@@ -600,7 +598,7 @@ public class ServiceImpl implements Service.Iface {
 	}
 
 	/**
-	 * It is to merge data. If data in the tsfile is new, append thetsfile to the
+	 * It is to merge data. If data in the tsfile is new, append the tsfile to the
 	 * storage group directly. If data in the tsfile is old, it has two strategy to
 	 * merge.It depends on the possibility of updating historical data.
 	 */
