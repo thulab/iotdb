@@ -246,7 +246,7 @@ public class TsFileAnalyzer {
         int scalesize = (int) (dataList.size() * SCALE);
         int max = dataList.get(dataList.size() - 1);
         int start = dataList.get(0);
-        int end = dataList.get(dataList.size() - scalesize);
+        int end = dataList.get(dataList.size() - 1 - scalesize);
         int shift = (end - start) / BOX_NUM;
         if(shift <= 0)shift = 1;
 
@@ -304,7 +304,7 @@ public class TsFileAnalyzer {
         writeContent(metadataSize, "metadata_size");
         writeContent(dataSize / (double)fileSize, "data_rate");
         writeContent(fileMetaData.getTimeSeriesList().size(), "file_timeseries_num");
-        writeContent(fileRowNum, "file_row_num");
+        writeContent(fileRowNum, "file_points_num");
         writeContent("" + file_timestamp_min, "file_timestamp_min");
         writeContent("" + file_timestamp_max, "file_timestamp_max");
         writeEndTag("File");
