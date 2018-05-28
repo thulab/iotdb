@@ -12,7 +12,6 @@ import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import javafx.util.Pair;
 
 import java.io.*;
 import java.util.*;
@@ -33,6 +32,7 @@ public class TsFileAnalyzer {
     private long fileSize;
     private long dataSize;
     private long metadataSize;
+    private int filePathNum;
     private int fileRowNum;
     private long file_timestamp_min;
     private long file_timestamp_max;
@@ -57,6 +57,7 @@ public class TsFileAnalyzer {
 
         dataSize = 0;
         metadataSize = 0;
+        filePathNum = 0;
         fileRowNum = 0;
         file_timestamp_min = -1;
         file_timestamp_max = -1;
@@ -97,6 +98,7 @@ public class TsFileAnalyzer {
             for(RowGroupMetaData rowGroupMetaData : rowGroupBlockMetaData.getRowGroups()) {
                 rowGroupMetaDataSizeList.add((int)rowGroupMetaData.getTotalByteSize());
                 rowGroupMetaDataContentList.add(rowGroupMetaData.getTimeSeriesChunkMetaDataList().size());
+                Set<String> measurementIdSet = new HashSet<>();
                 fileRowNum += rowGroupMetaData.getNumOfRows();
 
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
@@ -138,9 +140,13 @@ public class TsFileAnalyzer {
 
                     timeSeriesChunkMetaDataSizeList.add(size);
                     timeSeriesChunkMetaDataContentList.add(pageNum);
+                    measurementIdSet.add(timeSeriesChunkMetaData.getProperties().getMeasurementUID());
                     timeSeriesChunkMetaDataRowNumList.add((int)timeSeriesChunkMetaData.getNumRows());
                 }
+
+                filePathNum += measurementIdSet.size();
             }
+
             rgbCount++;
             System.out.println(rgbCount / (float)totalCount);
         }
@@ -303,7 +309,9 @@ public class TsFileAnalyzer {
         writeContent(dataSize, "data_size");
         writeContent(metadataSize, "metadata_size");
         writeContent(dataSize / (double)fileSize, "data_rate");
+        writeContent(rowGroupBlockMetaDataSizeList.size(), "file_deltaobject_num");
         writeContent(fileMetaData.getTimeSeriesList().size(), "file_timeseries_num");
+        writeContent(filePathNum, "file_path_num");
         writeContent(fileRowNum, "file_points_num");
         writeContent("" + file_timestamp_min, "file_timestamp_min");
         writeContent("" + file_timestamp_max, "file_timestamp_max");
