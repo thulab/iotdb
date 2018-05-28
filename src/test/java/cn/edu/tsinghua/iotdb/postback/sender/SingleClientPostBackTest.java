@@ -28,13 +28,8 @@ public class SingleClientPostBackTest {
 
 	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
 	
-	private String POST_BACK_DIRECTORY_TEST = new File("data").getAbsolutePath() + File.separator + "postback" + File.separator;
-	private String UUID_PATH_TEST = POST_BACK_DIRECTORY_TEST + "uuid.txt";
-	private String LAST_FILE_INFO_TEST = POST_BACK_DIRECTORY_TEST + "lastLocalFileList.txt";
-	private String SENDER_FILE_PATH_TEST = (conf.getBufferWriteDirs())[0];
-	private String SNAPSHOT_PATH_TEST = POST_BACK_DIRECTORY_TEST + "dataSnapshot";
-	private String SERVER_IP_TEST = "192.168.130.16";
-	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();
+	private String serverIpTest = "192.168.130.17";
+	private PostBackSenderConfig config= PostBackSenderDescriptor.getInstance().getConfig();;
 	private Set<String> dataSender = new HashSet<>();
 	private Set<String> dataReceiver = new HashSet<>();
 	private boolean success = true;
@@ -43,9 +38,20 @@ public class SingleClientPostBackTest {
 	private IoTDB deamon;
 	
 	public void setConfig() {
-		config.uuidPath = UUID_PATH_TEST;
-		config.lastFileInfo = LAST_FILE_INFO_TEST;
-		config.serverIp = SERVER_IP_TEST;
+		config.uuidPath = config.dataDirectory + "postback" + File.separator + "uuid.txt";
+		config.lastFileInfo = config.dataDirectory + "postback" + File.separator + "lastLocalFileList.txt";
+
+		String[] snapshots = new String[config.iotdbBufferwriteDirectory.length];
+		for (int i = 0; i < config.iotdbBufferwriteDirectory.length; i++) {
+			config.iotdbBufferwriteDirectory[i] = new File(config.iotdbBufferwriteDirectory[i]).getAbsolutePath();
+			if (!config.iotdbBufferwriteDirectory[i].endsWith(File.separator)) {
+				config.iotdbBufferwriteDirectory[i] = config.iotdbBufferwriteDirectory[i] + File.separator;
+			}
+			snapshots[i] = config.iotdbBufferwriteDirectory[i] + "postback" + File.separator + "dataSnapshot"
+					+ File.separator;
+		}
+		config.snapshotPaths = snapshots;
+		config.serverIp = serverIpTest;
 		fileSenderImpl.setConfig(config);
 	}
 	
@@ -154,7 +160,6 @@ public class SingleClientPostBackTest {
 	private boolean testFlag = TestUtils.testFlag;
 
 	public void setUp() throws Exception {
-		setConfig();
 		if (testFlag) {
 			EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
@@ -163,17 +168,7 @@ public class SingleClientPostBackTest {
             EnvironmentUtils.envSetUp();
             conf.overflowFileSizeThreshold = 0;
 		}
-		File file = new File(LAST_FILE_INFO_TEST);
-		if (!file.getParentFile().exists()) {
-			file.getParentFile().mkdirs();
-		}
-		if (!file.exists()) {
-			file.createNewFile();
-		}
-		file = new File(SENDER_FILE_PATH_TEST);
-		if (!file.exists()) {
-			file.mkdirs();
-		}
+		setConfig();
 	}
 
 	public void tearDown() throws Exception {
@@ -268,7 +263,7 @@ public class SingleClientPostBackTest {
 				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 				Connection connection = null;
 				try {
-					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
+					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
 					Statement statement = connection.createStatement();
 					boolean hasResultSet = statement.execute("select * from root.vehicle");
 					if (hasResultSet) {
@@ -393,7 +388,7 @@ public class SingleClientPostBackTest {
 				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 				Connection connection = null;
 				try {
-					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
+					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
 					Statement statement = connection.createStatement();
 					boolean hasResultSet = statement.execute("select * from root.vehicle");
 					if (hasResultSet) {
@@ -538,7 +533,7 @@ public class SingleClientPostBackTest {
 				Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 				Connection connection = null;
 				try {
-					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
+					connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
 					Statement statement = connection.createStatement();
 					boolean hasResultSet = statement.execute("select * from root.vehicle");
 					if (hasResultSet) {

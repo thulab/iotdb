@@ -84,6 +84,7 @@ public class PostBackSenderDescriptor {
 			
 			String[] snapshots = new String[conf.iotdbBufferwriteDirectory.length];
 			for (int i = 0; i < conf.iotdbBufferwriteDirectory.length; i++) {
+				conf.iotdbBufferwriteDirectory[i] = new File(conf.iotdbBufferwriteDirectory[i]).getAbsolutePath();
 				if (!conf.iotdbBufferwriteDirectory[i].endsWith(File.separator)) {
 					conf.iotdbBufferwriteDirectory[i] = conf.iotdbBufferwriteDirectory[i] + File.separator;
 				}
