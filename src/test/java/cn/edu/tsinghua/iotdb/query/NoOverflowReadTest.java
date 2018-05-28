@@ -46,7 +46,6 @@ public class NoOverflowReadTest {
         EnvironmentUtils.closeStatMonitor();
         EnvironmentUtils.closeMemControl();
         daemon = IoTDB.getInstance();
-        daemon.stop();
         daemon.active();
         EnvironmentUtils.envSetUp();
     }
