@@ -653,7 +653,6 @@ public class MTree implements Serializable {
 		MNode root;
 		if ((root = getRoot()) != null) {
 			findStorageGroup(root, "root", res);
-
 		}
 		return res;
 	}
