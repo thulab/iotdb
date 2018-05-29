@@ -14,6 +14,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -25,6 +26,7 @@ public class TsFileAnalyzer {
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
     private static final double SCALE = 0.05;
     private static final int BOX_NUM = 20;
+    private static final String DATA_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private String tsFilePath;
     private ITsRandomAccessFileReader randomAccessFileReader;
@@ -313,8 +315,9 @@ public class TsFileAnalyzer {
         writeContent(fileMetaData.getTimeSeriesList().size(), "file_timeseries_num");
         writeContent(filePathNum, "file_path_num");
         writeContent(fileRowNum, "file_points_num");
-        writeContent("" + file_timestamp_min, "file_timestamp_min");
-        writeContent("" + file_timestamp_max, "file_timestamp_max");
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATA_FORMAT);
+        writeContent(dateFormat.format(new Date(file_timestamp_min)), "file_timestamp_min");
+        writeContent(dateFormat.format(new Date(file_timestamp_max)), "file_timestamp_max");
         writeEndTag("File");
 
         // file metadata
@@ -377,9 +380,15 @@ public class TsFileAnalyzer {
     }
 
     public static void main(String[] args) throws IOException {
-        String path = "/Users/East/Desktop/tsfile解析/data/1524261157000-1524291295414";
+        args = new String[]{"/Users/East/Desktop/tsfile解析/data/1524261157000-1524291295414", "/Users/East/Desktop/tsfile解析/data/report.txt"};
+        if (args == null || args.length < 2) {
+            System.out.println("[ERROR] Too few params input, please input path for both tsfile and output report.");
+            return;
+        }
+
+        String path = args[0];
         TsFileAnalyzer analyzer = new TsFileAnalyzer(path);
         analyzer.analyze();
-        analyzer.output("/Users/East/Desktop/1.txt");
+        analyzer.output(args[1]);
     }
 }
