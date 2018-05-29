@@ -117,7 +117,7 @@ public class ServerServiceImpl implements ServerService.Iface {
      * @param status status = 0 : finish receiving one tsfile status = 1 : a tsfile has not received completely.
      */
     @Override
-    public String startReceiving(String md5, List<String> filePathSplit, ByteBuffer dataToReceive, int status)
+    public String startReceiving(String md5OfSender, List<String> filePathSplit, ByteBuffer dataToReceive, int status)
             throws TException {
         String md5OfReceiver = "";
         String filePath = "";
@@ -154,7 +154,7 @@ public class ServerServiceImpl implements ServerService.Iface {
             try {
                 FileInputStream fis = new FileInputStream(filePath);
                 MessageDigest md = MessageDigest.getInstance("MD5");
-                int mBufferSize = 64 * 1024 * 1024;
+                int mBufferSize = 8 * 1024 * 1024;
                 byte[] buffer = new byte[mBufferSize];
                 int n;
                 while ((n = fis.read(buffer)) != -1) {
@@ -162,7 +162,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                 }
                 fis.close();
                 md5OfReceiver = (new BigInteger(1, md.digest())).toString(16);
-                if (md5.equals(md5OfReceiver)) {
+                if (md5OfSender.equals(md5OfReceiver)) {
                     fileNum.set(fileNum.get() + 1);
                     LOGGER.info("IoTDB post back receiver : Receiver has received " + fileNum.get() + " files from sender!");
                 } else {

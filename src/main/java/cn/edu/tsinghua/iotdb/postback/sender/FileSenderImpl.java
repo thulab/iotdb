@@ -213,8 +213,8 @@ public class FileSenderImpl implements FileSender{
 					filePathSplit.add(name[name.length - 1]);
 				}
 				while (true) {
+					//Send all data to receiver
 					FileInputStream fis = new FileInputStream(file);
-					MessageDigest md = MessageDigest.getInstance("MD5");
 					int mBufferSize = 64 * 1024 * 1024;
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(mBufferSize);
 					byte[] buffer = new byte[mBufferSize];
@@ -223,10 +223,20 @@ public class FileSenderImpl implements FileSender{
 						bos.write(buffer, 0, n);
 						ByteBuffer buffToSend = ByteBuffer.wrap(bos.toByteArray());
 						bos.reset();
-						md.update(buffer, 0, n);
 						clientOfServer.startReceiving(null, filePathSplit, buffToSend, 1);
 					}
 					bos.close();
+					fis.close();
+
+					//Get md5 of the file.
+					fis = new FileInputStream(file);
+					MessageDigest md = MessageDigest.getInstance("MD5");
+					mBufferSize = 8 * 1024 * 1024;
+					buffer = new byte[mBufferSize];
+					int m;
+					while ((m = fis.read(buffer)) != -1) {
+						md.update(buffer, 0, m);
+					}
 					fis.close();
 
 					// the file is sent successfully
