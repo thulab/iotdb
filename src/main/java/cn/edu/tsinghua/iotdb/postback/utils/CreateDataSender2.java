@@ -179,10 +179,10 @@ public class CreateDataSender2 {
         Map<String, String> timeseriesMap = generateTimeseriesMapFromFile(path);
 
         List<String> storageGroupList = new ArrayList<>();
-        storageGroupList.add("root.vehicle_history");
-        storageGroupList.add("root.vehicle_alarm");
-        storageGroupList.add("root.vehicle_temp");
-        storageGroupList.add("root.range_event");
+        storageGroupList.add("root.vehicle_history1");
+        storageGroupList.add("root.vehicle_alarm1");
+        storageGroupList.add("root.vehicle_temp1");
+        storageGroupList.add("root.range_event1");
 
         try {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");

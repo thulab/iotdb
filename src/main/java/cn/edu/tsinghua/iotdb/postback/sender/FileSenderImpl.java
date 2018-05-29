@@ -215,7 +215,7 @@ public class FileSenderImpl implements FileSender{
 				while (true) {
 					FileInputStream fis = new FileInputStream(file);
 					MessageDigest md = MessageDigest.getInstance("MD5");
-					int mBufferSize = 4 * 1024 * 1024;
+					int mBufferSize = 64 * 1024 * 1024;
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(mBufferSize);
 					byte[] buffer = new byte[mBufferSize];
 					int n;
