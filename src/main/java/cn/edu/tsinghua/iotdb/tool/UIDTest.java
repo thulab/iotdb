@@ -60,8 +60,7 @@ public class UIDTest {
     private long UID(String value) {
         byte[] md5hash;
         synchronized (md5Digest) {
-            md5hash = md5Digest.digest(value.getBytes(Charsets.UTF_8));
-            md5Digest.reset();
+            md5hash = md5Digest.digest(value.getBytes());
         }
         long hash = 0L;
         for (int i = 0; i < 8; i++) {
@@ -70,17 +69,37 @@ public class UIDTest {
         return hash;
     }
 
+    private long bytesToLong(byte[] bytes){
+        long res = 0L;
+        for (int i = 0; i < bytes.length; i++) {
+            res = res << 8 | bytes[i] & 0x00000000000000FFL;
+        }
+        return res;
+    }
+
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         String path = "/Users/East/Desktop/tsfile解析/data/1524261157000-1524291295414";
         UIDTest test = new UIDTest(path);
         test.analyze();
 
         Set<Long> uidSet = new HashSet<>();
-        for(int i = 0;i < 100;i++) {
-            long uid = test.UID(test.deltaobjectIdList.get(i));
+        for(String deltaobjectId : test.deltaobjectIdList) {
+            long uid = test.UID(deltaobjectId);
             uidSet.add(uid);
-            System.out.println(uid);
         }
+        System.out.println(test.deltaobjectIdList.size());
+        System.out.println(uidSet.size());
+
+        uidSet.clear();
+        for(String measurementId : test.measurementIdList) {
+            long uid = test.UID(measurementId);
+            if(uidSet.contains(uid)) {
+                System.out.println("warn:" + measurementId);
+                System.out.println(uid);
+            }
+            uidSet.add(uid);
+        }
+        System.out.println(test.measurementIdList.size());
         System.out.println(uidSet.size());
     }
 }
