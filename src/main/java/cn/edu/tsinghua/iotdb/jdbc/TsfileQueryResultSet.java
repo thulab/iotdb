@@ -6,10 +6,12 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchResultsReq;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSFetchResultsResp;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
+
 import org.apache.thrift.TException;
 
 import java.io.InputStream;
@@ -677,12 +679,8 @@ public class TsfileQueryResultSet implements ResultSet {
 				if (!resp.hasResultSet) {
 					emptyResultSet = true;
 				} else {
-					QueryDataSet queryDataSet = Utils.convertQueryDataSet(resp.getQueryDataSet());
-					List<RowRecord> records = new ArrayList<>();
-					while (queryDataSet.hasNextRecord()) {
-						RowRecord rowRecord = queryDataSet.getNextRecord();
-						records.add(rowRecord);
-					}
+					TSQueryDataSet tsQueryDataSet = resp.getQueryDataSet();
+					List<RowRecord> records = Utils.convertRowRecords(tsQueryDataSet);
 					recordItr = records.iterator();
 				}
 			} catch (TException e) {
@@ -1218,7 +1216,7 @@ public class TsfileQueryResultSet implements ResultSet {
 	private String getValueByName(String columnName) throws SQLException {
 		checkRecord();
 		if (columnName.equals(TIMESTAMP_STR)) {
-			return String.valueOf(record.getTime());
+			return String.valueOf(record.getTimestamp());
 		}
 		int tmp = columnInfoMap.get(columnName)+seriesOffset;
 		Field field = record.fields.get(tmp - 2);
