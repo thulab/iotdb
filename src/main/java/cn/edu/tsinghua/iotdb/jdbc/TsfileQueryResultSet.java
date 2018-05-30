@@ -8,9 +8,9 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TSIService;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSOperationHandle;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_SessionHandle;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 
 import org.apache.thrift.TException;
 
@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class TsfileQueryResultSet implements ResultSet {
 
@@ -79,7 +80,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
         // first try to retrieve limit&offset&slimit&soffset parameters from sql
         String[] splited = sql.toUpperCase().split("\\s+");
-        List arraySplited = Arrays.asList(splited);
+        List<String> arraySplited = Arrays.asList(splited);
         try {
             int posLimit = arraySplited.indexOf(LIMIT_STR);
             if (posLimit != -1) {
@@ -1219,8 +1220,13 @@ public class TsfileQueryResultSet implements ResultSet {
 			return String.valueOf(record.getTimestamp());
 		}
 		int tmp = columnInfoMap.get(columnName)+seriesOffset;
-		Field field = record.fields.get(tmp - 2);
-		if(field == null || field.getStringValue() == null) return null;
-		return field.getStringValue();
+		int i = 0;
+		for(Entry<Path, TsPrimitiveType> entry : record.getFields().entrySet()){
+			i++;
+			if(i == tmp-1){
+				return entry.getValue().getStringValue();
+			}
+		}
+		return null;
 	}
 }
