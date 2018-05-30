@@ -380,7 +380,6 @@ public class TsFileAnalyzer {
     }
 
     public static void main(String[] args) throws IOException {
-        args = new String[]{"/Users/East/Desktop/tsfile解析/data/1524261157000-1524291295414", "/Users/East/Desktop/tsfile解析/data/report.txt"};
         if (args == null || args.length < 2) {
             System.out.println("[ERROR] Too few params input, please input path for both tsfile and output report.");
             return;
