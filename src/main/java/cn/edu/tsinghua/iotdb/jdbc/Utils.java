@@ -129,6 +129,7 @@ public class Utils {
 					}
     				}
     			}
+    			records.add(r);
     		}
     		return records;
     }

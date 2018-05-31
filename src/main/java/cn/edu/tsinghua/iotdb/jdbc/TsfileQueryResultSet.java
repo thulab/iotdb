@@ -1224,7 +1224,11 @@ public class TsfileQueryResultSet implements ResultSet {
 		for(Entry<Path, TsPrimitiveType> entry : record.getFields().entrySet()){
 			i++;
 			if(i == tmp-1){
-				return entry.getValue().getStringValue();
+				if(entry.getValue() != null){
+					return entry.getValue().getStringValue();
+				} else {
+					return null;
+				}
 			}
 		}
 		return null;
