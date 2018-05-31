@@ -1,15 +1,18 @@
 package cn.edu.tsinghua.iotdb.qp.executor.iterator;
 
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -121,6 +124,18 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
         if (data.hasNextRecord())
             return true;
         else {
+            try {
+                data = executor.groupBy(getAggrePair(), filterStructures, unit, origin, intervals, fetchSize);
+                if(data.hasNextRecord())
+                    System.out.println("has next record!!!");
+            } catch (ProcessorException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (PathErrorException e) {
+                e.printStackTrace();
+            }
+
             noNext = true;
             return false;
         }
