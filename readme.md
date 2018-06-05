@@ -45,7 +45,7 @@ server.port = 8888
 运行后端数据源连接器，在控制台输入
 ```$xslt
 cd target/
-java -jar iotdb-grafana-0.4.0-SNAPSHOT.war
+java -jar iotdb-grafana-0.7.0-SNAPSHOT.war
 ```
 Grafana的默认端口为 3000，在浏览器中访问 http://localhost:3000
 
