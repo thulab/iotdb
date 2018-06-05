@@ -15,7 +15,7 @@ The example is to show how to send data from localhost to IoTDB through Kafka.
     <dependency>
 	    <groupId>cn.edu.tsinghua</groupId>
 	    <artifactId>iotdb-jdbc</artifactId>
-	    <version>0.6.0</version>
+	    <version>0.7.0</version>
     </dependency>
 </dependencies>
 ```
