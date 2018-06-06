@@ -26,7 +26,7 @@ public class TsFileAnalyzer {
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
     private static final double SCALE = 0.05;
     private static final int BOX_NUM = 20;
-    private static final String DATA_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private String tsFilePath;
     private ITsRandomAccessFileReader randomAccessFileReader;
@@ -36,8 +36,8 @@ public class TsFileAnalyzer {
     private long metadataSize;
     private int filePathNum;
     private int fileRowNum;
-    private long file_timestamp_min;
-    private long file_timestamp_max;
+    private long fileTimestampMin;
+    private long fileTimestampMax;
 
     private int fileMetadataSize;
     private TsFileMetaData fileMetaData;
@@ -61,8 +61,8 @@ public class TsFileAnalyzer {
         metadataSize = 0;
         filePathNum = 0;
         fileRowNum = 0;
-        file_timestamp_min = -1;
-        file_timestamp_max = -1;
+        fileTimestampMin = -1;
+        fileTimestampMax = -1;
         rowGroupBlockMetaDataSizeList = new ArrayList<>();
         rowGroupBlockMetaDataContentList = new ArrayList<>();
         rowGroupMetaDataSizeList = new ArrayList<>();
@@ -104,14 +104,14 @@ public class TsFileAnalyzer {
                 fileRowNum += rowGroupMetaData.getNumOfRows();
 
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
-                    if(file_timestamp_min < 0 && file_timestamp_max < 0){
-                        file_timestamp_min = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime();
-                        file_timestamp_max = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime();
+                    if(fileTimestampMin < 0 && fileTimestampMax < 0){
+                        fileTimestampMin = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime();
+                        fileTimestampMax = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime();
                     }else{
-                        if(file_timestamp_min > timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime())
-                            file_timestamp_min = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime();
-                        if(file_timestamp_max < timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime())
-                            file_timestamp_max = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime();
+                        if(fileTimestampMin > timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime())
+                            fileTimestampMin = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime();
+                        if(fileTimestampMax < timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime())
+                            fileTimestampMax = timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime();
                     }
 
                     int size = (int) timeSeriesChunkMetaData.getTotalByteSize();
@@ -315,9 +315,9 @@ public class TsFileAnalyzer {
         writeContent(fileMetaData.getTimeSeriesList().size(), "file_timeseries_num");
         writeContent(filePathNum, "file_path_num");
         writeContent(fileRowNum, "file_points_num");
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATA_FORMAT);
-        writeContent(dateFormat.format(new Date(file_timestamp_min)), "file_timestamp_min");
-        writeContent(dateFormat.format(new Date(file_timestamp_max)), "file_timestamp_max");
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        writeContent(dateFormat.format(new Date(fileTimestampMin)), "file_timestamp_min");
+        writeContent(dateFormat.format(new Date(fileTimestampMax)), "file_timestamp_max");
         writeEndTag("File");
 
         // file metadata
