@@ -6,7 +6,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
-import com.sun.corba.se.impl.oa.toa.TOA;
 
 import java.util.ArrayList;
 import java.util.HashMap;

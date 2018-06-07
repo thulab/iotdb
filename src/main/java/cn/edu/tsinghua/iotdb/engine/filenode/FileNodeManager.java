@@ -478,8 +478,9 @@ public class FileNodeManager implements IStatistic, IService {
 						.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
 			}
 		} catch (IOException e) {
-			fileNodeProcessor.writeUnlock();
 			throw new FileNodeManagerException(e.getMessage());
+		} finally {
+			fileNodeProcessor.writeUnlock();
 		}
 
 		try {

@@ -759,6 +759,8 @@ public class BufferWriteProcessor extends Processor {
 			try {
 				getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
 			} catch (IOException e) {
+				LOGGER.error("Cannot append tombstone to Bufferwrite {}, because:", getProcessorName(), e);
+			} finally {
 				getTombstoneFile().unlock();
 			}
 		}

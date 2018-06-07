@@ -1775,7 +1775,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					}
 				}
 			} catch (BufferWriteProcessorException | PathErrorException | IndexManagerException e) {
-				e.printStackTrace();
+				LOGGER.error("Close BufferWrite {} failed, because :",getProcessorName(), e);
 				throw new FileNodeProcessorException(e);
 			}
 		}
@@ -1803,7 +1803,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				overflowProcessor.clear();
 				overflowProcessor = null;
 			} catch (OverflowProcessorException | IOException e) {
-				e.printStackTrace();
+				LOGGER.error("Close Overflow {} failed, because :",getProcessorName(), e);
 				throw new FileNodeProcessorException(e);
 			}
 		}
@@ -1959,7 +1959,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 if (hasTombstone)
                     return true;
             } catch (IOException e) {
-                LOGGER.error("Cannot access tombstone file of {}", emptyIntervalFileNode.getFilePath());
+                LOGGER.error("Cannot access the tombstone file of {}, because: ", emptyIntervalFileNode.getFilePath(), e);
                 return false;
             }
         }
@@ -1971,7 +1971,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 if (hasTombstone)
                     return true;
             } catch (IOException e) {
-                LOGGER.error("Cannot access tombstone file of {}", currentIntervalFileNode.getFilePath());
+                LOGGER.error("Cannot access the tombstone file of {}, because: ", currentIntervalFileNode.getFilePath(), e);
                 return false;
             }
         }
@@ -1983,7 +1983,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 if (hasTombstone)
                     return true;
             } catch (IOException e) {
-                LOGGER.error("Cannot access tombstone file of {}", fileNode.getFilePath());
+                LOGGER.error("Cannot access the tombstone file of {}, because: ", fileNode.getFilePath(), e);
                 return false;
             }
         }

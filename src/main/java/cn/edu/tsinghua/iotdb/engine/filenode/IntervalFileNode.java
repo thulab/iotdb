@@ -172,7 +172,7 @@ public class IntervalFileNode implements Serializable {
 			try {
 				tombstoneFile.close();
 			} catch (IOException e) {
-				logger.error("Cannot close tombstone file for {}", relativePath);
+				logger.error("Cannot close tombstone file for {}, because:", relativePath, e);
 			}
 		}
 	}
