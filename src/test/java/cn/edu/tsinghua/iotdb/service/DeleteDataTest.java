@@ -236,7 +236,7 @@ public class DeleteDataTest {
             int deleteTime = 750;
             exeDelete(deleteTime);
             // check that tombstone file exists
-            File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
+            File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().getBufferWriteDirs()[0] + File.separator + STORAGE_GROUP);
             File[] files = storageGroupDir.listFiles();
             assertTrue(files != null);
             boolean exists = false;
@@ -283,7 +283,7 @@ public class DeleteDataTest {
         int deleteTime = 500;
         exeDelete(deleteTime);
         // check that tombstone file exists
-        File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().bufferWriteDir + File.separator + STORAGE_GROUP);
+        File storageGroupDir = new File(TsfileDBDescriptor.getInstance().getConfig().getBufferWriteDirs()[0] + File.separator + STORAGE_GROUP);
         File[] files = storageGroupDir.listFiles();
         assertTrue(files != null);
         boolean exists = false;
