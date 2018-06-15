@@ -11,7 +11,7 @@ public class TimeSpan extends AbstractUDSF {
   }
 
   @Override
-  public boolean isBreakpoint(long time, Comparable<?> value) {
+  public boolean isCuttingpoint(long time, Comparable<?> value) {
     return time - lastTime >= span;
   }
 }

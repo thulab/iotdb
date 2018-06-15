@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.query.v2.QueryRecordReader;
 import cn.edu.tsinghua.iotdb.query.v2.ReaderType;
 import cn.edu.tsinghua.iotdb.query.v2.RecordReaderFactory;
 import cn.edu.tsinghua.iotdb.udf.AbstractUDSF;
+import cn.edu.tsinghua.iotdb.view.ViewManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
@@ -42,6 +43,7 @@ public class SegmentByEngineNoFilter {
   private List<Pair<Path, AggregateFunction>> aggregations;
 
   private AbstractUDSF udsf;
+  private String segmentStr;
 
   /**
    * segment by partition fetch size, when result size is reach to partitionSize, the current
@@ -66,7 +68,7 @@ public class SegmentByEngineNoFilter {
 
   public SegmentByEngineNoFilter(List<Pair<Path, AggregateFunction>> aggregations,
       SingleSeriesFilterExpression queryTimeFilter,
-      AbstractUDSF udsf, int partitionFetchSize) {
+      AbstractUDSF udsf, String segmentStr, int partitionFetchSize) {
     this.aggregations = aggregations;
     this.queryTimeFilter = queryTimeFilter;
     this.queryPathResult = new HashMap<>();
@@ -82,6 +84,7 @@ public class SegmentByEngineNoFilter {
     }
 
     this.udsf = udsf;
+    this.segmentStr = segmentStr;
     this.partitionFetchSize = partitionFetchSize;
   }
 

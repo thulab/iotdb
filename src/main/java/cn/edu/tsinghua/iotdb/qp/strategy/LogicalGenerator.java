@@ -573,6 +573,8 @@ public class LogicalGenerator {
 
         if (childCount == 1) {
             String udsfName = astNode.getChild(0).getChild(0).getText();
+            ((QueryOperator) initializedOperator).setSegmentStr(udsfName);
+
             FunctionDesc functionDesc = FunctionManager.getFunctionDesc(udsfName);
             try {
                 AbstractUDSF udsf = (AbstractUDSF)Class.forName(functionDesc.getClassName()).newInstance();
@@ -588,6 +590,17 @@ public class LogicalGenerator {
             for (int i = 0; i < astNode.getChild(1).getChildCount(); i++) {
                 valueList.add(astNode.getChild(1).getChild(i).getText());
             }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(udsfName);
+            sb.append("(");
+            for (String value : valueList) {
+                sb.append(value);
+                sb.append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append(")");
+            ((QueryOperator) initializedOperator).setSegmentStr(sb.toString());
 
             try {
                 Class<?> c = Class.forName(functionDesc.getClassName());

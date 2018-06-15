@@ -189,8 +189,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     public QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
-                                  AbstractUDSF udsf, int fetchSize) throws ProcessorException, IOException, PathErrorException {
-        return queryEngine.segmentBy(aggres, filterStructures, udsf, fetchSize);
+                                  AbstractUDSF udsf, String segmentStr, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+        return queryEngine.segmentBy(aggres, filterStructures, udsf, segmentStr, fetchSize);
     }
 
     @Override

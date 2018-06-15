@@ -63,7 +63,7 @@ public abstract class QueryProcessExecutor {
 			case SEGMENTBY:
 				return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(),
 						mergeQuery.getAggregations(), getFilterStructure(selectPlans),
-						mergeQuery.getUdsf(), this);
+						mergeQuery.getUdsf(), mergeQuery.getSegmentStr(), this);
 			case FILL:
 				return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(), mergeQuery.getQueryTime(),
 						 mergeQuery.getFillType(), this);
@@ -105,7 +105,7 @@ public abstract class QueryProcessExecutor {
 			throws ProcessorException, IOException, PathErrorException;
 
     public abstract QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
-										   AbstractUDSF udsf, int fetchSize) throws ProcessorException, IOException, PathErrorException;
+										   AbstractUDSF udsf, String segmentStr, int fetchSize) throws ProcessorException, IOException, PathErrorException;
 
     public abstract QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
 			throws ProcessorException, IOException, PathErrorException;

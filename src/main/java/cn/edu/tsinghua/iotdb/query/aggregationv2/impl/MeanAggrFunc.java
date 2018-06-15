@@ -9,6 +9,8 @@ import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,7 +20,6 @@ public class MeanAggrFunc extends AggregateFunction{
 
     private double sum = 0.0;
     private int cnt = 0;
-
     private boolean isResultSet = false;
 
     public MeanAggrFunc() {
@@ -152,8 +153,7 @@ public class MeanAggrFunc extends AggregateFunction{
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             Comparable<?> value = data.getAnObject(data.curIdx);
-
-            if (udsf.isBreakpoint(time, value)) {
+            if (udsf.isCuttingpoint(time, value)) {
                 resultData.putEmptyTime(udsf.getLastTime());
                 if (resultData.valueLength - 1 == segmentIdx) {
                     resultData.setDouble(segmentIdx, sum / cnt);
@@ -166,7 +166,6 @@ public class MeanAggrFunc extends AggregateFunction{
                 reset();
                 return;
             }
-
             sum += ((Number) value).doubleValue();
             cnt++;
             data.curIdx++;

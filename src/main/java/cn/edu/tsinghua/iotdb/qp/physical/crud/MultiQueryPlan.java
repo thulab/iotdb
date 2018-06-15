@@ -39,6 +39,7 @@ public class MultiQueryPlan extends PhysicalPlan {
 
     //segment by
     private AbstractUDSF udsf;
+    private String segmentStr;
 
     //fill
     private long queryTime;
@@ -103,6 +104,14 @@ public class MultiQueryPlan extends PhysicalPlan {
 
     public void setUdsf(AbstractUDSF udsf) {
         this.udsf = udsf;
+    }
+
+    public String getSegmentStr() {
+        return segmentStr;
+    }
+
+    public void setSegmentStr(String segmentStr) {
+        this.segmentStr = segmentStr;
     }
 
     public MultiQueryPlan(ArrayList<SingleQueryPlan> selectPlans, List<String> aggregations) {

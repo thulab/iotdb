@@ -146,7 +146,7 @@ public class FirstAggrFunc extends AggregateFunction{
             long time = data.getTime(data.curIdx);
             Comparable<?> value = data.getAnObject(data.curIdx);
 
-            if (udsf.isBreakpoint(time, value)) {
+            if (udsf.isCuttingpoint(time, value)) {
                 resultData.putEmptyTime(udsf.getLastTime());
                 udsf.setLastTime(time);
                 udsf.setLastValue(value);

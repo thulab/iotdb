@@ -8,7 +8,7 @@ public class AbstractUDSF implements UDSF {
     protected Comparable<?> lastValue;
 
     @Override
-    public boolean isBreakpoint(long time, Comparable<?> value) {
+    public boolean isCuttingpoint(long time, Comparable<?> value) {
         return false;
     }
 

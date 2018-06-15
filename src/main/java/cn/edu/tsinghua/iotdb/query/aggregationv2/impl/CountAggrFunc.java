@@ -150,7 +150,7 @@ public class CountAggrFunc extends AggregateFunction {
             long time = data.getTime(data.curIdx);
             Comparable<?> value = data.getAnObject(data.curIdx);
 
-            if (udsf.isBreakpoint(time, value)) {
+            if (udsf.isCuttingpoint(time, value)) {
                 resultData.putEmptyTime(udsf.getLastTime());
                 if (resultData.valueLength - 1 == segmentIdx) {
                     long preSum = resultData.getLong(segmentIdx);

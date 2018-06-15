@@ -32,6 +32,7 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
 
     //segment by
     private AbstractUDSF udsf;
+    private String segmentStr;
 
     //fill
     private long queryTime;
@@ -79,13 +80,14 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
 
     //segment by
     public QueryDataSetIterator(List<Path> paths, int fetchSize, List<String> aggregations,
-                                List<FilterStructure> filterStructures, AbstractUDSF udsf, QueryProcessExecutor executor) {
+                                List<FilterStructure> filterStructures, AbstractUDSF udsf, String segmentStr, QueryProcessExecutor executor) {
         this.fetchSize = fetchSize;
         this.executor = executor;
         this.filterStructures = filterStructures;
         this.paths = paths;
         this.aggregations = aggregations;
         this.udsf = udsf;
+        this.segmentStr = segmentStr;
         this.type = MultiQueryPlan.QueryType.SEGMENTBY;
     }
 
@@ -123,7 +125,7 @@ public class QueryDataSetIterator implements Iterator<QueryDataSet> {
                         data = executor.groupBy(getAggrePair(), filterStructures, unit, origin, intervals, fetchSize);
                         break;
                     case SEGMENTBY:
-                        data = executor.segmentBy(getAggrePair(), filterStructures, udsf, fetchSize);
+                        data = executor.segmentBy(getAggrePair(), filterStructures, udsf, segmentStr, fetchSize);
                         break;
                     case FILL:
                         data = executor.fill(paths, queryTime, fillType);

@@ -262,6 +262,7 @@ public class PhysicalGenerator {
 		if(queryOperator.isSegmentBy()) {
 			multiQueryPlan.setType(MultiQueryPlan.QueryType.SEGMENTBY);
 			multiQueryPlan.setUdsf(queryOperator.getUdsf());
+			multiQueryPlan.setSegmentStr(queryOperator.getSegmentStr());
 		}
 
 		if(queryOperator.isFill()) {

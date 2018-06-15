@@ -26,6 +26,7 @@ public class QueryOperator extends SFWOperator {
     private boolean isGroupBy = false;
 
     private AbstractUDSF udsf;
+    private String segmentStr;
     private boolean isSegmentBy = false;
 
     private Map<TSDataType, IFill> fillTypes;
@@ -85,6 +86,14 @@ public class QueryOperator extends SFWOperator {
 
     public void setUdsf(AbstractUDSF udsf) {
         this.udsf = udsf;
+    }
+
+    public String getSegmentStr() {
+        return segmentStr;
+    }
+
+    public void setSegmentStr(String segmentStr) {
+        this.segmentStr = segmentStr;
     }
 
     public boolean isSegmentBy() {

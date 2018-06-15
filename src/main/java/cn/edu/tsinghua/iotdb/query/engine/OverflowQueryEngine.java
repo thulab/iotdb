@@ -227,7 +227,7 @@ public class OverflowQueryEngine {
      * @return
      */
     public QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
-                                  AbstractUDSF udsf, int fetchSize) {
+                                  AbstractUDSF udsf, String segmentStr, int fetchSize) {
 
         ThreadLocal<Integer> segmentByCalcTime = ReadLockManager.getInstance().getSegmentByCalcTime();
         ThreadLocal<SegmentByEngineNoFilter>  segmentByEngineNoFilterLocal = ReadLockManager.getInstance().getSegmentByEngineNoFilterLocal();
@@ -250,11 +250,11 @@ public class OverflowQueryEngine {
                     if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
                         timeFilter = filterStructures.get(0).getTimeFilter();
                     }
-                    SegmentByEngineNoFilter segmentByEngineNoFilter = new SegmentByEngineNoFilter(aggregations, timeFilter, udsf, fetchSize);
+                    SegmentByEngineNoFilter segmentByEngineNoFilter = new SegmentByEngineNoFilter(aggregations, timeFilter, udsf, segmentStr, fetchSize);
                     segmentByEngineNoFilterLocal.set(segmentByEngineNoFilter);
                     return segmentByEngineNoFilter.segmentBy();
                 }  else {
-                    SegmentByEngineWithFilter segmentByEngineWithFilter = new SegmentByEngineWithFilter(aggregations, filterStructures, udsf, fetchSize);
+                    SegmentByEngineWithFilter segmentByEngineWithFilter = new SegmentByEngineWithFilter(aggregations, filterStructures, udsf, segmentStr, fetchSize);
                     segmentByEngineWithFilterLocal.set(segmentByEngineWithFilter);
                     return segmentByEngineWithFilter.segmentBy();
                 }

@@ -113,7 +113,7 @@ public class SegmentByEngineWithFilter {
 
   public SegmentByEngineWithFilter(List<Pair<Path, AggregateFunction>> aggregations,
       List<FilterStructure> filterStructures,
-      AbstractUDSF udsf, int partitionFetchSize)
+      AbstractUDSF udsf, String segmentStr, int partitionFetchSize)
       throws IOException, ProcessorException {
     this.aggregations = aggregations;
     this.filterStructures = filterStructures;

@@ -15,11 +15,11 @@
 			<pattern>%d [%t] %-5p %C:%L - %m %n</pattern>
 			<charset>utf-8</charset>
 		</encoder>
-		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+		<valueFilter class="ch.qos.logback.classic.valueFilter.LevelFilter">
 			<level>error</level>
 			<onMatch>ACCEPT</onMatch>
       		<onMismatch>DENY</onMismatch>
-		</filter>
+		</valueFilter>
 	</appender>
 
 	<appender name="FILEWARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -35,11 +35,11 @@
             <pattern>%d [%t] %-5p %C:%L - %m %n</pattern>
 			<charset>utf-8</charset>
 		</encoder>
-		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+		<valueFilter class="ch.qos.logback.classic.valueFilter.LevelFilter">
 			<level>WARN</level>
 			<onMatch>ACCEPT</onMatch>
       		<onMismatch>DENY</onMismatch>
-		</filter>
+		</valueFilter>
 	</appender>
 
 	<appender name="FILEINFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -55,11 +55,11 @@
             <pattern>%d [%t] %-5p %C:%L - %m %n</pattern>
 			<charset>utf-8</charset>
 		</encoder>
-		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+		<valueFilter class="ch.qos.logback.classic.valueFilter.LevelFilter">
 			<level>INFO</level>
 			<onMatch>ACCEPT</onMatch>
       		<onMismatch>DENY</onMismatch>
-		</filter>
+		</valueFilter>
 	</appender>
 
 
@@ -76,11 +76,11 @@
             <pattern>%d [%t] %-5p %C:%L - %m %n</pattern>
 			<charset>utf-8</charset>
 		</encoder>
-		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+		<valueFilter class="ch.qos.logback.classic.valueFilter.LevelFilter">
 			<level>DEBUG</level>
 			<onMatch>ACCEPT</onMatch>
       		<onMismatch>DENY</onMismatch>
-		</filter>
+		</valueFilter>
 	</appender>
 
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
@@ -89,9 +89,9 @@
             <pattern>%d [%t] %-5p %C:%L - %m %n</pattern>
 			<charset>utf-8</charset>
 		</encoder>
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+		<valueFilter class="ch.qos.logback.classic.valueFilter.ThresholdFilter">
 			<level>DEBUG</level>
-		</filter>
+		</valueFilter>
 	</appender>
 	
 

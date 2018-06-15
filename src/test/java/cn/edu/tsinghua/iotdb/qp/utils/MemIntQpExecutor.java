@@ -189,7 +189,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
 
     @Override
     public QueryDataSet segmentBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
-                                  AbstractUDSF udsf, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+                                  AbstractUDSF udsf, String segmentStr, int fetchSize) throws ProcessorException, IOException, PathErrorException {
         throw new ProcessorException("Do not support");
     }
 

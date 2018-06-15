@@ -151,7 +151,7 @@ public class SumAggrFunc extends AggregateFunction {
             long time = data.getTime(data.curIdx);
             Comparable<?> value = data.getAnObject(data.curIdx);
 
-            if (udsf.isBreakpoint(time, value)) {
+            if (udsf.isCuttingpoint(time, value)) {
                 resultData.putEmptyTime(udsf.getLastTime());
                 if (resultData.valueLength - 1 == segmentIdx) {
                     resultData.setDouble(segmentIdx, sum);
