@@ -152,4 +152,12 @@ public class RecordReader {
     public int getReadToken() {
         return this.readToken;
     }
+
+    public String getDeltaObjectId() {
+        return this.deltaObjectId;
+    }
+
+    public String getMeasurementId() {
+        return this.measurementId;
+    }
 }

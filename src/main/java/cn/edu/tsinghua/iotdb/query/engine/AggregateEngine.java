@@ -285,11 +285,11 @@ public class AggregateEngine {
         public void run() {
             try {
                 aggregateRecordReader .aggregate(aggregateFunction);
-//                FileNodeManager.getInstance().endQuery(deltaObjectUID, recordReader.getReadToken());
-//                ReadCacheManager.getInstance().removeReadToken(deltaObjectUID, recordReader.getReadToken());
+                FileNodeManager.getInstance().endQuery(aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getReadToken());
+                ReadCacheManager.getInstance().removeReadToken(aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getReadToken());
                 FileReaderMap.getInstance().close();
                 latch.countDown();
-            } catch (ProcessorException | IOException  e) {
+            } catch (ProcessorException | IOException | FileNodeManagerException e) {
                 e.printStackTrace();
             }
         }
