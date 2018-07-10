@@ -98,7 +98,7 @@ public class LockMaxTest {
             int cnt = 0;
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(max_value("root.vehicle.d1.s0"));
-                System.out.println("+++++++++++++　" +ans);
+                System.out.println("output  +++++++++++++　" +ans);
                 cnt++;
             }
             assertEquals(1, cnt);
@@ -131,7 +131,7 @@ public class LockMaxTest {
 
             // insert large amount of data    time range : 3000 ~ 13600
             int time = 1000;
-            for (time = 3000; time < 3200; time++) {
+            for (time = 3000; time < 3600; time++) {
                 for (int i = 0; i < DEVICE_NUM; i++) {
                     String sql = String.format("insert into root.vehicle.d%s(timestamp,s0) values(%s,%s)", i, time, time%10);
                     //System.out.println("---------------insert " + sql);
