@@ -16,7 +16,7 @@ import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.*;
 
 
-public class LargeDataTest {
+public class LargeDataTestV2 {
 
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
@@ -66,9 +66,9 @@ public class LargeDataTest {
             pageSizeInByte = tsFileConfig.pageSizeInByte;
             groupSizeInByte = tsFileConfig.groupSizeInByte;
             // new value
-            tsFileConfig.maxNumberOfPointsInPage = 1000;
-            tsFileConfig.pageSizeInByte = 1024 * 1024 * 150;
-            tsFileConfig.groupSizeInByte = 1024 * 1024 * 1000;
+            tsFileConfig.maxNumberOfPointsInPage = 100;
+            tsFileConfig.pageSizeInByte = 1024 * 1024 * 15;
+            tsFileConfig.groupSizeInByte = 1024 * 1024 * 100;
 
             deamon = IoTDB.getInstance();
             deamon.active();
@@ -101,29 +101,25 @@ public class LargeDataTest {
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
             // select test
-//            selectAllTest();
-//            selectOneSeriesWithValueFilterTest();
-//            seriesTimeDigestReadTest();
-//            crossSeriesReadUpdateTest();
+            selectAllTest();
+            selectOneSeriesWithValueFilterTest();
+            seriesTimeDigestReadTest();
+            crossSeriesReadUpdateTest();
 
             // aggregation test
             aggregationWithoutFilterTest();
-//            aggregationTest();
-//            aggregationWithFilterOptimizationTest();
-//            allNullSeriesAggregationTest();
-//            negativeValueAggTest();
+            aggregationTest();
+            allNullSeriesAggregationTest();
+            negativeValueAggTest();
 
-//            // group by test
-//            groupByTest();
-//            allNullSeriesGroupByTest();
-//            fixBigGroupByClassFormNumberTest();
-//
-//            // fill test
-//            previousFillTest();
-//            linearFillTest();
-//
-//            // verify the rightness of overflow insert and after merge operation
-//            newInsertAggTest();
+            // group by test
+            groupByTest();
+            allNullSeriesGroupByTest();
+            fixBigGroupByClassFormNumberTest();
+
+            // fill test
+            previousFillTest();
+            linearFillTest();
 
             connection.close();
         }
@@ -144,7 +140,7 @@ public class LargeDataTest {
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1)
                         + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
-                //System.out.println("===" + ans);
+                System.out.println("---" + ans);
                 cnt++;
             }
             //System.out.println("cnt ::" + cnt);
@@ -246,7 +242,6 @@ public class LargeDataTest {
                 long time = Long.valueOf(resultSet.getString(TIMESTAMP_STR));
                 String value = resultSet.getString(d0s1);
                 if (time > 23000 && time < 100100) {
-                    //System.out.println("~~~~" + time + "," + value);
                     assertEquals("11111111", value);
                 }
                 //String ans = resultSet.getString(d0s1);
@@ -337,40 +332,6 @@ public class LargeDataTest {
         }
     }
 
-    private void aggregationWithFilterOptimizationTest() throws ClassNotFoundException, SQLException {
-
-        // all the page data of d0.s0 are eligible for the time filter
-        String sql = "select count(s0),mean(s0),first(s0),sum(s0),last(s0) from root.vehicle.d0 where time < 1600000";
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute(sql);
-            Assert.assertTrue(hasResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
-                        + "," + resultSet.getString(sum(d0s0)) + "," + resultSet.getString(mean(d0s0))
-                         + "," + resultSet.getString(first(d0s0)) + "," + resultSet.getString(last(d0s0));
-                //System.out.println("===" + ans);
-                assertEquals("0,23400,2672550.0,114.21153846153847,2000,6666", ans);
-                cnt++;
-            }
-            assertEquals(1, cnt);
-            statement.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
     private void allNullSeriesAggregationTest() throws ClassNotFoundException, SQLException {
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -425,24 +386,6 @@ public class LargeDataTest {
             assertEquals(1, cnt);
             statement.close();
 
-            // (3). aggregation test : there is no value in series d1.s0 in the given time range
-            sql = "select max_value(s0),min_value(s0)" +
-                    "from root.vehicle.d0 where time > 13601 and time < 13602";
-            statement = connection.createStatement();
-            hasResultSet = statement.execute(sql);
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR)
-                        + "," + resultSet.getString(max_value(d0s0)) + "," + resultSet.getString(min_value(d0s0));
-                assertEquals("0,null,null", ans);
-                //System.out.println(".." + ans);
-                cnt++;
-            }
-            assertEquals(1, cnt);
-            statement.close();
-
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -453,10 +396,9 @@ public class LargeDataTest {
         }
     }
 
-    private void negativeValueAggTest() throws ClassNotFoundException, SQLException {
+    private void negativeValueAggTest() throws ClassNotFoundException, SQLException, FileNotFoundException {
 
         String sql = "select count(s0),sum(s0),mean(s0),first(s0) from root.vehicle.d0 where s0 < 0";
-        String selectSql = "select s0 from root.vehicle.d0 where s0 < 0";
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
@@ -472,13 +414,14 @@ public class LargeDataTest {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
                         + "," + resultSet.getString(mean(d0s0)) + "," + resultSet.getString(first(d0s0))
                         + "," + resultSet.getString(sum(d0s0));
-                //System.out.println("====" + ans);
+                //System.out.println("0,855,-10.0,-1,-8550.0" + ans);
                 Assert.assertEquals("0,855,-10.0,-1,-8550.0", ans);
                 //sum += Double.valueOf(resultSet.getString(d0s0));
                 cnt++;
             }
             assertEquals(1, cnt);
             statement.close();
+
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -868,7 +811,7 @@ public class LargeDataTest {
 
             // insert large amount of data    time range : 3000 ~ 13600
             for (int time = 3000; time < 13600; time++) {
-                //System.out.println("===" + time);
+
                 String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 100);
                 statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 17);
@@ -883,7 +826,7 @@ public class LargeDataTest {
                 statement.execute(sql);
             }
 
-            // statement.execute("flush");
+            statement.execute("flush");
 
             // insert large amount of data time range : 13700 ~ 24000
             for (int time = 13700; time < 24000; time++) {
@@ -924,6 +867,7 @@ public class LargeDataTest {
                 statement.execute(sql);
             }
 
+
             // overflow insert, time < 3000
             for (int time = 2000; time < 2500; time++) {
 
@@ -960,90 +904,7 @@ public class LargeDataTest {
             // overflow update
             statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
 
-    public void newInsertAggTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            String sql;
-            boolean hasResultSet;
-            ResultSet resultSet;
-            int cnt;
-            String[] retArray = new String[]{};
-            sql = "select count(s0),count(s1),count(s2),count(s3),count(s4)" +
-                    "from root.vehicle.d0";
-            hasResultSet = statement.execute(sql);
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
-                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
-                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
-                //assertEquals("0,0,null,null,null,null,null,null,null,null", ans);
-                //System.out.println("(1) ============ " + ans);
-                cnt++;
-            }
-            statement.close();
-
-            statement = connection.createStatement();
-            for (int time = 10000; time < 60000; time++) {
-                sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 20);
-                statement.execute(sql);
-                sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 30);
-                statement.execute(sql);
-                sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 77);
-                statement.execute(sql);
-            }
-            statement.close();
-
-            sql = "select count(s0),count(s1),count(s2),count(s3),count(s4)" +
-                    "from root.vehicle.d0";
-            statement = connection.createStatement();
-            hasResultSet = statement.execute(sql);
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
-                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
-                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
-                //assertEquals("0,0,null,null,null,null,null,null,null,null", ans);
-                System.out.println("(2) ============ " + ans);
-                cnt++;
-            }
-            statement.close();
-
-            statement = connection.createStatement();
-            statement.execute("merge");
-            statement.close();
-
-            statement = connection.createStatement();
-            hasResultSet = statement.execute(sql);
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(count(d0s0))
-                        + "," + resultSet.getString(count(d0s1)) + "," + resultSet.getString(count(d0s2))
-                        + "," + resultSet.getString(count(d0s3)) + "," + resultSet.getString(count(d0s4));
-                //assertEquals("0,0,null,null,null,null,null,null,null,null", ans);
-                System.out.println("(3) ============ " + ans);
-                cnt++;
-            }
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

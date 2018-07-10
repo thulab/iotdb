@@ -49,6 +49,7 @@ public class RecordReaderFactory {
         } else {
             readToken = readLock;
         }
+        System.out.println(String.format("------------------------ %s, %s, %s", deltaObjectUID, measurementID, readToken));
         String cacheDeltaKey = prefix + deltaObjectUID;
         if (readCacheManager.getRecordReaderCacheManager().containsRecordReader(cacheDeltaKey, measurementID)) {
             return readCacheManager.getRecordReaderCacheManager().get(cacheDeltaKey, measurementID);

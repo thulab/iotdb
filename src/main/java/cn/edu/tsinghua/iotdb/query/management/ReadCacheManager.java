@@ -51,10 +51,11 @@ public class ReadCacheManager {
 
     public int lock(String deltaObjectUID) throws ProcessorException {
         checkLocksMap();
-        int token;
+        int token = 0;
         if (!locksMap.get().containsKey(deltaObjectUID)) {
             try {
                 token = fileNodeManager.beginQuery(deltaObjectUID);
+                System.out.println("#######################" + token);
             } catch (FileNodeManagerException e) {
                 e.printStackTrace();
                 throw new ProcessorException(e.getMessage());
