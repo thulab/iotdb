@@ -285,18 +285,18 @@ public class AggregateEngine {
         public void run() {
             try {
                 aggregateRecordReader .aggregate(aggregateFunction);
-                System.out.println(String.format("=================<<<<< %s, %s, %s, %s",
+                logger.debug(String.format("=================<<<<< %s, %s, %s, %s",
                         aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getMeasurementId(),
                         aggregateFunction.name,
                         aggregateRecordReader.getReadToken()));
 
                 // aggregateRecordReader has maintain the read lock..
 
-                FileNodeManager.getInstance().endQuery(aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getReadToken());
-                ReadCacheManager.getInstance().removeReadToken(aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getReadToken());
+                //FileNodeManager.getInstance().endQuery(aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getReadToken());
+                //ReadCacheManager.getInstance().removeReadToken(aggregateRecordReader.getDeltaObjectId(), aggregateRecordReader.getReadToken());
                 FileReaderMap.getInstance().close();
                 latch.countDown();
-            } catch (ProcessorException | IOException | FileNodeManagerException e) {
+            } catch (ProcessorException | IOException  e) {
                 e.printStackTrace();
             }
         }
