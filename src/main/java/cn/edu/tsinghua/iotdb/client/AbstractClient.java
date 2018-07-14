@@ -118,7 +118,7 @@ public abstract class AbstractClient {
 		} else { // query
 			resultSetMetaData = res.getMetaData();
 			colCount = resultSetMetaData.getColumnCount();
-			if (res.getMetaData().getColumnTypeName(0) != null) {
+			if (resultSetMetaData.getColumnTypeName(0) != null) {
 				printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
 			}
 		}

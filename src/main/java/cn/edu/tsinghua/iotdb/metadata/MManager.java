@@ -75,7 +75,8 @@ public class MManager {
 
         mNodeCache = new RandomDeleteCache<String, MNode>(cacheSize) {
             @Override
-            public void beforeRemove(MNode object) throws CacheException {}
+            public void beforeRemove(MNode object) throws CacheException {
+            }
 
             @Override
             public MNode loadObjectByKey(String key) throws CacheException {
@@ -612,6 +613,19 @@ public class MManager {
     }
 
     /**
+     * return in batch a HashMap contains all the paths separated by File Name
+     */
+    public HashMap<String, ArrayList<String>> getAllPathGroupByFileName(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getAllPathGroupByFilename(path, batchFetchIdx, batchFetchSize);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
      * return all paths for given path if the path is abstract.Or return the
      * path itself.
      */
@@ -631,14 +645,33 @@ public class MManager {
     }
 
     /**
+     * return in batch all paths for given path if the path is abstract.Or return the
+     * path itself.
+     */
+    public ArrayList<String> getPaths(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            ArrayList<String> res = new ArrayList<>();
+            HashMap<String, ArrayList<String>> pathsGroupByFilename = getAllPathGroupByFileName(path, batchFetchIdx, batchFetchSize);
+            for (ArrayList<String> ps : pathsGroupByFilename.values()) {
+                res.addAll(ps);
+            }
+            return res;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
      * @param path
      * @return All leaf nodes' path(s) of given path.
      */
     public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
         lock.readLock().lock();
-        try{
+        try {
             return mGraph.getLeafNodePathInNextLevel(path);
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
@@ -973,7 +1006,7 @@ public class MManager {
         }
     }
 
-    public static class PathCheckRet{
+    public static class PathCheckRet {
         private boolean successfully;
         private TSDataType dataType;
 
