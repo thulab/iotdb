@@ -64,7 +64,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
     @Override
     public TSOpenSessionResp openSession(TSOpenSessionReq req) throws TException {
-        LOGGER.info("{}: receive open session request from username {}", TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
+        LOGGER.info("{}: receive open session request from username {}",TsFileDBConstant.GLOBAL_DB_NAME, req.getUsername());
 
         boolean status;
         IAuthorizer authorizer = null;
@@ -92,7 +92,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
         TSOpenSessionResp resp = new TSOpenSessionResp(ts_status, TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1);
         resp.setSessionHandle(new TS_SessionHandle(new TSHandleIdentifier(ByteBuffer.wrap(req.getUsername().getBytes()),
                 ByteBuffer.wrap((req.getPassword().getBytes())))));
-        LOGGER.info("{}: Login status: {}. User : {}", TsFileDBConstant.GLOBAL_DB_NAME, ts_status.getErrorMessage(), req.getUsername());
+        LOGGER.info("{}: Login status: {}. User : {}",TsFileDBConstant.GLOBAL_DB_NAME, ts_status.getErrorMessage(), req.getUsername());
 
         return resp;
     }
@@ -104,18 +104,18 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
     @Override
     public TSCloseSessionResp closeSession(TSCloseSessionReq req) throws TException {
-        LOGGER.info("{}: receive close session", TsFileDBConstant.GLOBAL_DB_NAME);
+        LOGGER.info("{}: receive close session",TsFileDBConstant.GLOBAL_DB_NAME);
         TS_Status ts_status;
         if (username.get() == null) {
             ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
             ts_status.setErrorMessage("Has not logged in");
-            if (timeZone.get() != null) {
+            if(timeZone.get() != null){
                 timeZone.remove();
             }
         } else {
             ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
             username.remove();
-            if (timeZone.get() != null) {
+            if(timeZone.get() != null){
                 timeZone.remove();
             }
         }
@@ -129,7 +129,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
     @Override
     public TSCloseOperationResp closeOperation(TSCloseOperationReq req) throws TException {
-        LOGGER.info("{}: receive close operation", TsFileDBConstant.GLOBAL_DB_NAME);
+        LOGGER.info("{}: receive close operation",TsFileDBConstant.GLOBAL_DB_NAME);
         try {
             ReadCacheManager.getInstance().unlockForOneRequest();
             clearAllStatusForCurrentRequest();
@@ -140,10 +140,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
     }
 
     private void clearAllStatusForCurrentRequest() {
-        if (this.queryRet.get() != null) {
+        if(this.queryRet.get() != null){
             this.queryRet.get().clear();
         }
-        if (this.queryStatus.get() != null) {
+        if(this.queryStatus.get() != null){
             this.queryStatus.get().clear();
         }
     }
@@ -290,9 +290,11 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
     /**
      * Judge whether the statement is ADMIN COMMAND and if true, execute it.
      *
-     * @param statement command
+     * @param statement
+     *            command
      * @return true if the statement is ADMIN COMMAND
-     * @throws IOException exception
+     * @throws IOException
+     *             exception
      */
     private boolean execAdminCommand(String statement) throws IOException {
         if (!username.get().equals("root")) {
@@ -330,7 +332,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
     public TSExecuteBatchStatementResp executeBatchStatement(TSExecuteBatchStatementReq req) throws TException {
         try {
             if (!checkLogin()) {
-                LOGGER.info("{}: Not login.", TsFileDBConstant.GLOBAL_DB_NAME);
+                LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
                 return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login", null);
             }
             List<String> statements = req.getStatements();
@@ -347,9 +349,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
                                 result);
                     }
                     TSExecuteStatementResp resp = ExecuteUpdateStatement(physicalPlan);
-                    if (resp.getStatus().getStatusCode().equals(TS_StatusCode.SUCCESS_STATUS)) {
+                    if(resp.getStatus().getStatusCode().equals(TS_StatusCode.SUCCESS_STATUS)){
                         result.add(Statement.SUCCESS_NO_INFO);
-                    } else {
+                    }
+                    else{
                         result.add(Statement.EXECUTE_FAILED);
                         isAllSuccessful = false;
                         batchErrorMessage = resp.getStatus().getErrorMessage();
@@ -362,13 +365,13 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
                     batchErrorMessage = errMessage;
                 }
             }
-            if (isAllSuccessful) {
+            if(isAllSuccessful) {
                 return getTSBathExecuteStatementResp(TS_StatusCode.SUCCESS_STATUS, "Execute batch statements successfully", result);
             } else {
                 return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, batchErrorMessage, result);
             }
         } catch (Exception e) {
-            LOGGER.error("{}: error occurs when executing statements", TsFileDBConstant.GLOBAL_DB_NAME, e);
+            LOGGER.error("{}: error occurs when executing statements",TsFileDBConstant.GLOBAL_DB_NAME, e);
             return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage(), null);
         }
     }
@@ -377,7 +380,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
     public TSExecuteStatementResp executeStatement(TSExecuteStatementReq req) throws TException {
         try {
             if (!checkLogin()) {
-                LOGGER.info("{}: Not login.", TsFileDBConstant.GLOBAL_DB_NAME);
+                LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
                 return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login");
             }
             String statement = req.getStatement();
@@ -416,7 +419,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
         try {
             if (!checkLogin()) {
-                LOGGER.info("{}: Not login.", TsFileDBConstant.GLOBAL_DB_NAME);
+                LOGGER.info("{}: Not login.",TsFileDBConstant.GLOBAL_DB_NAME);
                 return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Not login");
             }
 
@@ -424,7 +427,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
             PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement, timeZone.get());
             plan.setProposer(username.get());
             String targetUser = null;
-            if (plan instanceof AuthorPlan)
+            if(plan instanceof AuthorPlan)
                 targetUser = ((AuthorPlan) plan).getUserName();
 
             List<Path> paths;
@@ -451,9 +454,9 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
             List<String> columns = new ArrayList<>();
             // Restore column header of aggregate to func(column_name), only
             // support single aggregate function for now
-            if (plan.getOperatorType() == INDEXQUERY) {
-                columns = ((IndexQueryPlan) plan).getColumnHeader();
-            } else {
+            if (plan.getOperatorType() == INDEXQUERY){
+                columns = ((IndexQueryPlan)plan).getColumnHeader();
+            } else{
                 switch (((MultiQueryPlan) plan).getType()) {
                     case QUERY:
                     case FILL:
@@ -493,7 +496,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
             recordANewQuery(statement, plan);
             return resp;
         } catch (Exception e) {
-            LOGGER.error("{}: Internal server error: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+            LOGGER.error("{}: Internal server error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
             return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
         }
     }
@@ -539,7 +542,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
             return resp;
         } catch (Exception e) {
             //e.printStackTrace();
-            LOGGER.error("{}: Internal server error: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+            LOGGER.error("{}: Internal server error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
             return getTSFetchResultsResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
         }
 
@@ -556,7 +559,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
         } catch (ProcessorException e) {
             return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
         } catch (Exception e) {
-            LOGGER.error("{}: server Internal Error: {}", TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
+            LOGGER.error("{}: server Internal Error: {}",TsFileDBConstant.GLOBAL_DB_NAME, e.getMessage());
             return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, e.getMessage());
         }
     }
@@ -678,7 +681,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
     private boolean checkAuthorization(List<Path> paths, PhysicalPlan plan) throws AuthException {
         String targetUser = null;
-        if (plan instanceof AuthorPlan)
+        if(plan instanceof AuthorPlan)
             targetUser = ((AuthorPlan) plan).getUserName();
         return AuthorityChecker.check(username.get(), paths, plan.getOperatorType(), targetUser);
     }

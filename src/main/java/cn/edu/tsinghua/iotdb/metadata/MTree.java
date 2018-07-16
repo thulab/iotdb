@@ -11,6 +11,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
  * The hierarchical struct of the Metadata Tree is implemented in this class.
  *
  * @author Jinrui Zhang
+ *
  */
 public class MTree implements Serializable {
 
@@ -30,7 +31,8 @@ public class MTree implements Serializable {
     /**
      * add timeseries, it should check whether path exists.
      *
-     * @param timeseriesPath - A full path
+     * @param timeseriesPath
+     *            - A full path
      * @param dataType
      * @param encoding
      * @param args
@@ -88,8 +90,10 @@ public class MTree implements Serializable {
     }
 
     /**
-     * @param path -path not necessarily the whole path (possibly a prefix of a
-     *             sequence)
+     *
+     * @param path
+     *            -path not necessarily the whole path (possibly a prefix of a
+     *            sequence)
      * @return
      */
     public boolean isPathExist(String path) {
@@ -119,8 +123,8 @@ public class MTree implements Serializable {
 
     public boolean isPathExist(MNode node, String path) {
         String[] nodeNames = path.trim().split(separator);
-        if (nodeNames.length < 1) return true;
-        if (!node.hasChild(nodeNames[0])) return false;
+        if(nodeNames.length < 1)return true;
+        if(!node.hasChild(nodeNames[0]))return false;
         MNode cur = node.getChild(nodeNames[0]);
 
         int i = 0;
@@ -215,8 +219,9 @@ public class MTree implements Serializable {
     /**
      * Delete one path from current Metadata Tree
      *
-     * @param path Format: root.node.(node)* Notice: Path must be a complete Path
-     *             from root to leaf node.
+     * @param path
+     *            Format: root.node.(node)* Notice: Path must be a complete Path
+     *            from root to leaf node.
      */
     public String deletePath(String path) throws PathErrorException {
         String[] nodes = path.split(separator);
@@ -421,7 +426,6 @@ public class MTree implements Serializable {
 
     /**
      * Check whether a path is available
-     *
      * @param path
      * @return last node in given path if current path is available
      * @throws PathErrorException
@@ -444,7 +448,7 @@ public class MTree implements Serializable {
 
     private void checkPath(MNode node, String path) throws PathErrorException {
         String[] nodes = path.split(separator);
-        if (nodes.length < 1) return;
+        if (nodes.length < 1)return;
         MNode cur = node;
         for (int i = 0; i < nodes.length; i++) {
             if (!cur.hasChild(nodes[i])) {
@@ -478,7 +482,7 @@ public class MTree implements Serializable {
                 cur = cur.getChild(nodes[i]);
             }
         }
-        if (cur.isStorageLevel()) {
+        if(cur.isStorageLevel()){
             return cur.getDataFileName();
         }
         throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
@@ -498,7 +502,7 @@ public class MTree implements Serializable {
                 cur = cur.getChild(nodes[i]);
             }
         }
-        if (cur.isStorageLevel()) {
+        if(cur.isStorageLevel()){
             return cur.getDataFileName();
         }
         throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
@@ -507,8 +511,7 @@ public class MTree implements Serializable {
     public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
 
         String[] nodes = path.split(separator);
-        if (nodes.length < 1 || !node.hasChild(nodes[0]))
-            throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+        if(nodes.length < 1 || !node.hasChild(nodes[0]))throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
 
         MNode cur = node.getChild(nodes[0]);
         for (int i = 1; i < nodes.length; i++) {
@@ -518,14 +521,14 @@ public class MTree implements Serializable {
             } else if (cur.isStorageLevel()) {
                 return cur.getDataFileName();
             } else {
-                if (!cur.hasChild(nodes[i])) {
+                if(!cur.hasChild(nodes[i])){
                     throw new PathErrorException(
                             String.format("The prefix of the path %s is not one storage group path", path));
                 }
                 cur = cur.getChild(nodes[i]);
             }
         }
-        if (cur.isStorageLevel()) {
+        if(cur.isStorageLevel()){
             return cur.getDataFileName();
         }
         throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
@@ -538,7 +541,7 @@ public class MTree implements Serializable {
      *
      * @param path
      * @return true the prefix of this path is storage group path false the
-     * prefix of this path is not storage group path
+     *         prefix of this path is not storage group path
      */
     public boolean checkFileNameByPath(String path) {
 
@@ -586,13 +589,14 @@ public class MTree implements Serializable {
     }
 
     /**
+     *
      * @param path
      * @return All leaf nodes' path(s) of given path.
      */
     public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
         List<String> ret = new ArrayList<>();
         MNode cur = checkPath(path);
-        for (MNode child : cur.getChildren().values()) {
+        for(MNode child : cur.getChildren().values()) {
             if (child.isLeaf()) {
                 ret.add(new StringBuilder(path).append(".").append(child.getName()).toString());
             }
@@ -679,7 +683,8 @@ public class MTree implements Serializable {
     /**
      * Get all delta objects for given type
      *
-     * @param type DeltaObject Type
+     * @param type
+     *            DeltaObject Type
      * @return a list contains all delta objects for given type
      * @throws PathErrorException
      */
@@ -708,7 +713,8 @@ public class MTree implements Serializable {
     /**
      * Get all ColumnSchemas for given delta object type
      *
-     * @param path A path represented one Delta object
+     * @param path
+     *            A path represented one Delta object
      * @return a list contains all column schema
      * @throws PathErrorException
      */
@@ -724,19 +730,17 @@ public class MTree implements Serializable {
         res.addAll(leafMap.values());
         return res;
     }
-
     /**
      * <p>Get all ColumnSchemas for the filenode path</p>
-     *
      * @param path
      * @return ArrayList<ColumnSchema> The list of the schema
      */
-    public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path) {
+    public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path){
 
         String nodes[] = path.split(separator);
         HashMap<String, ColumnSchema> leafMap = new HashMap<>();
         MNode cur = getRoot();
-        for (int i = 1; i < nodes.length; i++) {
+        for(int i = 1;i<nodes.length;i++){
             cur = cur.getChild(nodes[i]);
         }
         // cur is the storage group node
@@ -746,19 +750,19 @@ public class MTree implements Serializable {
         return res;
     }
 
-    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path) {
+    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path){
         String nodes[] = path.split(separator);
         MNode cur = getRoot();
-        for (int i = 1; i < nodes.length; i++) {
+        for(int i = 1;i<nodes.length;i++){
             cur = cur.getChild(nodes[i]);
         }
         return cur.getSchemaMap();
     }
 
-    public Map<String, Integer> getNumSchemaMapForOneFileNode(String path) {
+    public Map<String, Integer> getNumSchemaMapForOneFileNode(String path){
         String nodes[] = path.split(separator);
         MNode cur = getRoot();
-        for (int i = 1; i < nodes.length; i++) {
+        for(int i = 1;i<nodes.length;i++){
             cur = cur.getChild(nodes[i]);
         }
         return cur.getNumSchemaMap();

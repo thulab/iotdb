@@ -10,6 +10,7 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
  * Metadata Graph consists of one {@code MTree} and several {@code PTree}
  *
  * @author Jinrui Zhang
+ *
  */
 public class MGraph implements Serializable {
     private static final long serialVersionUID = 8214849219614352834L;
@@ -25,11 +26,10 @@ public class MGraph implements Serializable {
 
     /**
      * Add a {@code PTree} to current {@code MGraph}
-     *
      * @throws MetadataArgsErrorException
      */
     public void addAPTree(String pTreeRootName) throws MetadataArgsErrorException {
-        if (pTreeRootName.toLowerCase().equals("root")) {
+        if(pTreeRootName.toLowerCase().equals("root")){
             throw new MetadataArgsErrorException("Property Tree's root name should not be 'root'");
         }
         PTree pTree = new PTree(pTreeRootName, mTree);
@@ -72,7 +72,6 @@ public class MGraph implements Serializable {
 
     /**
      * Delete path in current MGraph.
-     *
      * @param path a path belongs to MTree or PTree
      * @throws PathErrorException
      */
@@ -119,7 +118,6 @@ public class MGraph implements Serializable {
 
     /**
      * Set storage level for current Metadata Tree.
-     *
      * @param path Format: root.node.(node)*
      * @throws PathErrorException
      */
@@ -158,9 +156,8 @@ public class MGraph implements Serializable {
 
     /**
      * Get all DeltaObject type in current Metadata Tree
-     *
      * @return a HashMap contains all distinct DeltaObject type separated by
-     * DeltaObject Type
+     *         DeltaObject Type
      */
     public Map<String, List<ColumnSchema>> getSchemaForAllType() throws PathErrorException {
         Map<String, List<ColumnSchema>> res = new HashMap<>();
@@ -189,7 +186,6 @@ public class MGraph implements Serializable {
 
     /**
      * Get the full Metadata info.
-     *
      * @return A {@code Metadata} instance which stores all metadata info
      */
     public Metadata getMetadata() throws PathErrorException {
@@ -209,7 +205,6 @@ public class MGraph implements Serializable {
 
     /**
      * Get all ColumnSchemas for given delta object type
-     *
      * @param path A path represented one Delta object
      * @return a list contains all column schema
      */
@@ -219,25 +214,23 @@ public class MGraph implements Serializable {
 
     /**
      * <p>Get all ColumnSchemas for the filenode path</p>
-     *
      * @param path
      * @return ArrayList<ColumnSchema> The list of the schema
      */
-    public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path) {
+    public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path){
         return mTree.getSchemaForOneFileNode(path);
     }
 
-    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path) {
+    public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path){
         return mTree.getSchemaMapForOneFileNode(path);
     }
 
-    public Map<String, Integer> getNumSchemaMapForOneFileNode(String path) {
+    public Map<String, Integer> getNumSchemaMapForOneFileNode(String path){
         return mTree.getNumSchemaMapForOneFileNode(path);
     }
 
     /**
      * Calculate the count of storage-level nodes included in given path
-     *
      * @return The total count of storage-level nodes.
      */
     public int getFileCountForOneType(String path) throws PathErrorException {
@@ -261,7 +254,7 @@ public class MGraph implements Serializable {
         return mTree.getFileNameByPathWithCheck(node, path);
     }
 
-    public boolean checkFileNameByPath(String path) {
+    public boolean checkFileNameByPath(String path){
         return mTree.checkFileNameByPath(path);
     }
 
@@ -286,7 +279,6 @@ public class MGraph implements Serializable {
 
     /**
      * Extract the DeltaObjectId from given path
-     *
      * @return String represents the DeltaObjectId
      */
     public String getDeltaObjectTypeByPath(String path) throws PathErrorException {

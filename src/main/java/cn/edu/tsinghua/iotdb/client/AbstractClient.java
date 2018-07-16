@@ -2,7 +2,6 @@ package cn.edu.tsinghua.iotdb.client;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.tool.ImportCsv;
 
@@ -93,14 +92,14 @@ public abstract class AbstractClient {
 
     protected static Set<String> keywordSet = new HashSet<>();
 
-    protected static void init() {
-        keywordSet.add("-" + HOST_ARGS);
-        keywordSet.add("-" + HELP_ARGS);
-        keywordSet.add("-" + PORT_ARGS);
-        keywordSet.add("-" + PASSWORD_ARGS);
-        keywordSet.add("-" + USERNAME_ARGS);
-        keywordSet.add("-" + ISO8601_ARGS);
-        keywordSet.add("-" + MAX_PRINT_ROW_COUNT_ARGS);
+    protected static void init(){
+        keywordSet.add("-"+HOST_ARGS);
+        keywordSet.add("-"+HELP_ARGS);
+        keywordSet.add("-"+PORT_ARGS);
+        keywordSet.add("-"+PASSWORD_ARGS);
+        keywordSet.add("-"+USERNAME_ARGS);
+        keywordSet.add("-"+ISO8601_ARGS);
+        keywordSet.add("-"+MAX_PRINT_ROW_COUNT_ARGS);
 
         AGGREGRATE_TIME_LIST.add(AggregationConstant.MAX_TIME);
         AGGREGRATE_TIME_LIST.add(AggregationConstant.MIN_TIME);
@@ -233,7 +232,7 @@ public abstract class AbstractClient {
         switch (timeFormat) {
             case "long":
             case "number":
-                return timestamp + "";
+                return timestamp+"";
             case "default":
             case "iso8601":
                 return new DateTime(timestamp, timeZone).toString(ISODateTimeFormat.dateHourMinuteSecondMillis());
@@ -245,12 +244,12 @@ public abstract class AbstractClient {
     protected static String checkRequiredArg(String arg, String name, CommandLine commandLine, boolean isRequired, String defaultValue) throws ArgsErrorException {
         String str = commandLine.getOptionValue(arg);
         if (str == null) {
-            if (isRequired) {
+            if(isRequired) {
                 String msg = String.format("%s: Required values for option '%s' not provided", IOTDB_CLI_PREFIX, name);
                 System.out.println(msg);
                 System.out.println("Use -help for more information");
                 throw new ArgsErrorException(msg);
-            } else if (defaultValue == null) {
+            } else if (defaultValue == null){
                 String msg = String.format("%s: Required values for option '%s' is null", IOTDB_CLI_PREFIX, name);
                 throw new ArgsErrorException(msg);
             } else {
@@ -283,11 +282,11 @@ public abstract class AbstractClient {
         formatTime = "%" + maxTimeLength + "s|";
     }
 
-    private static void setFetchSize(String fetchSizeString) {
+    private static void setFetchSize(String fetchSizeString){
         fetchSize = Integer.parseInt(fetchSizeString.trim());
     }
 
-    protected static void setMaxDisplayNumber(String maxDisplayNum) {
+    protected static void setMaxDisplayNumber(String maxDisplayNum){
         maxPrintRowCount = Integer.parseInt(maxDisplayNum.trim());
         if (maxPrintRowCount < 0) {
             maxPrintRowCount = Integer.MAX_VALUE;
@@ -321,7 +320,8 @@ public abstract class AbstractClient {
         System.out.println(blockLine);
     }
 
-    protected static void printName(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData, boolean isShowTs) throws SQLException {
+    protected static void printName(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData,
+                                    boolean isShowTs) throws SQLException {
         System.out.print("|");
         if (isShowTs) {
             for (int i = 1; i <= colCount; i++) {
@@ -342,32 +342,32 @@ public abstract class AbstractClient {
 
     protected static String[] checkPasswordArgs(String[] args) {
         int index = -1;
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-" + PASSWORD_ARGS)) {
+        for(int i = 0; i < args.length; i++){
+            if(args[i].equals("-"+PASSWORD_ARGS)){
                 index = i;
                 break;
             }
         }
-        if (index > 0) {
-            if ((index + 1 >= args.length) || (index + 1 < args.length && keywordSet.contains(args[index + 1]))) {
+        if(index > 0){
+            if((index+1 >= args.length) || (index+1 < args.length && keywordSet.contains(args[index+1]))){
                 return ArrayUtils.remove(args, index);
             }
         }
         return args;
     }
 
-    protected static void displayLogo() {
+    protected static void displayLogo(){
         System.out.println(
                 " _____       _________  ______   ______    \n" +
                         "|_   _|     |  _   _  ||_   _ `.|_   _ \\   \n" +
                         "  | |   .--.|_/ | | \\_|  | | `. \\ | |_) |  \n" +
                         "  | | / .'`\\ \\  | |      | |  | | |  __'.  \n" +
                         " _| |_| \\__. | _| |_    _| |_.' /_| |__) | \n" +
-                        "|_____|'.__.' |_____|  |______.'|_______/  version " + TsFileDBConstant.VERSION + "\n" +
+                        "|_____|'.__.' |_____|  |______.'|_______/  version "+TsFileDBConstant.VERSION+"\n" +
                         "                                           \n");
     }
 
-    protected static OPERATION_RESULT handleInputInputCmd(String cmd, TsfileConnection connection) {
+    protected static OPERATION_RESULT handleInputInputCmd(String cmd, TsfileConnection connection){
         String specialCmd = cmd.toLowerCase().trim();
 
         if (specialCmd.equals(QUIT_COMMAND) || specialCmd.equals(EXIT_COMMAND)) {
@@ -383,9 +383,9 @@ public abstract class AbstractClient {
             return OPERATION_RESULT.CONTINUE_OPER;
         }
 
-        if (specialCmd.startsWith(SET_TIMESTAMP_DISPLAY)) {
+        if(specialCmd.startsWith(SET_TIMESTAMP_DISPLAY)){
             String[] values = specialCmd.split("=");
-            if (values.length != 2) {
+            if(values.length != 2){
                 System.out.println(String.format("Time display format error, please input like %s=ISO8601", SET_TIMESTAMP_DISPLAY));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
@@ -395,13 +395,13 @@ public abstract class AbstractClient {
                 System.out.println(String.format("time display format error, %s", e.getMessage()));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
-            System.out.println("Time display type has set to " + cmd.split("=")[1].trim());
+            System.out.println("Time display type has set to "+cmd.split("=")[1].trim());
             return OPERATION_RESULT.CONTINUE_OPER;
         }
 
-        if (specialCmd.startsWith(SET_TIME_ZONE)) {
+        if(specialCmd.startsWith(SET_TIME_ZONE)){
             String[] values = specialCmd.split("=");
-            if (values.length != 2) {
+            if(values.length != 2){
                 System.out.println(String.format("Time zone format error, please input like %s=+08:00", SET_TIME_ZONE));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
@@ -411,13 +411,13 @@ public abstract class AbstractClient {
                 System.out.println(String.format("Time zone format error, %s", e.getMessage()));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
-            System.out.println("Time zone has set to " + values[1].trim());
+            System.out.println("Time zone has set to "+values[1].trim());
             return OPERATION_RESULT.CONTINUE_OPER;
         }
 
-        if (specialCmd.startsWith(SET_FETCH_SIZE)) {
+        if(specialCmd.startsWith(SET_FETCH_SIZE)){
             String[] values = specialCmd.split("=");
-            if (values.length != 2) {
+            if(values.length != 2){
                 System.out.println(String.format("Fetch size format error, please input like %s=10000", SET_FETCH_SIZE));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
@@ -427,13 +427,13 @@ public abstract class AbstractClient {
                 System.out.println(String.format("Fetch size format error, %s", e.getMessage()));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
-            System.out.println("Fetch size has set to " + values[1].trim());
+            System.out.println("Fetch size has set to "+values[1].trim());
             return OPERATION_RESULT.CONTINUE_OPER;
         }
 
-        if (specialCmd.startsWith(SET_MAX_DISPLAY_NUM)) {
+        if(specialCmd.startsWith(SET_MAX_DISPLAY_NUM)) {
             String[] values = specialCmd.split("=");
-            if (values.length != 2) {
+            if(values.length != 2){
                 System.out.println(String.format("Max display number format error, please input like %s = 10000", SET_MAX_DISPLAY_NUM));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
@@ -443,30 +443,30 @@ public abstract class AbstractClient {
                 System.out.println(String.format("Max display number format error, %s", e.getMessage()));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
-            System.out.println("Max display number has set to " + values[1].trim());
+            System.out.println("Max display number has set to "+values[1].trim());
             return OPERATION_RESULT.CONTINUE_OPER;
         }
 
-        if (specialCmd.startsWith(SHOW_TIMEZONE)) {
+        if(specialCmd.startsWith(SHOW_TIMEZONE)){
             try {
-                System.out.println("Current time zone: " + connection.getTimeZone());
+                System.out.println("Current time zone: "+connection.getTimeZone());
             } catch (Exception e) {
-                System.out.println("Cannot get time zone from server side because: " + e.getMessage());
+                System.out.println("Cannot get time zone from server side because: "+e.getMessage());
             }
             return OPERATION_RESULT.CONTINUE_OPER;
         }
-        if (specialCmd.startsWith(SHOW_TIMESTAMP_DISPLAY)) {
-            System.out.println("Current time format: " + timeFormat);
+        if(specialCmd.startsWith(SHOW_TIMESTAMP_DISPLAY)){
+            System.out.println("Current time format: "+timeFormat);
             return OPERATION_RESULT.CONTINUE_OPER;
         }
-        if (specialCmd.startsWith(SHOW_FETCH_SIZE)) {
-            System.out.println("Current fetch size: " + fetchSize);
+        if(specialCmd.startsWith(SHOW_FETCH_SIZE)){
+            System.out.println("Current fetch size: "+fetchSize);
             return OPERATION_RESULT.CONTINUE_OPER;
         }
 
-        if (specialCmd.startsWith(IMPORT_CMD)) {
+        if(specialCmd.startsWith(IMPORT_CMD)){
             String[] values = specialCmd.split(" ");
-            if (values.length != 2) {
+            if(values.length != 2){
                 System.out.println(String.format("Please input like: import /User/myfile. Noted that your file path cannot contain any space character)"));
                 return OPERATION_RESULT.CONTINUE_OPER;
             }
@@ -505,11 +505,11 @@ public abstract class AbstractClient {
             }
         }
         long costTime = System.currentTimeMillis() - startTime;
-        System.out.println(String.format("It costs %.3fs", costTime / 1000.0));
+        System.out.println(String.format("It costs %.3fs", costTime/1000.0));
         return OPERATION_RESULT.NO_OPER;
     }
 
-    enum OPERATION_RESULT {
+    enum OPERATION_RESULT{
         RETURN_OPER, CONTINUE_OPER, NO_OPER
     }
 }

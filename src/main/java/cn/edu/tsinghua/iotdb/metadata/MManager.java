@@ -75,8 +75,7 @@ public class MManager {
 
         mNodeCache = new RandomDeleteCache<String, MNode>(cacheSize) {
             @Override
-            public void beforeRemove(MNode object) throws CacheException {
-            }
+            public void beforeRemove(MNode object) throws CacheException {}
 
             @Override
             public MNode loadObjectByKey(String key) throws CacheException {
@@ -669,9 +668,9 @@ public class MManager {
      */
     public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
         lock.readLock().lock();
-        try {
+        try{
             return mGraph.getLeafNodePathInNextLevel(path);
-        } finally {
+        }finally {
             lock.readLock().unlock();
         }
     }
@@ -1006,7 +1005,7 @@ public class MManager {
         }
     }
 
-    public static class PathCheckRet {
+    public static class PathCheckRet{
         private boolean successfully;
         private TSDataType dataType;
 
