@@ -74,7 +74,7 @@ public abstract class AbstractClient {
 	protected static final int ISO_DATETIME_LEN = 23;
 	protected static int maxTimeLength = ISO_DATETIME_LEN;
 	protected static int maxValueLength = 15;
-    protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// for sql 'show timeseries <path>' and 'show storage group'
+    	protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// for sql 'show timeseries <path>' and 'show storage group'
 	protected static String formatTime = "%" + maxTimeLength + "s|";
 	protected static String formatValue = "%" + maxValueLength + "s|";
 	
@@ -107,97 +107,97 @@ public abstract class AbstractClient {
 
 	public static void output(ResultSet res, boolean printToConsole, String statement, DateTimeZone timeZone) throws SQLException {
 		int cnt = 0;
-        int displayCnt = 0;
-        boolean printTimestamp = true;
-        boolean printHeader = false;
-        ResultSetMetaData resultSetMetaData = res.getMetaData();
+		int displayCnt = 0;
+		boolean printTimestamp = true;
+		boolean printHeader = false;
+		ResultSetMetaData resultSetMetaData = res.getMetaData();
 
-        int colCount = resultSetMetaData.getColumnCount();
+		int colCount = resultSetMetaData.getColumnCount();
 
-        boolean isShow = res instanceof TsfileMetadataResultSet;
-        if (!isShow && resultSetMetaData.getColumnTypeName(0) != null) {
-            printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
-        }
+		boolean isShow = res instanceof TsfileMetadataResultSet;
+		if (!isShow && resultSetMetaData.getColumnTypeName(0) != null) {
+		    printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
+		}
 
-        // Output values
-        while (res.next()) {
-            // Output Labels
-            if (printToConsole) {
-                if (!printHeader) {
-                    printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
-                    printName(printTimestamp, colCount, resultSetMetaData, isShow);
-                    printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
-                    printHeader = true;
-                }
+		// Output values
+		while (res.next()) {
+		    // Output Labels
+		    if (printToConsole) {
+			if (!printHeader) {
+			    printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+			    printName(printTimestamp, colCount, resultSetMetaData, isShow);
+			    printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+			    printHeader = true;
+			}
 
-                if (isShow) { // 'show timeseries <path>' or 'show storage group' metadata results
-                    System.out.print("|");
-                    for (int i = 1; i <= colCount; i++) {
-                        formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
-                        System.out.printf(formatValue, String.valueOf(res.getString(i)));
-                    }
-                    System.out.printf("\n");
-                } else { // queried data results
-                    if (displayCnt < maxPrintRowCount) { // NOTE displayCnt only works on queried data results
-                        System.out.print("|");
-                        if (printTimestamp) {
-                            System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
-                        }
-                        for (int i = 2; i <= colCount; i++) {
-                            boolean flag = false;
-                            for (String timeStr : AGGREGRATE_TIME_LIST) {
-                                if (resultSetMetaData.getColumnLabel(i).toUpperCase().contains(timeStr.toUpperCase())) {
-                                    flag = true;
-                                    break;
-                                }
-                            }
-                            if (flag) {
-                                try {
-                                    System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
-                                } catch (Exception e) {
-                                    System.out.printf(formatValue, "null");
-                                }
-                            } else {
-                                System.out.printf(formatValue, String.valueOf(res.getString(i)));
-                            }
-                        }
-                        System.out.printf("\n");
-                        displayCnt++;
-                    }
-                }
-            }
+			if (isShow) { // 'show timeseries <path>' or 'show storage group' metadata results
+			    System.out.print("|");
+			    for (int i = 1; i <= colCount; i++) {
+				formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
+				System.out.printf(formatValue, String.valueOf(res.getString(i)));
+			    }
+			    System.out.printf("\n");
+			} else { // queried data results
+			    if (displayCnt < maxPrintRowCount) { // NOTE displayCnt only works on queried data results
+				System.out.print("|");
+				if (printTimestamp) {
+				    System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
+				}
+				for (int i = 2; i <= colCount; i++) {
+				    boolean flag = false;
+				    for (String timeStr : AGGREGRATE_TIME_LIST) {
+					if (resultSetMetaData.getColumnLabel(i).toUpperCase().contains(timeStr.toUpperCase())) {
+					    flag = true;
+					    break;
+					}
+				    }
+				    if (flag) {
+					try {
+					    System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+					} catch (Exception e) {
+					    System.out.printf(formatValue, "null");
+					}
+				    } else {
+					System.out.printf(formatValue, String.valueOf(res.getString(i)));
+				    }
+				}
+				System.out.printf("\n");
+				displayCnt++;
+			    }
+			}
+		    }
 
-            cnt++;
+		    cnt++;
 
-            if (!printToConsole && cnt % 10000 == 0) {
-                System.out.println(cnt);
-            }
-        }
+		    if (!printToConsole && cnt % 10000 == 0) {
+			System.out.println(cnt);
+		    }
+		}
 
-        if (printToConsole) {
-            if (!printHeader) {
-                printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
-                printName(printTimestamp, colCount, resultSetMetaData, isShow);
-                printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
-            } else {
-                printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
-            }
-            if (displayCnt == maxPrintRowCount) {
-                System.out.println(String.format("Reach maxPrintRowCount = %s lines", maxPrintRowCount));
-            }
-        }
+		if (printToConsole) {
+		    if (!printHeader) {
+			printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+			printName(printTimestamp, colCount, resultSetMetaData, isShow);
+			printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+		    } else {
+			printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+		    }
+		    if (displayCnt == maxPrintRowCount) {
+			System.out.println(String.format("Reach maxPrintRowCount = %s lines", maxPrintRowCount));
+		    }
+		}
 
-        System.out.println(StringUtils.repeat('-', 40));
-        if (isShow) {
-            int type = res.getType();
-            if (type == 0) { // storage group
-                System.out.println("Total storage group number = " + cnt);
-            } else if (type == 1) { // show timeseries <path>
-                System.out.println("Total timeseries number = " + cnt);
-            }
-        } else {
-            System.out.println("Total line number = " + cnt);
-        }
+		System.out.println(StringUtils.repeat('-', 40));
+		if (isShow) {
+		    int type = res.getType();
+		    if (type == 0) { // storage group
+			System.out.println("Total storage group number = " + cnt);
+		    } else if (type == 1) { // show timeseries <path>
+			System.out.println("Total timeseries number = " + cnt);
+		    }
+		} else {
+		    System.out.println("Total line number = " + cnt);
+		}
 	}
 
 	protected static Options createOptions() {
