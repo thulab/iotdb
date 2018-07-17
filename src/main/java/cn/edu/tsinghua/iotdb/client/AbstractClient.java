@@ -74,6 +74,7 @@ public abstract class AbstractClient {
 	protected static final int ISO_DATETIME_LEN = 23;
 	protected static int maxTimeLength = ISO_DATETIME_LEN;
 	protected static int maxValueLength = 15;
+    	protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// for sql 'show timeseries <path>' and 'show storage group'
 	protected static String formatTime = "%" + maxTimeLength + "s|";
 	protected static String formatValue = "%" + maxValueLength + "s|";
 	
@@ -109,63 +110,61 @@ public abstract class AbstractClient {
 		int displayCnt = 0;
 		boolean printTimestamp = true;
 		boolean printHeader = false;
-		ResultSetMetaData resultSetMetaData = null;
-		int colCount;
+		ResultSetMetaData resultSetMetaData = res.getMetaData();
+
+		int colCount = resultSetMetaData.getColumnCount();
 
 		boolean isShow = res instanceof TsfileMetadataResultSet;
-		if (isShow) { // show timeseries or storage group
-			colCount = ((TsfileMetadataResultSet) res).getColCount();
-		} else { // query
-			resultSetMetaData = res.getMetaData();
-			colCount = resultSetMetaData.getColumnCount();
-			if (res.getMetaData().getColumnTypeName(0) != null) {
-				printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
-			}
+		if (!isShow && resultSetMetaData.getColumnTypeName(0) != null) {
+			printTimestamp = !res.getMetaData().getColumnTypeName(0).toUpperCase().equals(NEED_NOT_TO_PRINT_TIMESTAMP);
 		}
 
 		// Output values
 		while (res.next()) {
 			// Output Labels
-			if (printToConsole) {
+		    	if (printToConsole) {
 				if (!printHeader) {
-					printBlockLine(printTimestamp, colCount, res, isShow);
-					printName(printTimestamp, colCount, res, isShow);
-					printBlockLine(printTimestamp, colCount, res, isShow);
-					printHeader = true;
+			    		printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+			    		printName(printTimestamp, colCount, resultSetMetaData, isShow);
+			    		printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+			    		printHeader = true;
 				}
-				System.out.print("|");
-				if (isShow) {
-					for (int i = 1; i <= colCount; i++) {
-						formatValue = "%" + ((TsfileMetadataResultSet) res).getMaxValueLength(i) + "s|";
+
+				if (isShow) { // 'show timeseries <path>' or 'show storage group' metadata results
+			    		System.out.print("|");
+			    		for (int i = 1; i <= colCount; i++) {
+						formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
 						System.out.printf(formatValue, String.valueOf(res.getString(i)));
-					}
-				} else {
-					if (displayCnt < maxPrintRowCount) {
+			    		}
+			    		System.out.printf("\n");
+				} else { // queried data results
+			    		if (displayCnt < maxPrintRowCount) { // NOTE displayCnt only works on queried data results
+						System.out.print("|");
 						if (printTimestamp) {
-							System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
+				    			System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), timeZone));
 						}
 						for (int i = 2; i <= colCount; i++) {
-							boolean flag = false;
-							for (String timeStr : AGGREGRATE_TIME_LIST) {
+				    			boolean flag = false;
+				    			for (String timeStr : AGGREGRATE_TIME_LIST) {
 								if (resultSetMetaData.getColumnLabel(i).toUpperCase().contains(timeStr.toUpperCase())) {
-									flag = true;
-									break;
+					    				flag = true;
+					    				break;
 								}
-							}
-							if (flag) {
+				    			}
+				    			if (flag) {
 								try {
-									System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
+					    				System.out.printf(formatValue, formatDatetime(res.getLong(i), timeZone));
 								} catch (Exception e) {
-									System.out.printf(formatValue, "null");
+					    				System.out.printf(formatValue, "null");
 								}
-							} else {
+				    			} else {
 								System.out.printf(formatValue, String.valueOf(res.getString(i)));
-							}
+				    			}
 						}
+						System.out.printf("\n");
+						displayCnt++;
 					}
-					displayCnt++;
 				}
-				System.out.printf("\n");
 			}
 
 			cnt++;
@@ -177,28 +176,27 @@ public abstract class AbstractClient {
 
 		if (printToConsole) {
 			if (!printHeader) {
-				printBlockLine(printTimestamp, colCount, res, isShow);
-				printName(printTimestamp, colCount, res, isShow);
-				printBlockLine(printTimestamp, colCount, res, isShow);
-			} else {
-				printBlockLine(printTimestamp, colCount, res, isShow);
-			}
-
-			if (displayCnt == maxPrintRowCount) {
+				printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+				printName(printTimestamp, colCount, resultSetMetaData, isShow);
+				printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+		    	} else {
+				printBlockLine(printTimestamp, colCount, resultSetMetaData, isShow);
+		    	}
+		    	if (displayCnt == maxPrintRowCount) {
 				System.out.println(String.format("Reach maxPrintRowCount = %s lines", maxPrintRowCount));
-			}
+		    	}
 		}
 
 		System.out.println(StringUtils.repeat('-', 40));
 		if (isShow) {
-			int type = ((TsfileMetadataResultSet) res).getType();
-			if (type == 0) { // storage group
-				System.out.println("storage group number = " + cnt);
-			} else if (type == 2) { // show timeseries
-				System.out.println("timeseries number = " + cnt);
-			}
+			int type = res.getType();
+		    	if (type == 0) { // storage group
+				System.out.println("Total storage group number = " + cnt);
+		    	} else if (type == 1) { // show timeseries <path>
+				System.out.println("Total timeseries number = " + cnt);
+		    	}
 		} else {
-			System.out.println("Total line number = " + cnt);
+		    	System.out.println("Total line number = " + cnt);
 		}
 	}
 
@@ -295,17 +293,17 @@ public abstract class AbstractClient {
 		}
 	}
 
-	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
+	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData, boolean isShowTs) throws SQLException {
 		StringBuilder blockLine = new StringBuilder();
 		if (isShowTs) {
 			blockLine.append("+");
 			for (int i = 1; i <= colCount; i++) {
-				blockLine.append(StringUtils.repeat('-', ((TsfileMetadataResultSet) res).getMaxValueLength(i))).append("+");
+				blockLine.append(StringUtils.repeat('-', maxValueLengthForShow[i - 1])).append("+");
 			}
 		} else {
 			int tmp = Integer.MIN_VALUE;
 			for (int i = 1; i <= colCount; i++) {
-				int len = res.getMetaData().getColumnLabel(i).length();
+				int len = resultSetMetaData.getColumnLabel(i).length();
 				tmp = tmp > len ? tmp : len;
 			}
 			maxValueLength = tmp;
@@ -321,13 +319,12 @@ public abstract class AbstractClient {
 		System.out.println(blockLine);
 	}
 
-	protected static void printName(boolean printTimestamp, int colCount, ResultSet res, boolean isShowTs) throws SQLException {
+	protected static void printName(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData, boolean isShowTs) throws SQLException {
 		System.out.print("|");
 		if (isShowTs) {
-			TsfileMetadataResultSet metaRes = (TsfileMetadataResultSet) res;
 			for (int i = 1; i <= colCount; i++) {
-				formatValue = "%" + metaRes.getMaxValueLength(i) + "s|";
-				System.out.printf(formatValue, metaRes.getShowLabels()[i - 1]);
+				formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
+				System.out.printf(formatValue, resultSetMetaData.getColumnName(i));
 			}
 		} else {
 			formatValue = "%" + maxValueLength + "s|";
@@ -335,7 +332,7 @@ public abstract class AbstractClient {
 				System.out.printf(formatTime, TIMESTAMP_STR);
 			}
 			for (int i = 2; i <= colCount; i++) {
-				System.out.printf(formatValue, res.getMetaData().getColumnLabel(i));
+				System.out.printf(formatValue, resultSetMetaData.getColumnLabel(i));
 			}
 		}
 		System.out.printf("\n");

@@ -602,10 +602,22 @@ public class MManager {
      * return a HashMap contains all the paths separated by File Name
      */
     public HashMap<String, ArrayList<String>> getAllPathGroupByFileName(String path) throws PathErrorException {
-
         lock.readLock().lock();
         try {
             return mGraph.getAllPathGroupByFilename(path);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * return in batch a HashMap contains all the paths separated by File Name
+     */
+    public HashMap<String, ArrayList<String>> getAllPathGroupByFileName(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+
+        lock.readLock().lock();
+        try {
+            return mGraph.getAllPathGroupByFilename(path, batchFetchIdx, batchFetchSize);
         } finally {
             lock.readLock().unlock();
         }
@@ -621,6 +633,24 @@ public class MManager {
         try {
             ArrayList<String> res = new ArrayList<>();
             HashMap<String, ArrayList<String>> pathsGroupByFilename = getAllPathGroupByFileName(path);
+            for (ArrayList<String> ps : pathsGroupByFilename.values()) {
+                res.addAll(ps);
+            }
+            return res;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * return in batch all paths for given path if the path is abstract.Or return the
+     * path itself.
+     */
+    public ArrayList<String> getPaths(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            ArrayList<String> res = new ArrayList<>();
+            HashMap<String, ArrayList<String>> pathsGroupByFilename = getAllPathGroupByFileName(path, batchFetchIdx, batchFetchSize);
             for (ArrayList<String> ps : pathsGroupByFilename.values()) {
                 res.addAll(ps);
             }
