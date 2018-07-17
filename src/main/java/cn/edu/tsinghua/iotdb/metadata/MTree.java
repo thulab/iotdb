@@ -575,18 +575,18 @@ public class MTree implements Serializable {
 		return paths;
 	}
     
-    private int batchFetchCnt = 0;
+    	private int batchFetchCnt = 0;
 
-    public HashMap<String, ArrayList<String>> getAllPath(String pathReg, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
-        HashMap<String, ArrayList<String>> paths = new HashMap<>();
-        String[] nodes = pathReg.split(separator);
-        if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
-            throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
-        }
-        batchFetchCnt = 0;
-        findPath(getRoot(), nodes, 1, "", paths, batchFetchIdx, batchFetchSize);
-        return paths;
-    }
+    	public HashMap<String, ArrayList<String>> getAllPath(String pathReg, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+        	HashMap<String, ArrayList<String>> paths = new HashMap<>();
+        	String[] nodes = pathReg.split(separator);
+        	if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
+            		throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
+        	}
+        	batchFetchCnt = 0;
+        	findPath(getRoot(), nodes, 1, "", paths, batchFetchIdx, batchFetchSize);
+        	return paths;
+    	}
 
 	/**
 	 *
@@ -670,15 +670,15 @@ public class MTree implements Serializable {
 		return res;
 	}
 
-    private void findStorageGroup(MNode node, String path, HashSet<String> res) {
-        if (node.isStorageLevel()) {
-            res.add(path);
-            return;
-        }
-        for (MNode childNode : node.getChildren().values()) {
-            findStorageGroup(childNode, path + "." + childNode.toString(), res);
-        }
-    }
+    	private void findStorageGroup(MNode node, String path, HashSet<String> res) {
+        	if (node.isStorageLevel()) {
+            	res.add(path);
+            	return;
+        	}
+        	for (MNode childNode : node.getChildren().values()) {
+            		findStorageGroup(childNode, path + "." + childNode.toString(), res);
+        	}
+    	}
 
 	/**
 	 * Get all delta objects for given type
@@ -812,50 +812,50 @@ public class MTree implements Serializable {
 		return;
 	}
     
-     private boolean checkIdx(int idx, int batchFetchIdx, int batchFetchSize) {
-        if (idx >= batchFetchIdx && idx < batchFetchIdx + batchFetchSize) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+     	private boolean checkIdx(int idx, int batchFetchIdx, int batchFetchSize) {
+        	if (idx >= batchFetchIdx && idx < batchFetchIdx + batchFetchSize) {
+            		return true;
+        	} else {
+            		return false;
+        	}
+    	}
 
-    private void findPath(MNode node, String[] nodes, int idx, String parent,
+    	private void findPath(MNode node, String[] nodes, int idx, String parent,
                           HashMap<String, ArrayList<String>> paths, int batchFetchIdx, int batchFetchSize) {
-        if (batchFetchCnt >= batchFetchIdx + batchFetchSize) {
-            return;
-        }
-        if (node.isLeaf()) {
-            if (nodes.length <= idx && checkIdx(batchFetchCnt, batchFetchIdx, batchFetchSize)) {
-                String fileName = node.getDataFileName();
-                String nodePath = parent + node;
-                putAPath(paths, fileName, nodePath);
-            }
-            batchFetchCnt++;
-            return;
-        }
-        String nodeReg;
-        if (idx >= nodes.length) {
-            nodeReg = "*";
-        } else {
-            nodeReg = nodes[idx];
-        }
+        	if (batchFetchCnt >= batchFetchIdx + batchFetchSize) {
+            	return;
+        	}
+        	if (node.isLeaf()) {
+            		if (nodes.length <= idx && checkIdx(batchFetchCnt, batchFetchIdx, batchFetchSize)) {
+                		String fileName = node.getDataFileName();
+                		String nodePath = parent + node;
+                		putAPath(paths, fileName, nodePath);
+            		}
+            		batchFetchCnt++;
+            		return;
+        	}
+        	String nodeReg;
+        	if (idx >= nodes.length) {
+            		nodeReg = "*";
+        	} else {
+            		nodeReg = nodes[idx];
+        	}
 
-        if (!nodeReg.equals("*")) {
-            if (!node.hasChild(nodeReg)) {
+        	if (!nodeReg.equals("*")) {
+            		if (!node.hasChild(nodeReg)) {
 
-            } else {
-                findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".",
-                        paths, batchFetchIdx, batchFetchSize);
-            }
-        } else {
-            for (MNode child : node.getChildren().values()) {
-                findPath(child, nodes, idx + 1, parent + node.getName() + ".",
-                        paths, batchFetchIdx, batchFetchSize);
-            }
-        }
-        return;
-    }
+            		} else {
+                	findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".",
+                        	paths, batchFetchIdx, batchFetchSize);
+            		}
+        	} else {
+            		for (MNode child : node.getChildren().values()) {
+                		findPath(child, nodes, idx + 1, parent + node.getName() + ".",
+                        		paths, batchFetchIdx, batchFetchSize);
+            		}
+        	}
+        	return;
+    	}
 
 	private void putAPath(HashMap<String, ArrayList<String>> paths, String fileName, String nodePath) {
 		if (paths.containsKey(fileName)) {
