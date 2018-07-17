@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 
 /**
  * The hierarchical struct of the Metadata Tree is implemented in this class.
- *
+ * 
  * @author Jinrui Zhang
  *
  */
@@ -30,7 +30,7 @@ public class MTree implements Serializable {
 
     /**
      * add timeseries, it should check whether path exists.
-     *
+     * 
      * @param timeseriesPath
      *            - A full path
      * @param dataType
@@ -90,7 +90,7 @@ public class MTree implements Serializable {
     }
 
     /**
-     *
+     * 
      * @param path
      *            -path not necessarily the whole path (possibly a prefix of a
      *            sequence)
@@ -151,7 +151,7 @@ public class MTree implements Serializable {
 
     /**
      * make sure check path before setting storage group
-     *
+     * 
      * @param path
      * @throws PathErrorException
      */
@@ -190,7 +190,7 @@ public class MTree implements Serializable {
     /**
      * Check whether set file path for this node or not. If not, throw an
      * exception
-     *
+     * 
      * @param node
      * @throws PathErrorException
      */
@@ -218,7 +218,7 @@ public class MTree implements Serializable {
 
     /**
      * Delete one path from current Metadata Tree
-     *
+     * 
      * @param path
      *            Format: root.node.(node)* Notice: Path must be a complete Path
      *            from root to leaf node.
@@ -412,7 +412,7 @@ public class MTree implements Serializable {
 
     /**
      * Extract the DeltaObjectType from given path
-     *
+     * 
      * @return String represents the DeltaObjectId
      */
     public String getDeltaObjectTypeByPath(String path) throws PathErrorException {
@@ -463,7 +463,7 @@ public class MTree implements Serializable {
      * <p>
      * Get the storage group path from the path
      * </p>
-     *
+     * 
      * @param path
      * @return String storage group path
      * @throws PathErrorException
@@ -538,7 +538,7 @@ public class MTree implements Serializable {
      * <p>
      * Check the prefix of this path is storage group path
      * </p>
-     *
+     * 
      * @param path
      * @return true the prefix of this path is storage group path false the
      *         prefix of this path is not storage group path
@@ -562,7 +562,7 @@ public class MTree implements Serializable {
     /**
      * Get all paths for given path regular expression Regular expression in
      * this method is formed by the amalgamation of path and the character '*'
-     *
+     * 
      * @return A HashMap whose Keys are separated by the storage file name.
      */
     public HashMap<String, ArrayList<String>> getAllPath(String pathReg) throws PathErrorException {
@@ -615,7 +615,7 @@ public class MTree implements Serializable {
 
     /**
      * Calculate the count of storage-level nodes included in given path
-     *
+     * 
      * @return The total count of storage-level nodes.
      */
     public int getFileCountForOneType(String path) throws PathErrorException {
@@ -643,7 +643,7 @@ public class MTree implements Serializable {
 
     /**
      * Get all DeltaObject type in current Metadata Tree
-     *
+     * 
      * @return a list contains all distinct DeltaObject type
      */
     public ArrayList<String> getAllType() {
@@ -682,7 +682,7 @@ public class MTree implements Serializable {
 
     /**
      * Get all delta objects for given type
-     *
+     * 
      * @param type
      *            DeltaObject Type
      * @return a list contains all delta objects for given type
@@ -712,7 +712,7 @@ public class MTree implements Serializable {
 
     /**
      * Get all ColumnSchemas for given delta object type
-     *
+     * 
      * @param path
      *            A path represented one Delta object
      * @return a list contains all column schema
@@ -736,7 +736,7 @@ public class MTree implements Serializable {
      * @return ArrayList<ColumnSchema> The list of the schema
      */
     public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path){
-
+        
         String nodes[] = path.split(separator);
         HashMap<String, ColumnSchema> leafMap = new HashMap<>();
         MNode cur = getRoot();
@@ -749,7 +749,7 @@ public class MTree implements Serializable {
         res.addAll(leafMap.values());
         return res;
     }
-
+    
     public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path){
         String nodes[] = path.split(separator);
         MNode cur = getRoot();
@@ -758,7 +758,7 @@ public class MTree implements Serializable {
         }
         return cur.getSchemaMap();
     }
-
+    
     public Map<String, Integer> getNumSchemaMapForOneFileNode(String path){
         String nodes[] = path.split(separator);
         MNode cur = getRoot();
@@ -767,7 +767,7 @@ public class MTree implements Serializable {
         }
         return cur.getNumSchemaMap();
     }
-
+    
 
     private void putLeafToLeafMap(MNode node, HashMap<String, ColumnSchema> leafMap) {
         if (node.isLeaf()) {
@@ -782,7 +782,7 @@ public class MTree implements Serializable {
     }
 
     private void findPath(MNode node, String[] nodes, int idx, String parent,
-                          HashMap<String, ArrayList<String>> paths) {
+            HashMap<String, ArrayList<String>> paths) {
         if (node.isLeaf()) {
             if (nodes.length <= idx) {
                 String fileName = node.getDataFileName();
@@ -812,7 +812,7 @@ public class MTree implements Serializable {
         return;
     }
 
-    private boolean checkIdx(int idx, int batchFetchIdx, int batchFetchSize) {
+     private boolean checkIdx(int idx, int batchFetchIdx, int batchFetchSize) {
         if (idx >= batchFetchIdx && idx < batchFetchIdx + batchFetchSize) {
             return true;
         } else {
