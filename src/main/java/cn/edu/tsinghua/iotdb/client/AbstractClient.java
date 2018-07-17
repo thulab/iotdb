@@ -293,52 +293,50 @@ public abstract class AbstractClient {
 		}
 	}
 
-	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData,
-                                         boolean isShowTs) throws SQLException {
-        StringBuilder blockLine = new StringBuilder();
-        if (isShowTs) {
-            blockLine.append("+");
-            for (int i = 1; i <= colCount; i++) {
-                blockLine.append(StringUtils.repeat('-', maxValueLengthForShow[i - 1])).append("+");
-            }
-        } else {
-            int tmp = Integer.MIN_VALUE;
-            for (int i = 1; i <= colCount; i++) {
-                int len = resultSetMetaData.getColumnLabel(i).length();
-                tmp = tmp > len ? tmp : len;
-            }
-            maxValueLength = tmp;
-            if (printTimestamp) {
-                blockLine.append("+").append(StringUtils.repeat('-', maxTimeLength)).append("+");
-            } else {
-                blockLine.append("+");
-            }
-            for (int i = 0; i < colCount - 1; i++) {
-                blockLine.append(StringUtils.repeat('-', maxValueLength)).append("+");
-            }
-        }
-        System.out.println(blockLine);
-    }
+	protected static void printBlockLine(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData, boolean isShowTs) throws SQLException {
+		StringBuilder blockLine = new StringBuilder();
+		if (isShowTs) {
+			blockLine.append("+");
+			for (int i = 1; i <= colCount; i++) {
+				blockLine.append(StringUtils.repeat('-', maxValueLengthForShow[i - 1])).append("+");
+			}
+		} else {
+			int tmp = Integer.MIN_VALUE;
+			for (int i = 1; i <= colCount; i++) {
+				int len = resultSetMetaData.getColumnLabel(i).length();
+				tmp = tmp > len ? tmp : len;
+			}
+			maxValueLength = tmp;
+			if (printTimestamp) {
+				blockLine.append("+").append(StringUtils.repeat('-', maxTimeLength)).append("+");
+			} else {
+				blockLine.append("+");
+			}
+			for (int i = 0; i < colCount - 1; i++) {
+				blockLine.append(StringUtils.repeat('-', maxValueLength)).append("+");
+			}
+		}
+		System.out.println(blockLine);
+	}
 
-    protected static void printName(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData,
-                                    boolean isShowTs) throws SQLException {
-        System.out.print("|");
-        if (isShowTs) {
-            for (int i = 1; i <= colCount; i++) {
-                formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
-                System.out.printf(formatValue, resultSetMetaData.getColumnName(i));
-            }
-        } else {
-            formatValue = "%" + maxValueLength + "s|";
-            if (printTimestamp) {
-                System.out.printf(formatTime, TIMESTAMP_STR);
-            }
-            for (int i = 2; i <= colCount; i++) {
-                System.out.printf(formatValue, resultSetMetaData.getColumnLabel(i));
-            }
-        }
-        System.out.printf("\n");
-    }
+	protected static void printName(boolean printTimestamp, int colCount, ResultSetMetaData resultSetMetaData, boolean isShowTs) throws SQLException {
+		System.out.print("|");
+		if (isShowTs) {
+			for (int i = 1; i <= colCount; i++) {
+				formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
+				System.out.printf(formatValue, resultSetMetaData.getColumnName(i));
+			}
+		} else {
+			formatValue = "%" + maxValueLength + "s|";
+			if (printTimestamp) {
+				System.out.printf(formatTime, TIMESTAMP_STR);
+			}
+			for (int i = 2; i <= colCount; i++) {
+				System.out.printf(formatValue, resultSetMetaData.getColumnLabel(i));
+			}
+		}
+		System.out.printf("\n");
+	}
 
 	protected static String[] checkPasswordArgs(String[] args) {
 		int index = -1;
