@@ -161,35 +161,37 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		switch (req.getType()) {
 			case "SHOW_TIMESERIES":
 				String path = req.getColumnPath();
+				int batchFetchIdx = req.getBatchFetchIdx();
+				int batchFetchSize = req.getBatchFetchSize();
 				List<List<String>> showTimeseriesList = new ArrayList<>();
 				try {
-					List<String> paths = MManager.getInstance().getPaths(path);
-					if(paths.size()==0) { // check path exists
-						status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-						status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: Timeseries does not exist.", req.getColumnPath()));
-						resp.setStatus(status);
-						return resp;
-					}
-					for (int i = 0; i < paths.size(); i++) {
-						String apath = paths.get(i);
-						// get [name,storage group,dataType,encoding]
-						List<String> tsRow = new ArrayList<>(4);
-						tsRow.add(apath);
-						MNode leafNode = MManager.getInstance().getNodeByPath(apath);
-						if (leafNode.isLeaf()) {
-							ColumnSchema columnSchema = leafNode.getSchema();
-							tsRow.add(leafNode.getDataFileName());
-							tsRow.add(columnSchema.dataType.toString());
-							tsRow.add(columnSchema.encoding.toString());
-						}
-						showTimeseriesList.add(tsRow);
-					}
-					resp.setShowTimeseriesList(showTimeseriesList);
-				} catch (PathErrorException e) {
-					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-					status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: %s", req.getColumnPath(), e));
+				    List<String> paths = MManager.getInstance().getPaths(path, batchFetchIdx, batchFetchSize);
+				    if (paths.size() == 0) { // check path exists
+					resp.setHasResultSet(false);
+					status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 					resp.setStatus(status);
 					return resp;
+				    }
+				    for (int i = 0; i < paths.size(); i++) {
+					String apath = paths.get(i);
+					List<String> tsRow = new ArrayList<>(4);// get [name,storage group,dataType,encoding]
+					tsRow.add(apath);
+					MNode leafNode = MManager.getInstance().getNodeByPath(apath);
+					if (leafNode.isLeaf()) {
+					    ColumnSchema columnSchema = leafNode.getSchema();
+					    tsRow.add(leafNode.getDataFileName());
+					    tsRow.add(columnSchema.dataType.toString());
+					    tsRow.add(columnSchema.encoding.toString());
+					}
+					showTimeseriesList.add(tsRow);
+				    }
+				    resp.setShowTimeseriesList(showTimeseriesList);
+				    resp.setHasResultSet(true);
+				} catch (PathErrorException e) {
+				    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+				    status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: %s", req.getColumnPath(), e));
+				    resp.setStatus(status);
+				    return resp;
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
