@@ -602,7 +602,6 @@ public class MManager {
      * return a HashMap contains all the paths separated by File Name
      */
     public HashMap<String, ArrayList<String>> getAllPathGroupByFileName(String path) throws PathErrorException {
-
         lock.readLock().lock();
         try {
             return mGraph.getAllPathGroupByFilename(path);
@@ -648,7 +647,6 @@ public class MManager {
      * path itself.
      */
     public ArrayList<String> getPaths(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
-
         lock.readLock().lock();
         try {
             ArrayList<String> res = new ArrayList<>();
