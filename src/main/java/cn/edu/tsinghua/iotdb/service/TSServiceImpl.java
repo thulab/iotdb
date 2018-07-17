@@ -207,68 +207,68 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				break;
 			case "METADATA_IN_JSON":
 				String metadataInJson = null;
-                try {
-                    metadataInJson = MManager.getInstance().getMetadataInString();
-                } catch (OutOfMemoryError outOfMemoryError) {
-                    LOGGER.error("Failed to fetch all metadata in json", outOfMemoryError);
-                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-                    status.setErrorMessage(String.format("Failed to fetch all metadata in json because: %s", outOfMemoryError));
-                    resp.setStatus(status);
-                    return resp;
-                }
-                resp.setMetadataInJson(metadataInJson);
+                		try {
+                    			metadataInJson = MManager.getInstance().getMetadataInString();
+                		} catch (OutOfMemoryError outOfMemoryError) {
+                    			LOGGER.error("Failed to fetch all metadata in json", outOfMemoryError);
+                    			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+                    			status.setErrorMessage(String.format("Failed to fetch all metadata in json because: %s", outOfMemoryError));
+                    			resp.setStatus(status);
+                    			return resp;
+                		}
+                		resp.setMetadataInJson(metadataInJson);
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
 			case "DELTA_OBEJECT":
 				Metadata metadata;
 				try {
-                    String column = req.getColumnPath();
-                    metadata = MManager.getInstance().getMetadata();
-                    Map<String, List<String>> deltaObjectMap = metadata.getDeltaObjectMap();
-                    if (deltaObjectMap == null || !deltaObjectMap.containsKey(column)) {
-                        resp.setColumnsList(new ArrayList<>());
-                    } else {
-                        resp.setColumnsList(deltaObjectMap.get(column));
-                    }
-                } catch (PathErrorException e) {
-                    LOGGER.error("cannot get delta object map", e);
-                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-                    status.setErrorMessage(String.format("Failed to fetch delta object map because: %s", e));
-                    resp.setStatus(status);
-                    return resp;
-                } catch (OutOfMemoryError outOfMemoryError) {
-                    LOGGER.error("Failed to get delta object map", outOfMemoryError);
-                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-                    status.setErrorMessage(String.format("Failed to get delta object map because: %s", outOfMemoryError));
-                    break;
-                }
+                    			String column = req.getColumnPath();
+                    			metadata = MManager.getInstance().getMetadata();
+                    			Map<String, List<String>> deltaObjectMap = metadata.getDeltaObjectMap();
+                    			if (deltaObjectMap == null || !deltaObjectMap.containsKey(column)) {
+                        			resp.setColumnsList(new ArrayList<>());
+                    			} else {
+						resp.setColumnsList(deltaObjectMap.get(column));
+                    			}
+                		} catch (PathErrorException e) {
+                    			LOGGER.error("cannot get delta object map", e);
+                    			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+                    			status.setErrorMessage(String.format("Failed to fetch delta object map because: %s", e));
+                    			resp.setStatus(status);
+                    			return resp;
+                		} catch (OutOfMemoryError outOfMemoryError) {
+                    			LOGGER.error("Failed to get delta object map", outOfMemoryError);
+                    			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+                    			status.setErrorMessage(String.format("Failed to get delta object map because: %s", outOfMemoryError));
+                    			break;
+                		}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
 			case "COLUMN":
 				try {
-                    resp.setDataType(MManager.getInstance().getSeriesType(req.getColumnPath()).toString());
-                } catch (PathErrorException e) { //TODO aggregate path e.g. last(root.ln.wf01.wt01.status)
-//                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-//                    status.setErrorMessage(String.format("Failed to fetch %s's data type because: %s", req.getColumnPath(), e));
-//                    resp.setStatus(status);
-//                    return resp;
-                }
+                    			resp.setDataType(MManager.getInstance().getSeriesType(req.getColumnPath()).toString());
+                		} catch (PathErrorException e) { //TODO aggregate path e.g. last(root.ln.wf01.wt01.status)
+			//                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+			//                    status.setErrorMessage(String.format("Failed to fetch %s's data type because: %s", req.getColumnPath(), e));
+			//                    resp.setStatus(status);
+			//                    return resp;
+                		}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
 			case "ALL_COLUMNS":
 				try {
-                    resp.setColumnsList(MManager.getInstance().getPaths(req.getColumnPath()));
-                } catch (PathErrorException e) {
-                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-                    status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), e));
-                    resp.setStatus(status);
-                    return resp;
-                } catch (OutOfMemoryError outOfMemoryError) {
-                    LOGGER.error("Failed to fetch path {}'s all columns", req.getColumnPath(), outOfMemoryError);
-                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
-                    status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), outOfMemoryError));
-                    break;
-                }
+                    			resp.setColumnsList(MManager.getInstance().getPaths(req.getColumnPath()));
+                		} catch (PathErrorException e) {
+                    			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+                    			status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), e));
+                    			resp.setStatus(status);
+                    			return resp;
+                		} catch (OutOfMemoryError outOfMemoryError) {
+                    			LOGGER.error("Failed to fetch path {}'s all columns", req.getColumnPath(), outOfMemoryError);
+                    			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+                    			status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), outOfMemoryError));
+                    			break;
+                		}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
 			default:
