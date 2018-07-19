@@ -1,7 +1,9 @@
 package cn.edu.tsinghua.iotdb.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -117,15 +119,25 @@ public class IoTDB implements IoTDBMBean {
         } catch (PathErrorException e) {
             throw new RecoverException(e);
         }
+        List<FutureTask> futureTasks = new ArrayList<>();
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         for (String filenodeName : filenodeNames) {
             if (writeLogManager.hasWAL(filenodeName)) {
-                try {
+                FutureTask<Object> futureTask = new FutureTask<>(() -> {
                     long startTime = System.currentTimeMillis();
                     FileNodeManager.getInstance().recoverFileNode(filenodeName);
                     LOGGER.info("Recovery of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
-                } catch (FileNodeProcessorException | FileNodeManagerException e) {
-                    throw new RecoverException(e);
-                }
+                    return null;
+                });
+                threadPool.submit(futureTask);
+                futureTasks.add(futureTask);
+            }
+        }
+        for(FutureTask futureTask : futureTasks) {
+            try {
+                futureTask.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RecoverException(e);
             }
         }
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();

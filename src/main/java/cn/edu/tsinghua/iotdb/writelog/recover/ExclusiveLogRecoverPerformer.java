@@ -46,8 +46,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     private LogReplayer replayer = new ConcreteLogReplayer();
 
-    // The field can be made static only because the recovery is a serial process.
-    private static ILogReader logReader = new BufStreamLogReader();
+    private ILogReader logReader = new BufStreamLogReader();
 
     private RecoverPerformer fileNodeRecoverPerformer;
 
@@ -286,7 +285,9 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         if(failedEntryCnt > 0)
             throw new RecoverException("There are " + failedEntryCnt + " logs failed to recover, see logs above for details");
         try {
+            long flushStartTime = System.currentTimeMillis();
             FileNodeManager.getInstance().closeOneFileNode(writeLogNode.getFileNodeName());
+            logger.info("Flush after recovery of {} consumed {}ms", writeLogNode.getIdentifier(), (System.currentTimeMillis() - flushStartTime));
         } catch (FileNodeManagerException e) {
             logger.error("Log node {} cannot perform flush after replaying logs! Because {}",writeLogNode.getIdentifier(), e.getMessage());
             throw new RecoverException(e);
