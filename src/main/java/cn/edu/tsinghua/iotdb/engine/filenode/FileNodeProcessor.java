@@ -1954,8 +1954,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	private boolean shouldMergeTombstone() {
 	    if (emptyIntervalFileNode != null) {
             try {
-                boolean hasTombstone = !emptyIntervalFileNode.getTombstoneFile().isEmpty();
-                emptyIntervalFileNode.getTombstoneFile().close();
+                boolean hasTombstone = (emptyIntervalFileNode.getTombstoneFile() != null && !emptyIntervalFileNode.getTombstoneFile().isEmpty());
+                if (emptyIntervalFileNode.getTombstoneFile() != null)
+                	emptyIntervalFileNode.getTombstoneFile().close();
                 if (hasTombstone)
                     return true;
             } catch (IOException e) {

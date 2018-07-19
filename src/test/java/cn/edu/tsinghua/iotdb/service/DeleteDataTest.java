@@ -33,11 +33,16 @@ public class DeleteDataTest {
     private Connection connection;
 
     private boolean testFlag = TestUtils.testFlag;
+    private String[] bufferWriteDirs;
 
 
     @Before
     public void setUp() throws Exception {
         if (testFlag) {
+            bufferWriteDirs = TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs;
+            TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = new String[]{"settled1"};
+            TsfileDBDescriptor.getInstance().getConfig().updatePath();
+
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
             deamon = IoTDB.getInstance();
@@ -58,6 +63,8 @@ public class DeleteDataTest {
             deamon.stop();
             Thread.sleep(1000);
             EnvironmentUtils.cleanEnv();
+            TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = bufferWriteDirs;
+            TsfileDBDescriptor.getInstance().getConfig().updatePath();
         }
     }
 

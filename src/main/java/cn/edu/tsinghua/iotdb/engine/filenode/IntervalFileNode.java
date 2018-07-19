@@ -265,7 +265,7 @@ public class IntervalFileNode implements Serializable {
 	}
 
 	public TombstoneFile getTombstoneFile() throws IOException {
-		if (tombstoneFile == null) {
+		if (tombstoneFile == null && relativePath != null) {
 			String baseDir = Directories.getInstance().getTsFileFolder(baseDirIndex);
 			tombstoneFile = TombstoneFileFactory.getFactory().getTombstoneFile(baseDir + File.separator + this.relativePath + TombstoneFile.TOMBSTONE_SUFFIX);
 		}
