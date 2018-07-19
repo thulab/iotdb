@@ -5,6 +5,8 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.RecoverException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.writelog.RecoverStage;
+import cn.edu.tsinghua.iotdb.writelog.io.BufStreamLogReader;
+import cn.edu.tsinghua.iotdb.writelog.io.ILogReader;
 import cn.edu.tsinghua.iotdb.writelog.replay.ConcreteLogReplayer;
 import cn.edu.tsinghua.iotdb.writelog.io.RAFLogReader;
 import cn.edu.tsinghua.iotdb.writelog.replay.LogReplayer;
@@ -44,8 +46,8 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     private LogReplayer replayer = new ConcreteLogReplayer();
 
-    // The two fields can be made static only because the recovery is a serial process.
-    private static RAFLogReader RAFLogReader = new RAFLogReader();
+    // The field can be made static only because the recovery is a serial process.
+    private static ILogReader logReader = new BufStreamLogReader();
 
     private RecoverPerformer fileNodeRecoverPerformer;
 
@@ -66,7 +68,9 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     @Override
     public void recover() throws RecoverException {
+        long startTime = System.currentTimeMillis();
         currStage = determineStage();
+        logger.info("Determining recovery stage of {} consumed {}ms", this.writeLogNode.getIdentifier(), (System.currentTimeMillis() - startTime));
        if(currStage != null)
            recoverAtStage(currStage);
     }
@@ -160,6 +164,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
     }
 
     private void backup() throws RecoverException {
+        long startTime = System.currentTimeMillis();
         String recoverRestoreFilePath = restoreFilePath + RECOVER_SUFFIX;
         File recoverRestoreFile = new File(recoverRestoreFilePath);
         File restoreFile = new File(restoreFilePath);
@@ -186,11 +191,12 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
         setFlag(backup);
         currStage = recoverFile;
-        logger.info("Log node {} backup ended", writeLogNode.getLogDirectory());
+        logger.info("Log node {} backup ended, time consumption {}ms", writeLogNode.getLogDirectory(), (System.currentTimeMillis() - startTime));
         recoverFile();
     }
 
     private void recoverFile() throws RecoverException {
+        long startTime = System.currentTimeMillis();
         String recoverRestoreFilePath = restoreFilePath + RECOVER_SUFFIX;
         File recoverRestoreFile = new File(recoverRestoreFilePath);
         try {
@@ -214,38 +220,60 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         fileNodeRecoverPerformer.recover();
 
         currStage = replayLog;
-        logger.info("Log node {} recover files ended", writeLogNode.getLogDirectory());
+        logger.info("Log node {} recover files ended, time consumption {}ms", writeLogNode.getLogDirectory(), (System.currentTimeMillis() - startTime));
         replayLog();
     }
 
     private int replayLogFile(File logFile) throws RecoverException {
+        long startTime = System.nanoTime();
+        long logReadTime = 0, logReplayTime = 0;
         int failedCnt = 0;
+        int logCnt = 0;
         if(logFile.exists()) {
             try {
-                RAFLogReader.open(logFile);
+                logReader.open(logFile);
             } catch (FileNotFoundException e) {
                 logger.error("Log node {} cannot read old log file, because {}",writeLogNode.getIdentifier(), e.getMessage());
                 throw new RecoverException("Cannot read old log file, recovery aborted.");
             }
-            while(RAFLogReader.hasNext()) {
+            long logStartTime = System.nanoTime();
+            while(logReader.hasNext()) {
                 try {
-                    PhysicalPlan physicalPlan = RAFLogReader.next();
+                    PhysicalPlan physicalPlan = logReader.next();
+                    logReadTime += System.nanoTime() - logStartTime;
                     if(physicalPlan == null) {
                         logger.error("Log node {} read a bad log",writeLogNode.getIdentifier());
                         throw new RecoverException("Cannot read old log file, recovery aborted.");
                     }
+
+                    logStartTime = System.nanoTime();
                     replayer.replay(physicalPlan);
+                    logCnt ++;
+                    logReplayTime += System.nanoTime() - logStartTime;
+
+                    logStartTime = System.nanoTime();
                 } catch (ProcessorException e) {
                     failedCnt ++;
                     logger.error("Log node {}, {}", writeLogNode.getLogDirectory(), e.getMessage());
                 }
             }
-            RAFLogReader.close();
+            try {
+                logReader.close();
+            } catch (IOException e) {
+                throw new RecoverException(String.format("Cannot close log file %s, because %s, recovery aborted.", logFile.getPath(), e.getMessage()), e);
+            }
         }
+        logReadTime /= 1000000;
+        logReplayTime /= 1000000;
+
+        logger.info("Log node {} replay file {} of {} logs, time consumption {}ms, {}ms for read and {}ms for replay",
+                writeLogNode.getLogDirectory(), logFile.getName(), logCnt, (System.nanoTime() - startTime) / 1000000,
+                logReadTime, logReplayTime);
         return failedCnt;
     }
 
     private void replayLog() throws RecoverException {
+        long startTime = System.currentTimeMillis();
         int failedEntryCnt = 0;
         // if old log file exists, replay it first.
         File oldLogFile = new File(writeLogNode.getLogDirectory() + File.separator +
@@ -265,11 +293,12 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         }
         currStage = cleanup;
         setFlag(replayLog);
-        logger.info("Log node {} replay ended.", writeLogNode.getLogDirectory());
+        logger.info("Log node {} replay ended, time consumption {}ms", writeLogNode.getLogDirectory(), System.currentTimeMillis() - startTime);
         cleanup();
     }
 
     private void cleanup() throws RecoverException {
+        long startTime = System.currentTimeMillis();
         // clean recovery files
         List<String> failedFiles = new ArrayList<>();
         String recoverRestoreFilePath = restoreFilePath + RECOVER_SUFFIX;
@@ -309,6 +338,6 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
         // clean flag
         currStage = init;
         cleanFlag();
-        logger.info("Log node {} cleanup ended.", writeLogNode.getLogDirectory());
+        logger.info("Log node {} cleanup ended, time consumption {}ms", writeLogNode.getLogDirectory(), (System.currentTimeMillis() - startTime));
     }
 }

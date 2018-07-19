@@ -98,9 +98,11 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
         nodeList.sort(null);
         for(WriteLogNode node : nodeList) {
             try {
+                long startTime = System.currentTimeMillis();
                 node.recover();
+                logger.info("Recovery of WAL node {} consumed {}ms", node.getIdentifier(), (System.currentTimeMillis() - startTime));
             } catch (RecoverException e) {
-                logger.error("{} failed to recover because {}", node.toString(), e.getMessage());
+                logger.error("{} failed to recover because", node.toString(), e);
                 throw e;
             }
         }
