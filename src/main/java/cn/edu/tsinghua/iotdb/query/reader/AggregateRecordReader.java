@@ -97,9 +97,12 @@ public class AggregateRecordReader extends RecordReader {
             }
         }
 
+        int count = 0;
         for (ValueReader valueReader : valueReaders) {
             if (valueReader.getDataType().equals(dataType)) {
+                logger.debug("Start aggregating the {} value reader in unsealed file", count);
                 aggregate(valueReader, aggregateFunction);
+                logger.debug("End aggregating the {} value reader in unsealed file", count++);
             }
         }
 
