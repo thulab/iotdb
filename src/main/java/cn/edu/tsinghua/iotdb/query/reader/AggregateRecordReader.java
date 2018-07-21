@@ -90,14 +90,17 @@ public class AggregateRecordReader extends RecordReader {
 
         // aggregation calculation except for "max_time" and "last"
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
+        int count = 0;
         for (RowGroupReader rowGroupReader : rowGroupReaderList) {
             if (rowGroupReader.getValueReaders().containsKey(measurementId) &&
                     rowGroupReader.getValueReaders().get(measurementId).getDataType().equals(dataType)) {
+                logger.debug("Start aggregating the {} value reader in row groups", count);
                 aggregate(rowGroupReader.getValueReaders().get(measurementId), aggregateFunction);
+                logger.debug("End aggregating the {} value reader in row groups", count++);
             }
         }
 
-        int count = 0;
+        count = 0;
         for (ValueReader valueReader : valueReaders) {
             if (valueReader.getDataType().equals(dataType)) {
                 logger.debug("Start aggregating the {} value reader in unsealed file", count);
