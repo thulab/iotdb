@@ -24,7 +24,8 @@ before_install:
 
 script: 
 # only SNAPSHOT version needs to do the following phase
+  - mvn cobertura:cobertura
   - mvn clean test
   
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
