@@ -103,6 +103,7 @@ public class MManager {
         lock.writeLock().lock();
         File dataFile = new File(datafilePath);
         File logFile = new File(logFilePath);
+        boolean needFlush = false;
         try {
             try {
                 if (dataFile.exists()) {
@@ -125,11 +126,15 @@ public class MManager {
                         String cmd;
                         while ((cmd = br.readLine()) != null) {
                             operation(cmd);
+                            needFlush = true;
                         }
                         br.close();
                     }
                 }
-                flushObjectToFile();
+                LOGGER.info("MGraph recovered");
+                needFlush = needFlush | !dataFile.exists();
+                if (needFlush)
+                    flushObjectToFile();
                 FileWriter fw = new FileWriter(logFile, true);
                 logWriter = new BufferedWriter(fw);
                 writeToLog = true;
@@ -803,7 +808,8 @@ public class MManager {
     }
 
     public void flushObjectToFile() throws IOException {
-
+        LOGGER.info("Snapshot MGraph ...");
+        long startTime = System.currentTimeMillis();
         lock.writeLock().lock();
         try {
             File dataFile = new File(datafilePath);
@@ -817,7 +823,7 @@ public class MManager {
             }
             File tempFile = new File(datafilePath + MetadataConstant.METADATA_TEMP);
             FileOutputStream fos = new FileOutputStream(tempFile, false);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(fos));
             oos.writeObject(mGraph);
             oos.close();
             // close the logFile stream
@@ -830,6 +836,7 @@ public class MManager {
                 new File(logFilePath).delete();
         } finally {
             lock.writeLock().unlock();
+            LOGGER.info("Snapshot MGraph consumed {}ms", (System.currentTimeMillis() - startTime));
         }
     }
 
