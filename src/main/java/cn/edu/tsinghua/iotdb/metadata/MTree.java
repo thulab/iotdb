@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.*;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -576,7 +577,10 @@ public class MTree implements Serializable {
 			throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
 		}
 		findPath(getRoot(), nodes, 1, "", paths);
-		LOGGER.info("Getting {} paths consumed {}ms", paths.size(), (System.currentTimeMillis() - startTime));
+		int pathCnt = 0;
+		for(ArrayList<String> list : paths.values())
+			pathCnt += list.size();
+		LOGGER.info("Getting {} paths that match {} consumed {}ms", pathCnt, pathReg, (System.currentTimeMillis() - startTime));
 		return paths;
 	}
 
