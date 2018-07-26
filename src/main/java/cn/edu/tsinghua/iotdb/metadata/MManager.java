@@ -110,7 +110,7 @@ public class MManager {
                     // init the metadata from the serialized file
                     LOGGER.info("Recovering MGraph from data file");
                     FileInputStream fis = new FileInputStream(dataFile);
-                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis));
                     mGraph = (MGraph) ois.readObject();
                     ois.close();
                     fis.close();
