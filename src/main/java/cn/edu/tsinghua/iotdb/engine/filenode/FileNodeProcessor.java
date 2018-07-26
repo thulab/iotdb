@@ -1155,6 +1155,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	private void mergeIndex() throws FileNodeProcessorException {
+		long startTime = System.currentTimeMillis();
 		try {
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
@@ -1179,9 +1180,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.error("Failed to find all fileList to be merged. Because" + e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
 		}
+		LOGGER.info("Index merging consumed {}ms", (System.currentTimeMillis() - startTime));
 	}
 
 	private void switchMergeIndex() throws FileNodeProcessorException {
+		long startTime = System.currentTimeMillis();
 		try {
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
@@ -1206,6 +1209,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.error("Failed to find all fileList to be mergeSwitch because of" + e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
 		}
+		LOGGER.info("Index switching consumed {}ms", (System.currentTimeMillis() - startTime));
 	}
 
 	private void switchMergeToWaitingv2(List<IntervalFileNode> backupIntervalFiles, boolean needEmpty)

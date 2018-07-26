@@ -580,7 +580,7 @@ public class MTree implements Serializable {
 		int pathCnt = 0;
 		for(ArrayList<String> list : paths.values())
 			pathCnt += list.size();
-		LOGGER.info("Getting {} paths that match {} consumed {}ms", pathCnt, pathReg, (System.currentTimeMillis() - startTime));
+		LOGGER.debug("Getting {} paths that match {} consumed {}ms", pathCnt, pathReg, (System.currentTimeMillis() - startTime));
 		return paths;
 	}
 
