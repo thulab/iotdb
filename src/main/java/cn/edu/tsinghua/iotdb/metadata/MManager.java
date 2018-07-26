@@ -118,7 +118,8 @@ public class MManager {
                 if (logFile.exists()){
                     // init the metadata from the operation log
                     LOGGER.info("Recovering MGraph from log file");
-                    mGraph = new MGraph(ROOT_NAME);
+                    if (mGraph == null)
+                        mGraph = new MGraph(ROOT_NAME);
                     if (logFile.exists()) {
                         FileReader fr;
                         fr = new FileReader(logFile);
