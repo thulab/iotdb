@@ -169,8 +169,8 @@ public class MNode implements Serializable {
 
 	public String getFullPath() {
 		StringBuilder fullPath = new StringBuilder(name);
-		MNode parent;
-		while((parent = getParent()) != null) {
+		MNode parent = this;
+		while((parent = parent.getParent()) != null) {
 			fullPath.insert(0, parent.getName() + TsFileDBConstant.PATH_SEPARATER);
 		}
 		return fullPath.toString();

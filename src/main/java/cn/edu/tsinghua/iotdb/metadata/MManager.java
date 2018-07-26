@@ -609,7 +609,6 @@ public class MManager {
             for(MNode node : mGraph) {
                 if (node.isStorageLevel()) {
                     fileNameList.add(node.getFullPath());
-                    LOGGER.info("Find a file node : {}", node.getFullPath());
                 }
             }
             return fileNameList;
