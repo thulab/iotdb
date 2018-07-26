@@ -113,8 +113,8 @@ public class MManager {
                     mGraph = (MGraph) ois.readObject();
                     ois.close();
                     fis.close();
-                    dataFile.delete();
-                } else {
+                }
+                if (logFile.exists()){
                     // init the metadata from the operation log
                     LOGGER.info("Recovering MGraph from log file");
                     mGraph = new MGraph(ROOT_NAME);
@@ -129,6 +129,7 @@ public class MManager {
                         br.close();
                     }
                 }
+                flushObjectToFile();
                 FileWriter fw = new FileWriter(logFile, true);
                 logWriter = new BufferedWriter(fw);
                 writeToLog = true;
@@ -815,7 +816,7 @@ public class MManager {
                 metadataDir.mkdirs();
             }
             File tempFile = new File(datafilePath + MetadataConstant.METADATA_TEMP);
-            FileOutputStream fos = new FileOutputStream(tempFile);
+            FileOutputStream fos = new FileOutputStream(tempFile, false);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(mGraph);
             oos.close();
@@ -825,7 +826,8 @@ public class MManager {
                 logWriter = null;
             }
             // rename temp file to data file
-            tempFile.renameTo(dataFile);
+            if(tempFile.renameTo(dataFile))
+                new File(logFilePath).delete();
         } finally {
             lock.writeLock().unlock();
         }
