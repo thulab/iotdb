@@ -6,6 +6,8 @@ import java.util.*;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The hierarchical struct of the Metadata Tree is implemented in this class.
@@ -15,6 +17,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
  */
 public class MTree implements Serializable {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(MTree.class);
 	private static final long serialVersionUID = -4200394435237291964L;
 	private final String space = "    ";
 	private MNode root;
@@ -566,12 +569,14 @@ public class MTree implements Serializable {
 	 * @return A HashMap whose Keys are separated by the storage file name.
 	 */
 	public HashMap<String, ArrayList<String>> getAllPath(String pathReg) throws PathErrorException {
+		long startTime = System.currentTimeMillis();
 		HashMap<String, ArrayList<String>> paths = new HashMap<>();
 		String[] nodes = pathReg.split(separator);
 		if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
 			throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
 		}
 		findPath(getRoot(), nodes, 1, "", paths);
+		LOGGER.info("Getting {} paths consumed {}ms", paths.size(), (System.currentTimeMillis() - startTime));
 		return paths;
 	}
 
