@@ -223,7 +223,10 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			List<String> filenodeNames = MManager.getInstance().getAllFileNames();
 			for (String filenodeName : filenodeNames) {
+				LOGGER.info("Building filenode {} ", filenodeName);
+				long startTime = System.currentTimeMillis();
 				FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
+				LOGGER.info("Building of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
 				if (fileNodeProcessor.shouldRecovery()) {
 					LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
 							fileNodeProcessor.getFileNodeProcessorStatus());
