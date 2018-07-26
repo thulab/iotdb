@@ -1157,7 +1157,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	private void mergeIndex() throws FileNodeProcessorException {
 		long startTime = System.currentTimeMillis();
 		try {
+			long findStartTime = System.currentTimeMillis();
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
+			LOGGER.info("Finding all index paths consumed {}ms", (System.currentTimeMillis() - findStartTime));
 			if (!allIndexSeries.isEmpty()) {
 				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
 						getProcessorName(), allIndexSeries);
@@ -1186,7 +1188,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	private void switchMergeIndex() throws FileNodeProcessorException {
 		long startTime = System.currentTimeMillis();
 		try {
+			long findStartTime = System.currentTimeMillis();
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
+			LOGGER.info("Finding all index paths consumed {}ms", (System.currentTimeMillis() - findStartTime));
 			if (!allIndexSeries.isEmpty()) {
 				LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
 						getProcessorName(), allIndexSeries);
