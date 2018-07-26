@@ -8,6 +8,8 @@ import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
 import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
@@ -22,6 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Jinrui Zhang
  */
 public class MManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MManager.class);
     // private static MManager manager = new MManager();
     private static final String ROOT_NAME = MetadataConstant.ROOT;
     // the lock for read/write
@@ -47,6 +50,9 @@ public class MManager {
     }
 
     private MManager() {
+        LOGGER.info("Initializing MManager");
+        long startTime = System.currentTimeMillis();
+
         metadataDirPath = TsfileDBDescriptor.getInstance().getConfig().metadataDir;
         if (metadataDirPath.length() > 0
                 && metadataDirPath.charAt(metadataDirPath.length() - 1) != File.separatorChar) {
@@ -88,6 +94,7 @@ public class MManager {
         };
 
         init();
+        LOGGER.info("Initialization of MManager consumed {}ms", (System.currentTimeMillis() - startTime));
     }
 
     private void init() {
