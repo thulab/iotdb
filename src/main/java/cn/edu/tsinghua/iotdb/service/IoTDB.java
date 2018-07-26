@@ -60,8 +60,9 @@ public class IoTDB implements IoTDBMBean {
 
     private void setUp() throws StartupException {
         setUncaughtExceptionHandler();
-
+        long startTime = System.currentTimeMillis();
         FileNodeManager.getInstance().recovery();
+        LOGGER.info("Recovery of FileNodeManager consumed {}ms", (System.currentTimeMillis() - startTime));
         try {
             systemDataRecovery();
         } catch (RecoverException e) {
