@@ -890,10 +890,10 @@ public class MTree implements Serializable, Iterable<MNode> {
 		@Override
 		public MNode next() {
 			MNode current = queue.remove();
-			Collection<MNode> children = current.getChildren().values();
-			if (children != null) {
-				for (MNode child : children)
-					queue.add(child);
+			Map<String, MNode> childrenMap = current.getChildren();
+			if(childrenMap != null) {
+				Collection<MNode> children = childrenMap.values();
+				queue.addAll(children);
 			}
 			return current;
 		}
