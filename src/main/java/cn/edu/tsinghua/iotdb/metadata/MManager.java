@@ -605,10 +605,10 @@ public class MManager {
         long startTime = System.currentTimeMillis();
         lock.readLock().lock();
         try {
-            HashMap<String, ArrayList<String>> res = getAllPathGroupByFileName(ROOT_NAME);
-            List<String> fileNameList = new ArrayList<String>();
-            for (String fileName : res.keySet()) {
-                fileNameList.add(fileName);
+            List<String> fileNameList = new ArrayList<>();
+            for(MNode node : mGraph) {
+                if (node.isStorageLevel())
+                    fileNameList.add(node.getFullPath());
             }
             return fileNameList;
         } finally {
