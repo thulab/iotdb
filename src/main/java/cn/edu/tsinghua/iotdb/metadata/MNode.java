@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 
@@ -166,4 +167,12 @@ public class MNode implements Serializable {
 		this.name = name;
 	}
 
+	public String getFullPath() {
+		StringBuilder fullPath = new StringBuilder(name);
+		MNode parent;
+		while((parent = getParent()) != null) {
+			fullPath.insert(0, parent.getName() + TsFileDBConstant.PATH_SEPARATER);
+		}
+		return fullPath.toString();
+	}
 }

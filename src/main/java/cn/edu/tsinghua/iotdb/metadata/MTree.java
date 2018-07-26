@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author Jinrui Zhang
  *
  */
-public class MTree implements Serializable {
+public class MTree implements Serializable, Iterable<MNode> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MTree.class);
 	private static final long serialVersionUID = -4200394435237291964L;
@@ -866,5 +866,36 @@ public class MTree implements Serializable {
 
 	public MNode getRoot() {
 		return root;
+	}
+
+	@Override
+	public Iterator<MNode> iterator() {
+		return new MNodeIterator(root);
+	}
+
+	class MNodeIterator implements Iterator<MNode> {
+
+		private Queue<MNode> queue;
+
+		public MNodeIterator(MNode root) {
+			this.queue = new ArrayDeque<>();
+			queue.add(root);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return !queue.isEmpty();
+		}
+
+		@Override
+		public MNode next() {
+			MNode current = queue.remove();
+			Collection<MNode> children = current.getChildren().values();
+			if (children != null) {
+				for (MNode child : children)
+					queue.add(child);
+			}
+			return current;
+		}
 	}
 }

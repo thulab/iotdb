@@ -12,7 +12,7 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
  * @author Jinrui Zhang
  *
  */
-public class MGraph implements Serializable {
+public class MGraph implements Serializable, Iterable<MNode> {
 	private static final long serialVersionUID = 8214849219614352834L;
 
 	private MTree mTree;
@@ -300,5 +300,10 @@ public class MGraph implements Serializable {
 		sb.append("===  Timeseries Tree  ===\n\n");
 		sb.append(mTree.toString());
 		return sb.toString();
+	}
+
+	@Override
+	public Iterator<MNode> iterator() {
+		return mTree.iterator();
 	}
 }

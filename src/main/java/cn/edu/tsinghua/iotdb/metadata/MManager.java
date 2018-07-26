@@ -887,11 +887,11 @@ public class MManager {
         lock.readLock().lock();
         try {
             Map<String, Set<IndexType>> ret = new HashMap<>();
-            ArrayList<String> paths = getPaths(path);
-            for (String timeseries : paths) {
-                Set<IndexType> indexes = getSchemaForOnePath(timeseries).getIndexSet();
-                if (!indexes.isEmpty()) {
-                    ret.put(timeseries, indexes);
+            for (MNode mNode : mGraph) {
+                if (mNode.isLeaf() && (mNode.getSchema().getIndexSet() != null && !mNode.getSchema().getIndexSet().isEmpty()) ) {
+                    String fullPath = mNode.getFullPath();
+                    if (fullPath.contains(path))
+                        ret.put(mNode.getFullPath(), mNode.getSchema().getIndexSet());
                 }
             }
             return ret;
