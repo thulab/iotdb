@@ -602,6 +602,7 @@ public class MManager {
 
     public List<String> getAllFileNames() throws PathErrorException {
 
+        long startTime = System.currentTimeMillis();
         lock.readLock().lock();
         try {
             HashMap<String, ArrayList<String>> res = getAllPathGroupByFileName(ROOT_NAME);
@@ -612,6 +613,7 @@ public class MManager {
             return fileNameList;
         } finally {
             lock.readLock().unlock();
+            LOGGER.info("Get all file names consumed {}ms", (System.currentTimeMillis() - startTime));
         }
     }
 
