@@ -221,10 +221,13 @@ public class FileNodeManager implements IStatistic, IService {
 	public void recovery() {
 
 		try {
+			long startTime = System.currentTimeMillis();
 			List<String> filenodeNames = MManager.getInstance().getAllFileNames();
+			LOGGER.info("Retrieving all filenodes' name consumed {}ms", (System.currentTimeMillis() - startTime));
+
 			for (String filenodeName : filenodeNames) {
 				LOGGER.info("Building filenode {} ", filenodeName);
-				long startTime = System.currentTimeMillis();
+				startTime = System.currentTimeMillis();
 				FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
 				LOGGER.info("Building of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
 				if (fileNodeProcessor.shouldRecovery()) {
@@ -235,7 +238,9 @@ public class FileNodeManager implements IStatistic, IService {
 					fileNodeProcessor.writeUnlock();
 				}
 				// add index check sum
+				startTime = System.currentTimeMillis();
 				fileNodeProcessor.rebuildIndex();
+				LOGGER.info("Rebuilding index of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
 			}
 		} catch (PathErrorException | FileNodeManagerException | FileNodeProcessorException e) {
 			LOGGER.error("Restore all FileNode failed, the reason is {}", e.getMessage());
