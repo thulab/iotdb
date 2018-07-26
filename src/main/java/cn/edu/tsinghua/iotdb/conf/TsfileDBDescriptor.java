@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.exception.builder.Language;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,10 +149,7 @@ public class TsfileDBDescriptor {
 			int maxLogEntrySize = Integer.parseInt(properties.getProperty("max_log_entry_size", conf.maxLogEntrySize + "").trim());
 			conf.maxLogEntrySize = maxLogEntrySize > 0 ? maxLogEntrySize : conf.maxLogEntrySize;
 
-			conf.languageVersion = properties.getProperty("language_version", conf.languageVersion + "").trim();
-				if(!Language.isSupported(conf.languageVersion)){
-					conf.languageVersion = "EN";
-			}
+			conf.languageVersion = properties.getProperty("language_version", conf.languageVersion).trim();
 
 			String tmpTimeZone = properties.getProperty("time_zone", conf.timeZone.getID());
 			try {

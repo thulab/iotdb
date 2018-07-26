@@ -8,12 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
 public class ExceptionBuilder {
-    private  HashMap<Integer,String> errInfo = new HashMap<>();
+    private Properties properties = new Properties();
 
     public static final int UNKNOWN_ERROR = 20000;
     public static final int NO_PARAMETERS_EXISTS=20001;
@@ -51,8 +50,9 @@ public class ExceptionBuilder {
         }
     }
     private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
-    public static final String CONFIG_NAME_EN = "error_info_en.properties";
-    public static final String CONFIG_NAME_CN = "error_info_cn.properties";
+    public static final String CONFIG_NAME= "error_info_";
+    public static final String FILE_SUFFIX=".properties";
+    public static final String DEFAULT_FILEPATH="error_info_en.properties";
 
     private static final ExceptionBuilder INSTANCE = new ExceptionBuilder();
     public static final ExceptionBuilder getInstance() {
@@ -62,15 +62,8 @@ public class ExceptionBuilder {
     public void loadInfo(String filePath){
         InputStream in = null;
         try {
-            Properties properties = new Properties();
             in = new BufferedInputStream (new FileInputStream(filePath));
             properties.load(new InputStreamReader(in,"utf-8"));
-            Iterator<String> it=properties.stringPropertyNames().iterator();
-            while(it.hasNext()){
-                String key=it.next();
-                //System.out.println(key+":"+properties.getProperty(key));
-                errInfo.put(Integer.parseInt(key),"[Error: "+properties.get(key).toString()+"]");  //
-            }
             in.close();
         } catch (IOException e) {
             LOGGER.error("Read file error. File does not exist or file is broken. File path: {}.Because: {}.",filePath,e.getMessage());
@@ -86,30 +79,29 @@ public class ExceptionBuilder {
     }
 
     public void loadInfo(){
-        Language language = Language.valueOf(TsfileDBDescriptor.getInstance().getConfig().languageVersion);
-        int index=language.getIndex();
+        String language = TsfileDBDescriptor.getInstance().getConfig().languageVersion.toLowerCase();
 
         String url = System.getProperty(TsFileDBConstant.IOTDB_CONF, null);
         if (url == null) {
             url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
             if (url != null) {
-                if(index==1)
-                    url = url + File.separatorChar + "conf" + File.separatorChar + ExceptionBuilder.CONFIG_NAME_EN;
-                else if(index==2)
-                    url = url + File.separatorChar + "conf" + File.separatorChar + ExceptionBuilder.CONFIG_NAME_CN;
+                    url = url + File.separatorChar + "conf" + File.separatorChar + ExceptionBuilder.CONFIG_NAME+language+FILE_SUFFIX;
             } else {
                 LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", TsfileDBConfig.CONFIG_NAME);
                 return;
             }
         } else{
-            if(index==1)
-                url += (File.separatorChar + ExceptionBuilder.CONFIG_NAME_EN);
-            else if(index==2)
-                url += (File.separatorChar + ExceptionBuilder.CONFIG_NAME_CN);
+            url += (File.separatorChar + ExceptionBuilder.CONFIG_NAME+language+FILE_SUFFIX);
         }
+
+        File file = new File(url);
+        if(!file.exists()){
+            url.replace(CONFIG_NAME+language+FILE_SUFFIX, DEFAULT_FILEPATH);
+        }
+
         loadInfo(url);
     }
     public String searchInfo(int errCode){
-        return errInfo.get(errCode);
+        return properties.getProperty(String.valueOf(errCode));
     }
 }
