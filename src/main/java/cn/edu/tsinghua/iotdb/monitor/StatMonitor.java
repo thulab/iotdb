@@ -10,6 +10,8 @@ import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.metadata.operator.AddPathOperator;
+import cn.edu.tsinghua.iotdb.metadata.operator.SetStorageOperator;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.iotdb.service.IService;
@@ -18,6 +20,7 @@ import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
@@ -74,7 +77,7 @@ public class StatMonitor implements IService{
             try {
                 String prefix = MonitorConstants.statStorageGroupPrefix;
                 if (!mManager.pathExist(prefix)) {
-                    mManager.setStorageLevelToMTree(prefix);
+                    mManager.setStorageLevelToMTree(new SetStorageOperator(prefix));
                 }
             } catch (PathErrorException|IOException e) {
                 LOGGER.error("MManager cannot set storage level to MTree.", e);
@@ -120,7 +123,7 @@ public class StatMonitor implements IService{
         String prefix = MonitorConstants.statStorageGroupPrefix;
         try {
             if (!mManager.pathExist(prefix)) {
-                mManager.setStorageLevelToMTree(prefix);
+                mManager.setStorageLevelToMTree(new SetStorageOperator(prefix));
             }
         } catch (Exception e){
             LOGGER.error("MManager cannot set storage level to MTree, because {}", e.getMessage());
@@ -199,7 +202,7 @@ public class StatMonitor implements IService{
 
                 if (!mManager.pathExist(entry.getKey())) {
                     mManager.addPathToMTree(
-                            entry.getKey(), entry.getValue(), "RLE", new String[0]);
+                            new AddPathOperator(entry.getKey(), TSDataType.valueOf(entry.getValue()), TSEncoding.valueOf("RLE"), new String[0]));
                 }
             }
         } catch (MetadataArgsErrorException|IOException|PathErrorException e) {

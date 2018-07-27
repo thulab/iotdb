@@ -4,9 +4,14 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
+import cn.edu.tsinghua.iotdb.metadata.operator.*;
+import cn.edu.tsinghua.iotdb.qp.logical.Operator;
+import cn.edu.tsinghua.iotdb.qp.logical.crud.DeleteOperator;
+import cn.edu.tsinghua.iotdb.query.aggregation.impl.MeanAggrFunc;
 import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
 import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +39,7 @@ public class MManager {
     // the log file path
     private String logFilePath;
     private MGraph mGraph;
-    private BufferedWriter logWriter;
+    private DataOutputStream logWriter;
     private boolean writeToLog;
     private String metadataDirPath;
 
@@ -121,23 +126,20 @@ public class MManager {
                     // init the metadata from the operation log
                     LOGGER.info("Recovering MGraph from log file");
                     if (logFile.exists()) {
-                        FileReader fr;
-                        fr = new FileReader(logFile);
-                        BufferedReader br = new BufferedReader(fr);
-                        String cmd;
-                        while ((cmd = br.readLine()) != null) {
-                            operation(cmd);
-                            needFlush = true;
-                        }
-                        br.close();
+                        DataInputStream is;
+                        is = new DataInputStream(new BufferedInputStream(new FileInputStream(logFile)));
+                        MetaOperator operator;
+                        while((operator = OperatorFactory.readFromStream(is)) != null)
+                            operation(operator);
+                        is.close();
                     }
                 }
                 LOGGER.info("MGraph recovered");
                 needFlush = needFlush | !dataFile.exists();
                 if (needFlush)
                     flushObjectToFile();
-                FileWriter fw = new FileWriter(logFile, true);
-                logWriter = new BufferedWriter(fw);
+                FileOutputStream fs = new FileOutputStream(logFile, true);
+                logWriter = new DataOutputStream(new BufferedOutputStream(fs));
                 writeToLog = true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -157,38 +159,28 @@ public class MManager {
         }
     }
 
-    private void operation(String cmd) throws PathErrorException, IOException, MetadataArgsErrorException {
+    public void operation(MetaOperator operator) throws PathErrorException, IOException, MetadataArgsErrorException {
 
-        String args[] = cmd.trim().split(",");
-        if (args[0].equals(MetadataOperationType.ADD_PATH_TO_MTREE)) {
-            String[] leftArgs;
-            if (args.length > 4) {
-                leftArgs = new String[args.length - 4];
-                for (int k = 4; k < args.length; k++) {
-                    leftArgs[k - 4] = args[k];
-                }
-            } else {
-                leftArgs = new String[0];
-            }
-            addPathToMTree(args[1], args[2], args[3], leftArgs);
-        } else if (args[0].equals(MetadataOperationType.DELETE_PATH_FROM_MTREE)) {
-            deletePathFromMTree(args[1]);
-        } else if (args[0].equals(MetadataOperationType.SET_STORAGE_LEVEL_TO_MTREE)) {
-            setStorageLevelToMTree(args[1]);
-        } else if (args[0].equals(MetadataOperationType.ADD_A_PTREE)) {
-            addAPTree(args[1]);
-        } else if (args[0].equals(MetadataOperationType.ADD_A_PATH_TO_PTREE)) {
-            addPathToPTree(args[1]);
-        } else if (args[0].equals(MetadataOperationType.DELETE_PATH_FROM_PTREE)) {
-            deletePathFromPTree(args[1]);
-        } else if (args[0].equals(MetadataOperationType.LINK_MNODE_TO_PTREE)) {
-            linkMNodeToPTree(args[1], args[2]);
-        } else if (args[0].equals(MetadataOperationType.UNLINK_MNODE_FROM_PTREE)) {
-            unlinkMNodeFromPTree(args[1], args[2]);
-        } else if (args[0].equals(MetadataOperationType.ADD_INDEX_TO_PATH)) {
-            addIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
-        } else if (args[0].equals(MetadataOperationType.DELETE_INDEX_FROM_PATH)) {
-            deleteIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
+        if (operator instanceof AddPathOperator) {
+            addPathToMTree((AddPathOperator) operator);
+        } else if (operator instanceof  DeletePathOperator) {
+            deletePathFromMTree((DeletePathOperator) operator);
+        } else if (operator instanceof SetStorageOperator) {
+            setStorageLevelToMTree((SetStorageOperator) operator);
+        } else if (operator instanceof AddPTreeOperator) {
+            addAPTree((AddPTreeOperator) operator);
+        } else if (operator instanceof AddPTreePathOperator) {
+            addPathToPTree((AddPTreePathOperator) operator);
+        } else if (operator instanceof DeletePTreePathOperator) {
+            deletePathFromPTree((DeletePTreePathOperator) operator);
+        } else if (operator instanceof LinkM2POperator) {
+            linkMNodeToPTree((LinkM2POperator) operator);
+        } else if (operator instanceof UnlinkM2POperator) {
+            unlinkMNodeFromPTree((UnlinkM2POperator) operator);
+        } else if (operator instanceof AddIndexOperator) {
+            addIndexForOneTimeseries((AddIndexOperator) operator);
+        } else if (operator instanceof DeleteIndexOperator) {
+            deleteIndexForOneTimeseries((DeleteIndexOperator) operator);
         }
     }
 
@@ -199,11 +191,10 @@ public class MManager {
             if (!metadataDir.exists()) {
                 metadataDir.mkdirs();
             }
-            FileWriter fileWriter;
+            FileOutputStream fs;
             try {
-
-                fileWriter = new FileWriter(logFile, true);
-                logWriter = new BufferedWriter(fileWriter);
+                fs = new FileOutputStream(logFile, true);
+                logWriter = new DataOutputStream(new BufferedOutputStream(fs));
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -217,145 +208,98 @@ public class MManager {
      * <code>getFileNameByPath</code> method first to check timeseries.
      * </p>
      *
-     * @param path     the timeseries path
-     * @param dataType the datetype {@code DataType} for the timeseries
-     * @param encoding the encoding function {@code Encoding} for the timeseries
-     * @param args
      * @throws PathErrorException
      * @throws IOException
      * @throws MetadataArgsErrorException
      */
-    public void addPathToMTree(String path, String dataType, String encoding, String[] args)
+    public void addPathToMTree(AddPathOperator operator)
             throws PathErrorException, IOException, MetadataArgsErrorException {
 
         lock.writeLock().lock();
         try {
-            mGraph.addPathToMTree(path, dataType, encoding, args);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.ADD_PATH_TO_MTREE + "," + path + "," + dataType + "," + encoding);
-                for (int i = 0; i < args.length; i++) {
-                    logWriter.write("," + args[i]);
-                }
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.addPathToMTree(operator.path, operator.dataType.name(), operator.encoding.name(), operator.args);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public String deletePathFromMTree(String path) throws PathErrorException, IOException {
+    public String deletePathFromMTree(DeletePathOperator operator) throws PathErrorException, IOException {
         lock.writeLock().lock();
         try {
             checkAndGetDataTypeCache.clear();
             mNodeCache.clear();
-            String dataFileName = mGraph.deletePath(path);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.DELETE_PATH_FROM_MTREE + "," + path);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            String dataFileName = mGraph.deletePath(operator.path);
+            logOp(operator);
             return dataFileName;
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void setStorageLevelToMTree(String path) throws PathErrorException, IOException {
+    public void setStorageLevelToMTree(SetStorageOperator operator) throws PathErrorException, IOException {
 
         lock.writeLock().lock();
         try {
             checkAndGetDataTypeCache.clear();
             mNodeCache.clear();
-            mGraph.setStorageLevel(path);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.SET_STORAGE_LEVEL_TO_MTREE + "," + path);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.setStorageLevel(operator.path);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void addAPTree(String pTreeRootName) throws IOException, MetadataArgsErrorException {
+    public void addAPTree(AddPTreeOperator operator) throws IOException, MetadataArgsErrorException {
 
         lock.writeLock().lock();
         try {
-            mGraph.addAPTree(pTreeRootName);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.ADD_A_PTREE + "," + pTreeRootName);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.addAPTree(operator.rootName);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void addPathToPTree(String path) throws PathErrorException, IOException, MetadataArgsErrorException {
+    public void addPathToPTree(AddPTreePathOperator operator) throws PathErrorException, IOException, MetadataArgsErrorException {
 
         lock.writeLock().lock();
         try {
-            mGraph.addPathToPTree(path);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.ADD_A_PATH_TO_PTREE + "," + path);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.addPathToPTree(operator.path);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void deletePathFromPTree(String path) throws PathErrorException, IOException {
+    public void deletePathFromPTree(DeletePTreePathOperator operator) throws PathErrorException, IOException {
 
         lock.writeLock().lock();
         try {
-            mGraph.deletePath(path);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.DELETE_PATH_FROM_PTREE + "," + path);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.deletePath(operator.path);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void linkMNodeToPTree(String path, String mPath) throws PathErrorException, IOException {
+    public void linkMNodeToPTree(LinkM2POperator operator) throws PathErrorException, IOException {
 
         lock.writeLock().lock();
         try {
-            mGraph.linkMNodeToPTree(path, mPath);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.LINK_MNODE_TO_PTREE + "," + path + "," + mPath);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.linkMNodeToPTree(operator.path, operator.mPath);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void unlinkMNodeFromPTree(String path, String mPath) throws PathErrorException, IOException {
+    public void unlinkMNodeFromPTree(UnlinkM2POperator operator) throws PathErrorException, IOException {
 
         lock.writeLock().lock();
         try {
-            mGraph.unlinkMNodeFromPTree(path, mPath);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.UNLINK_MNODE_FROM_PTREE + "," + path + "," + mPath);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            mGraph.unlinkMNodeFromPTree(operator.path, operator.mPath);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
@@ -921,20 +865,14 @@ public class MManager {
     /**
      * add index for one timeseries
      *
-     * @param path
      * @throws PathErrorException
      * @throws IOException
      */
-    public void addIndexForOneTimeseries(String path, IndexType indexType) throws PathErrorException, IOException {
+    public void addIndexForOneTimeseries(AddIndexOperator operator) throws PathErrorException, IOException {
         lock.writeLock().lock();
         try {
-            getSchemaForOnePath(path).setHasIndex(indexType);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.ADD_INDEX_TO_PATH + "," + path + "," + indexType);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            getSchemaForOnePath(operator.path).setHasIndex(operator.indexType);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
@@ -943,20 +881,14 @@ public class MManager {
     /**
      * drop index for one timeseries
      *
-     * @param path
      * @throws PathErrorException
      * @throws IOException
      */
-    public void deleteIndexForOneTimeseries(String path, IndexType indexType) throws PathErrorException, IOException {
+    public void deleteIndexForOneTimeseries(DeleteIndexOperator operator) throws PathErrorException, IOException {
         lock.writeLock().lock();
         try {
-            getSchemaForOnePath(path).removeIndex(indexType);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.DELETE_INDEX_FROM_PATH + "," + path + "," + indexType);
-                logWriter.newLine();
-                logWriter.flush();
-            }
+            getSchemaForOnePath(operator.path).removeIndex(operator.indexType);
+            logOp(operator);
         } finally {
             lock.writeLock().unlock();
         }
@@ -1009,4 +941,24 @@ public class MManager {
             return dataType;
         }
     }
+
+    public void logOp(MetaOperator operator) throws IOException {
+        if (writeToLog) {
+            initLogStream();
+            operator.writeTo(logWriter);
+        }
+    }
+
+    public void addPathToMTree(String s, String dataType, String encdoing, String[] strings) throws MetadataArgsErrorException, PathErrorException, IOException {
+        addPathToMTree(new AddPathOperator(s, TSDataType.valueOf(dataType), TSEncoding.valueOf(encdoing), strings));
+    }
+
+    public void deletePathFromMTree(String s) throws IOException, PathErrorException {
+        deletePathFromMTree(new DeletePathOperator(s));
+    }
+
+    public void setStorageLevelToMTree(String s) throws IOException, PathErrorException {
+        setStorageLevelToMTree(new SetStorageOperator(s));
+    }
+
 }

@@ -17,6 +17,7 @@ import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.metadata.MNode;
+import cn.edu.tsinghua.iotdb.metadata.operator.*;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator;
@@ -39,6 +40,7 @@ import cn.edu.tsinghua.iotdb.utils.LoadDataUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
@@ -144,7 +146,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                         throw new IndexManagerException(indexPlan.getIndexType() + " doesn't support");
                     Path indexPath = indexPlan.getPaths().get(0);
                     if (index.build(indexPath, new ArrayList<>(), indexPlan.getParameters())) {
-                        mManager.addIndexForOneTimeseries(path, indexPlan.getIndexType());
+                        mManager.addIndexForOneTimeseries(new AddIndexOperator(path, indexPlan.getIndexType()));
                     }
                 } catch (IndexManagerException | PathErrorException | IOException e) {
                     e.printStackTrace();
@@ -167,7 +169,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                         throw new IndexManagerException(indexPlan.getIndexType() + " doesn't support");
                     Path indexPath = indexPlan.getPaths().get(0);
                     if (index.drop(indexPath)) {
-                        mManager.deleteIndexForOneTimeseries(path, indexPlan.getIndexType());
+                        mManager.deleteIndexForOneTimeseries(new DeleteIndexOperator(path, indexPlan.getIndexType()));
                     }
                 } catch (IndexManagerException | PathErrorException | IOException e) {
                     e.printStackTrace();
@@ -537,6 +539,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                      * schemaMap
                      */
                     synchronized (schemaMap) {
+                        AddPathOperator operator = new AddPathOperator(path.getFullPath(), TSDataType.valueOf(dataType), TSEncoding.valueOf(encoding), encodingArgs);
                         if (schemaMap.containsKey(lastNode)) {
                             isNewMeasurement = false;
                             ColumnSchema columnSchema = schemaMap.get(lastNode);
@@ -546,10 +549,11 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                                         "The dataType or encoding of the last node %s is conflicting in the storage group %s",
                                         lastNode, fileNodePath));
                             }
-                            mManager.addPathToMTree(path.getFullPath(), dataType, encoding, encodingArgs);
+
+                            mManager.addPathToMTree(operator);
                             numSchemaMap.put(lastNode, numSchemaMap.get(lastNode) + 1);
                         } else {
-                            mManager.addPathToMTree(path.getFullPath(), dataType, encoding, encodingArgs);
+                            mManager.addPathToMTree(operator);
                             ColumnSchema columnSchema = mManager.getSchemaForOnePath(path.toString());
                             schemaMap.put(lastNode, columnSchema);
                             numSchemaMap.put(lastNode, 1);
@@ -629,7 +633,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                                 } else {
                                     numSchemaMap.put(measurementId, numSchemaMap.get(measurementId) - 1);
                                 }
-                                String deleteNameSpacePath = mManager.deletePathFromMTree(p);
+                                String deleteNameSpacePath = mManager.deletePathFromMTree(new DeletePathOperator(p));
                                 if (deleteNameSpacePath != null) {
                                     deleteFielNodes.add(deleteNameSpacePath);
                                 }
@@ -646,7 +650,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     }
                     break;
                 case SET_FILE_LEVEL:
-                    mManager.setStorageLevelToMTree(path.getFullPath());
+                    mManager.setStorageLevelToMTree(new SetStorageOperator(path.getFullPath()));
                     break;
                 default:
                     throw new ProcessorException("unknown namespace type:" + namespaceType);
@@ -681,19 +685,19 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
         try {
             switch (propertyType) {
                 case ADD_TREE:
-                    mManager.addAPTree(propertyPath.getFullPath());
+                    mManager.addAPTree(new AddPTreeOperator(propertyPath.getFullPath()));
                     break;
                 case ADD_PROPERTY_LABEL:
-                    mManager.addPathToPTree(propertyPath.getFullPath());
+                    mManager.addPathToPTree(new AddPTreePathOperator(propertyPath.getFullPath()));
                     break;
                 case DELETE_PROPERTY_LABEL:
-                    mManager.deletePathFromPTree(propertyPath.getFullPath());
+                    mManager.deletePathFromPTree(new DeletePTreePathOperator(propertyPath.getFullPath()));
                     break;
                 case ADD_PROPERTY_TO_METADATA:
-                    mManager.linkMNodeToPTree(propertyPath.getFullPath(), metadataPath.getFullPath());
+                    mManager.linkMNodeToPTree(new LinkM2POperator(propertyPath.getFullPath(), metadataPath.getFullPath()));
                     break;
                 case DEL_PROPERTY_FROM_METADATA:
-                    mManager.unlinkMNodeFromPTree(propertyPath.getFullPath(), metadataPath.getFullPath());
+                    mManager.unlinkMNodeFromPTree(new UnlinkM2POperator(propertyPath.getFullPath(), metadataPath.getFullPath()));
                     break;
                 default:
                     throw new ProcessorException("unknown namespace type:" + propertyType);
