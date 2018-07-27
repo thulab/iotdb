@@ -115,11 +115,11 @@ public class MManager {
                     ois.close();
                     fis.close();
                 }
+                if (mGraph == null)
+                    mGraph = new MGraph(ROOT_NAME);
                 if (logFile.exists()){
                     // init the metadata from the operation log
                     LOGGER.info("Recovering MGraph from log file");
-                    if (mGraph == null)
-                        mGraph = new MGraph(ROOT_NAME);
                     if (logFile.exists()) {
                         FileReader fr;
                         fr = new FileReader(logFile);
@@ -606,11 +606,7 @@ public class MManager {
         lock.readLock().lock();
         try {
             List<String> fileNameList = new ArrayList<>();
-            for(MNode node : mGraph) {
-                if (node.isStorageLevel()) {
-                    fileNameList.add(node.getFullPath());
-                }
-            }
+            fileNameList.addAll(mGraph.getAllStorageGroup());
             return fileNameList;
         } finally {
             lock.readLock().unlock();

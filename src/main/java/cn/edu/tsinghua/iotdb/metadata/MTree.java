@@ -1,14 +1,14 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
-import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.util.*;
-
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * The hierarchical struct of the Metadata Tree is implemented in this class.
@@ -576,7 +576,7 @@ public class MTree implements Serializable, Iterable<MNode> {
 		if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
 			throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
 		}
-		findPath(getRoot(), nodes, 1, "", paths);
+		findPath(nodes, paths);
 		int pathCnt = 0;
 		for(ArrayList<String> list : paths.values())
 			pathCnt += list.size();
@@ -661,7 +661,21 @@ public class MTree implements Serializable, Iterable<MNode> {
 		HashSet<String> res = new HashSet<>();
 		MNode root;
 		if ((root = getRoot()) != null) {
-			findStorageGroup(root, "root", res);
+			Queue<MNode> queue = new ArrayDeque<>();
+			queue.add(root);
+			while(!queue.isEmpty()) {
+				MNode current = queue.remove();
+				if (current.isStorageLevel()) {
+					res.add(current.getFullPath());
+				} else {
+					HashMap<String, MNode> map = current.getChildren();
+					if(!map.isEmpty()) {
+						for(MNode child : map.values()) {
+							queue.add(child);
+						}
+					}
+				}
+			}
 		}
 		return res;
 	}
@@ -777,35 +791,39 @@ public class MTree implements Serializable, Iterable<MNode> {
 		}
 	}
 
-	private void findPath(MNode node, String[] nodes, int idx, String parent,
-			HashMap<String, ArrayList<String>> paths) {
-		if (node.isLeaf()) {
-			if (nodes.length <= idx) {
-				String fileName = node.getDataFileName();
-				String nodePath = parent + node;
-				putAPath(paths, fileName, nodePath);
-			}
-			return;
-		}
-		String nodeReg;
-		if (idx >= nodes.length) {
-			nodeReg = "*";
-		} else {
-			nodeReg = nodes[idx];
-		}
+	private void findPath(String[] nodes, HashMap<String, ArrayList<String>> paths) {
 
-		if (!nodeReg.equals("*")) {
-			if (!node.hasChild(nodeReg)) {
+		Queue<MNode> currentLevel = new ArrayDeque<>();
+		Queue<MNode> nextLevel = new ArrayDeque<>();
+		Queue<MNode> temp;
+		int depth = 0;
+		currentLevel.add(root);
 
-			} else {
-				findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".", paths);
+		while (!currentLevel.isEmpty() || !nextLevel.isEmpty()) {
+			MNode current = currentLevel.remove();
+			// in 3 conditions will the node be accepted:
+			// 1. the whole pattern has been matched
+			// 2. the node matches a prefix of the pattern
+			// 3. the current sub-pattern (nodes[depth]) is a wildcard
+			if(depth >= nodes.length || current.getName().equals(nodes[depth]) || TsFileDBConstant.WILDCARD.equals(nodes[depth]) ) {
+				if(current.isLeaf()) {
+					ArrayList<String> pathList = paths.computeIfAbsent(current.getStorageGroup(), k -> new ArrayList<>());
+					pathList.add(current.getFullPath());
+				} else {
+					Map<String, MNode> children = current.getChildren();
+					if (children != null) {
+						nextLevel.addAll(children.values());
+					}
+				}
 			}
-		} else {
-			for (MNode child : node.getChildren().values()) {
-				findPath(child, nodes, idx + 1, parent + node.getName() + ".", paths);
+			if (currentLevel.isEmpty()) {
+				// move to nextLevel
+				temp = currentLevel;
+				currentLevel = nextLevel;
+				nextLevel = temp;
+				depth ++;
 			}
 		}
-		return;
 	}
 
 	private void putAPath(HashMap<String, ArrayList<String>> paths, String fileName, String nodePath) {

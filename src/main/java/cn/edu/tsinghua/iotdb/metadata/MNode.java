@@ -38,6 +38,12 @@ public class MNode implements Serializable {
 	private MNode parent;
 	private LinkedHashMap<String, MNode> children;
 
+	// this value will be set only after getFullPath is called
+	transient private String fullPath;
+	// this value will be set only after getStorageGroup is called
+	transient private String storageGroup;
+	transient private boolean nonStorageGroup = false;
+
 	public MNode(String name, MNode parent, boolean isLeaf) {
 		this.setName(name);
 		this.parent = parent;
@@ -168,11 +174,33 @@ public class MNode implements Serializable {
 	}
 
 	public String getFullPath() {
-		StringBuilder fullPath = new StringBuilder(name);
-		MNode parent = this;
-		while((parent = parent.getParent()) != null) {
-			fullPath.insert(0, parent.getName() + TsFileDBConstant.PATH_SEPARATER);
+		if (fullPath != null)
+			return fullPath;
+		MNode parent = getParent();
+		fullPath = name;
+		if (parent != null) {
+			fullPath = parent.getFullPath() + TsFileDBConstant.PATH_SEPARATER + fullPath;
 		}
-		return fullPath.toString();
+		return fullPath;
+	}
+
+	public String getStorageGroup() {
+		if (storageGroup != null || nonStorageGroup)
+			return storageGroup;
+		if (isStorageLevel) {
+			// if this node itself is a storage group, return its path
+			storageGroup = getFullPath();
+			return storageGroup;
+		}
+		// or get storage group from its parent
+		MNode parent = getParent();
+		if (parent != null) {
+			storageGroup = parent.getStorageGroup();
+			if (storageGroup == null)
+				nonStorageGroup = true;
+		} else {
+			nonStorageGroup = true;
+		}
+		return storageGroup;
 	}
 }
