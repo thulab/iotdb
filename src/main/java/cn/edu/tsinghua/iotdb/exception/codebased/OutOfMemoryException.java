@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.exception.code;
+package cn.edu.tsinghua.iotdb.exception.codebased;
 
 import cn.edu.tsinghua.iotdb.exception.builder.ExceptionBuilder;
 

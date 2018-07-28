@@ -1,7 +1,6 @@
-package cn.edu.tsinghua.iotdb.exception.code;
+package cn.edu.tsinghua.iotdb.exception.codebased;
 
 import cn.edu.tsinghua.iotdb.exception.builder.ExceptionBuilder;
-import com.sun.istack.internal.NotNull;
 
 public abstract class IoTDBException extends Exception{
     private static final long serialVersionUID = -8998294067060075273L;
@@ -14,7 +13,7 @@ public IoTDBException(int errorCode){
     this.errorCode=errorCode;
 
 }
-    public IoTDBException(int errCode, @NotNull String additionalInfo){
+    public IoTDBException(int errCode, String additionalInfo){
         this.errorCode=errCode;
         this.additionalInfo=additionalInfo;
     }
