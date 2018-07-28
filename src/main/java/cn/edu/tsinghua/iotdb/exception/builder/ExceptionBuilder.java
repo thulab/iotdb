@@ -3,7 +3,6 @@ package cn.edu.tsinghua.iotdb.exception.builder;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.exception.code.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
