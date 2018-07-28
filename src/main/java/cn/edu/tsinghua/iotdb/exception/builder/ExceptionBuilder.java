@@ -24,31 +24,7 @@ public class ExceptionBuilder {
     public static final int NO_PREPARE_STMT=20130;
     public static final int CON_FAIL_ERR=20220;
 
-    public static IoTDBException newException(int errorCode, String additionalInfo){
-        switch (errorCode){
-            case UNKNOWN_ERROR:
-                return new UnknownException(additionalInfo);
-            case NO_PARAMETERS_EXISTS:
-                return new NoParameterException(additionalInfo);
-            case INVALID﻿_PARAMETER_NO:
-                return new InvalidParameterException(additionalInfo);
-            case CONN_HOST_ERROR:
-                return new ConnectionHostException(additionalInfo);
-            case AUTH_PLUGIN_ERR:
-                return new ConnectionHostException(additionalInfo);
-            case INSECURE_API_ERR:
-                return new InsecureAPIException(additionalInfo);
-            case OUT_OF_MEMORY:
-                return new OutOfMemoryException(additionalInfo);
-            case NO_PREPARE_STMT:
-                return new NoPreparedStatementException(additionalInfo);
-            case CON_FAIL_ERR:
-                return new ConnectionFailedException(additionalInfo);
-            default:
-                return null;
 
-        }
-    }
     private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
     public static final String CONFIG_NAME= "error_info_";
     public static final String FILE_SUFFIX=".properties";

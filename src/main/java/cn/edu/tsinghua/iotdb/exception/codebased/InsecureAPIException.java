@@ -6,7 +6,8 @@ public class InsecureAPIException extends IoTDBException{
     public InsecureAPIException() {
         super(ExceptionBuilder.INSECURE_API_ERR);
     }
-    public InsecureAPIException(String additionalInfo) {
+    public InsecureAPIException(String functionName, String additionalInfo) {
         super(ExceptionBuilder.INSECURE_API_ERR, additionalInfo);
+        defaultInfo=String.format(defaultInfo, functionName);
     }
 }
