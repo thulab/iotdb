@@ -19,6 +19,7 @@ import cn.edu.tsinghua.tsfile.timeseries.write.series.SeriesWriterImpl;
 public class MemTableFlushUtil {
 	private static final Logger logger = LoggerFactory.getLogger(MemTableFlushUtil.class);
 	private static final int pageSizeThreshold = TSFileDescriptor.getInstance().getConfig().pageSizeInByte;
+	private static final int ROWGROUP_RECORDNUM_WARN_THRESHOLD = 100;
 
 	private static int writeOneSeries(List<TimeValuePair> tvPairs, SeriesWriterImpl seriesWriterImpl,
 			TSDataType dataType) throws IOException {
@@ -84,6 +85,8 @@ public class MemTableFlushUtil {
 			}
 			long memSize = tsFileIOWriter.getPos() - startPos;
 			tsFileIOWriter.endRowGroup(memSize, recordCount);
+
+			if(recordCount < ROWGROUP_RECORDNUM_WARN_THRESHOLD)logger.warn("There are just {} records in row group {}, waste space.", recordCount, deltaObjectId);
 		}
 	}
 }
