@@ -109,6 +109,7 @@ public class MManager {
         File dataFile = new File(datafilePath);
         File logFile = new File(logFilePath);
         boolean needFlush = false;
+        int logCnt = -1;
         try {
             try {
                 if (dataFile.exists()) {
@@ -125,12 +126,15 @@ public class MManager {
                 if (logFile.exists()){
                     // init the metadata from the operation log
                     LOGGER.info("Recovering MGraph from log file");
+                    logCnt = 0;
                     if (logFile.exists()) {
                         DataInputStream is;
                         is = new DataInputStream(new BufferedInputStream(new FileInputStream(logFile)));
                         MetaOperator operator;
-                        while((operator = OperatorFactory.readFromStream(is)) != null)
+                        while((operator = OperatorFactory.readFromStream(is)) != null) {
                             operation(operator);
+                            logCnt ++;
+                        }
                         is.close();
                     }
                 }
@@ -143,6 +147,9 @@ public class MManager {
                 writeToLog = true;
             } catch (Exception e) {
                 e.printStackTrace();
+                if (logCnt >= 0) {
+                    LOGGER.info("Log recovery failed after {} logs successfully recovered", logCnt);
+                }
                 throw new RuntimeException(e);
             }
         } finally {
@@ -946,6 +953,7 @@ public class MManager {
         if (writeToLog) {
             initLogStream();
             operator.writeTo(logWriter);
+            logWriter.flush();
         }
     }
 
