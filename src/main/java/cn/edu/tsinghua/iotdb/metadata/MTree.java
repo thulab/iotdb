@@ -78,7 +78,7 @@ public class MTree implements Serializable, Iterable<MNode> {
 		TSDataType dt = TSDataType.valueOf(dataType);
 		TSEncoding ed = TSEncoding.valueOf(encoding);
 		MNode leaf = new MNode(nodeNames[nodeNames.length - 1], cur, dt, ed);
-		if (args.length > 0) {
+		if (args != null && args.length > 0) {
 			for (int k = 0; k < args.length; k++) {
 				String[] arg = args[k].split("=");
 				leaf.getSchema().putKeyValueToArgs(arg[0], arg[1]);
