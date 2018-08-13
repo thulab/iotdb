@@ -131,9 +131,13 @@ public class MManager {
                         DataInputStream is;
                         is = new DataInputStream(new BufferedInputStream(new FileInputStream(logFile)));
                         MetaOperator operator;
-                        while((operator = OperatorFactory.readFromStream(is)) != null) {
-                            operation(operator);
-                            logCnt ++;
+                        try {
+                            while((operator = OperatorFactory.readFromStream(is)) != null) {
+                                operation(operator);
+                                logCnt ++;
+                            }
+                        } catch (IOException | PathErrorException | MetadataArgsErrorException e) {
+                            LOGGER.error("Log recovery interrupted after {} logs successfully recovered, because ", logCnt, e);
                         }
                         is.close();
                     }
@@ -147,9 +151,6 @@ public class MManager {
                 writeToLog = true;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (logCnt >= 0) {
-                    LOGGER.info("Log recovery failed after {} logs successfully recovered", logCnt);
-                }
                 throw new RuntimeException(e);
             }
         } finally {
