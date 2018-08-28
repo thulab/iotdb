@@ -613,6 +613,7 @@ public class MManager {
     /**
      * return in batch a HashMap contains all the paths separated by File Name
      */
+    @Deprecated
     public HashMap<String, ArrayList<String>> getAllPathGroupByFileName(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
 
         lock.readLock().lock();
@@ -624,8 +625,8 @@ public class MManager {
     }
 
     /**
-     * return all paths for given path if the path is abstract.Or return the
-     * path itself.
+     * return all paths for given path if the path is abstract.
+     * Or return the path itself.
      */
     public ArrayList<String> getPaths(String path) throws PathErrorException {
 
@@ -643,9 +644,10 @@ public class MManager {
     }
 
     /**
-     * return in batch all paths for given path if the path is abstract.Or return the
-     * path itself.
+     * return in batch all paths for given path if the path is abstract.
+     * Or return the path itself.
      */
+    @Deprecated
     public ArrayList<String> getPaths(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
         lock.readLock().lock();
         try {
@@ -655,6 +657,18 @@ public class MManager {
                 res.addAll(ps);
             }
             return res;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * return in batch metadata of the given timeseries path
+     */
+    public List<List<String>> getShowTimeseriesPath(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+        lock.readLock().lock();
+        try {
+            return mGraph.getShowTimeseriesPath(path, batchFetchIdx, batchFetchSize);
         } finally {
             lock.readLock().unlock();
         }

@@ -143,7 +143,8 @@ public class MGraph implements Serializable {
 		}
 		throw new PathErrorException("Timeseries's root is not Correct. RootName: " + rootName);
 	}	
-    
+
+		@Deprecated
     	public HashMap<String, ArrayList<String>> getAllPathGroupByFilename(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
         	String rootName = path.trim().split(separator)[0];
         	if (mTree.getRoot().getName().equals(rootName)) {
@@ -153,7 +154,16 @@ public class MGraph implements Serializable {
         	}
         	throw new PathErrorException("Timeseries's root is not Correct. RootName: " + rootName);
     	}
-	
+
+    	public List<List<String>> getShowTimeseriesPath(String path, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+			String rootName = path.trim().split(separator)[0];
+			if (mTree.getRoot().getName().equals(rootName)) {
+				return mTree.getShowTimeseriesPath(path, batchFetchIdx, batchFetchSize);
+			} else if (pTreeMap.containsKey(rootName)) {
+				throw new PathErrorException("PTree is not involved in the batch execution of the sql 'show timeseries " + path + "'");
+			}
+			throw new PathErrorException("Timeseries's root is not Correct. RootName: " + rootName);
+		}
 	/**
 	 * Get all DeltaObject type in current Metadata Tree
 	 * @return a HashMap contains all distinct DeltaObject type separated by

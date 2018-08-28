@@ -163,29 +163,15 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				String path = req.getColumnPath();
 				int batchFetchIdx = req.getBatchFetchIdx();
 				int batchFetchSize = req.getBatchFetchSize();
-				List<List<String>> showTimeseriesList = new ArrayList<>();
 				try {
-				    List<String> paths = MManager.getInstance().getPaths(path, batchFetchIdx, batchFetchSize);
-				    if (paths.size() == 0) { // check path exists
-					resp.setHasResultSet(false);
-					status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
-					resp.setStatus(status);
-					return resp;
-				    }
-				    for (int i = 0; i < paths.size(); i++) {
-					String apath = paths.get(i);
-					List<String> tsRow = new ArrayList<>(4);// get [name,storage group,dataType,encoding]
-					tsRow.add(apath);
-					MNode leafNode = MManager.getInstance().getNodeByPath(apath);
-					if (leafNode.isLeaf()) {
-					    ColumnSchema columnSchema = leafNode.getSchema();
-					    tsRow.add(leafNode.getDataFileName());
-					    tsRow.add(columnSchema.dataType.toString());
-					    tsRow.add(columnSchema.encoding.toString());
+					List<List<String>> showTimeseriesList = MManager.getInstance().getShowTimeseriesPath(path, batchFetchIdx, batchFetchSize);
+					if (showTimeseriesList.size() == 0) { // check the result
+						resp.setHasResultSet(false);
+						status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
+						resp.setStatus(status);
+						return resp;
 					}
-					showTimeseriesList.add(tsRow);
-				    }
-				    resp.setShowTimeseriesList(showTimeseriesList);
+					resp.setShowTimeseriesList(showTimeseriesList);
 				    resp.setHasResultSet(true);
 				} catch (PathErrorException e) {
 				    status = new TS_Status(TS_StatusCode.ERROR_STATUS);

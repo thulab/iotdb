@@ -577,6 +577,7 @@ public class MTree implements Serializable {
     
     	private int batchFetchCnt = 0;
 
+		@Deprecated
     	public HashMap<String, ArrayList<String>> getAllPath(String pathReg, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
         	HashMap<String, ArrayList<String>> paths = new HashMap<>();
         	String[] nodes = pathReg.split(separator);
@@ -587,6 +588,17 @@ public class MTree implements Serializable {
         	findPath(getRoot(), nodes, 1, "", paths, batchFetchIdx, batchFetchSize);
         	return paths;
     	}
+
+    	public List<List<String>> getShowTimeseriesPath(String pathReg, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+			List<List<String>> res = new ArrayList<>();
+			String[] nodes = pathReg.split(separator);
+			if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
+				throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
+			}
+			batchFetchCnt = 0;
+			findPath(getRoot(), nodes, 1, "", res, batchFetchIdx, batchFetchSize);
+			return res;
+		}
 
 	/**
 	 *
@@ -818,6 +830,7 @@ public class MTree implements Serializable {
         	}
     	}
 
+    	@Deprecated
     	private void findPath(MNode node, String[] nodes, int idx, String parent,
                           HashMap<String, ArrayList<String>> paths, int batchFetchIdx, int batchFetchSize) {
         	if (batchFetchCnt >= batchFetchIdx + batchFetchSize) {
@@ -852,6 +865,46 @@ public class MTree implements Serializable {
         	}
         	return;
     	}
+
+	private void findPath(MNode node, String[] nodes, int idx, String parent,
+						  List<List<String>> res, int batchFetchIdx, int batchFetchSize) {
+		if (batchFetchCnt >= batchFetchIdx + batchFetchSize) {
+			return;
+		}
+		if (node.isLeaf()) {
+			if (nodes.length <= idx && checkIdx(batchFetchCnt, batchFetchIdx, batchFetchSize)) {
+				String nodePath = parent + node;
+				List<String> tsRow = new ArrayList<>(4);// get [name,storage group,dataType,encoding]
+				tsRow.add(nodePath);
+				ColumnSchema columnSchema = node.getSchema();
+				tsRow.add(node.getDataFileName());
+				tsRow.add(columnSchema.dataType.toString());
+				tsRow.add(columnSchema.encoding.toString());
+				res.add(tsRow);
+			}
+			batchFetchCnt++;
+			return;
+		}
+		String nodeReg;
+		if (idx >= nodes.length) {
+			nodeReg = "*";
+		} else {
+			nodeReg = nodes[idx];
+		}
+
+		if (!nodeReg.equals("*")) {
+			if (node.hasChild(nodeReg)) {
+				findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".",
+						res, batchFetchIdx, batchFetchSize);
+			}
+		} else {
+			for (MNode child : node.getChildren().values()) {
+				findPath(child, nodes, idx + 1, parent + node.getName() + ".",
+						res, batchFetchIdx, batchFetchSize);
+			}
+		}
+		return;
+	}
 
 	private void putAPath(HashMap<String, ArrayList<String>> paths, String fileName, String nodePath) {
 		if (paths.containsKey(fileName)) {
