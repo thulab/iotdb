@@ -799,9 +799,7 @@ public class MTree implements Serializable {
 		}
 
 		if (!nodeReg.equals("*")) {
-			if (!node.hasChild(nodeReg)) {
-
-			} else {
+			if (node.hasChild(nodeReg)) {
 				findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".", paths);
 			}
 		} else {
@@ -842,9 +840,7 @@ public class MTree implements Serializable {
         	}
 
         	if (!nodeReg.equals("*")) {
-            		if (!node.hasChild(nodeReg)) {
-
-            		} else {
+            		if (node.hasChild(nodeReg)) {
                 	findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".",
                         	paths, batchFetchIdx, batchFetchSize);
             		}
