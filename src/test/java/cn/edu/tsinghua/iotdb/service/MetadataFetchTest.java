@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.service;
 
+import cn.edu.tsinghua.iotdb.jdbc.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -208,7 +209,7 @@ public class MetadataFetchTest {
                 "root.ln.wf01.wt01.status,\n" +
                 "root.ln.wf01.wt01.temperature,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns("col", "root", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogColumn, "root", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
@@ -232,7 +233,7 @@ public class MetadataFetchTest {
         String standard = "Column,\n" +
                 "root.ln.wf01.wt01,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns("delta", "ln", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDeltaObject, "ln", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
@@ -258,7 +259,7 @@ public class MetadataFetchTest {
                 "root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n" +
                 "root.ln.wf01.wt01.temperature,root.ln.wf01.wt01,FLOAT,RLE,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns("ts", "root", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, "root", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
@@ -283,7 +284,7 @@ public class MetadataFetchTest {
         String standard = "DataType,\n" +
                 "BOOLEAN,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns("ts", "root.ln.wf01.wt01.status", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, "root.ln.wf01.wt01.status", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         StringBuilder resultStr = new StringBuilder();
         resultStr.append(resultSetMetaData.getColumnName(3)).append(",\n");
@@ -301,7 +302,7 @@ public class MetadataFetchTest {
         String standard = "Storage Group,\n" +
                 "root.ln.wf01.wt01,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns("sg", null, null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogStorageGroup, null, null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();

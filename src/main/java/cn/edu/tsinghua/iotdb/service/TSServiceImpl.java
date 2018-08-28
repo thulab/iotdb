@@ -211,7 +211,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				String metadataInJson = null;
                 		try {
                     			metadataInJson = MManager.getInstance().getMetadataInString();
-                		} catch (OutOfMemoryError outOfMemoryError) {
+                		} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
                     			LOGGER.error("Failed to fetch all metadata in json", outOfMemoryError);
                     			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
                     			status.setErrorMessage(String.format("Failed to fetch all metadata in json because: %s", outOfMemoryError));
@@ -238,7 +238,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
                     			status.setErrorMessage(String.format("Failed to fetch delta object map because: %s", e));
                     			resp.setStatus(status);
                     			return resp;
-                		} catch (OutOfMemoryError outOfMemoryError) {
+                		} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
                     			LOGGER.error("Failed to get delta object map", outOfMemoryError);
                     			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
                     			status.setErrorMessage(String.format("Failed to get delta object map because: %s", outOfMemoryError));
@@ -265,7 +265,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
                     			status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), e));
                     			resp.setStatus(status);
                     			return resp;
-                		} catch (OutOfMemoryError outOfMemoryError) {
+                		} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
                     			LOGGER.error("Failed to fetch path {}'s all columns", req.getColumnPath(), outOfMemoryError);
                     			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
                     			status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), outOfMemoryError));

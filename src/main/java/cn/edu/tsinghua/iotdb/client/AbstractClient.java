@@ -47,10 +47,10 @@ public abstract class AbstractClient {
 	protected static String timeFormat = "default";
 //	protected static final String TIME_KEY_WORD = "time";
 	protected static final List<String> AGGREGRATE_TIME_LIST = new ArrayList<>();
-	
+
 	protected static final String MAX_PRINT_ROW_COUNT_ARGS = "maxPRC";
 	protected static final String MAX_PRINT_ROW_COUNT_NAME = "maxPrintRowCount";
-	
+
 	protected static final String SET_MAX_DISPLAY_NUM = "set max_display_num";
 	protected static int maxPrintRowCount = 1000;
 
@@ -58,11 +58,11 @@ public abstract class AbstractClient {
 	protected static final String SHOW_TIMESTAMP_DISPLAY = "show time_display_type";
 	protected static final String SET_TIME_ZONE = "set time_zone";
 	protected static final String SHOW_TIMEZONE = "show time_zone";
-	
+
 	protected static final String SET_FETCH_SIZE = "set fetch_size";
 	protected static final String SHOW_FETCH_SIZE = "show fetch_size";
 	protected static int fetchSize = 10000;
-	
+
 	protected static final String IOTDB_CLI_PREFIX = "IoTDB";
 	protected static final String SCRIPT_HINT = "./start-client.sh(start-client.bat if Windows)";
 	private static final String QUIT_COMMAND = "quit";
@@ -77,12 +77,14 @@ public abstract class AbstractClient {
     	protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// for sql 'show timeseries <path>' and 'show storage group'
 	protected static String formatTime = "%" + maxTimeLength + "s|";
 	protected static String formatValue = "%" + maxValueLength + "s|";
-	
+
+	protected static int DIVIDING_LINE_LEN = 40;
+
 	protected static final String IMPORT_CMD = "import";
 	protected static final String EXPORT_CMD = "export";
-	
+
 	private static final String NEED_NOT_TO_PRINT_TIMESTAMP = "AGGREGATION";
-	
+
 	protected static String host = "127.0.0.1";
 	protected static String port = "6667";
 	protected static String username;
@@ -100,7 +102,7 @@ public abstract class AbstractClient {
 		keywordSet.add("-"+USERNAME_ARGS);
 		keywordSet.add("-"+ISO8601_ARGS);
 		keywordSet.add("-"+MAX_PRINT_ROW_COUNT_ARGS);
-		
+
 		AGGREGRATE_TIME_LIST.add(AggregationConstant.MAX_TIME);
 		AGGREGRATE_TIME_LIST.add(AggregationConstant.MIN_TIME);
 	}
@@ -187,12 +189,12 @@ public abstract class AbstractClient {
 		    	}
 		}
 
-		System.out.println(StringUtils.repeat('-', 40));
+		System.out.println(StringUtils.repeat('-', DIVIDING_LINE_LEN));
 		if (isShow) {
 			int type = res.getType();
-		    	if (type == 0) { // storage group
+		    	if (type == TsfileMetadataResultSet.MetadataType.STORAGE_GROUP.ordinal()) { // storage group
 				System.out.println("Total storage group number = " + cnt);
-		    	} else if (type == 1) { // show timeseries <path>
+		    	} else if (type == TsfileMetadataResultSet.MetadataType.TIMESERIES.ordinal()) { // show timeseries <path>
 				System.out.println("Total timeseries number = " + cnt);
 		    	}
 		} else {
@@ -281,11 +283,11 @@ public abstract class AbstractClient {
 		}
 		formatTime = "%" + maxTimeLength + "s|";
 	}
-	
+
 	private static void setFetchSize(String fetchSizeString){
 		fetchSize = Integer.parseInt(fetchSizeString.trim());
 	}
-	
+
 	protected static void setMaxDisplayNumber(String maxDisplayNum){
 		maxPrintRowCount = Integer.parseInt(maxDisplayNum.trim());
 		if (maxPrintRowCount < 0) {
@@ -396,7 +398,7 @@ public abstract class AbstractClient {
 			System.out.println("Time display type has set to "+cmd.split("=")[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
-		
+
 		if(specialCmd.startsWith(SET_TIME_ZONE)){
 			String[] values = specialCmd.split("=");
 			if(values.length != 2){
@@ -412,7 +414,7 @@ public abstract class AbstractClient {
 			System.out.println("Time zone has set to "+values[1].trim());
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
-		
+
 		if(specialCmd.startsWith(SET_FETCH_SIZE)){
 			String[] values = specialCmd.split("=");
 			if(values.length != 2){
@@ -461,7 +463,7 @@ public abstract class AbstractClient {
 			System.out.println("Current fetch size: "+fetchSize);
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
-		
+
 		if(specialCmd.startsWith(IMPORT_CMD)){
 			String[] values = specialCmd.split(" ");
 			if(values.length != 2){
