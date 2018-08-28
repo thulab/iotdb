@@ -1,9 +1,7 @@
-package cn.edu.tsinghua.iotdb.sql;
+package cn.edu.tsinghua.iotdb.service;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
-import cn.edu.tsinghua.iotdb.service.IoTDB;
-import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -14,7 +12,7 @@ import java.sql.*;
 
 import static org.junit.Assert.fail;
 
-public class ShowTimeseriesPathAndStorageGroupTest {
+public class MetadataFetchTest {
     private IoTDB deamon;
 
     private DatabaseMetaData databaseMetaData;
@@ -69,11 +67,8 @@ public class ShowTimeseriesPathAndStorageGroupTest {
         }
     }
 
-    /*
-        SQL TEST
-     */
     @Test
-    public void Test1() throws ClassNotFoundException, SQLException {
+    public void ShowTimeseriesTest1() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
@@ -86,8 +81,6 @@ public class ShowTimeseriesPathAndStorageGroupTest {
 
                     "show timeseries root.a.b", // nonexistent timeseries, thus returning ""
                     "show timeseries root.ln,root.ln", // SHOW TIMESERIES <PATH> only accept single path, thus returning ""
-
-                    "show storage group"
             };
             String[] standards = new String[]{"root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n",
 
@@ -99,10 +92,7 @@ public class ShowTimeseriesPathAndStorageGroupTest {
 
                     "",
 
-                    "",
-
-                    "root.ln.wf01.wt01,\n"
-
+                    ""
             };
             for (int n = 0; n < sqls.length; n++) {
                 String sql = sqls[n];
@@ -132,11 +122,8 @@ public class ShowTimeseriesPathAndStorageGroupTest {
         }
     }
 
-    /*
-        SQL TEST
-     */
     @Test(expected = SQLException.class)
-    public void Test2() throws ClassNotFoundException, SQLException {
+    public void ShowTimeseriesTest2() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
@@ -147,11 +134,49 @@ public class ShowTimeseriesPathAndStorageGroupTest {
         connection.close();
     }
 
-    /*
-        JDBC DatabaseMetaData TEST
-     */
     @Test
-    public void Test3() throws ClassNotFoundException, SQLException {
+    public void ShowStorageGroupTest() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            String[] sqls = new String[]{
+                    "show storage group"
+            };
+            String[] standards = new String[]{
+                    "root.ln.wf01.wt01,\n"
+            };
+            for (int n = 0; n < sqls.length; n++) {
+                String sql = sqls[n];
+                String standard = standards[n];
+                StringBuilder builder = new StringBuilder();
+                try {
+                    boolean hasResultSet = statement.execute(sql);
+                    if (hasResultSet) {
+                        ResultSet resultSet = statement.getResultSet();
+                        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                        while (resultSet.next()) {
+                            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                                builder.append(resultSet.getString(i)).append(",");
+                            }
+                            builder.append("\n");
+                        }
+                    }
+                    Assert.assertEquals(builder.toString(), standard);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    fail(e.getMessage());
+                }
+            }
+            statement.close();
+        } finally {
+            connection.close();
+        }
+    }
+
+    @Test
+    public void DatabaseMetaDataTest() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
@@ -162,6 +187,7 @@ public class ShowTimeseriesPathAndStorageGroupTest {
             DeltaObject();
             ShowTimeseriesPath();
             ShowTimeseriesPath2();
+            ShowStorageGroup();
             ShowTimeseriesInJson();
 
         } catch (Exception e) {
@@ -321,5 +347,4 @@ public class ShowTimeseriesPathAndStorageGroupTest {
                 "}";
         Assert.assertEquals(metadataInJson, standard);
     }
-
 }
