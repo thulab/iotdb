@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.sql;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -15,6 +16,8 @@ import static org.junit.Assert.fail;
 
 public class ShowTimeseriesPathAndStorageGroupTest {
     private IoTDB deamon;
+
+    private DatabaseMetaData databaseMetaData;
 
     private boolean testFlag = TestUtils.testFlag;
 
@@ -66,8 +69,11 @@ public class ShowTimeseriesPathAndStorageGroupTest {
         }
     }
 
+    /*
+        SQL TEST
+     */
     @Test
-    public void Test() throws ClassNotFoundException, SQLException {
+    public void Test1() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
@@ -77,10 +83,10 @@ public class ShowTimeseriesPathAndStorageGroupTest {
                     "show timeseries root.ln.wf01.wt01.status", // full path
                     "show timeseries root.ln", // prefix path
                     "show timeseries root.ln.*.wt01", // path with stars
-                    "show storage group", // nonexistent timeseries
-                    "show timeseries root.a.b", // SHOW TIMESERIES <PATH> only accept single path
-                    "show timeseries root.ln,root.ln", // SHOW TIMESERIES <PATH> only accept single path
-                    "show timeseries", // not supported in jdbc
+
+                    "show timeseries root.a.b", // nonexistent timeseries, thus returning ""
+                    "show timeseries root.ln,root.ln", // SHOW TIMESERIES <PATH> only accept single path, thus returning ""
+
                     "show storage group"
             };
             String[] standards = new String[]{"root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n",
@@ -91,13 +97,9 @@ public class ShowTimeseriesPathAndStorageGroupTest {
                     "root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n" +
                             "root.ln.wf01.wt01.temperature,root.ln.wf01.wt01,FLOAT,RLE,\n",
 
-                    "root.ln.wf01.wt01,\n",
-
                     "",
 
                     "",
-
-                    "", // used as a placeholder because this sql is asserted in the 'catch' clause
 
                     "root.ln.wf01.wt01,\n"
 
@@ -120,8 +122,8 @@ public class ShowTimeseriesPathAndStorageGroupTest {
                     }
                     Assert.assertEquals(builder.toString(), standard);
                 } catch (SQLException e) {
-                    // assert specially for sql "show timeseries"
-                    Assert.assertEquals(e.toString(), "java.sql.SQLException: Error format of 'SHOW TIMESERIES <PATH>'");
+                    e.printStackTrace();
+                    fail(e.getMessage());
                 }
             }
             statement.close();
@@ -130,5 +132,194 @@ public class ShowTimeseriesPathAndStorageGroupTest {
         }
     }
 
+    /*
+        SQL TEST
+     */
+    @Test(expected = SQLException.class)
+    public void Test2() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Statement statement = connection.createStatement();
+        String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
+        boolean hasResultSet = statement.execute(sql);
+        statement.close();
+        connection.close();
+    }
+
+    /*
+        JDBC DatabaseMetaData TEST
+     */
+    @Test
+    public void Test3() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            databaseMetaData = connection.getMetaData();
+
+            AllColumns();
+            DeltaObject();
+            ShowTimeseriesPath();
+            ShowTimeseriesPath2();
+            ShowTimeseriesInJson();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    /**
+     * get all columns' name under a given path
+     */
+    public void AllColumns() throws SQLException {
+        String standard = "Column,\n" +
+                "root.ln.wf01.wt01.status,\n" +
+                "root.ln.wf01.wt01.temperature,\n";
+
+        ResultSet resultSet = databaseMetaData.getColumns("col", "root", null, null);
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int colCount = resultSetMetaData.getColumnCount();
+        StringBuilder resultStr = new StringBuilder();
+        for (int i = 1; i < colCount + 1; i++) {
+            resultStr.append(resultSetMetaData.getColumnName(i)).append(",");
+        }
+        resultStr.append("\n");
+        while (resultSet.next()) {
+            for (int i = 1; i <= colCount; i++) {
+                resultStr.append(resultSet.getString(i)).append(",");
+            }
+            resultStr.append("\n");
+        }
+        Assert.assertEquals(resultStr.toString(), standard);
+    }
+
+    /**
+     * get all delta objects under a given column
+     */
+    public void DeltaObject() throws SQLException {
+        String standard = "Column,\n" +
+                "root.ln.wf01.wt01,\n";
+
+        ResultSet resultSet = databaseMetaData.getColumns("delta", "ln", null, null);
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int colCount = resultSetMetaData.getColumnCount();
+        StringBuilder resultStr = new StringBuilder();
+        for (int i = 1; i < colCount + 1; i++) {
+            resultStr.append(resultSetMetaData.getColumnName(i)).append(",");
+        }
+        resultStr.append("\n");
+        while (resultSet.next()) {
+            for (int i = 1; i <= colCount; i++) {
+                resultStr.append(resultSet.getString(i)).append(",");
+            }
+            resultStr.append("\n");
+        }
+        Assert.assertEquals(resultStr.toString(), standard);
+    }
+
+    /**
+     * show timeseries <path>
+     * usage 1
+     */
+    public void ShowTimeseriesPath() throws SQLException {
+        String standard = "Timeseries,Storage Group,DataType,Encoding,\n" +
+                "root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n" +
+                "root.ln.wf01.wt01.temperature,root.ln.wf01.wt01,FLOAT,RLE,\n";
+
+        ResultSet resultSet = databaseMetaData.getColumns("ts", "root", null, null);
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int colCount = resultSetMetaData.getColumnCount();
+        StringBuilder resultStr = new StringBuilder();
+        for (int i = 1; i < colCount + 1; i++) {
+            resultStr.append(resultSetMetaData.getColumnName(i)).append(",");
+        }
+        resultStr.append("\n");
+        while (resultSet.next()) {
+            for (int i = 1; i <= colCount; i++) {
+                resultStr.append(resultSet.getString(i)).append(",");
+            }
+            resultStr.append("\n");
+        }
+        Assert.assertEquals(resultStr.toString(), standard);
+    }
+
+    /**
+     * show timeseries <path>
+     * usage 2
+     */
+    public void ShowTimeseriesPath2() throws SQLException {
+        String standard = "DataType,\n" +
+                "BOOLEAN,\n";
+
+        ResultSet resultSet = databaseMetaData.getColumns("ts", "root.ln.wf01.wt01.status", null, null);
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        StringBuilder resultStr = new StringBuilder();
+        resultStr.append(resultSetMetaData.getColumnName(3)).append(",\n");
+        while (resultSet.next()) {
+            resultStr.append(resultSet.getString(TsfileMetadataResultSet.GET_STRING_TIMESERIES_DATATYPE)).append(",");
+            resultStr.append("\n");
+        }
+        Assert.assertEquals(resultStr.toString(), standard);
+    }
+
+    /**
+     * show storage group
+     */
+    public void ShowStorageGroup() throws SQLException {
+        String standard = "Storage Group,\n" +
+                "root.ln.wf01.wt01,\n";
+
+        ResultSet resultSet = databaseMetaData.getColumns("sg", null, null, null);
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int colCount = resultSetMetaData.getColumnCount();
+        StringBuilder resultStr = new StringBuilder();
+        for (int i = 1; i < colCount + 1; i++) {
+            resultStr.append(resultSetMetaData.getColumnName(i)).append(",");
+        }
+        resultStr.append("\n");
+        while (resultSet.next()) {
+            for (int i = 1; i <= colCount; i++) {
+                resultStr.append(resultSet.getString(i)).append(",");
+            }
+            resultStr.append("\n");
+        }
+        Assert.assertEquals(resultStr.toString(), standard);
+    }
+
+    /**
+     * show metadata in json
+     */
+    public void ShowTimeseriesInJson() {
+        String metadataInJson = databaseMetaData.toString();
+        String standard = "===  Timeseries Tree  ===\n" +
+                "\n" +
+                "root:{\n" +
+                "    ln:{\n" +
+                "        wf01:{\n" +
+                "            wt01:{\n" +
+                "                status:{\n" +
+                "                     DataType: BOOLEAN,\n" +
+                "                     Encoding: PLAIN,\n" +
+                "                     args: {},\n" +
+                "                     StorageGroup: root.ln.wf01.wt01 \n" +
+                "                },\n" +
+                "                temperature:{\n" +
+                "                     DataType: FLOAT,\n" +
+                "                     Encoding: RLE,\n" +
+                "                     args: {COMPRESSOR=SNAPPY, MAX_POINT_NUMBER=3},\n" +
+                "                     StorageGroup: root.ln.wf01.wt01 \n" +
+                "                }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        Assert.assertEquals(metadataInJson, standard);
+    }
 
 }
