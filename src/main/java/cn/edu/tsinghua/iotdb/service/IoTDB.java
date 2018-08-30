@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import cn.edu.tsinghua.iotdb.exception.*;
+import cn.edu.tsinghua.iotdb.exception.builder.ExceptionBuilder;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +88,8 @@ public class IoTDB implements IoTDBMBean {
 
         JMXService.registerMBean(getInstance(), MBEAN_NAME);
 
+        initErrorInformation();
+      
         serverManager.startServer();
     }
 
@@ -105,6 +108,11 @@ public class IoTDB implements IoTDBMBean {
         Thread.setDefaultUncaughtExceptionHandler(new IoTDBDefaultThreadExceptionHandler());
     }
 
+    private void initErrorInformation(){
+      	ExceptionBuilder.getInstance().loadInfo();
+    }
+
+  
     /**
      * Recover data using system log.
      *
@@ -155,6 +163,5 @@ public class IoTDB implements IoTDBMBean {
         IoTDB daemon = IoTDB.getInstance();
         daemon.active();
     }
-
 }
 
