@@ -379,6 +379,8 @@ public abstract class AbstractClient {
 				System.out.println(connection.getMetaData());
 			} catch (SQLException e) {
 				System.out.println("Failed to show timeseries because: " + e.getMessage());
+			} catch (OutOfMemoryError outOfMemoryError) {
+				System.out.println("Failed to show timeseries because: " + outOfMemoryError.getMessage());
 			}
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
