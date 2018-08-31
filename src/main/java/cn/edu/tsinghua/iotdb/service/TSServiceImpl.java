@@ -161,23 +161,20 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		switch (req.getType()) {
 			case "SHOW_TIMESERIES":
 				String path = req.getColumnPath();
-				int batchFetchIdx = req.getBatchFetchIdx();
-				int batchFetchSize = req.getBatchFetchSize();
 				try {
-					List<List<String>> showTimeseriesList = MManager.getInstance().getShowTimeseriesPath(path, batchFetchIdx, batchFetchSize);
-					if (showTimeseriesList.size() == 0) { // check the result
-						resp.setHasResultSet(false);
-						status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
-						resp.setStatus(status);
-						return resp;
-					}
+					List<List<String>> showTimeseriesList = MManager.getInstance().getShowTimeseriesPath(path);
 					resp.setShowTimeseriesList(showTimeseriesList);
-				    resp.setHasResultSet(true);
 				} catch (PathErrorException e) {
 				    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 				    status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: %s", req.getColumnPath(), e));
 				    resp.setStatus(status);
 				    return resp;
+				} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
+					LOGGER.error(String.format("Failed to fetch timeseries %s's metadata", req.getColumnPath()), outOfMemoryError);
+					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+					status.setErrorMessage(String.format("Failed to fetch timeseries %s's metadata because: %s", req.getColumnPath(), outOfMemoryError));
+					resp.setStatus(status);
+					return resp;
 				}
 				status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 				break;
@@ -188,6 +185,12 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				} catch (PathErrorException e) {
 					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 					status.setErrorMessage(String.format("Failed to fetch storage groups' metadata because: %s", e));
+					resp.setStatus(status);
+					return resp;
+				} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
+					LOGGER.error("Failed to fetch storage groups' metadata", outOfMemoryError);
+					status = new TS_Status(TS_StatusCode.ERROR_STATUS);
+					status.setErrorMessage(String.format("Failed to fetch storage groups' metadata because: %s", outOfMemoryError));
 					resp.setStatus(status);
 					return resp;
 				}

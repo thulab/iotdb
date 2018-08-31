@@ -186,7 +186,7 @@ public class MetadataFetchTest {
 
             AllColumns();
             DeltaObject();
-            ShowTimeseriesPath();
+            ShowTimeseriesPath1();
             ShowTimeseriesPath2();
             ShowStorageGroup();
             ShowTimeseriesInJson();
@@ -254,7 +254,7 @@ public class MetadataFetchTest {
      * show timeseries <path>
      * usage 1
      */
-    public void ShowTimeseriesPath() throws SQLException {
+    public void ShowTimeseriesPath1() throws SQLException {
         String standard = "Timeseries,Storage Group,DataType,Encoding,\n" +
                 "root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n" +
                 "root.ln.wf01.wt01.temperature,root.ln.wf01.wt01,FLOAT,RLE,\n";

@@ -574,29 +574,14 @@ public class MTree implements Serializable {
 		findPath(getRoot(), nodes, 1, "", paths);
 		return paths;
 	}
-    
-    	private int batchFetchCnt = 0;
 
-		@Deprecated
-    	public HashMap<String, ArrayList<String>> getAllPath(String pathReg, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
-        	HashMap<String, ArrayList<String>> paths = new HashMap<>();
-        	String[] nodes = pathReg.split(separator);
-        	if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
-            		throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
-        	}
-        	batchFetchCnt = 0;
-        	findPath(getRoot(), nodes, 1, "", paths, batchFetchIdx, batchFetchSize);
-        	return paths;
-    	}
-
-    	public List<List<String>> getShowTimeseriesPath(String pathReg, int batchFetchIdx, int batchFetchSize) throws PathErrorException {
+    	public List<List<String>> getShowTimeseriesPath(String pathReg) throws PathErrorException {
 			List<List<String>> res = new ArrayList<>();
 			String[] nodes = pathReg.split(separator);
 			if (nodes.length == 0 || !nodes[0].equals(getRoot().getName())) {
 				throw new PathErrorException(String.format("Timeseries %s is not correct", pathReg));
 			}
-			batchFetchCnt = 0;
-			findPath(getRoot(), nodes, 1, "", res, batchFetchIdx, batchFetchSize);
+			findPath(getRoot(), nodes, 1, "", res);
 			return res;
 		}
 
@@ -821,58 +806,14 @@ public class MTree implements Serializable {
 		}
 		return;
 	}
-    
-     	private boolean checkIdx(int idx, int batchFetchIdx, int batchFetchSize) {
-        	if (idx >= batchFetchIdx && idx < batchFetchIdx + batchFetchSize) {
-            		return true;
-        	} else {
-            		return false;
-        	}
-    	}
 
-    	@Deprecated
-    	private void findPath(MNode node, String[] nodes, int idx, String parent,
-                          HashMap<String, ArrayList<String>> paths, int batchFetchIdx, int batchFetchSize) {
-        	if (batchFetchCnt >= batchFetchIdx + batchFetchSize) {
-            	return;
-        	}
-        	if (node.isLeaf()) {
-            		if (nodes.length <= idx && checkIdx(batchFetchCnt, batchFetchIdx, batchFetchSize)) {
-                		String fileName = node.getDataFileName();
-                		String nodePath = parent + node;
-                		putAPath(paths, fileName, nodePath);
-            		}
-            		batchFetchCnt++;
-            		return;
-        	}
-        	String nodeReg;
-        	if (idx >= nodes.length) {
-            		nodeReg = "*";
-        	} else {
-            		nodeReg = nodes[idx];
-        	}
-
-        	if (!nodeReg.equals("*")) {
-            		if (node.hasChild(nodeReg)) {
-                	findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".",
-                        	paths, batchFetchIdx, batchFetchSize);
-            		}
-        	} else {
-            		for (MNode child : node.getChildren().values()) {
-                		findPath(child, nodes, idx + 1, parent + node.getName() + ".",
-                        		paths, batchFetchIdx, batchFetchSize);
-            		}
-        	}
-        	return;
-    	}
-
+	/*
+		Iterate through MTree to fetch metadata info of all leaf nodes under the given path
+	 */
 	private void findPath(MNode node, String[] nodes, int idx, String parent,
-						  List<List<String>> res, int batchFetchIdx, int batchFetchSize) {
-		if (batchFetchCnt >= batchFetchIdx + batchFetchSize) {
-			return;
-		}
+						  List<List<String>> res) {
 		if (node.isLeaf()) {
-			if (nodes.length <= idx && checkIdx(batchFetchCnt, batchFetchIdx, batchFetchSize)) {
+			if (nodes.length <= idx) {
 				String nodePath = parent + node;
 				List<String> tsRow = new ArrayList<>(4);// get [name,storage group,dataType,encoding]
 				tsRow.add(nodePath);
@@ -882,7 +823,6 @@ public class MTree implements Serializable {
 				tsRow.add(columnSchema.encoding.toString());
 				res.add(tsRow);
 			}
-			batchFetchCnt++;
 			return;
 		}
 		String nodeReg;
@@ -894,13 +834,11 @@ public class MTree implements Serializable {
 
 		if (!nodeReg.equals("*")) {
 			if (node.hasChild(nodeReg)) {
-				findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".",
-						res, batchFetchIdx, batchFetchSize);
+				findPath(node.getChild(nodeReg), nodes, idx + 1, parent + node.getName() + ".", res);
 			}
 		} else {
 			for (MNode child : node.getChildren().values()) {
-				findPath(child, nodes, idx + 1, parent + node.getName() + ".",
-						res, batchFetchIdx, batchFetchSize);
+				findPath(child, nodes, idx + 1, parent + node.getName() + ".", res);
 			}
 		}
 		return;
