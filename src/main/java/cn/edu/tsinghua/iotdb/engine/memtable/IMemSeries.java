@@ -31,5 +31,5 @@ public interface IMemSeries extends TimeValuePairSorter{
 
     int size();
 
-    void delete(long timestamp);
+    void delete(long timeUpperBound);
 }

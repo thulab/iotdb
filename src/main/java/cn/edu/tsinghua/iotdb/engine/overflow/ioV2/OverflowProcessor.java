@@ -687,16 +687,16 @@ public class OverflowProcessor extends Processor {
 		return logNode;
 	}
 
-    public void deleteInMem(String deltaObjectId, String measurementId, long timestamp) {
-		workSupport.getMemTabale().delete(deltaObjectId, measurementId, timestamp);
+    public void deleteInMem(String deltaObjectId, String measurementId, long timeUpperBound) {
+		workSupport.getMemTabale().delete(deltaObjectId, measurementId, timeUpperBound);
     }
 
-    public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
-		if(workResource != null && workResource.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
-			workResource.appendTombstone(deltaObjectId, measurementId, timestamp);
+    public void appendTombstone(String deltaObjectId, String measurementId, long timeUpperBound) throws IOException {
+		if(workResource != null && workResource.hasTimeseries(deltaObjectId, measurementId, timeUpperBound)) {
+			workResource.appendTombstone(deltaObjectId, measurementId, timeUpperBound);
 		}
-		if(mergeResource != null && mergeResource.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
-			mergeResource.appendTombstone(deltaObjectId, measurementId, timestamp);
+		if(mergeResource != null && mergeResource.hasTimeseries(deltaObjectId, measurementId, timeUpperBound)) {
+			mergeResource.appendTombstone(deltaObjectId, measurementId, timeUpperBound);
 		}
 	}
 }

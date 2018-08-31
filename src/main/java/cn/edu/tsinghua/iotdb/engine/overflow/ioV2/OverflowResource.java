@@ -409,15 +409,15 @@ public class OverflowResource {
 		return tombstoneFile;
 	}
 
-	public boolean hasTimeseries(String deltaObjectId, String measurementId, long timestamp) {
+	public boolean hasTimeseries(String deltaObjectId, String measurementId, long timeUpperBound) {
 		// TODO-DELETE: use timestamp to filter series？
 		return insertMetadatas.containsKey(deltaObjectId) && insertMetadatas.get(deltaObjectId).containsKey(measurementId);
 	}
 
-	public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
+	public void appendTombstone(String deltaObjectId, String measurementId, long timeUpperBound) throws IOException {
 		getTombstoneFile().lock();
 		try {
-			getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+			getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timeUpperBound, System.currentTimeMillis()));
 		} catch (IOException e) {
 			getTombstoneFile().unlock();
 		}

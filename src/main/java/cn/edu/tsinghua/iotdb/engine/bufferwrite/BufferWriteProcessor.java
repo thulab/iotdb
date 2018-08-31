@@ -749,15 +749,15 @@ public class BufferWriteProcessor extends Processor {
 		return tombstoneFile;
 	}
 
-	public void deleteInMem(String deltaObjectId, String measurementId, long timestamp) {
-		workMemTable.delete(deltaObjectId, measurementId, timestamp);
+	public void deleteInMem(String deltaObjectId, String measurementId, long timeUpperBound) {
+		workMemTable.delete(deltaObjectId, measurementId, timeUpperBound);
 	}
 
-	public void appendTombstone(String deltaObjectId, String measurementId, long timestamp) throws IOException {
-		if(bufferIOWriter.hasTimeseries(deltaObjectId, measurementId, timestamp)) {
+	public void appendTombstone(String deltaObjectId, String measurementId, long timeUpperBound) throws IOException {
+		if(bufferIOWriter.hasTimeseries(deltaObjectId, measurementId, timeUpperBound)) {
 			getTombstoneFile().lock();
 			try {
-				getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timestamp, System.currentTimeMillis()));
+				getTombstoneFile().append(new Tombstone(deltaObjectId, measurementId, timeUpperBound, System.currentTimeMillis()));
 			} catch (IOException e) {
 				LOGGER.error("Cannot append tombstone to Bufferwrite {}, because:", getProcessorName(), e);
 			} finally {

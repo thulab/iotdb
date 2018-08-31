@@ -92,13 +92,13 @@ public abstract class AbstractMemTable implements IMemTable{
     }
 
     @Override
-    public void delete(String deltaObjectId, String measurementId, long timestamp) {
+    public void delete(String deltaObjectId, String measurementId, long timeUpperBound) {
         Map<String, IMemSeries> seriesMap = memTableMap.get(deltaObjectId);
         if(seriesMap == null)
             return;
         IMemSeries series = seriesMap.get(measurementId);
         if(series == null)
             return;
-        series.delete(timestamp);
+        series.delete(timeUpperBound);
     }
 }

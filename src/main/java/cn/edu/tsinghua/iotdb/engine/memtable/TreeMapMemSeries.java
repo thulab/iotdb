@@ -132,7 +132,7 @@ public class TreeMapMemSeries implements IMemSeries{
     }
 
     @Override
-    public void delete(long timestamp) {
+    public void delete(long timeUpperBound) {
         throw new UnsupportedOperationException("Method unimplemented");
     }
 }

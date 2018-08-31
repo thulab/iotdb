@@ -464,7 +464,7 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public void delete(String deltaObjectId, String measurementId, long timestamp, TSDataType type)
+	public void delete(String deltaObjectId, String measurementId, long timeUpperBound, TSDataType type)
 			throws FileNodeManagerException {
 
 		// get overflow processor
@@ -476,14 +476,14 @@ public class FileNodeManager implements IStatistic, IService {
 				overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					overflowProcessor.getLogNode()
-							.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
+							.write(new DeletePlan(timeUpperBound, new Path(deltaObjectId + "." + measurementId)));
 				}
 			} catch (IOException e) {
 				throw new FileNodeManagerException(e.getMessage());
 			}
 
 			try {
-				fileNodeProcessor.delete(deltaObjectId, measurementId, timestamp);
+				fileNodeProcessor.delete(deltaObjectId, measurementId, timeUpperBound);
 			} catch (FileNodeProcessorException e) {
 				throw new FileNodeManagerException(e.getMessage());
 			}

@@ -112,8 +112,8 @@ public class PrimitiveMemSeries implements IMemSeries {
     }
 
     @Override
-    public void delete(long timestamp) {
-        list.delete(timestamp);
+    public void delete(long timeUpperBound) {
+        list.delete(timeUpperBound);
     }
 
     private TsPrimitiveType genTsPrimitiveType(TSDataType dataType, Object v) {
