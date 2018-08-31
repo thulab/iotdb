@@ -74,7 +74,7 @@ public abstract class AbstractClient {
 	protected static final int ISO_DATETIME_LEN = 23;
 	protected static int maxTimeLength = ISO_DATETIME_LEN;
 	protected static int maxValueLength = 15;
-    	protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// for sql 'show timeseries <path>' and 'show storage group'
+    	protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// control the width of columns for 'show timeseries <path>' and 'show storage group'
 	protected static String formatTime = "%" + maxTimeLength + "s|";
 	protected static String formatValue = "%" + maxValueLength + "s|";
 
