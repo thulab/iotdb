@@ -645,9 +645,7 @@ public class MTree implements Serializable, Iterable<MNode> {
 	public ArrayList<String> getAllType() {
 		ArrayList<String> res = new ArrayList<>();
 		if (getRoot() != null) {
-			for (String type : getRoot().getChildren().keySet()) {
-				res.add(type);
-			}
+            res.addAll(getRoot().getChildren().keySet());
 		}
 		return res;
 	}
@@ -669,10 +667,8 @@ public class MTree implements Serializable, Iterable<MNode> {
 					res.add(current.getFullPath());
 				} else {
 					HashMap<String, MNode> map = current.getChildren();
-					if(!map.isEmpty()) {
-						for(MNode child : map.values()) {
-							queue.add(child);
-						}
+					if(map != null && !map.isEmpty()) {
+                        queue.addAll(map.values());
 					}
 				}
 			}

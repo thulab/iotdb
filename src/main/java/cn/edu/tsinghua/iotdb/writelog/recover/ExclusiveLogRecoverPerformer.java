@@ -7,10 +7,9 @@ import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.writelog.RecoverStage;
 import cn.edu.tsinghua.iotdb.writelog.io.BufStreamLogReader;
 import cn.edu.tsinghua.iotdb.writelog.io.ILogReader;
-import cn.edu.tsinghua.iotdb.writelog.replay.ConcreteLogReplayer;
-import cn.edu.tsinghua.iotdb.writelog.io.RAFLogReader;
-import cn.edu.tsinghua.iotdb.writelog.replay.LogReplayer;
 import cn.edu.tsinghua.iotdb.writelog.node.ExclusiveWriteLogNode;
+import cn.edu.tsinghua.iotdb.writelog.replay.ConcreteLogReplayer;
+import cn.edu.tsinghua.iotdb.writelog.replay.LogReplayer;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -32,7 +31,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
     public static final String RECOVER_SUFFIX = "-recover";
 
-    public static final String FLAG_SEPERATOR = "-";
+    private static final String FLAG_SEPERATOR = "-";
 
     private ExclusiveWriteLogNode writeLogNode;
 
@@ -262,6 +261,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
                 throw new RecoverException(String.format("Cannot close log file %s, because %s, recovery aborted.", logFile.getPath(), e.getMessage()), e);
             }
         }
+        // nano seconds to milliseconds
         logReadTime /= 1000000;
         logReplayTime /= 1000000;
 

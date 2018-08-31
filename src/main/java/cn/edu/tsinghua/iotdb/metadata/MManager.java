@@ -30,6 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class MManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(MManager.class);
+    // a 4MB buffer for recovery of MGraph
+    private static final int INIT_BUFFER_SIZE = 4 * 1024 * 1024;
     // private static MManager manager = new MManager();
     private static final String ROOT_NAME = MetadataConstant.ROOT;
     // the lock for read/write
@@ -86,7 +88,8 @@ public class MManager {
 
         mNodeCache = new RandomDeleteCache<String, MNode>(cacheSize) {
             @Override
-            public void beforeRemove(MNode object) throws CacheException {}
+            public void beforeRemove(MNode object) throws CacheException {
+            }
 
             @Override
             public MNode loadObjectByKey(String key) throws CacheException {
@@ -115,42 +118,49 @@ public class MManager {
                 if (dataFile.exists()) {
                     // init the metadata from the serialized file
                     LOGGER.info("Recovering MGraph from data file");
-                    FileInputStream fis = new FileInputStream(dataFile);
-                    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis, 4 * 1024 * 1024));
-                    mGraph = (MGraph) ois.readObject();
-                    ois.close();
-                    fis.close();
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(dataFile);
+                        ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis, INIT_BUFFER_SIZE));
+                        mGraph = (MGraph) ois.readObject();
+                    } finally {
+                        if (fis != null)
+                            fis.close();
+                    }
                 }
                 if (mGraph == null)
                     mGraph = new MGraph(ROOT_NAME);
-                if (logFile.exists()){
+                if (logFile.exists()) {
                     // init the metadata from the operation log
                     LOGGER.info("Recovering MGraph from log file");
                     logCnt = 0;
                     if (logFile.exists()) {
-                        DataInputStream is;
-                        is = new DataInputStream(new BufferedInputStream(new FileInputStream(logFile)));
-                        MetaOperator operator;
+                        DataInputStream is = null;
                         try {
-                            while((operator = OperatorFactory.readFromStream(is)) != null) {
+                            is = new DataInputStream(new BufferedInputStream(new FileInputStream(logFile)));
+                            MetaOperator operator;
+                            while ((operator = OperatorFactory.readFromStream(is)) != null) {
                                 operation(operator);
-                                logCnt ++;
+                                logCnt++;
                             }
                         } catch (IOException | PathErrorException | MetadataArgsErrorException e) {
                             LOGGER.error("Log recovery interrupted after {} logs successfully recovered, because ", logCnt, e);
+                        } finally {
+                            if (is != null) {
+                                is.close();
+                            }
                         }
-                        is.close();
                     }
                 }
                 LOGGER.info("MGraph recovered");
-                needFlush = needFlush | !dataFile.exists();
+                needFlush = logCnt > 0 | !dataFile.exists();
                 if (needFlush)
                     flushObjectToFile();
                 FileOutputStream fs = new FileOutputStream(logFile, true);
                 logWriter = new DataOutputStream(new BufferedOutputStream(fs));
                 writeToLog = true;
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("Fail to init MGraph because:", e);
                 throw new RuntimeException(e);
             }
         } finally {
@@ -171,7 +181,7 @@ public class MManager {
 
         if (operator instanceof AddPathOperator) {
             addPathToMTree((AddPathOperator) operator);
-        } else if (operator instanceof  DeletePathOperator) {
+        } else if (operator instanceof DeletePathOperator) {
             deletePathFromMTree((DeletePathOperator) operator);
         } else if (operator instanceof SetStorageOperator) {
             setStorageLevelToMTree((SetStorageOperator) operator);
@@ -204,7 +214,7 @@ public class MManager {
                 fs = new FileOutputStream(logFile, true);
                 logWriter = new DataOutputStream(new BufferedOutputStream(fs));
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Cannot init metadata log output stream because: ", e);
                 throw new RuntimeException(e);
             }
         }
@@ -604,9 +614,9 @@ public class MManager {
      */
     public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
         lock.readLock().lock();
-        try{
+        try {
             return mGraph.getLeafNodePathInNextLevel(path);
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
@@ -774,17 +784,25 @@ public class MManager {
                 metadataDir.mkdirs();
             }
             File tempFile = new File(datafilePath + MetadataConstant.METADATA_TEMP);
-            FileOutputStream fos = new FileOutputStream(tempFile, false);
-            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(fos));
-            oos.writeObject(mGraph);
-            oos.close();
+            FileOutputStream fos = null;
+            ObjectOutputStream oos;
+            try {
+                fos = new FileOutputStream(tempFile, false);
+                oos = new ObjectOutputStream(new BufferedOutputStream(fos));
+                oos.writeObject(mGraph);
+            } finally {
+                if (fos != null) {
+                    fos.close();
+                }
+            }
+
             // close the logFile stream
             if (logWriter != null) {
                 logWriter.close();
                 logWriter = null;
             }
             // rename temp file to data file
-            if(tempFile.renameTo(dataFile))
+            if (tempFile.renameTo(dataFile))
                 new File(logFilePath).delete();
         } finally {
             lock.writeLock().unlock();
@@ -837,7 +855,7 @@ public class MManager {
         try {
             Map<String, Set<IndexType>> ret = new HashMap<>();
             for (MNode mNode : mGraph) {
-                if (mNode.isLeaf() && (mNode.getSchema().getIndexSet() != null && !mNode.getSchema().getIndexSet().isEmpty()) ) {
+                if (mNode.isLeaf() && (mNode.getSchema().getIndexSet() != null && !mNode.getSchema().getIndexSet().isEmpty())) {
                     String fullPath = mNode.getFullPath();
                     if (fullPath.contains(path))
                         ret.put(mNode.getFullPath(), mNode.getSchema().getIndexSet());
@@ -932,7 +950,7 @@ public class MManager {
         }
     }
 
-    public static class PathCheckRet{
+    public static class PathCheckRet {
         private boolean successfully;
         private TSDataType dataType;
 

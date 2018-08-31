@@ -35,6 +35,7 @@ public class BufStreamLogReader implements ILogReader {
         if (planBuffer != null)
             return true;
         try {
+            // 12 = 4 (logSize) + 8 （checkSum）
             if (dataInputStream.available() < 12) {
                 return false;
             }
@@ -49,13 +50,12 @@ public class BufStreamLogReader implements ILogReader {
                 buffer = new byte[bufferSize];
             }
             long checkSum = dataInputStream.readLong();
-            dataInputStream.read(buffer, 0, logSize);
+            dataInputStream.readFully(buffer, 0, logSize);
             checkSummer.reset();
             checkSummer.update(buffer, 0, logSize);
             if (checkSummer.getValue() != checkSum)
                 return false;
-            PhysicalPlan plan = PhysicalPlanLogTransfer.logToOperator(buffer);
-            planBuffer = plan;
+            planBuffer = PhysicalPlanLogTransfer.logToOperator(buffer);
             return true;
         } catch (IOException e) {
             logger.error("Cannot read log file {}, because {}", logFile.getPath(), e.getMessage());
