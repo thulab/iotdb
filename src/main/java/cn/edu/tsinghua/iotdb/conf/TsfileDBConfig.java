@@ -14,6 +14,7 @@ public class TsfileDBConfig {
 	public static final String default_tsfile_dir = "settled";
 	public static final String mult_dir_strategy_prefix = "cn.edu.tsinghua.iotdb.conf.directories.strategy.";
 	public static final String default_mult_dir_strategy = "MaxDiskUsableSpaceFirstStrategy";
+
 	/**
 	 * Port which JDBC server listens to
 	 */
@@ -61,7 +62,7 @@ public class TsfileDBConfig {
 	/**
 	 * Data directory of bufferWrite data
 	 */
-	public String[] bufferWriteDirs = {"settled1", "settled2", "settled3"};
+	public String[] bufferWriteDirs = {"settled1"};
 
 	/**
 	 * Strategy of multiple directories
@@ -245,6 +246,11 @@ public class TsfileDBConfig {
 	 * If IoTDB is a receiver of postback, set the server port
 	 */
 	public int postbackServerPort = 5555;
+
+	/*
+	* Set the language version when loading file including error information, default value is "EN"
+	* */
+	public String languageVersion = "EN";
 
 	/**
 	 * Choose a postBack strategy of merging historical data: 1. It's more likely to

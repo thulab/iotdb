@@ -169,34 +169,34 @@ public class OverflowProcessor extends Processor {
 	 * @param value
 	 */
 	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
-			byte[] value) {
+					   byte[] value) {
 		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, value);
 		valueCount++;
 	}
 
 	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
-			String value) {
+					   String value) {
 		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, convertStringToBytes(type, value));
 		valueCount++;
 	}
 
 	private byte[] convertStringToBytes(TSDataType type, String o) {
 		switch (type) {
-		case INT32:
-			return BytesUtils.intToBytes(Integer.valueOf(o));
-		case INT64:
-			return BytesUtils.longToBytes(Long.valueOf(o));
-		case BOOLEAN:
-			return BytesUtils.boolToBytes(Boolean.valueOf(o));
-		case FLOAT:
-			return BytesUtils.floatToBytes(Float.valueOf(o));
-		case DOUBLE:
-			return BytesUtils.doubleToBytes(Double.valueOf(o));
-		case TEXT:
-			return BytesUtils.StringToBytes(o);
-		default:
-			LOGGER.error("Unsupport data type: {}", type);
-			throw new UnsupportedOperationException("Unsupport data type:" + type);
+			case INT32:
+				return BytesUtils.intToBytes(Integer.valueOf(o));
+			case INT64:
+				return BytesUtils.longToBytes(Long.valueOf(o));
+			case BOOLEAN:
+				return BytesUtils.boolToBytes(Boolean.valueOf(o));
+			case FLOAT:
+				return BytesUtils.floatToBytes(Float.valueOf(o));
+			case DOUBLE:
+				return BytesUtils.doubleToBytes(Double.valueOf(o));
+			case TEXT:
+				return BytesUtils.StringToBytes(o);
+			default:
+				LOGGER.error("Unsupport data type: {}", type);
+				throw new UnsupportedOperationException("Unsupport data type:" + type);
 		}
 	}
 
@@ -227,8 +227,8 @@ public class OverflowProcessor extends Processor {
 	 * @throws IOException
 	 */
 	public OverflowSeriesDataSource query(String deltaObjectId, String measurementId,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-			SingleSeriesFilterExpression valueFilter, TSDataType dataType) throws IOException {
+										  SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+										  SingleSeriesFilterExpression valueFilter, TSDataType dataType) throws IOException {
 		queryFlushLock.lock();
 		try {
 			// query insert data in memory and unseqTsFiles
@@ -292,8 +292,8 @@ public class OverflowProcessor extends Processor {
 	 * @return insert data in SeriesChunkInMemTable
 	 */
 	private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-			SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
+													   SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+													   SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
 
 		MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
 		if (flushStatus.isFlushing()) {
@@ -318,8 +318,8 @@ public class OverflowProcessor extends Processor {
 	 * @return update/delete result in DynamicOneColumnData
 	 */
 	private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
-			SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-			SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
+															 SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
+															 SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
 		DynamicOneColumnData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId,
 				timeFilter, freqFilter, valueFilter, dataType, null);
 		if (flushStatus.isFlushing()) {
@@ -339,7 +339,7 @@ public class OverflowProcessor extends Processor {
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryWorkDataInOverflowUpdate(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
+																					  String measurementId, TSDataType dataType) {
 		Pair<String, List<TimeSeriesChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
 				workResource.getUpdateDeleteFilePath(),
 				workResource.getUpdateDeleteMetadatas(deltaObjectId, measurementId, dataType));
@@ -356,7 +356,7 @@ public class OverflowProcessor extends Processor {
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryWorkDataInOverflowInsert(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
+																					  String measurementId, TSDataType dataType) {
 		Pair<String, List<TimeSeriesChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
 				workResource.getInsertFilePath(),
 				workResource.getInsertMetadatas(deltaObjectId, measurementId, dataType));
@@ -381,7 +381,7 @@ public class OverflowProcessor extends Processor {
 	}
 
 	public OverflowSeriesDataSource queryMerge(String deltaObjectId, String measurementId, TSDataType dataType,
-			boolean isMerge) {
+											   boolean isMerge) {
 		Pair<String, List<TimeSeriesChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
 				measurementId, dataType);
 		Pair<String, List<TimeSeriesChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
@@ -410,7 +410,7 @@ public class OverflowProcessor extends Processor {
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryMergeDataInOverflowUpdate(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
+																					   String measurementId, TSDataType dataType) {
 		if (!isMerge) {
 			return new Pair<String, List<TimeSeriesChunkMetaData>>(null, null);
 		}
@@ -430,7 +430,7 @@ public class OverflowProcessor extends Processor {
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryMergeDataInOverflowInsert(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
+																					   String measurementId, TSDataType dataType) {
 		if (!isMerge) {
 			return new Pair<String, List<TimeSeriesChunkMetaData>>(null, null);
 		}
@@ -698,5 +698,9 @@ public class OverflowProcessor extends Processor {
 		if(mergeResource != null && mergeResource.hasTimeseries(deltaObjectId, measurementId, timeUpperBound)) {
 			mergeResource.appendTombstone(deltaObjectId, measurementId, timeUpperBound);
 		}
+	}
+
+	public OverflowResource getWorkResource() {
+		return workResource;
 	}
 }
