@@ -2,8 +2,6 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.reader.component;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 
 /**
@@ -17,7 +15,6 @@ import java.nio.MappedByteBuffer;
  */
 public class SegmentInputStreamWithMMap extends SegmentInputStream {
 
-    private RandomAccessFile randomAccessFile;
     private long offset;
     private long position;
     private long size;
@@ -26,15 +23,6 @@ public class SegmentInputStreamWithMMap extends SegmentInputStream {
     // NIO MMAP
     private MappedByteBuffer mmap;
     private ByteArrayInputStream byteArrayInputStream;
-
-    public SegmentInputStreamWithMMap(RandomAccessFile randomAccessFile, long offset, long size) throws IOException {
-        this.randomAccessFile = randomAccessFile;
-        //mmap = this.randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, offset, size);
-        this.offset = offset;
-        this.size = size;
-        this.position = offset;
-        this.mark = offset;
-    }
 
     public SegmentInputStreamWithMMap(MappedByteBuffer mmap, long offset, long size) throws IOException {
         this.mmap = mmap;

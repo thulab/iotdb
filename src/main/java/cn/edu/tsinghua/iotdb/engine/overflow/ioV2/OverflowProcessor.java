@@ -15,6 +15,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import cn.edu.tsinghua.iotdb.engine.tombstone.Tombstone;
+import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import org.joda.time.DateTime;
@@ -474,6 +475,7 @@ public class OverflowProcessor extends Processor {
 	public void switchMergeToWork() throws IOException {
 		if (mergeResource != null) {
 			mergeResource.close();
+			OverflowFileStreamManager.getInstance().removeMappedByteBuffer(mergeResource.getInsertFilePath());
 			mergeResource.deleteResource();
 			mergeResource = null;
 		}

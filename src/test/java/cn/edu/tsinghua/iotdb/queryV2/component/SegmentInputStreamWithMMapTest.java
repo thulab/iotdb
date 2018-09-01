@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import sun.nio.ch.DirectBuffer;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +49,7 @@ public class SegmentInputStreamWithMMapTest {
         testOneSegmentWithMMap(buffer1, 30, 1000);
         testOneSegmentWithMMap(buffer1, 1000, 1000);
         randomAccessFile.close();
+        ((DirectBuffer) buffer1).cleaner().clean();
     }
 
     private void testOneSegmentWithMMap(MappedByteBuffer buffer, int offset, int size) throws IOException {

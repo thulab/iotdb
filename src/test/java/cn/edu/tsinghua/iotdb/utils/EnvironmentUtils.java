@@ -14,6 +14,10 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
+import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
+import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
+import cn.edu.tsinghua.iotdb.queryV2.engine.control.TsFileStreamManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -41,6 +45,9 @@ public class EnvironmentUtils {
 	private static TSFileConfig tsfileConfig = TSFileDescriptor.getInstance().getConfig();
 
 	public static void cleanEnv() throws IOException {
+		//ReadCacheManager.getInstance().getRecordReaderCacheManager().clear();
+		OverflowFileStreamManager.getInstance().clear();
+		TsFileStreamManager.getInstance().clear();
 		// tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager
 		try {

@@ -10,42 +10,43 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReader;
  */
 public class RecordReaderCacheManager {
 
-    private ThreadLocal<HashMap<String, RecordReader>> cache = new ThreadLocal<>();
+    private HashMap<String, RecordReader> cache = new HashMap<>();
 
     public boolean containsRecordReader(String deltaObjectUID, String measurementID) {
         checkCacheInitialized();
-        return cache.get().containsKey(getKey(deltaObjectUID, measurementID));
+        return cache.containsKey(getKey(deltaObjectUID, measurementID));
     }
 
     public RecordReader get(String deltaObjectUID, String measurementID) {
         checkCacheInitialized();
-        return cache.get().get(getKey(deltaObjectUID, measurementID));
+        return cache.get(getKey(deltaObjectUID, measurementID));
     }
 
     public void put(String deltaObjectUID, String measurementID, RecordReader recordReader) {
         checkCacheInitialized();
-        cache.get().put(getKey(deltaObjectUID, measurementID), recordReader);
+        cache.put(getKey(deltaObjectUID, measurementID), recordReader);
     }
 
     public RecordReader remove(String deltaObjectUID, String measurementID) {
         checkCacheInitialized();
-        return cache.get().remove(getKey(deltaObjectUID, measurementID));
+        return cache.remove(getKey(deltaObjectUID, measurementID));
     }
 
     public void clear() throws IOException {
-        for (RecordReader reader : cache.get().values()) {
+        for (RecordReader reader : cache.values()) {
+            reader.closeFileStream();
             reader.closeFileStreamForOneRequest();
         }
-        cache.remove();
+        cache.clear();
     }
 
     private String getKey(String deltaObjectUID, String measurementID) {
-        return deltaObjectUID + "#" + measurementID;
+        return Thread.currentThread().getId() + "#" + deltaObjectUID + "#" + measurementID;
     }
 
     private void checkCacheInitialized() {
-        if (cache.get() == null) {
-            cache.set(new HashMap<>());
+        if (cache == null) {
+            cache=new HashMap<>();
         }
     }
 }

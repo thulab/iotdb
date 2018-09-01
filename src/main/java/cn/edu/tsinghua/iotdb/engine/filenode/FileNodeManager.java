@@ -485,7 +485,7 @@ public class FileNodeManager implements IStatistic, IService {
 			try {
 				fileNodeProcessor.delete(deltaObjectId, measurementId, timeUpperBound);
 			} catch (FileNodeProcessorException e) {
-				throw new FileNodeManagerException(e.getMessage());
+				throw new FileNodeManagerException(e);
 			}
 		} finally {
 			fileNodeProcessor.writeUnlock();

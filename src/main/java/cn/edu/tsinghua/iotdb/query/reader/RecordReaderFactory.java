@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.reader;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -53,7 +54,7 @@ public class RecordReaderFactory {
         if (readCacheManager.getRecordReaderCacheManager().containsRecordReader(cacheDeltaKey, measurementID)) {
             return readCacheManager.getRecordReaderCacheManager().get(cacheDeltaKey, measurementID);
         } else {
-            QueryDataSource queryDataSource;
+            QueryDataSource queryDataSource = null;
             try {
                 queryDataSource = fileNodeManager.query(deltaObjectUID, measurementID, timeFilter, null, valueFilter);
             } catch (FileNodeManagerException e) {
@@ -99,4 +100,5 @@ public class RecordReaderFactory {
             readCacheManager.getRecordReaderCacheManager().remove(deltaObjectId, measurementId);
         }
     }
+
 }

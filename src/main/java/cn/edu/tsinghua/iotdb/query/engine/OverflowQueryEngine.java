@@ -270,8 +270,8 @@ public class OverflowQueryEngine {
                 public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
                     try {
                         return queryOneSeriesWithoutFilter(p, res, fetchSize, readLock);
-                    } catch (PathErrorException e) {
-                        e.printStackTrace();
+                    } catch (Exception e) {
+                        LOGGER.error("Cannot get more records because", e);
                         return null;
                     }
                 }

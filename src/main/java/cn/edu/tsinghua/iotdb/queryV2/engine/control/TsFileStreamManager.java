@@ -55,6 +55,13 @@ public class TsFileStreamManager {
         cache.remove(queryJob);
     }
 
+    public void clear() throws IOException {
+        if (cache != null) {
+            for (TsFileReaderCacheForOneQuery readerCache : cache.values())
+                readerCache.close();
+        }
+    }
+
     private class TsFileReaderCacheForOneQuery {
         private Map<String, CachedTsFileReader> cache;
 
@@ -88,7 +95,9 @@ public class TsFileStreamManager {
                     cachedTsFileReader.close();
                 }
             }
+            cache.clear();
         }
+
     }
 
     private static class FileStreamManagerHelper {

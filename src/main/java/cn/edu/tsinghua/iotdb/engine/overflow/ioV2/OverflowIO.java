@@ -40,6 +40,7 @@ public class OverflowIO extends TsFileIOWriter {
 		FileChannel fileChannel = new FileOutputStream(new File(filePath), true).getChannel();
 		fileChannel.truncate(lastUpdatePosition);
 		fileChannel.close();
+
 		//OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
 		overflowReadWriter = new OverflowReadWriter(filePath);
 		if (isInsert) {

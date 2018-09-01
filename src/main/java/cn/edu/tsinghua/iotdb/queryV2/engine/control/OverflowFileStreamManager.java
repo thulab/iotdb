@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.control;
 
+import sun.misc.Cleaner;
 import sun.nio.ch.DirectBuffer;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class OverflowFileStreamManager {
             MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
             memoryStreamStore.put(path, mappedByteBuffer);
             mappedByteBufferUsage.set(mappedByteBufferUsage.get() + (int)randomAccessFile.length());
+            randomAccessFile.close();
         }
         return memoryStreamStore.get(path);
     }
@@ -77,6 +79,25 @@ public class OverflowFileStreamManager {
             }
             fileStreamStore.remove(jobId);
         }
+    }
+
+    public void clear() throws IOException {
+        if (fileStreamStore != null) {
+            for (Map<String, RandomAccessFile> rafs : fileStreamStore.values())
+                for (RandomAccessFile raf : rafs.values())
+                    raf.close();
+            fileStreamStore.clear();
+        }
+        if (memoryStreamStore != null) {
+            for(MappedByteBuffer byteBuffer : memoryStreamStore.values()) {
+                Cleaner cl = ((DirectBuffer) byteBuffer).cleaner();
+                if (cl != null)
+                    cl.clean();
+            }
+
+            memoryStreamStore.clear();
+        }
+        mappedByteBufferUsage.set(0);
     }
 
     private static class OverflowFileStreamManagerHelper {

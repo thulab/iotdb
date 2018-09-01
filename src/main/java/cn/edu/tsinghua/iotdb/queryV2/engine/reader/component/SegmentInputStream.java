@@ -92,4 +92,8 @@ public class SegmentInputStream extends InputStream {
 
         randomAccessFile.seek(position);
     }
+
+    public void close() throws IOException {
+        randomAccessFile.close();
+    }
 }
