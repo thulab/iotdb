@@ -222,7 +222,7 @@ public class FileNodeManager implements IStatistic, IService {
 
 	/**
 	 * 恢复所有的FileNodeProcessor。
-	 * 先从MManager获得所有的FileName（）
+	 * 先从MManager获得所有的FileName（StorageGroup）；
 	 *
 	 * 该函数应更名为recover()
 	 */
