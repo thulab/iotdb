@@ -1393,6 +1393,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		String baseDir = null;
 		String fileName = null;
         TombstoneFile tombstoneFile = backupIntervalFile.getTombstoneFile();
+        tombstoneFile.lock();
         Map<String, Map<String, List<Tombstone>>> TSTombstones = tombstoneFile.getTombstonesMap();
         tombstoneFile.close();
         Map<String, List<Tombstone>> deltaObjectTombstones = null;
@@ -1478,7 +1479,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (fileIOWriter != null) {
 			fileIOWriter.endFile(fileSchema);
 		}
-        backupIntervalFile.getTombstoneFile().delete();
+		backupIntervalFile.getTombstoneFile().lock();
+		try {
+			backupIntervalFile.getTombstoneFile().delete();
+		} finally {
+			backupIntervalFile.getTombstoneFile().unlock();
+		}
 		backupIntervalFile.setBaseDirIndex(directories.getTsFileFolderIndex(baseDir));
 		backupIntervalFile.setRelativePath(fileName);
 		backupIntervalFile.overflowChangeType = OverflowChangeType.NO_CHANGE;
