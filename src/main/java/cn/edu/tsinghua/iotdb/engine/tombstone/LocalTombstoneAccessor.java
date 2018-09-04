@@ -13,6 +13,7 @@ import java.util.*;
  * int measurementLength
  * byte[] measurementBytes
  * long deleteTimestamp
+ * long executeTimestamp
  */
 public class LocalTombstoneAccessor implements ITombstoneAccessor {
 

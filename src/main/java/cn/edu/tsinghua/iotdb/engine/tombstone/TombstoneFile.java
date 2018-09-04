@@ -30,7 +30,7 @@ public abstract class TombstoneFile {
 
     /**
      *
-     * @return All tombstones in this file as a Map(deltaObjectId, Map(deltaObjectId, List(Tombstone))).
+     * @return All tombstones in this file as a Map(deltaObjectId, Map(measurementId, List(Tombstone))).
      * @throws IOException
      */
     public Map<String, Map<String, List<Tombstone>>> getTombstonesMap() throws IOException {

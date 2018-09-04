@@ -50,7 +50,7 @@ public interface ITombstoneAccessor {
     void close() throws IOException;
 
     /**
-     * @return If lower storage do contain any tombstone.
+     * @return If lower storage contains any tombstone.
      * @throws IOException
      */
     boolean isEmpty() throws IOException;
