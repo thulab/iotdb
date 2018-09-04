@@ -165,6 +165,7 @@ public class FileNodeManager implements IStatistic, IService {
 		this.baseDir = baseDir;
 		File dir = new File(baseDir);
 		if (dir.mkdirs()) {
+			// TODO 使用更标准的英语
 			LOGGER.info("{} dir home doesn't exist, create it", dir.getPath());
 		}
 
@@ -219,6 +220,12 @@ public class FileNodeManager implements IStatistic, IService {
 		return processor;
 	}
 
+	/**
+	 * 恢复所有的FileNodeProcessor。
+	 * 先从MManager获得所有的FileName（）
+	 *
+	 * 该函数应更名为recover()
+	 */
 	public void recovery() {
 
 		try {
