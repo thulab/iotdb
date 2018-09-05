@@ -23,7 +23,7 @@
     <dependency>
       <groupId>cn.edu.tsinghua</groupId>
       <artifactId>iotdb-jdbc</artifactId>
-      <version>0.6.0</version>
+      <version>0.7.0</version>
     </dependency>
 </dependencies>
 ```
@@ -48,7 +48,7 @@ public class Example {
             statement.execute("select s1 from root.laptop.d1");
             ResultSet resultSet = statement.getResultSet();
             while(resultSet.next()){
-                System.out.println(String.format("timestamp %s, value %s", resultSet.getString(0), resultSet.getString(1)));
+                System.out.println(String.format("timestamp %s, value %s", resultSet.getString(1), resultSet.getString(2)));
             }
         } finally {
             if(statement != null) statement.close();
