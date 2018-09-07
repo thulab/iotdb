@@ -852,7 +852,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 return null;
             }
         } else if (!shouldMergeTombstone) {
-            LOGGER.info("Skip this merge taks submission, because the filenode processor {} has no overflow processor.",
+            LOGGER.info("Skip this merge taks submission, because the filenode processor {} has no overflow processor. ",
                     getProcessorName());
             return null;
         }
