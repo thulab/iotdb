@@ -3,7 +3,7 @@ Grafana下载地址：https://grafana.com/grafana/download
 
 版本：4.4.1
 
-选择相应的操作系统下载并安装，启动 Grafana
+选择相应的操作系统下载并安装
 
 # 数据源插件安装
 基于simple-json-datasource数据源插件连接IoTDB数据库。
@@ -12,6 +12,9 @@ Grafana下载地址：https://grafana.com/grafana/download
 
 下载并解压，将文件放到Grafana的目录中：
 `data/plugin/`（Windows）或`/var/lib/grafana/plugins` (Linux)
+
+# 启动Grafana
+启动 Grafana
 
 # IoTDB安装
 参考：https://github.com/thulab/iotdb
@@ -45,7 +48,7 @@ server.port = 8888
 运行后端数据源连接器，在控制台输入
 ```$xslt
 cd target/
-java -jar iotdb-grafana-0.7.0-SNAPSHOT.war
+java -jar iotdb-grafana-0.7.0.war
 ```
 Grafana的默认端口为 3000，在浏览器中访问 http://localhost:3000
 
