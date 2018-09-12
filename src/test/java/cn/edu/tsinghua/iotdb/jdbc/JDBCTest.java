@@ -16,7 +16,7 @@ public class JDBCTest {
 		Connection connection = null;
 		try {
 			connection =  DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-			
+			 
 			Statement statement = connection.createStatement();
 			statement.execute("SET STORAGE GROUP TO root.jdbc");
 //			statement.execute("SET STORAGE GROUP TO root.ln.wf01.wt01");
