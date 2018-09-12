@@ -1,19 +1,19 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSColumnSchema;
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSDynamicOneColumnData;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSDataValue;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
+import cn.edu.tsinghua.iotdb.jdbc.thrift.TSRowRecord;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_Status;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -91,72 +91,46 @@ public class Utils {
         ColumnSchema.setArgsMap(tsSchema.getOtherArgs());
         return ColumnSchema;
     }
-
-    public static QueryDataSet convertQueryDataSet(TSQueryDataSet tsQueryDataSet) {
-        QueryDataSet queryDataSet = new QueryDataSet();
-        List<String> keys = tsQueryDataSet.getKeys();
-        List<TSDynamicOneColumnData> values = tsQueryDataSet.getValues();
-
-        LinkedHashMap<String, DynamicOneColumnData> ret = new LinkedHashMap<>();
-        int length = keys.size();
-        for (int i = 0; i < length; i++) {
-            ret.put(keys.get(i), convertDynamicOneColumnData(values.get(i)));
-        }
-        queryDataSet.mapRet = ret;
-        return queryDataSet;
-    }
-
-    private static DynamicOneColumnData convertDynamicOneColumnData(TSDynamicOneColumnData tsDynamicOneColumnData) {
-        TSDataType dataType = TSDataType.valueOf(tsDynamicOneColumnData.getDataType());
-        DynamicOneColumnData dynamicOneColumnData = null;
-        if (tsDynamicOneColumnData.getEmptyList() != null && tsDynamicOneColumnData.getEmptyList().size() > 0) {
-            dynamicOneColumnData = new DynamicOneColumnData(dataType, true, true);
-        } else {
-            dynamicOneColumnData = new DynamicOneColumnData(dataType, true);
-        }
-
-        for (long time : tsDynamicOneColumnData.getTimeRet()) {
-            dynamicOneColumnData.putTime(time);
-        }
-
-        if (tsDynamicOneColumnData.getEmptyList() != null) {
-            for (long time : tsDynamicOneColumnData.getEmptyList()) {
-                dynamicOneColumnData.putEmptyTime(time);
-            }
-        }
-
-        switch (dataType) {
-            case BOOLEAN:
-                tsDynamicOneColumnData.getBoolList().forEach(dynamicOneColumnData::putBoolean);
-                break;
-            case INT32:
-                // tsDynamicOneColumnData.getI32List().forEach(dynamicOneColumnData::putInt);
-                for (Integer integer : tsDynamicOneColumnData.getI32List()) {
-                    dynamicOneColumnData.putInt(integer);
-                }
-                break;
-            case INT64:
-                tsDynamicOneColumnData.getI64List().forEach(dynamicOneColumnData::putLong);
-                break;
-            case FLOAT:
-                List<Double> floats = tsDynamicOneColumnData.getFloatList();
-                for (double f : floats) {
-                    dynamicOneColumnData.putFloat((float) f);
-                }
-                break;
-            case DOUBLE:
-                tsDynamicOneColumnData.getDoubleList().forEach(dynamicOneColumnData::putDouble);
-                break;
-            case TEXT:
-                List<ByteBuffer> binaries = tsDynamicOneColumnData.getBinaryList();
-                for (ByteBuffer b : binaries) {
-                    dynamicOneColumnData.putBinary(new Binary(StandardCharsets.UTF_8.decode(b).toString()));
-                }
-                break;
-            default:
-                throw new UnSupportedDataTypeException(
-                        String.format("data type %s is not supported when convert data at client", dataType));
-        }
-        return dynamicOneColumnData;
+    
+    public static List<RowRecord> convertRowRecords(TSQueryDataSet tsQueryDataSet) {
+    		List<RowRecord> records = new ArrayList<>();
+    		for(TSRowRecord ts : tsQueryDataSet.getRecords()) {
+    			RowRecord r = new RowRecord(ts.getTimestamp());
+    			r.setFields(new LinkedHashMap<Path, TsPrimitiveType>());
+    			int l = ts.getKeysSize();
+    			for(int i = 0; i < l;i++) {
+    				Path path = new Path(ts.getKeys().get(i));
+    				if(ts.getValues().get(i).is_empty) {
+    					r.getFields().put(path, null);
+    				} else {
+    					TSDataValue value = ts.getValues().get(i);
+    					TSDataType dataType = TSDataType.valueOf(value.getType());
+					switch (dataType) {
+					case BOOLEAN:
+						r.getFields().put(path, new TsPrimitiveType.TsBoolean(value.isBool_val()));
+						break;
+					case INT32:
+						r.getFields().put(path, new TsPrimitiveType.TsInt(value.getInt_val()));
+						break;
+					case INT64:
+						r.getFields().put(path, new TsPrimitiveType.TsLong(value.getLong_val()));
+						break;
+					case FLOAT:
+						r.getFields().put(path, new TsPrimitiveType.TsFloat((float)value.getFloat_val()));
+						break;
+					case DOUBLE:
+						r.getFields().put(path, new TsPrimitiveType.TsDouble(value.getDouble_val()));
+						break;
+					case TEXT:
+						r.getFields().put(path, new TsPrimitiveType.TsBinary(new Binary((value.getBinary_val()))));
+						break;
+					default:
+						throw new UnSupportedDataTypeException(String.format("data type %s is not supported when convert data at client", dataType));
+					}
+    				}
+    			}
+    			records.add(r);
+    		}
+    		return records;
     }
 }

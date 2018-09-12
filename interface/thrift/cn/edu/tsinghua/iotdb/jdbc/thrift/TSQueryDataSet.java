@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
 public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, TSQueryDataSet._Fields>, java.io.Serializable, Cloneable, Comparable<TSQueryDataSet> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TSQueryDataSet");
 
-  private static final org.apache.thrift.protocol.TField KEYS_FIELD_DESC = new org.apache.thrift.protocol.TField("keys", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField VALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("values", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField RECORDS_FIELD_DESC = new org.apache.thrift.protocol.TField("records", org.apache.thrift.protocol.TType.LIST, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -44,13 +43,11 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     schemes.put(TupleScheme.class, new TSQueryDataSetTupleSchemeFactory());
   }
 
-  public List<String> keys; // required
-  public List<TSDynamicOneColumnData> values; // required
+  public List<TSRowRecord> records; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    KEYS((short)1, "keys"),
-    VALUES((short)2, "values");
+    RECORDS((short)1, "records");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,10 +62,8 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // KEYS
-          return KEYS;
-        case 2: // VALUES
-          return VALUES;
+        case 1: // RECORDS
+          return RECORDS;
         default:
           return null;
       }
@@ -112,12 +107,9 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.KEYS, new org.apache.thrift.meta_data.FieldMetaData("keys", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.RECORDS, new org.apache.thrift.meta_data.FieldMetaData("records", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.VALUES, new org.apache.thrift.meta_data.FieldMetaData("values", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TSDynamicOneColumnData.class))));
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TSRowRecord.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TSQueryDataSet.class, metaDataMap);
   }
@@ -126,28 +118,22 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
   }
 
   public TSQueryDataSet(
-    List<String> keys,
-    List<TSDynamicOneColumnData> values)
+    List<TSRowRecord> records)
   {
     this();
-    this.keys = keys;
-    this.values = values;
+    this.records = records;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public TSQueryDataSet(TSQueryDataSet other) {
-    if (other.isSetKeys()) {
-      List<String> __this__keys = new ArrayList<String>(other.keys);
-      this.keys = __this__keys;
-    }
-    if (other.isSetValues()) {
-      List<TSDynamicOneColumnData> __this__values = new ArrayList<TSDynamicOneColumnData>(other.values.size());
-      for (TSDynamicOneColumnData other_element : other.values) {
-        __this__values.add(new TSDynamicOneColumnData(other_element));
+    if (other.isSetRecords()) {
+      List<TSRowRecord> __this__records = new ArrayList<TSRowRecord>(other.records.size());
+      for (TSRowRecord other_element : other.records) {
+        __this__records.add(new TSRowRecord(other_element));
       }
-      this.values = __this__values;
+      this.records = __this__records;
     }
   }
 
@@ -157,103 +143,55 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
   @Override
   public void clear() {
-    this.keys = null;
-    this.values = null;
+    this.records = null;
   }
 
-  public int getKeysSize() {
-    return (this.keys == null) ? 0 : this.keys.size();
+  public int getRecordsSize() {
+    return (this.records == null) ? 0 : this.records.size();
   }
 
-  public java.util.Iterator<String> getKeysIterator() {
-    return (this.keys == null) ? null : this.keys.iterator();
+  public java.util.Iterator<TSRowRecord> getRecordsIterator() {
+    return (this.records == null) ? null : this.records.iterator();
   }
 
-  public void addToKeys(String elem) {
-    if (this.keys == null) {
-      this.keys = new ArrayList<String>();
+  public void addToRecords(TSRowRecord elem) {
+    if (this.records == null) {
+      this.records = new ArrayList<TSRowRecord>();
     }
-    this.keys.add(elem);
+    this.records.add(elem);
   }
 
-  public List<String> getKeys() {
-    return this.keys;
+  public List<TSRowRecord> getRecords() {
+    return this.records;
   }
 
-  public TSQueryDataSet setKeys(List<String> keys) {
-    this.keys = keys;
+  public TSQueryDataSet setRecords(List<TSRowRecord> records) {
+    this.records = records;
     return this;
   }
 
-  public void unsetKeys() {
-    this.keys = null;
+  public void unsetRecords() {
+    this.records = null;
   }
 
-  /** Returns true if field keys is set (has been assigned a value) and false otherwise */
-  public boolean isSetKeys() {
-    return this.keys != null;
+  /** Returns true if field records is set (has been assigned a value) and false otherwise */
+  public boolean isSetRecords() {
+    return this.records != null;
   }
 
-  public void setKeysIsSet(boolean value) {
+  public void setRecordsIsSet(boolean value) {
     if (!value) {
-      this.keys = null;
-    }
-  }
-
-  public int getValuesSize() {
-    return (this.values == null) ? 0 : this.values.size();
-  }
-
-  public java.util.Iterator<TSDynamicOneColumnData> getValuesIterator() {
-    return (this.values == null) ? null : this.values.iterator();
-  }
-
-  public void addToValues(TSDynamicOneColumnData elem) {
-    if (this.values == null) {
-      this.values = new ArrayList<TSDynamicOneColumnData>();
-    }
-    this.values.add(elem);
-  }
-
-  public List<TSDynamicOneColumnData> getValues() {
-    return this.values;
-  }
-
-  public TSQueryDataSet setValues(List<TSDynamicOneColumnData> values) {
-    this.values = values;
-    return this;
-  }
-
-  public void unsetValues() {
-    this.values = null;
-  }
-
-  /** Returns true if field values is set (has been assigned a value) and false otherwise */
-  public boolean isSetValues() {
-    return this.values != null;
-  }
-
-  public void setValuesIsSet(boolean value) {
-    if (!value) {
-      this.values = null;
+      this.records = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case KEYS:
+    case RECORDS:
       if (value == null) {
-        unsetKeys();
+        unsetRecords();
       } else {
-        setKeys((List<String>)value);
-      }
-      break;
-
-    case VALUES:
-      if (value == null) {
-        unsetValues();
-      } else {
-        setValues((List<TSDynamicOneColumnData>)value);
+        setRecords((List<TSRowRecord>)value);
       }
       break;
 
@@ -262,11 +200,8 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case KEYS:
-      return getKeys();
-
-    case VALUES:
-      return getValues();
+    case RECORDS:
+      return getRecords();
 
     }
     throw new IllegalStateException();
@@ -279,10 +214,8 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     }
 
     switch (field) {
-    case KEYS:
-      return isSetKeys();
-    case VALUES:
-      return isSetValues();
+    case RECORDS:
+      return isSetRecords();
     }
     throw new IllegalStateException();
   }
@@ -300,21 +233,12 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     if (that == null)
       return false;
 
-    boolean this_present_keys = true && this.isSetKeys();
-    boolean that_present_keys = true && that.isSetKeys();
-    if (this_present_keys || that_present_keys) {
-      if (!(this_present_keys && that_present_keys))
+    boolean this_present_records = true && this.isSetRecords();
+    boolean that_present_records = true && that.isSetRecords();
+    if (this_present_records || that_present_records) {
+      if (!(this_present_records && that_present_records))
         return false;
-      if (!this.keys.equals(that.keys))
-        return false;
-    }
-
-    boolean this_present_values = true && this.isSetValues();
-    boolean that_present_values = true && that.isSetValues();
-    if (this_present_values || that_present_values) {
-      if (!(this_present_values && that_present_values))
-        return false;
-      if (!this.values.equals(that.values))
+      if (!this.records.equals(that.records))
         return false;
     }
 
@@ -334,22 +258,12 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetKeys()).compareTo(other.isSetKeys());
+    lastComparison = Boolean.valueOf(isSetRecords()).compareTo(other.isSetRecords());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetKeys()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keys, other.keys);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetValues()).compareTo(other.isSetValues());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetValues()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.values, other.values);
+    if (isSetRecords()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.records, other.records);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -374,19 +288,11 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     StringBuilder sb = new StringBuilder("TSQueryDataSet(");
     boolean first = true;
 
-    sb.append("keys:");
-    if (this.keys == null) {
+    sb.append("records:");
+    if (this.records == null) {
       sb.append("null");
     } else {
-      sb.append(this.keys);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("values:");
-    if (this.values == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.values);
+      sb.append(this.records);
     }
     first = false;
     sb.append(")");
@@ -395,11 +301,8 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (keys == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'keys' was not present! Struct: " + toString());
-    }
-    if (values == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'values' was not present! Struct: " + toString());
+    if (records == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'records' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
   }
@@ -438,39 +341,21 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
           break;
         }
         switch (schemeField.id) {
-          case 1: // KEYS
+          case 1: // RECORDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list116 = iprot.readListBegin();
-                struct.keys = new ArrayList<String>(_list116.size);
-                for (int _i117 = 0; _i117 < _list116.size; ++_i117)
+                org.apache.thrift.protocol.TList _list62 = iprot.readListBegin();
+                struct.records = new ArrayList<TSRowRecord>(_list62.size);
+                for (int _i63 = 0; _i63 < _list62.size; ++_i63)
                 {
-                  String _elem118;
-                  _elem118 = iprot.readString();
-                  struct.keys.add(_elem118);
+                  TSRowRecord _elem64;
+                  _elem64 = new TSRowRecord();
+                  _elem64.read(iprot);
+                  struct.records.add(_elem64);
                 }
                 iprot.readListEnd();
               }
-              struct.setKeysIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // VALUES
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list119 = iprot.readListBegin();
-                struct.values = new ArrayList<TSDynamicOneColumnData>(_list119.size);
-                for (int _i120 = 0; _i120 < _list119.size; ++_i120)
-                {
-                  TSDynamicOneColumnData _elem121;
-                  _elem121 = new TSDynamicOneColumnData();
-                  _elem121.read(iprot);
-                  struct.values.add(_elem121);
-                }
-                iprot.readListEnd();
-              }
-              struct.setValuesIsSet(true);
+              struct.setRecordsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -490,25 +375,13 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.keys != null) {
-        oprot.writeFieldBegin(KEYS_FIELD_DESC);
+      if (struct.records != null) {
+        oprot.writeFieldBegin(RECORDS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.keys.size()));
-          for (String _iter122 : struct.keys)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.records.size()));
+          for (TSRowRecord _iter65 : struct.records)
           {
-            oprot.writeString(_iter122);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
-      if (struct.values != null) {
-        oprot.writeFieldBegin(VALUES_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.values.size()));
-          for (TSDynamicOneColumnData _iter123 : struct.values)
-          {
-            _iter123.write(oprot);
+            _iter65.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -532,17 +405,10 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     public void write(org.apache.thrift.protocol.TProtocol prot, TSQueryDataSet struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
-        oprot.writeI32(struct.keys.size());
-        for (String _iter124 : struct.keys)
+        oprot.writeI32(struct.records.size());
+        for (TSRowRecord _iter66 : struct.records)
         {
-          oprot.writeString(_iter124);
-        }
-      }
-      {
-        oprot.writeI32(struct.values.size());
-        for (TSDynamicOneColumnData _iter125 : struct.values)
-        {
-          _iter125.write(oprot);
+          _iter66.write(oprot);
         }
       }
     }
@@ -551,28 +417,17 @@ public class TSQueryDataSet implements org.apache.thrift.TBase<TSQueryDataSet, T
     public void read(org.apache.thrift.protocol.TProtocol prot, TSQueryDataSet struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list126 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.keys = new ArrayList<String>(_list126.size);
-        for (int _i127 = 0; _i127 < _list126.size; ++_i127)
+        org.apache.thrift.protocol.TList _list67 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.records = new ArrayList<TSRowRecord>(_list67.size);
+        for (int _i68 = 0; _i68 < _list67.size; ++_i68)
         {
-          String _elem128;
-          _elem128 = iprot.readString();
-          struct.keys.add(_elem128);
+          TSRowRecord _elem69;
+          _elem69 = new TSRowRecord();
+          _elem69.read(iprot);
+          struct.records.add(_elem69);
         }
       }
-      struct.setKeysIsSet(true);
-      {
-        org.apache.thrift.protocol.TList _list129 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.values = new ArrayList<TSDynamicOneColumnData>(_list129.size);
-        for (int _i130 = 0; _i130 < _list129.size; ++_i130)
-        {
-          TSDynamicOneColumnData _elem131;
-          _elem131 = new TSDynamicOneColumnData();
-          _elem131.read(iprot);
-          struct.values.add(_elem131);
-        }
-      }
-      struct.setValuesIsSet(true);
+      struct.setRecordsIsSet(true);
     }
   }
 

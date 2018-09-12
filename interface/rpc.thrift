@@ -230,26 +230,25 @@ struct TSCloseOperationResp {
   1: required TS_Status status
 }
 
-struct TSDynamicOneColumnData{
-  1: required string deviceType
-  2: required string dataType
-	3: required i32 length
+struct TSDataValue{
+  1: required bool is_empty
+  2: optional bool bool_val
+  3: optional i32 int_val
+  4: optional i64 long_val
+  5: optional double float_val
+  6: optional double double_val
+  7: optional binary binary_val
+  8: optional string type;
+}
 
-  4: required list<i64> timeRet
-
-  5: optional list<bool> boolList
-	6: optional list<i32> i32List
-	7: optional list<i64> i64List
-	8: optional list<double> floatList
-	9: optional list<double> doubleList
-	10: optional list<binary> binaryList
-	
-	11: optional list<i64> emptyList;
+struct TSRowRecord{
+  1: required i64 timestamp
+  2: required list<string> keys
+  3: required list<TSDataValue> values
 }
 
 struct TSQueryDataSet{
-	1: required list<string> keys
-  2: required list<TSDynamicOneColumnData> values
+	1: required list<TSRowRecord> records
 }
 
 struct TSFetchResultsReq{
@@ -262,25 +261,6 @@ struct TSFetchResultsResp{
 	2: required bool hasResultSet
 	3: optional TSQueryDataSet queryDataSet
 }
-//
-// struct TSJDBCRecord {
-// 	1: required string deviceType
-// 	2: required string deviceId
-// 	3: required list<TSDataPoint> dataList
-// 	4: required TSTimeValue timeValue
-// }
-//
-// struct TSTimeValue {
-// 	1: required i64 time
-// }
-//
-// struct TSDataPoint{
-//   1: required string type
-//   2: required string sensorId
-//   3: required string deviceId
-// 	4: required string valueStr
-// 	5: optional i32 groupId
-// }
 
 struct TSFetchMetadataResp{
 		1: required TS_Status status
@@ -297,14 +277,12 @@ struct TSFetchMetadataReq{
 		2: optional string columnPath
 }
 
-
 struct TSColumnSchema{
 	1: optional string name;
 	2: optional string dataType;
 	3: optional string encoding;
 	4: optional map<string, string> otherArgs;
 }
-
 
 struct TSGetTimeZoneResp {
     1: required TS_Status status
@@ -323,7 +301,6 @@ service TSIService {
 	TSOpenSessionResp openSession(1:TSOpenSessionReq req);
 
 	TSCloseSessionResp closeSession(1:TSCloseSessionReq req);
-
 
 	TSExecuteStatementResp executeStatement(1:TSExecuteStatementReq req);
 
