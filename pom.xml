@@ -4,7 +4,7 @@
 
 	<groupId>cn.edu.tsinghua</groupId>
 	<artifactId>IoTDB</artifactId>
-	<version>0.7.0</version>
+	<version>0.8.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>IoTDB</name>

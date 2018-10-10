@@ -95,11 +95,10 @@ public class LargeDataTest {
         //System.setOut(ps);
 
         if (testFlag) {
-            // Thread.sleep(5000);
+//            Thread.sleep(5000);
             insertSQL();
 
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            verifyTest();
 
             // select test
             selectAllTest();
@@ -254,7 +253,7 @@ public class LargeDataTest {
                 //System.out.println(ans);
                 cnt++;
             }
-            assertEquals(22600, cnt);
+            assertEquals(22800, cnt);
             statement.close();
 
         } catch (Exception e) {
@@ -268,6 +267,7 @@ public class LargeDataTest {
     }
 
     private void aggregationWithoutFilterTest() throws ClassNotFoundException, SQLException {
+
         String sql = "select count(s0),mean(s0),first(s0),sum(s0)," +
                 "count(s1),mean(s1),first(s1),sum(s1) from root.vehicle.d0";
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -290,35 +290,6 @@ public class LargeDataTest {
                 cnt++;
             }
             assertEquals(1, cnt);
-            statement.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    private void verifyTest() throws ClassNotFoundException, SQLException {
-
-        String sql = "select count(s1) from root.vehicle.d0";
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute(sql);
-            Assert.assertTrue(hasResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR)
-                        + "," + resultSet.getString(count(d0s1));
-                System.out.println(ans);
-            }
             statement.close();
 
         } catch (Exception e) {
@@ -884,7 +855,7 @@ public class LargeDataTest {
         }
     }
 
-    private void insertSQL() throws ClassNotFoundException, SQLException {
+    private void insertSQL() throws ClassNotFoundException, SQLException, InterruptedException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
@@ -912,7 +883,7 @@ public class LargeDataTest {
                 statement.execute(sql);
             }
 
-            // statement.execute("flush");
+             statement.execute("flush");
 
             // insert large amount of data time range : 13700 ~ 24000
             for (int time = 13700; time < 24000; time++) {
@@ -929,7 +900,7 @@ public class LargeDataTest {
 
             Thread.sleep(5000);
 
-            // buffwrite data, unsealed file
+//             buffwrite data, unsealed file
             for (int time = 100000; time < 101000; time++) {
 
                 String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 20);

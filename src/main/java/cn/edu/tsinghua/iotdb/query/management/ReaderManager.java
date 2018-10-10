@@ -28,12 +28,6 @@ public class ReaderManager {
     /** file has been serialized, sealed **/
     private List<String> sealedFilePathList;
 
-    /** unsealed file, at most one **/
-    private String unSealedFilePath = null;
-
-    /** RowGroupMetadata for unsealed file path **/
-    private List<RowGroupMetaData> unSealedRowGroupMetadataList = null;
-
     /** key: deltaObjectUID **/
     private Map<String, List<RowGroupReader>> rowGroupReaderMap = new LinkedHashMap<>();
 
@@ -77,18 +71,6 @@ public class ReaderManager {
                         RowGroupReader reader = new IoTRowGroupReader(meta, fileReader, tombstones);
                         rowGroupReaderList.add(reader);
                     }
-                }
-            }
-
-            if (unSealedFilePath != null) {
-                // get tome stones of this file
-                Map<String, List<Tombstone>> tombstones = getTombStone(unSealedFilePath, deltaObjectUID);
-                TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(unSealedFilePath);
-                for (RowGroupMetaData meta : unSealedRowGroupMetadataList) {
-                    //TODO parallelism could be used to speed up
-
-                    RowGroupReader reader = new IoTRowGroupReader(meta, fileReader, tombstones);
-                    rowGroupReaderList.add(reader);
                 }
             }
 

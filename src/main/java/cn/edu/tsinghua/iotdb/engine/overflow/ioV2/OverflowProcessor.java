@@ -39,12 +39,14 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class OverflowProcessor extends Processor {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OverflowProcessor.class);
     private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
     private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
@@ -220,22 +222,17 @@ public class OverflowProcessor extends Processor {
      *
      * @param deltaObjectId
      * @param measurementId
-     * @param timeFilter
-     * @param freqFilter
-     * @param valueFilter
      * @param dataType
      * @return OverflowSeriesDataSource
      * @throws IOException
      */
-    public OverflowSeriesDataSource query(String deltaObjectId, String measurementId,
-                                          SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-                                          SingleSeriesFilterExpression valueFilter, TSDataType dataType) throws IOException {
+    public <T extends Comparable<T>> OverflowSeriesDataSource query(String deltaObjectId, String measurementId,
+                                                                    Filter<T> filter, TSDataType dataType) throws IOException {
         queryFlushLock.lock();
         try {
             // query insert data in memory and unseqTsFiles
             // memory
-            RawSeriesChunk insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, timeFilter,
-                    freqFilter, valueFilter, dataType);
+            RawSeriesChunk insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType);
 
             List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
             // work file
@@ -253,8 +250,7 @@ public class OverflowProcessor extends Processor {
             // query update/delete data in memory and overflowFiles
             UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
             // memory
-            DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, timeFilter,
-                    freqFilter, valueFilter, dataType);
+            DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
             updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
             List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
             // work file
@@ -286,15 +282,10 @@ public class OverflowProcessor extends Processor {
      *
      * @param deltaObjectId
      * @param measurementId
-     * @param timeFilter
-     * @param freqFilter
-     * @param valueFilter
      * @param dataType
      * @return insert data in SeriesChunkInMemTable
      */
-    private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
-                                                       SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-                                                       SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
+    private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
 
         MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
         if (flushStatus.isFlushing()) {
@@ -312,20 +303,13 @@ public class OverflowProcessor extends Processor {
      *
      * @param deltaObjectId
      * @param measurementId
-     * @param timeFilter
-     * @param freqFilter
-     * @param valueFilter
      * @param dataType
      * @return update/delete result in DynamicOneColumnData
      */
-    private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
-                                                             SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression freqFilter,
-                                                             SingleSeriesFilterExpression valueFilter, TSDataType dataType) {
-        DynamicOneColumnData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId,
-                timeFilter, freqFilter, valueFilter, dataType, null);
+    private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
+        DynamicOneColumnData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, null);
         if (flushStatus.isFlushing()) {
-            columnData = flushSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, timeFilter, freqFilter,
-                    valueFilter, dataType, columnData);
+            columnData = flushSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, columnData);
         }
         return columnData;
     }
@@ -689,6 +673,10 @@ public class OverflowProcessor extends Processor {
         return logNode;
     }
 
+    public OverflowResource getWorkResource() {
+        return workResource;
+    }
+
     public void deleteInMem(String deltaObjectId, String measurementId, long timeUpperBound) {
         workSupport.getMemTabale().delete(deltaObjectId, measurementId, timeUpperBound);
     }
@@ -702,7 +690,5 @@ public class OverflowProcessor extends Processor {
         }
     }
 
-    public OverflowResource getWorkResource() {
-        return workResource;
-    }
+
 }
