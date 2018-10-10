@@ -220,12 +220,6 @@ public class FileNodeManager implements IStatistic, IService {
 		return processor;
 	}
 
-	/**
-	 * 恢复所有的FileNodeProcessor。
-	 * 先从MManager获得所有的FileName（StorageGroup）；
-	 *
-	 * 该函数应更名为recover()
-	 */
 	public void recovery() {
 
 		try {

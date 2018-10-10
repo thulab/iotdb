@@ -4,6 +4,7 @@ import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.LongFilterSeries;
@@ -14,9 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,10 +61,10 @@ public class IoTValueReader extends ValueReader {
         // convert tombstone to a filter
         if (maxTombstoneTime >= this.getStartTime()) {
             if(timeFilter == null) {
-                timeFilter = new GtEq<Long>(new LongFilterSeries(deltaObjectId, measurementId, TSDataType.INT64, FilterSeriesType.TIME_FILTER),
+                timeFilter = new GtEq<Long>(FilterFactory.timeFilterSeries(),
                         maxTombstoneTime, false);
             } else {
-                timeFilter = new And(timeFilter, new GtEq<Long>(new LongFilterSeries(deltaObjectId, measurementId, TSDataType.INT64, FilterSeriesType.TIME_FILTER),
+                timeFilter = new And(timeFilter, new GtEq<Long>(FilterFactory.timeFilterSeries(),
                         maxTombstoneTime, false));
             }
         }

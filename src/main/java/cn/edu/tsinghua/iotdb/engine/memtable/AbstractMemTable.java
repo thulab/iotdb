@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * @author Rong Kang
  */
-public abstract class AbstractMemTable implements IMemTable{
+public abstract class AbstractMemTable implements IMemTable {
 
     @Override
     public Map<String, Map<String, IMemSeries>> getMemTableMap() {
@@ -20,12 +20,11 @@ public abstract class AbstractMemTable implements IMemTable{
     public AbstractMemTable() {
         this.memTableMap = new HashMap<>();
     }
-    
+
     /**
      * check whether the given path is within this memtable.
      *
      * @return true if path is within this memtable
-     *
      */
     private boolean checkPath(String deltaObject, String measurement) {
         return memTableMap.containsKey(deltaObject) &&
@@ -33,11 +32,11 @@ public abstract class AbstractMemTable implements IMemTable{
     }
 
     private IMemSeries addSeriesIfNone(String deltaObject, String measurement, TSDataType dataType) {
-        if(!memTableMap.containsKey(deltaObject)) {
+        if (!memTableMap.containsKey(deltaObject)) {
             memTableMap.put(deltaObject, new HashMap<>());
         }
         Map<String, IMemSeries> memSeries = memTableMap.get(deltaObject);
-        if(!memSeries.containsKey(measurement)) {
+        if (!memSeries.containsKey(measurement)) {
             memSeries.put(measurement, genMemSeries(dataType));
         }
         return memSeries.get(measurement);
@@ -48,7 +47,7 @@ public abstract class AbstractMemTable implements IMemTable{
     @Override
     public void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue) {
         IMemSeries memSeries = addSeriesIfNone(deltaObject, measurement, dataType);
-        memSeries.write(dataType,insertTime,insertValue);
+        memSeries.write(dataType, insertTime, insertValue);
     }
 
     @Override
@@ -61,32 +60,32 @@ public abstract class AbstractMemTable implements IMemTable{
         }
         return sum;
     }
-    
+
     @Override
-    public void clear(){
-    	memTableMap.clear();
+    public void clear() {
+        memTableMap.clear();
     }
-    
+
     @Override
     public boolean isEmpty() {
-    	return memTableMap.isEmpty();
+        return memTableMap.isEmpty();
     }
 
 
     @Override
     public IMemSeries query(String deltaObject, String measurement, TSDataType dataType) {
-        if(!checkPath(deltaObject,measurement))
-        	return new PrimitiveMemSeries(dataType);
+        if (!checkPath(deltaObject, measurement))
+            return new PrimitiveMemSeries(dataType);
         return memTableMap.get(deltaObject).get(measurement);
     }
 
     @Override
     public void resetMemSeries(String deltaObject, String measurement) {
-        if(!memTableMap.containsKey(deltaObject)) {
+        if (!memTableMap.containsKey(deltaObject)) {
             return;
         }
         Map<String, IMemSeries> memSeries = memTableMap.get(deltaObject);
-        if(memSeries.containsKey(measurement)) {
+        if (memSeries.containsKey(measurement)) {
             memSeries.get(measurement).reset();
         }
     }
@@ -94,10 +93,10 @@ public abstract class AbstractMemTable implements IMemTable{
     @Override
     public void delete(String deltaObjectId, String measurementId, long timeUpperBound) {
         Map<String, IMemSeries> seriesMap = memTableMap.get(deltaObjectId);
-        if(seriesMap == null)
+        if (seriesMap == null)
             return;
         IMemSeries series = seriesMap.get(measurementId);
-        if(series == null)
+        if (series == null)
             return;
         series.delete(timeUpperBound);
     }
