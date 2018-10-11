@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.client;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
+import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.tool.ImportCsv;
 
@@ -376,11 +377,9 @@ public abstract class AbstractClient {
 		}
 		if (specialCmd.equals(SHOW_METADATA_COMMAND)) {
 			try {
-				System.out.println(connection.getMetaData());
+				System.out.println(((TsfileDatabaseMetadata)connection.getMetaData()).getMetadataInJson());
 			} catch (SQLException e) {
 				System.out.println("Failed to show timeseries because: " + e.getMessage());
-			} catch (OutOfMemoryError outOfMemoryError) {
-				System.out.println("Failed to show timeseries because: " + outOfMemoryError.getMessage());
 			}
 			return OPERATION_RESULT.CONTINUE_OPER;
 		}
