@@ -1,5 +1,6 @@
 # Status
 [![Build Status](https://travis-ci.org/thulab/iotdb-jdbc.svg?branch=master)](https://travis-ci.org/thulab/iotdb-jdbc)
+[![codecov](https://codecov.io/gh/thulab/iotdb-jdbc/branch/master/graph/badge.svg)](https://codecov.io/gh/thulab/iotdb-jdbc)
 
 # Usage
 
