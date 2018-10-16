@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -62,7 +63,6 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
@@ -661,8 +661,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 	}
 
-	public QueryDataSource query(String deltaObjectId, String measurementId, SingleSeriesFilterExpression timeFilter,
-			SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
+	public <T extends Comparable<T>> QueryDataSource query(String deltaObjectId, String measurementId, Filter<T> filter)
 			throws FileNodeProcessorException {
 		// query overflow data
 		TSDataType dataType = null;
@@ -673,8 +672,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 		OverflowSeriesDataSource overflowSeriesDataSource;
 		try {
-			overflowSeriesDataSource = overflowProcessor.query(deltaObjectId, measurementId, timeFilter, freqFilter,
-					valueFilter, dataType);
+			overflowSeriesDataSource = overflowProcessor.query(deltaObjectId, measurementId, filter, dataType);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new FileNodeProcessorException(e);
@@ -731,7 +729,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * append one specified tsfile to this filenode processor
-	 * 
+	 *
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @param appendFilePath
@@ -835,7 +833,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * submit the merge task to the <code>MergePool</code>
-	 * 
+	 *
 	 * @return null -can't submit the merge task, because this filenode is not
 	 *         overflowed or it is merging now. Future<?> - submit the merge
 	 *         task successfully.
@@ -935,7 +933,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * Merge this storage group, merge the tsfile data with overflow data.
-	 * 
+	 *
 	 * @throws FileNodeProcessorException
 	 */
 	public void merge() throws FileNodeProcessorException {
@@ -1070,6 +1068,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						getProcessorName(), backupIntervalFile.getRelativePath());
 			}
 		}
+
+		OverflowFileStreamManager.getInstance()
+				.removeMappedByteBuffer(overflowProcessor.getWorkResource().getInsertFilePath());
 		//
 		// change status from merge to wait
 		//
@@ -1616,6 +1617,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 				endTimeMap.put(deltaObjectId, endTime);
 			}
+			break;
 		default:
 			LOGGER.error("Not support data type: {}", dataType);
 			break;
@@ -1725,7 +1727,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * Close the bufferwrite processor
-	 * 
+	 *
 	 * @throws FileNodeProcessorException
 	 */
 	public void closeBufferWrite() throws FileNodeProcessorException {
@@ -1774,7 +1776,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	/**
 	 * Close the overflow processor
-	 * 
+	 *
 	 * @throws FileNodeProcessorException
 	 */
 	public void closeOverflow() throws FileNodeProcessorException {

@@ -51,6 +51,7 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
@@ -536,10 +537,10 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public QueryDataSource query(String deltaObjectId, String measurementId, SingleSeriesFilterExpression timeFilter,
-			SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter)
+	public QueryDataSource query(SeriesFilter<?> seriesFilter)
 			throws FileNodeManagerException {
-
+		String deltaObjectId = seriesFilter.getSeriesPath().getDeltaObjectToString();
+		String measurementId = seriesFilter.getSeriesPath().getMeasurementToString();
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		LOGGER.debug("Get the FileNodeProcessor: filenode is {}, query.", fileNodeProcessor.getProcessorName());
 		try {
@@ -555,8 +556,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 			}
 			try {
-				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, timeFilter, freqFilter,
-						valueFilter);
+				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, seriesFilter.getFilter());
 			} catch (FileNodeProcessorException e) {
 				LOGGER.error("Query error: the deltaObjectId {}, the measurementId {}", deltaObjectId, measurementId,
 						e);
