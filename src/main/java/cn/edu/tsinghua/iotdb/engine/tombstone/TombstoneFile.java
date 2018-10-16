@@ -22,7 +22,7 @@ public abstract class TombstoneFile {
     /**
      * Storage accessor for writing and reading.
      */
-    protected ITombstoneAccessor accessor;
+    protected volatile ITombstoneAccessor accessor;
     /**
      * A lock that prevents a in-use tombstone from being deleted.
      */
