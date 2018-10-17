@@ -139,7 +139,7 @@ public abstract class AbstractClient {
 						formatValue = "%" + maxValueLengthForShow[i - 1] + "s|";
 						System.out.printf(formatValue, String.valueOf(res.getString(i)));
 			    		}
-			    		System.out.printf("\n");
+			    		System.out.println();
 				} else { // queried data results
 			    		if (displayCnt < maxPrintRowCount) { // NOTE displayCnt only works on queried data results
 						System.out.print("|");
@@ -164,7 +164,7 @@ public abstract class AbstractClient {
 								System.out.printf(formatValue, String.valueOf(res.getString(i)));
 				    			}
 						}
-						System.out.printf("\n");
+						System.out.println();
 						displayCnt++;
 					}
 				}
