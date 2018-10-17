@@ -17,12 +17,7 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
 
 import org.apache.thrift.TException;
 
-import java.sql.BatchUpdateException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -193,18 +188,18 @@ public class TsfileStatement implements Statement {
 		isCancelled = false;
 		String sqlToLowerCase = sql.toLowerCase().trim();
 		if (sqlToLowerCase.startsWith(SHOW_TIMESERIES_COMMAND_LOWERCASE)) {
-			String[] cmdSplited = sqlToLowerCase.split("\\s+");
+			String[] cmdSplited = sql.split("\\s+");
 			if (cmdSplited.length != 3) {
 				throw new SQLException("Error format of \'SHOW TIMESERIES <PATH>\'");
 			} else {
 				String path = cmdSplited[2];
-				TsfileDatabaseMetadata databaseMetaData = (TsfileDatabaseMetadata) connection.getMetaData();
-				resultSet = databaseMetaData.getShowTimeseries(path);
+				DatabaseMetaData databaseMetaData = connection.getMetaData();
+				resultSet = databaseMetaData.getColumns("ts", path, null, null);
 				return true;
 			}
 		} else if (sqlToLowerCase.equals(SHOW_STORAGE_GROUP_COMMAND_LOWERCASE)) {
-			TsfileDatabaseMetadata databaseMetaData = (TsfileDatabaseMetadata) connection.getMetaData();
-			resultSet = databaseMetaData.getShowStorageGroups();
+			DatabaseMetaData databaseMetaData = connection.getMetaData();
+			resultSet = databaseMetaData.getColumns("sg", null, null, null);
 			return true;
 		} else {
 			TSExecuteStatementReq execReq = new TSExecuteStatementReq(sessionHandle, sql);

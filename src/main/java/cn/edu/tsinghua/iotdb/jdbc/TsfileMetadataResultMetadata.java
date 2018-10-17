@@ -5,23 +5,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /*
-   This class is mainly used for TsfileMetadataResultSet to be used in a similar way to TsfileQueryResultSet, for example:
+    TsfileMetadataResultMetadata implements a similar api like TsfileQueryResultSet to display column metadata.
+ */
 
-   boolean hasResultSet = statement.execute("show timeseries root.ln.wf01.wt01");
-   if(hasResultSet) {
-       ResultSet resultSet = statement.getResultSet();
-       ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-       while (resultSet.next()) {
-           StringBuilder builder = new StringBuilder();
-           for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-               builder.append(resultSet.getString(i)).append(",");
-           }
-           System.out.println(builder);
-       }
-   }
-   statement.close();
-
-   */
 public class TsfileMetadataResultMetadata implements ResultSetMetaData {
     private String[] showLabels;
 

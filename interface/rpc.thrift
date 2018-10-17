@@ -265,10 +265,9 @@ struct TSFetchResultsResp{
 struct TSFetchMetadataResp{
 		1: required TS_Status status
 		2: optional string metadataInJson
-		3: optional map<string, list<string>> deltaObjectMap
+		3: optional list<string> ColumnsList
 		4: optional string dataType
-		5: optional list<string> allColumns
-		6: optional list<list<string>> showTimeseriesList
+		5: optional list<list<string>> showTimeseriesList
 		7: optional set<string> showStorageGroups
 }
 

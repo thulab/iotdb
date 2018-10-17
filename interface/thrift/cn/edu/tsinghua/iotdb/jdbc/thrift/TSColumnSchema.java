@@ -586,15 +586,15 @@ public class TSColumnSchema implements org.apache.thrift.TBase<TSColumnSchema, T
           case 4: // OTHER_ARGS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map182 = iprot.readMapBegin();
-                struct.otherArgs = new HashMap<String,String>(2*_map182.size);
-                for (int _i183 = 0; _i183 < _map182.size; ++_i183)
+                org.apache.thrift.protocol.TMap _map164 = iprot.readMapBegin();
+                struct.otherArgs = new HashMap<String,String>(2*_map164.size);
+                for (int _i165 = 0; _i165 < _map164.size; ++_i165)
                 {
-                  String _key184;
-                  String _val185;
-                  _key184 = iprot.readString();
-                  _val185 = iprot.readString();
-                  struct.otherArgs.put(_key184, _val185);
+                  String _key166;
+                  String _val167;
+                  _key166 = iprot.readString();
+                  _val167 = iprot.readString();
+                  struct.otherArgs.put(_key166, _val167);
                 }
                 iprot.readMapEnd();
               }
@@ -644,10 +644,10 @@ public class TSColumnSchema implements org.apache.thrift.TBase<TSColumnSchema, T
           oprot.writeFieldBegin(OTHER_ARGS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.otherArgs.size()));
-            for (Map.Entry<String, String> _iter186 : struct.otherArgs.entrySet())
+            for (Map.Entry<String, String> _iter168 : struct.otherArgs.entrySet())
             {
-              oprot.writeString(_iter186.getKey());
-              oprot.writeString(_iter186.getValue());
+              oprot.writeString(_iter168.getKey());
+              oprot.writeString(_iter168.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -697,10 +697,10 @@ public class TSColumnSchema implements org.apache.thrift.TBase<TSColumnSchema, T
       if (struct.isSetOtherArgs()) {
         {
           oprot.writeI32(struct.otherArgs.size());
-          for (Map.Entry<String, String> _iter187 : struct.otherArgs.entrySet())
+          for (Map.Entry<String, String> _iter169 : struct.otherArgs.entrySet())
           {
-            oprot.writeString(_iter187.getKey());
-            oprot.writeString(_iter187.getValue());
+            oprot.writeString(_iter169.getKey());
+            oprot.writeString(_iter169.getValue());
           }
         }
       }
@@ -724,15 +724,15 @@ public class TSColumnSchema implements org.apache.thrift.TBase<TSColumnSchema, T
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TMap _map188 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.otherArgs = new HashMap<String,String>(2*_map188.size);
-          for (int _i189 = 0; _i189 < _map188.size; ++_i189)
+          org.apache.thrift.protocol.TMap _map170 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.otherArgs = new HashMap<String,String>(2*_map170.size);
+          for (int _i171 = 0; _i171 < _map170.size; ++_i171)
           {
-            String _key190;
-            String _val191;
-            _key190 = iprot.readString();
-            _val191 = iprot.readString();
-            struct.otherArgs.put(_key190, _val191);
+            String _key172;
+            String _val173;
+            _key172 = iprot.readString();
+            _val173 = iprot.readString();
+            struct.otherArgs.put(_key172, _val173);
           }
         }
         struct.setOtherArgsIsSet(true);
