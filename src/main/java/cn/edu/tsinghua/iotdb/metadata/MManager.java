@@ -57,7 +57,7 @@ public class MManager {
     }
 
     private MManager() {
-        LOGGER.info("Initializing MManager");
+        LOGGER.debug("Initializing MManager");
         long startTime = System.currentTimeMillis();
 
         metadataDirPath = TsfileDBDescriptor.getInstance().getConfig().metadataDir;
@@ -102,8 +102,8 @@ public class MManager {
         };
         long graphStartTime = System.currentTimeMillis();
         init();
-        LOGGER.info("Initialization of MGraph consumed {}ms", (System.currentTimeMillis() - graphStartTime));
-        LOGGER.info("Initialization of MManager consumed {}ms", (System.currentTimeMillis() - startTime));
+        LOGGER.debug("Initialization of MGraph consumed {}ms", (System.currentTimeMillis() - graphStartTime));
+        LOGGER.debug("Initialization of MManager consumed {}ms", (System.currentTimeMillis() - startTime));
     }
 
     private void init() {
@@ -117,7 +117,7 @@ public class MManager {
             try {
                 if (dataFile.exists()) {
                     // init the metadata from the serialized file
-                    LOGGER.info("Recovering MGraph from data file");
+                    LOGGER.debug("Recovering MGraph from data file");
                     FileInputStream fis = null;
                     try {
                         fis = new FileInputStream(dataFile);
@@ -132,7 +132,7 @@ public class MManager {
                     mGraph = new MGraph(ROOT_NAME);
                 if (logFile.exists()) {
                     // init the metadata from the operation log
-                    LOGGER.info("Recovering MGraph from log file");
+                    LOGGER.debug("Recovering MGraph from log file");
                     logCnt = 0;
                     if (logFile.exists()) {
                         DataInputStream is = null;
@@ -152,7 +152,7 @@ public class MManager {
                         }
                     }
                 }
-                LOGGER.info("MGraph recovered");
+                LOGGER.debug("MGraph recovered");
                 needFlush = logCnt > 0 | !dataFile.exists();
                 if (needFlush)
                     flushObjectToFile();
@@ -572,7 +572,7 @@ public class MManager {
             return fileNameList;
         } finally {
             lock.readLock().unlock();
-            LOGGER.info("Get all file names consumed {}ms", (System.currentTimeMillis() - startTime));
+            LOGGER.debug("Get all file names consumed {}ms", (System.currentTimeMillis() - startTime));
         }
     }
 

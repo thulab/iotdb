@@ -1160,7 +1160,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		try {
 			long findStartTime = System.currentTimeMillis();
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
-			LOGGER.info("Finding all index paths consumed {}ms", (System.currentTimeMillis() - findStartTime));
+			LOGGER.debug("Finding all index paths consumed {}ms", (System.currentTimeMillis() - findStartTime));
 			if (!allIndexSeries.isEmpty()) {
 				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
 						getProcessorName(), allIndexSeries);
@@ -1183,7 +1183,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.error("Failed to find all fileList to be merged. Because" + e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
 		}
-		LOGGER.info("Index merging consumed {}ms", (System.currentTimeMillis() - startTime));
+		LOGGER.debug("Index merging consumed {}ms", (System.currentTimeMillis() - startTime));
 	}
 
 	private void switchMergeIndex() throws FileNodeProcessorException {
@@ -1191,7 +1191,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		try {
 			long findStartTime = System.currentTimeMillis();
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
-			LOGGER.info("Finding all index paths consumed {}ms", (System.currentTimeMillis() - findStartTime));
+			LOGGER.debug("Finding all index paths consumed {}ms", (System.currentTimeMillis() - findStartTime));
 			if (!allIndexSeries.isEmpty()) {
 				LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
 						getProcessorName(), allIndexSeries);
@@ -1214,7 +1214,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.error("Failed to find all fileList to be mergeSwitch because of" + e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
 		}
-		LOGGER.info("Index switching consumed {}ms", (System.currentTimeMillis() - startTime));
+		LOGGER.debug("Index switching consumed {}ms", (System.currentTimeMillis() - startTime));
 	}
 
 	private void switchMergeToWaitingv2(List<IntervalFileNode> backupIntervalFiles, boolean needEmpty)

@@ -224,13 +224,13 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			long startTime = System.currentTimeMillis();
 			List<String> filenodeNames = MManager.getInstance().getAllFileNames();
-			LOGGER.info("Retrieving all {} filenodes' names consumed {}ms", filenodeNames.size(), (System.currentTimeMillis() - startTime));
+			LOGGER.debug("Retrieving all {} filenodes' names consumed {}ms", filenodeNames.size(), (System.currentTimeMillis() - startTime));
 
 			for (String filenodeName : filenodeNames) {
-				LOGGER.info("Building filenode {} ", filenodeName);
+				LOGGER.debug("Building filenode {} ", filenodeName);
 				startTime = System.currentTimeMillis();
 				FileNodeProcessor fileNodeProcessor = getProcessor(filenodeName, true);
-				LOGGER.info("Building of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
+				LOGGER.debug("Building of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
 				if (fileNodeProcessor.shouldRecovery()) {
 					LOGGER.info("Recovery the filenode processor, the filenode is {}, the status is {}", filenodeName,
 							fileNodeProcessor.getFileNodeProcessorStatus());
@@ -241,7 +241,7 @@ public class FileNodeManager implements IStatistic, IService {
 				// add index check sum
 				startTime = System.currentTimeMillis();
 				fileNodeProcessor.rebuildIndex();
-				LOGGER.info("Rebuilding index of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
+				LOGGER.debug("Rebuilding index of filenode {} consumed {}ms", filenodeName, (System.currentTimeMillis() - startTime));
 			}
 		} catch (PathErrorException | FileNodeManagerException | FileNodeProcessorException e) {
 			LOGGER.error("Restore all FileNode failed, the reason is {}", e.getMessage());
