@@ -790,6 +790,7 @@ public class MManager {
                 fos = new FileOutputStream(tempFile, false);
                 oos = new ObjectOutputStream(new BufferedOutputStream(fos));
                 oos.writeObject(mGraph);
+                oos.flush();
             } finally {
                 if (fos != null) {
                     fos.close();

@@ -41,6 +41,7 @@ public class IoTDB implements IoTDBMBean {
     }
 
     public void active() {
+        long startTime = System.currentTimeMillis();
         StartupChecks checks = new StartupChecks().withDefaultTest();
         try {
             checks.verify();
@@ -56,7 +57,7 @@ public class IoTDB implements IoTDBMBean {
             LOGGER.error("{} exit", TsFileDBConstant.GLOBAL_DB_NAME);
             return;
         }
-        LOGGER.info("{} has started.", TsFileDBConstant.GLOBAL_DB_NAME);
+        LOGGER.info("{} has started after {}ms.", TsFileDBConstant.GLOBAL_DB_NAME, (System.currentTimeMillis() - startTime));
     }
 
     private void setUp() throws StartupException {
