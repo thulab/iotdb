@@ -54,7 +54,6 @@ public class MetadataFetchTest {
             deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
-
             insertSQL();
         }
     }
