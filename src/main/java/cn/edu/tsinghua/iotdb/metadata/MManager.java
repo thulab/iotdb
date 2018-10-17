@@ -154,8 +154,9 @@ public class MManager {
                 }
                 LOGGER.debug("MGraph recovered");
                 needFlush = logCnt > 0 | !dataFile.exists();
-                if (needFlush)
-                    flushObjectToFile();
+                // disable this until we find a better way to serialize MTree
+//                if (needFlush)
+//                    flushObjectToFile();
                 FileOutputStream fs = new FileOutputStream(logFile, true);
                 logWriter = new DataOutputStream(new BufferedOutputStream(fs));
                 writeToLog = true;
