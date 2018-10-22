@@ -29,17 +29,17 @@ import static org.mockito.Mockito.when;
  * (4) show storage group
  * databaseMetaData.getColumns(“sg”, null, null, null);
  * (5) show metadata in json
- * databaseMetaData.toString()
+ * ((TsfileDatabaseMetadata)databaseMetaData).getMetadataInJson()
  * <p>
  * The tests utilize the mockito framework to mock responses from an IoTDB server.
- * The IoTDB server status mocked here is determined by the following four sql commands:
+ * The status of the IoTDB server mocked here is determined by the following four sql commands:
  * SET STORAGE GROUP TO root.vehicle;
  * CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE;
  * CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE;
  * CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE;
  */
 
-public class MetadataMockTest {
+public class TsfileDatabaseMetadataTest {
     @Mock
     private TsfileConnection connection;
 
@@ -292,7 +292,7 @@ public class MetadataMockTest {
 
         when(fetchMetadataResp.getMetadataInJson()).thenReturn(metadataInJson);
 
-        String res = databaseMetaData.toString();
+        String res = ((TsfileDatabaseMetadata)databaseMetaData).getMetadataInJson();
         assertEquals(metadataInJson, res);
     }
 }

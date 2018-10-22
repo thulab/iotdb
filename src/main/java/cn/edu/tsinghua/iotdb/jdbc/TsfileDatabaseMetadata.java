@@ -1151,6 +1151,9 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 		throw new SQLException("Method not supported");
 	}
 
+	/*
+	recommend using getMetadataInJson() instead of toString()
+	 */
 	@Deprecated
 	@Override
 	public String toString() {
@@ -1177,7 +1180,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 	}
 
 	/*
-	 replace toString() with getMetadataInJson()
+	recommend using getMetadataInJson() instead of toString()
 	 */
 	public String getMetadataInJson()
 			throws SQLException {

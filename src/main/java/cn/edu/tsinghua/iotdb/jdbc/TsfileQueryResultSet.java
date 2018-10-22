@@ -131,16 +131,22 @@ public class TsfileQueryResultSet implements ResultSet {
         // else slimit and soffset are set and soffset is less than 'colCount',
         // so there is no need to modify slimit or soffset.
 
-        // assign columnInfoList, columnInfoMap and columnTypeList
-        int seriesEnd = seriesOffset + seriesLimit;
-        for (int i = seriesOffset; i < colCount && i < seriesEnd; i++) {
-            String name = columnName.get(i);
-            columnInfoList.add(name);
-            if (!columnInfoMap.containsKey(name)) {
-                columnInfoMap.put(name, index++);
-            }
-            this.columnTypeList.add(columnTypeList.get(i));
-        }
+		// assign columnInfoMap
+		// Note: columnInfoMap must not be affected by slimit or soffset.
+		for (int i = 0; i < colCount; i++) {
+			String name = columnName.get(i);
+			if (!columnInfoMap.containsKey(name)) {
+				columnInfoMap.put(name, index++);
+			}
+		}
+
+		// assign columnInfoList and columnTypeList under the effect of slimit and soffset
+		int seriesEnd = seriesOffset + seriesLimit;
+		for (int i = seriesOffset; i < colCount && i < seriesEnd; i++) {
+			String name = columnName.get(i);
+			columnInfoList.add(name);
+			this.columnTypeList.add(columnTypeList.get(i));
+		}
 
 	}
 
@@ -676,7 +682,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 			try {
 				TSFetchResultsResp resp = client.fetchResults(req);
-				Utils.verifySuccess(resp.status);
+				Utils.verifySuccess(resp.getStatus());
 				if (!resp.hasResultSet) {
 					emptyResultSet = true;
 				} else {
@@ -1219,7 +1225,7 @@ public class TsfileQueryResultSet implements ResultSet {
 		if (columnName.equals(TIMESTAMP_STR)) {
 			return String.valueOf(record.getTimestamp());
 		}
-		int tmp = columnInfoMap.get(columnName)+seriesOffset;
+		int tmp = columnInfoMap.get(columnName);
 		int i = 0;
 		for(Entry<Path, TsPrimitiveType> entry : record.getFields().entrySet()){
 			i++;
