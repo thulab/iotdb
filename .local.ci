@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 pwd
 rm -rf data
 # get tsfile
