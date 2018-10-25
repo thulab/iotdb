@@ -87,7 +87,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 				try {
 					TSFetchMetadataResp resp = client.fetchMetadata(req);
 					Utils.verifySuccess(resp.getStatus());
-					List<List<String>> showTimeseriesList= resp.showTimeseriesList;
+					List<List<String>> showTimeseriesList= resp.getShowTimeseriesList();
 					return new TsfileMetadataResultSet(null, null, showTimeseriesList);
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching timeseries metadata", e);

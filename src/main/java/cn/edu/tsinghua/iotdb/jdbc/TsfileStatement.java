@@ -167,7 +167,6 @@ public class TsfileStatement implements Statement {
 		}
 	}
 
-
 	/**
 	 * There are four kinds of sql here:
 	 * (1) show timeseries path
@@ -194,12 +193,12 @@ public class TsfileStatement implements Statement {
 			} else {
 				String path = cmdSplited[2];
 				DatabaseMetaData databaseMetaData = connection.getMetaData();
-				resultSet = databaseMetaData.getColumns("ts", path, null, null);
+				resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, path, null, null);
 				return true;
 			}
 		} else if (sqlToLowerCase.equals(SHOW_STORAGE_GROUP_COMMAND_LOWERCASE)) {
 			DatabaseMetaData databaseMetaData = connection.getMetaData();
-			resultSet = databaseMetaData.getColumns("sg", null, null, null);
+			resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogStorageGroup, null, null, null);
 			return true;
 		} else {
 			TSExecuteStatementReq execReq = new TSExecuteStatementReq(sessionHandle, sql);
@@ -256,7 +255,7 @@ public class TsfileStatement implements Statement {
 		isCancelled = false;
 		TSExecuteBatchStatementReq execReq = new TSExecuteBatchStatementReq(sessionHandle, batchSQLList);
 		TSExecuteBatchStatementResp execResp = client.executeBatchStatement(execReq);
-		if(execResp.getStatus().statusCode ==  TS_StatusCode.SUCCESS_STATUS){
+		if(execResp.getStatus().statusCode == TS_StatusCode.SUCCESS_STATUS){
 			if (execResp.getResult() == null) {
 				return new int[0];
 			} else {

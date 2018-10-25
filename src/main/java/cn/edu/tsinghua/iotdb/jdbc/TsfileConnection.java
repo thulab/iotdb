@@ -54,6 +54,10 @@ public class TsfileConnection implements Connection {
     private DateTimeZone timeZone;
     private boolean autoCommit;
 
+    public TsfileConnection(){
+    	
+    }
+    
     public TsfileConnection(String url, Properties info) throws SQLException, TTransportException {
 	if (url == null) {
 	    throw new TsfileURLException("Input url cannot be null");

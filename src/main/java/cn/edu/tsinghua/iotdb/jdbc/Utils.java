@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-import cn.edu.tsinghua.iotdb.jdbc.thrift.TSColumnSchema;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSDataValue;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.iotdb.jdbc.thrift.TSRowRecord;
@@ -9,16 +8,13 @@ import cn.edu.tsinghua.iotdb.jdbc.thrift.TS_StatusCode;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,32 +60,6 @@ public class Utils {
         if (status.getStatusCode() != TS_StatusCode.SUCCESS_STATUS) {
             throw new TsfileSQLException(status.errorMessage);
         }
-    }
-
-    public static Map<String, List<ColumnSchema>> convertAllSchema(Map<String, List<TSColumnSchema>> tsAllSchema) {
-        if (tsAllSchema == null) {
-            return null;
-        }
-        Map<String, List<ColumnSchema>> allSchema = new HashMap<>();
-        for (Map.Entry<String, List<TSColumnSchema>> entry : tsAllSchema.entrySet()) {
-            List<ColumnSchema> columnSchemas = new ArrayList<>();
-            for (TSColumnSchema columnSchema : entry.getValue()) {
-                columnSchemas.add(convertColumnSchema(columnSchema));
-            }
-            allSchema.put(entry.getKey(), columnSchemas);
-        }
-        return allSchema;
-    }
-
-    private static ColumnSchema convertColumnSchema(TSColumnSchema tsSchema) {
-        if (tsSchema == null) {
-            return null;
-        }
-        TSDataType dataType = tsSchema.dataType == null ? null : TSDataType.valueOf(tsSchema.dataType);
-        TSEncoding encoding = tsSchema.encoding == null ? null : TSEncoding.valueOf(tsSchema.encoding);
-        ColumnSchema ColumnSchema = new ColumnSchema(tsSchema.name, dataType, encoding);
-        ColumnSchema.setArgsMap(tsSchema.getOtherArgs());
-        return ColumnSchema;
     }
     
     public static List<RowRecord> convertRowRecords(TSQueryDataSet tsQueryDataSet) {

@@ -140,7 +140,7 @@ public class TsfileDatabaseMetadataTest {
      * show timeseries <path>
      * usage 1
      */
-    @SuppressWarnings("resource")
+    @SuppressWarnings({ "resource", "serial" })
     @Test
     public void ShowTimeseriesPath1() throws Exception {
         List<List<String>> tslist = new ArrayList<>();
@@ -194,7 +194,7 @@ public class TsfileDatabaseMetadataTest {
      * show timeseries <path>
      * usage 2: Get information about a specific column, e.g., DataType
      */
-    @SuppressWarnings("resource")
+    @SuppressWarnings({ "resource", "serial" })
     @Test
     public void ShowTimeseriesPath2() throws Exception {
         List<List<String>> tslist = new ArrayList<>();
