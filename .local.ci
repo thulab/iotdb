@@ -2,6 +2,7 @@
 
 pwd
 rm -rf data
+
 # get tsfile
 rm -rf tsfile
 git clone https://github.com/thulab/tsfile.git
