@@ -20,3 +20,8 @@ rm -rf derby*
 mvn clean test
 rm -rf data
 rm -rf derby*
+pip install --user codecov
+mvn cobertura:cobertura
+bash <(curl -s https://codecov.io/bash) -t caf768b1-10bc-416f-b2cc-c47c0d5d495e
+rm -rf data
+rm -rf derby*
