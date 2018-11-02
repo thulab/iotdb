@@ -1,6 +1,9 @@
 # Status
 [![Build Status](https://travis-ci.org/thulab/iotdb-jdbc.svg?branch=master)](https://travis-ci.org/thulab/iotdb-jdbc)
 [![codecov](https://codecov.io/gh/thulab/iotdb-jdbc/branch/master/graph/badge.svg)](https://codecov.io/gh/thulab/iotdb-jdbc)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/cn.edu.tsinghua/iotdb-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/cn.edu.tsinghua/iotdb-jdbc/)
+[![GitHub release](https://img.shields.io/github/release/thulab/iotdb-jdbc.svg)](https://github.com/thulab/iotdb-jdbc/releases)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Usage
 
