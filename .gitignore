@@ -24,7 +24,8 @@ derby-tsfile-db
 
 # intermediately generated locally
 **/logs/
-src/main/resources/*
+
+#src/main/resources/*
 
 tsfile-timeseries/src/main/resources/logback.out.out.xml
 tsfile-timeseries/src/main/resources/logback.out.xml
@@ -38,6 +39,6 @@ tsfile-jdbc/src/main/resources/output/queryRes.csv
 *.tar.gz
 *.tar
 /data/
-src/test/resources/logback.xml
+#src/test/resources/logback.xml
 
 
