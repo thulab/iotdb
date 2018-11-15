@@ -1,5 +1,7 @@
 iotdb/data/*
 iotdb/derby.log
+iotdb/iotdb/data/*
+iotdb/iotdb/derby.log
 iotdb/*.pid
 # Eclipse IDE files
 **/.classpath
@@ -10,6 +12,8 @@ iotdb/*.pid
 **/*.iml
 **/.idea/
 **/*.log
+**/*.ipr
+**/*.iws
 # Apple OS X related
 **/.DS_Store
 derby-tsfile-db
