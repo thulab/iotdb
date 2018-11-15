@@ -24,6 +24,7 @@ derby-tsfile-db
 
 # intermediately generated locally
 **/logs/
+src/main/resources/*
 
 #src/main/resources/*
 
