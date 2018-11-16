@@ -18,15 +18,19 @@ iotdb/*.pid
 **/.DS_Store
 derby-tsfile-db
 
+# intellj IDE files
+**/*.iml
+**/.idea/
+
+# Apple OS X related
+**/.DS_Store
+
 # build generated
 **/target/
 **/build/
 
 # intermediately generated locally
 **/logs/
-src/main/resources/*
-
-#src/main/resources/*
 
 tsfile-timeseries/src/main/resources/logback.out.out.xml
 tsfile-timeseries/src/main/resources/logback.out.xml
@@ -75,3 +79,6 @@ grafana/data/
 
 
 grafana/data/test.csv
+**/lib/
+*.jar
+/target/
