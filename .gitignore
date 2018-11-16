@@ -43,3 +43,35 @@ tsfile-jdbc/src/main/resources/output/queryRes.csv
 #src/test/resources/logback.xml
 
 
+### Maven ###
+grafana/target/
+!grafana/.mvn/wrapper/maven-wrapper.jar
+grafana/.mvn/
+
+grafana/logs/
+*.log
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+
+### NetBeans ###
+**/nbproject/private/
+**/build/
+**/nbbuild/
+**/dist/
+**/nbdist/
+**/.nb-gradle/
+grafana/data/
+
+
+
+**/.DS_Store
+
+
+grafana/data/test.csv
