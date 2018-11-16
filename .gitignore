@@ -17,7 +17,6 @@ iotdb/*.pid
 # Apple OS X related
 **/.DS_Store
 derby-tsfile-db
-
 # intellj IDE files
 **/*.iml
 **/.idea/
@@ -82,3 +81,4 @@ grafana/data/test.csv
 **/lib/
 *.jar
 /target/
+*.tsfile
