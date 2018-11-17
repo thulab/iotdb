@@ -15,19 +15,21 @@ before_install:
 #  - ./configure --disable-gen-erl --disable-gen-hs --without-cpp --without-boost --without-qt4 --without-c_glib --without-csharp --without-erlang --without-python --without-perl --without-php --without-php_extension --without-ruby --without-haskell --without-go --without-d
 #  - sudo make install
 #  - cd ..
+
   - pip install --user codecov
-  - git clone https://github.com/thulab/tsfile.git
-  - cd tsfile 
-#  - git checkout hxd_tsfile_sdk
-  - mvn install -DskipTests=true
-  - cd ..
+# we do not need to use the following commands anymore, because now we are a assemble project!
+#  - git clone https://github.com/thulab/tsfile.git
+#  - cd tsfile
+#  - mvn install -DskipTests=true
+#  - cd ..
 
 script: 
 # only SNAPSHOT version needs to do the following phase
-  - mvn cobertura:cobertura
+#we do not need to run mvn cobertura:cobertura manually anymore, because we have config it in the pom.xml
+#  - mvn cobertura:cobertura
   - bash <(curl -s https://codecov.io/bash) -t 853796a6-a626-422f-a897-ac233e121f8f
   - mvn clean test
   
 after_success:
-  - mvn cobertura:cobertura
+#  - mvn cobertura:cobertura
   - bash <(curl -s https://codecov.io/bash) -t 853796a6-a626-422f-a897-ac233e121f8f
