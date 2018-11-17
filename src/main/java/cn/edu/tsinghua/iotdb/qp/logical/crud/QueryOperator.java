@@ -10,7 +10,6 @@ import java.util.Map;
 
 /**
  * this class extends {@code RootOperator} and process getIndex statement
- * 
  */
 public class QueryOperator extends SFWOperator {
 
@@ -26,6 +25,10 @@ public class QueryOperator extends SFWOperator {
 
     private Map<TSDataType, IFill> fillTypes;
     private boolean isFill = false;
+
+    private int seriesLimit;
+    private int seriesOffset;
+    private boolean isSlimit = false; // false if sql does not contain SLIMIT clause
 
     public boolean isFill() {
         return isFill;
@@ -49,6 +52,28 @@ public class QueryOperator extends SFWOperator {
 
     public boolean isGroupBy() {
         return isGroupBy;
+    }
+
+    public void setSlimit(int seriesLimit) {
+        this.seriesLimit = seriesLimit;
+        this.isSlimit = true;
+    }
+
+    public void setSoffset(int seriesOffset) {
+        this.seriesOffset = seriesOffset;
+        // Since soffset can only be set after slimit is set, 'isSlimit' do not need to be set true here again.
+    }
+
+    public int getSeriesLimit() {
+        return seriesLimit;
+    }
+
+    public int getSeriesOffset() {
+        return seriesOffset;
+    }
+
+    public boolean isSlimit() {
+        return isSlimit;
     }
 
     public long getUnit() {

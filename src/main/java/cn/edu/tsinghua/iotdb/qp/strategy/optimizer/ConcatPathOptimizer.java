@@ -6,19 +6,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.iotdb.qp.logical.crud.FromOperator;
+import cn.edu.tsinghua.iotdb.qp.logical.crud.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
-import cn.edu.tsinghua.iotdb.qp.logical.crud.BasicFunctionOperator;
-import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
-import cn.edu.tsinghua.iotdb.qp.logical.crud.SFWOperator;
-import cn.edu.tsinghua.iotdb.qp.logical.crud.SelectOperator;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 
 /**
@@ -49,10 +46,22 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         }
         SelectOperator select = sfwOperator.getSelectOperator();
 
-        boolean isSlimit = sfwOperator.isSlimit();
+        List<Path> suffixPaths = select.getSuffixPaths();
 
         // concat select paths
-        concatSelect(prefixPaths, select, isSlimit);
+        concatSelect(prefixPaths, select);
+
+        if (operator instanceof QueryOperator) {
+            if (((QueryOperator) operator).isSlimit()) {
+                // check whether the usage of 'SLIMIT&SOFFSET' conforms to constraints
+                checkSlimitUsageConstraint(select, suffixPaths, prefixPaths);
+
+                // make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of selectOperator
+                int seriesLimit = ((QueryOperator) operator).getSeriesLimit();
+                int seriesOffset = ((QueryOperator) operator).getSeriesOffset();
+                SlimitTrim(select, seriesLimit, seriesOffset);
+            }
+        }
 
         // concat filter
         FilterOperator filter = sfwOperator.getFilterOperator();
@@ -63,21 +72,14 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
     }
 
     /**
-     * This function serves two purposes:
-     * First,
-     * extract paths from select&from cql, expand them into complete versions, and reassign them to selectOperator's suffixPathList.
+     * Extract paths from select&from cql, expand them into complete versions, and reassign them to selectOperator's suffixPathList.
      * Treat aggregations similarly.
-     * Second,
-     * considering a query path, there are three types: 1)complete path, 2)prefix path, 3)path with stars.
-     * And SLIMIT is designed to be used with 2) or 3). In another word, SLIMIT is not allowed to be used with 1).
-     * Thus, check if SLIMIT is used with complete paths and throw an exception if it is.
      *
      * @param fromPaths
      * @param selectOperator
-     * @param isSlimit  true if sql contains SLIMIT clause
      * @throws LogicalOptimizeException
      */
-    private void concatSelect(List<Path> fromPaths, SelectOperator selectOperator, boolean isSlimit)
+    private void concatSelect(List<Path> fromPaths, SelectOperator selectOperator)
             throws LogicalOptimizeException {
         List<Path> suffixPaths;
         if (selectOperator == null || (suffixPaths = selectOperator.getSuffixPaths()).isEmpty()) {
@@ -108,36 +110,80 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         }
 
         removeStarsInPath(allPaths, afterConcatAggregations, selectOperator);
+    }
 
-        //now check if SLIMIT is wrongly used with complete paths and throw an exception if it is.
-        if (isSlimit) {
-            boolean isWithStar = false;
-            List<Path> transformedPaths = selectOperator.getSuffixPaths();
-            List<Path> fakePaths = new ArrayList<>();
-            for (Iterator<Path> iter_suffix = suffixPaths.iterator(); iter_suffix.hasNext() && !isWithStar; ) {
-                for (Iterator<Path> iter_prefix = fromPaths.iterator(); iter_prefix.hasNext() && !isWithStar; ) {
-                    Path fakePath = new Path(iter_prefix.next() + "." + iter_suffix.next());
-                    if (fakePath.getFullPath().contains("*")) {
-                        isWithStar = true;
-                    } else {
-                        fakePaths.add(fakePath);
-                    }
+    /**
+     * Check if SLIMIT is wrongly used with complete paths and throw an exception if it is.
+     *
+     * Considering a query path, there are three types: 1)complete path, 2)prefix path, 3)path with stars.
+     * And SLIMIT is designed to be used with 2) or 3).
+     * In another word, SLIMIT is not allowed to be used with 1).
+     * Thus, check if SLIMIT is used with complete paths and throw an exception if it is.
+     *
+     * @param selectOperator
+     * @param oldSuffixPaths
+     * @param fromPaths
+     */
+    private void checkSlimitUsageConstraint(SelectOperator selectOperator,
+                                            List<Path> oldSuffixPaths, List<Path> fromPaths)
+            throws LogicalOptimizeException {
+        boolean isWithStar = false;
+        List<Path> transformedPaths = selectOperator.getSuffixPaths();
+        List<Path> fakePaths = new ArrayList<>();
+        for (Iterator<Path> iter_suffix = oldSuffixPaths.iterator(); iter_suffix.hasNext() && !isWithStar; ) {
+            for (Iterator<Path> iter_prefix = fromPaths.iterator(); iter_prefix.hasNext() && !isWithStar; ) {
+                Path fakePath = new Path(iter_prefix.next() + "." + iter_suffix.next());
+                if (fakePath.getFullPath().contains("*")) {
+                    isWithStar = true;
+                } else {
+                    fakePaths.add(fakePath);
                 }
             }
-            if (!isWithStar) { // now check if SLIMIT is correctly used with prefix paths
-                int sz = fakePaths.size();
-                if (sz == transformedPaths.size()) {
-                    int i = 0;
-                    for (; i < sz; i++) {
-                        if (!fakePaths.get(i).getFullPath().equals(transformedPaths.get(i).getFullPath())) {
-                            break;
-                        }
-                    }
-                    if (i >= sz) { // SLIMIT is wrongly used with complete paths
-                        throw new LogicalOptimizeException("Wrong use of SLIMIT: SLIMIT is not allowed to be used with complete paths.");
+        }
+        if (!isWithStar) { // now check if SLIMIT is correctly used with prefix paths
+            int sz = fakePaths.size();
+            if (sz == transformedPaths.size()) {
+                int i = 0;
+                for (; i < sz; i++) {
+                    if (!fakePaths.get(i).getFullPath().equals(transformedPaths.get(i).getFullPath())) {
+                        break;
                     }
                 }
+                if (i >= sz) { // SLIMIT is wrongly used with complete paths
+                    throw new LogicalOptimizeException("Wrong use of SLIMIT: SLIMIT is not allowed to be used with complete paths.");
+                }
             }
+        }
+    }
+
+    /**
+     * Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of selectOperator
+     * @param select
+     * @param seriesLimit is ensured to be positive integer
+     * @param seriesOffset is ensured to be non-negative integer
+     */
+    public void SlimitTrim(SelectOperator select, int seriesLimit, int seriesOffset) throws LogicalOptimizeException {
+        List<Path> suffixList = select.getSuffixPaths();
+        List<String> aggregations = select.getAggregations();
+        int size = suffixList.size();
+
+        // check parameter range
+        if(seriesOffset >= size) {
+            throw new LogicalOptimizeException("SOFFSET <SOFFSETValue>: SOFFSETValue exceeds the range.");
+        }
+        int endPosition =  seriesOffset+seriesLimit;
+        if(endPosition>size) {
+            endPosition = size;
+        }
+
+        // trim path list
+        List<Path> trimedSuffixList = new ArrayList<>(suffixList.subList(seriesOffset, endPosition));
+        select.setSuffixPathList(trimedSuffixList);
+
+        // trim aggregations if exists
+        if (aggregations != null && !aggregations.isEmpty()) {
+            List<String> trimedAggregations = new ArrayList<>(aggregations.subList(seriesOffset, endPosition));
+            select.setAggregations(trimedAggregations);
         }
     }
 

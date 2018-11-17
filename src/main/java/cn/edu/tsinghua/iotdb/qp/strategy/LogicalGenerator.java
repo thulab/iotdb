@@ -192,14 +192,61 @@ public class LogicalGenerator {
             case TSParser.TOK_LIST:
                 analyzeList(astNode);
                 return;
+            case TSParser.TOK_LIMIT:
+                analyzeLimit(astNode);
+                return;
             case TSParser.TOK_SLIMIT:
-                ((SFWOperator) initializedOperator).setSlimit(true);
+                analyzeSlimit(astNode);
+                return;
+            case TSParser.TOK_SOFFSET:
+                analyzeSoffset(astNode);
                 return;
             default:
                 throw new QueryProcessorException("Not supported TSParser type" + tokenIntType);
         }
         for (Node node : astNode.getChildren())
             analyze((ASTNode) node);
+    }
+
+    private void analyzeSlimit(ASTNode astNode) throws LogicalOperatorException {
+        ASTNode unit = astNode.getChild(0);
+        int seriesLimit;
+        try {
+            seriesLimit = Integer.parseInt(unit.getText().trim());
+        } catch (NumberFormatException e) {
+            throw new LogicalOperatorException("SLIMIT <SN>: SN should be Int32.");
+        }
+        // seriesLimit is ensured to be a non negative integer after the lexical examination
+        // and here we need it to be larger than zero
+        if(seriesLimit <= 0) {
+            throw new LogicalOperatorException("SLIMIT <SN>: SN must be a positive integer and can not be zero.");
+        }
+        ((QueryOperator) initializedOperator).setSlimit(seriesLimit);
+    }
+
+    private void analyzeSoffset(ASTNode astNode) throws LogicalOperatorException {
+        ASTNode unit = astNode.getChild(0);
+        try {
+            // seriesOffset is ensured to be a non negative integer after the lexical examination
+            ((QueryOperator) initializedOperator).setSoffset(Integer.parseInt(unit.getText().trim()));
+        } catch (NumberFormatException e) {
+            throw new LogicalOperatorException("SOFFSET <SOFFSETValue>: SOFFSETValue should be Int32.");
+        }
+    }
+
+    private void analyzeLimit(ASTNode astNode) throws LogicalOperatorException {
+        ASTNode unit = astNode.getChild(0);
+        int rowsLimit;
+        try {
+            rowsLimit = Integer.parseInt(unit.getText().trim());
+        } catch (NumberFormatException e) {
+            throw new LogicalOperatorException("LIMIT <N>: N should be Int32.");
+        }
+        // rowsLimit is ensured to be a non negative integer after the lexical examination
+        // and here we need it to be larger than zero
+        if(rowsLimit <= 0) {
+            throw new LogicalOperatorException("LIMIT <N>: N must be a positive integer and can not be zero.");
+        }
     }
 
     private void  analyzeList(ASTNode astNode) {
