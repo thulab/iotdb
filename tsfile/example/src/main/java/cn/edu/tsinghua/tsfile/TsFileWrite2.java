@@ -10,9 +10,13 @@ import java.io.File;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import org.json.JSONObject;
+
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.FloatDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.*;
 
 public class TsFileWrite2 {
@@ -23,7 +27,24 @@ public class TsFileWrite2 {
 			File f = new File(path);
 			if(f.exists()) {
 				f.delete();
+                "            \"measurement_id\": \"sensor_1\",\n" +
+                "            \"data_type\": \"FLOAT\",\n" +
+                "            \"encoding\": \"RLE\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"measurement_id\": \"sensor_2\",\n" +
+                "            \"data_type\": \"INT32\",\n" +
+                "            \"encoding\": \"TS_2DIFF\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"measurement_id\": \"sensor_3\",\n" +
+                "            \"data_type\": \"INT32\",\n" +
+                "            \"encoding\": \"TS_2DIFF\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"row_group_size\": 134217728\n" +
 			}
+        JSONObject schemaObject = new JSONObject(s);
 			TsFileWriter tsFileWriter = new TsFileWriter(f);
 
 			// add measurements
@@ -64,7 +85,9 @@ public class TsFileWrite2 {
 			tsRecord.addTuple(dPoint3);
 			tsFileWriter.write(tsRecord);
 			
+
 			tsRecord = new TSRecord(6, "device_1");
+        tsRecord1.dataPointList = new ArrayList<DataPoint>() {{
 			dPoint1 = new FloatDataPoint("sensor_1", 7.2f);
 			dPoint2 = new IntDataPoint("sensor_2", 10);
 			dPoint3 = new IntDataPoint("sensor_3", 11);
@@ -74,6 +97,7 @@ public class TsFileWrite2 {
 			tsFileWriter.write(tsRecord);
 			
 			tsRecord = new TSRecord(7, "device_1");
+        tsRecord2.dataPointList = new ArrayList<DataPoint>() {{
 			dPoint1 = new FloatDataPoint("sensor_1", 6.2f);
 			dPoint2 = new IntDataPoint("sensor_2", 20);
 			dPoint3 = new IntDataPoint("sensor_3", 21);
@@ -83,9 +107,11 @@ public class TsFileWrite2 {
 			tsFileWriter.write(tsRecord);
 			
 			tsRecord = new TSRecord(8, "device_1");
+        tsRecord3.dataPointList = new ArrayList<DataPoint>() {{
 			dPoint1 = new FloatDataPoint("sensor_1", 9.2f);
 			dPoint2 = new IntDataPoint("sensor_2", 30);
 			dPoint3 = new IntDataPoint("sensor_3", 31);
+        }};
 			tsRecord.addTuple(dPoint1);
 			tsRecord.addTuple(dPoint2);
 			tsRecord.addTuple(dPoint3);

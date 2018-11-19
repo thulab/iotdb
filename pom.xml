@@ -132,9 +132,9 @@
 
 	<modules>
 		<module>tsfile</module>
-		<module>jdbc</module>
+		<!--<module>jdbc</module>
 		<module>iotdb</module>
-		<module>grafana</module>
+		<module>grafana</module>-->
 		<!-- <module>hadoop</module> -->
 		<!-- <module>spark</module> -->
 	</modules>
