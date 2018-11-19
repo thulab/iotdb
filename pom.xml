@@ -232,7 +232,8 @@
 				<executions>
 					<execution>
 						<id>check</id>
-						<phase>test</phase>
+						<!-- skip when executing 'mvn clean test' -->
+						<!-- <phase>test</phase> -->
 						<goals>
 							<goal>cobertura</goal>
 						</goals>
