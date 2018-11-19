@@ -9,13 +9,12 @@
 	    <relativePath>../pom.xml</relativePath>
     </parent>
 
-	<groupId>cn.edu.tsinghua</groupId>
 	<artifactId>iotdb-jdbc</artifactId>
 	<packaging>jar</packaging>
 
 	<name>IoTDB Jdbc</name>
 	<description>A jdbc driver for a time series database, IoTDB, which uses TsFile as its storage format on disk.</description>
-	<url>https://github.com/thulab/iotdb-jdbc</url>
+	<url>https://github.com/thulab/iotdb/tree/master/jdbc</url>
 
 	<licenses>
 		<license>
