@@ -137,9 +137,6 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${project.basedir}/iotdb/lib</outputDirectory>
-							<overWriteIfNewer>true</overWriteIfNewer>
-							<overWriteReleases>true</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
@@ -193,7 +190,7 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>target/generated-sources/antlr3</source>
+								<source>${project.basedir}/target/generated-sources/antlr3</source>
 							</sources>
 						</configuration>
 					</execution>
