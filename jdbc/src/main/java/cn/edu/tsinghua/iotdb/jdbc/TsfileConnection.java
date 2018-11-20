@@ -55,8 +55,7 @@ public class TsfileConnection implements Connection {
     private DateTimeZone timeZone;
     private boolean autoCommit;
 
-    public TsfileConnection(){
-    	
+    public TsfileConnection(){    
     }
     
     public TsfileConnection(String url, Properties info) throws SQLException, TTransportException {
