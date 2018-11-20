@@ -55,7 +55,6 @@ public class TsfileConnection implements Connection {
     private boolean autoCommit;
 
     public TsfileConnection(){
-    	
     }
     
     public TsfileConnection(String url, Properties info) throws SQLException, TTransportException {
