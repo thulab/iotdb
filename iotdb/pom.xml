@@ -9,7 +9,6 @@
 	    <relativePath>../pom.xml</relativePath>
     </parent>
 
-
 	<groupId>cn.edu.tsinghua</groupId>
 	<artifactId>IoTDB</artifactId>
 	<packaging>jar</packaging>
