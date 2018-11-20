@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 
 	<name>Service-rpc</name>
-	<description>A jdbc driver for a time series database, IoTDB, which uses TsFile as its storage format on disk.</description>
+	<description>RPC framework for client and server.</description>
 	<url>https://github.com/thulab/iotdb/tree/master/service-rpc</url>
 
 	<licenses>
