@@ -150,7 +150,7 @@ public class TsFileIOWriter {
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
         LOG.debug("get time series list:{}", schemaDescriptors);
         // clustering rowGroupMetadata and build the range
-
+        Map<String,TsDeviceMetadataIndex> tsDeviceMetadataIndexMap = new HashMap<>();
         String currentDeltaObject;
         TsDeviceMetadata currentTsDeviceMetadata;
 
@@ -166,11 +166,14 @@ public class TsFileIOWriter {
         }
         Iterator<Map.Entry<String, TsDeviceMetadata>> iterator = tsDeltaObjectMetadataMap.entrySet().iterator();
 
-        /** start time for a delta object **/
+        /* start time for a delta object */
         long startTime;
 
-        /** end time for a delta object **/
+        /* end time for a delta object */
         long endTime;
+
+        /*offset for the grouping delta object metadata*/
+        long offset;
 
         while (iterator.hasNext()) {
             startTime = Long.MAX_VALUE;
@@ -182,7 +185,6 @@ public class TsFileIOWriter {
             for (ChunkGroupMetaData chunkGroupMetaData : currentTsDeviceMetadata.getRowGroups()) {
                 for (ChunkMetaData chunkMetaData : chunkGroupMetaData
                         .getChunkMetaDataList()) {
-
 					// update startTime and endTime
                     startTime = Long.min(startTime, chunkMetaData.getStartTime());
                     endTime = Long.max(endTime, chunkMetaData.getEndTime());
@@ -191,9 +193,15 @@ public class TsFileIOWriter {
             // flush tsRowGroupBlockMetaDatas in order
             currentTsDeviceMetadata.setStartTime(startTime);
             currentTsDeviceMetadata.setEndTime(endTime);
+
+            offset = out.getChannel().position();
+            int size = currentTsDeviceMetadata.serializeTo(out);
+
+            TsDeviceMetadataIndex tsDeviceMetadataIndex = new TsDeviceMetadataIndex(offset,size,startTime,endTime);
+            tsDeviceMetadataIndexMap.put(entry.getKey(),tsDeviceMetadataIndex);
         }
 
-        TsFileMetaData tsFileMetaData = new TsFileMetaData(tsDeltaObjectMetadataMap, schemaDescriptors,
+        TsFileMetaData tsFileMetaData = new TsFileMetaData(tsDeviceMetadataIndexMap, schemaDescriptors,
                 TSFileConfig.currentVersion);
 
         long footerIndex = out.getChannel().position();

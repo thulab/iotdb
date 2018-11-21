@@ -135,6 +135,15 @@ public class Utils {
 		}
 	}
 
+	public static void isTsDeviceMetadataIndexEqual(TsDeviceMetadataIndex index1,TsDeviceMetadataIndex index2){
+		if(Utils.isTwoObjectsNotNULL(index1,index2,"TsDeviceMetadataIndex")){
+			assertEquals(index1.getOffset(),index2.getOffset());
+			assertEquals(index1.getLen(),index2.getLen());
+			assertEquals(index1.getStartTime(),index2.getStartTime());
+			assertEquals(index1.getEndTime(),index2.getEndTime());
+		}
+	}
+
 	public static void isFileMetaDataEqual(TsFileMetaData metadata1, TsFileMetaData metadata2) {
 		if (Utils.isTwoObjectsNotNULL(metadata1, metadata2, "File MetaData")) {
             if (Utils.isTwoObjectsNotNULL(metadata1.getDeltaObjectMap(), metadata2.getDeltaObjectMap(),
