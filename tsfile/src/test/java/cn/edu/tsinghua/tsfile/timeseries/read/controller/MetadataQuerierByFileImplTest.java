@@ -36,7 +36,7 @@ public class MetadataQuerierByFileImplTest {
     public void test() throws IOException {
         fileReader = new TsFileSequenceReader(FILE_PATH);
         MetadataQuerierByFileImpl metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
-        List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getSeriesChunkMetaDataList(new Path("d2.s1"));
+        List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d2.s1"));
         for(ChunkMetaData chunkMetaData: chunkMetaDataList) {
             Assert.assertEquals(chunkMetaData.getMeasurementUID(), "s1");
         }

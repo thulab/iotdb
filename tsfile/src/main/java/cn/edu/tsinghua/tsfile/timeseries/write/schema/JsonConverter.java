@@ -150,7 +150,7 @@ public class JsonConverter {
         return new MeasurementSchema(measurementId, type, encoding, compressionType, props);
     }
 
-    public static long convertJsonToRowGroupSize(JSONObject jsonSchema) {
+    public static long convertJsonToChunkGroupSize(JSONObject jsonSchema) {
         if (jsonSchema.has(JsonFormatConstant.ROW_GROUP_SIZE)) {
             return jsonSchema.getLong(JsonFormatConstant.ROW_GROUP_SIZE);
         }

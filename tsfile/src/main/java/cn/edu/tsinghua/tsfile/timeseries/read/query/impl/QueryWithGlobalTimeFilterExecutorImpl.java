@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
@@ -21,11 +21,11 @@ import java.util.List;
  */
 public class QueryWithGlobalTimeFilterExecutorImpl implements QueryExecutor {
 
-    private SeriesChunkLoader seriesChunkLoader;
+    private ChunkLoader chunkLoader;
     private MetadataQuerier metadataQuerier;
 
-    public QueryWithGlobalTimeFilterExecutorImpl(SeriesChunkLoader seriesChunkLoader, MetadataQuerier metadataQuerier) {
-        this.seriesChunkLoader = seriesChunkLoader;
+    public QueryWithGlobalTimeFilterExecutorImpl(ChunkLoader chunkLoader, MetadataQuerier metadataQuerier) {
+        this.chunkLoader = chunkLoader;
         this.metadataQuerier = metadataQuerier;
     }
 
@@ -40,8 +40,8 @@ public class QueryWithGlobalTimeFilterExecutorImpl implements QueryExecutor {
     private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries,
                                              List<Path> selectedSeries, Filter<Long> timeFilter) throws IOException {
         for (Path path : selectedSeries) {
-            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getSeriesChunkMetaDataList(path);
-            SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(seriesChunkLoader, chunkMetaDataList, timeFilter);
+            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
+            SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(chunkLoader, chunkMetaDataList, timeFilter);
             readersOfSelectedSeries.put(path, seriesReader);
         }
     }

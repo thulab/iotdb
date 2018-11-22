@@ -4,7 +4,7 @@ import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 
 /**
- * This class define an Object named Path to represent a series in delta system.
+ * This class define an Object named Path to represent a series in IoTDB.
  * And in batch read, this definition is also used in query processing.
  * Note that, Path is unmodified after a new object has been created.
  *
@@ -12,7 +12,7 @@ import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
  */
 public class Path {
     private String measurement = null;
-    private String deltaObject = null;
+    private String device = null;
     private String fullPath;
 
     public Path(StringContainer pathSc) {
@@ -38,10 +38,10 @@ public class Path {
     private void init(String[] splitedPathArray) {
         StringContainer sc = new StringContainer(splitedPathArray, SystemConstant.PATH_SEPARATOR);
         if (sc.size() <= 1) {
-            deltaObject = "";
+            device = "";
             fullPath = measurement = sc.toString();
         } else {
-            deltaObject = sc.getSubStringContainer(0, -2).toString();
+            device = sc.getSubStringContainer(0, -2).toString();
             measurement = sc.getSubString(-1);
             fullPath = sc.toString();
         }
@@ -52,8 +52,8 @@ public class Path {
         return fullPath;
     }
 
-    public String getDeltaObjectToString() {
-        return deltaObject;
+    public String getDeviceToString() {
+        return device;
     }
 
     public String getMeasurementToString() {

@@ -3,7 +3,7 @@ package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
 
@@ -15,17 +15,17 @@ import java.util.List;
  */
 public class NodeConstructorForSingleFileImpl extends NodeConstructor {
     private MetadataQuerier metadataQuerier;
-    private SeriesChunkLoader seriesChunkLoader;
+    private ChunkLoader chunkLoader;
 
-    public NodeConstructorForSingleFileImpl(MetadataQuerier metadataQuerier, SeriesChunkLoader seriesChunkLoader) {
+    public NodeConstructorForSingleFileImpl(MetadataQuerier metadataQuerier, ChunkLoader chunkLoader) {
         this.metadataQuerier = metadataQuerier;
-        this.seriesChunkLoader = seriesChunkLoader;
+        this.chunkLoader = chunkLoader;
     }
 
     @Override
     public SeriesReader generateSeriesReader(SeriesFilter<?> seriesFilter) throws IOException {
-        List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getSeriesChunkMetaDataList(
+        List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(
                 seriesFilter.getSeriesPath());
-        return new SeriesReaderFromSingleFileWithFilterImpl(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
+        return new SeriesReaderFromSingleFileWithFilterImpl(chunkLoader, chunkMetaDataList, seriesFilter.getFilter());
     }
 }

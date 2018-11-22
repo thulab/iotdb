@@ -44,7 +44,7 @@ public class TSRecord {
 
     /**
      * output this TSRecord in String format.For example:
-     * {delta object id: d1 time: 123456 ,data:[
+     * {device id: d1 time: 123456 ,data:[
      *      {measurement id: s1 type: INT32 value: 1 }
      *      {measurement id: s2 type: FLOAT value: 11.11 }
      *      {measurement id: s3 type: BOOLEAN value: true }
@@ -53,7 +53,7 @@ public class TSRecord {
      */
     public String toString() {
         StringContainer sc = new StringContainer(" ");
-        sc.addTail("{delta object id:", deviceId, "time:", time, ",data:[");
+        sc.addTail("{device id:", deviceId, "time:", time, ",data:[");
         for (DataPoint tuple : dataPointList) {
             sc.addTail(tuple);
         }

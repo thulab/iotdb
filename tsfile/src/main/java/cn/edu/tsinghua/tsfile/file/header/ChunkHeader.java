@@ -27,8 +27,8 @@ public class ChunkHeader {
     private long maxTombstoneTime;
 
     /**
-     * The time when the RowGroup of this chunk is closed. This will not be written out and will only be set when read together
-     * with its RowGroup during querying.
+     * The time when the ChunkGroup of this chunk is closed. This will not be written out and will only be set when read together
+     * with its ChunkGroup during querying.
      */
     private long writtenTime;
 

@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class TsFileMetaData {
 
-    private Map<String, TsDeviceMetadata> deviceMap = new HashMap<>();
+    private Map<String, TsDeviceMetadataIndex> deviceIndexMap = new HashMap<>();
 
     /**
      * TSFile schema for this file. This schema contains metadata for all the time series.
@@ -42,8 +42,8 @@ public class TsFileMetaData {
      * @param measurementSchema - time series info list
      * @param currentVersion    - current version
      */
-    public TsFileMetaData(Map<String, TsDeviceMetadata> deviceMap, Map<String, MeasurementSchema> measurementSchema, int currentVersion) {
-        this.deviceMap = deviceMap;
+    public TsFileMetaData(Map<String, TsDeviceMetadataIndex> deviceMap, Map<String, MeasurementSchema> measurementSchema, int currentVersion) {
+        this.deviceIndexMap = deviceMap;
         this.measurementSchema = measurementSchema;
         this.currentVersion = currentVersion;
     }
@@ -60,13 +60,12 @@ public class TsFileMetaData {
     @Override
     public String toString() {
         return "TsFileMetaData{" +
-                "deviceMap=" + deviceMap +
+                "deviceIndexMap=" + deviceIndexMap +
                 ", measurementSchema=" + measurementSchema +
                 ", currentVersion=" + currentVersion +
                 ", createdBy='" + createdBy + '\'' +
                 '}';
     }
-
 
     public int getCurrentVersion() {
         return currentVersion;
@@ -84,20 +83,20 @@ public class TsFileMetaData {
         this.createdBy = createdBy;
     }
 
-    public Map<String, TsDeviceMetadata> getDeltaObjectMap() {
-        return deviceMap;
+    public Map<String, TsDeviceMetadataIndex> getDeviceMap() {
+        return deviceIndexMap;
     }
 
-    public void setDeltaObjectMap(Map<String, TsDeviceMetadata> deviceMap) {
-        this.deviceMap = deviceMap;
+    public void setDeviceMap(Map<String, TsDeviceMetadataIndex> deviceMap) {
+        this.deviceIndexMap = deviceMap;
     }
 
-    public boolean containsDeltaObject(String DeltaObjUID) {
-        return this.deviceMap.containsKey(DeltaObjUID);
+    public boolean containsDevice(String DeltaObjUID) {
+        return this.deviceIndexMap.containsKey(DeltaObjUID);
     }
 
-    public TsDeviceMetadata getDeltaObject(String DeltaObjUID) {
-        return this.deviceMap.get(DeltaObjUID);
+    public TsDeviceMetadataIndex getDeviceMetadataIndex(String DeltaObjUID) {
+        return this.deviceIndexMap.get(DeltaObjUID);
     }
 
     public boolean containsMeasurement(String measurement) {
@@ -120,8 +119,8 @@ public class TsFileMetaData {
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIOUtils.write(deviceMap.size(), outputStream);
-        for (Map.Entry<String, TsDeviceMetadata> entry : deviceMap.entrySet()) {
+        byteLen += ReadWriteIOUtils.write(deviceIndexMap.size(), outputStream);
+        for (Map.Entry<String, TsDeviceMetadataIndex> entry : deviceIndexMap.entrySet()) {
             byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream);
             byteLen += entry.getValue().serializeTo(outputStream);
         }
@@ -143,14 +142,14 @@ public class TsFileMetaData {
     public int serializeTo(ByteBuffer buffer) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIOUtils.write(deviceMap.size(), buffer);
-        for (Map.Entry<String, TsDeviceMetadata> entry : deviceMap.entrySet()) {
+        byteLen += ReadWriteIOUtils.write(deviceIndexMap.size(), buffer);
+        for (Map.Entry<String, TsDeviceMetadataIndex> entry : deviceIndexMap.entrySet()) {
             byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);
             byteLen += entry.getValue().serializeTo(buffer);
         }
 
         byteLen += ReadWriteIOUtils.write(measurementSchema.size(), buffer);
-        for (Map.Entry<String, MeasurementSchema> entry : measurementSchema.entrySet()) {//TODO 应该排序
+        for (Map.Entry<String, MeasurementSchema> entry : measurementSchema.entrySet()) {
             byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);
             byteLen += entry.getValue().serializeTo(buffer);
         }
@@ -168,15 +167,15 @@ public class TsFileMetaData {
 
         int size = ReadWriteIOUtils.readInt(inputStream);
         if (size > 0) {
-            Map<String, TsDeviceMetadata> deviceMap = new HashMap<>();
+            Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
             String key;
-            TsDeviceMetadata value;
+            TsDeviceMetadataIndex value;
             for (int i = 0; i < size; i++) {
                 key = ReadWriteIOUtils.readString(inputStream);
-                value = TsDeviceMetadata.deserializeFrom(inputStream);
+                value = TsDeviceMetadataIndex.deserializeFrom(inputStream);
                 deviceMap.put(key, value);
             }
-            fileMetaData.deviceMap = deviceMap;
+            fileMetaData.deviceIndexMap = deviceMap;
         }
 
         size = ReadWriteIOUtils.readInt(inputStream);
@@ -204,15 +203,15 @@ public class TsFileMetaData {
 
         int size = ReadWriteIOUtils.readInt(buffer);
         if (size > 0) {
-            Map<String, TsDeviceMetadata> deviceMap = new HashMap<>();
+            Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
             String key;
-            TsDeviceMetadata value;
+            TsDeviceMetadataIndex value;
             for (int i = 0; i < size; i++) {
                 key = ReadWriteIOUtils.readString(buffer);
-                value = TsDeviceMetadata.deserializeFrom(buffer);
+                value = TsDeviceMetadataIndex.deserializeFrom(buffer);
                 deviceMap.put(key, value);
             }
-            fileMetaData.deviceMap = deviceMap;
+            fileMetaData.deviceIndexMap = deviceMap;
         }
 
         size = ReadWriteIOUtils.readInt(buffer);

@@ -132,7 +132,7 @@ public class PerfTest {
         //LOG.info(jsonSchema.toString());
         FileSchema schema = new FileSchema(jsonSchema);
 
-        // TSFileDescriptor.conf.rowGroupSize = 2000;
+        // TSFileDescriptor.conf.chunkGroupSize = 2000;
         // TSFileDescriptor.conf.pageSizeInByte = 100;
         innerWriter = new TsFileWriter(file, schema, TSFileDescriptor.getInstance().getConfig());
 

@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * a row group in TSFile contains a list of value series. TimeSeriesGroupWriter
+ * a chunk group in TSFile contains a list of value series. TimeSeriesGroupWriter
  * should implement write method which inputs a time stamp(in TimeValue class)
  * and a list of data points. It also should provide flushing method for
  * outputting to OS file system or HDFS.
@@ -48,7 +48,7 @@ public interface IChunkGroupWriter {
     long updateMaxGroupMemSize();
 
     /**
-     * given a measurement descriptor, create a corresponding writer and put into this RowGroupWriter
+     * given a measurement descriptor, create a corresponding writer and put into this ChunkGroupWriter
      *
      * @param measurementSchema a measurement descriptor containing the message of the series
      * @param pageSize the specified page size
@@ -56,9 +56,9 @@ public interface IChunkGroupWriter {
     void addSeriesWriter(MeasurementSchema measurementSchema, int pageSize);
 
     /**
-     * @return get the serialized size of current rowGroup header + all chunks
+     * @return get the serialized size of current chunkGroup header + all chunks
      */
-    long getCurrentRowGroupSize();
+    long getCurrentChunkGroupSize();
 
     /**
      * call all the series to prepare to flush data.

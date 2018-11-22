@@ -3,7 +3,7 @@ package cn.edu.tsinghua.tsfile.timeseries.write.io;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.utils.*;
-import cn.edu.tsinghua.tsfile.file.footer.RowGroupFooter;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
@@ -56,7 +56,7 @@ public class TsFileIOWriter {
 
     /**
      * Writes given bytes to output stream.
-     * This method is called when total memory size exceeds the row group size
+     * This method is called when total memory size exceeds the chunk group size
      * threshold.
      *
      * @param bytes - data of several pages which has been packed
@@ -73,15 +73,15 @@ public class TsFileIOWriter {
     /**
      * start a {@linkplain ChunkGroupMetaData ChunkGroupMetaData}.
      *
-     * @param deviceId delta object id
+     * @param deviceId device id
      * @param dataSize      the serialized size of all chunks
-     * @return the serialized size of RowGroupFooter
+     * @return the serialized size of ChunkGroupFooter
      */
-    public RowGroupFooter startFlushRowGroup(String deviceId, long dataSize, int numberOfChunks) throws IOException {
-        LOG.debug("start row group:{}, file position {}", deviceId, out.getChannel().position());
+    public ChunkGroupFooter startFlushChunkGroup(String deviceId, long dataSize, int numberOfChunks) throws IOException {
+        LOG.debug("start chunk group:{}, file position {}", deviceId, out.getChannel().position());
         currentChunkGroupMetaData = new ChunkGroupMetaData(deviceId, new ArrayList<>());
-        RowGroupFooter header = new RowGroupFooter(deviceId, dataSize, numberOfChunks);
-        LOG.debug("finishing writing row group header {}, file position {}", header, out.getChannel().position());
+        ChunkGroupFooter header = new ChunkGroupFooter(deviceId, dataSize, numberOfChunks);
+        LOG.debug("finishing writing chunk group header {}, file position {}", header, out.getChannel().position());
         return header;
     }
 
@@ -131,10 +131,10 @@ public class TsFileIOWriter {
         currentChunkMetaData = null;
     }
 
-    public void endRowGroup(long memSize, RowGroupFooter rowGroupFooter) throws IOException {
-        rowGroupFooter.serializeTo(out);
+    public void endChunkGroup(long memSize, ChunkGroupFooter chunkGroupFooter) throws IOException {
+        chunkGroupFooter.serializeTo(out);
         chunkGroupMetaData.add(currentChunkGroupMetaData);
-        LOG.debug("end row group:{}", currentChunkGroupMetaData);
+        LOG.debug("end chunk group:{}", currentChunkGroupMetaData);
         currentChunkGroupMetaData = null;
     }
 
@@ -149,28 +149,31 @@ public class TsFileIOWriter {
     	// get all TimeSeriesMetadatas of this TsFile
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
         LOG.debug("get time series list:{}", schemaDescriptors);
-        // clustering rowGroupMetadata and build the range
-
-        String currentDeltaObject;
+        // clustering chunkGroupMetadata and build the range
+        Map<String,TsDeviceMetadataIndex> tsDeviceMetadataIndexMap = new HashMap<>();
+        String currentDevice;
         TsDeviceMetadata currentTsDeviceMetadata;
 
-        LinkedHashMap<String, TsDeviceMetadata> tsDeltaObjectMetadataMap = new LinkedHashMap<>();
+        LinkedHashMap<String, TsDeviceMetadata> tsDeviceMetadataMap = new LinkedHashMap<>();
 
         for (ChunkGroupMetaData chunkGroupMetaData : this.chunkGroupMetaData) {
-            currentDeltaObject = chunkGroupMetaData.getDeltaObjectID();
-            if (!tsDeltaObjectMetadataMap.containsKey(currentDeltaObject)) {
+            currentDevice = chunkGroupMetaData.getDeviceID();
+            if (!tsDeviceMetadataMap.containsKey(currentDevice)) {
                 TsDeviceMetadata tsDeviceMetadata = new TsDeviceMetadata();
-                tsDeltaObjectMetadataMap.put(currentDeltaObject, tsDeviceMetadata);
+                tsDeviceMetadataMap.put(currentDevice, tsDeviceMetadata);
             }
-            tsDeltaObjectMetadataMap.get(currentDeltaObject).addRowGroupMetaData(chunkGroupMetaData);
+            tsDeviceMetadataMap.get(currentDevice).addChunkGroupMetaData(chunkGroupMetaData);
         }
-        Iterator<Map.Entry<String, TsDeviceMetadata>> iterator = tsDeltaObjectMetadataMap.entrySet().iterator();
+        Iterator<Map.Entry<String, TsDeviceMetadata>> iterator = tsDeviceMetadataMap.entrySet().iterator();
 
-        /** start time for a delta object **/
+        /* start time for a device */
         long startTime;
 
-        /** end time for a delta object **/
+        /* end time for a device */
         long endTime;
+
+        /*offset for the grouping device metadata*/
+        long offset;
 
         while (iterator.hasNext()) {
             startTime = Long.MAX_VALUE;
@@ -179,21 +182,26 @@ public class TsFileIOWriter {
             Map.Entry<String, TsDeviceMetadata> entry = iterator.next();
             currentTsDeviceMetadata = entry.getValue();
 
-            for (ChunkGroupMetaData chunkGroupMetaData : currentTsDeviceMetadata.getRowGroups()) {
+            for (ChunkGroupMetaData chunkGroupMetaData : currentTsDeviceMetadata.getChunkGroups()) {
                 for (ChunkMetaData chunkMetaData : chunkGroupMetaData
                         .getChunkMetaDataList()) {
-
 					// update startTime and endTime
                     startTime = Long.min(startTime, chunkMetaData.getStartTime());
                     endTime = Long.max(endTime, chunkMetaData.getEndTime());
                 }
             }
-            // flush tsRowGroupBlockMetaDatas in order
+            // flush tsChunkGroupBlockMetaDatas in order
             currentTsDeviceMetadata.setStartTime(startTime);
             currentTsDeviceMetadata.setEndTime(endTime);
+
+            offset = out.getChannel().position();
+            int size = currentTsDeviceMetadata.serializeTo(out);
+
+            TsDeviceMetadataIndex tsDeviceMetadataIndex = new TsDeviceMetadataIndex(offset,size,startTime,endTime);
+            tsDeviceMetadataIndexMap.put(entry.getKey(),tsDeviceMetadataIndex);
         }
 
-        TsFileMetaData tsFileMetaData = new TsFileMetaData(tsDeltaObjectMetadataMap, schemaDescriptors,
+        TsFileMetaData tsFileMetaData = new TsFileMetaData(tsDeviceMetadataIndexMap, schemaDescriptors,
                 TSFileConfig.currentVersion);
 
         long footerIndex = out.getChannel().position();

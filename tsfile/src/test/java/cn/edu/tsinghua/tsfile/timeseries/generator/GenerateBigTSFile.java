@@ -30,7 +30,7 @@ public class GenerateBigTSFile {
     private static String outputDataFile;
     private static TSFileConfig conf = TSFileDescriptor.getInstance().getConfig();
 
-    private static int setRowGroupSize = conf.groupSizeInByte;
+    private static int setChunkGroupSize = conf.groupSizeInByte;
     // To be configure
     private static int deviceCount = 3;
     // s0:broken line
@@ -173,7 +173,7 @@ public class GenerateBigTSFile {
 
     public static void main(String[] args) throws IOException, InterruptedException, WriteProcessException {
         if (args.length < 3) {
-            System.err.println("input format: <outputFile> <size> <unit> [rowGroupSize(MB)]");
+            System.err.println("input format: <outputFile> <size> <unit> [chunkGroupSize(MB)]");
             return;
         }
         outputDataFile = args[0];
@@ -184,9 +184,9 @@ public class GenerateBigTSFile {
                 (long) FileUtils
                         .transformUnitToByte(Double.valueOf(args[1]), FileUtils.Unit.valueOf(args[2]));
         if (args.length >= 4)
-            setRowGroupSize =
+            setChunkGroupSize =
                     (int) FileUtils.transformUnitToByte(Integer.valueOf(args[3]), FileUtils.Unit.MB);
-        conf.groupSizeInByte = setRowGroupSize;
+        conf.groupSizeInByte = setChunkGroupSize;
         deviceCount = 1;
         strLines = new String[deviceCount];
         sensorSet.add("s0");
@@ -194,7 +194,7 @@ public class GenerateBigTSFile {
         sensorSet.add("s2");
         // write file
         writer = new TsFileWriter(new File(outputDataFile), fileSchema, conf);
-        System.out.println("setRowGroupSize: " + setRowGroupSize + ",total target:" + size);
+        System.out.println("setChunkGroupSize: " + setChunkGroupSize + ",total target:" + size);
         writeToFile(size);
     }
 }

@@ -14,8 +14,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV1.TsFileGeneratorForTest;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoaderImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
@@ -40,7 +40,7 @@ public class QueryExecutorTest {
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
     private TsFileSequenceReader fileReader;
     private MetadataQuerierByFileImpl metadataQuerierByFile;
-    private SeriesChunkLoader seriesChunkLoader;
+    private ChunkLoader chunkLoader;
     private int rowCount = 10000;
     private QueryWithQueryFilterExecutorImpl queryExecutorWithQueryFilter;
 
@@ -50,8 +50,8 @@ public class QueryExecutorTest {
         TsFileGeneratorForTest.generateFile(rowCount, 16 * 1024 * 1024, 10000);
         fileReader = new TsFileSequenceReader(FILE_PATH);
         metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
-        seriesChunkLoader = new SeriesChunkLoaderImpl(fileReader);
-        queryExecutorWithQueryFilter = new QueryWithQueryFilterExecutorImpl(seriesChunkLoader, metadataQuerierByFile);
+        chunkLoader = new ChunkLoaderImpl(fileReader);
+        queryExecutorWithQueryFilter = new QueryWithQueryFilterExecutorImpl(chunkLoader, metadataQuerierByFile);
     }
 
     @After
@@ -91,7 +91,7 @@ public class QueryExecutorTest {
 
     @Test
     public void queryWithoutFilter() throws IOException {
-        QueryExecutor queryExecutor = new QueryWithoutFilterExecutorImpl(seriesChunkLoader, metadataQuerierByFile);
+        QueryExecutor queryExecutor = new QueryWithoutFilterExecutorImpl(chunkLoader, metadataQuerierByFile);
 
         QueryExpression queryExpression = QueryExpression.create()
                 .addSelectedPath(new Path("d1.s1"))
@@ -117,7 +117,7 @@ public class QueryExecutorTest {
 
     @Test
     public void queryWithGlobalTimeFilter() throws IOException {
-        QueryExecutor queryExecutor = new QueryWithGlobalTimeFilterExecutorImpl(seriesChunkLoader, metadataQuerierByFile);
+        QueryExecutor queryExecutor = new QueryWithGlobalTimeFilterExecutorImpl(chunkLoader, metadataQuerierByFile);
 
         QueryFilter queryFilter = new GlobalTimeFilter(FilterFactory.and(TimeFilter.gtEq(1480562618100L), TimeFilter.lt(1480562618200L)));
         QueryExpression queryExpression = QueryExpression.create()

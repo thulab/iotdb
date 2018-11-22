@@ -4,13 +4,10 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 
 import java.nio.ByteBuffer;
 
-/**
- *
- * Created by zhangjinrui on 2018/1/14.
- */
-public interface SeriesChunk {
+
+public interface Chunk {
 
     ChunkMetaData getChunkMetaData();
 
-    ByteBuffer getSeriesChunkBodyStream();
+    ByteBuffer getChunkBodyStream();
 }

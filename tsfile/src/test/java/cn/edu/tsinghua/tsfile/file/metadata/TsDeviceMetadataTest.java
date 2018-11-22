@@ -16,7 +16,7 @@ public class TsDeviceMetadataTest {
 
     public static final long START_TIME = 523372036854775806L;
     public static final long END_TIME = 523372036854775806L;
-    final String PATH = "target/outputDeltaObject.tsfile";
+    final String PATH = "target/outputDevice.tsfile";
 
     @Before
     public void setUp() {
@@ -31,7 +31,7 @@ public class TsDeviceMetadataTest {
 
     @Test
     public void testWriteIntoFile() throws IOException {
-        TsDeviceMetadata metaData = TestHelper.createSimpleDeltaObjectMetaData();
+        TsDeviceMetadata metaData = TestHelper.createSimpleDeviceMetaData();
         File file = new File(PATH);
         if (file.exists())
             file.delete();
@@ -40,6 +40,6 @@ public class TsDeviceMetadataTest {
         fos.close();
 
         FileInputStream fis = new FileInputStream(new File(PATH));
-        Utils.isDeltaObjectEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
+        Utils.isDeviceEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
     }
 }

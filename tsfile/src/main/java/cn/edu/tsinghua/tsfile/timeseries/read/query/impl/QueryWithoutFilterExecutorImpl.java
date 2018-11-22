@@ -3,7 +3,7 @@ package cn.edu.tsinghua.tsfile.timeseries.read.query.impl;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
@@ -19,11 +19,11 @@ import java.util.List;
  */
 public class QueryWithoutFilterExecutorImpl implements QueryExecutor {
 
-    private SeriesChunkLoader seriesChunkLoader;
+    private ChunkLoader chunkLoader;
     private MetadataQuerier metadataQuerier;
 
-    public QueryWithoutFilterExecutorImpl(SeriesChunkLoader seriesChunkLoader, MetadataQuerier metadataQuerier) {
-        this.seriesChunkLoader = seriesChunkLoader;
+    public QueryWithoutFilterExecutorImpl(ChunkLoader chunkLoader, MetadataQuerier metadataQuerier) {
+        this.chunkLoader = chunkLoader;
         this.metadataQuerier = metadataQuerier;
     }
 
@@ -37,8 +37,8 @@ public class QueryWithoutFilterExecutorImpl implements QueryExecutor {
     private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries,
                                              List<Path> selectedSeries) throws IOException {
         for (Path path : selectedSeries) {
-            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getSeriesChunkMetaDataList(path);
-            SeriesReader seriesReader = new SeriesReaderFromSingleFileWithoutFilterImpl(seriesChunkLoader, chunkMetaDataList);
+            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
+            SeriesReader seriesReader = new SeriesReaderFromSingleFileWithoutFilterImpl(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }
     }

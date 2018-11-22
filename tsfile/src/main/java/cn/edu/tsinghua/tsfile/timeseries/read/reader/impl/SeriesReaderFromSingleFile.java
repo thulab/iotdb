@@ -4,8 +4,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoaderImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public abstract class SeriesReaderFromSingleFile implements SeriesReader {
 
-    protected SeriesChunkLoader seriesChunkLoader;
+    protected ChunkLoader chunkLoader;
     protected List<ChunkMetaData> chunkMetaDataList;
 
     protected SeriesChunkReader seriesChunkReader;
@@ -28,25 +28,25 @@ public abstract class SeriesReaderFromSingleFile implements SeriesReader {
 
     public SeriesReaderFromSingleFile(TsFileSequenceReader fileReader, Path path) throws IOException {
         this.fileReader = fileReader;
-        this.seriesChunkLoader = new SeriesChunkLoaderImpl(fileReader);
-        this.chunkMetaDataList = new MetadataQuerierByFileImpl(fileReader).getSeriesChunkMetaDataList(path);
+        this.chunkLoader = new ChunkLoaderImpl(fileReader);
+        this.chunkMetaDataList = new MetadataQuerierByFileImpl(fileReader).getChunkMetaDataList(path);
         this.currentReadSeriesChunkIndex = -1;
         this.seriesChunkReaderInitialized = false;
     }
 
     public SeriesReaderFromSingleFile(TsFileSequenceReader fileReader,
-                                      SeriesChunkLoader seriesChunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        this(seriesChunkLoader, chunkMetaDataList);
+                                      ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+        this(chunkLoader, chunkMetaDataList);
         this.fileReader = fileReader;
     }
 
     /**
      * Using this constructor cannot close corresponding FileStream
-     * @param seriesChunkLoader
+     * @param chunkLoader
      * @param chunkMetaDataList
      */
-    public SeriesReaderFromSingleFile(SeriesChunkLoader seriesChunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        this.seriesChunkLoader = seriesChunkLoader;
+    public SeriesReaderFromSingleFile(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+        this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
         this.currentReadSeriesChunkIndex = -1;
         this.seriesChunkReaderInitialized = false;

@@ -2,9 +2,9 @@ package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.SeriesChunk;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
@@ -22,8 +22,8 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
     private TimeValuePair cachedTimeValuePair;
     private int nextSeriesChunkIndex;
 
-    public SeriesReaderFromSingleFileByTimestampImpl(SeriesChunkLoader seriesChunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        super(seriesChunkLoader, chunkMetaDataList);
+    public SeriesReaderFromSingleFileByTimestampImpl(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+        super(chunkLoader, chunkMetaDataList);
         nextSeriesChunkIndex = 0;
         currentTimestamp = Long.MIN_VALUE;
     }
@@ -34,8 +34,8 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
     }
 
     public SeriesReaderFromSingleFileByTimestampImpl(TsFileSequenceReader tsFileReader,
-                                      SeriesChunkLoader seriesChunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        super(tsFileReader, seriesChunkLoader, chunkMetaDataList);
+                                                     ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+        super(tsFileReader, chunkLoader, chunkMetaDataList);
         currentTimestamp = Long.MIN_VALUE;
     }
 
@@ -117,8 +117,8 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
 
     @Override
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-        SeriesChunk memSeriesChunk = seriesChunkLoader.getMemSeriesChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderByTimestampImpl(memSeriesChunk.getSeriesChunkBodyStream());
+        Chunk memChunk = chunkLoader.getMemChunk(chunkMetaData);
+        this.seriesChunkReader = new SeriesChunkReaderByTimestampImpl(memChunk.getChunkBodyStream());
         this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 

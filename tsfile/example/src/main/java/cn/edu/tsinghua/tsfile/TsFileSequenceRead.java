@@ -3,7 +3,7 @@ package cn.edu.tsinghua.tsfile;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.MetaMarker;
-import cn.edu.tsinghua.tsfile.file.footer.RowGroupFooter;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
@@ -24,11 +24,11 @@ public class TsFileSequenceRead {
         System.out.println(reader.readHeadMagic());
         System.out.println(reader.readTailMagic());
         TsFileMetaData metaData = reader.readFileMetadata();
-        // Sequential reading of one RowGroup now follows this order:
-        // first SeriesChunks (headers and data) in one RowGroup, then the RowGroupFooter
-        // Because we do not know how many chunks a RowGroup may have, we should read one byte (the marker) ahead and
+        // Sequential reading of one ChunkGroup now follows this order:
+        // first SeriesChunks (headers and data) in one ChunkGroup, then the ChunkGroupFooter
+        // Because we do not know how many chunks a ChunkGroup may have, we should read one byte (the marker) ahead and
         // judge accordingly.
-        while (reader.hasNextRowGroup()) {
+        while (reader.hasNextChunkGroup()) {
             byte marker = reader.readMarker();
             switch (marker) {
                 case MetaMarker.ChunkHeader:
@@ -52,10 +52,10 @@ public class TsFileSequenceRead {
                         }
                     }
                     break;
-                case MetaMarker.RowGroupFooter:
-                    RowGroupFooter rowGroupFooter = reader.readRowGroupFooter();
+                case MetaMarker.ChunkGroupFooter:
+                    ChunkGroupFooter chunkGroupFooter = reader.readChunkGroupFooter();
                     System.out.println("position: " + reader.getChannel().position());
-                    System.out.println("row group: " + rowGroupFooter.getDeltaObjectID());
+                    System.out.println("chunk group: " + chunkGroupFooter.getDeviceID());
                     break;
                 default:
                     MetaMarker.handleUnexpectedMarker(marker);

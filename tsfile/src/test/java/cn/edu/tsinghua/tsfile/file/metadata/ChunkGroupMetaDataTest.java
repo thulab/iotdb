@@ -16,7 +16,7 @@ import org.junit.Test;
 public class ChunkGroupMetaDataTest {
 
   public static final String DELTA_OBJECT_UID = "delta-3312";
-  final String PATH = "target/outputRowGroup.tsfile";
+  final String PATH = "target/outputChunkGroup.tsfile";
 
   @Before
   public void setUp() {}
@@ -30,7 +30,7 @@ public class ChunkGroupMetaDataTest {
 
   @Test
   public void testWriteIntoFile() throws IOException {
-    ChunkGroupMetaData metaData = TestHelper.createSimpleRowGroupMetaData();
+    ChunkGroupMetaData metaData = TestHelper.createSimpleChunkGroupMetaData();
     File file = new File(PATH);
     if (file.exists())
       file.delete();
@@ -39,6 +39,6 @@ public class ChunkGroupMetaDataTest {
     fos.close();
 
     FileInputStream fis = new FileInputStream(new File(PATH));
-    Utils.isRowGroupMetaDataEqual(metaData, ChunkGroupMetaData.deserializeFrom(fis));
+    Utils.isChunkGroupMetaDataEqual(metaData, ChunkGroupMetaData.deserializeFrom(fis));
   }
 }
