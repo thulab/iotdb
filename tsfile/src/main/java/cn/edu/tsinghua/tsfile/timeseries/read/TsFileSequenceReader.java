@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.compress.UnCompressor;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.MetaMarker;
-import cn.edu.tsinghua.tsfile.file.footer.RowGroupFooter;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
@@ -92,22 +92,22 @@ public class TsFileSequenceReader {
         return TsFileMetaData.deserializeFrom(buffer);
     }
 
-    public boolean hasNextRowGroup() throws IOException {
+    public boolean hasNextChunkGroup() throws IOException {
         return channel.position() < fileMetadataPos;
     }
 
-    public RowGroupFooter readRowGroupFooter() throws IOException {
-        return RowGroupFooter.deserializeFrom(Channels.newInputStream(channel), true);
+    public ChunkGroupFooter readChunkGroupFooter() throws IOException {
+        return ChunkGroupFooter.deserializeFrom(Channels.newInputStream(channel), true);
     }
 
     /**
-     * After reading the footer of a RowGroup, call this method to set the file pointer to the start of the data of this
-     * RowGroup if you want to read its data next.
+     * After reading the footer of a ChunkGroup, call this method to set the file pointer to the start of the data of this
+     * ChunkGroup if you want to read its data next.
      *
      * @param footer
      * @throws IOException
      */
-    public void prepareReadRowGroup(RowGroupFooter footer) throws IOException {
+    public void prepareReadChunkGroup(ChunkGroupFooter footer) throws IOException {
         channel.position(channel.position() - footer.getDataSize() - footer.getSerializedSize());
     }
 

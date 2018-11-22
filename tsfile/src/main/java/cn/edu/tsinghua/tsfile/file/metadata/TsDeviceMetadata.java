@@ -13,7 +13,7 @@ import java.util.List;
 public class TsDeviceMetadata {
 
     /**
-     * size of RowGroupMetadataBlock in byte
+     * size of ChunkGroupMetadataBlock in byte
      **/
     private int serializedSize = 2 * Long.BYTES + Integer.BYTES;// this field does not need to be serialized.
 
@@ -50,13 +50,13 @@ public class TsDeviceMetadata {
     }
 
     /**
-     * add row group metadata to rowGroups. THREAD NOT SAFE
+     * add row group metadata to chunkGroups. THREAD NOT SAFE
      *
-     * @param rowGroup - row group metadata to add
+     * @param chunkGroup - row group metadata to add
      */
-    public void addRowGroupMetaData(ChunkGroupMetaData rowGroup) {
-        chunkGroupMetadataList.add(rowGroup);
-        serializedSize += rowGroup.getSerializedSize();
+    public void addChunkGroupMetaData(ChunkGroupMetaData chunkGroup) {
+        chunkGroupMetadataList.add(chunkGroup);
+        serializedSize += chunkGroup.getSerializedSize();
     }
 
     public List<ChunkGroupMetaData> getChunkGroups() {

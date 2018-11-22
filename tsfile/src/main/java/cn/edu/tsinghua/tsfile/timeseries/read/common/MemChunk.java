@@ -7,20 +7,20 @@ import java.nio.ByteBuffer;
 /**
  * Created by zhangjinrui on 2017/12/25.
  */
-public class MemSeriesChunk implements SeriesChunk{
+public class MemChunk implements Chunk {
     private ChunkMetaData chunkMetaData;
-    private ByteBuffer seriesChunkBodyStream;
+    private ByteBuffer chunkBodyStream;
 
-    public MemSeriesChunk(ChunkMetaData chunkMetaData, ByteBuffer seriesChunkBodyStream) {
+    public MemChunk(ChunkMetaData chunkMetaData, ByteBuffer chunkBodyStream) {
         this.chunkMetaData = chunkMetaData;
-        this.seriesChunkBodyStream = seriesChunkBodyStream;
+        this.chunkBodyStream = chunkBodyStream;
     }
 
     public ChunkMetaData getChunkMetaData() {
         return chunkMetaData;
     }
 
-    public ByteBuffer getSeriesChunkBodyStream() {
-        return seriesChunkBodyStream;
+    public ByteBuffer getChunkBodyStream() {
+        return chunkBodyStream;
     }
 }

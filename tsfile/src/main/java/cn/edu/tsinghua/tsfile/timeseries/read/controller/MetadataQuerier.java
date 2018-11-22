@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface MetadataQuerier {
 
-    List<ChunkMetaData> getSeriesChunkMetaDataList(Path path) throws IOException;
+    List<ChunkMetaData> getChunkMetaDataList(Path path) throws IOException;
 
     TsFileMetaData getWholeFileMetadata();
 

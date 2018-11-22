@@ -13,8 +13,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV1.TsFileGeneratorForTest;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoaderImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,7 +31,7 @@ public class TimestampGeneratorTest {
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
     private TsFileSequenceReader fileReader;
     private MetadataQuerierByFileImpl metadataQuerierByFile;
-    private SeriesChunkLoader seriesChunkLoader;
+    private ChunkLoader chunkLoader;
 
     @Before
     public void before() throws InterruptedException, WriteProcessException, IOException {
@@ -39,7 +39,7 @@ public class TimestampGeneratorTest {
         TsFileGeneratorForTest.generateFile(1000, 10 * 1024 * 1024, 10000);
         fileReader = new TsFileSequenceReader(FILE_PATH);
         metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
-        seriesChunkLoader = new SeriesChunkLoaderImpl(fileReader);
+        chunkLoader = new ChunkLoaderImpl(fileReader);
     }
 
     @After
@@ -62,7 +62,7 @@ public class TimestampGeneratorTest {
                 ),
                 new SeriesFilter<>(new Path("d1.s1"), filter3));
 
-        TimestampGeneratorByQueryFilterImpl timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, seriesChunkLoader, metadataQuerierByFile);
+        TimestampGeneratorByQueryFilterImpl timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerierByFile);
         while (timestampGenerator.hasNext()) {
 //            System.out.println(timestampGenerator.next());
             Assert.assertEquals(startTimestamp, timestampGenerator.next());

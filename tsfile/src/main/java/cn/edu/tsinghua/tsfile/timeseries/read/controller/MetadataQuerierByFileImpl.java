@@ -38,7 +38,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
     }
 
     @Override
-    public List<ChunkMetaData> getSeriesChunkMetaDataList(Path path) throws IOException {
+    public List<ChunkMetaData> getChunkMetaDataList(Path path) throws IOException {
         try {
             return seriesChunkDescriptorCache.get(path);
         } catch (CacheException e) {
@@ -53,8 +53,10 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
     private List<ChunkMetaData> loadSeriesChunkDescriptor(Path path) throws IOException {
 
-        TsDeviceMetadataIndex index = fileMetaData.getDeltaObjectMetadataIndex(path.getDeltaObjectToString());
+        // get the index information of TsDeviceMetadata
+        TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(path.getDeviceToString());
 
+        // read TsDeviceMetadata from file
         FileChannel channel = tsFileReader.getChannel();
         channel.position(index.getOffset());
         ByteBuffer buffer = ByteBuffer.allocate(index.getLen());
@@ -63,10 +65,11 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
         TsDeviceMetadata tsDeviceMetadata = TsDeviceMetadata.deserializeFrom(buffer);
 
+        // get all ChunkMetaData of this path included in all ChunkGroups of this device
         List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
         for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
-            List<ChunkMetaData> chunkMetaDataListInOneRowGroup = chunkGroupMetaData.getChunkMetaDataList();
-            for (ChunkMetaData chunkMetaData : chunkMetaDataListInOneRowGroup) {
+            List<ChunkMetaData> chunkMetaDataListInOneChunkGroup = chunkGroupMetaData.getChunkMetaDataList();
+            for (ChunkMetaData chunkMetaData : chunkMetaDataListInOneChunkGroup) {
                 if (path.getMeasurementToString().equals(chunkMetaData.getMeasurementUID())) {
                     chunkMetaDataList.add(chunkMetaData);
                 }

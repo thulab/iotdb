@@ -179,7 +179,7 @@ public class WriteTest {
                         (System.currentTimeMillis() - startTime) / 1000);
                 stageState++;
                 LOG.info("stage:" + stageState);
-                if (stageState == stageDeltaObjectIds.length)
+                if (stageState == stageDeviceIds.length)
                     break;
             }
             if (lineCount == ROW_COUNT / 2)
@@ -208,17 +208,17 @@ public class WriteTest {
         LOG.info("stage size: {}, write {} group data", stageSize, lineCount);
     }
 
-    private String[][] stageDeltaObjectIds = {{"d1", "d2", "d3"}, {"d1"}, {"d2", "d3"}};
+    private String[][] stageDeviceIds = {{"d1", "d2", "d3"}, {"d1"}, {"d2", "d3"}};
     private String[] measurementIds = {"s0", "s1", "s2", "s3", "s4", "s5"};
     private long longBase = System.currentTimeMillis() * 1000;
     private String[] enums = {"MAN", "WOMAN"};
 
     private String[] getNextRecord(long lineCount, int stage) {
 
-        String[] ret = new String[stageDeltaObjectIds[stage].length];
+        String[] ret = new String[stageDeviceIds[stage].length];
         for (int i = 0; i < ret.length; i++) {
             StringContainer sc = new StringContainer(JsonFormatConstant.TSRECORD_SEPARATOR);
-            sc.addTail(stageDeltaObjectIds[stage][i], lineCount);
+            sc.addTail(stageDeviceIds[stage][i], lineCount);
             sc.addTail(measurementIds[0], lineCount * 10 + i, measurementIds[1], longBase
                             + lineCount * 20 + i, measurementIds[2], (lineCount * 30 + i) / 3.0,
                     measurementIds[3], (longBase + lineCount * 40 + i) / 7.0);

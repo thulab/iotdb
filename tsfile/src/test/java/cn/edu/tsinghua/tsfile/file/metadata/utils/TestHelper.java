@@ -20,30 +20,30 @@ public class TestHelper {
     private static final String LAST_VALUE = "222";
 
     public static TsFileMetaData createSimpleFileMetaData() {
-        TsFileMetaData metaData = new TsFileMetaData(generateDeltaObjectIndexMetadataMap(), new HashMap<>(), TsFileMetaDataTest.VERSION);
+        TsFileMetaData metaData = new TsFileMetaData(generateDeviceIndexMetadataMap(), new HashMap<>(), TsFileMetaDataTest.VERSION);
         metaData.addMeasurementSchema(TestHelper.createSimpleMeasurementSchema());
         metaData.addMeasurementSchema(TestHelper.createSimpleMeasurementSchema());
         metaData.setCreatedBy(TsFileMetaDataTest.CREATED_BY);
         return metaData;
     }
 
-    public static Map<String, TsDeviceMetadataIndex> generateDeltaObjectIndexMetadataMap() {
-        Map<String,TsDeviceMetadataIndex> indexMap = new HashMap<>();
-        for(int i = 0;i<5;i++){
-            indexMap.put("device_"+i,createSimpleDeltaObjectIndexMetadata());
+    public static Map<String, TsDeviceMetadataIndex> generateDeviceIndexMetadataMap() {
+        Map<String, TsDeviceMetadataIndex> indexMap = new HashMap<>();
+        for (int i = 0; i < 5; i++) {
+            indexMap.put("device_" + i, createSimpleDeviceIndexMetadata());
         }
         return indexMap;
     }
 
-    public static Map<String, TsDeviceMetadata> generateDeltaObjectMetadataMap() {
+    public static Map<String, TsDeviceMetadata> generateDeviceMetadataMap() {
         Map<String, TsDeviceMetadata> deviceMetadataMap = new HashMap<>();
         for (int i = 0; i < 5; i++) {
-            deviceMetadataMap.put("device_" + i, createSimpleDeltaObjectMetaData());
+            deviceMetadataMap.put("device_" + i, createSimpleDeviceMetaData());
         }
         return deviceMetadataMap;
     }
 
-    public static TsDeviceMetadataIndex createSimpleDeltaObjectIndexMetadata() {
+    public static TsDeviceMetadataIndex createSimpleDeviceIndexMetadata() {
         TsDeviceMetadataIndex index = new TsDeviceMetadataIndex();
         index.setOffset(0);
         index.setLen(10);
@@ -52,16 +52,16 @@ public class TestHelper {
         return index;
     }
 
-    public static TsDeviceMetadata createSimpleDeltaObjectMetaData() {
+    public static TsDeviceMetadata createSimpleDeviceMetaData() {
         TsDeviceMetadata metaData = new TsDeviceMetadata();
         metaData.setStartTime(TsDeviceMetadataTest.START_TIME);
         metaData.setEndTime(TsDeviceMetadataTest.END_TIME);
-        metaData.addRowGroupMetaData(TestHelper.createSimpleRowGroupMetaData());
-        metaData.addRowGroupMetaData(TestHelper.createSimpleRowGroupMetaData());
+        metaData.addChunkGroupMetaData(TestHelper.createSimpleChunkGroupMetaData());
+        metaData.addChunkGroupMetaData(TestHelper.createSimpleChunkGroupMetaData());
         return metaData;
     }
 
-    public static ChunkGroupMetaData createSimpleRowGroupMetaData() {
+    public static ChunkGroupMetaData createSimpleChunkGroupMetaData() {
         ChunkGroupMetaData metaData = new ChunkGroupMetaData(ChunkGroupMetaDataTest.DELTA_OBJECT_UID, new ArrayList<>());
         metaData.addTimeSeriesChunkMetaData(TestHelper.createSimpleTimeSeriesChunkMetaData());
         metaData.addTimeSeriesChunkMetaData(TestHelper.createSimpleTimeSeriesChunkMetaData());

@@ -83,19 +83,19 @@ public class TsFileMetaData {
         this.createdBy = createdBy;
     }
 
-    public Map<String, TsDeviceMetadataIndex> getDeltaObjectMap() {
+    public Map<String, TsDeviceMetadataIndex> getDeviceMap() {
         return deviceIndexMap;
     }
 
-    public void setDeltaObjectMap(Map<String, TsDeviceMetadataIndex> deviceMap) {
+    public void setDeviceMap(Map<String, TsDeviceMetadataIndex> deviceMap) {
         this.deviceIndexMap = deviceMap;
     }
 
-    public boolean containsDeltaObject(String DeltaObjUID) {
+    public boolean containsDevice(String DeltaObjUID) {
         return this.deviceIndexMap.containsKey(DeltaObjUID);
     }
 
-    public TsDeviceMetadataIndex getDeltaObjectMetadataIndex(String DeltaObjUID) {
+    public TsDeviceMetadataIndex getDeviceMetadataIndex(String DeltaObjUID) {
         return this.deviceIndexMap.get(DeltaObjUID);
     }
 

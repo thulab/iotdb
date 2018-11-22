@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.util.QueryFilterOptimizer;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
@@ -18,11 +18,11 @@ import java.io.IOException;
 public class QueryExecutorRouter implements QueryExecutor {
 
     private MetadataQuerier metadataQuerier;
-    private SeriesChunkLoader seriesChunkLoader;
+    private ChunkLoader chunkLoader;
 
-    public QueryExecutorRouter(MetadataQuerier metadataQuerier, SeriesChunkLoader seriesChunkLoader) {
+    public QueryExecutorRouter(MetadataQuerier metadataQuerier, ChunkLoader chunkLoader) {
         this.metadataQuerier = metadataQuerier;
-        this.seriesChunkLoader = seriesChunkLoader;
+        this.chunkLoader = chunkLoader;
     }
 
     @Override
@@ -33,15 +33,15 @@ public class QueryExecutorRouter implements QueryExecutor {
                 QueryFilter regularQueryFilter = QueryFilterOptimizer.getInstance().convertGlobalTimeFilter(queryFilter, queryExpression.getSelectedSeries());
                 queryExpression.setQueryFilter(regularQueryFilter);
                 if (regularQueryFilter instanceof GlobalTimeFilter) {
-                    return new QueryWithGlobalTimeFilterExecutorImpl(seriesChunkLoader, metadataQuerier).execute(queryExpression);
+                    return new QueryWithGlobalTimeFilterExecutorImpl(chunkLoader, metadataQuerier).execute(queryExpression);
                 } else {
-                    return new QueryWithQueryFilterExecutorImpl(seriesChunkLoader, metadataQuerier).execute(queryExpression);
+                    return new QueryWithQueryFilterExecutorImpl(chunkLoader, metadataQuerier).execute(queryExpression);
                 }
             } catch (QueryFilterOptimizationException e) {
                 throw new IOException(e);
             }
         } else {
-            return new QueryWithoutFilterExecutorImpl(seriesChunkLoader, metadataQuerier).execute(queryExpression);
+            return new QueryWithoutFilterExecutorImpl(chunkLoader, metadataQuerier).execute(queryExpression);
         }
     }
 }

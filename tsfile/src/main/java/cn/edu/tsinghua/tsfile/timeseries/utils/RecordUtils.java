@@ -26,7 +26,7 @@ public class RecordUtils {
      * @return TSRecord constructed from str
      */
     public static TSRecord parseSimpleTupleRecord(String str, FileSchema schema) {
-        // spliall items
+        // split items
         String[] items = str.split(JsonFormatConstant.TSRECORD_SEPARATOR);
         // get deviceId and timestamp, then create a new TSRecord
         String deviceId = items[0].trim();
@@ -80,12 +80,8 @@ public class RecordUtils {
                             ret.addTuple(new StringDataPoint(measurementId, Binary
                                     .valueOf(items[i + 1])));
                             break;
-                        // BIGDECIMAL is annotated because no encoder supports this type.
-                        // case BIGDECIMAL:
-                        // ret.addTuple(new BigDecimalDataPoint(measurementId, new BigDecimal(
-                        // items[i + 1])));
-                        // break;
                         default:
+
                             LOG.warn("unsupported data type:{}", type);
                             break;
                     }

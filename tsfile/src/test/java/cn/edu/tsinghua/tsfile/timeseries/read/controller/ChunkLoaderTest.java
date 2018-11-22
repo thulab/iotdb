@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.readV1.TsFileGeneratorForTest;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.MemSeriesChunk;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.MemChunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
@@ -20,7 +20,7 @@ import java.util.List;
  * Created by zhangjinrui on 2017/12/25.
  */
 
-public class SeriesChunkLoaderTest {
+public class ChunkLoaderTest {
 
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
     private TsFileSequenceReader fileReader;
@@ -40,13 +40,13 @@ public class SeriesChunkLoaderTest {
     public void test() throws IOException {
         fileReader = new TsFileSequenceReader(FILE_PATH);
         MetadataQuerierByFileImpl metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
-        List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getSeriesChunkMetaDataList(new Path("d2.s1"));
+        List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d2.s1"));
 
-        SeriesChunkLoaderImpl seriesChunkLoader = new SeriesChunkLoaderImpl(fileReader);
+        ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         for (ChunkMetaData chunkMetaData : chunkMetaDataList) {
-            MemSeriesChunk memSeriesChunk = seriesChunkLoader.getMemSeriesChunk(chunkMetaData);
-            ChunkHeader chunkHeader = ChunkHeader.deserializeFrom(memSeriesChunk.getSeriesChunkBodyStream(), false);
-            Assert.assertEquals(chunkHeader.getDataSize(), memSeriesChunk.getSeriesChunkBodyStream().remaining());
+            MemChunk memSeriesChunk = seriesChunkLoader.getMemChunk(chunkMetaData);
+            ChunkHeader chunkHeader = ChunkHeader.deserializeFrom(memSeriesChunk.getChunkBodyStream(), false);
+            Assert.assertEquals(chunkHeader.getDataSize(), memSeriesChunk.getChunkBodyStream().remaining());
         }
     }
 }

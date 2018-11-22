@@ -17,11 +17,11 @@ public class TsDeviceMetadataIndex {
      */
     private int len;
     /**
-     * The start time of the deltaObject
+     * The start time of the device
      */
     private long startTime;
     /**
-     * The end time of the deltaObject
+     * The end time of the device
      */
     private long endTime;
 

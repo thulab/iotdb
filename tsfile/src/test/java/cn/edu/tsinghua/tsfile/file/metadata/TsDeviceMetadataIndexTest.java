@@ -24,7 +24,7 @@ public class TsDeviceMetadataIndexTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         index = new TsDeviceMetadataIndex();
         index.setOffset(offset);
         index.setLen(len);
@@ -34,23 +34,23 @@ public class TsDeviceMetadataIndexTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         file.delete();
     }
 
     @Test
     public void testSerDeDeviceMetadataIndex() throws IOException {
         OutputStream outputStream = new FileOutputStream(file);
-        try{
+        try {
             index.serializeTo(outputStream);
             InputStream inputStream = new FileInputStream(file);
-            try{
+            try {
                 TsDeviceMetadataIndex index2 = TsDeviceMetadataIndex.deserializeFrom(inputStream);
-                Utils.isTsDeviceMetadataIndexEqual(index,index2);
-            }finally {
+                Utils.isTsDeviceMetadataIndexEqual(index, index2);
+            } finally {
                 inputStream.close();
             }
-        }finally {
+        } finally {
             outputStream.close();
         }
     }

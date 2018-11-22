@@ -92,7 +92,7 @@ public abstract class SeriesChunkReader implements SeriesReader {
             hasCachedTimeValuePair = false;
             return cachedTimeValuePair;
         }
-        throw new IOException("No more timeValuePair in current MemSeriesChunk");
+        throw new IOException("No more timeValuePair in current MemChunk");
     }
 
     /**

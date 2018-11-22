@@ -29,7 +29,7 @@ public class ReadPageInMemTest {
 	private FileSchema fileSchema = null;
 
 	private int pageSize;
-	private int RowGroupSize;
+	private int ChunkGroupSize;
 	private int pageCheckSizeThreshold;
 	private int defaultMaxStringLength;
 	@Before
@@ -37,7 +37,7 @@ public class ReadPageInMemTest {
 		file.delete();
 		pageSize = conf.pageSizeInByte;
 		conf.pageSizeInByte = 200;
-		RowGroupSize = conf.groupSizeInByte;
+		ChunkGroupSize = conf.groupSizeInByte;
 		conf.groupSizeInByte = 100000;
 		pageCheckSizeThreshold = conf.pageCheckSizeThreshold;
 		conf.pageCheckSizeThreshold = 1;
@@ -51,13 +51,13 @@ public class ReadPageInMemTest {
 	public void tearDown() throws Exception {
 		file.delete();
 		conf.pageSizeInByte = pageSize;
-		conf.groupSizeInByte = RowGroupSize;
+		conf.groupSizeInByte = ChunkGroupSize;
 		conf.pageCheckSizeThreshold = pageCheckSizeThreshold;
 		conf.maxStringLength = defaultMaxStringLength;
 	}
 
 	@Test
-	public void OneDeltaObjectTest() {
+	public void OneDeviceTest() {
 		String line = "";
 		for (int i = 1; i <= 3; i++) {
 			line = "root.car.d1," + i + ",s1,1,s2,1,s3,0.1,s4,0.1";
@@ -88,7 +88,7 @@ public class ReadPageInMemTest {
 	}
 
 	@Test
-	public void MultiDeltaObjectTest() throws IOException {
+	public void MultiDeviceTest() throws IOException {
 
 		String line = "";
 		for (int i = 1; i <= 3; i++) {

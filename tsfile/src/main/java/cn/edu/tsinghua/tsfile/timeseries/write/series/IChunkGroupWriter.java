@@ -48,7 +48,7 @@ public interface IChunkGroupWriter {
     long updateMaxGroupMemSize();
 
     /**
-     * given a measurement descriptor, create a corresponding writer and put into this RowGroupWriter
+     * given a measurement descriptor, create a corresponding writer and put into this ChunkGroupWriter
      *
      * @param measurementSchema a measurement descriptor containing the message of the series
      * @param pageSize the specified page size
@@ -56,9 +56,9 @@ public interface IChunkGroupWriter {
     void addSeriesWriter(MeasurementSchema measurementSchema, int pageSize);
 
     /**
-     * @return get the serialized size of current rowGroup header + all chunks
+     * @return get the serialized size of current chunkGroup header + all chunks
      */
-    long getCurrentRowGroupSize();
+    long getCurrentChunkGroupSize();
 
     /**
      * call all the series to prepare to flush data.

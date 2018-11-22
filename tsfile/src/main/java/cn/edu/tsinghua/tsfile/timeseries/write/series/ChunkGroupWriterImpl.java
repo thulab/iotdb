@@ -70,7 +70,7 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
 
 
     @Override
-    public long getCurrentRowGroupSize() {
+    public long getCurrentChunkGroupSize() {
         long size = 0;
         for (IChunkWriter writer : dataSeriesWriters.values()) {
             size += writer.getCurrentChunkSize();

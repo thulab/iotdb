@@ -2,13 +2,13 @@ package cn.edu.tsinghua.tsfile.timeseries.write;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.file.footer.RowGroupFooter;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.NoMeasurementException;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.JsonConverter;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.IChunkGroupWriter;
@@ -48,7 +48,7 @@ public class TsFileWriter {
     private long recordCount = 0;
 
     /**
-     * all IRowGroupWriters
+     * all IChunkGroupWriters
      **/
     private Map<String, IChunkGroupWriter> groupWriters = new HashMap<String, IChunkGroupWriter>();
 
@@ -56,7 +56,7 @@ public class TsFileWriter {
      * min value of threshold of data points num check
      **/
     private long recordCountForNextMemCheck = 100;
-    private long rowGroupSizeThreshold;
+    private long chunkGroupSizeThreshold;
 
     /**
      * init this TsFileWriter
@@ -114,7 +114,7 @@ public class TsFileWriter {
         this.deltaFileWriter = tsfileWriter;
         this.schema = schema;
         this.pageSize = conf.pageSizeInByte;
-        this.rowGroupSizeThreshold = conf.groupSizeInByte;
+        this.chunkGroupSizeThreshold = conf.groupSizeInByte;
     }
 
     /**
@@ -161,7 +161,7 @@ public class TsFileWriter {
             groupWriter = groupWriters.get(record.deviceId);
         }
 
-        // add all SeriesWriter of measurements in this TSRecord to this RowGroupWriter
+        // add all SeriesWriter of measurements in this TSRecord to this ChunkGroupWriter
         Map<String, MeasurementSchema> schemaDescriptorMap = schema.getAllMeasurementSchema();
         for (DataPoint dp : record.dataPointList) {
             String measurementId = dp.getMeasurementId();
@@ -184,10 +184,10 @@ public class TsFileWriter {
      */
     public boolean write(TSRecord record) throws IOException, WriteProcessException {
 
-        // make sure the RowGroupWriter for this TSRecord exist
+        // make sure the ChunkGroupWriter for this TSRecord exist
         if (checkIsTimeSeriesExist(record)) {
 
-            // get corresponding RowGroupWriter and write this TSRecord
+            // get corresponding ChunkGroupWriter and write this TSRecord
             groupWriters.get(record.deviceId).write(record.time, record.dataPointList);
             ++recordCount;
             return checkMemorySizeAndMayFlushGroup();
@@ -196,7 +196,7 @@ public class TsFileWriter {
     }
 
     /**
-     * calculate total memory size occupied by all RowGroupWriter instances currently.
+     * calculate total memory size occupied by all ChunkGroupWriter instances currently.
      *
      * @return total memory size used
      */
@@ -210,7 +210,7 @@ public class TsFileWriter {
 
 
     /**
-     * check occupied memory size, if it exceeds the rowGroupSize threshold, flush them to given
+     * check occupied memory size, if it exceeds the chunkGroupSize threshold, flush them to given
      * OutputStream.
      *
      * @return true - size of tsfile or metadata reaches the threshold.
@@ -220,13 +220,13 @@ public class TsFileWriter {
     private boolean checkMemorySizeAndMayFlushGroup() throws IOException {
         if (recordCount >= recordCountForNextMemCheck) {
             long memSize = calculateMemSizeForAllGroup();
-            if (memSize > rowGroupSizeThreshold) {
+            if (memSize > chunkGroupSizeThreshold) {
                 LOG.info("start_flush_row_group, memory space occupy:" + memSize);
-                recordCountForNextMemCheck = recordCount * rowGroupSizeThreshold / memSize;
+                recordCountForNextMemCheck = recordCount * chunkGroupSizeThreshold / memSize;
                 LOG.debug("current threshold:{}, next check:{}", recordCount, recordCountForNextMemCheck);
-                return flushAllRowGroups();
+                return flushAllChunkGroups();
             } else {
-                recordCountForNextMemCheck = recordCount * rowGroupSizeThreshold / memSize;
+                recordCountForNextMemCheck = recordCount * chunkGroupSizeThreshold / memSize;
                 LOG.debug("current threshold:{}, next check:{}", recordCount, recordCountForNextMemCheck);
                 return false;
             }
@@ -243,28 +243,28 @@ public class TsFileWriter {
      * false - otherwise. But this function just return false, the Override of IoTDB may return true.
      * @throws IOException exception in IO
      */
-    protected boolean flushAllRowGroups() throws IOException {
+    protected boolean flushAllChunkGroups() throws IOException {
         if (recordCount > 0) {
             long totalMemStart = deltaFileWriter.getPos();
-            //make sure all the pages have been compressed into buffers, so that we can get correct groupWriter.getCurrentRowGroupSize().
+            //make sure all the pages have been compressed into buffers, so that we can get correct groupWriter.getCurrentChunkGroupSize().
             for (IChunkGroupWriter writer : groupWriters.values()) {
                 writer.preFlush();
             }
             for (String deviceId : groupWriters.keySet()) {
                 long memSize = deltaFileWriter.getPos();
                 IChunkGroupWriter groupWriter = groupWriters.get(deviceId);
-                long RowGroupSize = groupWriter.getCurrentRowGroupSize();
-                RowGroupFooter rowGroupFooter = deltaFileWriter.startFlushRowGroup(deviceId, RowGroupSize, groupWriter.getSeriesNumber());
+                long ChunkGroupSize = groupWriter.getCurrentChunkGroupSize();
+                ChunkGroupFooter chunkGroupFooter = deltaFileWriter.startFlushChunkGroup(deviceId, ChunkGroupSize, groupWriter.getSeriesNumber());
                 groupWriter.flushToFileWriter(deltaFileWriter);
 
-                if (deltaFileWriter.getPos() - memSize != RowGroupSize)
+                if (deltaFileWriter.getPos() - memSize != ChunkGroupSize)
                     throw new IOException(String.format("Flushed data size is inconsistent with computation! Estimated: %d, Actuall: %d",
-                            RowGroupSize, deltaFileWriter.getPos() - memSize));
+                            ChunkGroupSize, deltaFileWriter.getPos() - memSize));
 
-                deltaFileWriter.endRowGroup(deltaFileWriter.getPos() - memSize, rowGroupFooter);
+                deltaFileWriter.endChunkGroup(deltaFileWriter.getPos() - memSize, chunkGroupFooter);
             }
-            long actualTotalRowGroupSize = deltaFileWriter.getPos() - totalMemStart;
-            LOG.info("total row group size:{}", actualTotalRowGroupSize);
+            long actualTotalChunkGroupSize = deltaFileWriter.getPos() - totalMemStart;
+            LOG.info("total row group size:{}", actualTotalChunkGroupSize);
             LOG.info("write row group end");
             recordCount = 0;
             reset();
@@ -285,7 +285,7 @@ public class TsFileWriter {
      */
     public void close() throws IOException {
         LOG.info("start close file");
-        flushAllRowGroups();
+        flushAllChunkGroups();
         deltaFileWriter.endFile(this.schema);
     }
 }

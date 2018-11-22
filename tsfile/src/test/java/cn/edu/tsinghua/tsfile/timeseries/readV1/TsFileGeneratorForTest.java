@@ -32,7 +32,7 @@ import java.util.Scanner;
 public class TsFileGeneratorForTest {
 
     private static int rowCount;
-    private static int rowGroupSize;
+    private static int chunkGroupSize;
     private static int pageSize;
 
     private static final Logger LOG = LoggerFactory.getLogger(TsFileGeneratorForTest.class);
@@ -43,9 +43,9 @@ public class TsFileGeneratorForTest {
 
     public static final long START_TIMESTAMP = 1480562618000L;
 
-    public static void generateFile(int rowCount, int rowGroupSize, int pageSize) throws IOException, InterruptedException, WriteProcessException {
+    public static void generateFile(int rowCount, int chunkGroupSize, int pageSize) throws IOException, InterruptedException, WriteProcessException {
         TsFileGeneratorForTest.rowCount = rowCount;
-        TsFileGeneratorForTest.rowGroupSize = rowGroupSize;
+        TsFileGeneratorForTest.chunkGroupSize = chunkGroupSize;
         TsFileGeneratorForTest.pageSize = pageSize;
         prepare();
         write();
@@ -126,7 +126,7 @@ public class TsFileGeneratorForTest {
         //FileSchema schema = new FileSchema(jsonSchema);
         FileSchema schema = generateTestSchema();
 
-        TSFileDescriptor.getInstance().getConfig().groupSizeInByte = rowGroupSize;
+        TSFileDescriptor.getInstance().getConfig().groupSizeInByte = chunkGroupSize;
         TSFileDescriptor.getInstance().getConfig().maxNumberOfPointsInPage = pageSize;
         innerWriter = new TsFileWriter(file, schema, TSFileDescriptor.getInstance().getConfig());
 

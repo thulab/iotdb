@@ -7,8 +7,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.impl.DigestFilterVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.SeriesChunk;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,16 +21,16 @@ public class SeriesReaderFromSingleFileWithFilterImpl extends SeriesReaderFromSi
     private Filter<?> filter;
     private DigestFilterVisitor digestFilterVisitor;
 
-    public SeriesReaderFromSingleFileWithFilterImpl(SeriesChunkLoader seriesChunkLoader
+    public SeriesReaderFromSingleFileWithFilterImpl(ChunkLoader chunkLoader
             , List<ChunkMetaData> chunkMetaDataList, Filter<?> filter) {
-        super(seriesChunkLoader, chunkMetaDataList);
+        super(chunkLoader, chunkMetaDataList);
         this.filter = filter;
         this.digestFilterVisitor = new DigestFilterVisitor();
     }
 
-    public SeriesReaderFromSingleFileWithFilterImpl(TsFileSequenceReader tsFileReader, SeriesChunkLoader seriesChunkLoader,
+    public SeriesReaderFromSingleFileWithFilterImpl(TsFileSequenceReader tsFileReader, ChunkLoader chunkLoader,
                                                     List<ChunkMetaData> chunkMetaDataList, Filter<?> filter) {
-        super(tsFileReader, seriesChunkLoader, chunkMetaDataList);
+        super(tsFileReader, chunkLoader, chunkMetaDataList);
         this.filter = filter;
         this.digestFilterVisitor = new DigestFilterVisitor();
     }
@@ -43,8 +43,8 @@ public class SeriesReaderFromSingleFileWithFilterImpl extends SeriesReaderFromSi
     }
 
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-        SeriesChunk memSeriesChunk = seriesChunkLoader.getMemSeriesChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderWithFilterImpl(memSeriesChunk.getSeriesChunkBodyStream(),
+        Chunk memChunk = chunkLoader.getMemChunk(chunkMetaData);
+        this.seriesChunkReader = new SeriesChunkReaderWithFilterImpl(memChunk.getChunkBodyStream(),
                 filter);
         this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }

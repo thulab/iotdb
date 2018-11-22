@@ -46,7 +46,7 @@ public class ChunkGroupMetaData {
     /**
      * @param deviceID               name of device
      * @param chunkMetaDataList all time series chunks in this row group. Can not be Null.
-     *                                    notice: after constructing a RowGroupMetadata instance. Donot use list.add()
+     *                                    notice: after constructing a ChunkGroupMetadata instance. Donot use list.add()
      *                                    to modify `chunkMetaDataList`. Instead, use addTimeSeriesChunkMetaData()
      *                                    to make sure  getSerializedSize() is correct.
      */
@@ -89,7 +89,7 @@ public class ChunkGroupMetaData {
     }
 
 
-    public String getDeltaObjectID() {
+    public String getDeviceID() {
         return deviceID;
     }
 
