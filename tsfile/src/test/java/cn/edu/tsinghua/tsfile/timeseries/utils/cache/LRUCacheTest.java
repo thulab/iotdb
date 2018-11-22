@@ -4,6 +4,8 @@ import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * Created by zhangjinrui on 2017/12/25.
  */
@@ -32,7 +34,7 @@ public class LRUCacheTest {
                 Assert.assertEquals(i * 10, (int) cache.get(i));
                 Assert.assertEquals((i - 1) * 10, (int) cache.get(i - 1));
             }
-        } catch (CacheException e) {
+        } catch (CacheException | IOException e) {
             e.printStackTrace();
             Assert.fail();
         }

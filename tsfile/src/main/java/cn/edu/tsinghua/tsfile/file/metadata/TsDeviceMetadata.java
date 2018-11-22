@@ -59,7 +59,7 @@ public class TsDeviceMetadata {
         serializedSize += rowGroup.getSerializedSize();
     }
 
-    public List<ChunkGroupMetaData> getRowGroups() {
+    public List<ChunkGroupMetaData> getChunkGroups() {
         return Collections.unmodifiableList(chunkGroupMetadataList);
     }
 

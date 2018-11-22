@@ -182,7 +182,7 @@ public class TsFileIOWriter {
             Map.Entry<String, TsDeviceMetadata> entry = iterator.next();
             currentTsDeviceMetadata = entry.getValue();
 
-            for (ChunkGroupMetaData chunkGroupMetaData : currentTsDeviceMetadata.getRowGroups()) {
+            for (ChunkGroupMetaData chunkGroupMetaData : currentTsDeviceMetadata.getChunkGroups()) {
                 for (ChunkMetaData chunkMetaData : chunkGroupMetaData
                         .getChunkMetaDataList()) {
 					// update startTime and endTime
