@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * a row group in TSFile contains a list of value series. TimeSeriesGroupWriter
+ * a chunk group in TSFile contains a list of value series. TimeSeriesGroupWriter
  * should implement write method which inputs a time stamp(in TimeValue class)
  * and a list of data points. It also should provide flushing method for
  * outputting to OS file system or HDFS.

@@ -18,12 +18,12 @@ public class TsDeviceMetadata {
     private int serializedSize = 2 * Long.BYTES + Integer.BYTES;// this field does not need to be serialized.
 
     /**
-     * start time for a delta object
+     * start time for a device
      **/
     private long startTime;
 
     /**
-     * end time for a delta object
+     * end time for a device
      **/
     private long endTime;
 
@@ -50,9 +50,9 @@ public class TsDeviceMetadata {
     }
 
     /**
-     * add row group metadata to chunkGroups. THREAD NOT SAFE
+     * add chunk group metadata to chunkGroups. THREAD NOT SAFE
      *
-     * @param chunkGroup - row group metadata to add
+     * @param chunkGroup - chunk group metadata to add
      */
     public void addChunkGroupMetaData(ChunkGroupMetaData chunkGroup) {
         chunkGroupMetadataList.add(chunkGroup);

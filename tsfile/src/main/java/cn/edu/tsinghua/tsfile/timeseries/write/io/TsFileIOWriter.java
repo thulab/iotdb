@@ -56,7 +56,7 @@ public class TsFileIOWriter {
 
     /**
      * Writes given bytes to output stream.
-     * This method is called when total memory size exceeds the row group size
+     * This method is called when total memory size exceeds the chunk group size
      * threshold.
      *
      * @param bytes - data of several pages which has been packed
@@ -73,15 +73,15 @@ public class TsFileIOWriter {
     /**
      * start a {@linkplain ChunkGroupMetaData ChunkGroupMetaData}.
      *
-     * @param deviceId delta object id
+     * @param deviceId device id
      * @param dataSize      the serialized size of all chunks
      * @return the serialized size of ChunkGroupFooter
      */
     public ChunkGroupFooter startFlushChunkGroup(String deviceId, long dataSize, int numberOfChunks) throws IOException {
-        LOG.debug("start row group:{}, file position {}", deviceId, out.getChannel().position());
+        LOG.debug("start chunk group:{}, file position {}", deviceId, out.getChannel().position());
         currentChunkGroupMetaData = new ChunkGroupMetaData(deviceId, new ArrayList<>());
         ChunkGroupFooter header = new ChunkGroupFooter(deviceId, dataSize, numberOfChunks);
-        LOG.debug("finishing writing row group header {}, file position {}", header, out.getChannel().position());
+        LOG.debug("finishing writing chunk group header {}, file position {}", header, out.getChannel().position());
         return header;
     }
 
@@ -134,7 +134,7 @@ public class TsFileIOWriter {
     public void endChunkGroup(long memSize, ChunkGroupFooter chunkGroupFooter) throws IOException {
         chunkGroupFooter.serializeTo(out);
         chunkGroupMetaData.add(currentChunkGroupMetaData);
-        LOG.debug("end row group:{}", currentChunkGroupMetaData);
+        LOG.debug("end chunk group:{}", currentChunkGroupMetaData);
         currentChunkGroupMetaData = null;
     }
 
@@ -166,13 +166,13 @@ public class TsFileIOWriter {
         }
         Iterator<Map.Entry<String, TsDeviceMetadata>> iterator = tsDeviceMetadataMap.entrySet().iterator();
 
-        /* start time for a delta object */
+        /* start time for a device */
         long startTime;
 
-        /* end time for a delta object */
+        /* end time for a device */
         long endTime;
 
-        /*offset for the grouping delta object metadata*/
+        /*offset for the grouping device metadata*/
         long offset;
 
         while (iterator.hasNext()) {

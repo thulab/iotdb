@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Digest/statistics per row group and per page.
+ * Digest/statistics per chunk group and per page.
  */
 public class TsDigest {
 

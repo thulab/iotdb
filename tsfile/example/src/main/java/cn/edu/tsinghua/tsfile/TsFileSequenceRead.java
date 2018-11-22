@@ -55,7 +55,7 @@ public class TsFileSequenceRead {
                 case MetaMarker.ChunkGroupFooter:
                     ChunkGroupFooter chunkGroupFooter = reader.readChunkGroupFooter();
                     System.out.println("position: " + reader.getChannel().position());
-                    System.out.println("row group: " + chunkGroupFooter.getDeviceID());
+                    System.out.println("chunk group: " + chunkGroupFooter.getDeviceID());
                     break;
                 default:
                     MetaMarker.handleUnexpectedMarker(marker);

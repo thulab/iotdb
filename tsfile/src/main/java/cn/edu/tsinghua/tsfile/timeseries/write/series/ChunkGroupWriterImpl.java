@@ -54,7 +54,7 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
 
     @Override
     public void flushToFileWriter(TsFileIOWriter deltaFileWriter) throws IOException {
-        LOG.debug("start flush delta object id:{}", deviceId);
+        LOG.debug("start flush device id:{}", deviceId);
         for (IChunkWriter seriesWriter : dataSeriesWriters.values()) {
             seriesWriter.writeToFileWriter(deltaFileWriter);
         }

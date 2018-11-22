@@ -11,10 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * FileSchema stores the schema of registered measurements and delta objects that appeared in this
- * stage. All delta objects written to the same TSFile have the same schema. FileSchema takes the
+ * FileSchema stores the schema of registered measurements and devices that appeared in this
+ * stage. All devices written to the same TSFile have the same schema. FileSchema takes the
  * JSON schema file as a parameter and registers measurement information. FileSchema also records
- * all appeared delta object IDs in this stage.
+ * all appeared device IDs in this stage.
  *
  * @author kangrong
  */

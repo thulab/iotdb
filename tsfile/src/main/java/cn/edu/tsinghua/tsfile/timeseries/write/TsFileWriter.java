@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * TsFileWriter is the entrance for writing processing. It receives a record and send it to
- * responding row group write. It checks memory size for all writing processing along its strategy
+ * responding chunk group write. It checks memory size for all writing processing along its strategy
  * and flush data stored in memory to OutputStream. At the end of writing, user should call
  * {@code close()} method to flush the last data outside and close the normal outputStream and error
  * outputStream.
@@ -264,8 +264,8 @@ public class TsFileWriter {
                 deltaFileWriter.endChunkGroup(deltaFileWriter.getPos() - memSize, chunkGroupFooter);
             }
             long actualTotalChunkGroupSize = deltaFileWriter.getPos() - totalMemStart;
-            LOG.info("total row group size:{}", actualTotalChunkGroupSize);
-            LOG.info("write row group end");
+            LOG.info("total chunk group size:{}", actualTotalChunkGroupSize);
+            LOG.info("write chunk group end");
             recordCount = 0;
             reset();
         }
