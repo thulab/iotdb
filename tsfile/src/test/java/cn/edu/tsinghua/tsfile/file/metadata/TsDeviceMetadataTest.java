@@ -2,7 +2,6 @@ package cn.edu.tsinghua.tsfile.file.metadata;
 
 import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
 import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +39,6 @@ public class TsDeviceMetadataTest {
         fos.close();
 
         FileInputStream fis = new FileInputStream(new File(PATH));
-        Utils.isDeviceEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
+        Utils.isTsDeviceMetadataEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
     }
 }

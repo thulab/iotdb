@@ -65,7 +65,8 @@ public class Utils {
      * @param objectA
      * @param objectB
      * @param name
-     * @return true - A and B both are not NULL, so we need to check their members
+     * @return false - A and B both are NULL, so we do not need to check whether their members are equal
+     *         true - A and B both are not NULL, so we need to check their members
      */
     public static boolean isTwoObjectsNotNULL(Object objectA, Object objectB, String name) {
         if ((objectA == null) && (objectB == null))
@@ -101,7 +102,7 @@ public class Utils {
         }
     }
 
-    public static void isDeviceEqual(TsDeviceMetadata metadata1, TsDeviceMetadata metadata2) {
+    public static void isTsDeviceMetadataEqual(TsDeviceMetadata metadata1, TsDeviceMetadata metadata2) {
         if (Utils.isTwoObjectsNotNULL(metadata1, metadata2, "DeviceMetaData")) {
             assertEquals(metadata1.getStartTime(), metadata2.getStartTime());
             assertEquals(metadata1.getEndTime(), metadata2.getEndTime());
@@ -150,12 +151,9 @@ public class Utils {
                 Map<String, TsDeviceMetadataIndex> deviceMetadataMap1 = metadata1.getDeviceMap();
                 Map<String, TsDeviceMetadataIndex> deviceMetadataMap2 = metadata2.getDeviceMap();
                 assertEquals(deviceMetadataMap1.size(), deviceMetadataMap2.size());
-                Iterator<String> iterator = deviceMetadataMap1.keySet().iterator();
 
-                while (iterator.hasNext()) {
-                    String key = iterator.next();
-                    assertTrue(deviceMetadataMap2.containsKey(key));
-                    // Utils.isDeviceEqual(deviceMetadataMap1.get(key), deviceMetadataMap2.get(key));
+                for (String key : deviceMetadataMap1.keySet()) {
+                    Utils.isTsDeviceMetadataIndexEqual(deviceMetadataMap1.get(key), deviceMetadataMap2.get(key));
                 }
             }
 

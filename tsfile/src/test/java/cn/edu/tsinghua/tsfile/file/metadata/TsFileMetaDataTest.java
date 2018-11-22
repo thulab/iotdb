@@ -15,10 +15,6 @@ public class TsFileMetaDataTest {
     final String PATH = "target/output1.tsfile";
     public static final int VERSION = 123;
     public static final String CREATED_BY = "tsf";
-    public static final long FIRST_TSMETADATA_OFFSET = 111111111L;
-    public static final long LAST_TSMETADATA_OFFSET = 222222222L;
-    public static final long FIRST_DOMETADATA_OFFSET = 333333333L;
-    public static final long LAST_DOMETADATA_OFFSET = 444444444L;
 
     @Before
     public void setUp() {
