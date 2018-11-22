@@ -16,17 +16,17 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 
 /**
  * a implementation of IChunkGroupWriter
- *
- * @author kangrong
- * @see IChunkGroupWriter IChunkGroupWriter
  */
 public class ChunkGroupWriterImpl implements IChunkGroupWriter {
+
     private static Logger LOG = LoggerFactory.getLogger(ChunkGroupWriterImpl.class);
+
     private final String deviceId;
+
     /**
      * <measurementID, ChunkWriterImpl>
      */
-    private Map<String, IChunkWriter> dataSeriesWriters = new HashMap<String, IChunkWriter>();
+    private Map<String, IChunkWriter> chunkWriters = new HashMap<>();
 
     public ChunkGroupWriterImpl(String deviceId) {
         this.deviceId = deviceId;
@@ -34,10 +34,10 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
 
     @Override
     public void addSeriesWriter(MeasurementSchema schema, int pageSizeThreshold) {
-        if (!dataSeriesWriters.containsKey(schema.getMeasurementId())) {
+        if (!chunkWriters.containsKey(schema.getMeasurementId())) {
             ChunkBuffer chunkBuffer = new ChunkBuffer(schema);
             IChunkWriter seriesWriter = new ChunkWriterImpl(schema, chunkBuffer, pageSizeThreshold);
-            this.dataSeriesWriters.put(schema.getMeasurementId(), seriesWriter);
+            this.chunkWriters.put(schema.getMeasurementId(), seriesWriter);
         }
     }
 
@@ -45,25 +45,25 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
     public void write(long time, List<DataPoint> data) throws WriteProcessException, IOException {
         for (DataPoint point : data) {
             String measurementId = point.getMeasurementId();
-            if (!dataSeriesWriters.containsKey(measurementId))
+            if (!chunkWriters.containsKey(measurementId))
                 throw new NoMeasurementException("time " + time + ", measurement id " + measurementId + " not found!");
-            point.writeTo(time, dataSeriesWriters.get(measurementId));
+            point.writeTo(time, chunkWriters.get(measurementId));
 
         }
     }
 
     @Override
-    public void flushToFileWriter(TsFileIOWriter deltaFileWriter) throws IOException {
+    public void flushToFileWriter(TsFileIOWriter fileWriter) throws IOException {
         LOG.debug("start flush device id:{}", deviceId);
-        for (IChunkWriter seriesWriter : dataSeriesWriters.values()) {
-            seriesWriter.writeToFileWriter(deltaFileWriter);
+        for (IChunkWriter seriesWriter : chunkWriters.values()) {
+            seriesWriter.writeToFileWriter(fileWriter);
         }
     }
 
     @Override
     public long updateMaxGroupMemSize() {
         long bufferSize = 0;
-        for (IChunkWriter seriesWriter : dataSeriesWriters.values())
+        for (IChunkWriter seriesWriter : chunkWriters.values())
             bufferSize += seriesWriter.estimateMaxSeriesMemSize();
         return bufferSize;
     }
@@ -72,7 +72,7 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
     @Override
     public long getCurrentChunkGroupSize() {
         long size = 0;
-        for (IChunkWriter writer : dataSeriesWriters.values()) {
+        for (IChunkWriter writer : chunkWriters.values()) {
             size += writer.getCurrentChunkSize();
         }
         return size;
@@ -80,13 +80,13 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
 
     @Override
     public void preFlush() {
-        for (IChunkWriter writer : dataSeriesWriters.values()) {
+        for (IChunkWriter writer : chunkWriters.values()) {
             writer.preFlush();
         }
     }
 
     @Override
     public int getSeriesNumber() {
-        return dataSeriesWriters.size();
+        return chunkWriters.size();
     }
 }

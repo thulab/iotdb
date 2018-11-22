@@ -38,7 +38,7 @@ public class TsFileWriter {
     /**
      * IO writer of this TsFile
      **/
-    private final TsFileIOWriter deltaFileWriter;
+    private final TsFileIOWriter fileWriter;
 
     /**
      * schema of this TsFile
@@ -106,12 +106,12 @@ public class TsFileWriter {
     /**
      * init this TsFileWriter
      *
-     * @param tsfileWriter the io writer of this TsFile
+     * @param fileWriter the io writer of this TsFile
      * @param schema       the schema of this TsFile
      * @param conf         the configuration of this TsFile
      */
-    protected TsFileWriter(TsFileIOWriter tsfileWriter, FileSchema schema, TSFileConfig conf) {
-        this.deltaFileWriter = tsfileWriter;
+    protected TsFileWriter(TsFileIOWriter fileWriter, FileSchema schema, TSFileConfig conf) {
+        this.fileWriter = fileWriter;
         this.schema = schema;
         this.pageSize = conf.pageSizeInByte;
         this.chunkGroupSizeThreshold = conf.groupSizeInByte;
@@ -245,25 +245,25 @@ public class TsFileWriter {
      */
     protected boolean flushAllChunkGroups() throws IOException {
         if (recordCount > 0) {
-            long totalMemStart = deltaFileWriter.getPos();
+            long totalMemStart = fileWriter.getPos();
             //make sure all the pages have been compressed into buffers, so that we can get correct groupWriter.getCurrentChunkGroupSize().
             for (IChunkGroupWriter writer : groupWriters.values()) {
                 writer.preFlush();
             }
             for (String deviceId : groupWriters.keySet()) {
-                long memSize = deltaFileWriter.getPos();
+                long memSize = fileWriter.getPos();
                 IChunkGroupWriter groupWriter = groupWriters.get(deviceId);
                 long ChunkGroupSize = groupWriter.getCurrentChunkGroupSize();
-                ChunkGroupFooter chunkGroupFooter = deltaFileWriter.startFlushChunkGroup(deviceId, ChunkGroupSize, groupWriter.getSeriesNumber());
-                groupWriter.flushToFileWriter(deltaFileWriter);
+                ChunkGroupFooter chunkGroupFooter = fileWriter.startFlushChunkGroup(deviceId, ChunkGroupSize, groupWriter.getSeriesNumber());
+                groupWriter.flushToFileWriter(fileWriter);
 
-                if (deltaFileWriter.getPos() - memSize != ChunkGroupSize)
+                if (fileWriter.getPos() - memSize != ChunkGroupSize)
                     throw new IOException(String.format("Flushed data size is inconsistent with computation! Estimated: %d, Actuall: %d",
-                            ChunkGroupSize, deltaFileWriter.getPos() - memSize));
+                            ChunkGroupSize, fileWriter.getPos() - memSize));
 
-                deltaFileWriter.endChunkGroup(deltaFileWriter.getPos() - memSize, chunkGroupFooter);
+                fileWriter.endChunkGroup(fileWriter.getPos() - memSize, chunkGroupFooter);
             }
-            long actualTotalChunkGroupSize = deltaFileWriter.getPos() - totalMemStart;
+            long actualTotalChunkGroupSize = fileWriter.getPos() - totalMemStart;
             LOG.info("total chunk group size:{}", actualTotalChunkGroupSize);
             LOG.info("write chunk group end");
             recordCount = 0;
@@ -286,6 +286,6 @@ public class TsFileWriter {
     public void close() throws IOException {
         LOG.info("start close file");
         flushAllChunkGroups();
-        deltaFileWriter.endFile(this.schema);
+        fileWriter.endFile(this.schema);
     }
 }
