@@ -7,6 +7,7 @@ import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 
@@ -14,36 +15,31 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-/**
- * @author Jinrui Zhang
- */
+
 public abstract class SeriesChunkReader implements SeriesReader {
 
-    private ByteBuffer seriesChunkByteBuffer;
+    ChunkHeader chunkHeader;
+    private ByteBuffer chunkDataBuffer;
 
     private boolean pageReaderInitialized;
     private PageDataReader pageDataReader;
-    private UnCompressor unCompressor;
+
     boolean hasCachedTimeValuePair;
     TimeValuePair cachedTimeValuePair;
-	private long maxTombstoneTime;
 
-    ChunkHeader chunkHeader;
-    Decoder valueDecoder;
-    //TODO: How to get defaultTimeDecoder by TSConfig rather than hard code here ?
-    Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
+    private UnCompressor unCompressor;
+    private Decoder valueDecoder;
+    private Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
             , TSDataType.INT64);
 
-    public SeriesChunkReader(ByteBuffer seriesChunkByteBuffer) {
-        this.seriesChunkByteBuffer = seriesChunkByteBuffer;
+    private long maxTombstoneTime;
+
+    public SeriesChunkReader(Chunk chunk) {
+        this.chunkDataBuffer = chunk.getData();
         this.pageReaderInitialized = false;
-        try {
-            chunkHeader=ChunkHeader.deserializeFrom(seriesChunkByteBuffer, false);
-            this.unCompressor = UnCompressor.getUnCompressor(chunkHeader.getCompressionType());
-            valueDecoder = Decoder.getDecoderByType(chunkHeader.getEncodingType(), chunkHeader.getDataType());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        chunkHeader = chunk.getHeader();
+        this.unCompressor = UnCompressor.getUnCompressor(chunkHeader.getCompressionType());
+        valueDecoder = Decoder.getDecoderByType(chunkHeader.getEncodingType(), chunkHeader.getDataType());
     }
 
     @Override
@@ -92,12 +88,13 @@ public abstract class SeriesChunkReader implements SeriesReader {
             hasCachedTimeValuePair = false;
             return cachedTimeValuePair;
         }
-        throw new IOException("No more timeValuePair in current MemChunk");
+        throw new IOException("No more timeValuePair in current Chunk");
     }
 
     /**
      * Read page one by one from InputStream and check the page header whether this page satisfies the filter.
      * Skip the unsatisfied pages and construct PageDataReader for the first page satisfied.
+     *
      * @return whether there exists a satisfied page
      * @throws IOException exception when reading page
      */
@@ -105,8 +102,8 @@ public abstract class SeriesChunkReader implements SeriesReader {
 
         boolean gotNextPageReader = false;
 
-        while (seriesChunkByteBuffer.remaining() > 0 && !gotNextPageReader) {
-            // deserialize a PageHeader from seriesChunkByteBuffer
+        while (chunkDataBuffer.remaining() > 0 && !gotNextPageReader) {
+            // deserialize a PageHeader from chunkDataBuffer
             PageHeader pageHeader = getNextPageHeader();
 
             // if the current page satisfies the filter
@@ -120,8 +117,8 @@ public abstract class SeriesChunkReader implements SeriesReader {
         return gotNextPageReader;
     }
 
-    private void skipBytesInStreamByLength(long length) throws IOException {
-        seriesChunkByteBuffer.position(seriesChunkByteBuffer.position()+(int)length);
+    private void skipBytesInStreamByLength(long length) {
+        chunkDataBuffer.position(chunkDataBuffer.position() + (int) length);
     }
 
     public abstract boolean pageSatisfied(PageHeader pageHeader);
@@ -134,18 +131,18 @@ public abstract class SeriesChunkReader implements SeriesReader {
         byte[] compressedPageBody = new byte[compressedPageBodyLength];
 
         // already in memory
-        if(compressedPageBodyLength > seriesChunkByteBuffer.remaining())
+        if (compressedPageBodyLength > chunkDataBuffer.remaining())
             throw new IOException("unexpected byte read length when read compressedPageBody. Expected:"
-                    + Arrays.toString(compressedPageBody) + ". Actual:" + seriesChunkByteBuffer.remaining());
+                    + Arrays.toString(compressedPageBody) + ". Actual:" + chunkDataBuffer.remaining());
 
-        seriesChunkByteBuffer.get(compressedPageBody, 0, compressedPageBodyLength);
+        chunkDataBuffer.get(compressedPageBody, 0, compressedPageBodyLength);
 
         return new PageDataReader(ByteBuffer.wrap(unCompressor.uncompress(compressedPageBody)),
                 chunkHeader.getDataType(), valueDecoder, timeDecoder);
     }
 
     private PageHeader getNextPageHeader() throws IOException {
-        return PageHeader.deserializeFrom(seriesChunkByteBuffer, chunkHeader.getDataType());
+        return PageHeader.deserializeFrom(chunkDataBuffer, chunkHeader.getDataType());
     }
 
     @Override

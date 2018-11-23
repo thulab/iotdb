@@ -21,8 +21,7 @@ public class SeriesReaderFromSingleFileWithFilterImpl extends SeriesReaderFromSi
     private Filter<?> filter;
     private DigestFilterVisitor digestFilterVisitor;
 
-    public SeriesReaderFromSingleFileWithFilterImpl(ChunkLoader chunkLoader
-            , List<ChunkMetaData> chunkMetaDataList, Filter<?> filter) {
+    public SeriesReaderFromSingleFileWithFilterImpl(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList, Filter<?> filter) {
         super(chunkLoader, chunkMetaDataList);
         this.filter = filter;
         this.digestFilterVisitor = new DigestFilterVisitor();
@@ -43,9 +42,8 @@ public class SeriesReaderFromSingleFileWithFilterImpl extends SeriesReaderFromSi
     }
 
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-        Chunk memChunk = chunkLoader.getMemChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderWithFilterImpl(memChunk.getChunkBodyStream(),
-                filter);
+        Chunk chunk = chunkLoader.getChunk(chunkMetaData);
+        this.seriesChunkReader = new SeriesChunkReaderWithFilterImpl(chunk, filter);
         this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 

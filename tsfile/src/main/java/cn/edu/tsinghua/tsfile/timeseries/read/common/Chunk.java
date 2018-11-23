@@ -1,13 +1,28 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.common;
 
+import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 
 import java.nio.ByteBuffer;
 
+/**
+ * used in query
+ */
+public class Chunk {
 
-public interface Chunk {
+    private ChunkHeader chunkHeader;
+    private ByteBuffer chunkData;
 
-    ChunkMetaData getChunkMetaData();
+    public Chunk(ChunkHeader header, ByteBuffer buffer) {
+        this.chunkHeader = header;
+        this.chunkData = buffer;
+    }
 
-    ByteBuffer getChunkBodyStream();
+    public ChunkHeader getHeader() {
+        return chunkHeader;
+    }
+
+    public ByteBuffer getData() {
+        return chunkData;
+    }
 }

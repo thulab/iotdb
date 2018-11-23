@@ -1,17 +1,16 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 import java.nio.ByteBuffer;
 
-/**
- * Created by zhangjinrui on 2017/12/24.
- */
+
 public class SeriesChunkReaderWithoutFilterImpl extends SeriesChunkReader {
 
-    public SeriesChunkReaderWithoutFilterImpl(ByteBuffer seriesChunkInputStream) {
-        super(seriesChunkInputStream);
+    public SeriesChunkReaderWithoutFilterImpl(Chunk chunk) {
+        super(chunk);
     }
 
     @Override

@@ -3,9 +3,9 @@ package cn.edu.tsinghua.tsfile.timeseries.read.controller;
 
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.readV1.TsFileGeneratorForTest;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.MemChunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
@@ -16,9 +16,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/25.
- */
 
 public class ChunkLoaderTest {
 
@@ -44,9 +41,9 @@ public class ChunkLoaderTest {
 
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         for (ChunkMetaData chunkMetaData : chunkMetaDataList) {
-            MemChunk memSeriesChunk = seriesChunkLoader.getMemChunk(chunkMetaData);
-            ChunkHeader chunkHeader = ChunkHeader.deserializeFrom(memSeriesChunk.getChunkBodyStream(), false);
-            Assert.assertEquals(chunkHeader.getDataSize(), memSeriesChunk.getChunkBodyStream().remaining());
+            Chunk chunk = seriesChunkLoader.getChunk(chunkMetaData);
+            ChunkHeader chunkHeader = chunk.getHeader();
+            Assert.assertEquals(chunkHeader.getDataSize(), chunk.getData().remaining());
         }
     }
 }

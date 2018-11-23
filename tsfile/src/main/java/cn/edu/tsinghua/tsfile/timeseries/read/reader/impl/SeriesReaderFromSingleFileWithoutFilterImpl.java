@@ -28,8 +28,8 @@ public class SeriesReaderFromSingleFileWithoutFilterImpl extends SeriesReaderFro
     }
 
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-        Chunk memChunk = chunkLoader.getMemChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderWithoutFilterImpl(memChunk.getChunkBodyStream());
+        Chunk chunk = chunkLoader.getChunk(chunkMetaData);
+        this.seriesChunkReader = new SeriesChunkReaderWithoutFilterImpl(chunk);
  		this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 

@@ -1,20 +1,16 @@
 package cn.edu.tsinghua.tsfile.timeseries.read;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.compress.UnCompressor;
-import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
-import cn.edu.tsinghua.tsfile.file.MetaMarker;
 import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageDataReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -143,18 +139,13 @@ public class TsFileSequenceReader {
 
     /**
      * notice, this function will modify channel's position.
-     *
-     * @param position
-     * @return
-     * @throws IOException
      */
-    public ByteBuffer readChunkAndHeader(long position) throws IOException {
-        ChunkHeader header = readChunkHeader(position);
-        ByteBuffer buffer = ByteBuffer.allocate(header.getSerializedSize() + header.getDataSize());
-        header.serializeTo(buffer);
+    public Chunk readMemChunk(ChunkMetaData metaData) throws IOException {
+        ChunkHeader header = readChunkHeader(metaData.getOffsetOfChunkHeader());
+        ByteBuffer buffer = ByteBuffer.allocate(header.getDataSize());
         ReadWriteIOUtils.readAsPossible(channel, buffer);
         buffer.flip();
-        return buffer;
+        return new Chunk(header, buffer);
     }
 
     /**
