@@ -10,3 +10,6 @@ coverage:
 
 ignore:
   - "*/interface/thrift/**/*.java"  # ignore thrift-gen folders and all its contents
+  - "grafana/**/*.java"
+  - "spark/**/*.java"
+  - "hadoop/**/*.java"
