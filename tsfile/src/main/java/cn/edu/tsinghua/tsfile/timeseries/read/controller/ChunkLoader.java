@@ -11,5 +11,5 @@ public interface ChunkLoader {
     /**
      * read all content of any chunk
      */
-    Chunk getMemChunk(ChunkMetaData chunkMetaData) throws IOException;
+    Chunk getChunk(ChunkMetaData chunkMetaData) throws IOException;
 }

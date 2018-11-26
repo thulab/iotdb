@@ -6,21 +6,19 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.TimeValuePairFilterVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.impl.DigestFilterVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.impl.TimeValuePairFilterVisitorImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 import java.nio.ByteBuffer;
 
-/**
- * Created by zhangjinrui on 2017/12/24.
- */
 public class SeriesChunkReaderWithFilterImpl extends SeriesChunkReader {
 
     private Filter<?> filter;
     private DigestFilterVisitor digestFilterVisitor;
     private TimeValuePairFilterVisitor<Boolean> timeValuePairFilterVisitor;
 
-    public SeriesChunkReaderWithFilterImpl(ByteBuffer seriesChunkByteBuffer, Filter<?> filter) {
-        super(seriesChunkByteBuffer);
+    public SeriesChunkReaderWithFilterImpl(Chunk chunk, Filter<?> filter) {
+        super(chunk);
         this.filter = filter;
         this.timeValuePairFilterVisitor = new TimeValuePairFilterVisitorImpl();
         this.digestFilterVisitor = new DigestFilterVisitor();

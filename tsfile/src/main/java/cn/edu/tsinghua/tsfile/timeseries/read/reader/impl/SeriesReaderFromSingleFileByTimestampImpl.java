@@ -117,8 +117,8 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
 
     @Override
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-        Chunk memChunk = chunkLoader.getMemChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderByTimestampImpl(memChunk.getChunkBodyStream());
+        Chunk chunk = chunkLoader.getChunk(chunkMetaData);
+        this.seriesChunkReader = new SeriesChunkReaderByTimestampImpl(chunk);
         this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 

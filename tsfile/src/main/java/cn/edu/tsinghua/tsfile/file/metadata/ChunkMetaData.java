@@ -22,7 +22,7 @@ public class ChunkMetaData {
      * Byte offset of the corresponding data in the file
      * Notice:  include the chunk header and marker
      */
-    private long fileOffsetOfCorrespondingData;
+    private long offsetOfChunkHeader;
 
     private long numOfPoints;
 
@@ -43,7 +43,7 @@ public class ChunkMetaData {
 
     public int getSerializedSize(){
         return (Integer.BYTES + measurementUID.length()) +  // measurementUID
-                4 * Long.BYTES  + //4 long: fileOffsetOfCorrespondingData, numOfPoints, startTime, endTime
+                4 * Long.BYTES  + //4 long: offsetOfChunkHeader, numOfPoints, startTime, endTime
                 TSDataType.getSerializedSize() +  // TSDataType
                 (valuesStatistics==null? TsDigest.getNullDigestSize():valuesStatistics.getSerializedSize());
 
@@ -55,7 +55,7 @@ public class ChunkMetaData {
     public ChunkMetaData(String measurementUID, TSDataType tsDataType, long fileOffset, long startTime, long endTime) {
         this.measurementUID = measurementUID;
         this.tsDataType = tsDataType;
-        this.fileOffsetOfCorrespondingData = fileOffset;
+        this.offsetOfChunkHeader = fileOffset;
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -74,10 +74,10 @@ public class ChunkMetaData {
     }
 
     /**
-     * @return Byte offset of the corresponding data in the file (not include the chunk header)
+     * @return Byte offset of header of this chunk (includes the marker)
      */
-    public long getFileOffsetOfCorrespondingData() {
-        return fileOffsetOfCorrespondingData;
+    public long getOffsetOfChunkHeader() {
+        return offsetOfChunkHeader;
     }
 
     public String getMeasurementUID() {
@@ -120,7 +120,7 @@ public class ChunkMetaData {
         int byteLen = 0;
 
         byteLen += ReadWriteIOUtils.write(measurementUID, outputStream);
-        byteLen += ReadWriteIOUtils.write(fileOffsetOfCorrespondingData, outputStream);
+        byteLen += ReadWriteIOUtils.write(offsetOfChunkHeader, outputStream);
         byteLen += ReadWriteIOUtils.write(numOfPoints, outputStream);
         byteLen += ReadWriteIOUtils.write(startTime, outputStream);
         byteLen += ReadWriteIOUtils.write(endTime, outputStream);
@@ -137,7 +137,7 @@ public class ChunkMetaData {
         int byteLen = 0;
 
         byteLen += ReadWriteIOUtils.write(measurementUID, buffer);
-        byteLen += ReadWriteIOUtils.write(fileOffsetOfCorrespondingData, buffer);
+        byteLen += ReadWriteIOUtils.write(offsetOfChunkHeader, buffer);
         byteLen += ReadWriteIOUtils.write(numOfPoints, buffer);
         byteLen += ReadWriteIOUtils.write(startTime, buffer);
         byteLen += ReadWriteIOUtils.write(endTime, buffer);
@@ -155,7 +155,7 @@ public class ChunkMetaData {
 
         chunkMetaData.measurementUID = ReadWriteIOUtils.readString(inputStream);
 
-        chunkMetaData.fileOffsetOfCorrespondingData = ReadWriteIOUtils.readLong(inputStream);
+        chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(inputStream);
 
 
         chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(inputStream);
@@ -174,7 +174,7 @@ public class ChunkMetaData {
         ChunkMetaData chunkMetaData = new ChunkMetaData();
 
         chunkMetaData.measurementUID = ReadWriteIOUtils.readString(buffer);
-        chunkMetaData.fileOffsetOfCorrespondingData = ReadWriteIOUtils.readLong(buffer);
+        chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(buffer);
         chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(buffer);
         chunkMetaData.startTime = ReadWriteIOUtils.readLong(buffer);
         chunkMetaData.endTime = ReadWriteIOUtils.readLong(buffer);

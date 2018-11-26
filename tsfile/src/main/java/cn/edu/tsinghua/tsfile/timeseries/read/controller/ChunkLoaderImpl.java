@@ -3,36 +3,37 @@ package cn.edu.tsinghua.tsfile.timeseries.read.controller;
 import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.MemChunk;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.utils.cache.LRUCache;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
- * Read one Chunk and cache it
+ * Read one Chunk and cache it into a LRUCache
  */
 public class ChunkLoaderImpl implements ChunkLoader {
-    private static final int DEFAULT_MEMSERISCHUNK_CACHE_SIZE = 100;
-    private TsFileSequenceReader fileSequenceReader;
-    private LRUCache<ChunkMetaData, ByteBuffer> chunkBytesCache;
+    private static final int DEFAULT_CHUNK_CACHE_SIZE = 100000;
+    private TsFileSequenceReader reader;
+    private LRUCache<ChunkMetaData, Chunk> chunkCache;
 
     public ChunkLoaderImpl(TsFileSequenceReader fileSequenceReader) {
-        this(fileSequenceReader, DEFAULT_MEMSERISCHUNK_CACHE_SIZE);
+        this(fileSequenceReader, DEFAULT_CHUNK_CACHE_SIZE);
     }
 
     public ChunkLoaderImpl(TsFileSequenceReader fileSequenceReader, int cacheSize) {
-        this.fileSequenceReader = fileSequenceReader;
-        chunkBytesCache = new LRUCache<ChunkMetaData, ByteBuffer>(cacheSize) {
+
+        this.reader = fileSequenceReader;
+
+        chunkCache = new LRUCache<ChunkMetaData, Chunk>(cacheSize) {
             @Override
-            public void beforeRemove(ByteBuffer object) {
+            public void beforeRemove(Chunk object) {
                 return;
             }
 
             @Override
-            public ByteBuffer loadObjectByKey(ChunkMetaData key) throws CacheException {
+            public Chunk loadObjectByKey(ChunkMetaData metaData) throws CacheException {
                 try {
-                    return load(key);
+                    return reader.readMemChunk(metaData);
                 } catch (IOException e) {
                     throw new CacheException(e);
                 }
@@ -40,16 +41,13 @@ public class ChunkLoaderImpl implements ChunkLoader {
         };
     }
 
-    public MemChunk getMemChunk(ChunkMetaData chunkMetaData) throws IOException {
+    public Chunk getChunk(ChunkMetaData chunkMetaData) throws IOException {
         try {
-            chunkBytesCache.get(chunkMetaData).position(0);
-            return new MemChunk(chunkMetaData, chunkBytesCache.get(chunkMetaData));
+            chunkCache.get(chunkMetaData).getData().position(0);
+            return chunkCache.get(chunkMetaData);
         } catch (CacheException e) {
             throw new IOException(e);
         }
     }
 
-    private ByteBuffer load(ChunkMetaData chunkMetaData) throws IOException {
-        return fileSequenceReader.readChunkAndHeader(chunkMetaData.getFileOffsetOfCorrespondingData());
-    }
 }

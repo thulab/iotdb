@@ -4,7 +4,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -92,7 +91,7 @@ public class Utils {
                     "sensorUID")) {
                 assertTrue(metadata1.getMeasurementUID().equals(metadata2.getMeasurementUID()));
             }
-            assertTrue(metadata1.getFileOffsetOfCorrespondingData() == metadata2.getFileOffsetOfCorrespondingData());
+            assertTrue(metadata1.getOffsetOfChunkHeader() == metadata2.getOffsetOfChunkHeader());
             assertTrue(metadata1.getNumOfPoints() == metadata2.getNumOfPoints());
             assertTrue(metadata1.getStartTime() == metadata2.getStartTime());
             assertTrue(metadata1.getEndTime() == metadata2.getEndTime());
