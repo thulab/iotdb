@@ -229,6 +229,12 @@ struct TSSetTimeZoneResp {
     1: required TS_Status status
 }
 
+struct ServerProperties {
+	1: required string version;
+	2: required string iotdbHome;
+	3: required list<string> aggregationTimeConstant;
+}
+
 service TSIService {
 	TSOpenSessionResp openSession(1:TSOpenSessionReq req);
 
@@ -253,4 +259,6 @@ service TSIService {
 	TSGetTimeZoneResp getTimeZone();
 
 	TSSetTimeZoneResp setTimeZone(1:TSSetTimeZoneReq req);
+	
+	ServerProperties getProperties();
 	}

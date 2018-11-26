@@ -25,8 +25,19 @@
 	<dependencies>
 		<dependency>
 			<groupId>cn.edu.tsinghua</groupId>
+			<artifactId>service-rpc</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.edu.tsinghua</groupId>
+			<artifactId>tsfile</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.edu.tsinghua</groupId>
 			<artifactId>iotdb-jdbc</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>cn.edu.fudan.dsm</groupId>

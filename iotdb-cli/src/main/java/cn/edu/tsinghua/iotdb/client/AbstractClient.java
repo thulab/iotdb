@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.tool.ImportCsv;
-
+import cn.edu.tsinghua.service.rpc.thrift.ServerProperties;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
 
 import org.apache.commons.cli.CommandLine;
@@ -92,6 +92,8 @@ public abstract class AbstractClient {
 	protected static boolean printToConsole = true;
 
 	protected static Set<String> keywordSet = new HashSet<>();
+	
+	protected static ServerProperties properties = null;
 
 	protected static void init(){
 		keywordSet.add("-"+HOST_ARGS);
@@ -101,9 +103,6 @@ public abstract class AbstractClient {
 		keywordSet.add("-"+USERNAME_ARGS);
 		keywordSet.add("-"+ISO8601_ARGS);
 		keywordSet.add("-"+MAX_PRINT_ROW_COUNT_ARGS);
-
-		AGGREGRATE_TIME_LIST.add(AggregationConstant.MAX_TIME);
-		AGGREGRATE_TIME_LIST.add(AggregationConstant.MIN_TIME);
 	}
 
 	public static void output(ResultSet res, boolean printToConsole, String statement, DateTimeZone timeZone) throws SQLException {
@@ -355,14 +354,14 @@ public abstract class AbstractClient {
 		return args;
 	}
 
-	protected static void displayLogo(){
+	protected static void displayLogo(String version){
 		System.out.println(
 				" _____       _________  ______   ______    \n" +
 				"|_   _|     |  _   _  ||_   _ `.|_   _ \\   \n" +
 				"  | |   .--.|_/ | | \\_|  | | `. \\ | |_) |  \n" +
 				"  | | / .'`\\ \\  | |      | |  | | |  __'.  \n" +
 				" _| |_| \\__. | _| |_    _| |_.' /_| |__) | \n" +
-				"|_____|'.__.' |_____|  |______.'|_______/  version "+TsFileDBConstant.VERSION+"\n" +
+				"|_____|'.__.' |_____|  |______.'|_______/  version "+version+"\n" +
 				"                                           \n");
 	}
 

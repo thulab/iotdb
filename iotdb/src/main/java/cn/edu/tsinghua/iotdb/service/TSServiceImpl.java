@@ -24,6 +24,8 @@ import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
+import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
@@ -751,5 +753,16 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		}
 		TSSetTimeZoneResp resp = new TSSetTimeZoneResp(ts_status);
 		return resp;
+	}
+
+	@Override
+	public ServerProperties getProperties() throws TException {
+		ServerProperties properties = new ServerProperties();
+		properties.setVersion(TsFileDBConstant.VERSION);
+		properties.setIotdbHome(TsFileDBConstant.IOTDB_HOME);
+		properties.setAggregationTimeConstant(new ArrayList<>());
+		properties.getAggregationTimeConstant().add(AggregationConstant.MAX_TIME);
+		properties.getAggregationTimeConstant().add(AggregationConstant.MIN_TIME);
+		return properties;
 	}
 }
