@@ -94,12 +94,6 @@ public class AbstractClientTest {
 	}
 //
 //	@Test
-//	public void testSetMaxDisplayNumber() {
-//		AbstractClient.setMaxDisplayNumber("10");
-//		
-//	}
-//
-//	@Test
 //	public void testPrintBlockLine() {
 //		fail("Not yet implemented");
 //	}
