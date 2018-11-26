@@ -64,16 +64,16 @@ public abstract class AbstractClient {
 
 	protected static final String IOTDB_CLI_PREFIX = "IoTDB";
 	protected static final String SCRIPT_HINT = "./start-client.sh(start-client.bat if Windows)";
-	private static final String QUIT_COMMAND = "quit";
-	private static final String EXIT_COMMAND = "exit";
-	private static final String SHOW_METADATA_COMMAND = "show timeseries";
+	protected static final String QUIT_COMMAND = "quit";
+	protected static final String EXIT_COMMAND = "exit";
+	protected static final String SHOW_METADATA_COMMAND = "show timeseries";
 	protected static final int MAX_HELP_CONSOLE_WIDTH = 88;
 
 	protected static final String TIMESTAMP_STR = "Time";
 	protected static final int ISO_DATETIME_LEN = 23;
 	protected static int maxTimeLength = ISO_DATETIME_LEN;
 	protected static int maxValueLength = 15;
-    	protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// control the width of columns for 'show timeseries <path>' and 'show storage group'
+    protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// control the width of columns for 'show timeseries <path>' and 'show storage group'
 	protected static String formatTime = "%" + maxTimeLength + "s|";
 	protected static String formatValue = "%" + maxValueLength + "s|";
 
@@ -346,7 +346,7 @@ public abstract class AbstractClient {
 				break;
 			}
 		}
-		if(index > 0){
+		if(index >= 0){
 			if((index+1 >= args.length) || (index+1 < args.length && keywordSet.contains(args[index+1]))){
 				return ArrayUtils.remove(args, index);
 			}
