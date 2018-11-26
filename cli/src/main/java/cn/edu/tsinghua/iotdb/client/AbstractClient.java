@@ -1,13 +1,11 @@
 package cn.edu.tsinghua.iotdb.client;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.tool.ImportCsv;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
-import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
