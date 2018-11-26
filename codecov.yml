@@ -1,2 +1,12 @@
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    project: yes
+    patch: no
+    changes: no
+
 ignore:
   - "*/interface/thrift/**/*.java"  # ignore thrift-gen folders and all its contents
