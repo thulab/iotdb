@@ -1,2 +1,2 @@
 ignore:
-  - "**/interface/thrift/**/*.java"  # ignore thrift-gen folders and all its contents
+  - "*/interface/thrift/**/*.java"  # ignore thrift-gen folders and all its contents
