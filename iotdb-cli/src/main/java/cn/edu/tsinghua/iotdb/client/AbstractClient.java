@@ -250,7 +250,7 @@ public abstract class AbstractClient {
 				System.out.println("Use -help for more information");
 				throw new ArgsErrorException(msg);
 			} else if (defaultValue == null){
-				String msg = String.format("%s: Required values for option '%s' is null", IOTDB_CLI_PREFIX, name);
+				String msg = String.format("%s: Required values for option '%s' is null.", IOTDB_CLI_PREFIX, name);
 				throw new ArgsErrorException(msg);
 			} else {
 				return defaultValue;
@@ -283,13 +283,20 @@ public abstract class AbstractClient {
 	}
 
 	private static void setFetchSize(String fetchSizeString){
-		fetchSize = Integer.parseInt(fetchSizeString.trim());
+		long tmp = Long.parseLong(fetchSizeString.trim());
+		if(tmp > Integer.MAX_VALUE || tmp < 0) {
+			fetchSize = Integer.MAX_VALUE;
+		} else {
+			fetchSize = Integer.parseInt(fetchSizeString.trim());
+		}
 	}
 
 	protected static void setMaxDisplayNumber(String maxDisplayNum){
-		maxPrintRowCount = Integer.parseInt(maxDisplayNum.trim());
-		if (maxPrintRowCount < 0) {
+		long tmp = Long.parseLong(maxDisplayNum.trim());
+		if(tmp > Integer.MAX_VALUE || tmp < 0) {
 			maxPrintRowCount = Integer.MAX_VALUE;
+		} else {
+			maxPrintRowCount = Integer.parseInt(maxDisplayNum.trim());
 		}
 	}
 
