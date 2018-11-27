@@ -36,12 +36,12 @@ public class BitmapDecoder extends Decoder {
     private int number;
 
     /**
-     * number of data left for reading in current intBuffer
+     * number of data left for reading in current buffer
      */
     private int currentCount;
 
     /**
-     * each time decoder receives a inputstream, decoder creates a intBuffer to save all encoded data
+     * each time decoder receives a inputstream, decoder creates a buffer to save all encoded data
      */
     private ByteBuffer byteCache;
 
@@ -72,7 +72,7 @@ public class BitmapDecoder extends Decoder {
                 readNext();
             } catch (IOException e) {
                 LOGGER.error(
-                        "tsfile-encoding BitmapDecoder: error occurs when reading next number. lenght {}, number {}, current number {}, result intBuffer {}",
+                        "tsfile-encoding BitmapDecoder: error occurs when reading next number. lenght {}, number {}, current number {}, result buffer {}",
                         length, number, currentCount, this.buffer, e);
             }
         }
@@ -98,7 +98,7 @@ public class BitmapDecoder extends Decoder {
     }
 
     /**
-     * Decode all data from intBuffer and save them
+     * Decode all data from buffer and save them
      */
     private void readNext() throws IOException {
         int len = (this.number + 7) / 8;

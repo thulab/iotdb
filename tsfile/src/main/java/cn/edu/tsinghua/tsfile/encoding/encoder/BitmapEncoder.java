@@ -91,7 +91,7 @@ public class BitmapEncoder extends Encoder {
             }
             ReadWriteForEncodingUtils.writeUnsignedVarInt(value, byteCache);
             byteCache.write(buffer);
-//      LOGGER.debug("tsfile-encoding BitmapEncoder: encode value {}, bitmap index {}", value, intBuffer);
+//      LOGGER.debug("tsfile-encoding BitmapEncoder: encode value {}, bitmap index {}", value, buffer);
         }
         ReadWriteForEncodingUtils.writeUnsignedVarInt(byteCache.size(), out);
         ReadWriteForEncodingUtils.writeUnsignedVarInt(len, out);

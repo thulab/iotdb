@@ -16,9 +16,9 @@ public abstract class GorillaDecoder extends Decoder {
     protected boolean flag;
     protected int leadingZeroNum, tailingZeroNum;
     protected boolean isEnd;
-    // 8-bit intBuffer of bits to write out
-    protected int intBuffer;
-    // number of bits remaining in intBuffer
+    // 8-bit buffer of bits to write out
+    protected int buffer;
+    // number of bits remaining in buffer
     protected int numberLeftInBuffer;
 
     protected boolean nextFlag1;
@@ -39,7 +39,7 @@ public abstract class GorillaDecoder extends Decoder {
     }
 
     protected boolean isEmpty() {
-        return intBuffer == EOF;
+        return buffer == EOF;
     }
 
     protected boolean readBit(ByteBuffer buffer) throws IOException {
@@ -49,20 +49,20 @@ public abstract class GorillaDecoder extends Decoder {
         if (isEmpty())
             throw new IOException("Reading from empty input stream");
         numberLeftInBuffer--;
-        return ((this.intBuffer >> numberLeftInBuffer) & 1) == 1;
+        return ((this.buffer >> numberLeftInBuffer) & 1) == 1;
     }
 
     /**
-     * read one byte and save in intBuffer
+     * read one byte and save in buffer
      *
      * @param buffer ByteBuffer to read
      */
     protected void fillBuffer(ByteBuffer buffer) {
         if(buffer.remaining() >= 1) {
-            this.intBuffer = ReadWriteIOUtils.read(buffer);
+            this.buffer = ReadWriteIOUtils.read(buffer);
             numberLeftInBuffer = 8;
         } else {
-            this.intBuffer = EOF;
+            this.buffer = EOF;
         }
 
     }

@@ -22,7 +22,7 @@ public class IntRleDecoder extends RleDecoder {
     private int currentValue;
 
     /**
-     * intBuffer to save all values in group using bit-packing
+     * buffer to save all values in group using bit-packing
      */
     private int[] currentBuffer;
 

@@ -84,14 +84,14 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
     protected T preValue;
 
     /**
-     * array to intBuffer values temporarily
+     * array to buffer values temporarily
      */
     protected T[] bufferedValues;
 
     protected boolean isBitWidthSaved;
 
     /**
-     * output stream to intBuffer {@code <bitwidth> <encoded-data>}
+     * output stream to buffer {@code <bitwidth> <encoded-data>}
      */
     protected ByteArrayOutputStream byteCache;
 
@@ -159,7 +159,7 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
     protected abstract void writeRleRun() throws IOException;
 
     /**
-     * Start a bit-packing run transform values to bytes and intBuffer them in cache
+     * Start a bit-packing run transform values to bytes and buffer them in cache
      */
     public void writeOrAppendBitPackedRun() {
         if (bitPackedGroupCount >= config.RLE_MAX_BIT_PACKED_NUM) {

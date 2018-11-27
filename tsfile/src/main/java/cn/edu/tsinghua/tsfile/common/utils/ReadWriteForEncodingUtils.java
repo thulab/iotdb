@@ -93,7 +93,7 @@ public class ReadWriteForEncodingUtils {
         int value = 0;
         int i = 0;
         int b=0;
-        while (in.hasRemaining() && ((b = in.get()) & 0x80) != 0) {
+        while (in.hasRemaining() && ((b = ReadWriteIOUtils.read(in)) & 0x80) != 0) {
             value |= (b & 0x7F) << i;
             i += 7;
         }
@@ -130,8 +130,8 @@ public class ReadWriteForEncodingUtils {
      *
      *
      * @param value value to write into stream
-     * @param buffer where to store the result. intBuffer.remaining() needs to >= 32.
-     *               Notice: (1) this function does not check intBuffer's remaining().
+     * @param buffer where to store the result. buffer.remaining() needs to >= 32.
+     *               Notice: (1) this function does not check buffer's remaining().
      *              (2) the position will be updated.
      * @return the number of bytes that the value consume.
      * @throws IOException exception in IO

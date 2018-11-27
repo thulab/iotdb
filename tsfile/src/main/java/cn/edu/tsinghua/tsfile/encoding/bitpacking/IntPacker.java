@@ -50,12 +50,12 @@ public class IntPacker {
         int leftBit = 0;
 
         while (valueIdx < NUM_OF_INTS + offset) {
-            // intBuffer is used for saving 32 bits as a part of result
+            // buffer is used for saving 32 bits as a part of result
             int buffer = 0;
-            // remaining size of bits in the 'intBuffer'
+            // remaining size of bits in the 'buffer'
             int leftSize = 32;
 
-            // encode the left bits of current Integer to 'intBuffer'
+            // encode the left bits of current Integer to 'buffer'
             if (leftBit > 0) {
                 buffer |= (values[valueIdx] << (32 - leftBit));
                 leftSize -= leftBit;
@@ -64,20 +64,20 @@ public class IntPacker {
             }
 
             while (leftSize >= width && valueIdx < NUM_OF_INTS + offset) {
-                //encode one Integer to the 'intBuffer'
+                //encode one Integer to the 'buffer'
                 buffer |= (values[valueIdx] << (leftSize - width));
                 leftSize -= width;
                 valueIdx++;
             }
-            // If the remaining space of the intBuffer can not save the bits for one Integer,
+            // If the remaining space of the buffer can not save the bits for one Integer,
             if (leftSize > 0 && valueIdx < NUM_OF_INTS + offset) {
-                // put the first 'leftSize' bits of the Integer into remaining space of the intBuffer
+                // put the first 'leftSize' bits of the Integer into remaining space of the buffer
                 buffer |= (values[valueIdx] >>> (width - leftSize));
                 leftBit = width - leftSize;
                 leftSize = 0;
             }
 
-            // put the intBuffer into the final result
+            // put the buffer into the final result
             for (int j = 0; j < 4; j++) {
                 buf[bufIdx] = (byte) ((buffer >>> ((3 - j) * 8)) & 0xFF);
                 bufIdx++;
@@ -98,12 +98,12 @@ public class IntPacker {
     public void unpack8Values(byte[] buf, int offset, int[] values) {
         int byteIdx = offset;
         long buffer = 0;
-        //total bits which have read from 'buf' to 'intBuffer'. i.e., number of available bits to be decoded.
+        //total bits which have read from 'buf' to 'buffer'. i.e., number of available bits to be decoded.
         int totalBits = 0;
         int valueIdx = 0;
 
         while (valueIdx < NUM_OF_INTS) {
-            //If current available bits are not enough to decode one Integer, then add next byte from buf to 'intBuffer'
+            //If current available bits are not enough to decode one Integer, then add next byte from buf to 'buffer'
             //until totalBits >= width
             while (totalBits < width) {
                 buffer = ((buffer << 8) | (buf[byteIdx] & 0xFF));
@@ -112,7 +112,7 @@ public class IntPacker {
             }
 
             //If current available bits are enough to decode one Integer, then decode one Integer one by one
-            //until left bits in 'intBuffer' is not enough to decode one Integer.
+            //until left bits in 'buffer' is not enough to decode one Integer.
             while (totalBits >= width && valueIdx < 8) {
                 values[valueIdx] = (int) (buffer >>> (totalBits - width));
                 valueIdx++;

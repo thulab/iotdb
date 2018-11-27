@@ -94,7 +94,7 @@ public class IntRleEncoder extends RleEncoder<Integer> {
         }
         packer.pack8Values(tmpBuffer, 0, bytes);
         // we'll not write bit-packing group to OutputStream immediately
-        // we intBuffer them in list
+        // we buffer them in list
         bytesBuffer.add(bytes);
     }
 

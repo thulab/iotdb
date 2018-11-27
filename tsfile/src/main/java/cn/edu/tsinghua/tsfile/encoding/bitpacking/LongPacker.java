@@ -51,12 +51,12 @@ public class LongPacker {
         int leftBit = 0;
 
         while (valueIdx < NUM_OF_LONGS + offset) {
-            // intBuffer is used for saving 64 bits as a part of result
+            // buffer is used for saving 64 bits as a part of result
             long buffer = 0;
-            //remaining size of bits in the 'intBuffer'
+            //remaining size of bits in the 'buffer'
             int leftSize = 64;
 
-            // encode the left bits of current Long to 'intBuffer'
+            // encode the left bits of current Long to 'buffer'
             if (leftBit > 0) {
                 buffer |= (values[valueIdx] << (64 - leftBit));
                 leftSize -= leftBit;
@@ -65,20 +65,20 @@ public class LongPacker {
             }
 
             while (leftSize >= width && valueIdx < NUM_OF_LONGS + offset) {
-                //encode one Long to the 'intBuffer'
+                //encode one Long to the 'buffer'
                 buffer |= (values[valueIdx] << (leftSize - width));
                 leftSize -= width;
                 valueIdx++;
             }
-            // If the remaining space of the intBuffer can not save the bits for one Long
+            // If the remaining space of the buffer can not save the bits for one Long
             if (leftSize > 0 && valueIdx < NUM_OF_LONGS + offset) {
-                // put the first 'leftSize' bits of the Long into remaining space of the intBuffer
+                // put the first 'leftSize' bits of the Long into remaining space of the buffer
                 buffer |= (values[valueIdx] >>> (width - leftSize));
                 leftBit = width - leftSize;
                 leftSize = 0;
             }
 
-            // put the intBuffer into the final result
+            // put the buffer into the final result
             for (int j = 0; j < 8; j++) {
                 buf[bufIdx] = (byte) ((buffer >>> ((8 - j - 1) * 8)) & 0xFF);
                 bufIdx++;

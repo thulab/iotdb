@@ -33,7 +33,7 @@ public abstract class RleDecoder extends Decoder {
      */
     protected int bitWidth;
     /**
-     * number of data left for reading in current intBuffer
+     * number of data left for reading in current buffer
      */
     protected int currentCount;
     /**
@@ -47,7 +47,7 @@ public abstract class RleDecoder extends Decoder {
      */
     protected boolean isLengthAndBitWidthReaded;
     /**
-     * intBuffer to save data format like [{@code <bitwidth> <encoded-data>}] for decoder
+     * buffer to save data format like [{@code <bitwidth> <encoded-data>}] for decoder
      */
     protected ByteArrayInputStream byteCache;
     /**
@@ -154,14 +154,14 @@ public abstract class RleDecoder extends Decoder {
     protected abstract void initPacker();
 
     /**
-     * Read rle package and save them in intBuffer
+     * Read rle package and save them in buffer
      *
      * @throws IOException cannot read number
      */
     protected abstract void readNumberInRLE() throws IOException;
 
     /**
-     * Read bit-packing package and save them in intBuffer
+     * Read bit-packing package and save them in buffer
      *
      * @param bitPackedGroupCount number of group number
      * @param lastBitPackedNum    number of useful value in last group

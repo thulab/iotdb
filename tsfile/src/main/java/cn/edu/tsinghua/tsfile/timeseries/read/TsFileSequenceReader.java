@@ -200,7 +200,7 @@ public class TsFileSequenceReader {
         buffer.flip();
         UnCompressor unCompressor = UnCompressor.getUnCompressor(type);
         ByteBuffer uncompressedBuffer = ByteBuffer.allocate(header.getUncompressedSize());
-        //unCompressor.uncompress(intBuffer, uncompressedBuffer);
+        //unCompressor.uncompress(buffer, uncompressedBuffer);
         //uncompressedBuffer.flip();
         switch (type) {
             case UNCOMPRESSED:
