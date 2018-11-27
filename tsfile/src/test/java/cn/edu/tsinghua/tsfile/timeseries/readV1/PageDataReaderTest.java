@@ -12,13 +12,10 @@ import cn.edu.tsinghua.tsfile.timeseries.write.series.PageWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
-/**
- * Created by zhangjinrui on 2017/12/21.
- */
+
 public class PageDataReaderTest {
 
     private static final int POINTS_COUNT_IN_ONE_PAGE = 1000000;
@@ -140,7 +137,7 @@ public class PageDataReaderTest {
                 pageWriter.setValueEncoder(this.encoder);
                 writeData();
 
-                InputStream page = new ByteArrayInputStream(pageWriter.getUncompressedBytes().array());
+                ByteBuffer page = ByteBuffer.wrap(pageWriter.getUncompressedBytes().array());
 
                 PageDataReader pageReader = new PageDataReader(page, dataType, decoder, new DeltaBinaryDecoder.LongDeltaDecoder());
 

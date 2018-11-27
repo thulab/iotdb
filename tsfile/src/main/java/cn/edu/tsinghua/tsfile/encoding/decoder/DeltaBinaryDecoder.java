@@ -1,13 +1,14 @@
 package cn.edu.tsinghua.tsfile.encoding.decoder;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.encoding.encoder.DeltaBinaryEncoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * This class is a decoder for decoding the byte array that encoded by
@@ -44,7 +45,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         super(TSEncoding.TS_2DIFF);
     }
 
-    protected abstract void readHeader(InputStream in) throws IOException;
+    protected abstract void readHeader(ByteBuffer in) throws IOException;
 
     protected abstract void allocateDataArray();
 
@@ -62,8 +63,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
 
 
     @Override
-    public boolean hasNext(InputStream in) throws IOException {
-        return (nextReadIndex < readIntTotalCount) || in.available() > 0;
+    public boolean hasNext(ByteBuffer in) throws IOException {
+        return (nextReadIndex < readIntTotalCount) || in.remaining() > 0;
     }
 
 
@@ -87,14 +88,14 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          * @return int
          * @throws IOException cannot read T from InputStream
          */
-        protected int readT(InputStream in) throws IOException {
+        protected int readT(ByteBuffer in) throws IOException {
             if (nextReadIndex == readIntTotalCount)
                 return loadIntBatch(in);
             return data[nextReadIndex++];
         }
 
         @Override
-        public int readInt(InputStream in) {
+        public int readInt(ByteBuffer in) {
             try {
                 return readT(in);
             } catch (IOException e) {
@@ -106,18 +107,19 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         /**
          * if remaining data has been run out, load next pack from InputStream
          *
-         * @param in InputStream
+         * @param buffer ByteBuffer
          * @return int
          * @throws IOException cannot load batch from InputStream
          */
-        protected int loadIntBatch(InputStream in) throws IOException {
-            packNum = BytesUtils.readInt(in);
-            packWidth = BytesUtils.readInt(in);
+        protected int loadIntBatch(ByteBuffer buffer) {
+            packNum = ReadWriteIOUtils.readInt(buffer);
+            packWidth = ReadWriteIOUtils.readInt(buffer);
             count++;
-            readHeader(in);
+            readHeader(buffer);
 
             encodingLength = ceil(packNum * packWidth);
-            deltaBuf = BytesUtils.safeReadInputStreamToBytes(encodingLength, in);
+            deltaBuf = new byte[encodingLength];
+            buffer.get(deltaBuf);
             allocateDataArray();
 
             previous = firstValue;
@@ -127,7 +129,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
             return firstValue;
         }
 
-        private void readPack() throws IOException {
+        private void readPack() {
             for (int i = 0; i < packNum; i++) {
                 readValue(i);
                 previous = data[i];
@@ -135,9 +137,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
         @Override
-        protected void readHeader(InputStream in) throws IOException {
-            minDeltaBase = BytesUtils.readInt(in);
-            firstValue = BytesUtils.readInt(in);
+        protected void readHeader(ByteBuffer in) {
+            minDeltaBase = ReadWriteIOUtils.readInt(in);
+            firstValue = ReadWriteIOUtils.readInt(in);
         }
 
         @Override
@@ -172,7 +174,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          * @return long value
          * @throws IOException cannot read T from InputStream
          */
-        protected long readT(InputStream in) throws IOException {
+        protected long readT(ByteBuffer in) throws IOException {
             if (nextReadIndex == readIntTotalCount)
                 return loadIntBatch(in);
             return data[nextReadIndex++];
@@ -181,18 +183,19 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         /***
          * if remaining data has been run out, load next pack from InputStream
          *
-         * @param in InputStream
+         * @param buffer ByteBuffer
          * @return long value
          * @throws IOException  cannot load batch from InputStream
          */
-        protected long loadIntBatch(InputStream in) throws IOException {
-            packNum = BytesUtils.readInt(in);
-            packWidth = BytesUtils.readInt(in);
+        protected long loadIntBatch(ByteBuffer buffer) throws IOException {
+            packNum = ReadWriteIOUtils.readInt(buffer);
+            packWidth = ReadWriteIOUtils.readInt(buffer);
             count++;
-            readHeader(in);
+            readHeader(buffer);
 
             encodingLength = ceil(packNum * packWidth);
-            deltaBuf = BytesUtils.safeReadInputStreamToBytes(encodingLength, in);
+            deltaBuf = new byte[encodingLength];
+            buffer.get(deltaBuf);
             allocateDataArray();
 
             previous = firstValue;
@@ -211,7 +214,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
         @Override
-        public long readLong(InputStream in) {
+        public long readLong(ByteBuffer in) {
             try {
                 return readT(in);
             } catch (IOException e) {
@@ -221,9 +224,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
         @Override
-        protected void readHeader(InputStream in) throws IOException {
-            minDeltaBase = BytesUtils.readLong(in);
-            firstValue = BytesUtils.readLong(in);
+        protected void readHeader(ByteBuffer in) {
+            minDeltaBase = ReadWriteIOUtils.readLong(in);
+            firstValue = ReadWriteIOUtils.readLong(in);
         }
 
         @Override

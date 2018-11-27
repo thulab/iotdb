@@ -24,7 +24,7 @@ public class TsFileSequenceReader {
     private Path path;
     private FileChannel channel;
     private long fileMetadataPos;
-    private int fileMetadtaSize;
+    private int fileMetadataSize;
     private ByteBuffer markerBuffer = ByteBuffer.allocate(Byte.BYTES);
 
     public TsFileSequenceReader(String file) throws IOException {
@@ -43,8 +43,8 @@ public class TsFileSequenceReader {
         ByteBuffer metadataSize = ByteBuffer.allocate(Integer.BYTES);
         channel.read(metadataSize, channel.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES);
         metadataSize.flip();
-        fileMetadtaSize = ReadWriteIOUtils.readInt(metadataSize);//read file metadata size and position
-        fileMetadataPos = channel.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES - fileMetadtaSize;
+        fileMetadataSize = ReadWriteIOUtils.readInt(metadataSize);//read file metadata size and position
+        fileMetadataPos = channel.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES - fileMetadataSize;
         channel.position(TSFileConfig.MAGIC_STRING.length());//skip the magic header
     }
 
@@ -82,7 +82,7 @@ public class TsFileSequenceReader {
      * @throws IOException
      */
     public TsFileMetaData readFileMetadata() throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(fileMetadtaSize);
+        ByteBuffer buffer = ByteBuffer.allocate(fileMetadataSize);
         ReadWriteIOUtils.readAsPossible(channel, fileMetadataPos, buffer);
         buffer.flip();
         return TsFileMetaData.deserializeFrom(buffer);
@@ -200,7 +200,7 @@ public class TsFileSequenceReader {
         buffer.flip();
         UnCompressor unCompressor = UnCompressor.getUnCompressor(type);
         ByteBuffer uncompressedBuffer = ByteBuffer.allocate(header.getUncompressedSize());
-        //unCompressor.uncompress(buffer, uncompressedBuffer);
+        //unCompressor.uncompress(intBuffer, uncompressedBuffer);
         //uncompressedBuffer.flip();
         switch (type) {
             case UNCOMPRESSED:

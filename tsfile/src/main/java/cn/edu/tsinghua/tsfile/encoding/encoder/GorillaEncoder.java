@@ -12,9 +12,9 @@ public abstract class GorillaEncoder extends Encoder{
 	// flag to indicate whether the first value is saved
 	protected boolean flag;
 	protected int leadingZeroNum, tailingZeroNum;
-	// 8-bit buffer of bits to write out
+	// 8-bit intBuffer of bits to write out
 	protected byte buffer;
-	// number of bits remaining in buffer
+	// number of bits remaining in intBuffer
 	protected int numberLeftInBuffer;
 	
 	public GorillaEncoder() {
@@ -23,11 +23,11 @@ public abstract class GorillaEncoder extends Encoder{
 	}
 
 	protected void writeBit(boolean b, ByteArrayOutputStream out){
-		// add bit to buffer
+		// add bit to intBuffer
         buffer <<= 1;
         if (b) buffer |= 1;
 
-        // if buffer is full (8 bits), write out as a single byte
+        // if intBuffer is full (8 bits), write out as a single byte
         numberLeftInBuffer++;
         if (numberLeftInBuffer == 8) clearBuffer(out);
 	}

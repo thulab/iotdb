@@ -2,14 +2,15 @@ package cn.edu.tsinghua.tsfile.encoding.decoder;
 
 import cn.edu.tsinghua.tsfile.common.exception.TSFileDecodingException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 
 /**
  * @author Zhang Jinrui
@@ -25,65 +26,48 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public boolean readBoolean(InputStream in) {
-        try {
-            int ch1 = in.read();
-            if (ch1 == 0) {
-                return false;
-            } else {
-                return true;
-            }
-        } catch (IOException e) {
-            LOGGER.error("tsfile-encoding PlainDecoder: errors whewn read boolean", e);
+    public boolean readBoolean(ByteBuffer in) {
+        int ch1 = in.get();
+        if (ch1 == 0) {
+            return false;
+        } else {
+            return true;
         }
-        return false;
     }
 
     @Override
-    public short readShort(InputStream in) {
-        try {
-            int ch1 = in.read();
-            int ch2 = in.read();
-            if (this.endianType == EndianType.LITTLE_ENDIAN) {
-                return (short) ((ch2 << 8) + ch1);
-            } else {
-                LOGGER.error(
-                        "tsfile-encoding PlainEncoder: current version does not support short value decoding");
-            }
-        } catch (IOException e) {
-            LOGGER.error("tsfile-encoding PlainDecoder: errors whewn read short", e);
+    public short readShort(ByteBuffer in) {
+        int ch1 = in.get();
+        int ch2 = in.get();
+        if (this.endianType == EndianType.LITTLE_ENDIAN) {
+            return (short) ((ch2 << 8) + ch1);
+        } else {
+            LOGGER.error(
+                    "tsfile-encoding PlainEncoder: current version does not support short value decoding");
         }
         return -1;
     }
 
     @Override
-    public int readInt(InputStream in) {
-        try {
-            int ch1 = in.read();
-            int ch2 = in.read();
-            int ch3 = in.read();
-            int ch4 = in.read();
-            if (this.endianType == EndianType.LITTLE_ENDIAN) {
-                return ch1 + (ch2 << 8) + (ch3 << 16) + (ch4 << 24);
-            } else {
-                LOGGER.error(
-                        "tsfile-encoding PlainEncoder: current version does not support int value encoding");
-            }
-        } catch (IOException e) {
-            LOGGER.error("tsfile-encoding PlainDecoder: errors whewn read int", e);
+    public int readInt(ByteBuffer in) {
+        int ch1 = ReadWriteIOUtils.read(in);
+        int ch2 = ReadWriteIOUtils.read(in);
+        int ch3 = ReadWriteIOUtils.read(in);
+        int ch4 = ReadWriteIOUtils.read(in);
+        if (this.endianType == EndianType.LITTLE_ENDIAN) {
+            return ch1 + (ch2 << 8) + (ch3 << 16) + (ch4 << 24);
+        } else {
+            LOGGER.error(
+                    "tsfile-encoding PlainEncoder: current version does not support int value encoding");
         }
         return -1;
     }
 
     @Override
-    public long readLong(InputStream in) {
+    public long readLong(ByteBuffer in) {
         int[] buf = new int[8];
-        try {
-            for (int i = 0; i < 8; i++)
-                buf[i] = in.read();
-        } catch (IOException e) {
-            LOGGER.error("tsfile-encoding PlainDecoder: errors whewn read long", e);
-        }
+        for (int i = 0; i < 8; i++)
+            buf[i] = ReadWriteIOUtils.read(in);
 
         Long res = 0L;
         for (int i = 0; i < 8; i++) {
@@ -93,34 +77,30 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public float readFloat(InputStream in) {
+    public float readFloat(ByteBuffer in) {
         return Float.intBitsToFloat(readInt(in));
     }
 
     @Override
-    public double readDouble(InputStream in) {
+    public double readDouble(ByteBuffer in) {
         return Double.longBitsToDouble(readLong(in));
     }
 
     @Override
-    public Binary readBinary(InputStream in) {
+    public Binary readBinary(ByteBuffer in) {
         int length = readInt(in);
         byte[] buf = new byte[length];
-        try {
-            in.read(buf, 0, buf.length);
-        } catch (IOException e) {
-            LOGGER.error("tsfile-encoding PlainDecoder: errors whewn read binary", e);
-        }
+        in.get(buf, 0, buf.length);
         return new Binary(buf);
     }
 
     @Override
-    public boolean hasNext(InputStream in) throws IOException {
-        return in.available() > 0;
+    public boolean hasNext(ByteBuffer in) throws IOException {
+        return in.remaining() > 0;
     }
 
     @Override
-    public BigDecimal readBigDecimal(InputStream in) {
+    public BigDecimal readBigDecimal(ByteBuffer in) {
         throw new TSFileDecodingException("Method readBigDecimal is not supproted by PlainDecoder");
     }
 }

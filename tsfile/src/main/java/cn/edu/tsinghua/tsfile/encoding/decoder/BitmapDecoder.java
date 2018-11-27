@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,14 +36,14 @@ public class BitmapDecoder extends Decoder {
     private int number;
 
     /**
-     * number of data left for reading in current buffer
+     * number of data left for reading in current intBuffer
      */
     private int currentCount;
 
     /**
-     * each time decoder receives a inputstream, decoder creates a buffer to save all encoded data
+     * each time decoder receives a inputstream, decoder creates a intBuffer to save all encoded data
      */
-    private ByteArrayInputStream byteCache;
+    private ByteBuffer byteCache;
 
     /**
      * decoder reads all bitmap index from byteCache and save in Map<value, bitmap index>
@@ -55,7 +55,7 @@ public class BitmapDecoder extends Decoder {
      */
     public BitmapDecoder(EndianType endianType) {
         super(TSEncoding.BITMAP);
-        byteCache = new ByteArrayInputStream(new byte[0]);
+        byteCache = ByteBuffer.wrap(new byte[0]);
         buffer = new HashMap<>();
         length = 0;
         number = 0;
@@ -64,22 +64,22 @@ public class BitmapDecoder extends Decoder {
     }
 
     @Override
-    public int readInt(InputStream in) {
+    public int readInt(ByteBuffer buffer) {
         if (currentCount == 0) {
             try {
                 reset();
-                getLengthAndNumber(in);
+                getLengthAndNumber(buffer);
                 readNext();
             } catch (IOException e) {
                 LOGGER.error(
-                        "tsfile-encoding BitmapDecoder: error occurs when reading next number. lenght {}, number {}, current number {}, result buffer {}",
-                        length, number, currentCount, buffer, e);
+                        "tsfile-encoding BitmapDecoder: error occurs when reading next number. lenght {}, number {}, current number {}, result intBuffer {}",
+                        length, number, currentCount, this.buffer, e);
             }
         }
         int result = 0;
         int index = (number - currentCount) / 8;
         int offset = 7 - ((number - currentCount) % 8);
-        for (Map.Entry<Integer, byte[]> entry : buffer.entrySet()) {
+        for (Map.Entry<Integer, byte[]> entry : this.buffer.entrySet()) {
             byte[] tmp = entry.getValue();
             if ((tmp[index] & ((byte) 1 << offset)) != 0) {
                 result = entry.getKey();
@@ -89,23 +89,23 @@ public class BitmapDecoder extends Decoder {
         return result;
     }
 
-    private void getLengthAndNumber(InputStream in) throws IOException {
-        this.length = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
-        this.number = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
+    private void getLengthAndNumber(ByteBuffer buffer) throws IOException {
+        this.length = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
+        this.number = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
         byte[] tmp = new byte[length];
-        in.read(tmp, 0, length);
-        this.byteCache = new ByteArrayInputStream(tmp);
+        buffer.get(tmp, 0, length);
+        this.byteCache = ByteBuffer.wrap(tmp);
     }
 
     /**
-     * Decode all data from buffer and save them
+     * Decode all data from intBuffer and save them
      */
     private void readNext() throws IOException {
         int len = (this.number + 7) / 8;
-        while (byteCache.available() > 0) {
+        while (byteCache.remaining() > 0) {
             int value = ReadWriteForEncodingUtils.readUnsignedVarInt(byteCache);
             byte[] tmp = new byte[len];
-            byteCache.read(tmp, 0, len);
+            byteCache.get(tmp, 0, len);
             buffer.put(value, tmp);
         }
         currentCount = number;
@@ -118,7 +118,7 @@ public class BitmapDecoder extends Decoder {
         if (this.byteCache == null) {
             new ByteArrayInputStream(new byte[0]);
         } else {
-            this.byteCache.reset();
+            this.byteCache.flip();
         }
         if (this.buffer == null) {
             this.buffer = new HashMap<>();
@@ -134,21 +134,21 @@ public class BitmapDecoder extends Decoder {
      * @param pageList input page list
      * @return List(Pair of (length, bitmap index) )
      */
-    public List<Pair<Integer, byte[]>> decodeAll(int target, List<InputStream> pageList) {
+    public List<Pair<Integer, byte[]>> decodeAll(int target, List<ByteBuffer> pageList) {
         List<Pair<Integer, byte[]>> resultList = new ArrayList<>();
-        for (InputStream inputStream : pageList) {
+        for (ByteBuffer buffer : pageList) {
             try {
                 reset();
-                getLengthAndNumber(inputStream);
+                getLengthAndNumber(buffer);
                 int byteArrayLength = (this.number + 7) / 8;
                 byte[] tmp = new byte[byteArrayLength];
-                while (byteCache.available() > 0) {
+                while (byteCache.remaining() > 0) {
                     int value = ReadWriteForEncodingUtils.readUnsignedVarInt(byteCache);
                     if (value == target) {
-                        byteCache.read(tmp, 0, byteArrayLength);
+                        byteCache.get(tmp, 0, byteArrayLength);
                         break;
                     } else {
-                        byteCache.skip(byteArrayLength);
+                        byteCache.position(byteArrayLength);
                     }
                 }
 
@@ -158,7 +158,7 @@ public class BitmapDecoder extends Decoder {
             } catch (IOException e) {
                 LOGGER.error(
                         "tsfile-encoding BitmapDecoder: error occurs when decoding all numbers in page {}, number {}",
-                        inputStream, this.number, e);
+                        buffer, this.number, e);
             }
         }
         return resultList;
@@ -170,11 +170,10 @@ public class BitmapDecoder extends Decoder {
      * @param in : decoded data saved in InputStream
      * @return true or false to indicate whether there is number left
      * @throws IOException cannot read next value
-     * @see Decoder#hasNext(java.io.InputStream)
      */
     @Override
-    public boolean hasNext(InputStream in) throws IOException {
-        if (currentCount > 0 || in.available() > 0) {
+    public boolean hasNext(ByteBuffer in) throws IOException {
+        if (currentCount > 0 || in.remaining() > 0) {
             return true;
         }
         return false;
@@ -185,40 +184,39 @@ public class BitmapDecoder extends Decoder {
      *
      * @param in : decoded data saved in InputStream
      * @throws TSFileDecodingException cannot read next value
-     * @see Decoder#readBoolean(java.io.InputStream)
      */
     @Override
-    public boolean readBoolean(InputStream in) {
+    public boolean readBoolean(ByteBuffer in) {
         throw new TSFileDecodingException("Method readBoolean is not supported by BitmapDecoder");
     }
 
     @Override
-    public short readShort(InputStream in) {
+    public short readShort(ByteBuffer in) {
         throw new TSFileDecodingException("Method readShort is not supported by BitmapDecoder");
     }
 
     @Override
-    public long readLong(InputStream in) {
+    public long readLong(ByteBuffer in) {
         throw new TSFileDecodingException("Method readLong is not supported by BitmapDecoder");
     }
 
     @Override
-    public float readFloat(InputStream in) {
+    public float readFloat(ByteBuffer in) {
         throw new TSFileDecodingException("Method readFloat is not supported by BitmapDecoder");
     }
 
     @Override
-    public double readDouble(InputStream in) {
+    public double readDouble(ByteBuffer in) {
         throw new TSFileDecodingException("Method readDouble is not supported by BitmapDecoder");
     }
 
     @Override
-    public Binary readBinary(InputStream in) {
+    public Binary readBinary(ByteBuffer in) {
         throw new TSFileDecodingException("Method readBinary is not supported by BitmapDecoder");
     }
 
     @Override
-    public BigDecimal readBigDecimal(InputStream in) {
+    public BigDecimal readBigDecimal(ByteBuffer in) {
         throw new TSFileDecodingException("Method readBigDecimal is not supported by BitmapDecoder");
     }
 }

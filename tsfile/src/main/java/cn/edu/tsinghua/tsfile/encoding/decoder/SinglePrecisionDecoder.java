@@ -1,8 +1,9 @@
 package cn.edu.tsinghua.tsfile.encoding.decoder;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,14 +20,14 @@ public class SinglePrecisionDecoder extends GorillaDecoder {
 	}
 
 	@Override
-	public float readFloat(InputStream in) {
+	public float readFloat(ByteBuffer in) {
 		if (!flag) {
 			flag = true;
 			try {
-				int ch1 = in.read();
-				int ch2 = in.read();
-				int ch3 = in.read();
-				int ch4 = in.read();
+				int ch1 = ReadWriteIOUtils.read(in);
+				int ch2 = ReadWriteIOUtils.read(in);
+				int ch3 = ReadWriteIOUtils.read(in);
+				int ch4 = ReadWriteIOUtils.read(in);
 				preValue = ch1 + (ch2 << 8) + (ch3 << 16) + (ch4 << 24);
 				leadingZeroNum = Integer.numberOfLeadingZeros(preValue);
 				tailingZeroNum = Integer.numberOfTrailingZeros(preValue);
@@ -55,7 +56,7 @@ public class SinglePrecisionDecoder extends GorillaDecoder {
 	 * @param in stream to read
 	 * @throws IOException cannot read from stream
 	 */
-	private void getNextValue(InputStream in) throws IOException {
+	private void getNextValue(ByteBuffer in) throws IOException {
 		nextFlag1 = readBit(in);
 		// case: '0'
 		if (!nextFlag1) {

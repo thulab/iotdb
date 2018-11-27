@@ -18,11 +18,7 @@ import java.nio.ByteBuffer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-/**
- *
- * @author kangrong
- *
- */
+
 public class PageWriterTest {
 
     @Test
@@ -48,18 +44,16 @@ public class PageWriterTest {
             writer.write(timeCount++, new Binary(str1));
             assertEquals(101, writer.estimateMaxMemSize());
             ByteBuffer input = writer.getUncompressedBytes();
-            ByteArrayInputStream in = new ByteArrayInputStream(input.array());
+            ByteBuffer in = ByteBuffer.wrap(input.array());
             writer.reset();
             assertEquals(0, writer.estimateMaxMemSize());
             int timeSize = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
             byte[] timeBytes = new byte[timeSize];
-            int ret = in.read(timeBytes);
-            if(ret != timeBytes.length)
-                fail();
-            ByteArrayInputStream timeInputStream = new ByteArrayInputStream(timeBytes);
+            in.get(timeBytes);
+            ByteBuffer buffer = ByteBuffer.wrap(timeBytes);
             PlainDecoder decoder = new PlainDecoder(EndianType.LITTLE_ENDIAN);
             for (int i = 0; i < timeCount; i++) {
-                assertEquals(i, decoder.readLong(timeInputStream));
+                assertEquals(i, decoder.readLong(buffer));
             }
             assertEquals(s1, decoder.readShort(in));
             assertEquals(b1, decoder.readBoolean(in));

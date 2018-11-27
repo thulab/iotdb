@@ -1,8 +1,9 @@
 package cn.edu.tsinghua.tsfile.encoding.decoder;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +20,13 @@ public class DoublePrecisionDecoder extends GorillaDecoder{
 	}
 	
 	@Override
-	public double readDouble(InputStream in) {
+	public double readDouble(ByteBuffer in) {
 		if (!flag) {
 			flag = true;
 			try {
 		        int[] buf = new int[8];
 		        for (int i = 0; i < 8; i++)
-	                buf[i] = in.read();
+	                buf[i] = ReadWriteIOUtils.read(in);
 		        long res = 0L;
 		        for (int i = 0; i < 8; i++) {
 		            res += ((long) buf[i] << (i * 8));
@@ -58,7 +59,7 @@ public class DoublePrecisionDecoder extends GorillaDecoder{
 	 * @param in stream to read
 	 * @throws IOException cannot read from stream
 	 */
-	private void getNextValue(InputStream in) throws IOException {
+	private void getNextValue(ByteBuffer in) throws IOException {
 		nextFlag1 = readBit(in);
 		// case: '0'
 		if (!nextFlag1) {

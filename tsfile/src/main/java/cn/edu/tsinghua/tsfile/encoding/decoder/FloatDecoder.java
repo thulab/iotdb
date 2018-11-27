@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Decoder for float or double value using rle or two diff. For
@@ -64,7 +64,7 @@ public class FloatDecoder extends Decoder {
     }
 
     @Override
-    public float readFloat(InputStream in) {
+    public float readFloat(ByteBuffer in) {
         readMaxPointValue(in);
         int value = decoder.readInt(in);
         double result = value / maxPointValue;
@@ -72,14 +72,14 @@ public class FloatDecoder extends Decoder {
     }
 
     @Override
-    public double readDouble(InputStream in) {
+    public double readDouble(ByteBuffer in) {
         readMaxPointValue(in);
         long value = decoder.readLong(in);
         double result = value / maxPointValue;
         return result;
     }
 
-    private void readMaxPointValue(InputStream in) {
+    private void readMaxPointValue(ByteBuffer in) {
         try {
             if (!isMaxPointNumberRead) {
                 int maxPointNumber = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
@@ -96,7 +96,7 @@ public class FloatDecoder extends Decoder {
     }
 
     @Override
-    public boolean hasNext(InputStream in) throws IOException {
+    public boolean hasNext(ByteBuffer in) throws IOException {
         if (decoder == null) {
             return false;
         }
@@ -104,27 +104,27 @@ public class FloatDecoder extends Decoder {
     }
 
     @Override
-    public Binary readBinary(InputStream in) {
+    public Binary readBinary(ByteBuffer in) {
         throw new TSFileDecodingException("Method readBinary is not supproted by FloatDecoder");
     }
 
     @Override
-    public boolean readBoolean(InputStream in) {
+    public boolean readBoolean(ByteBuffer in) {
         throw new TSFileDecodingException("Method readBoolean is not supproted by FloatDecoder");
     }
 
     @Override
-    public short readShort(InputStream in) {
+    public short readShort(ByteBuffer in) {
         throw new TSFileDecodingException("Method readShort is not supproted by FloatDecoder");
     }
 
     @Override
-    public int readInt(InputStream in) {
+    public int readInt(ByteBuffer in) {
         throw new TSFileDecodingException("Method readInt is not supproted by FloatDecoder");
     }
 
     @Override
-    public long readLong(InputStream in) {
+    public long readLong(ByteBuffer in) {
         throw new TSFileDecodingException("Method readLong is not supproted by FloatDecoder");
     }
 }

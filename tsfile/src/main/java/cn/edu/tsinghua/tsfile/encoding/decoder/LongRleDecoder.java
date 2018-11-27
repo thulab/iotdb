@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Decoder for long value using rle or bit-packing
@@ -22,7 +22,7 @@ public class LongRleDecoder extends RleDecoder {
     private long currentValue;
 
     /**
-     * buffer to save all values in group using bit-packing
+     * intBuffer to save all values in group using bit-packing
      */
     private long[] currentBuffer;
 
@@ -43,7 +43,7 @@ public class LongRleDecoder extends RleDecoder {
      * @return value - current valid value
      */
     @Override
-    public long readLong(InputStream in) {
+    public long readLong(ByteBuffer in) {
         if (!isLengthAndBitWidthReaded) {
             //start to read a new rle+bit-packing pattern
             try {

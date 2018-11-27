@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Decoder for int value using rle or bit-packing
@@ -22,7 +22,7 @@ public class IntRleDecoder extends RleDecoder {
     private int currentValue;
 
     /**
-     * buffer to save all values in group using bit-packing
+     * intBuffer to save all values in group using bit-packing
      */
     private int[] currentBuffer;
 
@@ -37,7 +37,7 @@ public class IntRleDecoder extends RleDecoder {
     }
     
     @Override
-    public boolean readBoolean(InputStream in) {
+    public boolean readBoolean(ByteBuffer in) {
     	return this.readInt(in) == 0 ? false : true;
     }
 
@@ -50,7 +50,7 @@ public class IntRleDecoder extends RleDecoder {
      * @return value - current valid value
      */
     @Override
-    public int readInt(InputStream in) {
+    public int readInt(ByteBuffer in) {
         if (!isLengthAndBitWidthReaded) {
             //start to read a new rle+bit-packing pattern
             try {
