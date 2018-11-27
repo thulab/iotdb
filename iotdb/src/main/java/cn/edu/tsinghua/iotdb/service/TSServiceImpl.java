@@ -759,7 +759,6 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public ServerProperties getProperties() throws TException {
 		ServerProperties properties = new ServerProperties();
 		properties.setVersion(TsFileDBConstant.VERSION);
-		properties.setIotdbHome(TsFileDBConstant.IOTDB_HOME);
 		properties.setAggregationTimeConstant(new ArrayList<>());
 		properties.getAggregationTimeConstant().add(AggregationConstant.MAX_TIME);
 		properties.getAggregationTimeConstant().add(AggregationConstant.MIN_TIME);

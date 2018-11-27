@@ -61,19 +61,16 @@ public class TsfileConnectionTest {
 	@Test
 	public void testGetServerProperties() throws TsfileSQLException, TException {
 		final String version = "v0.1";
-		final String iotdbHome = "home";
 		@SuppressWarnings("serial")
 		final List<String> supportedAggregationTime = new ArrayList<String>() {{
 		    add("max_time");
 		    add("min_time");
 		}};
-		when(client.getProperties()).thenReturn(new ServerProperties(version, iotdbHome, supportedAggregationTime));
+		when(client.getProperties()).thenReturn(new ServerProperties(version, supportedAggregationTime));
 		connection.client = client;
 		assertEquals(connection.getServerProperties().getVersion(), version);
-		assertEquals(connection.getServerProperties().getIotdbHome(), iotdbHome);
 		for(int i = 0; i < supportedAggregationTime.size();i++) {
 			assertEquals(connection.getServerProperties().getAggregationTimeConstant().get(i), supportedAggregationTime.get(i));
 		}
-
 	}
 }

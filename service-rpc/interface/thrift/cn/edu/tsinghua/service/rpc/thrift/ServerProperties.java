@@ -36,8 +36,7 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ServerProperties");
 
   private static final org.apache.thrift.protocol.TField VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("version", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField IOTDB_HOME_FIELD_DESC = new org.apache.thrift.protocol.TField("iotdbHome", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField AGGREGATION_TIME_CONSTANT_FIELD_DESC = new org.apache.thrift.protocol.TField("aggregationTimeConstant", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField AGGREGATION_TIME_CONSTANT_FIELD_DESC = new org.apache.thrift.protocol.TField("aggregationTimeConstant", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,14 +45,12 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   }
 
   public String version; // required
-  public String iotdbHome; // required
   public List<String> aggregationTimeConstant; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     VERSION((short)1, "version"),
-    IOTDB_HOME((short)2, "iotdbHome"),
-    AGGREGATION_TIME_CONSTANT((short)3, "aggregationTimeConstant");
+    AGGREGATION_TIME_CONSTANT((short)2, "aggregationTimeConstant");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -70,9 +67,7 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       switch(fieldId) {
         case 1: // VERSION
           return VERSION;
-        case 2: // IOTDB_HOME
-          return IOTDB_HOME;
-        case 3: // AGGREGATION_TIME_CONSTANT
+        case 2: // AGGREGATION_TIME_CONSTANT
           return AGGREGATION_TIME_CONSTANT;
         default:
           return null;
@@ -119,8 +114,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.VERSION, new org.apache.thrift.meta_data.FieldMetaData("version", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.IOTDB_HOME, new org.apache.thrift.meta_data.FieldMetaData("iotdbHome", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.AGGREGATION_TIME_CONSTANT, new org.apache.thrift.meta_data.FieldMetaData("aggregationTimeConstant", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -133,12 +126,10 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
 
   public ServerProperties(
     String version,
-    String iotdbHome,
     List<String> aggregationTimeConstant)
   {
     this();
     this.version = version;
-    this.iotdbHome = iotdbHome;
     this.aggregationTimeConstant = aggregationTimeConstant;
   }
 
@@ -148,9 +139,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   public ServerProperties(ServerProperties other) {
     if (other.isSetVersion()) {
       this.version = other.version;
-    }
-    if (other.isSetIotdbHome()) {
-      this.iotdbHome = other.iotdbHome;
     }
     if (other.isSetAggregationTimeConstant()) {
       List<String> __this__aggregationTimeConstant = new ArrayList<String>(other.aggregationTimeConstant);
@@ -165,7 +153,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   @Override
   public void clear() {
     this.version = null;
-    this.iotdbHome = null;
     this.aggregationTimeConstant = null;
   }
 
@@ -190,30 +177,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   public void setVersionIsSet(boolean value) {
     if (!value) {
       this.version = null;
-    }
-  }
-
-  public String getIotdbHome() {
-    return this.iotdbHome;
-  }
-
-  public ServerProperties setIotdbHome(String iotdbHome) {
-    this.iotdbHome = iotdbHome;
-    return this;
-  }
-
-  public void unsetIotdbHome() {
-    this.iotdbHome = null;
-  }
-
-  /** Returns true if field iotdbHome is set (has been assigned a value) and false otherwise */
-  public boolean isSetIotdbHome() {
-    return this.iotdbHome != null;
-  }
-
-  public void setIotdbHomeIsSet(boolean value) {
-    if (!value) {
-      this.iotdbHome = null;
     }
   }
 
@@ -266,14 +229,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       }
       break;
 
-    case IOTDB_HOME:
-      if (value == null) {
-        unsetIotdbHome();
-      } else {
-        setIotdbHome((String)value);
-      }
-      break;
-
     case AGGREGATION_TIME_CONSTANT:
       if (value == null) {
         unsetAggregationTimeConstant();
@@ -289,9 +244,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     switch (field) {
     case VERSION:
       return getVersion();
-
-    case IOTDB_HOME:
-      return getIotdbHome();
 
     case AGGREGATION_TIME_CONSTANT:
       return getAggregationTimeConstant();
@@ -309,8 +261,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     switch (field) {
     case VERSION:
       return isSetVersion();
-    case IOTDB_HOME:
-      return isSetIotdbHome();
     case AGGREGATION_TIME_CONSTANT:
       return isSetAggregationTimeConstant();
     }
@@ -336,15 +286,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       if (!(this_present_version && that_present_version))
         return false;
       if (!this.version.equals(that.version))
-        return false;
-    }
-
-    boolean this_present_iotdbHome = true && this.isSetIotdbHome();
-    boolean that_present_iotdbHome = true && that.isSetIotdbHome();
-    if (this_present_iotdbHome || that_present_iotdbHome) {
-      if (!(this_present_iotdbHome && that_present_iotdbHome))
-        return false;
-      if (!this.iotdbHome.equals(that.iotdbHome))
         return false;
     }
 
@@ -379,16 +320,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     }
     if (isSetVersion()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.version, other.version);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetIotdbHome()).compareTo(other.isSetIotdbHome());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetIotdbHome()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.iotdbHome, other.iotdbHome);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -431,14 +362,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("iotdbHome:");
-    if (this.iotdbHome == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.iotdbHome);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("aggregationTimeConstant:");
     if (this.aggregationTimeConstant == null) {
       sb.append("null");
@@ -454,9 +377,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     // check for required fields
     if (version == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'version' was not present! Struct: " + toString());
-    }
-    if (iotdbHome == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'iotdbHome' was not present! Struct: " + toString());
     }
     if (aggregationTimeConstant == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'aggregationTimeConstant' was not present! Struct: " + toString());
@@ -506,15 +426,7 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // IOTDB_HOME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.iotdbHome = iprot.readString();
-              struct.setIotdbHomeIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // AGGREGATION_TIME_CONSTANT
+          case 2: // AGGREGATION_TIME_CONSTANT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list118 = iprot.readListBegin();
@@ -552,11 +464,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
         oprot.writeString(struct.version);
         oprot.writeFieldEnd();
       }
-      if (struct.iotdbHome != null) {
-        oprot.writeFieldBegin(IOTDB_HOME_FIELD_DESC);
-        oprot.writeString(struct.iotdbHome);
-        oprot.writeFieldEnd();
-      }
       if (struct.aggregationTimeConstant != null) {
         oprot.writeFieldBegin(AGGREGATION_TIME_CONSTANT_FIELD_DESC);
         {
@@ -587,7 +494,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     public void write(org.apache.thrift.protocol.TProtocol prot, ServerProperties struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.version);
-      oprot.writeString(struct.iotdbHome);
       {
         oprot.writeI32(struct.aggregationTimeConstant.size());
         for (String _iter122 : struct.aggregationTimeConstant)
@@ -602,8 +508,6 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.version = iprot.readString();
       struct.setVersionIsSet(true);
-      struct.iotdbHome = iprot.readString();
-      struct.setIotdbHomeIsSet(true);
       {
         org.apache.thrift.protocol.TList _list123 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.aggregationTimeConstant = new ArrayList<String>(_list123.size);

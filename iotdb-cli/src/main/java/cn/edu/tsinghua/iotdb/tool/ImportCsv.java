@@ -20,7 +20,6 @@ import java.util.Map;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.service.rpc.thrift.ServerProperties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -331,18 +330,17 @@ public class ImportCsv extends AbstractCsvTool{
 	}
 
     public static void importCsvFromFile(String ip,String port, String username, String password, String filename, String timeZone) throws SQLException{
-
+		String property = System.getProperty("IOTDB_HOME");
+		if (property == null) {
+			errorInsertInfo = ERROR_INFO_STR;
+		} else {
+			errorInsertInfo = property + File.separatorChar + ERROR_INFO_STR;
+		}
     		try {
     			Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     			connection = (TsfileConnection) DriverManager.getConnection("jdbc:tsfile://" + ip + ":" + port + "/", username, password);
     			timeZoneID = timeZone;
     			setTimeZone();
-    			ServerProperties properties = connection.getServerProperties();
-    	        if (System.getProperty(properties.getIotdbHome()) == null) {
-    	            errorInsertInfo = ERROR_INFO_STR;
-    	        } else {
-    	            errorInsertInfo = System.getProperty(properties.getIotdbHome()) + File.separatorChar + ERROR_INFO_STR;
-    	        }
     			
     	        File file = new File(filename);
     	        if(file.isFile()){
