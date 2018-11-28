@@ -88,4 +88,9 @@ public class SinglePrecisionDecoder extends GorillaDecoder {
 			isEnd = true;
 		}
 	}
+
+	@Override
+	public void reset() {
+		super.reset();
+	}
 }

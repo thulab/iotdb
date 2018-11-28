@@ -42,7 +42,6 @@ public class IntRleDecoder extends RleDecoder {
     }
 
 
-
     /**
      * read a int value from InputStream
      *
@@ -108,4 +107,9 @@ public class IntRleDecoder extends RleDecoder {
         // save all int values in currentBuffer
         packer.unpackAllValues(bytes, 0, bytesToRead, currentBuffer);
     }
+
+	@Override
+	public void reset() {
+		super.reset();
+	}
 }

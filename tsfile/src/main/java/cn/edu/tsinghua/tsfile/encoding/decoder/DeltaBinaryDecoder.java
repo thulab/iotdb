@@ -152,6 +152,10 @@ public abstract class DeltaBinaryDecoder extends Decoder {
             int v = BytesUtils.bytesToInt(deltaBuf, packWidth * i, packWidth);
             data[i] = previous + minDeltaBase + v;
         }
+
+		@Override
+		public void reset() {
+		}
     }
 
     public static class LongDeltaDecoder extends DeltaBinaryDecoder {
@@ -239,6 +243,10 @@ public abstract class DeltaBinaryDecoder extends Decoder {
             long v = BytesUtils.bytesToLong(deltaBuf, packWidth * i, packWidth);
             data[i] = previous + minDeltaBase + v;
         }
+
+		@Override
+		public void reset() {
+		}
 
     }
 }

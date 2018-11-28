@@ -21,14 +21,21 @@ public abstract class GorillaDecoder extends Decoder {
     // number of bits remaining in buffer
     protected int numberLeftInBuffer;
 
+
     protected boolean nextFlag1;
     protected boolean nextFlag2;
 
+
     public GorillaDecoder() {
-        super(TSEncoding.GORILLA);
-        this.flag = false;
-        this.isEnd = false;
-    }
+		super(TSEncoding.GORILLA);
+		reset();
+	}
+
+	public void reset() {
+		this.flag = false;
+		this.isEnd = false;
+		this.numberLeftInBuffer = 0;
+	}
 
     @Override
     public boolean hasNext(ByteBuffer buffer) throws IOException {

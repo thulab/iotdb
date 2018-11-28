@@ -77,4 +77,6 @@ public abstract class Decoder {
 
     public abstract boolean hasNext(ByteBuffer buffer) throws IOException;
 
+    public abstract void reset();
+
 }
