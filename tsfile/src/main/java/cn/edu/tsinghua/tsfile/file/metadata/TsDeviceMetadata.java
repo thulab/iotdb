@@ -57,8 +57,7 @@ public class TsDeviceMetadata {
     public void addChunkGroupMetaData(ChunkGroupMetaData chunkGroup) {
         chunkGroupMetadataList.add(chunkGroup);
         serializedSize += chunkGroup.getSerializedSize();
-        for (ChunkMetaData chunkMetaData : chunkGroup
-                .getChunkMetaDataList()) {
+        for (ChunkMetaData chunkMetaData : chunkGroup.getChunkMetaDataList()) {
             // update startTime and endTime
             startTime = Long.min(startTime, chunkMetaData.getStartTime());
             endTime = Long.max(endTime, chunkMetaData.getEndTime());

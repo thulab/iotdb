@@ -195,7 +195,7 @@ public class TsFileIOWriter {
 
         TsDeviceMetadata currentTsDeviceMetadata;
 
-        for(Map.Entry<String, TsDeviceMetadata> entry: getAllTsDeviceMetadata(chunkGroupMetaDataList).entrySet()) {
+        for (Map.Entry<String, TsDeviceMetadata> entry : getAllTsDeviceMetadata(chunkGroupMetaDataList).entrySet()) {
             // update statistics in TsDeviceMetadata
             currentTsDeviceMetadata = entry.getValue();
 
@@ -213,6 +213,7 @@ public class TsFileIOWriter {
 
     /**
      * group all chunk group metadata by device
+     *
      * @param chunkGroupMetaDataList all chunk group metadata
      * @return TsDeviceMetadata of all devices
      */
