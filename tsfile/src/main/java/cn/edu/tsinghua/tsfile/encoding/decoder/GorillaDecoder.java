@@ -25,8 +25,13 @@ public abstract class GorillaDecoder extends Decoder {
 
 	public GorillaDecoder() {
 		super(TSEncoding.GORILLA);
+		reset();
+	}
+
+	public void reset() {
 		this.flag = false;
 		this.isEnd = false;
+		this.numberLeftInBuffer = 0;
 	}
 
 	@Override

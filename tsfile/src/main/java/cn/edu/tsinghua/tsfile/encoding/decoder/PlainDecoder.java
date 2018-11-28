@@ -123,4 +123,8 @@ public class PlainDecoder extends Decoder {
     public BigDecimal readBigDecimal(InputStream in) {
         throw new TSFileDecodingException("Method readBigDecimal is not supproted by PlainDecoder");
     }
+
+	@Override
+	public void reset() {
+	}
 }

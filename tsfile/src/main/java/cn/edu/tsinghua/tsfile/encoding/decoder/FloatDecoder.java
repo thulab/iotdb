@@ -127,4 +127,10 @@ public class FloatDecoder extends Decoder {
     public long readLong(InputStream in) {
         throw new TSFileDecodingException("Method readLong is not supproted by FloatDecoder");
     }
+
+	@Override
+	public void reset() {
+		this.decoder.reset();
+		this.isMaxPointNumberRead = false;
+	}
 }
