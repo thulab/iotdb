@@ -29,11 +29,11 @@ public class TsDeviceMetadataIndex {
 
     }
 
-    public TsDeviceMetadataIndex(long offset, int len, long startTime, long endTime) {
+    public TsDeviceMetadataIndex(long offset, int len, TsDeviceMetadata deviceMetadata) {
         this.offset = offset;
         this.len = len;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.startTime = deviceMetadata.getStartTime();
+        this.endTime = deviceMetadata.getEndTime();
     }
 
     public void setOffset(long offset) {
