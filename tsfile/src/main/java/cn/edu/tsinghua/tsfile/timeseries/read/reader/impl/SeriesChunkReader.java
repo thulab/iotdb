@@ -136,7 +136,7 @@ public abstract class SeriesChunkReader implements SeriesReader {
                     + Arrays.toString(compressedPageBody) + ". Actual:" + chunkDataBuffer.remaining());
 
         chunkDataBuffer.get(compressedPageBody, 0, compressedPageBodyLength);
-
+        valueDecoder.reset();
         return new PageDataReader(ByteBuffer.wrap(unCompressor.uncompress(compressedPageBody)),
                 chunkHeader.getDataType(), valueDecoder, timeDecoder);
     }

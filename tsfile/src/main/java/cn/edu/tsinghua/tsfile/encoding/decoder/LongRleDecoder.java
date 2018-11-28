@@ -101,4 +101,9 @@ public class LongRleDecoder extends RleDecoder {
         // save all long values in currentBuffer
         packer.unpackAllValues(bytes, 0, bytesToRead, currentBuffer);
     }
+
+	@Override
+	public void reset() {
+		super.reset();
+	}
 }

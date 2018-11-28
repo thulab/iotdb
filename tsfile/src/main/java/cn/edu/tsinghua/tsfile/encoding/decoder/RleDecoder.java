@@ -59,6 +59,10 @@ public abstract class RleDecoder extends Decoder {
     public RleDecoder(EndianType endianType) {
         super(TSEncoding.RLE);
         this.endianType = endianType;
+        reset();
+    }
+
+    public void reset() {
         currentCount = 0;
         isLengthAndBitWidthReaded = false;
         bitPackingNum = 0;

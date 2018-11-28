@@ -90,4 +90,9 @@ public class DoublePrecisionDecoder extends GorillaDecoder{
 			isEnd = true;
 		}
 	}
+
+	@Override
+	public void reset() {
+		super.reset();
+	}
 }

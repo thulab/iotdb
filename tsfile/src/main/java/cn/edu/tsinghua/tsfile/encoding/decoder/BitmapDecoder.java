@@ -55,11 +55,7 @@ public class BitmapDecoder extends Decoder {
      */
     public BitmapDecoder(EndianType endianType) {
         super(TSEncoding.BITMAP);
-        byteCache = new ByteArrayInputStream(new byte[0]);
-        buffer = new HashMap<>();
-        length = 0;
-        number = 0;
-        currentCount = 0;
+        this.reset();
         LOGGER.debug("tsfile-encoding BitmapDecoder: init bitmap decoder");
     }
 
@@ -111,7 +107,8 @@ public class BitmapDecoder extends Decoder {
         currentCount = number;
     }
 
-    private void reset() {
+    @Override
+    public void reset() {
         this.length = 0;
         this.number = 0;
         this.currentCount = 0;

@@ -81,4 +81,6 @@ public abstract class Decoder {
 
     public abstract boolean hasNext(InputStream in) throws IOException;
 
+    public abstract void reset();
+
 }
