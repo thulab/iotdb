@@ -3,6 +3,7 @@ package cn.edu.tsinghua.tsfile.timeseries.write.io;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.utils.*;
+import cn.edu.tsinghua.tsfile.file.MetaMarker;
 import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
@@ -146,6 +147,10 @@ public class TsFileIOWriter {
      * @throws IOException if I/O error occurs
      */
     public void endFile(FileSchema schema) throws IOException {
+
+        // serialize the Separator of MetaData and ChunkGroups
+        ReadWriteIOUtils.write(MetaMarker.Separator, out);
+
     	// get all TimeSeriesMetadatas of this TsFile
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
         LOG.debug("get time series list:{}", schemaDescriptors);
