@@ -152,7 +152,7 @@ public class ReadWriteIOUtils {
     }
 
     /**
-     * read an unsigned byte as InputStream does
+     * read an unsigned byte(0 ~ 255) as InputStream does,
      *
      * @return the byte or -1(means there is no byte to read)
      */
