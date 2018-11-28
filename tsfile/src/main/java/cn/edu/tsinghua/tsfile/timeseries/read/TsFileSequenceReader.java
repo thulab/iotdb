@@ -76,9 +76,6 @@ public class TsFileSequenceReader {
         return TsFileMetaData.deserializeFrom(buffer);
     }
 
-    public boolean hasNextChunkGroup() throws IOException {
-        return channel.position() < fileMetadataPos;
-    }
 
     public ChunkGroupFooter readChunkGroupFooter() throws IOException {
         return ChunkGroupFooter.deserializeFrom(Channels.newInputStream(channel), true);
