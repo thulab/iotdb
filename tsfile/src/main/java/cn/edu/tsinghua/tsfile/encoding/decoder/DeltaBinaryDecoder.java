@@ -45,7 +45,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         super(TSEncoding.TS_2DIFF);
     }
 
-    protected abstract void readHeader(ByteBuffer in) throws IOException;
+    protected abstract void readHeader(ByteBuffer buffer) throws IOException;
 
     protected abstract void allocateDataArray();
 
@@ -84,24 +84,18 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         /**
          * if there's no decoded data left, decode next pack into {@code data}
          *
-         * @param in InputStream
+         * @param buffer InputStream
          * @return int
-         * @throws IOException cannot read T from InputStream
          */
-        protected int readT(ByteBuffer in) throws IOException {
+        protected int readT(ByteBuffer buffer) {
             if (nextReadIndex == readIntTotalCount)
-                return loadIntBatch(in);
+                return loadIntBatch(buffer);
             return data[nextReadIndex++];
         }
 
         @Override
-        public int readInt(ByteBuffer in) {
-            try {
-                return readT(in);
-            } catch (IOException e) {
-                LOG.warn("meet IOException when load batch from InputStream, return 0");
-                return 0;
-            }
+        public int readInt(ByteBuffer buffer) {
+            return readT(buffer);
         }
 
         /**
@@ -109,7 +103,6 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          *
          * @param buffer ByteBuffer
          * @return int
-         * @throws IOException cannot load batch from InputStream
          */
         protected int loadIntBatch(ByteBuffer buffer) {
             packNum = ReadWriteIOUtils.readInt(buffer);
@@ -153,9 +146,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
             data[i] = previous + minDeltaBase + v;
         }
 
-		@Override
-		public void reset() {
-		}
+        @Override
+        public void reset() {
+        }
     }
 
     public static class LongDeltaDecoder extends DeltaBinaryDecoder {
@@ -176,9 +169,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          *
          * @param buffer InputStream
          * @return long value
-         * @throws IOException cannot read T from InputStream
          */
-        protected long readT(ByteBuffer buffer) throws IOException {
+        protected long readT(ByteBuffer buffer) {
             if (nextReadIndex == readIntTotalCount)
                 return loadIntBatch(buffer);
             return data[nextReadIndex++];
@@ -189,9 +181,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          *
          * @param buffer ByteBuffer
          * @return long value
-         * @throws IOException  cannot load batch from InputStream
          */
-        protected long loadIntBatch(ByteBuffer buffer) throws IOException {
+        protected long loadIntBatch(ByteBuffer buffer) {
             packNum = ReadWriteIOUtils.readInt(buffer);
             packWidth = ReadWriteIOUtils.readInt(buffer);
             count++;
@@ -210,7 +201,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
 
-        private void readPack() throws IOException {
+        private void readPack() {
             for (int i = 0; i < packNum; i++) {
                 readValue(i);
                 previous = data[i];
@@ -219,12 +210,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
 
         @Override
         public long readLong(ByteBuffer buffer) {
-            try {
-                return readT(buffer);
-            } catch (IOException e) {
-                LOG.warn("meet IOException when load batch from InputStream, return 0");
-                return 0;
-            }
+            return readT(buffer);
         }
 
         @Override
@@ -244,9 +230,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
             data[i] = previous + minDeltaBase + v;
         }
 
-		@Override
-		public void reset() {
-		}
+        @Override
+        public void reset() {
+        }
 
     }
 }
