@@ -22,6 +22,7 @@ import java.util.Map;
  * Decoder switch or enums value using bitmap, bitmap-encoding:
  * {@code <length> <num> <encoded-data>}
  */
+@Deprecated
 public class BitmapDecoder extends Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(BitmapDecoder.class);
 
@@ -114,7 +115,7 @@ public class BitmapDecoder extends Decoder {
         this.number = 0;
         this.currentCount = 0;
         if (this.byteCache == null) {
-            new ByteArrayInputStream(new byte[0]);
+            this.byteCache = ByteBuffer.allocate(0);
         } else {
             this.byteCache.flip();
         }

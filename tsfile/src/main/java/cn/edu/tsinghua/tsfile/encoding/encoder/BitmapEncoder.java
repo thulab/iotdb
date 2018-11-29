@@ -27,6 +27,7 @@ import java.util.Set;
  * }
  * </pre>
  */
+@Deprecated
 public class BitmapEncoder extends Encoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(BitmapEncoder.class);
 
