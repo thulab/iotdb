@@ -73,7 +73,24 @@ public abstract class AbstractClient {
 	protected static final int ISO_DATETIME_LEN = 23;
 	protected static int maxTimeLength = ISO_DATETIME_LEN;
 	protected static int maxValueLength = 15;
-    protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};// control the width of columns for 'show timeseries <path>' and 'show storage group'
+	/**
+	 * control the width of columns for 'show timeseries <path>' and 'show storage group'
+	 * <p> for 'show timeseries <path>':
+	 * <table>
+	 * <tr> <th>Timeseries (width:75)</th> <th>Storage Group (width:45)</th> <th>DataType width:8)</th> <th>Encoding (width:8)</th></tr>
+	 * <tr> <td>root.vehicle.d1.s1</td>    <td>root.vehicle</td>             <td>INT32</td>             <td>PLAIN</td></tr>
+	 * <tr> <td>...</td>                   <td>...</td>                      <td>...</td>               <td>...</td></tr>
+	 * </table>
+	 * </p>
+	 * <p> for show storage group <path>':
+	 * <table>
+	 * <tr> <th>STORAGE_GROUP (width:75)</th> </tr>
+	 * <tr> <td>root.vehicle</td>             </tr>
+	 * <tr> <td>...</td>                      </tr>
+	 * </table>
+	 * </p>
+	 */
+    protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};
 	protected static String formatTime = "%" + maxTimeLength + "s|";
 	protected static String formatValue = "%" + maxValueLength + "s|";
 
