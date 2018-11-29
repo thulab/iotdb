@@ -20,12 +20,12 @@ public class TsDeviceMetadata {
     /**
      * start time for a device
      **/
-    private long startTime;
+    private long startTime = Long.MAX_VALUE;
 
     /**
      * end time for a device
      **/
-    private long endTime;
+    private long endTime = Long.MIN_VALUE;
 
     /**
      * Row groups in this file
@@ -57,6 +57,11 @@ public class TsDeviceMetadata {
     public void addChunkGroupMetaData(ChunkGroupMetaData chunkGroup) {
         chunkGroupMetadataList.add(chunkGroup);
         serializedSize += chunkGroup.getSerializedSize();
+        for (ChunkMetaData chunkMetaData : chunkGroup.getChunkMetaDataList()) {
+            // update startTime and endTime
+            startTime = Long.min(startTime, chunkMetaData.getStartTime());
+            endTime = Long.max(endTime, chunkMetaData.getEndTime());
+        }
     }
 
     public List<ChunkGroupMetaData> getChunkGroups() {

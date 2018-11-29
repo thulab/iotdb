@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -190,12 +191,12 @@ public class LongRleDecoderTest {
 			}
 			encoder.flush(baos);
 		}
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+		ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
 		RleDecoder decoder = new LongRleDecoder(EndianType.LITTLE_ENDIAN);
 		for(int i = 0;i < repeatCount;i++){
 			for(long value : list){
-				long value_ = decoder.readLong(bais);
+				long value_ = decoder.readLong(buffer);
 				if(isDebug){
 					System.out.println(value_+"/"+value);
 				}

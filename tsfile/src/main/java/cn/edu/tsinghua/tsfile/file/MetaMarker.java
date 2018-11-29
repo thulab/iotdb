@@ -7,7 +7,8 @@ import java.io.IOException;
  */
 public class MetaMarker {
     public static final byte ChunkGroupFooter = 0;
-    public static final byte ChunkHeader = ChunkGroupFooter + 1;
+    public static final byte ChunkHeader = 1;
+    public static final byte Separator = 2;
 
     public static void handleUnexpectedMarker(byte marker) throws IOException {
         throw new IOException("Unexpected marker " + marker);

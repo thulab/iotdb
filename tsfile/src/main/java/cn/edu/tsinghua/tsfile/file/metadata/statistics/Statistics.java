@@ -258,7 +258,7 @@ public abstract class Statistics<T> {
         return statistics;
     }
 
-    public static Statistics deserialize(ByteBuffer inputStream, TSDataType dataType) throws IOException {
+    public static Statistics deserialize(ByteBuffer buffer, TSDataType dataType) throws IOException {
         Statistics statistics=null;
         switch (dataType) {
             case INT32:
@@ -282,7 +282,7 @@ public abstract class Statistics<T> {
             default:
                 throw new UnknownColumnTypeException(dataType.toString());
         }
-        statistics.fill(inputStream);
+        statistics.fill(buffer);
         return statistics;
     }
 

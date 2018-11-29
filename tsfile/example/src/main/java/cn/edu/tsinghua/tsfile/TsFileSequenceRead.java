@@ -28,8 +28,8 @@ public class TsFileSequenceRead {
         // first SeriesChunks (headers and data) in one ChunkGroup, then the ChunkGroupFooter
         // Because we do not know how many chunks a ChunkGroup may have, we should read one byte (the marker) ahead and
         // judge accordingly.
-        while (reader.hasNextChunkGroup()) {
-            byte marker = reader.readMarker();
+        byte marker;
+        while ((marker = reader.readMarker()) != MetaMarker.Separator) {
             switch (marker) {
                 case MetaMarker.ChunkHeader:
                     ChunkHeader header = reader.readChunkHeader();

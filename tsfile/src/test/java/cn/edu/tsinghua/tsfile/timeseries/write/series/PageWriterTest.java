@@ -11,18 +11,13 @@ import cn.edu.tsinghua.tsfile.timeseries.constant.TimeseriesTestConstant;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-/**
- *
- * @author kangrong
- *
- */
+
 public class PageWriterTest {
 
     @Test
@@ -47,27 +42,25 @@ public class PageWriterTest {
             writer.write(timeCount++, d1);
             writer.write(timeCount++, new Binary(str1));
             assertEquals(101, writer.estimateMaxMemSize());
-            ByteBuffer input = writer.getUncompressedBytes();
-            ByteArrayInputStream in = new ByteArrayInputStream(input.array());
+            ByteBuffer buffer1 = writer.getUncompressedBytes();
+            ByteBuffer buffer = ByteBuffer.wrap(buffer1.array());
             writer.reset();
             assertEquals(0, writer.estimateMaxMemSize());
-            int timeSize = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
+            int timeSize = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
             byte[] timeBytes = new byte[timeSize];
-            int ret = in.read(timeBytes);
-            if(ret != timeBytes.length)
-                fail();
-            ByteArrayInputStream timeInputStream = new ByteArrayInputStream(timeBytes);
+            buffer.get(timeBytes);
+            ByteBuffer buffer2 = ByteBuffer.wrap(timeBytes);
             PlainDecoder decoder = new PlainDecoder(EndianType.LITTLE_ENDIAN);
             for (int i = 0; i < timeCount; i++) {
-                assertEquals(i, decoder.readLong(timeInputStream));
+                assertEquals(i, decoder.readLong(buffer2));
             }
-            assertEquals(s1, decoder.readShort(in));
-            assertEquals(b1, decoder.readBoolean(in));
-            assertEquals(i1, decoder.readInt(in));
-            assertEquals(l1, decoder.readLong(in));
-            Assert.assertEquals(f1, decoder.readFloat(in), TimeseriesTestConstant.float_min_delta);
-            assertEquals(d1, decoder.readDouble(in), TimeseriesTestConstant.double_min_delta);
-            assertEquals(str1, decoder.readBinary(in).getStringValue());
+            assertEquals(s1, decoder.readShort(buffer));
+            assertEquals(b1, decoder.readBoolean(buffer));
+            assertEquals(i1, decoder.readInt(buffer));
+            assertEquals(l1, decoder.readLong(buffer));
+            Assert.assertEquals(f1, decoder.readFloat(buffer), TimeseriesTestConstant.float_min_delta);
+            assertEquals(d1, decoder.readDouble(buffer), TimeseriesTestConstant.double_min_delta);
+            assertEquals(str1, decoder.readBinary(buffer).getStringValue());
 
         } catch (IOException e) {
             fail();

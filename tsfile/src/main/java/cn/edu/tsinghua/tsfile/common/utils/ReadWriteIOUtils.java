@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.tsfile.common.utils;
 
-import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
@@ -150,6 +149,18 @@ public class ReadWriteIOUtils {
     public static int readInt(ByteBuffer buffer) {
         int n = buffer.getInt();
         return n;
+    }
+
+    /**
+     * read an unsigned byte(0 ~ 255) as InputStream does
+     *
+     * @return the byte or -1(means there is no byte to read)
+     */
+    public static int read(ByteBuffer buffer) {
+        if (!buffer.hasRemaining()) {
+            return -1;
+        }
+        return buffer.get() & 0xFF;
     }
 
     public static int write(long n, OutputStream outputStream) throws IOException {
