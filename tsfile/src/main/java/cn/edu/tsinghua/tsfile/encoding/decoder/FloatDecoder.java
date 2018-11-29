@@ -64,25 +64,25 @@ public class FloatDecoder extends Decoder {
     }
 
     @Override
-    public float readFloat(ByteBuffer in) {
-        readMaxPointValue(in);
-        int value = decoder.readInt(in);
+    public float readFloat(ByteBuffer buffer) {
+        readMaxPointValue(buffer);
+        int value = decoder.readInt(buffer);
         double result = value / maxPointValue;
         return (float) result;
     }
 
     @Override
-    public double readDouble(ByteBuffer in) {
-        readMaxPointValue(in);
-        long value = decoder.readLong(in);
+    public double readDouble(ByteBuffer buffer) {
+        readMaxPointValue(buffer);
+        long value = decoder.readLong(buffer);
         double result = value / maxPointValue;
         return result;
     }
 
-    private void readMaxPointValue(ByteBuffer in) {
+    private void readMaxPointValue(ByteBuffer buffer) {
         try {
             if (!isMaxPointNumberRead) {
-                int maxPointNumber = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
+                int maxPointNumber = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
                 if (maxPointNumber <= 0) {
                     maxPointValue = 1;
                 } else {
@@ -96,35 +96,35 @@ public class FloatDecoder extends Decoder {
     }
 
     @Override
-    public boolean hasNext(ByteBuffer in) throws IOException {
+    public boolean hasNext(ByteBuffer buffer) throws IOException {
         if (decoder == null) {
             return false;
         }
-        return decoder.hasNext(in);
+        return decoder.hasNext(buffer);
     }
 
     @Override
-    public Binary readBinary(ByteBuffer in) {
+    public Binary readBinary(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBinary is not supproted by FloatDecoder");
     }
 
     @Override
-    public boolean readBoolean(ByteBuffer in) {
+    public boolean readBoolean(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBoolean is not supproted by FloatDecoder");
     }
 
     @Override
-    public short readShort(ByteBuffer in) {
+    public short readShort(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readShort is not supproted by FloatDecoder");
     }
 
     @Override
-    public int readInt(ByteBuffer in) {
+    public int readInt(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readInt is not supproted by FloatDecoder");
     }
 
     @Override
-    public long readLong(ByteBuffer in) {
+    public long readLong(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readLong is not supproted by FloatDecoder");
     }
 

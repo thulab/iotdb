@@ -137,9 +137,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
         @Override
-        protected void readHeader(ByteBuffer in) {
-            minDeltaBase = ReadWriteIOUtils.readInt(in);
-            firstValue = ReadWriteIOUtils.readInt(in);
+        protected void readHeader(ByteBuffer buffer) {
+            minDeltaBase = ReadWriteIOUtils.readInt(buffer);
+            firstValue = ReadWriteIOUtils.readInt(buffer);
         }
 
         @Override
@@ -174,13 +174,13 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         /**
          * if there's no decoded data left, decode next pack into {@code data}
          *
-         * @param in InputStream
+         * @param buffer InputStream
          * @return long value
          * @throws IOException cannot read T from InputStream
          */
-        protected long readT(ByteBuffer in) throws IOException {
+        protected long readT(ByteBuffer buffer) throws IOException {
             if (nextReadIndex == readIntTotalCount)
-                return loadIntBatch(in);
+                return loadIntBatch(buffer);
             return data[nextReadIndex++];
         }
 
@@ -218,9 +218,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
         @Override
-        public long readLong(ByteBuffer in) {
+        public long readLong(ByteBuffer buffer) {
             try {
-                return readT(in);
+                return readT(buffer);
             } catch (IOException e) {
                 LOG.warn("meet IOException when load batch from InputStream, return 0");
                 return 0;
@@ -228,9 +228,9 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         }
 
         @Override
-        protected void readHeader(ByteBuffer in) {
-            minDeltaBase = ReadWriteIOUtils.readLong(in);
-            firstValue = ReadWriteIOUtils.readLong(in);
+        protected void readHeader(ByteBuffer buffer) {
+            minDeltaBase = ReadWriteIOUtils.readLong(buffer);
+            firstValue = ReadWriteIOUtils.readLong(buffer);
         }
 
         @Override
