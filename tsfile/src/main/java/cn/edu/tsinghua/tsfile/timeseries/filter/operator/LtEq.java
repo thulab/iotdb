@@ -1,16 +1,14 @@
 package cn.edu.tsinghua.tsfile.timeseries.filter.operator;
 
+import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.UnaryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.AbstractFilterVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.TimeValuePairFilterVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 /**
  * Less than or Equals
  *
  * @param <T> comparable data type
- * @author CGF
  */
 public class LtEq<T extends Comparable<T>> extends UnaryFilter<T> {
 
@@ -21,13 +19,25 @@ public class LtEq<T extends Comparable<T>> extends UnaryFilter<T> {
     }
 
     @Override
-    public <R> R accept(AbstractFilterVisitor<R> visitor) {
-        return visitor.visit(this);
+    public boolean satisfy(DigestForFilter digest) {
+        if (filterType == FilterType.TIME_FILTER) {
+            return ((Long) value) >= digest.getMinTime();
+        } else {
+            return value.compareTo(digest.getMinValue()) >= 0;
+        }
     }
 
     @Override
-    public <R> R accept(TimeValuePair value, TimeValuePairFilterVisitor<R> visitor) {
-        return visitor.visit(value, this);
+    public boolean satisfy(TimeValuePair pair) {
+        Object v = filterType == FilterType.TIME_FILTER ? pair.getTimestamp() : pair.getValue().getValue();
+        return value.compareTo((T) v) >= 0;
+    }
+
+
+    @Override
+    public boolean satisfy(Object time, Object value) {
+        Object v = filterType == FilterType.TIME_FILTER ? time : value;
+        return this.value.compareTo((T) v) >= 0;
     }
 
     @Override

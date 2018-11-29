@@ -13,7 +13,7 @@ import java.io.Serializable;
  *
  * @author CGF
  */
-public class Or<T extends Comparable<T>> extends BinaryFilter<T> implements Serializable {
+public class Or<T extends Comparable<T>> extends BinaryFilter implements Serializable {
 
     private static final long serialVersionUID = -968055896528472694L;
 

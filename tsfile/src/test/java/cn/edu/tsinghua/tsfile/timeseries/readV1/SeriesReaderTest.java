@@ -91,7 +91,7 @@ public class SeriesReaderTest {
 
         Filter<Integer> filter = new FilterFactory().or(
                 FilterFactory.and(TimeFilter.gt(1480563570029L), TimeFilter.lt(1480563570033L)),
-                (And<Integer>)FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
+                (And)FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
         SeriesFilter<Integer> seriesFilter = new SeriesFilter<>(new Path("d1.s1"), filter);
         SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
 
