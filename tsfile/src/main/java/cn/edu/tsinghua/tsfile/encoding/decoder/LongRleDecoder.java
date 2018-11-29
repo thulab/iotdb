@@ -94,9 +94,8 @@ public class LongRleDecoder extends RleDecoder {
         currentBuffer = new long[bitPackedGroupCount * config.RLE_MIN_REPEATED_NUM];
         byte[] bytes = new byte[bitPackedGroupCount * bitWidth];
         int bytesToRead = bitPackedGroupCount * bitWidth;
-        bytesToRead = Math.min(bytesToRead, byteCache.available());
-//		new DataInputStream(byteCache).readFully(bytes, 0, bytesToRead);
-        byteCache.read(bytes, 0, bytesToRead);
+        bytesToRead = Math.min(bytesToRead, byteCache.remaining());
+        byteCache.get(bytes, 0, bytesToRead);
 
         // save all long values in currentBuffer
         packer.unpackAllValues(bytes, 0, bytesToRead, currentBuffer);

@@ -5,10 +5,10 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.TSFileDecodingException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
  * information about rle format, see RleEncoder
  */
 public abstract class RleDecoder extends Decoder {
-    // private static final Logger LOGGER = LoggerFactory.getLogger(RleDecoder.class);
+
     public EndianType endianType;
     protected TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
     /**
@@ -49,7 +49,7 @@ public abstract class RleDecoder extends Decoder {
     /**
      * buffer to save data format like [{@code <bitwidth> <encoded-data>}] for decoder
      */
-    protected ByteArrayInputStream byteCache;
+    protected ByteBuffer byteCache;
     /**
      * number of bit-packing group in which is saved in header
      */
@@ -65,7 +65,7 @@ public abstract class RleDecoder extends Decoder {
         currentCount = 0;
         isLengthAndBitWidthReaded = false;
         bitPackingNum = 0;
-        byteCache = new ByteArrayInputStream(new byte[0]);
+        byteCache = ByteBuffer.allocate(0);
     }
 
     /**
@@ -96,7 +96,7 @@ public abstract class RleDecoder extends Decoder {
                 int bitPackedGroupCount = header >> 1;
                 // in last bit-packing group, there may be some useless value,
                 // lastBitPackedNum indicates how many values is useful
-                int lastBitPackedNum = byteCache.read();
+                int lastBitPackedNum = ReadWriteIOUtils.read(byteCache);
                 if (bitPackedGroupCount > 0) {
 
                     currentCount = (bitPackedGroupCount - 1) * config.RLE_MIN_REPEATED_NUM + lastBitPackedNum;
@@ -124,9 +124,9 @@ public abstract class RleDecoder extends Decoder {
         length = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
         byte[] tmp = new byte[length];
         in.get(tmp, 0, length);
-        byteCache = new ByteArrayInputStream(tmp);
+        byteCache = ByteBuffer.wrap(tmp);
         isLengthAndBitWidthReaded = true;
-        bitWidth = byteCache.read();
+        bitWidth = ReadWriteIOUtils.read(byteCache);
         initPacker();
     }
 
@@ -152,7 +152,7 @@ public abstract class RleDecoder extends Decoder {
      * @return true or false to indicate whether there is another pattern left
      */
     protected boolean hasNextPackage() {
-        return currentCount > 0 || byteCache.available() > 0;
+        return currentCount > 0 || byteCache.remaining() > 0;
     }
 
     protected abstract void initPacker();

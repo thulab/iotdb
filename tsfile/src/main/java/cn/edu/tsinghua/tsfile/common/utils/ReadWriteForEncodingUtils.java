@@ -214,6 +214,23 @@ public class ReadWriteForEncodingUtils {
         return result;
     }
 
+    public static int readIntLittleEndianPaddedOnBitWidth(ByteBuffer in, int bitWidth) throws IOException {
+        int paddedByteNum = (bitWidth + 7) / 8;
+        if (paddedByteNum > 4) {
+            throw new IOException(String.format(
+                    "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes", paddedByteNum));
+        }
+        int result = 0;
+        int offset = 0;
+        while (paddedByteNum > 0) {
+            int ch = ReadWriteIOUtils.read(in);
+            result += ch << offset;
+            offset += 8;
+            paddedByteNum--;
+        }
+        return result;
+    }
+
     /**
      * read long value using special bit from input stream
      *
@@ -231,6 +248,21 @@ public class ReadWriteForEncodingUtils {
         long result = 0;
         for (int i = 0; i < paddedByteNum; i++) {
             int ch = in.read();
+            result <<= 8;
+            result |= (ch & 0xff);
+        }
+        return result;
+    }
+
+    public static long readLongLittleEndianPaddedOnBitWidth(ByteBuffer in, int bitWidth) throws IOException {
+        int paddedByteNum = (bitWidth + 7) / 8;
+        if (paddedByteNum > 8) {
+            throw new IOException(String.format(
+                    "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes", paddedByteNum));
+        }
+        long result = 0;
+        for (int i = 0; i < paddedByteNum; i++) {
+            int ch = ReadWriteIOUtils.read(in);
             result <<= 8;
             result |= (ch & 0xff);
         }
