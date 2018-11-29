@@ -27,15 +27,15 @@ public abstract class GorillaDecoder extends Decoder {
 
 
     public GorillaDecoder() {
-		super(TSEncoding.GORILLA);
-		reset();
-	}
+        super(TSEncoding.GORILLA);
+        reset();
+    }
 
-	public void reset() {
-		this.flag = false;
-		this.isEnd = false;
-		this.numberLeftInBuffer = 0;
-	}
+    public void reset() {
+        this.flag = false;
+        this.isEnd = false;
+        this.numberLeftInBuffer = 0;
+    }
 
     @Override
     public boolean hasNext(ByteBuffer buffer) throws IOException {
@@ -65,7 +65,7 @@ public abstract class GorillaDecoder extends Decoder {
      * @param buffer ByteBuffer to read
      */
     protected void fillBuffer(ByteBuffer buffer) {
-        if(buffer.remaining() >= 1) {
+        if (buffer.remaining() >= 1) {
             this.buffer = ReadWriteIOUtils.read(buffer);
             numberLeftInBuffer = 8;
         } else {
@@ -79,15 +79,15 @@ public abstract class GorillaDecoder extends Decoder {
     /**
      * read some bits and convert them to a int value
      *
-     * @param in  stream to read
+     * @param buffer  stream to read
      * @param len number of bit to read
      * @return converted int value
      * @throws IOException cannot read from stream
      */
-    protected int readIntFromStream(ByteBuffer in, int len) throws IOException {
+    protected int readIntFromStream(ByteBuffer buffer, int len) throws IOException {
         int num = 0;
         for (int i = 0; i < len; i++) {
-            int bit = readBit(in) ? 1 : 0;
+            int bit = readBit(buffer) ? 1 : 0;
             num |= bit << (len - 1 - i);
         }
         return num;
@@ -96,15 +96,15 @@ public abstract class GorillaDecoder extends Decoder {
     /**
      * read some bits and convert them to a long value
      *
-     * @param in  stream to read
+     * @param buffer  stream to read
      * @param len number of bit to read
      * @return converted long value
      * @throws IOException cannot read from stream
      */
-    protected long readLongFromStream(ByteBuffer in, int len) throws IOException {
+    protected long readLongFromStream(ByteBuffer buffer, int len) throws IOException {
         long num = 0;
         for (int i = 0; i < len; i++) {
-            long bit = (long) (readBit(in) ? 1 : 0);
+            long bit = (long) (readBit(buffer) ? 1 : 0);
             num |= bit << (len - 1 - i);
         }
         return num;
