@@ -36,7 +36,7 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ServerProperties");
 
   private static final org.apache.thrift.protocol.TField VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("version", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField AGGREGATION_TIME_CONSTANT_FIELD_DESC = new org.apache.thrift.protocol.TField("aggregationTimeConstant", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField SUPPORTED_TIME_AGGREGATION_OPERATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("supportedTimeAggregationOperations", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,12 +45,12 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   }
 
   public String version; // required
-  public List<String> aggregationTimeConstant; // required
+  public List<String> supportedTimeAggregationOperations; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     VERSION((short)1, "version"),
-    AGGREGATION_TIME_CONSTANT((short)2, "aggregationTimeConstant");
+    SUPPORTED_TIME_AGGREGATION_OPERATIONS((short)2, "supportedTimeAggregationOperations");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,8 +67,8 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       switch(fieldId) {
         case 1: // VERSION
           return VERSION;
-        case 2: // AGGREGATION_TIME_CONSTANT
-          return AGGREGATION_TIME_CONSTANT;
+        case 2: // SUPPORTED_TIME_AGGREGATION_OPERATIONS
+          return SUPPORTED_TIME_AGGREGATION_OPERATIONS;
         default:
           return null;
       }
@@ -114,7 +114,7 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.VERSION, new org.apache.thrift.meta_data.FieldMetaData("version", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.AGGREGATION_TIME_CONSTANT, new org.apache.thrift.meta_data.FieldMetaData("aggregationTimeConstant", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.SUPPORTED_TIME_AGGREGATION_OPERATIONS, new org.apache.thrift.meta_data.FieldMetaData("supportedTimeAggregationOperations", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -126,11 +126,11 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
 
   public ServerProperties(
     String version,
-    List<String> aggregationTimeConstant)
+    List<String> supportedTimeAggregationOperations)
   {
     this();
     this.version = version;
-    this.aggregationTimeConstant = aggregationTimeConstant;
+    this.supportedTimeAggregationOperations = supportedTimeAggregationOperations;
   }
 
   /**
@@ -140,9 +140,9 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     if (other.isSetVersion()) {
       this.version = other.version;
     }
-    if (other.isSetAggregationTimeConstant()) {
-      List<String> __this__aggregationTimeConstant = new ArrayList<String>(other.aggregationTimeConstant);
-      this.aggregationTimeConstant = __this__aggregationTimeConstant;
+    if (other.isSetSupportedTimeAggregationOperations()) {
+      List<String> __this__supportedTimeAggregationOperations = new ArrayList<String>(other.supportedTimeAggregationOperations);
+      this.supportedTimeAggregationOperations = __this__supportedTimeAggregationOperations;
     }
   }
 
@@ -153,7 +153,7 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
   @Override
   public void clear() {
     this.version = null;
-    this.aggregationTimeConstant = null;
+    this.supportedTimeAggregationOperations = null;
   }
 
   public String getVersion() {
@@ -180,42 +180,42 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     }
   }
 
-  public int getAggregationTimeConstantSize() {
-    return (this.aggregationTimeConstant == null) ? 0 : this.aggregationTimeConstant.size();
+  public int getSupportedTimeAggregationOperationsSize() {
+    return (this.supportedTimeAggregationOperations == null) ? 0 : this.supportedTimeAggregationOperations.size();
   }
 
-  public java.util.Iterator<String> getAggregationTimeConstantIterator() {
-    return (this.aggregationTimeConstant == null) ? null : this.aggregationTimeConstant.iterator();
+  public java.util.Iterator<String> getSupportedTimeAggregationOperationsIterator() {
+    return (this.supportedTimeAggregationOperations == null) ? null : this.supportedTimeAggregationOperations.iterator();
   }
 
-  public void addToAggregationTimeConstant(String elem) {
-    if (this.aggregationTimeConstant == null) {
-      this.aggregationTimeConstant = new ArrayList<String>();
+  public void addToSupportedTimeAggregationOperations(String elem) {
+    if (this.supportedTimeAggregationOperations == null) {
+      this.supportedTimeAggregationOperations = new ArrayList<String>();
     }
-    this.aggregationTimeConstant.add(elem);
+    this.supportedTimeAggregationOperations.add(elem);
   }
 
-  public List<String> getAggregationTimeConstant() {
-    return this.aggregationTimeConstant;
+  public List<String> getSupportedTimeAggregationOperations() {
+    return this.supportedTimeAggregationOperations;
   }
 
-  public ServerProperties setAggregationTimeConstant(List<String> aggregationTimeConstant) {
-    this.aggregationTimeConstant = aggregationTimeConstant;
+  public ServerProperties setSupportedTimeAggregationOperations(List<String> supportedTimeAggregationOperations) {
+    this.supportedTimeAggregationOperations = supportedTimeAggregationOperations;
     return this;
   }
 
-  public void unsetAggregationTimeConstant() {
-    this.aggregationTimeConstant = null;
+  public void unsetSupportedTimeAggregationOperations() {
+    this.supportedTimeAggregationOperations = null;
   }
 
-  /** Returns true if field aggregationTimeConstant is set (has been assigned a value) and false otherwise */
-  public boolean isSetAggregationTimeConstant() {
-    return this.aggregationTimeConstant != null;
+  /** Returns true if field supportedTimeAggregationOperations is set (has been assigned a value) and false otherwise */
+  public boolean isSetSupportedTimeAggregationOperations() {
+    return this.supportedTimeAggregationOperations != null;
   }
 
-  public void setAggregationTimeConstantIsSet(boolean value) {
+  public void setSupportedTimeAggregationOperationsIsSet(boolean value) {
     if (!value) {
-      this.aggregationTimeConstant = null;
+      this.supportedTimeAggregationOperations = null;
     }
   }
 
@@ -229,11 +229,11 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       }
       break;
 
-    case AGGREGATION_TIME_CONSTANT:
+    case SUPPORTED_TIME_AGGREGATION_OPERATIONS:
       if (value == null) {
-        unsetAggregationTimeConstant();
+        unsetSupportedTimeAggregationOperations();
       } else {
-        setAggregationTimeConstant((List<String>)value);
+        setSupportedTimeAggregationOperations((List<String>)value);
       }
       break;
 
@@ -245,8 +245,8 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     case VERSION:
       return getVersion();
 
-    case AGGREGATION_TIME_CONSTANT:
-      return getAggregationTimeConstant();
+    case SUPPORTED_TIME_AGGREGATION_OPERATIONS:
+      return getSupportedTimeAggregationOperations();
 
     }
     throw new IllegalStateException();
@@ -261,8 +261,8 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     switch (field) {
     case VERSION:
       return isSetVersion();
-    case AGGREGATION_TIME_CONSTANT:
-      return isSetAggregationTimeConstant();
+    case SUPPORTED_TIME_AGGREGATION_OPERATIONS:
+      return isSetSupportedTimeAggregationOperations();
     }
     throw new IllegalStateException();
   }
@@ -289,12 +289,12 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
         return false;
     }
 
-    boolean this_present_aggregationTimeConstant = true && this.isSetAggregationTimeConstant();
-    boolean that_present_aggregationTimeConstant = true && that.isSetAggregationTimeConstant();
-    if (this_present_aggregationTimeConstant || that_present_aggregationTimeConstant) {
-      if (!(this_present_aggregationTimeConstant && that_present_aggregationTimeConstant))
+    boolean this_present_supportedTimeAggregationOperations = true && this.isSetSupportedTimeAggregationOperations();
+    boolean that_present_supportedTimeAggregationOperations = true && that.isSetSupportedTimeAggregationOperations();
+    if (this_present_supportedTimeAggregationOperations || that_present_supportedTimeAggregationOperations) {
+      if (!(this_present_supportedTimeAggregationOperations && that_present_supportedTimeAggregationOperations))
         return false;
-      if (!this.aggregationTimeConstant.equals(that.aggregationTimeConstant))
+      if (!this.supportedTimeAggregationOperations.equals(that.supportedTimeAggregationOperations))
         return false;
     }
 
@@ -324,12 +324,12 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetAggregationTimeConstant()).compareTo(other.isSetAggregationTimeConstant());
+    lastComparison = Boolean.valueOf(isSetSupportedTimeAggregationOperations()).compareTo(other.isSetSupportedTimeAggregationOperations());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAggregationTimeConstant()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.aggregationTimeConstant, other.aggregationTimeConstant);
+    if (isSetSupportedTimeAggregationOperations()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.supportedTimeAggregationOperations, other.supportedTimeAggregationOperations);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -362,11 +362,11 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("aggregationTimeConstant:");
-    if (this.aggregationTimeConstant == null) {
+    sb.append("supportedTimeAggregationOperations:");
+    if (this.supportedTimeAggregationOperations == null) {
       sb.append("null");
     } else {
-      sb.append(this.aggregationTimeConstant);
+      sb.append(this.supportedTimeAggregationOperations);
     }
     first = false;
     sb.append(")");
@@ -378,8 +378,8 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
     if (version == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'version' was not present! Struct: " + toString());
     }
-    if (aggregationTimeConstant == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'aggregationTimeConstant' was not present! Struct: " + toString());
+    if (supportedTimeAggregationOperations == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'supportedTimeAggregationOperations' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
   }
@@ -426,20 +426,20 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // AGGREGATION_TIME_CONSTANT
+          case 2: // SUPPORTED_TIME_AGGREGATION_OPERATIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list118 = iprot.readListBegin();
-                struct.aggregationTimeConstant = new ArrayList<String>(_list118.size);
+                struct.supportedTimeAggregationOperations = new ArrayList<String>(_list118.size);
                 for (int _i119 = 0; _i119 < _list118.size; ++_i119)
                 {
                   String _elem120;
                   _elem120 = iprot.readString();
-                  struct.aggregationTimeConstant.add(_elem120);
+                  struct.supportedTimeAggregationOperations.add(_elem120);
                 }
                 iprot.readListEnd();
               }
-              struct.setAggregationTimeConstantIsSet(true);
+              struct.setSupportedTimeAggregationOperationsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -464,11 +464,11 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
         oprot.writeString(struct.version);
         oprot.writeFieldEnd();
       }
-      if (struct.aggregationTimeConstant != null) {
-        oprot.writeFieldBegin(AGGREGATION_TIME_CONSTANT_FIELD_DESC);
+      if (struct.supportedTimeAggregationOperations != null) {
+        oprot.writeFieldBegin(SUPPORTED_TIME_AGGREGATION_OPERATIONS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.aggregationTimeConstant.size()));
-          for (String _iter121 : struct.aggregationTimeConstant)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.supportedTimeAggregationOperations.size()));
+          for (String _iter121 : struct.supportedTimeAggregationOperations)
           {
             oprot.writeString(_iter121);
           }
@@ -495,8 +495,8 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.version);
       {
-        oprot.writeI32(struct.aggregationTimeConstant.size());
-        for (String _iter122 : struct.aggregationTimeConstant)
+        oprot.writeI32(struct.supportedTimeAggregationOperations.size());
+        for (String _iter122 : struct.supportedTimeAggregationOperations)
         {
           oprot.writeString(_iter122);
         }
@@ -510,15 +510,15 @@ public class ServerProperties implements org.apache.thrift.TBase<ServerPropertie
       struct.setVersionIsSet(true);
       {
         org.apache.thrift.protocol.TList _list123 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.aggregationTimeConstant = new ArrayList<String>(_list123.size);
+        struct.supportedTimeAggregationOperations = new ArrayList<String>(_list123.size);
         for (int _i124 = 0; _i124 < _list123.size; ++_i124)
         {
           String _elem125;
           _elem125 = iprot.readString();
-          struct.aggregationTimeConstant.add(_elem125);
+          struct.supportedTimeAggregationOperations.add(_elem125);
         }
       }
-      struct.setAggregationTimeConstantIsSet(true);
+      struct.setSupportedTimeAggregationOperationsIsSet(true);
     }
   }
 

@@ -112,7 +112,7 @@ public class Client extends AbstractClient {
 				try {
 					connection = (TsfileConnection) DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username, password);
 					properties = connection.getServerProperties();
-					AGGREGRATE_TIME_LIST.addAll(properties.getAggregationTimeConstant());
+					AGGREGRATE_TIME_LIST.addAll(properties.getSupportedTimeAggregationOperations());
 				} catch (SQLException e) {
 					System.out.println(String.format("%s> %s. Host is %s, port is %s.", IOTDB_CLI_PREFIX, e.getMessage(), host, port));
 					return;

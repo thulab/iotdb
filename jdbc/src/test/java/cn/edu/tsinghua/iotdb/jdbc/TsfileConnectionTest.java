@@ -70,7 +70,7 @@ public class TsfileConnectionTest {
 		connection.client = client;
 		assertEquals(connection.getServerProperties().getVersion(), version);
 		for(int i = 0; i < supportedAggregationTime.size();i++) {
-			assertEquals(connection.getServerProperties().getAggregationTimeConstant().get(i), supportedAggregationTime.get(i));
+			assertEquals(connection.getServerProperties().getSupportedTimeAggregationOperations().get(i), supportedAggregationTime.get(i));
 		}
 	}
 }

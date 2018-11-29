@@ -231,7 +231,7 @@ struct TSSetTimeZoneResp {
 
 struct ServerProperties {
 	1: required string version;
-	2: required list<string> aggregationTimeConstant;
+	2: required list<string> supportedTimeAggregationOperations;
 }
 
 service TSIService {

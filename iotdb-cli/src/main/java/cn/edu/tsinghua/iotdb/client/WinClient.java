@@ -79,7 +79,7 @@ public class WinClient extends AbstractClient {
 					connection = (TsfileConnection) DriverManager.getConnection("jdbc:tsfile://" + host + ":" + port + "/", username,
 							password);
 					properties = connection.getServerProperties();
-					AGGREGRATE_TIME_LIST.addAll(properties.getAggregationTimeConstant());
+					AGGREGRATE_TIME_LIST.addAll(properties.getSupportedTimeAggregationOperations());
 				} catch (SQLException e) {
 					System.out.println(IOTDB_CLI_PREFIX + "> " + e.getMessage());
 					return;
