@@ -92,7 +92,7 @@ public abstract class SeriesChunkReader implements SeriesReader {
     }
 
     /**
-     * Read page one by one from InputStream and check the page header whether this page satisfies the filter.
+     * Read page one by one from ByteBuffer and check the page header whether this page satisfies the filter.
      * Skip the unsatisfied pages and construct PageDataReader for the first page satisfied.
      *
      * @return whether there exists a satisfied page

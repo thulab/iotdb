@@ -77,7 +77,7 @@ public class DeltaBinaryEncoderLongTest {
     writer.flush(out);
   }
 
-  private ByteBuffer in;
+  private ByteBuffer buffer;
 
   private void shouldReadAndWrite(long[] data, int length) throws IOException {
     System.out.println("source data size:" + 4 * length + " byte");
@@ -85,10 +85,10 @@ public class DeltaBinaryEncoderLongTest {
     writeData(data, length);
     byte[] page = out.toByteArray();
     System.out.println("encoding data size:" + page.length + " byte");
-    in = ByteBuffer.wrap(page);
+    buffer = ByteBuffer.wrap(page);
     int i = 0;
-    while (reader.hasNext(in)) {
-      assertEquals(data[i++], reader.readLong(in));
+    while (reader.hasNext(buffer)) {
+      assertEquals(data[i++], reader.readLong(buffer));
     }
   }
 

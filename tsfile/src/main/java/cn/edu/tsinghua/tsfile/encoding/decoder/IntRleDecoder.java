@@ -35,28 +35,24 @@ public class IntRleDecoder extends RleDecoder {
         super(endianType);
         currentValue = 0;
     }
-    
+
     @Override
-    public boolean readBoolean(ByteBuffer in) {
-    	return this.readInt(in) == 0 ? false : true;
+    public boolean readBoolean(ByteBuffer buffer) {
+        return this.readInt(buffer) == 0 ? false : true;
     }
 
 
     /**
      * read a int value from InputStream
      *
-     * @param in - InputStream
+     * @param buffer - ByteBuffer
      * @return value - current valid value
      */
     @Override
-    public int readInt(ByteBuffer in) {
+    public int readInt(ByteBuffer buffer) {
         if (!isLengthAndBitWidthReaded) {
             //start to read a new rle+bit-packing pattern
-            try {
-                readLengthAndBitWidth(in);
-            } catch (IOException e) {
-                LOGGER.error("tsfile-encoding IntRleDecoder: error occurs when reading length", e);
-            }
+            readLengthAndBitWidth(buffer);
         }
 
         if (currentCount == 0) {
@@ -107,8 +103,8 @@ public class IntRleDecoder extends RleDecoder {
         packer.unpackAllValues(bytes, 0, bytesToRead, currentBuffer);
     }
 
-	@Override
-	public void reset() {
-		super.reset();
-	}
+    @Override
+    public void reset() {
+        super.reset();
+    }
 }

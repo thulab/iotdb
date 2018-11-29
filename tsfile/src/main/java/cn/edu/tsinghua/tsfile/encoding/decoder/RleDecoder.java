@@ -116,14 +116,13 @@ public abstract class RleDecoder extends Decoder {
     /**
      * read length and bit width of current package before we decode number
      *
-     * @param in InputStream
-     * @throws IOException cannot read length and bit-width
+     * @param buffer ByteBuffer
      */
-    protected void readLengthAndBitWidth(ByteBuffer in) throws IOException {
+    protected void readLengthAndBitWidth(ByteBuffer buffer) {
         // long st = System.currentTimeMillis();
-        length = ReadWriteForEncodingUtils.readUnsignedVarInt(in);
+        length = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
         byte[] tmp = new byte[length];
-        in.get(tmp, 0, length);
+        buffer.get(tmp, 0, length);
         byteCache = ByteBuffer.wrap(tmp);
         isLengthAndBitWidthReaded = true;
         bitWidth = ReadWriteIOUtils.read(byteCache);
@@ -133,13 +132,13 @@ public abstract class RleDecoder extends Decoder {
     /**
      * Check whether there is number left for reading
      *
-     * @param in decoded data saved in InputStream
+     * @param buffer decoded data saved in ByteBuffer
      * @return true or false to indicate whether there is number left
      * @throws IOException cannot check next value
      */
     @Override
-    public boolean hasNext(ByteBuffer in) throws IOException {
-        if (currentCount > 0 || in.remaining() > 0 || hasNextPackage()) {
+    public boolean hasNext(ByteBuffer buffer) throws IOException {
+        if (currentCount > 0 || buffer.remaining() > 0 || hasNextPackage()) {
             return true;
         }
         return false;
@@ -174,42 +173,42 @@ public abstract class RleDecoder extends Decoder {
     protected abstract void readBitPackingBuffer(int bitPackedGroupCount, int lastBitPackedNum) throws IOException;
 
     @Override
-    public boolean readBoolean(ByteBuffer in) {
+    public boolean readBoolean(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBoolean is not supproted by RleDecoder");
     }
 
     @Override
-    public short readShort(ByteBuffer in) {
+    public short readShort(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readShort is not supproted by RleDecoder");
     }
 
     @Override
-    public int readInt(ByteBuffer in) {
+    public int readInt(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readInt is not supproted by RleDecoder");
     }
 
     @Override
-    public long readLong(ByteBuffer in) {
+    public long readLong(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readLong is not supproted by RleDecoder");
     }
 
     @Override
-    public float readFloat(ByteBuffer in) {
+    public float readFloat(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readFloat is not supproted by RleDecoder");
     }
 
     @Override
-    public double readDouble(ByteBuffer in) {
+    public double readDouble(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readDouble is not supproted by RleDecoder");
     }
 
     @Override
-    public Binary readBinary(ByteBuffer in) {
+    public Binary readBinary(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBinary is not supproted by RleDecoder");
     }
 
     @Override
-    public BigDecimal readBigDecimal(ByteBuffer in) {
+    public BigDecimal readBigDecimal(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBigDecimal is not supproted by RleDecoder");
     }
 

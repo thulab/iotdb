@@ -39,18 +39,14 @@ public class LongRleDecoder extends RleDecoder {
     /**
      * read a long value from InputStream
      *
-     * @param in - InputStream
+     * @param buffer - InputStream
      * @return value - current valid value
      */
     @Override
-    public long readLong(ByteBuffer in) {
+    public long readLong(ByteBuffer buffer) {
         if (!isLengthAndBitWidthReaded) {
             //start to read a new rle+bit-packing pattern
-            try {
-                readLengthAndBitWidth(in);
-            } catch (IOException e) {
-                LOGGER.error("tsfile-encoding IntRleDecoder: error occurs when reading length", e);
-            }
+            readLengthAndBitWidth(buffer);
         }
 
         if (currentCount == 0) {
@@ -101,8 +97,8 @@ public class LongRleDecoder extends RleDecoder {
         packer.unpackAllValues(bytes, 0, bytesToRead, currentBuffer);
     }
 
-	@Override
-	public void reset() {
-		super.reset();
-	}
+    @Override
+    public void reset() {
+        super.reset();
+    }
 }

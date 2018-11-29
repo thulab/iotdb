@@ -85,15 +85,14 @@ public class ReadWriteForEncodingUtils {
     /**
      * read an unsigned var int in stream and transform it to int format
      *
-     * @param in stream to read an unsigned var int
+     * @param buffer stream to read an unsigned var int
      * @return integer value
-     * @throws IOException exception in IO
      */
-    public static int readUnsignedVarInt(ByteBuffer in) throws IOException {
+    public static int readUnsignedVarInt(ByteBuffer buffer) {
         int value = 0;
         int i = 0;
         int b=0;
-        while (in.hasRemaining() && ((b = in.get()) & 0x80) != 0) {
+        while (buffer.hasRemaining() && ((b = buffer.get()) & 0x80) != 0) {
             value |= (b & 0x7F) << i;
             i += 7;
         }

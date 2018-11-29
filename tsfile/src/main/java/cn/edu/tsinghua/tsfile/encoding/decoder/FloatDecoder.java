@@ -80,18 +80,14 @@ public class FloatDecoder extends Decoder {
     }
 
     private void readMaxPointValue(ByteBuffer buffer) {
-        try {
-            if (!isMaxPointNumberRead) {
-                int maxPointNumber = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
-                if (maxPointNumber <= 0) {
-                    maxPointValue = 1;
-                } else {
-                    maxPointValue = Math.pow(10, maxPointNumber);
-                }
-                isMaxPointNumberRead = true;
+        if (!isMaxPointNumberRead) {
+            int maxPointNumber = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
+            if (maxPointNumber <= 0) {
+                maxPointValue = 1;
+            } else {
+                maxPointValue = Math.pow(10, maxPointNumber);
             }
-        } catch (IOException e) {
-            LOGGER.error("tsfile-encoding FloatDecoder: error occurs when reading maxPointValue", e);
+            isMaxPointNumberRead = true;
         }
     }
 
@@ -128,9 +124,9 @@ public class FloatDecoder extends Decoder {
         throw new TSFileDecodingException("Method readLong is not supproted by FloatDecoder");
     }
 
-	@Override
-	public void reset() {
-		this.decoder.reset();
-		this.isMaxPointNumberRead = false;
-	}
+    @Override
+    public void reset() {
+        this.decoder.reset();
+        this.isMaxPointNumberRead = false;
+    }
 }

@@ -63,8 +63,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
 
 
     @Override
-    public boolean hasNext(ByteBuffer in) throws IOException {
-        return (nextReadIndex < readIntTotalCount) || in.remaining() > 0;
+    public boolean hasNext(ByteBuffer buffer) throws IOException {
+        return (nextReadIndex < readIntTotalCount) || buffer.remaining() > 0;
     }
 
 
@@ -84,7 +84,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         /**
          * if there's no decoded data left, decode next pack into {@code data}
          *
-         * @param buffer InputStream
+         * @param buffer ByteBuffer
          * @return int
          */
         protected int readT(ByteBuffer buffer) {
@@ -167,7 +167,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         /**
          * if there's no decoded data left, decode next pack into {@code data}
          *
-         * @param buffer InputStream
+         * @param buffer ByteBuffer
          * @return long value
          */
         protected long readT(ByteBuffer buffer) {

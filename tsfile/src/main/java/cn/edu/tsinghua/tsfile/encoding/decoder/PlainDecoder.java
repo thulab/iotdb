@@ -26,8 +26,8 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public boolean readBoolean(ByteBuffer in) {
-        int ch1 = in.get();
+    public boolean readBoolean(ByteBuffer buffer) {
+        int ch1 = ReadWriteIOUtils.read(buffer);
         if (ch1 == 0) {
             return false;
         } else {
@@ -36,9 +36,9 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public short readShort(ByteBuffer in) {
-        int ch1 = in.get();
-        int ch2 = in.get();
+    public short readShort(ByteBuffer buffer) {
+        int ch1 = ReadWriteIOUtils.read(buffer);
+        int ch2 = ReadWriteIOUtils.read(buffer);
         if (this.endianType == EndianType.LITTLE_ENDIAN) {
             return (short) ((ch2 << 8) + ch1);
         } else {
@@ -49,11 +49,11 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public int readInt(ByteBuffer in) {
-        int ch1 = ReadWriteIOUtils.read(in);
-        int ch2 = ReadWriteIOUtils.read(in);
-        int ch3 = ReadWriteIOUtils.read(in);
-        int ch4 = ReadWriteIOUtils.read(in);
+    public int readInt(ByteBuffer buffer) {
+        int ch1 = ReadWriteIOUtils.read(buffer);
+        int ch2 = ReadWriteIOUtils.read(buffer);
+        int ch3 = ReadWriteIOUtils.read(buffer);
+        int ch4 = ReadWriteIOUtils.read(buffer);
         if (this.endianType == EndianType.LITTLE_ENDIAN) {
             return ch1 + (ch2 << 8) + (ch3 << 16) + (ch4 << 24);
         } else {
@@ -64,10 +64,10 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public long readLong(ByteBuffer in) {
+    public long readLong(ByteBuffer buffer) {
         int[] buf = new int[8];
         for (int i = 0; i < 8; i++)
-            buf[i] = ReadWriteIOUtils.read(in);
+            buf[i] = ReadWriteIOUtils.read(buffer);
 
         Long res = 0L;
         for (int i = 0; i < 8; i++) {
@@ -77,30 +77,30 @@ public class PlainDecoder extends Decoder {
     }
 
     @Override
-    public float readFloat(ByteBuffer in) {
-        return Float.intBitsToFloat(readInt(in));
+    public float readFloat(ByteBuffer buffer) {
+        return Float.intBitsToFloat(readInt(buffer));
     }
 
     @Override
-    public double readDouble(ByteBuffer in) {
-        return Double.longBitsToDouble(readLong(in));
+    public double readDouble(ByteBuffer buffer) {
+        return Double.longBitsToDouble(readLong(buffer));
     }
 
     @Override
-    public Binary readBinary(ByteBuffer in) {
-        int length = readInt(in);
+    public Binary readBinary(ByteBuffer buffer) {
+        int length = readInt(buffer);
         byte[] buf = new byte[length];
-        in.get(buf, 0, buf.length);
+        buffer.get(buf, 0, buf.length);
         return new Binary(buf);
     }
 
     @Override
-    public boolean hasNext(ByteBuffer in) throws IOException {
-        return in.remaining() > 0;
+    public boolean hasNext(ByteBuffer buffer) throws IOException {
+        return buffer.remaining() > 0;
     }
 
     @Override
-    public BigDecimal readBigDecimal(ByteBuffer in) {
+    public BigDecimal readBigDecimal(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBigDecimal is not supproted by PlainDecoder");
     }
 

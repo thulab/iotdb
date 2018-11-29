@@ -112,13 +112,13 @@ public class PageHeader {
         return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, max_timestamp, min_timestamp);
     }
 
-    public static PageHeader deserializeFrom(ByteBuffer inputStream, TSDataType dataType) throws IOException {
-        int uncompressedSize = ReadWriteIOUtils.readInt(inputStream);
-        int compressedSize = ReadWriteIOUtils.readInt(inputStream);
-        int numOfValues = ReadWriteIOUtils.readInt(inputStream);
-        long max_timestamp = ReadWriteIOUtils.readLong(inputStream);
-        long min_timestamp = ReadWriteIOUtils.readLong(inputStream);
-        Statistics statistics = Statistics.deserialize(inputStream, dataType);
+    public static PageHeader deserializeFrom(ByteBuffer buffer, TSDataType dataType) throws IOException {
+        int uncompressedSize = ReadWriteIOUtils.readInt(buffer);
+        int compressedSize = ReadWriteIOUtils.readInt(buffer);
+        int numOfValues = ReadWriteIOUtils.readInt(buffer);
+        long max_timestamp = ReadWriteIOUtils.readLong(buffer);
+        long min_timestamp = ReadWriteIOUtils.readLong(buffer);
+        Statistics statistics = Statistics.deserialize(buffer, dataType);
         return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, max_timestamp, min_timestamp);
     }
 

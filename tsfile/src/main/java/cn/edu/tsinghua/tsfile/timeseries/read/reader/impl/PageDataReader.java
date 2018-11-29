@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.common.utils.ByteBufferBasedInputStream;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -43,18 +42,18 @@ public class PageDataReader implements SeriesReader {
     }
 
     /**
-     * splite pageContent into two stream: time and value
+     * split pageContent into two stream: time and value
      * @param pageData uncompressed bytes size of time column, time column, value column
      * @throws IOException exception in reading data from pageContent
      */
     private void splitDataToTimeStampAndValue(ByteBuffer pageData) throws IOException {
-        int timeInputStreamLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
+        int timeBufferLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
 
         timeBuffer= pageData.slice();
-        timeBuffer.limit(timeInputStreamLength);
+        timeBuffer.limit(timeBufferLength);
 
         valueBuffer= pageData.slice();
-        valueBuffer.position(timeInputStreamLength);
+        valueBuffer.position(timeBufferLength);
     }
 
     @Override
