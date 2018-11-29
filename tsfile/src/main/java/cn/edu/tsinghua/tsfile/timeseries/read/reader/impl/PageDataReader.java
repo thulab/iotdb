@@ -80,6 +80,8 @@ public class PageDataReader implements SeriesReader {
 
     @Override
     public void close() {
+        timeBuffer = null;
+        valueBuffer = null;
     }
 
     // read one value according to data type
