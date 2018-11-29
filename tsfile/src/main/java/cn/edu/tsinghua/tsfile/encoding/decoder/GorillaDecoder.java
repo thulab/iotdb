@@ -69,7 +69,9 @@ public abstract class GorillaDecoder extends Decoder {
             this.buffer = ReadWriteIOUtils.read(buffer);
             numberLeftInBuffer = 8;
         } else {
+            LOGGER.error("Failed to fill a new buffer, because there is no byte to read");
             this.buffer = EOF;
+            numberLeftInBuffer = -1;
         }
 
     }

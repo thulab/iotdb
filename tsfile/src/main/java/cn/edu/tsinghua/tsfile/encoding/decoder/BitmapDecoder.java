@@ -88,6 +88,7 @@ public class BitmapDecoder extends Decoder {
     private void getLengthAndNumber(ByteBuffer buffer) throws IOException {
         this.length = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
         this.number = ReadWriteForEncodingUtils.readUnsignedVarInt(buffer);
+        //TODO maybe this.byteCache = buffer is faster, but not safe
         byte[] tmp = new byte[length];
         buffer.get(tmp, 0, length);
         this.byteCache = ByteBuffer.wrap(tmp);
@@ -145,7 +146,7 @@ public class BitmapDecoder extends Decoder {
                         byteCache.get(tmp, 0, byteArrayLength);
                         break;
                     } else {
-                        byteCache.position(byteArrayLength);
+                        byteCache.position(byteCache.position() + byteArrayLength);
                     }
                 }
 
