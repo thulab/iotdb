@@ -31,9 +31,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class QueryExecutorTest {
 
 
@@ -62,8 +60,8 @@ public class QueryExecutorTest {
 
     @Test
     public void query1() throws IOException {
-        Filter<Integer> filter = TimeFilter.lt(1480562618100L);
-        Filter<Binary> filter2 = ValueFilter.gt(new Binary("dog"));
+        Filter filter = TimeFilter.lt(1480562618100L);
+        Filter filter2 = ValueFilter.gt(new Binary("dog"));
 
         QueryFilter queryFilter = QueryFilterFactory.and(
                 new SeriesFilter<>(new Path("d1.s1"), filter),

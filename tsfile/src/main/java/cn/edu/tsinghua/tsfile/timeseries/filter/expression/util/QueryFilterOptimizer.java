@@ -14,11 +14,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/19.
- */
 public class QueryFilterOptimizer {
-    
+
     private static class QueryFilterOptimizerHelper {
         private static final QueryFilterOptimizer INSTANCE = new QueryFilterOptimizer();
     }
@@ -92,7 +89,7 @@ public class QueryFilterOptimizer {
         return queryFilter;
     }
 
-    private void addTimeFilterToQueryFilter(Filter<?> timeFilter, QueryFilter queryFilter) {
+    private void addTimeFilterToQueryFilter(Filter timeFilter, QueryFilter queryFilter) {
         if (queryFilter instanceof SeriesFilter) {
             addTimeFilterToSeriesFilter(timeFilter, (SeriesFilter) queryFilter);
         } else if (queryFilter instanceof QueryFilterFactory) {
@@ -104,7 +101,7 @@ public class QueryFilterOptimizer {
         }
     }
 
-    private void addTimeFilterToSeriesFilter(Filter<?> timeFilter, SeriesFilter seriesFilter) {
+    private void addTimeFilterToSeriesFilter(Filter timeFilter, SeriesFilter seriesFilter) {
         seriesFilter.setFilter(FilterFactory.and(seriesFilter.getFilter(), timeFilter));
     }
 

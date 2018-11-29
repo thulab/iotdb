@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.operator.*;
 
-/**
- * Created by zhangjinrui on 2017/12/15.
- */
+
 public class TimeFilter {
 
     public static class TimeEq extends Eq {
@@ -45,14 +43,9 @@ public class TimeFilter {
         }
     }
 
-    public static class TimeNoRestriction extends NoRestriction {
-        public String toString() {
-            return FilterType.TIME_FILTER + super.toString();
-        }
-    }
 
-    public static class TimeNot extends Not<Long> {
-        private TimeNot(Filter<Long> filter) {
+    public static class TimeNot extends Not {
+        private TimeNot(Filter filter) {
             super(filter);
         }
     }
@@ -77,11 +70,7 @@ public class TimeFilter {
         return new TimeLtEq(value);
     }
 
-    public static TimeNoRestriction noRestriction() {
-        return new TimeNoRestriction();
-    }
-
-    public static TimeNot not(Filter<Long> filter) {
+    public static TimeNot not(Filter filter) {
         return new TimeNot(filter);
     }
 

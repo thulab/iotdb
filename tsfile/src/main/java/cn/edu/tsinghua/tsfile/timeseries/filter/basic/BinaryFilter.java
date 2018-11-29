@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author CGF
  */
 
-public abstract class BinaryFilter implements Filter, Serializable {
+public abstract class BinaryFilter<T extends Comparable<T>> implements Filter, Serializable {
 
     private static final long serialVersionUID = 1039585564327602465L;
 

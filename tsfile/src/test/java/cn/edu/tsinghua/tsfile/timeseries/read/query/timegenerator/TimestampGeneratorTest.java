@@ -23,9 +23,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class TimestampGeneratorTest {
 
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
@@ -51,9 +49,9 @@ public class TimestampGeneratorTest {
     @Test
     public void testTimeGenerator() throws IOException {
         long startTimestamp = 1480562618000L;
-        Filter<Integer> filter = TimeFilter.lt(1480562618100L);
-        Filter<Binary> filter2 = ValueFilter.gt(new Binary("dog"));
-        Filter<Integer> filter3 = FilterFactory.and(TimeFilter.gtEq(1480562618000L), TimeFilter.ltEq(1480562618100L));
+        Filter filter = TimeFilter.lt(1480562618100L);
+        Filter filter2 = ValueFilter.gt(new Binary("dog"));
+        Filter filter3 = FilterFactory.and(TimeFilter.gtEq(1480562618000L), TimeFilter.ltEq(1480562618100L));
 
         QueryFilter queryFilter = QueryFilterFactory.or(
                 QueryFilterFactory.and(

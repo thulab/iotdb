@@ -5,20 +5,17 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.operator.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.operator.Not;
 import cn.edu.tsinghua.tsfile.timeseries.filter.operator.Or;
 
-/**
- * Created by zhangjinrui on 2017/12/15.
- */
 public class FilterFactory {
-    public static <T extends Comparable<T>> Filter<T> and(Filter<T> left, Filter<T> right){
+    public static <T extends Comparable<T>> Filter and(Filter left, Filter right){
         return new And(left, right);
     }
 
-    public static <T extends Comparable<T>> Filter<T> or(Filter<T> left, Filter<T> right){
+    public static <T extends Comparable<T>> Filter or(Filter left, Filter right){
         return new Or(left, right);
     }
 
-    public static <T extends Comparable<T>> Filter<T> not(Filter<T> filter) {
-        return new Not<>(filter);
+    public static <T extends Comparable<T>> Filter not(Filter filter) {
+        return new Not(filter);
     }
 
 }

@@ -25,9 +25,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/25.
- */
+
 public class SeriesReaderTest {
 
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
@@ -89,9 +87,9 @@ public class SeriesReaderTest {
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
 
-        Filter<Integer> filter = new FilterFactory().or(
+        Filter filter = new FilterFactory().or(
                 FilterFactory.and(TimeFilter.gt(1480563570029L), TimeFilter.lt(1480563570033L)),
-                (And)FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
+                FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
         SeriesFilter<Integer> seriesFilter = new SeriesFilter<>(new Path("d1.s1"), filter);
         SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
 
