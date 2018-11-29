@@ -116,7 +116,7 @@ public class BitmapDecoder extends Decoder {
         if (this.byteCache == null) {
             this.byteCache = ByteBuffer.allocate(0);
         } else {
-            this.byteCache.flip();
+            this.byteCache.position(0);
         }
         if (this.buffer == null) {
             this.buffer = new HashMap<>();
