@@ -192,12 +192,12 @@ public class ReadWriteForEncodingUtils {
     /**
      * read integer value using special bit from input stream
      *
-     * @param in       input stream
+     * @param buffer     byte buffer
      * @param bitWidth bit length
      * @return integer value
      * @throws IOException exception in IO
      */
-    public static int readIntLittleEndianPaddedOnBitWidth(InputStream in, int bitWidth) throws IOException {
+    public static int readIntLittleEndianPaddedOnBitWidth(ByteBuffer buffer, int bitWidth) throws IOException {
         int paddedByteNum = (bitWidth + 7) / 8;
         if (paddedByteNum > 4) {
             throw new IOException(String.format(
@@ -206,7 +206,7 @@ public class ReadWriteForEncodingUtils {
         int result = 0;
         int offset = 0;
         while (paddedByteNum > 0) {
-            int ch = in.read();
+            int ch = ReadWriteIOUtils.read(buffer);
             result += ch << offset;
             offset += 8;
             paddedByteNum--;
@@ -214,32 +214,16 @@ public class ReadWriteForEncodingUtils {
         return result;
     }
 
-    public static int readIntLittleEndianPaddedOnBitWidth(ByteBuffer in, int bitWidth) throws IOException {
-        int paddedByteNum = (bitWidth + 7) / 8;
-        if (paddedByteNum > 4) {
-            throw new IOException(String.format(
-                    "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes", paddedByteNum));
-        }
-        int result = 0;
-        int offset = 0;
-        while (paddedByteNum > 0) {
-            int ch = ReadWriteIOUtils.read(in);
-            result += ch << offset;
-            offset += 8;
-            paddedByteNum--;
-        }
-        return result;
-    }
 
     /**
      * read long value using special bit from input stream
      *
-     * @param in       input stream
+     * @param buffer       byte buffer
      * @param bitWidth bit length
      * @return long  long value
      * @throws IOException exception in IO
      */
-    public static long readLongLittleEndianPaddedOnBitWidth(InputStream in, int bitWidth) throws IOException {
+    public static long readLongLittleEndianPaddedOnBitWidth(ByteBuffer buffer, int bitWidth) throws IOException {
         int paddedByteNum = (bitWidth + 7) / 8;
         if (paddedByteNum > 8) {
             throw new IOException(String.format(
@@ -247,22 +231,7 @@ public class ReadWriteForEncodingUtils {
         }
         long result = 0;
         for (int i = 0; i < paddedByteNum; i++) {
-            int ch = in.read();
-            result <<= 8;
-            result |= (ch & 0xff);
-        }
-        return result;
-    }
-
-    public static long readLongLittleEndianPaddedOnBitWidth(ByteBuffer in, int bitWidth) throws IOException {
-        int paddedByteNum = (bitWidth + 7) / 8;
-        if (paddedByteNum > 8) {
-            throw new IOException(String.format(
-                    "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes", paddedByteNum));
-        }
-        long result = 0;
-        for (int i = 0; i < paddedByteNum; i++) {
-            int ch = ReadWriteIOUtils.read(in);
+            int ch = ReadWriteIOUtils.read(buffer);
             result <<= 8;
             result |= (ch & 0xff);
         }
