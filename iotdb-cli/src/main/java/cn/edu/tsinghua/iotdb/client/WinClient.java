@@ -35,7 +35,7 @@ public class WinClient extends AbstractClient {
 		
 		init();
 		
-		args = checkPasswordArgs(args);
+		args = removePasswordArgs(args);
 
 		try {
 			commandLine = parser.parse(options, args);

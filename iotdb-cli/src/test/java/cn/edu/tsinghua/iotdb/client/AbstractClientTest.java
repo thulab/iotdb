@@ -9,8 +9,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import static org.mockito.Matchers.any;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,12 +60,6 @@ public class AbstractClientTest {
 		}
 	}
 
-//	@Test
-//	public void testOutput() {
-//		fail("Not yet implemented");
-//	}
-//
-//
 	@Test
 	public void testCheckRequiredArg() throws ParseException, ArgsErrorException {
 		Options options = AbstractClient.createOptions();
@@ -92,43 +84,33 @@ public class AbstractClientTest {
 			assertEquals(e.getMessage(), "IoTDB: Required values for option 'host' is null.");
 		}
 	}
-//
-//	@Test
-//	public void testPrintBlockLine() {
-//		fail("Not yet implemented");
-//	}
-//
-//	@Test
-//	public void testPrintName() {
-//		fail("Not yet implemented");
-//	}
-//
+
 	@Test
-	public void testCheckPasswordArgs() {
+	public void testRemovePasswordArgs() {
 		AbstractClient.init();
 		String[] input = new String[] {"-h", "127.0.0.1", "-p", "6667", "-u", "root", "-pw", "root"};
 		String[] res = new String[] {"-h", "127.0.0.1", "-p", "6667", "-u", "root", "-pw", "root"};
-		isTwoStringArrayEqual(res, AbstractClient.checkPasswordArgs(input));
+		isTwoStringArrayEqual(res, AbstractClient.removePasswordArgs(input));
 		
 		input = new String[]{"-h", "127.0.0.1", "-p", "6667", "-pw", "root", "-u", "root"};
 		res = new String[]{"-h", "127.0.0.1", "-p", "6667", "-pw", "root", "-u", "root"};
-		isTwoStringArrayEqual(res, AbstractClient.checkPasswordArgs(input));
+		isTwoStringArrayEqual(res, AbstractClient.removePasswordArgs(input));
 
 		input = new String[]{"-h", "127.0.0.1", "-p", "6667", "root", "-u", "root", "-pw"};
 		res = new String[]{"-h", "127.0.0.1", "-p", "6667", "root", "-u", "root"};
-		isTwoStringArrayEqual(res, AbstractClient.checkPasswordArgs(input));
+		isTwoStringArrayEqual(res, AbstractClient.removePasswordArgs(input));
 
 		input = new String[]{"-h", "127.0.0.1", "-p", "6667", "-pw", "-u", "root"};
 		res = new String[]{"-h", "127.0.0.1", "-p", "6667", "-u", "root"};
-		isTwoStringArrayEqual(res, AbstractClient.checkPasswordArgs(input));
+		isTwoStringArrayEqual(res, AbstractClient.removePasswordArgs(input));
 
 		input = new String[]{"-pw", "-h", "127.0.0.1", "-p", "6667", "root", "-u", "root"};
 		res = new String[]{"-h", "127.0.0.1", "-p", "6667", "root", "-u", "root"};
-		isTwoStringArrayEqual(res, AbstractClient.checkPasswordArgs(input));
+		isTwoStringArrayEqual(res, AbstractClient.removePasswordArgs(input));
 
 		input = new String[]{};
 		res = new String[]{};
-		isTwoStringArrayEqual(res, AbstractClient.checkPasswordArgs(input));
+		isTwoStringArrayEqual(res, AbstractClient.removePasswordArgs(input));
 	}
 	
 	private void isTwoStringArrayEqual(String[] expected, String[] actual) {

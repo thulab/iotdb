@@ -66,7 +66,7 @@ public class Client extends AbstractClient {
 			return;
 		}
 		init();
-		args = checkPasswordArgs(args);
+		args = removePasswordArgs(args);
 		try {
 			commandLine = parser.parse(options, args);
 			if (commandLine.hasOption(HELP_ARGS)) {

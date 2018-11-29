@@ -345,7 +345,7 @@ public abstract class AbstractClient {
 		System.out.printf("\n");
 	}
 
-	protected static String[] checkPasswordArgs(String[] args) {
+	protected static String[] removePasswordArgs(String[] args) {
 		int index = -1;
 		for(int i = 0; i < args.length; i++){
 			if(args[i].equals("-"+PASSWORD_ARGS)){
