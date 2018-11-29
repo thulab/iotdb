@@ -85,15 +85,14 @@ public class ReadWriteForEncodingUtils {
     /**
      * read an unsigned var int in stream and transform it to int format
      *
-     * @param in stream to read an unsigned var int
+     * @param buffer stream to read an unsigned var int
      * @return integer value
-     * @throws IOException exception in IO
      */
-    public static int readUnsignedVarInt(ByteBuffer in) throws IOException {
+    public static int readUnsignedVarInt(ByteBuffer buffer) {
         int value = 0;
         int i = 0;
         int b=0;
-        while (in.hasRemaining() && ((b = in.get()) & 0x80) != 0) {
+        while (buffer.hasRemaining() && ((b = buffer.get()) & 0x80) != 0) {
             value |= (b & 0x7F) << i;
             i += 7;
         }
@@ -192,12 +191,12 @@ public class ReadWriteForEncodingUtils {
     /**
      * read integer value using special bit from input stream
      *
-     * @param in       input stream
+     * @param buffer     byte buffer
      * @param bitWidth bit length
      * @return integer value
      * @throws IOException exception in IO
      */
-    public static int readIntLittleEndianPaddedOnBitWidth(InputStream in, int bitWidth) throws IOException {
+    public static int readIntLittleEndianPaddedOnBitWidth(ByteBuffer buffer, int bitWidth) throws IOException {
         int paddedByteNum = (bitWidth + 7) / 8;
         if (paddedByteNum > 4) {
             throw new IOException(String.format(
@@ -206,7 +205,7 @@ public class ReadWriteForEncodingUtils {
         int result = 0;
         int offset = 0;
         while (paddedByteNum > 0) {
-            int ch = in.read();
+            int ch = ReadWriteIOUtils.read(buffer);
             result += ch << offset;
             offset += 8;
             paddedByteNum--;
@@ -214,15 +213,16 @@ public class ReadWriteForEncodingUtils {
         return result;
     }
 
+
     /**
      * read long value using special bit from input stream
      *
-     * @param in       input stream
+     * @param buffer       byte buffer
      * @param bitWidth bit length
      * @return long  long value
      * @throws IOException exception in IO
      */
-    public static long readLongLittleEndianPaddedOnBitWidth(InputStream in, int bitWidth) throws IOException {
+    public static long readLongLittleEndianPaddedOnBitWidth(ByteBuffer buffer, int bitWidth) throws IOException {
         int paddedByteNum = (bitWidth + 7) / 8;
         if (paddedByteNum > 8) {
             throw new IOException(String.format(
@@ -230,7 +230,7 @@ public class ReadWriteForEncodingUtils {
         }
         long result = 0;
         for (int i = 0; i < paddedByteNum; i++) {
-            int ch = in.read();
+            int ch = ReadWriteIOUtils.read(buffer);
             result <<= 8;
             result |= (ch & 0xff);
         }

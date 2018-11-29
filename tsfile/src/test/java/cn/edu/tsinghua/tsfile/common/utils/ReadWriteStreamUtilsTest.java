@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,10 +118,9 @@ public class ReadWriteStreamUtilsTest {
       int bitWidth = 32 - Integer.numberOfLeadingZeros(value);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ReadWriteForEncodingUtils.writeIntLittleEndianPaddedOnBitWidth(value, baos, bitWidth);
-      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
 
-      int value_read = ReadWriteForEncodingUtils.readIntLittleEndianPaddedOnBitWidth(bais, bitWidth);
-      // System.out.println(bitWidth+"/"+value_read+"/"+value);
+      int value_read = ReadWriteForEncodingUtils.readIntLittleEndianPaddedOnBitWidth(buffer, bitWidth);
       assertEquals(value_read, value);
     }
   }
@@ -131,10 +131,9 @@ public class ReadWriteStreamUtilsTest {
       int bitWidth = 64 - Long.numberOfLeadingZeros(value);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ReadWriteForEncodingUtils.writeLongLittleEndianPaddedOnBitWidth(value, baos, bitWidth);
-      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
 
-      long value_read = ReadWriteForEncodingUtils.readLongLittleEndianPaddedOnBitWidth(bais, bitWidth);
-      // System.out.println(bitWidth+"/"+value_read+"/"+value);
+      long value_read = ReadWriteForEncodingUtils.readLongLittleEndianPaddedOnBitWidth(buffer, bitWidth);
       assertEquals(value_read, value);
     }
   }
