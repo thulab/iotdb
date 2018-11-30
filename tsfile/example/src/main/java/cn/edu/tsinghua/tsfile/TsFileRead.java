@@ -16,11 +16,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- *
  * The class is to show how to read TsFile file named "test.tsfile".
  * The TsFile file "test.tsfile" is generated from class TsFileWrite2 or class TsFileWrite,
  * they generate the same TsFile file by two different ways
- *
+ * <p>
  * Run TsFileWrite1 or TsFileWrite to generate the test.tsfile first
  */
 public class TsFileRead {
@@ -34,67 +33,50 @@ public class TsFileRead {
 		TsFileSequenceReader reader = new TsFileSequenceReader(path);
 		ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
 		ArrayList<Path> paths = new ArrayList<>();
-		paths.add(new Path("device_1.sensor_1"));
-		paths.add(new Path("device_1.sensor_2"));
-		paths.add(new Path("device_1.sensor_3"));
-		QueryExpression queryExpression = QueryExpression.create(paths, null);
-		QueryDataSet queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
-		}
-		System.out.println("------------");
-		reader.close();
-
-		// time filter : 4 <= time <= 10
-		QueryFilter timeFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq( 4L)),
-				new GlobalTimeFilter(TimeFilter.ltEq(10L)));
-		reader = new TsFileSequenceReader(path);
-		readTsFile = new ReadOnlyTsFile(reader);
-		paths = new ArrayList<>();
-		paths.add(new Path("device_1.sensor_1"));
-		paths.add(new Path("device_1.sensor_2"));
-		paths.add(new Path("device_1.sensor_3"));
-		queryExpression = QueryExpression.create(paths, timeFilter);
-		queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
-		}
-		System.out.println("------------");
-		reader.close();
-
-		// value filter : device_1.sensor_2 <= 20
-		QueryFilter valueFilter = new SeriesFilter<>(new Path("device_1.sensor_2"), ValueFilter.ltEq(20));
-		reader = new TsFileSequenceReader(path);
-		readTsFile = new ReadOnlyTsFile(reader);
-		paths = new ArrayList<>();
-		paths.add(new Path("device_1.sensor_1"));
-		paths.add(new Path("device_1.sensor_2"));
-		paths.add(new Path("device_1.sensor_3"));
-		queryExpression = QueryExpression.create(paths, valueFilter);
-		queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
-		}
-		System.out.println("------------");
-		reader.close();
-
+//
 		// time filter : 4 <= time <= 10, value filter : device_1.sensor_3 >= 20
-		timeFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(4L)),
-				new GlobalTimeFilter(TimeFilter.ltEq(10L)));
-		valueFilter = new SeriesFilter<>(new Path("device_1.sensor_3"), ValueFilter.gtEq(20));
+
+
 		reader = new TsFileSequenceReader(path);
 		readTsFile = new ReadOnlyTsFile(reader);
 		paths = new ArrayList<>();
 		paths.add(new Path("device_1.sensor_1"));
 		paths.add(new Path("device_1.sensor_2"));
-		paths.add(new Path("device_1.sensor_3"));
-		QueryFilter finalFilter = QueryFilterFactory.and(timeFilter, valueFilter);
-		queryExpression = QueryExpression.create(paths, finalFilter);
-		queryDataSet = readTsFile.query(queryExpression);
+
+//        QueryFilter timeFilter = QueryFilterFactory.or(new GlobalTimeFilter(TimeFilter.gtEq(10000L)),
+//                new GlobalTimeFilter(TimeFilter.ltEq(3000L)));
+		QueryFilter valueFilter = new SeriesFilter<>(new Path("device_1.sensor_1"), ValueFilter.gtEq(5L));
+//        QueryFilter finalFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(5L)), valueFilter);
+		QueryExpression queryExpression = QueryExpression.create(paths, valueFilter);
+
+		long start = System.currentTimeMillis();
+		QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+		long i = 0;
 		while (queryDataSet.hasNext()) {
+			i++;
+//            if ((i % 10) == 0) {
 			System.out.println(queryDataSet.next());
+//                continue;
+//            }
+//            queryDataSet.next();
+//			return;
 		}
-		reader.close();
+		start = System.currentTimeMillis() - start;
+		System.out.println(i + " time cost: " + start + "ms");
+
+
+//		queryExpression = QueryExpression.create(paths, null);
+//
+//		start = System.currentTimeMillis();
+//		queryDataSet = readTsFile.query(queryExpression);
+//		i =0;
+//		while (queryDataSet.hasNext()) {
+//			i++;
+//			queryDataSet.next();
+//		}
+//		start = System.currentTimeMillis() - start;
+//		System.out.println(i + "time cost: " + start + "ms");
+//		reader.close();
 	}
 
 }
