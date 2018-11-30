@@ -39,6 +39,7 @@ public class ReadPerf {
         config.maxNumberOfPointsInPage = 10;
 	    prepare();
     	write();
+        config.maxNumberOfPointsInPage = oldMaxNumberOfPointsInPage;
 	}
 
     public static void prepare() throws IOException {
@@ -58,8 +59,6 @@ public class ReadPerf {
         file = new File(errorOutputDataFile);
         if (file.exists())
             file.delete();
-        TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
-        config.maxNumberOfPointsInPage = oldMaxNumberOfPointsInPage;
     }
 
     static private void generateSampleInputDataFile() throws IOException {
