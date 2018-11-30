@@ -7,6 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.utils.cache.LRUCache;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Read one Chunk and cache it into a LRUCache
@@ -43,8 +44,8 @@ public class ChunkLoaderImpl implements ChunkLoader {
 
     public Chunk getChunk(ChunkMetaData chunkMetaData) throws IOException {
         try {
-            chunkCache.get(chunkMetaData).getData().position(0);
-            return chunkCache.get(chunkMetaData);
+            Chunk chunk = chunkCache.get(chunkMetaData);
+            return new Chunk(chunk.getHeader(), ByteBuffer.wrap(chunk.getData().array()));
         } catch (CacheException e) {
             throw new IOException(e);
         }

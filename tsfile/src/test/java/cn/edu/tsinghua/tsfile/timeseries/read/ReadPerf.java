@@ -33,7 +33,9 @@ public class ReadPerf {
     public static JSONObject jsonSchema;
 
 	public static void generateFile() throws IOException, InterruptedException, WriteProcessException {
-		prepare();
+        TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
+        config.maxNumberOfPointsInPage = 10;
+	    prepare();
     	write();
 	}
 
