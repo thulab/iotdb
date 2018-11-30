@@ -45,7 +45,7 @@ public class ChunkLoaderImpl implements ChunkLoader {
     public Chunk getChunk(ChunkMetaData chunkMetaData) throws IOException {
         try {
             Chunk chunk = chunkCache.get(chunkMetaData);
-            return new Chunk(chunk.getHeader(), ByteBuffer.wrap(chunk.getData().array()));
+            return new Chunk(chunk.getHeader(), chunk.getData().duplicate());
         } catch (CacheException e) {
             throw new IOException(e);
         }
