@@ -64,8 +64,8 @@ public class QueryExecutorTest {
         Filter filter2 = ValueFilter.gt(new Binary("dog"));
 
         QueryFilter queryFilter = QueryFilterFactory.and(
-                new SeriesFilter<>(new Path("d1.s1"), filter),
-                new SeriesFilter<>(new Path("d1.s4"), filter2)
+                new SeriesFilter(new Path("d1.s1"), filter),
+                new SeriesFilter(new Path("d1.s4"), filter2)
         );
 
         QueryExpression queryExpression = QueryExpression.create()

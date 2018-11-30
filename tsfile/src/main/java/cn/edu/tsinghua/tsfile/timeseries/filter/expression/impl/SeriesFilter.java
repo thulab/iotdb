@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 
-public class SeriesFilter<T extends Comparable<T>> implements UnaryQueryFilter {
+public class SeriesFilter implements UnaryQueryFilter {
     private Path seriesPath;
     private Filter filter;
 

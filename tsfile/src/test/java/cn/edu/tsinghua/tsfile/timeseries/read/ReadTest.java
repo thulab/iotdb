@@ -91,7 +91,7 @@ public class ReadTest {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d2.s1"));
         pathList.add(new Path("d2.s4"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d2.s2"), ValueFilter.gt(9722L));
+        QueryFilter valFilter = new SeriesFilter(new Path("d2.s2"), ValueFilter.gt(9722L));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.lt(1480562618977L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -109,7 +109,7 @@ public class ReadTest {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s1"));
         pathList.add(new Path("d2.s2"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d2.s2"), ValueFilter.notEq(9722L));
+        QueryFilter valFilter = new SeriesFilter(new Path("d2.s2"), ValueFilter.notEq(9722L));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.lt(1480562618977L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -139,7 +139,7 @@ public class ReadTest {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s1"));
         pathList.add(new Path("d2.s2"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d2.s2"), ValueFilter.notEq(9722L));
+        QueryFilter valFilter = new SeriesFilter(new Path("d2.s2"), ValueFilter.notEq(9722L));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.lt(1480562618975L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -174,7 +174,7 @@ public class ReadTest {
         pathList.clear();
         pathList.add(new Path("d1.s1"));
         pathList.add(new Path("d2.s2"));
-        valFilter = new SeriesFilter<>(new Path("d2.s2"), ValueFilter.ltEq(9082L));
+        valFilter = new SeriesFilter(new Path("d2.s2"), ValueFilter.ltEq(9082L));
         tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618906L)),
                 new GlobalTimeFilter(TimeFilter.ltEq(1480562618915L)));
         tFilter = QueryFilterFactory.or(tFilter, 
@@ -199,7 +199,7 @@ public class ReadTest {
     public void queryBooleanTest() throws IOException {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s5"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d1.s5"), ValueFilter.eq(false));
+        QueryFilter valFilter = new SeriesFilter(new Path("d1.s5"), ValueFilter.eq(false));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.lt(1480562618981L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -227,7 +227,7 @@ public class ReadTest {
     public void queryStringTest() throws IOException {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s4"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d1.s4"), ValueFilter.gt(new Binary("dog97")));
+        QueryFilter valFilter = new SeriesFilter(new Path("d1.s4"), ValueFilter.gt(new Binary("dog97")));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.ltEq(1480562618981L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -249,7 +249,7 @@ public class ReadTest {
 
         pathList = new ArrayList<>();
         pathList.add(new Path("d1.s4"));
-        valFilter = new SeriesFilter<>(new Path("d1.s4"), ValueFilter.lt(new Binary("dog97")));
+        valFilter = new SeriesFilter(new Path("d1.s4"), ValueFilter.lt(new Binary("dog97")));
         tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.ltEq(1480562618981L)));
         finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -274,7 +274,7 @@ public class ReadTest {
     public void queryFloatTest() throws IOException {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s6"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d1.s6"), ValueFilter.gt(103.0f));
+        QueryFilter valFilter = new SeriesFilter(new Path("d1.s6"), ValueFilter.gt(103.0f));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618970L)),
                 new GlobalTimeFilter(TimeFilter.ltEq(1480562618981L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);
@@ -302,7 +302,7 @@ public class ReadTest {
     public void queryDoubleTest() throws IOException {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s7"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d1.s7"), ValueFilter.gt(7.0));
+        QueryFilter valFilter = new SeriesFilter(new Path("d1.s7"), ValueFilter.gt(7.0));
         QueryFilter tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618021L)),
                 new GlobalTimeFilter(TimeFilter.ltEq(1480562618033L)));
         QueryFilter finalFilter = QueryFilterFactory.and(valFilter, tFilter);

@@ -53,8 +53,8 @@ public class ReadOnlyTsFileTest {
 
         QueryFilter queryFilter = QueryFilterFactory.or(
                 QueryFilterFactory.and(
-                        new SeriesFilter<>(new Path("d1.s1"), filter),
-                        new SeriesFilter<>(new Path("d1.s4"), filter2)),
+                        new SeriesFilter(new Path("d1.s1"), filter),
+                        new SeriesFilter(new Path("d1.s4"), filter2)),
                 new GlobalTimeFilter(filter3)
         );
 

@@ -33,6 +33,6 @@ public abstract class NodeConstructor {
         throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + queryFilter.getType());
     }
 
-    public abstract SeriesReader generateSeriesReader(SeriesFilter<?> seriesFilter) throws IOException;
+    public abstract SeriesReader generateSeriesReader(SeriesFilter seriesFilter) throws IOException;
 
 }

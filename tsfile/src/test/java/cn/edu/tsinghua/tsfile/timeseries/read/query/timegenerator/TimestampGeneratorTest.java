@@ -55,10 +55,10 @@ public class TimestampGeneratorTest {
 
         QueryFilter queryFilter = QueryFilterFactory.or(
                 QueryFilterFactory.and(
-                        new SeriesFilter<>(new Path("d1.s1"), filter),
-                        new SeriesFilter<>(new Path("d1.s4"), filter2)
+                        new SeriesFilter(new Path("d1.s1"), filter),
+                        new SeriesFilter(new Path("d1.s4"), filter2)
                 ),
-                new SeriesFilter<>(new Path("d1.s1"), filter3));
+                new SeriesFilter(new Path("d1.s1"), filter3));
 
         TimestampGeneratorByQueryFilterImpl timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerierByFile);
         while (timestampGenerator.hasNext()) {

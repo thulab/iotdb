@@ -37,7 +37,7 @@ public class ValueFilter {
         }
     }
 
-    public static class ValueNot<T extends Comparable<T>> extends Not {
+    public static class ValueNot extends Not {
         private ValueNot(Filter filter) {
             super(filter);
         }
@@ -73,7 +73,7 @@ public class ValueFilter {
         return new ValueLtEq(value);
     }
 
-    public static <T extends Comparable<T>> ValueNot<T> not(Filter filter) {
+    public static ValueNot not(Filter filter) {
         return new ValueNot(filter);
     }
 
