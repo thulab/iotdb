@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Decoder for int value using rle or bit-packing
@@ -35,28 +35,24 @@ public class IntRleDecoder extends RleDecoder {
         super(endianType);
         currentValue = 0;
     }
-    
+
     @Override
-    public boolean readBoolean(InputStream in) {
-    	return this.readInt(in) == 0 ? false : true;
+    public boolean readBoolean(ByteBuffer buffer) {
+        return this.readInt(buffer) == 0 ? false : true;
     }
 
 
     /**
      * read a int value from InputStream
      *
-     * @param in - InputStream
+     * @param buffer - ByteBuffer
      * @return value - current valid value
      */
     @Override
-    public int readInt(InputStream in) {
+    public int readInt(ByteBuffer buffer) {
         if (!isLengthAndBitWidthReaded) {
             //start to read a new rle+bit-packing pattern
-            try {
-                readLengthAndBitWidth(in);
-            } catch (IOException e) {
-                LOGGER.error("tsfile-encoding IntRleDecoder: error occurs when reading length", e);
-            }
+            readLengthAndBitWidth(buffer);
         }
 
         if (currentCount == 0) {
@@ -100,16 +96,15 @@ public class IntRleDecoder extends RleDecoder {
         currentBuffer = new int[bitPackedGroupCount * config.RLE_MIN_REPEATED_NUM];
         byte[] bytes = new byte[bitPackedGroupCount * bitWidth];
         int bytesToRead = bitPackedGroupCount * bitWidth;
-        bytesToRead = Math.min(bytesToRead, byteCache.available());
-//		new DataInputStream(byteCache).readFully(bytes, 0, bytesToRead);
-        byteCache.read(bytes, 0, bytesToRead);
+        bytesToRead = Math.min(bytesToRead, byteCache.remaining());
+        byteCache.get(bytes, 0, bytesToRead);
 
         // save all int values in currentBuffer
         packer.unpackAllValues(bytes, 0, bytesToRead, currentBuffer);
     }
 
-	@Override
-	public void reset() {
-		super.reset();
-	}
+    @Override
+    public void reset() {
+        super.reset();
+    }
 }

@@ -13,11 +13,7 @@ import java.util.Random;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import org.junit.Test;
 
-/**
- * 
- * @author Zhang Jinrui
- *
- */
+
 public class LongPackerTest {
 
 	@Test

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,12 +170,12 @@ public class IntRleDecoderTest {
 			}
 			encoder.flush(baos);
 		}
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+		ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
 		RleDecoder decoder = new IntRleDecoder(EndianType.LITTLE_ENDIAN);
 		for(int i = 0;i < repeatCount;i++){
 			for(int value : list){
-				boolean value_ = decoder.readBoolean(bais);
+				boolean value_ = decoder.readBoolean(buffer);
 				if(isDebug){
 					System.out.println(value_+"/"+value);
 				}
@@ -197,12 +198,12 @@ public class IntRleDecoderTest {
 			}
 			encoder.flush(baos);
 		}
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+		ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
 		RleDecoder decoder = new IntRleDecoder(EndianType.LITTLE_ENDIAN);
 		for(int i = 0;i < repeatCount;i++){
 			for(int value : list){
-				int value_ = decoder.readInt(bais);
+				int value_ = decoder.readInt(buffer);
 				if(isDebug){
 					System.out.println(value_+"/"+value);
 				}

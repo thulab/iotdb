@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.common.utils.ByteBufferBasedInputStream;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -10,9 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType.*;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -31,10 +28,10 @@ public class PageDataReader implements SeriesReader {
     private Decoder timeDecoder;
 
     // time column in memory
-    private InputStream timestampInputStream;//TODO change to bytebuffer
+    private ByteBuffer timeBuffer;
 
     // value column in memory
-    private InputStream valueInputStream;//TODO change to bytebuffer
+    private ByteBuffer valueBuffer;
 
 
     public PageDataReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) throws IOException {
@@ -45,61 +42,29 @@ public class PageDataReader implements SeriesReader {
     }
 
     /**
-     *
-     * @param pageContent uncompressed bytes size of time column, time column, value column
-     * @param dataType value data type
-     * @param valueDecoder decoder for value column
-     * @param timeDecoder decoder for time column
-     * @throws IOException exception in IO
-     */
-    public PageDataReader(InputStream pageContent, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) throws IOException {
-        this.dataType = dataType;
-        this.valueDecoder = valueDecoder;
-        this.timeDecoder = timeDecoder;
-        splitInputStreamToTimeStampAndValue(pageContent);
-    }
-
-    /**
-     * splite pageContent into two stream: time and value
-     * @param pageContent uncompressed bytes size of time column, time column, value column
+     * split pageContent into two stream: time and value
+     * @param pageData uncompressed bytes size of time column, time column, value column
      * @throws IOException exception in reading data from pageContent
      */
-    private void splitInputStreamToTimeStampAndValue(InputStream pageContent) throws IOException {
-        int timeInputStreamLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageContent);
-        byte[] buf = new byte[timeInputStreamLength];
-        int readSize = pageContent.read(buf, 0, timeInputStreamLength);
-        if (readSize != timeInputStreamLength) {
-            throw new IOException("Error when read bytes of encoded timestamps. " +
-                    "Expect byte size : " + timeInputStreamLength + ". Read size : " + readSize);
-        }
-        this.timestampInputStream = new ByteArrayInputStream(buf);
-
-        // the left uncompressed values in stream
-        this.valueInputStream = pageContent;
-    }
-
     private void splitDataToTimeStampAndValue(ByteBuffer pageData) throws IOException {
-        int timeInputStreamLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
-        ByteBuffer timeDataBuffer= pageData.slice();
-        timeDataBuffer.limit(timeInputStreamLength);
-        timestampInputStream= new ByteBufferBasedInputStream(timeDataBuffer);
+        int timeBufferLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
 
-        ByteBuffer valueDataBuffer= pageData.slice();
-        valueDataBuffer.position(timeInputStreamLength);
-        valueInputStream = new ByteBufferBasedInputStream(valueDataBuffer);
+        timeBuffer= pageData.slice();
+        timeBuffer.limit(timeBufferLength);
 
+        valueBuffer= pageData.slice();
+        valueBuffer.position(timeBufferLength);
     }
-
 
     @Override
     public boolean hasNext() throws IOException {
-        return timeDecoder.hasNext(timestampInputStream) && valueDecoder.hasNext(valueInputStream);
+        return timeDecoder.hasNext(timeBuffer);
     }
 
     @Override
     public TimeValuePair next() throws IOException {
         if (hasNext()) {
-            long timestamp = timeDecoder.readLong(timestampInputStream);
+            long timestamp = timeDecoder.readLong(timeBuffer);
             TsPrimitiveType value = readOneValue();
             return new TimeValuePair(timestamp, value);
         } else {
@@ -113,26 +78,26 @@ public class PageDataReader implements SeriesReader {
     }
 
     @Override
-    public void close() throws IOException {
-        timestampInputStream.close();
-        valueInputStream.close();
+    public void close() {
+        timeBuffer = null;
+        valueBuffer = null;
     }
 
     // read one value according to data type
     private TsPrimitiveType readOneValue() {
         switch (dataType) {
             case BOOLEAN:
-                return new TsBoolean(valueDecoder.readBoolean(valueInputStream));
+                return new TsBoolean(valueDecoder.readBoolean(valueBuffer));
             case INT32:
-                return new TsInt(valueDecoder.readInt(valueInputStream));
+                return new TsInt(valueDecoder.readInt(valueBuffer));
             case INT64:
-                return new TsLong(valueDecoder.readLong(valueInputStream));
+                return new TsLong(valueDecoder.readLong(valueBuffer));
             case FLOAT:
-                return new TsFloat(valueDecoder.readFloat(valueInputStream));
+                return new TsFloat(valueDecoder.readFloat(valueBuffer));
             case DOUBLE:
-                return new TsDouble(valueDecoder.readDouble(valueInputStream));
+                return new TsDouble(valueDecoder.readDouble(valueBuffer));
             case TEXT:
-                return new TsBinary(valueDecoder.readBinary(valueInputStream));
+                return new TsBinary(valueDecoder.readBinary(valueBuffer));
             default:
                 break;
         }

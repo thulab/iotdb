@@ -8,13 +8,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
-/**
- * @author Zhang Jinrui
- */
 public abstract class Decoder {
     public TSEncoding type;
 
@@ -47,39 +43,39 @@ public abstract class Decoder {
         }
     }
 
-    public int readInt(InputStream in) {
+    public int readInt(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readInt is not supproted by Decoder");
     }
 
-    public boolean readBoolean(InputStream in) {
+    public boolean readBoolean(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBoolean is not supproted by Decoder");
     }
 
-    public short readShort(InputStream in) {
+    public short readShort(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readShort is not supproted by Decoder");
     }
 
-    public long readLong(InputStream in) {
+    public long readLong(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readLong is not supproted by Decoder");
     }
 
-    public float readFloat(InputStream in) {
+    public float readFloat(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readFloat is not supproted by Decoder");
     }
 
-    public double readDouble(InputStream in) {
+    public double readDouble(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readDouble is not supproted by Decoder");
     }
 
-    public Binary readBinary(InputStream in) {
+    public Binary readBinary(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBinary is not supproted by Decoder");
     }
 
-    public BigDecimal readBigDecimal(InputStream in) {
+    public BigDecimal readBigDecimal(ByteBuffer buffer) {
         throw new TSFileDecodingException("Method readBigDecimal is not supproted by Decoder");
     }
 
-    public abstract boolean hasNext(InputStream in) throws IOException;
+    public abstract boolean hasNext(ByteBuffer buffer) throws IOException;
 
     public abstract void reset();
 

@@ -251,17 +251,17 @@ public class TsFileWriter {
                 writer.preFlush();
             }
             for (String deviceId : groupWriters.keySet()) {
-                long memSize = fileWriter.getPos();
+                long pos = fileWriter.getPos();
                 IChunkGroupWriter groupWriter = groupWriters.get(deviceId);
                 long ChunkGroupSize = groupWriter.getCurrentChunkGroupSize();
                 ChunkGroupFooter chunkGroupFooter = fileWriter.startFlushChunkGroup(deviceId, ChunkGroupSize, groupWriter.getSeriesNumber());
                 groupWriter.flushToFileWriter(fileWriter);
 
-                if (fileWriter.getPos() - memSize != ChunkGroupSize)
+                if (fileWriter.getPos() - pos != ChunkGroupSize)
                     throw new IOException(String.format("Flushed data size is inconsistent with computation! Estimated: %d, Actuall: %d",
-                            ChunkGroupSize, fileWriter.getPos() - memSize));
+                            ChunkGroupSize, fileWriter.getPos() - pos));
 
-                fileWriter.endChunkGroup(fileWriter.getPos() - memSize, chunkGroupFooter);
+                fileWriter.endChunkGroup(chunkGroupFooter);
             }
             long actualTotalChunkGroupSize = fileWriter.getPos() - totalMemStart;
             LOG.info("total chunk group size:{}", actualTotalChunkGroupSize);
