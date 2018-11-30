@@ -64,7 +64,7 @@ public class JsonConverter {
      * @throws InvalidJsonSchemaException throw exception when json schema is not valid
      */
 
-    public static Map<String, MeasurementSchema> converterJsonToMeasurementDescriptors(
+    public static Map<String, MeasurementSchema> converterJsonToMeasurementSchemas(
             JSONObject jsonSchema) throws InvalidJsonSchemaException {
         Map<String, MeasurementSchema> result = new HashMap<>();
         if (!jsonSchema.has(JsonFormatConstant.JSON_SCHEMA))
@@ -88,7 +88,7 @@ public class JsonConverter {
          */
         JSONArray schemaArray = jsonSchema.getJSONArray(JsonFormatConstant.JSON_SCHEMA);
         for (int i = 0; i < schemaArray.length(); i++) {
-            MeasurementSchema mDescriptor = convertJsonToMeasureMentDescriptor(
+            MeasurementSchema mDescriptor = convertJsonToMeasurementSchema(
                     schemaArray.getJSONObject(i));
             result.put(mDescriptor.getMeasurementId(), mDescriptor);
         }
@@ -117,7 +117,7 @@ public class JsonConverter {
      *
      * @return converted MeasurementSchema
      */
-    public static MeasurementSchema convertJsonToMeasureMentDescriptor(
+    public static MeasurementSchema convertJsonToMeasurementSchema(
             JSONObject measurementObj) {
         if (!measurementObj.has(JsonFormatConstant.MEASUREMENT_UID)
                 && !measurementObj.has(JsonFormatConstant.DATA_TYPE)
@@ -167,11 +167,11 @@ public class JsonConverter {
             FileSchema fileSchema) {
         /** JSONObject form of FileSchema **/
         JSONObject ret = new JSONObject();
-        /** JSONObject form of all MeasurementDescriptors in fileSchema **/
+        /** JSONObject form of all MeasurementSchemas in fileSchema **/
         JSONArray jsonSchema = new JSONArray();
 
         for (MeasurementSchema measurementSchema : fileSchema.getAllMeasurementSchema().values()) {
-            jsonSchema.put(convertMeasurementDescriptorToJson(measurementSchema));
+            jsonSchema.put(convertMeasurementSchemaToJson(measurementSchema));
         }
 
         ret.put(JsonFormatConstant.JSON_SCHEMA, jsonSchema);
@@ -198,7 +198,7 @@ public class JsonConverter {
      *             "max_point_number":3
      *  }
      */
-    private static JSONObject convertMeasurementDescriptorToJson(
+    private static JSONObject convertMeasurementSchemaToJson(
             MeasurementSchema measurementSchema) {
         JSONObject measurementObj = new JSONObject();
         // put measurementID, data type, encoding info and properties into result JSONObject

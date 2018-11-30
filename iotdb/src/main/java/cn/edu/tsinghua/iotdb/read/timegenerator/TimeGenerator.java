@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.read.timegenerator;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.timegenerator.TimestampGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.timegenerator.node.Node;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 
 import java.io.IOException;
 

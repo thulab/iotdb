@@ -9,7 +9,7 @@ import cn.edu.tsinghua.iotdb.writelog.io.LogWriter;
 import cn.edu.tsinghua.iotdb.writelog.transfer.PhysicalPlanCodec;
 import cn.edu.tsinghua.iotdb.writelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.writelog.transfer.SystemLogOperator;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

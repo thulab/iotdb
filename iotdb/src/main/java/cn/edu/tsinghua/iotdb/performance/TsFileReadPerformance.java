@@ -5,12 +5,12 @@ import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 

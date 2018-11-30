@@ -4,7 +4,7 @@ import cn.edu.fudan.dsm.kvmatch.iotdb.common.QueryConfig;
 import cn.edu.fudan.dsm.kvmatch.iotdb.utils.SeriesUtils;
 import cn.edu.tsinghua.iotdb.query.management.ReadCachePrefix;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
 import cn.edu.tsinghua.iotdb.index.common.QueryDataSetIterator;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;

@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

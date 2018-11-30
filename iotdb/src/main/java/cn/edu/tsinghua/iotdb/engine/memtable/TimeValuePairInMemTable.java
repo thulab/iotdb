@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
 /**
  * Created by zhangjinrui on 2018/1/26.

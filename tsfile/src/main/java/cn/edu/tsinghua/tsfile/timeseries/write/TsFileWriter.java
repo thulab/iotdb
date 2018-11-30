@@ -118,7 +118,7 @@ public class TsFileWriter {
     }
 
     /**
-     * add a MeasurementSchema to this TsFile
+     * add a measurementSchema to this TsFile
      */
     public void addMeasurement(MeasurementSchema measurementSchema)
             throws WriteProcessException {
@@ -141,7 +141,7 @@ public class TsFileWriter {
      * @throws WriteProcessException if the json is illegal or the measurement exists
      */
     public void addMeasurementByJson(JSONObject measurement) throws WriteProcessException {
-        addMeasurement(JsonConverter.convertJsonToMeasureMentDescriptor(measurement));
+        addMeasurement(JsonConverter.convertJsonToMeasurementSchema(measurement));
     }
 
 

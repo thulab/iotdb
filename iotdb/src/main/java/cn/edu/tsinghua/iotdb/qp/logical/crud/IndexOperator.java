@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.logical.crud;
 import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.HashMap;
 import java.util.Map;

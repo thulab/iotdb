@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class UnsealedTsFile {
     private String filePath;
-    private List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas;
+    private List<ChunkMetaData> timeSeriesChunkMetaDatas;
 
     public String getFilePath() {
         return filePath;
@@ -19,11 +19,11 @@ public class UnsealedTsFile {
         this.filePath = filePath;
     }
 
-    public List<TimeSeriesChunkMetaData> getTimeSeriesChunkMetaDatas() {
+    public List<ChunkMetaData> getTimeSeriesChunkMetaDatas() {
         return timeSeriesChunkMetaDatas;
     }
 
-    public void setTimeSeriesChunkMetaDatas(List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas) {
+    public void setTimeSeriesChunkMetaDatas(List<ChunkMetaData> timeSeriesChunkMetaDatas) {
         this.timeSeriesChunkMetaDatas = timeSeriesChunkMetaDatas;
     }
 }

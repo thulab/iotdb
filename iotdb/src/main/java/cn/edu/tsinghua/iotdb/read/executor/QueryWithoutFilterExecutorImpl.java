@@ -4,11 +4,11 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
 import cn.edu.tsinghua.iotdb.read.reader.QueryWithOrWithOutFilterReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.impl.MergeQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.impl.MergeQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
