@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp.constant;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.HashMap;
 import java.util.Map;

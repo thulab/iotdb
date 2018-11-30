@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.List;
 

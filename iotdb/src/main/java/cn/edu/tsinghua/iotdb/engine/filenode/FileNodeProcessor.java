@@ -63,21 +63,21 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.page.IPageWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.page.PageWriterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.converter.JsonConverter;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.SeriesWriterImpl;
@@ -813,7 +813,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		ColumnSchema col = new ColumnSchema(measurementToString, TSDataType.valueOf(dataType),
 				TSEncoding.valueOf(encoding));
 		JSONObject measurement = constrcutMeasurement(col);
-		fileSchema.registerMeasurement(JsonConverter.convertJsonToMeasureMentDescriptor(measurement));
+		fileSchema.registerMeasurement(JsonConverter.convertJsonToMeasurementSchema(measurement));
 	}
 
 	private JSONObject constrcutMeasurement(ColumnSchema col) {
@@ -1451,7 +1451,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							startPos = fileIOWriter.getPos();
 						}
 						// init the serieswWriteImpl
-						MeasurementDescriptor desc = fileSchema.getMeasurementDescriptor(measurementId);
+						MeasurementSchema desc = fileSchema.getMeasurementSchema(measurementId);
 						IPageWriter pageWriter = new PageWriterImpl(desc);
 						int pageSizeThreshold = TsFileConf.pageSizeInByte;
 						SeriesWriterImpl seriesWriterImpl = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,

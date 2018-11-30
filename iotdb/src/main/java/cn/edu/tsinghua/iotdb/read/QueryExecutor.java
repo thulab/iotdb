@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 
 import java.io.IOException;
 

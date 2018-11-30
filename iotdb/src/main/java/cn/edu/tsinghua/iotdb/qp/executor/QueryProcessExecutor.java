@@ -17,10 +17,10 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
+//import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 
 import java.io.IOException;
 import java.util.*;

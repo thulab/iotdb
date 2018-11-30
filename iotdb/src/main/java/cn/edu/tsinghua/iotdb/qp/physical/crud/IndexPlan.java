@@ -4,7 +4,7 @@ import cn.edu.fudan.dsm.kvmatch.iotdb.common.IndexConfig;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexOperator.IndexOperatorType;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.ArrayList;
 import java.util.HashMap;

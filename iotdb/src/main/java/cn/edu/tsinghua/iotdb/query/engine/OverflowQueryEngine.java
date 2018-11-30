@@ -28,7 +28,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.BatchReadRecordGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

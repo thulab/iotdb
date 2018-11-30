@@ -66,7 +66,7 @@ public class FileSchema {
    */
   @Deprecated
   public FileSchema(JSONObject jsonSchema) throws InvalidJsonSchemaException {
-    this(JsonConverter.converterJsonToMeasurementDescriptors(jsonSchema));
+    this(JsonConverter.converterJsonToMeasurementSchemas(jsonSchema));
   }
 
   /**
@@ -94,7 +94,7 @@ public class FileSchema {
 
 
   /**
-   * register a MeasurementSchema
+   * register a measurementSchema
    */
   public void registerMeasurement(MeasurementSchema descriptor) {
     // add to measurementSchema as <measurementID, MeasurementSchema>
@@ -102,7 +102,7 @@ public class FileSchema {
   }
 
   /**
-   * register all MeasurementSchema in input map
+   * register all measurementSchema in input map
    */
   private void registerMeasurements(Map<String, MeasurementSchema> measurements) {
     measurements.forEach((id, md) -> registerMeasurement(md));

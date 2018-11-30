@@ -9,7 +9,7 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.iterator.PatternQueryDataSetIterator;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.IndexQueryPlan;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.ArrayList;
 import java.util.Iterator;

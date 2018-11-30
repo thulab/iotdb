@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class MemTableTestUtils {
@@ -25,7 +25,7 @@ public class MemTableTestUtils {
 
 	private static FileSchema fileSchema = new FileSchema();
 	static {
-		fileSchema.registerMeasurement(new MeasurementDescriptor(measurementId0, dataType0, TSEncoding.PLAIN));
+		fileSchema.registerMeasurement(new MeasurementSchema(measurementId0, dataType0, TSEncoding.PLAIN));
 	}
 
 	public static FileSchema getFileSchema() {

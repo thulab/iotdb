@@ -5,10 +5,10 @@ import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.ValueFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.ValueFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
 /**
  * all basic operator in filter
