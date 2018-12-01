@@ -1,7 +1,7 @@
 /**
  * There are two ways to construct a TsFile instance,they generate the same TsFile file.
  * The class use the second interface:
- * public void addMeasurement(MeasurementSchema measurementDescriptor) throws WriteProcessException
+ * public void addMeasurement(MeasurementSchema MeasurementSchema) throws WriteProcessException
  */
 package cn.edu.tsinghua.tsfile;
 

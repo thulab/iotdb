@@ -15,21 +15,21 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 import org.junit.Ignore;
@@ -132,7 +132,7 @@ public class ForDebug {
         long startTime = System.currentTimeMillis();
         FileSchema fileSchema = new FileSchema();
         for (int i = 0; i < 60; i++) {
-            fileSchema.registerMeasurement(new MeasurementDescriptor("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
+            fileSchema.registerMeasurement(new MeasurementSchema("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
         }
         File file = new File("/users/zhangjinrui/Desktop/readTest/out");
         TsFileWriter fileWriter = new TsFileWriter(file, fileSchema, TSFileDescriptor.getInstance().getConfig());
@@ -166,7 +166,7 @@ public class ForDebug {
         long startTime = System.currentTimeMillis();
         FileSchema fileSchema = new FileSchema();
         for (int i = 0; i < 60; i++) {
-            fileSchema.registerMeasurement(new MeasurementDescriptor("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
+            fileSchema.registerMeasurement(new MeasurementSchema("s_" + i, TSDataType.DOUBLE, TSEncoding.RLE));
         }
         File file = new File("/users/zhangjinrui/Desktop/readTest/out");
         TsFileWriter fileWriter = new TsFileWriter(file, fileSchema, TSFileDescriptor.getInstance().getConfig());

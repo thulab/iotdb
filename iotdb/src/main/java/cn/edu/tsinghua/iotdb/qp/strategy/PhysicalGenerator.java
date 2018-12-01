@@ -32,13 +32,13 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSe
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.LongFilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -32,7 +32,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;

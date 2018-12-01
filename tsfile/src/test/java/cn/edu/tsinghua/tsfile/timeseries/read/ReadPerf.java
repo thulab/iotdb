@@ -31,10 +31,15 @@ public class ReadPerf {
     public static String outputDataFile = "src/test/resources/perTestOutputData.tsfile";
     public static String errorOutputDataFile;
     public static JSONObject jsonSchema;
+    public static int oldMaxNumberOfPointsInPage;
 
 	public static void generateFile() throws IOException, InterruptedException, WriteProcessException {
-		prepare();
+        TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
+        oldMaxNumberOfPointsInPage = config.maxNumberOfPointsInPage;
+        config.maxNumberOfPointsInPage = 10;
+	    prepare();
     	write();
+        config.maxNumberOfPointsInPage = oldMaxNumberOfPointsInPage;
 	}
 
     public static void prepare() throws IOException {

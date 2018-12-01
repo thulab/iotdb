@@ -8,12 +8,12 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoaderImpl;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.EncodedSeriesChunkDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoaderImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

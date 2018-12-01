@@ -15,7 +15,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

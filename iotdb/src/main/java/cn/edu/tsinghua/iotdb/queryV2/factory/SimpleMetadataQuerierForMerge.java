@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.timeseries.utils.cache.LRUCache;

@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSe
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.LtEq;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;

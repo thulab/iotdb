@@ -18,7 +18,7 @@ import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +51,8 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
 public class FileNodeManager implements IStatistic, IService {

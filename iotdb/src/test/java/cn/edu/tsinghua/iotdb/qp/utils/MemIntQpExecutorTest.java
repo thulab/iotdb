@@ -13,7 +13,7 @@ import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.FilterUtils;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;

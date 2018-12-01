@@ -151,7 +151,7 @@ public class TsFileIOWriter {
         // serialize the Separator of MetaData and ChunkGroups
         ReadWriteIOUtils.write(MetaMarker.Separator, out);
 
-        // get all MeasurementSchema of this TsFile
+        // get all measurementSchema of this TsFile
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
         LOG.debug("get time series list:{}", schemaDescriptors);
 

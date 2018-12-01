@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.page.IPageWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.page.PageWriterImpl;
@@ -75,7 +75,7 @@ public class MemTableFlushUtil {
 			tsFileIOWriter.startRowGroup(deltaObjectId);
 			for (String measurementId : iMemTable.getMemTableMap().get(deltaObjectId).keySet()) {
 				IMemSeries series = iMemTable.getMemTableMap().get(deltaObjectId).get(measurementId);
-				MeasurementDescriptor desc = fileSchema.getMeasurementDescriptor(measurementId);
+				MeasurementSchema desc = fileSchema.getMeasurementSchema(measurementId);
 				IPageWriter pageWriter = new PageWriterImpl(desc);
 				SeriesWriterImpl seriesWriter = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,
 						pageSizeThreshold);

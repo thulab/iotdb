@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.logical.sys;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.RootOperator;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 
 /**

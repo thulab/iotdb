@@ -20,11 +20,11 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.LongDataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

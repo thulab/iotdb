@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.index.utils;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 

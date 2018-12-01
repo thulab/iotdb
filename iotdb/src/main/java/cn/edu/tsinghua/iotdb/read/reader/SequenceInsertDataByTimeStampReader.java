@@ -10,12 +10,12 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderBy
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderByTimestamp;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReaderByTimeStamp;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileByTimestampImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.EncodedSeriesChunkDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileByTimestampImpl;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

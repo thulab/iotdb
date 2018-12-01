@@ -12,7 +12,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;

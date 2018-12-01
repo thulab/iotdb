@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.visitor.impl.TimeValuePairFilterVisitorImpl;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.impl.TimeValuePairFilterVisitorImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;

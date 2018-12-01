@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
 import java.util.Iterator;
 

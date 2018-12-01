@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.index.common;
 
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.ArrayList;
 import java.util.List;

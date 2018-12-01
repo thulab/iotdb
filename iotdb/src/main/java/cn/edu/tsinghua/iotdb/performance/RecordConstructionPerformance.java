@@ -6,9 +6,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
@@ -33,7 +33,7 @@ public class RecordConstructionPerformance {
         FileSchema fileSchema = new FileSchema();
         File outPutFile = new File(outPutFilePath);
         for (int i = 1; i <= 100; i++)
-            fileSchema.registerMeasurement(new MeasurementDescriptor("s" + i, TSDataType.FLOAT, TSEncoding.RLE));
+            fileSchema.registerMeasurement(new MeasurementSchema("s" + i, TSDataType.FLOAT, TSEncoding.RLE));
         TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
         for (int i = 1; i <= 500; i++) {
@@ -55,7 +55,7 @@ public class RecordConstructionPerformance {
 
         FileSchema fileSchema = new FileSchema();
         File outPutFile = new File(outPutFilePath);
-        fileSchema.registerMeasurement(new MeasurementDescriptor("s0", TSDataType.FLOAT, TSEncoding.RLE));
+        fileSchema.registerMeasurement(new MeasurementSchema("s0", TSDataType.FLOAT, TSEncoding.RLE));
         TsFileWriter fileWriter = new TsFileWriter(outPutFile, fileSchema, TSFileDescriptor.getInstance().getConfig());
 
         for (int i = 1; i <= 112850000; i++) {

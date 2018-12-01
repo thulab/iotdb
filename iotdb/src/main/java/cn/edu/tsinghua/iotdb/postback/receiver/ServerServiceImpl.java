@@ -48,7 +48,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 
 /**

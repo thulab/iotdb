@@ -11,7 +11,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
