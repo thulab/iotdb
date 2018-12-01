@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.index.kvmatch;
 
 
 import cn.edu.tsinghua.iotdb.index.QueryRequest;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 /**
  * An instance of this class represents a query request with specific parameters.

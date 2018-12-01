@@ -99,9 +99,36 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         while (dataSet.hasNext()) {
-            RowRecord r = dataSet.next();
+            RowRecord record = dataSet.next();
         }
+    }
 
+    @Test
+    public void queryOneMeasurementsWithSameFilterTest() throws IOException {
+        List<Path> pathList = new ArrayList<>();
+        pathList.add(new Path("d2.s2"));
+        QueryFilter valFilter = new SeriesFilter<>(new Path("d2.s2"), ValueFilter.gt(9722L));
+        QueryExpression queryExpression = QueryExpression.create(pathList, valFilter);
+        QueryDataSet dataSet = roTsFile.query(queryExpression);
+
+        int cnt = 0;
+        while (dataSet.hasNext()) {
+            RowRecord record = dataSet.next();
+            TsPrimitiveType value = record.getFields().get(new Path("d2.s2"));
+            if (cnt == 0) {
+                assertEquals(record.getTimestamp(), 1480562618973L);
+                assertEquals(value.getLong(), 9732);
+            } else if (cnt == 1) {
+                assertEquals(record.getTimestamp(), 1480562618974L);
+                assertEquals(value.getLong(), 9742);
+            } else if (cnt == 7) {
+                assertEquals(record.getTimestamp(), 1480562618985L);
+                assertEquals(value.getLong(), 9852);
+            }
+
+            cnt ++;
+            //System.out.println(record.toString());
+        }
     }
 
     @Test

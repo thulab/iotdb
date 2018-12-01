@@ -37,9 +37,9 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 

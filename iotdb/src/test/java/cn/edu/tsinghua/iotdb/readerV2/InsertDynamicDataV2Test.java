@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSe
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class InsertDynamicDataV2Test {
 
     private String deltaObjectId = "device";
     private String measurementId = "sensor";
-    private MeasurementDescriptor descriptor = new MeasurementDescriptor(measurementId, TSDataType.FLOAT, TSEncoding.RLE);
+    private MeasurementSchema descriptor = new MeasurementSchema(measurementId, TSDataType.FLOAT, TSEncoding.RLE);
     private FilterSeries<Long> timeSeries = timeFilterSeries();
     private FilterSeries<Double> valueSeries = doubleFilterSeries(deltaObjectId, measurementId, FilterSeriesType.VALUE_FILTER);
     SingleSeriesFilterExpression timeFilter = ltEq(timeSeries, 197L, true);

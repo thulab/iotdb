@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

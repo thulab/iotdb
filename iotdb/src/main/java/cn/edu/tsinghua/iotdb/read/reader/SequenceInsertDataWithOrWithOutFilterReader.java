@@ -8,14 +8,14 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWi
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.visitor.impl.DigestFilterVisitor;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.impl.DigestFilterVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.EncodedSeriesChunkDescriptor;
+import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

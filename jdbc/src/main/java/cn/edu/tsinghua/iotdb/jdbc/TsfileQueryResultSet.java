@@ -8,9 +8,9 @@ import cn.edu.tsinghua.service.rpc.thrift.TSIService;
 import cn.edu.tsinghua.service.rpc.thrift.TSOperationHandle;
 import cn.edu.tsinghua.service.rpc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.service.rpc.thrift.TS_SessionHandle;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
 import org.apache.thrift.TException;
 

@@ -4,7 +4,7 @@ package cn.edu.tsinghua.iotdb.qp.logical.index;
 import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexQueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.SFWOperator;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 public class KvMatchIndexQueryOperator extends IndexQueryOperator {
 	private Path patternPath;

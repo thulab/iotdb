@@ -15,7 +15,7 @@ import cn.edu.tsinghua.service.rpc.thrift.TSDataValue;
 import cn.edu.tsinghua.service.rpc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.service.rpc.thrift.TSRowRecord;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;

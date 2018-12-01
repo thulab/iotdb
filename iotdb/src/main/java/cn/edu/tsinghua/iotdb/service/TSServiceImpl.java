@@ -30,7 +30,7 @@ import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;

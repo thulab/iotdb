@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.overflow;
 
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 /**
  * Created by zhangjinrui on 2018/1/11.

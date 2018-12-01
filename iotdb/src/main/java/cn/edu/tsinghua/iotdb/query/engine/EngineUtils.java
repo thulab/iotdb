@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.List;
 

@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.utils;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.DataPoint;
+import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.*;
 import org.slf4j.Logger;

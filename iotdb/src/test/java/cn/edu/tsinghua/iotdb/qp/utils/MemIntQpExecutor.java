@@ -19,7 +19,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExp
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 import org.slf4j.Logger;
