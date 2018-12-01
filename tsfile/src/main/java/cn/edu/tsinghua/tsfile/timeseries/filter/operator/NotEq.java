@@ -38,7 +38,7 @@ public class NotEq<T extends Comparable<T>> extends UnaryFilter<T> {
 
 
     @Override
-    public boolean satisfy(Object time, Object value) {
+    public boolean satisfy(long time, Object value) {
         Object v = filterType == FilterType.TIME_FILTER ? time : value;
         return !this.value.equals(v);
     }

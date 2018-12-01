@@ -107,7 +107,7 @@ public class ReadTest {
     public void queryOneMeasurementsWithSameFilterTest() throws IOException {
         List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d2.s2"));
-        QueryFilter valFilter = new SeriesFilter<>(new Path("d2.s2"), ValueFilter.gt(9722L));
+        QueryFilter valFilter = new SeriesFilter(new Path("d2.s2"), ValueFilter.gt(9722L));
         QueryExpression queryExpression = QueryExpression.create(pathList, valFilter);
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 

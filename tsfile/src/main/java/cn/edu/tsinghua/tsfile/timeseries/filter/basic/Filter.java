@@ -17,6 +17,6 @@ public interface Filter {
 
     boolean satisfy(TimeValuePair pair);
 
-    boolean satisfy(Object time, Object value);
+    boolean satisfy(long time, Object value);
 
 }

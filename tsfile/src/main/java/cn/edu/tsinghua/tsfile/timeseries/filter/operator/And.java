@@ -27,7 +27,7 @@ public class And extends BinaryFilter {
     }
 
     @Override
-    public boolean satisfy(Object time, Object value) {
+    public boolean satisfy(long time, Object value) {
         return left.satisfy(time, value) && right.satisfy(time, value);
     }
 

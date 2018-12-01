@@ -29,7 +29,7 @@ public class Not implements Filter, Serializable {
     }
 
     @Override
-    public boolean satisfy(Object time, Object value) {
+    public boolean satisfy(long time, Object value) {
         return !that.satisfy(time, value);
     }
 
