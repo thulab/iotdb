@@ -59,7 +59,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
                 // Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of the selectOperator
                 int seriesLimit = ((QueryOperator) operator).getSeriesLimit();
                 int seriesOffset = ((QueryOperator) operator).getSeriesOffset();
-                SlimitTrim(select, seriesLimit, seriesOffset);
+                slimitTrim(select, seriesLimit, seriesOffset);
             }
         }
 
@@ -130,10 +130,15 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
 
         boolean isWithStar = false;
         List<Path> fakePaths = new ArrayList<>();
-        for (Iterator<Path> iter_suffix = initialSuffixPaths.iterator(); iter_suffix.hasNext() && !isWithStar; ) {
+        for (Iterator<Path> iterSuffix = initialSuffixPaths.iterator(); iterSuffix.hasNext() && !isWithStar; ) {
             // NOTE the traversal order should keep consistent with that of the `transformedPaths`
-            for (Iterator<Path> iter_prefix = prefixPaths.iterator(); iter_prefix.hasNext() && !isWithStar; ) {
-                Path fakePath = new Path(iter_prefix.next() + "." + iter_suffix.next());
+            Path suffixPath = iterSuffix.next();
+            if (suffixPath.getFullPath().contains("*")) {
+                isWithStar = true; // the case of 3)path with stars
+                break;
+            }
+            for (Iterator<Path> iterPrefix = prefixPaths.iterator(); iterPrefix.hasNext(); ) {
+                Path fakePath = new Path(iterPrefix.next() + "." + suffixPath);
                 if (fakePath.getFullPath().contains("*")) {
                     isWithStar = true; // the case of 3)path with stars
                 } else {
@@ -164,7 +169,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
      * @param seriesLimit is ensured to be positive integer
      * @param seriesOffset is ensured to be non-negative integer
      */
-    public void SlimitTrim(SelectOperator select, int seriesLimit, int seriesOffset) throws LogicalOptimizeException {
+    public void slimitTrim(SelectOperator select, int seriesLimit, int seriesOffset) throws LogicalOptimizeException {
         List<Path> suffixList = select.getSuffixPaths();
         List<String> aggregations = select.getAggregations();
         int size = suffixList.size();
