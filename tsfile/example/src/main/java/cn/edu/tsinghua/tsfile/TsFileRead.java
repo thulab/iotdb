@@ -63,7 +63,7 @@ public class TsFileRead {
 		reader.close();
 
 		// value filter : device_1.sensor_2 <= 20
-		QueryFilter valueFilter = new SeriesFilter<>(new Path("device_1.sensor_2"), ValueFilter.ltEq(20));
+		QueryFilter valueFilter = new SeriesFilter(new Path("device_1.sensor_2"), ValueFilter.ltEq(20));
 		reader = new TsFileSequenceReader(path);
 		readTsFile = new ReadOnlyTsFile(reader);
 		paths = new ArrayList<>();
@@ -81,7 +81,7 @@ public class TsFileRead {
 		// time filter : 4 <= time <= 10, value filter : device_1.sensor_3 >= 20
 		timeFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(4L)),
 				new GlobalTimeFilter(TimeFilter.ltEq(10L)));
-		valueFilter = new SeriesFilter<>(new Path("device_1.sensor_3"), ValueFilter.gtEq(20));
+		valueFilter = new SeriesFilter(new Path("device_1.sensor_3"), ValueFilter.gtEq(20));
 		reader = new TsFileSequenceReader(path);
 		readTsFile = new ReadOnlyTsFile(reader);
 		paths = new ArrayList<>();

@@ -4,21 +4,19 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.UnaryQueryFilter;
 
-/**
- * Created by zhangjinrui on 2017/12/15.
- */
-public class GlobalTimeFilter implements UnaryQueryFilter {
-    private Filter<Long> filter;
 
-    public GlobalTimeFilter(Filter<Long> filter) {
+public class GlobalTimeFilter implements UnaryQueryFilter {
+    private Filter filter;
+
+    public GlobalTimeFilter(Filter filter) {
         this.filter = filter;
     }
 
-    public Filter<Long> getFilter() {
+    public Filter getFilter() {
         return filter;
     }
 
-    public void setFilter(Filter<Long> filter) {
+    public void setFilter(Filter filter) {
         this.filter = filter;
     }
 

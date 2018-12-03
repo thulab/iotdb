@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @param <T> comparable data type
  * @author CGF
  */
-public abstract class UnaryFilter<T extends Comparable<T>> implements Filter<T>, Serializable {
+public abstract class UnaryFilter<T extends Comparable<T>> implements Filter, Serializable {
 
     private static final long serialVersionUID = 1431606024929453556L;
     protected final T value;

@@ -90,6 +90,7 @@ public class ChunkMetaData {
 
     public void setDigest(TsDigest digest) {
         this.valuesStatistics = digest;
+
     }
 
     public long getStartTime() {
