@@ -1,27 +1,38 @@
 package cn.edu.tsinghua.tsfile.timeseries.write.io;
 
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
-import cn.edu.tsinghua.tsfile.common.utils.*;
-import cn.edu.tsinghua.tsfile.file.MetaMarker;
-import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
-import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
-import cn.edu.tsinghua.tsfile.file.metadata.*;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
+import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.common.utils.PublicBAOS;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.file.MetaMarker;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
+import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadataIndex;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 /**
  * TSFileIOWriter is used to construct metadata and write data stored in memory
@@ -52,6 +63,19 @@ public class TsFileIOWriter {
     public TsFileIOWriter(File file) throws IOException {
         this.out = new FileOutputStream(file);
         startFile();
+    }
+
+    /**
+     * for appending a broken tsfile.
+     * @param file -the broken tsfile
+     * @param position -the position the file will be truncated to
+     * @param chunkGroupMetaDataList -the list chunkGroupMetaData for the broken tsfile
+     * @throws IOException
+     */
+    public TsFileIOWriter(File file,long position, List<ChunkGroupMetaData> chunkGroupMetaDataList) throws IOException {
+    	this.out = new FileOutputStream(file, true);
+    	this.chunkGroupMetaDataList = chunkGroupMetaDataList;
+    	this.out.getChannel().truncate(position);
     }
 
 
@@ -241,6 +265,15 @@ public class TsFileIOWriter {
      */
     public long getPos() throws IOException {
         return out.getChannel().position();
+    }
+    
+    /**
+     * get chunkGroupMetaDataList
+     * 
+     * @return - List of chunkGroupMetaData
+     */
+    public List<ChunkGroupMetaData> getChunkGroupMetaDatas(){
+    	return chunkGroupMetaDataList;
     }
 
 }

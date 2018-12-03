@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +27,7 @@ import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 
 public class BufferWriteProcessorTest {
@@ -119,13 +119,13 @@ public class BufferWriteProcessorTest {
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
 		assertEquals(true, insertFile.exists());
 		assertEquals(insertFileLength, insertFile.length());
-		Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> pair = bufferWriteProcessor
+		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
 				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
-		TimeSeriesChunkMetaData chunkMetaData = pair.right.get(0);
-		assertEquals(measurementId, chunkMetaData.getProperties().getMeasurementUID());
-		assertEquals(dataType, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		ChunkMetaData chunkMetaData = pair.right.get(0);
+		assertEquals(measurementId, chunkMetaData.getMeasurementUID());
+		assertEquals(dataType, chunkMetaData.getTsDataType());
 		bufferWriteProcessor.close();
 		assertEquals(false, restoreFile.exists());
 	}
@@ -146,13 +146,13 @@ public class BufferWriteProcessorTest {
 		assertEquals(true, restoreFile.exists());
 		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
-		Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> pair = bufferWriteProcessor
+		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
 				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
-		TimeSeriesChunkMetaData chunkMetaData = pair.right.get(0);
-		assertEquals(measurementId, chunkMetaData.getProperties().getMeasurementUID());
-		assertEquals(dataType, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		ChunkMetaData chunkMetaData = pair.right.get(0);
+		assertEquals(measurementId, chunkMetaData.getMeasurementUID());
+		assertEquals(dataType, chunkMetaData.getTsDataType());
 		bufferWriteProcessor.close();
 		bufferwrite.close();
 		assertEquals(false, restoreFile.exists());
@@ -178,13 +178,13 @@ public class BufferWriteProcessorTest {
 		assertEquals(false, bufferwrite.isFlush());
 		assertEquals(0, bufferwrite.memoryUsage());
 		// query result
-		Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
+		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
 				measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
-		TimeSeriesChunkMetaData chunkMetaData = pair.right.get(0);
-		assertEquals(measurementId, chunkMetaData.getProperties().getMeasurementUID());
-		assertEquals(dataType, chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType());
+		ChunkMetaData chunkMetaData = pair.right.get(0);
+		assertEquals(measurementId, chunkMetaData.getMeasurementUID());
+		assertEquals(dataType, chunkMetaData.getTsDataType());
 		for (int i = 87; i <= 100; i++) {
 			bufferwrite.write(deltaObjectId, measurementId, i, dataType, String.valueOf(i));
 			assertEquals((i - 86) * 12, bufferwrite.memoryUsage());

@@ -87,6 +87,10 @@ public class FileSchema {
 
   }
 
+  public MeasurementSchema getMeasurementSchema(String measurementUID){
+    return measurementSchema.get(measurementUID);
+  }
+
 
   public Map<String, MeasurementSchema> getAllMeasurementSchema() {
     return measurementSchema;

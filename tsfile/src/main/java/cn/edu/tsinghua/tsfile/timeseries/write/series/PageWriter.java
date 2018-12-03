@@ -4,6 +4,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.PublicBAOS;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.encoder.Encoder;
+import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,8 +25,18 @@ public class PageWriter {
     private PublicBAOS valueOut;
 
     public PageWriter() {
+        this(null,null);
+    }
+
+    public PageWriter(MeasurementSchema measurementSchema){
+        this(measurementSchema.getTimeEncoder(),measurementSchema.getValueEncoder());
+    }
+
+    public PageWriter(Encoder timeEncoder,Encoder valueEncoder){
         this.timeOut = new PublicBAOS();
         this.valueOut = new PublicBAOS();
+        this.timeEncoder = timeEncoder;
+        this.valueEncoder = valueEncoder;
     }
 
     /**

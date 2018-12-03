@@ -60,6 +60,10 @@ public class ChunkGroupFooter {
         return length;
     }
 
+    public void setDataSize(long dataSize){
+        this.dataSize = dataSize;
+    }
+
     /**
      * @param inputStream
      * @param markerRead  Whether the marker of the ChunkGroupFooter is read ahead.

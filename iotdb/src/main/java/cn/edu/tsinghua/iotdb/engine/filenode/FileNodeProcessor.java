@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -60,7 +61,6 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
@@ -685,7 +685,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				bufferwriteDataInFiles.add(intervalFileNode.backUp());
 			}
 		}
-		Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> bufferwritedata = new Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>>(
+		Pair<RawSeriesChunk, List<ChunkMetaData>> bufferwritedata = new Pair<RawSeriesChunk, List<ChunkMetaData>>(
 				null, null);
 		// bufferwrite data
 		UnsealedTsFile unsealedTsFile = null;

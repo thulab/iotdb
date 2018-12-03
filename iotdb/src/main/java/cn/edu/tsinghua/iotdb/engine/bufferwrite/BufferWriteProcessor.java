@@ -12,6 +12,7 @@ import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,6 @@ import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -132,7 +132,7 @@ public class BufferWriteProcessor extends Processor {
         long memUsage = MemUtils.getRecordSize(tsRecord);
         BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, memUsage);
         for (DataPoint dataPoint : tsRecord.dataPointList) {
-            workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+            workMemTable.write(tsRecord.deviceId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
                     dataPoint.getValue().toString());
         }
         valueCount++;
@@ -177,8 +177,8 @@ public class BufferWriteProcessor extends Processor {
         }
     }
 
-    public Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> queryBufferWriteData(String deltaObjectId,
-                                                                                    String measurementId, TSDataType dataType) {
+    public Pair<RawSeriesChunk, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
+                                                                          String measurementId, TSDataType dataType) {
         flushQueryLock.lock();
         try {
             MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
@@ -187,7 +187,7 @@ public class BufferWriteProcessor extends Processor {
             }
             memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
             RawSeriesChunk rawSeriesChunk = new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
-            return new Pair<>(rawSeriesChunk,
+            return new Pair<RawSeriesChunk,List<ChunkMetaData>>(rawSeriesChunk,
                     bufferWriteRestoreManager.getInsertMetadatas(deltaObjectId, measurementId, dataType));
         } finally {
             flushQueryLock.unlock();
