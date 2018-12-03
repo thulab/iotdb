@@ -12,7 +12,10 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 import java.io.IOException;
 import java.util.List;
 
-
+/**
+ * <p> Series reader is used to query one series of one tsfile,
+ * using this reader to query the value of a series with given timestamps.
+ */
 public class SeriesReaderByTimestamp extends SeriesReader {
 
     private long currentTimestamp;
@@ -96,9 +99,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     }
 
     /**
-     * @param timestamp
      * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
-     * @throws IOException
      */
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
