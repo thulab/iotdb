@@ -4,9 +4,11 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
@@ -15,8 +17,8 @@ import java.io.IOException;
 public class TsFileReadPerformanceTest {
     static String filePath = "/Users/beyyes/Desktop/test.tsfile";
 
-    static int deviceNum = 10;
-    static int sensorNum = 50;
+    static int deviceNum = 1;
+    static int sensorNum = 1;
     static int SIZE = 10000000;
 
     public static void main(String args[]) throws IOException, InterruptedException {
@@ -57,10 +59,10 @@ public class TsFileReadPerformanceTest {
 
         long startTime = System.currentTimeMillis();
         int cnt = 0;
-        QueryDataSet queryDataSet = tsFile.query(queryExpression);
-        while (queryDataSet.hasNext()) {
-//            RowRecordV2 record = queryDataSet.nextRowRecord();
-//            //System.out.println(record.toString());
+        DataSetWithoutFilter queryDataSet = (DataSetWithoutFilter) tsFile.query(queryExpression);
+        while (queryDataSet.hasNextRowRecord()) {
+            RowRecordV2 record = queryDataSet.nextRowRecord();
+//            System.out.println(record.toString());
 //            if (cnt % 5000 == 0) {
 //                System.out.println(record.toString());
 //            }

@@ -16,7 +16,6 @@ public class ChunkReaderByTimestamp extends ChunkReader {
         super(chunk);
     }
 
-
     @Override
     public boolean pageSatisfied(PageHeader pageHeader) {
         long maxTimestamp = pageHeader.getMax_timestamp();
