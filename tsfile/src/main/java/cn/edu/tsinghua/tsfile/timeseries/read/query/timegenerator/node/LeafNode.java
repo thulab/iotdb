@@ -4,11 +4,10 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 
-/**
- * @author Jinrui Zhang
- */
+
 public class LeafNode implements Node {
 
+    // TODO make next method implementation of seriesReader using DOC
     private Reader seriesReader;
 
     public LeafNode(Reader seriesReader) {

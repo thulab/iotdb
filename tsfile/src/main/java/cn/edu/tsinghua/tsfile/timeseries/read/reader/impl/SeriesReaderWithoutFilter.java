@@ -9,7 +9,10 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import java.io.IOException;
 import java.util.List;
 
-
+/**
+ * <p> Series reader is used to query one series of one tsfile,
+ * this reader has no filter.
+ */
 public class SeriesReaderWithoutFilter extends SeriesReader {
 
     public SeriesReaderWithoutFilter(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {

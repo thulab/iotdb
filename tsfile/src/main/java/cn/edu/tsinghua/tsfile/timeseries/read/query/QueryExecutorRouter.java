@@ -68,7 +68,7 @@ public class QueryExecutorRouter implements QueryExecutor {
             Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter);
             readersOfSelectedSeries.put(path, seriesReader);
         }
-        return new DataSetWithoutFilter(readersOfSelectedSeries);
+        return new DataSetWithoutFilter(readersOfSelectedSeries, true);
     }
 
     /**
@@ -82,7 +82,7 @@ public class QueryExecutorRouter implements QueryExecutor {
             Reader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }
-        return new DataSetWithoutFilter(readersOfSelectedSeries);
+        return new DataSetWithoutFilter(readersOfSelectedSeries, true);
     }
 
     /**

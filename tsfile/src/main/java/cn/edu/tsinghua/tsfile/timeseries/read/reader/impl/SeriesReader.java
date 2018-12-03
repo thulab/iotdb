@@ -13,7 +13,9 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import java.io.IOException;
 import java.util.List;
 
-
+/**
+ * <p> Series reader is used to query one series of one tsfile.
+ */
 public abstract class SeriesReader implements Reader {
 
     protected ChunkLoader chunkLoader;
@@ -39,12 +41,6 @@ public abstract class SeriesReader implements Reader {
         this.fileReader = fileReader;
     }
 
-    /**
-     * Using this constructor cannot close corresponding FileStream
-     *
-     * @param chunkLoader
-     * @param chunkMetaDataList
-     */
     public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
