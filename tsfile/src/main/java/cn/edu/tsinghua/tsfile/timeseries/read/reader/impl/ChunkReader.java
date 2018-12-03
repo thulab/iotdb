@@ -7,22 +7,24 @@ import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 
-public abstract class SeriesChunkReader implements SeriesReader {
+public abstract class ChunkReader implements Reader {
 
     ChunkHeader chunkHeader;
     private ByteBuffer chunkDataBuffer;
 
     private boolean pageReaderInitialized;
-    private PageDataReader pageDataReader;
+    private PageReader pageReader;
 
     boolean hasCachedTimeValuePair;
     TimeValuePair cachedTimeValuePair;
@@ -32,9 +34,17 @@ public abstract class SeriesChunkReader implements SeriesReader {
     private Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
             , TSDataType.INT64);
 
+    private DynamicOneColumnData data = null;
+    private Filter filter = null;
+
     private long maxTombstoneTime;
 
-    public SeriesChunkReader(Chunk chunk) {
+    public ChunkReader(Chunk chunk) {
+        this(chunk, null);
+    }
+
+    public ChunkReader(Chunk chunk, Filter filter) {
+        this.filter = filter;
         this.chunkDataBuffer = chunk.getData();
         this.pageReaderInitialized = false;
         chunkHeader = chunk.getHeader();
@@ -63,10 +73,10 @@ public abstract class SeriesChunkReader implements SeriesReader {
             }
 
             // check whether there exists a satisfied time value pair in current page
-            while (pageDataReader.hasNext()) {
+            while (pageReader.hasNext()) {
 
                 // read next time value pair
-                TimeValuePair timeValuePair = pageDataReader.next();
+                TimeValuePair timeValuePair = pageReader.next();
 
                 // check if next time value pair satisfy the condition
                 if (timeValuePairSatisfied(timeValuePair) && timeValuePair.getTimestamp() > maxTombstoneTime) {
@@ -83,6 +93,29 @@ public abstract class SeriesChunkReader implements SeriesReader {
     }
 
     @Override
+    public boolean hasNextBatch() throws IOException {
+
+        // construct next satisfied page header
+        while (chunkDataBuffer.remaining() > 0) {
+            // deserialize a PageHeader from chunkDataBuffer
+            PageHeader pageHeader = getNextPageHeader();
+
+            // if the current page satisfies
+            if (pageSatisfied(pageHeader)) {
+                pageReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
+                if (pageReader.hasNextBatch()) {
+                    data = pageReader.nextBatch();
+                    return true;
+                }
+            } else {
+                skipBytesInStreamByLength(pageHeader.getCompressedSize());
+            }
+        }
+        return false;
+    }
+
+
+    @Override
     public TimeValuePair next() throws IOException {
         if (hasNext()) {
             hasCachedTimeValuePair = false;
@@ -91,9 +124,14 @@ public abstract class SeriesChunkReader implements SeriesReader {
         throw new IOException("No more timeValuePair in current Chunk");
     }
 
+    @Override
+    public DynamicOneColumnData nextBatch() {
+        return data;
+    }
+
     /**
      * Read page one by one from ByteBuffer and check the page header whether this page satisfies the filter.
-     * Skip the unsatisfied pages and construct PageDataReader for the first page satisfied.
+     * Skip the unsatisfied pages and construct PageReader for the first page satisfied.
      *
      * @return whether there exists a satisfied page
      * @throws IOException exception when reading page
@@ -108,7 +146,7 @@ public abstract class SeriesChunkReader implements SeriesReader {
 
             // if the current page satisfies the filter
             if (pageSatisfied(pageHeader)) {
-                pageDataReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
+                pageReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
                 gotNextPageReader = true;
             } else {
                 skipBytesInStreamByLength(pageHeader.getCompressedSize());
@@ -116,6 +154,7 @@ public abstract class SeriesChunkReader implements SeriesReader {
         }
         return gotNextPageReader;
     }
+
 
     private void skipBytesInStreamByLength(long length) {
         chunkDataBuffer.position(chunkDataBuffer.position() + (int) length);
@@ -126,7 +165,7 @@ public abstract class SeriesChunkReader implements SeriesReader {
     public abstract boolean timeValuePairSatisfied(TimeValuePair timeValuePair);
 
 
-    private PageDataReader constructPageReaderForNextPage(int compressedPageBodyLength)
+    private PageReader constructPageReaderForNextPage(int compressedPageBodyLength)
             throws IOException {
         byte[] compressedPageBody = new byte[compressedPageBodyLength];
 
@@ -137,8 +176,8 @@ public abstract class SeriesChunkReader implements SeriesReader {
 
         chunkDataBuffer.get(compressedPageBody, 0, compressedPageBodyLength);
         valueDecoder.reset();
-        return new PageDataReader(ByteBuffer.wrap(unCompressor.uncompress(compressedPageBody)),
-                chunkHeader.getDataType(), valueDecoder, timeDecoder);
+        return new PageReader(ByteBuffer.wrap(unCompressor.uncompress(compressedPageBody)),
+                chunkHeader.getDataType(), valueDecoder, timeDecoder, filter);
     }
 
     private PageHeader getNextPageHeader() throws IOException {
@@ -162,4 +201,6 @@ public abstract class SeriesChunkReader implements SeriesReader {
     public long getMaxTombstoneTime() {
         return this.maxTombstoneTime;
     }
+
+
 }

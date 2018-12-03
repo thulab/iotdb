@@ -9,8 +9,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -31,17 +31,17 @@ public class QueryWithGlobalTimeFilterExecutorImpl implements QueryExecutor {
 
     @Override
     public QueryDataSet execute(QueryExpression queryExpression) throws IOException {
-        LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries = new LinkedHashMap<>();
+        LinkedHashMap<Path, Reader> readersOfSelectedSeries = new LinkedHashMap<>();
         Filter timeFilter = ((GlobalTimeFilter) queryExpression.getQueryFilter()).getFilter();
         initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries(), timeFilter);
         return new MergeQueryDataSet(readersOfSelectedSeries);
     }
 
-    private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries,
+    private void initReadersOfSelectedSeries(LinkedHashMap<Path, Reader> readersOfSelectedSeries,
                                              List<Path> selectedSeries, Filter timeFilter) throws IOException {
         for (Path path : selectedSeries) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(chunkLoader, chunkMetaDataList, timeFilter);
+            Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter);
             readersOfSelectedSeries.put(path, seriesReader);
         }
     }

@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -16,10 +16,10 @@ import java.util.PriorityQueue;
  */
 public class MergeQueryDataSet implements QueryDataSet {
 
-    private LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries;
+    private LinkedHashMap<Path, Reader> readersOfSelectedSeries;
     private PriorityQueue<Point> heap;
 
-    public MergeQueryDataSet(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries) throws IOException {
+    public MergeQueryDataSet(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
         this.readersOfSelectedSeries = readersOfSelectedSeries;
         initHeap();
     }
@@ -27,7 +27,7 @@ public class MergeQueryDataSet implements QueryDataSet {
     private void initHeap() throws IOException {
         heap = new PriorityQueue<>();
         for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReader seriesReader = readersOfSelectedSeries.get(path);
+            Reader seriesReader = readersOfSelectedSeries.get(path);
             if (seriesReader.hasNext()) {
                 TimeValuePair timeValuePair = seriesReader.next();
                 heap.add(new Point(path, timeValuePair.getTimestamp(), timeValuePair.getValue()));

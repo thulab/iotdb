@@ -4,7 +4,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileByTimestampImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -15,9 +15,9 @@ import java.util.LinkedHashMap;
 public class QueryDataSetForQueryWithQueryFilterImpl implements QueryDataSet {
 
     private TimestampGenerator timestampGenerator;
-    private LinkedHashMap<Path, SeriesReaderFromSingleFileByTimestampImpl> readersOfSelectedSeries;
+    private LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries;
 
-    public QueryDataSetForQueryWithQueryFilterImpl(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderFromSingleFileByTimestampImpl> readersOfSelectedSeries) {
+    public QueryDataSetForQueryWithQueryFilterImpl(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries) {
         this.timestampGenerator = timestampGenerator;
         this.readersOfSelectedSeries = readersOfSelectedSeries;
     }
@@ -32,7 +32,7 @@ public class QueryDataSetForQueryWithQueryFilterImpl implements QueryDataSet {
         long timestamp = timestampGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
         for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReaderFromSingleFileByTimestampImpl seriesChunkReaderByTimestamp = readersOfSelectedSeries.get(path);
+            SeriesReaderByTimestamp seriesChunkReaderByTimestamp = readersOfSelectedSeries.get(path);
             rowRecord.putField(path, seriesChunkReaderByTimestamp.getValueInTimestamp(timestamp));
         }
         return rowRecord;

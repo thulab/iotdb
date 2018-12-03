@@ -7,8 +7,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -29,16 +29,16 @@ public class QueryWithoutFilterExecutorImpl implements QueryExecutor {
 
     @Override
     public QueryDataSet execute(QueryExpression queryExpression) throws IOException {
-        LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries = new LinkedHashMap<>();
+        LinkedHashMap<Path, Reader> readersOfSelectedSeries = new LinkedHashMap<>();
         initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries());
         return new MergeQueryDataSet(readersOfSelectedSeries);
     }
 
-    private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries,
+    private void initReadersOfSelectedSeries(LinkedHashMap<Path, Reader> readersOfSelectedSeries,
                                              List<Path> selectedSeries) throws IOException {
         for (Path path : selectedSeries) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            SeriesReader seriesReader = new SeriesReaderFromSingleFileWithoutFilterImpl(chunkLoader, chunkMetaDataList);
+            Reader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }
     }

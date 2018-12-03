@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGeneratorByQueryFilterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileByTimestampImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -33,16 +33,16 @@ public class QueryWithQueryFilterExecutorImpl implements QueryExecutor {
     public QueryDataSet execute(QueryExpression queryExpression) throws IOException {
         TimestampGenerator timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryExpression.getQueryFilter(),
                 chunkLoader, metadataQuerier);
-        LinkedHashMap<Path, SeriesReaderFromSingleFileByTimestampImpl> readersOfSelectedSeries = new LinkedHashMap<>();
+        LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries = new LinkedHashMap<>();
         initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries());
         return new QueryDataSetForQueryWithQueryFilterImpl(timestampGenerator, readersOfSelectedSeries);
     }
 
-    private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReaderFromSingleFileByTimestampImpl> readersOfSelectedSeries,
+    private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries,
                                              List<Path> selectedSeries) throws IOException {
         for (Path path : selectedSeries) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            SeriesReaderFromSingleFileByTimestampImpl seriesReader = new SeriesReaderFromSingleFileByTimestampImpl(
+            SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(
                     chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }

@@ -7,34 +7,32 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
-public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromSingleFile implements SeriesReaderByTimeStamp {
+
+public class SeriesReaderByTimestamp extends SeriesReader {
 
     private long currentTimestamp;
     private boolean hasCacheLastTimeValuePair;
     private TimeValuePair cachedTimeValuePair;
     private int nextSeriesChunkIndex;
 
-    public SeriesReaderFromSingleFileByTimestampImpl(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(chunkLoader, chunkMetaDataList);
         nextSeriesChunkIndex = 0;
         currentTimestamp = Long.MIN_VALUE;
     }
 
-    public SeriesReaderFromSingleFileByTimestampImpl(TsFileSequenceReader tsFileReader, Path path) throws IOException {
+    public SeriesReaderByTimestamp(TsFileSequenceReader tsFileReader, Path path) throws IOException {
         super(tsFileReader, path);
         currentTimestamp = Long.MIN_VALUE;
     }
 
-    public SeriesReaderFromSingleFileByTimestampImpl(TsFileSequenceReader tsFileReader,
-                                                     ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public SeriesReaderByTimestamp(TsFileSequenceReader tsFileReader,
+                                   ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(tsFileReader, chunkLoader, chunkMetaDataList);
         currentTimestamp = Long.MIN_VALUE;
     }
@@ -45,8 +43,8 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
             return true;
         }
         if (seriesChunkReaderInitialized) {
-            ((SeriesChunkReaderByTimestampImpl) seriesChunkReader).setCurrentTimestamp(currentTimestamp);
-            if(seriesChunkReader.hasNext()){
+            ((ChunkReaderByTimestamp) seriesChunkReader).setCurrentTimestamp(currentTimestamp);
+            if (seriesChunkReader.hasNext()) {
                 return true;
             }
         }
@@ -54,9 +52,9 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
             if (!seriesChunkReaderInitialized) {
                 ChunkMetaData chunkMetaData = chunkMetaDataList.get(nextSeriesChunkIndex);
                 //maxTime >= currentTime
-                if (seriesChunkSatisfied(chunkMetaData)) {
+                if (chunkSatisfied(chunkMetaData)) {
                     initSeriesChunkReader(chunkMetaData);
-                    ((SeriesChunkReaderByTimestampImpl) seriesChunkReader).setCurrentTimestamp(currentTimestamp);
+                    ((ChunkReaderByTimestamp) seriesChunkReader).setCurrentTimestamp(currentTimestamp);
                     seriesChunkReaderInitialized = true;
                     nextSeriesChunkIndex++;
                 } else {
@@ -87,12 +85,21 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
         return seriesChunkReader.next();
     }
 
+    @Override
+    public boolean hasNextBatch() throws IOException {
+        return false;
+    }
+
+    @Override
+    public DynamicOneColumnData nextBatch() {
+        return null;
+    }
+
     /**
      * @param timestamp
      * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
      * @throws IOException
      */
-    @Override
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
         if (hasCacheLastTimeValuePair) {
@@ -103,7 +110,7 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
                 return null;
             }
         }
-        if(hasNext()){
+        if (hasNext()) {
             cachedTimeValuePair = next();
             if (cachedTimeValuePair.getTimestamp() == timestamp) {
                 return cachedTimeValuePair.getValue();
@@ -118,13 +125,13 @@ public class SeriesReaderFromSingleFileByTimestampImpl extends SeriesReaderFromS
     @Override
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderByTimestampImpl(chunk);
+        this.seriesChunkReader = new ChunkReaderByTimestamp(chunk);
         this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override
-    protected boolean seriesChunkSatisfied(ChunkMetaData chunkMetaData) {
+    protected boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
         long maxTimestamp = chunkMetaData.getEndTime();
-        return  maxTimestamp >= currentTimestamp;
+        return maxTimestamp >= currentTimestamp;
     }
 }

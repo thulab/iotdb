@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 
@@ -9,9 +9,9 @@ import java.io.IOException;
  */
 public class LeafNode implements Node {
 
-    private SeriesReader seriesReader;
+    private Reader seriesReader;
 
-    public LeafNode(SeriesReader seriesReader) {
+    public LeafNode(Reader seriesReader) {
         this.seriesReader = seriesReader;
     }
 

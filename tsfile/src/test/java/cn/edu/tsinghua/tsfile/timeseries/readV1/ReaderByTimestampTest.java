@@ -8,9 +8,9 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileIm
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileByTimestampImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Created by zhangjinrui on 2017/12/25.
  */
-public class SeriesReaderByTimestampTest {
+public class ReaderByTimestampTest {
 
     private static final String FILE_PATH = TsFileGeneratorForSeriesReaderByTimestamp.outputDataFile;
     private TsFileSequenceReader fileReader;
@@ -50,7 +50,7 @@ public class SeriesReaderByTimestampTest {
     public void readByTimestamp() throws IOException {
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
-        SeriesReader seriesReader = new SeriesReaderFromSingleFileWithoutFilterImpl(seriesChunkLoader, chunkMetaDataList);
+        Reader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
 
         List<TimeValuePair> timeValuePairList = new ArrayList<>();
         int count = 0;
@@ -66,7 +66,7 @@ public class SeriesReaderByTimestampTest {
         long startTimestamp = System.currentTimeMillis();
         count = 0;
 
-        SeriesReaderFromSingleFileByTimestampImpl seriesReaderFromSingleFileByTimestamp = new SeriesReaderFromSingleFileByTimestampImpl(seriesChunkLoader, chunkMetaDataList);
+        SeriesReaderByTimestamp seriesReaderFromSingleFileByTimestamp = new SeriesReaderByTimestamp(seriesChunkLoader, chunkMetaDataList);
 
         for (TimeValuePair timeValuePair : timeValuePairList) {
             TsPrimitiveType value = seriesReaderFromSingleFileByTimestamp.getValueInTimestamp(timeValuePair.getTimestamp());

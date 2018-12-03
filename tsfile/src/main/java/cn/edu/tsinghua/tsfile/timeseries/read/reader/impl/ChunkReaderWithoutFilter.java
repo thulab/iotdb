@@ -1,15 +1,15 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
-import java.nio.ByteBuffer;
 
+public class ChunkReaderWithoutFilter extends ChunkReader {
 
-public class SeriesChunkReaderWithoutFilterImpl extends SeriesChunkReader {
-
-    public SeriesChunkReaderWithoutFilterImpl(Chunk chunk) {
+    public ChunkReaderWithoutFilter(Chunk chunk) {
         super(chunk);
     }
 
