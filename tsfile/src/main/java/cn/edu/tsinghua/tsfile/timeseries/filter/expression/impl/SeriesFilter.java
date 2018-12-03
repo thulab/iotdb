@@ -4,7 +4,6 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.UnaryQueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 
 public class SeriesFilter implements UnaryQueryFilter {
@@ -14,10 +13,6 @@ public class SeriesFilter implements UnaryQueryFilter {
     public SeriesFilter(Path seriesDescriptor, Filter filter) {
         this.seriesPath = seriesDescriptor;
         this.filter = filter;
-    }
-
-    public boolean satisfy(TimeValuePair timeValuePair) {
-        return filter.satisfy(timeValuePair);
     }
 
     @Override
