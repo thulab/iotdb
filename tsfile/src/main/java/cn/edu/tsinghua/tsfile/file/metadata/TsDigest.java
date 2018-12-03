@@ -45,6 +45,7 @@ public class TsDigest {
     }
 
     public Map<String, ByteBuffer> getStatistics() {
+        if(statistics == null) return null;
         return Collections.unmodifiableMap(this.statistics);
     }
 
