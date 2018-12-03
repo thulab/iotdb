@@ -57,7 +57,7 @@ public class ChunkGroupMetaData {
         reCalculateSerializedSize();
     }
 
-    void reCalculateSerializedSize(){
+    private void reCalculateSerializedSize(){
         serializedSize = Integer.BYTES + deviceID.length() +
                 Integer.BYTES; // size of chunkMetaDataList
         for (ChunkMetaData chunk : chunkMetaDataList) {
