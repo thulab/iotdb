@@ -6,6 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -97,6 +98,16 @@ public class NodeTest {
         @Override
         public void skipCurrentTimeValuePair() throws IOException {
             next();
+        }
+
+        @Override
+        public boolean hasNextBatch() throws IOException {
+            return false;
+        }
+
+        @Override
+        public DynamicOneColumnData nextBatch() {
+            return null;
         }
 
         @Override

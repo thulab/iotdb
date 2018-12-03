@@ -1,23 +1,21 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.query.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
-public class QueryDataSetForQueryWithQueryFilterImpl implements QueryDataSet {
+
+public class DataSetWithFilter implements QueryDataSet {
 
     private TimestampGenerator timestampGenerator;
     private LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries;
 
-    public QueryDataSetForQueryWithQueryFilterImpl(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries) {
+    public DataSetWithFilter(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries) {
         this.timestampGenerator = timestampGenerator;
         this.readersOfSelectedSeries = readersOfSelectedSeries;
     }
@@ -32,8 +30,8 @@ public class QueryDataSetForQueryWithQueryFilterImpl implements QueryDataSet {
         long timestamp = timestampGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
         for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReaderByTimestamp seriesChunkReaderByTimestamp = readersOfSelectedSeries.get(path);
-            rowRecord.putField(path, seriesChunkReaderByTimestamp.getValueInTimestamp(timestamp));
+            SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
+            rowRecord.putField(path, seriesReaderByTimestamp.getValueInTimestamp(timestamp));
         }
         return rowRecord;
     }

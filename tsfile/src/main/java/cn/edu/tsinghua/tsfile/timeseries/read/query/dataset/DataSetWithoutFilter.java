@@ -1,25 +1,23 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.query.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.PriorityQueue;
 
-/**
- * Created by zhangjinrui on 2017/12/27.
- */
-public class MergeQueryDataSet implements QueryDataSet {
+
+public class DataSetWithoutFilter implements QueryDataSet {
 
     private LinkedHashMap<Path, Reader> readersOfSelectedSeries;
     private PriorityQueue<Point> heap;
 
-    public MergeQueryDataSet(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
+    public DataSetWithoutFilter(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
         this.readersOfSelectedSeries = readersOfSelectedSeries;
         initHeap();
     }
