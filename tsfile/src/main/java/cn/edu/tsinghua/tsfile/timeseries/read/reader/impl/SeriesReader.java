@@ -50,7 +50,7 @@ public abstract class SeriesReader implements Reader {
 
     @Override
     public boolean hasNext() throws IOException {
-        if (chunkReaderInitialized && chunkReader.hasNextBatch()) {
+        if (chunkReaderInitialized && chunkReader.hasNext()) {
             return true;
         }
         while (currentChunkIndex < chunkMetaDataList.size()) {
@@ -81,7 +81,7 @@ public abstract class SeriesReader implements Reader {
     public boolean hasNextBatch() throws IOException {
 
         // current chunk has additional batch
-        if (chunkReader.hasNextBatch()) {
+        if (chunkReader != null && chunkReader.hasNextBatch()) {
             return true;
         }
 
