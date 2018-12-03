@@ -8,26 +8,32 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import java.nio.ByteBuffer;
 
 /**
- * @author ZJR
  * class to construct digest.
  */
 public class DigestForFilter {
 
-    private ByteBuffer min;
-    private ByteBuffer max;
+    private ByteBuffer minValue;
+    private ByteBuffer maxValue;
+    private long minTime;
+    private long maxTime;
     private TSDataType type;
 
-    public DigestForFilter(ByteBuffer min, ByteBuffer max, TSDataType type) {
-        this.min = min;
-        this.max = max;
+    public DigestForFilter(long minTime, long maxTime, ByteBuffer minValue, ByteBuffer maxValue, TSDataType type) {
+        this.minTime = minTime;
+        this.maxTime = maxTime;
+        this.minValue = minValue;
+        this.maxValue = maxValue;
         this.type = type;
     }
 
-    public DigestForFilter(long minv, long maxv) {
-        this.min = ByteBuffer.wrap(BytesUtils.longToBytes(minv));
-        this.max = ByteBuffer.wrap(BytesUtils.longToBytes(maxv));
-        this.type = TSDataType.INT64;
+    public DigestForFilter(long minTime, long maxTime, byte[] minValue, byte[] maxValue, TSDataType type) {
+        this.minTime = minTime;
+        this.maxTime = maxTime;
+        this.minValue = ByteBuffer.wrap(minValue);
+        this.maxValue = ByteBuffer.wrap(maxValue);
+        this.type = type;
     }
+
 
     @SuppressWarnings("unchecked")
     private  <T extends Comparable<T>> T getValue(ByteBuffer value){
@@ -49,12 +55,20 @@ public class DigestForFilter {
         }
     }
 
+    public long getMinTime() {
+        return minTime;
+    }
+
+    public long getMaxTime() {
+        return maxTime;
+    }
+
     public <T extends Comparable<T>> T getMinValue() {
-        return getValue(min);
+        return getValue(minValue);
     }
 
     public <T extends Comparable<T>> T getMaxValue() {
-        return getValue(max);
+        return getValue(maxValue);
     }
 
     public Class<?> getTypeClass() {

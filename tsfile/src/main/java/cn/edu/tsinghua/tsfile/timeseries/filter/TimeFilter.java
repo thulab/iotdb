@@ -4,88 +4,77 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.operator.*;
 
-/**
- * Created by zhangjinrui on 2017/12/15.
- */
+
 public class TimeFilter {
 
     public static class TimeEq extends Eq {
-        private TimeEq(Long value) {
+        private TimeEq(long value) {
             super(value, FilterType.TIME_FILTER);
         }
     }
 
     public static class TimeNotEq extends NotEq {
-        private TimeNotEq(Long value) {
+        private TimeNotEq(long value) {
             super(value, FilterType.TIME_FILTER);
         }
     }
 
     public static class TimeGt extends Gt {
-        private TimeGt(Long value) {
+        private TimeGt(long value) {
             super(value, FilterType.TIME_FILTER);
         }
     }
 
     public static class TimeGtEq extends GtEq {
-        private TimeGtEq(Long value) {
+        private TimeGtEq(long value) {
             super(value, FilterType.TIME_FILTER);
         }
     }
 
     public static class TimeLt extends Lt {
-        private TimeLt(Long value) {
+        private TimeLt(long value) {
             super(value, FilterType.TIME_FILTER);
         }
     }
 
     public static class TimeLtEq extends LtEq {
-        private TimeLtEq(Long value) {
+        private TimeLtEq(long value) {
             super(value, FilterType.TIME_FILTER);
         }
     }
 
-    public static class TimeNoRestriction extends NoRestriction {
-        public String toString() {
-            return FilterType.TIME_FILTER + super.toString();
-        }
-    }
 
-    public static class TimeNot extends Not<Long> {
-        private TimeNot(Filter<Long> filter) {
+    public static class TimeNot extends Not {
+        private TimeNot(Filter filter) {
             super(filter);
         }
     }
 
-    public static TimeEq eq(Long value) {
+    public static TimeEq eq(long value) {
         return new TimeEq(value);
     }
 
-    public static TimeGt gt(Long value) {
+    public static TimeGt gt(long value) {
         return new TimeGt(value);
     }
 
-    public static TimeGtEq gtEq(Long value) {
+    public static TimeGtEq gtEq(long value) {
         return new TimeGtEq(value);
     }
 
-    public static TimeLt lt(Long value) {
+    public static TimeLt lt(long value) {
         return new TimeLt(value);
     }
 
-    public static TimeLtEq ltEq(Long value) {
+    public static TimeLtEq ltEq(long value) {
         return new TimeLtEq(value);
     }
 
-    public static TimeNoRestriction noRestriction() {
-        return new TimeNoRestriction();
-    }
-
-    public static TimeNot not(Filter<Long> filter) {
+    public static TimeNot not(Filter filter) {
         return new TimeNot(filter);
     }
 
-    public static TimeNotEq notEq(Long value) {
+    public static TimeNotEq notEq(long value) {
         return new TimeNotEq(value);
     }
 
