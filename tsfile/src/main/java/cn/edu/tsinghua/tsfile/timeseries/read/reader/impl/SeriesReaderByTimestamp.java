@@ -42,20 +42,20 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         if (hasCacheLastTimeValuePair && cachedTimeValuePair.getTimestamp() >= currentTimestamp) {
             return true;
         }
-        if (seriesChunkReaderInitialized) {
-            ((ChunkReaderByTimestamp) seriesChunkReader).setCurrentTimestamp(currentTimestamp);
-            if (seriesChunkReader.hasNext()) {
+        if (chunkReaderInitialized) {
+            ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
+            if (chunkReader.hasNext()) {
                 return true;
             }
         }
         while (nextSeriesChunkIndex < chunkMetaDataList.size()) {
-            if (!seriesChunkReaderInitialized) {
+            if (!chunkReaderInitialized) {
                 ChunkMetaData chunkMetaData = chunkMetaDataList.get(nextSeriesChunkIndex);
                 //maxTime >= currentTime
                 if (chunkSatisfied(chunkMetaData)) {
                     initSeriesChunkReader(chunkMetaData);
-                    ((ChunkReaderByTimestamp) seriesChunkReader).setCurrentTimestamp(currentTimestamp);
-                    seriesChunkReaderInitialized = true;
+                    ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
+                    chunkReaderInitialized = true;
                     nextSeriesChunkIndex++;
                 } else {
                     long minTimestamp = chunkMetaData.getStartTime();
@@ -67,10 +67,10 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                     }
                 }
             }
-            if (seriesChunkReader.hasNext()) {
+            if (chunkReader.hasNext()) {
                 return true;
             } else {
-                seriesChunkReaderInitialized = false;
+                chunkReaderInitialized = false;
             }
         }
         return false;
@@ -82,7 +82,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
             hasCacheLastTimeValuePair = false;
             return cachedTimeValuePair;
         }
-        return seriesChunkReader.next();
+        return chunkReader.next();
     }
 
     @Override
@@ -125,8 +125,8 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     @Override
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-        this.seriesChunkReader = new ChunkReaderByTimestamp(chunk);
-        this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
+        this.chunkReader = new ChunkReaderByTimestamp(chunk);
+        this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override

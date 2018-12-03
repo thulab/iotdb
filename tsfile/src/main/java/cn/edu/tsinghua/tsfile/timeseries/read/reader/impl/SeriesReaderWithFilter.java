@@ -8,7 +8,6 @@ import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,8 +36,8 @@ public class SeriesReaderWithFilter extends SeriesReader {
 
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-        this.seriesChunkReader = new ChunkReaderWithFilter(chunk, filter);
-        this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
+        this.chunkReader = new ChunkReaderWithFilter(chunk, filter);
+        this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override
@@ -52,13 +51,4 @@ public class SeriesReaderWithFilter extends SeriesReader {
         return filter.satisfy(digest);
     }
 
-    @Override
-    public boolean hasNextBatch() throws IOException {
-        return false;
-    }
-
-    @Override
-    public DynamicOneColumnData nextBatch() {
-        return null;
-    }
 }

@@ -7,6 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileIm
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
@@ -18,9 +19,9 @@ public abstract class SeriesReader implements Reader {
     protected ChunkLoader chunkLoader;
     protected List<ChunkMetaData> chunkMetaDataList;
 
-    protected ChunkReader seriesChunkReader;
-    protected boolean seriesChunkReaderInitialized;
-    protected int currentReadSeriesChunkIndex;
+    protected ChunkReader chunkReader;
+    protected boolean chunkReaderInitialized;
+    protected int currentChunkIndex;
 
     protected TsFileSequenceReader fileReader;
 
@@ -28,8 +29,8 @@ public abstract class SeriesReader implements Reader {
         this.fileReader = fileReader;
         this.chunkLoader = new ChunkLoaderImpl(fileReader);
         this.chunkMetaDataList = new MetadataQuerierByFileImpl(fileReader).getChunkMetaDataList(path);
-        this.currentReadSeriesChunkIndex = -1;
-        this.seriesChunkReaderInitialized = false;
+        this.currentChunkIndex = 0;
+        this.chunkReaderInitialized = false;
     }
 
     public SeriesReader(TsFileSequenceReader fileReader,
@@ -47,29 +48,29 @@ public abstract class SeriesReader implements Reader {
     public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
-        this.currentReadSeriesChunkIndex = -1;
-        this.seriesChunkReaderInitialized = false;
+        this.currentChunkIndex = 0;
+        this.chunkReaderInitialized = false;
     }
 
     @Override
     public boolean hasNext() throws IOException {
-        if (seriesChunkReaderInitialized && seriesChunkReader.hasNext()) {
+        if (chunkReaderInitialized && chunkReader.hasNextBatch()) {
             return true;
         }
-        while ((currentReadSeriesChunkIndex + 1) < chunkMetaDataList.size()) {
-            if (!seriesChunkReaderInitialized) {
-                ChunkMetaData chunkMetaData = chunkMetaDataList.get(++currentReadSeriesChunkIndex);
+        while (currentChunkIndex < chunkMetaDataList.size()) {
+            if (!chunkReaderInitialized) {
+                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
                 if (chunkSatisfied(chunkMetaData)) {
                     initSeriesChunkReader(chunkMetaData);
-                    seriesChunkReaderInitialized = true;
+                    chunkReaderInitialized = true;
                 } else {
                     continue;
                 }
             }
-            if (seriesChunkReader.hasNext()) {
+            if (chunkReader.hasNext()) {
                 return true;
             } else {
-                seriesChunkReaderInitialized = false;
+                chunkReaderInitialized = false;
             }
         }
         return false;
@@ -77,8 +78,39 @@ public abstract class SeriesReader implements Reader {
 
     @Override
     public TimeValuePair next() throws IOException {
-        return seriesChunkReader.next();
+        return chunkReader.next();
     }
+
+    @Override
+    public boolean hasNextBatch() throws IOException {
+
+        // current chunk has additional batch
+        if (chunkReader.hasNextBatch()) {
+            return true;
+        }
+
+        // current chunk does not have additional batch, init new chunk reader
+        while (currentChunkIndex < chunkMetaDataList.size()) {
+
+            ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+            if (chunkSatisfied(chunkMetaData)) {
+                // chunk metadata satisfy the condition
+                initSeriesChunkReader(chunkMetaData);
+
+                if (chunkReader.hasNextBatch())
+                    return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    @Override
+    public DynamicOneColumnData nextBatch() {
+        return chunkReader.nextBatch();
+    }
+
 
     @Override
     public void skipCurrentTimeValuePair() throws IOException {
@@ -94,4 +126,6 @@ public abstract class SeriesReader implements Reader {
             fileReader.close();
         }
     }
+
+
 }
