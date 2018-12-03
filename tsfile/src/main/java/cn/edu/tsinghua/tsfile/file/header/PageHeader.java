@@ -25,6 +25,13 @@ public class PageHeader {
         return 3 * Integer.BYTES + 2 * Long.BYTES + Statistics.getStatsByType(type).getSerializedSize();
     }
 
+    public int calculatePageHeaderSize() {
+        if(statistics!=null)
+            return 3 * Integer.BYTES + 2 * Long.BYTES + statistics.getSerializedSize();
+        else
+            return 3 * Integer.BYTES + 2 * Long.BYTES;
+    }
+
     public int getSerializedSize() {
         return serializedSize;
     }
@@ -37,7 +44,7 @@ public class PageHeader {
         this.statistics = statistics;
         this.max_timestamp = max_timestamp;
         this.min_timestamp = min_timestamp;
-        serializedSize = 3 * Integer.BYTES + 2 * Long.BYTES + statistics.getSerializedSize();
+        serializedSize = calculatePageHeaderSize();
     }
 
 
@@ -71,6 +78,8 @@ public class PageHeader {
 
     public void setStatistics(Statistics<?> statistics) {
         this.statistics = statistics;
+        if(statistics != null)
+            serializedSize = calculatePageHeaderSize();
     }
 
     public long getMax_timestamp() {

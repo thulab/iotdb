@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,8 +45,9 @@ public class TsDigest {
     }
 
     public Map<String, ByteBuffer> getStatistics() {
-        return this.statistics;
+        return Collections.unmodifiableMap(this.statistics);
     }
+
 
     public void addStatistics(String key, ByteBuffer value) {
         if (statistics == null) {
@@ -61,11 +63,7 @@ public class TsDigest {
         return statistics != null ? statistics.toString() : "";
     }
 
-    public ByteBuffer byteBufferDeepCopy(ByteBuffer src) {
-        ByteBuffer copy = ByteBuffer.allocate(src.remaining()).put(src.slice());
-        copy.flip();
-        return copy;
-    }
+
 
 
     public int serializeTo(OutputStream outputStream) throws IOException {
