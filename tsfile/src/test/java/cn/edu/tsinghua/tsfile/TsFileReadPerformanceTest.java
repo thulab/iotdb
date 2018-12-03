@@ -8,8 +8,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class TsFileReadPerformanceTest {
 
         long startTime = System.currentTimeMillis();
         int cnt = 0;
-        DataSetWithoutFilter queryDataSet = (DataSetWithoutFilter) tsFile.query(queryExpression);
+        DataSetWithoutTimeGenerator queryDataSet = (DataSetWithoutTimeGenerator) tsFile.query(queryExpression);
         while (queryDataSet.hasNextRowRecord()) {
             RowRecordV2 record = queryDataSet.nextRowRecord();
 //            System.out.println(record.toString());

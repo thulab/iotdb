@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 
 
-public class DataSetWithFilter implements QueryDataSet {
+public class DataSetWithTimeGenerator implements QueryDataSet {
 
     private TimestampGenerator timestampGenerator;
     private LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries;
 
-    public DataSetWithFilter(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries) {
+    public DataSetWithTimeGenerator(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries) {
         this.timestampGenerator = timestampGenerator;
         this.readersOfSelectedSeries = readersOfSelectedSeries;
     }

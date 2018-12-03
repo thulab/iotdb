@@ -9,11 +9,9 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.util.QueryFilterOptim
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithTimeGenerator;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGeneratorByQueryFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
@@ -68,7 +66,7 @@ public class QueryExecutorRouter implements QueryExecutor {
             Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter);
             readersOfSelectedSeries.put(path, seriesReader);
         }
-        return new DataSetWithoutFilter(readersOfSelectedSeries, true);
+        return new DataSetWithoutTimeGenerator(readersOfSelectedSeries, true);
     }
 
     /**
@@ -82,7 +80,7 @@ public class QueryExecutorRouter implements QueryExecutor {
             Reader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }
-        return new DataSetWithoutFilter(readersOfSelectedSeries, true);
+        return new DataSetWithoutTimeGenerator(readersOfSelectedSeries, true);
     }
 
     /**
@@ -98,6 +96,6 @@ public class QueryExecutorRouter implements QueryExecutor {
                     chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }
-        return new DataSetWithFilter(timestampGenerator, readersOfSelectedSeries);
+        return new DataSetWithTimeGenerator(timestampGenerator, readersOfSelectedSeries);
     }
 }

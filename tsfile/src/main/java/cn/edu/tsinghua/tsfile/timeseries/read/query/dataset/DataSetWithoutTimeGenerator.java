@@ -11,12 +11,12 @@ import java.io.IOException;
 import java.util.*;
 
 
-public class DataSetWithoutFilter implements QueryDataSet {
+public class DataSetWithoutTimeGenerator implements QueryDataSet {
 
     private LinkedHashMap<Path, Reader> readersOfSelectedSeries;
     private PriorityQueue<Point> heap;
 
-    public DataSetWithoutFilter(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
+    public DataSetWithoutTimeGenerator(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
         this.readersOfSelectedSeries = readersOfSelectedSeries;
         initHeap();
     }
@@ -85,7 +85,7 @@ public class DataSetWithoutFilter implements QueryDataSet {
 
     private Set<Long> timeSet;
 
-    public DataSetWithoutFilter(LinkedHashMap<Path, Reader> readersOfSelectedSeries, boolean flag) throws IOException {
+    public DataSetWithoutTimeGenerator(LinkedHashMap<Path, Reader> readersOfSelectedSeries, boolean flag) throws IOException {
         this.readersOfSelectedSeries = readersOfSelectedSeries;
         initHeapV2();
     }
