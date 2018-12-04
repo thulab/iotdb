@@ -1,45 +1,27 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.datatype;
 
-import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class RowRecordV2 {
     private long timestamp;
-    public String deltaObjectId;
-    public List<Field> fields;
+    private List<Field> fields;
 
-    public RowRecordV2(long timestamp, String deltaObjectId, String deltaObjectType) {
+    public RowRecordV2(long timestamp) {
         this.timestamp = timestamp;
-        this.deltaObjectId = deltaObjectId;
-        this.fields = new ArrayList<Field>();
+        this.fields = new ArrayList<>();
     }
 
     public long getTime() {
         return timestamp;
     }
 
-    public String getRowKey() {
-        return deltaObjectId;
-    }
-
-
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
-    public void setDeltaObjectId(String did) {
-        this.deltaObjectId = did;
-    }
-
-    public int addField(Field f) {
+    public void addField(Field f) {
         this.fields.add(f);
-        return fields.size();
     }
 
     public String toString() {
@@ -51,45 +33,10 @@ public class RowRecordV2 {
         }
         return sb.toString();
     }
-
-    public TSRecord toTSRecord() {
-        TSRecord r = new TSRecord(timestamp, deltaObjectId);
-        for (Field f : fields) {
-            if (!f.isNull()) {
-                DataPoint d = createDataPoint(f.dataType, f.measurementId, f);
-                r.addTuple(d);
-            }
-        }
-        return r;
-    }
-
     public long getTimestamp() {
         return timestamp;
     }
 
-    private DataPoint createDataPoint(TSDataType dataType, String measurementId, Field f) {
-        switch (dataType) {
-
-            case BOOLEAN:
-                return new BooleanDataPoint(measurementId, f.getBoolV());
-            case DOUBLE:
-                return new DoubleDataPoint(measurementId, f.getDoubleV());
-            case FLOAT:
-                return new FloatDataPoint(measurementId, f.getFloatV());
-            case INT32:
-                return new IntDataPoint(measurementId, f.getIntV());
-            case INT64:
-                return new LongDataPoint(measurementId, f.getLongV());
-            case TEXT:
-                return new StringDataPoint(measurementId, Binary.valueOf(f.getStringValue()));
-            default:
-                throw new UnSupportedDataTypeException(String.valueOf(dataType));
-        }
-    }
-
-    /**
-     * @return the fields
-     */
     public List<Field> getFields() {
         return fields;
     }

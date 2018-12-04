@@ -16,11 +16,6 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
     private LinkedHashMap<Path, Reader> readersOfSelectedSeries;
     private PriorityQueue<Point> heap;
 
-    public DataSetWithoutTimeGenerator(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
-        this.readersOfSelectedSeries = readersOfSelectedSeries;
-        initHeap();
-    }
-
     private void initHeap() throws IOException {
         heap = new PriorityQueue<>();
         for (Path path : readersOfSelectedSeries.keySet()) {
@@ -73,19 +68,15 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
     }
 
     public LinkedHashMap<Path, DynamicOneColumnData> seriesDataMap;
-    protected DynamicOneColumnData[] seriesDataArray;
-
-    // usingIdxsOfSeriesData[i] stores the using index of seriesDataArray[i]
-    protected int[] usingIdxsOfSeriesData;
 
     private Map<Path, Boolean> hasDataRemaining;
 
-    // heap only need to store
+    // heap only need to store time
     private PriorityQueue<Long> timeHeap;
 
     private Set<Long> timeSet;
 
-    public DataSetWithoutTimeGenerator(LinkedHashMap<Path, Reader> readersOfSelectedSeries, boolean flag) throws IOException {
+    public DataSetWithoutTimeGenerator(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
         this.readersOfSelectedSeries = readersOfSelectedSeries;
         initHeapV2();
     }
@@ -119,7 +110,7 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
     public RowRecordV2 nextV2() throws IOException {
         long minTime = heapGet();
 
-        RowRecordV2 record = new RowRecordV2(minTime, null, null);
+        RowRecordV2 record = new RowRecordV2(minTime);
 
         record.setTimestamp(minTime);
 
@@ -183,25 +174,25 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
         return t;
     }
 
-    public void putValueToField(DynamicOneColumnData col, Field f) {
+    public void putValueToField(DynamicOneColumnData col, Field field) {
         switch (col.getDataType()) {
             case BOOLEAN:
-                f.setBoolV(col.getBoolean());
+                field.setBoolV(col.getBoolean());
                 break;
             case INT32:
-                f.setIntV(col.getInt());
+                field.setIntV(col.getInt());
                 break;
             case INT64:
-                f.setLongV(col.getLong());
+                field.setLongV(col.getLong());
                 break;
             case FLOAT:
-                f.setFloatV(col.getFloat());
+                field.setFloatV(col.getFloat());
                 break;
             case DOUBLE:
-                f.setDoubleV(col.getDouble());
+                field.setDoubleV(col.getDouble());
                 break;
             case TEXT:
-                f.setBinaryV(col.getBinary());
+                field.setBinaryV(col.getBinary());
                 break;
             default:
                 throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(col.getDataType()));
