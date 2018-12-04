@@ -35,7 +35,7 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
         for (Path path : readersOfSelectedSeries.keySet()) {
             SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
             TsPrimitiveType tsPrimitiveType;
-            Object value = seriesReaderByTimestamp.getValueInTimestampV3(timestamp);
+            Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
 
             if(value == null) {
                 rowRecord.putField(path, null);
@@ -87,7 +87,7 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
             SeriesReaderByTimestamp seriesReaderByTimestamp = entry.getValue();
             TSDataType dataType = seriesReaderByTimestamp.getDataType();
             Field field = new Field(dataType, path.getDeviceToString(), path.getMeasurementToString());
-            Object value = seriesReaderByTimestamp.getValueInTimestampV3(timestamp);
+            Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
             if (value == null) {
                 field.setNull();
             }

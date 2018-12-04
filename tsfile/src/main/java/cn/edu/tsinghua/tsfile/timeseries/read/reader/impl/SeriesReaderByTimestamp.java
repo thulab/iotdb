@@ -18,11 +18,8 @@ import java.util.List;
 public class SeriesReaderByTimestamp extends SeriesReader {
 
     private long currentTimestamp;
-    private boolean hasCacheLastTimeValuePair;
-    private TimeValuePair cachedTimeValuePair;
     private int currentSeriesChunkIndex;
-
-    private DynamicOneColumnData data = null;
+    private DynamicOneColumnData data = null; // current batch data
 
     public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(chunkLoader, chunkMetaDataList);
@@ -34,15 +31,14 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         return chunkMetaDataList.get(0).getTsDataType();
     }
 
-    public Object getValueInTimestampV3(long timestamp) throws IOException {
+    public Object getValueInTimestampV2(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
 
+        // first initialization, only invoked in the first time
         if (chunkReader == null) {
             if (!constructNextSatisfiedChunkReader())
                 return null;
-        }
 
-        if (data == null) {
             if (chunkReader.hasNextBatch())
                 data = chunkReader.nextBatch();
             else
@@ -56,15 +52,17 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                 else
                     break;
             }
-            if (data.hasNext() && data.getTime() == timestamp)
-                return data.getValue();
-            else if (data.hasNext())
+
+            if (data.hasNext()) {
+                if (data.getTime() == timestamp)
+                    return data.getValue();
                 return null;
-            else if (chunkReader.hasNextBatch()) // data does not has next
-                data = nextBatch();
-            else {
-                if (!constructNextSatisfiedChunkReader())
+            } else {
+                if (chunkReader.hasNextBatch()) { // data does not has next
+                    data = nextBatch();
+                } else if (!constructNextSatisfiedChunkReader()) {
                     return null;
+                }
             }
         }
 
@@ -92,12 +90,14 @@ public class SeriesReaderByTimestamp extends SeriesReader {
 
     @Override
     protected boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
-        long maxTimestamp = chunkMetaData.getEndTime();
-        return maxTimestamp >= currentTimestamp;
+        return chunkMetaData.getEndTime() >= currentTimestamp;
     }
 
 
     // ============= These methods below are deprecated ==========================
+
+    private boolean hasCacheLastTimeValuePair;
+    private TimeValuePair cachedTimeValuePair;
 
     @Override
     public boolean hasNext() throws IOException {

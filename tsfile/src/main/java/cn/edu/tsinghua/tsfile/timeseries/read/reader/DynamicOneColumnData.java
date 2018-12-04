@@ -70,13 +70,20 @@ public class DynamicOneColumnData {
 
     public Object getValue() {
         switch (dataType) {
-            case INT32: return getInt();
-            case INT64: return getLong();
-            case FLOAT: return getFloat();
-            case DOUBLE: return getDouble();
-            case BOOLEAN: return getBoolean();
-            case TEXT: return getBinary();
-            default: return null;
+            case INT32:
+                return getInt();
+            case INT64:
+                return getLong();
+            case FLOAT:
+                return getFloat();
+            case DOUBLE:
+                return getDouble();
+            case BOOLEAN:
+                return getBoolean();
+            case TEXT:
+                return getBinary();
+            default:
+                return null;
         }
     }
 
