@@ -123,5 +123,4 @@ public abstract class SeriesReader implements Reader {
         }
     }
 
-
 }

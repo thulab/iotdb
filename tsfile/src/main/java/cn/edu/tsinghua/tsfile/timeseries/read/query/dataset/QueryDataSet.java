@@ -23,7 +23,7 @@ public interface QueryDataSet {
      */
     RowRecord next() throws IOException;
 
-    boolean hasNextV2();
+    boolean hasNextV2() throws IOException;
 
     RowRecordV2 nextV2() throws IOException;
 
