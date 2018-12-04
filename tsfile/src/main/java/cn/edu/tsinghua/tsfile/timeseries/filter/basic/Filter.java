@@ -1,8 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.filter.basic;
 
 
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.AbstractFilterVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.TimeValuePairFilterVisitor;
+import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 /**
@@ -11,12 +10,13 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
  * {@link UnaryFilter}
  * Filter is a role of interviewee in visitor pattern.
  *
- * @author CGF
  */
-public interface Filter<T extends Comparable<T>> {
+public interface Filter {
 
-    <R> R accept(AbstractFilterVisitor<R> visitor);
+    boolean satisfy(DigestForFilter digest);
 
-    <R> R accept(TimeValuePair timeValuePair, TimeValuePairFilterVisitor<R> visitor);
+    boolean satisfy(TimeValuePair pair);
+
+    boolean satisfy(long time, Object value);
 
 }

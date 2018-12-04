@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.operator.*;
 
-/**
- * @author Jinrui Zhang
- */
+
 public class ValueFilter {
 
     public static class ValueEq<T extends Comparable<T>> extends Eq<T> {
@@ -39,14 +37,8 @@ public class ValueFilter {
         }
     }
 
-    public static class ValueNoRestriction<T extends Comparable<T>> extends NoRestriction<T> {
-        public String toString() {
-            return FilterType.VALUE_FILTER + super.toString();
-        }
-    }
-
-    public static class ValueNot<T extends Comparable<T>> extends Not<T> {
-        private ValueNot(Filter<T> filter) {
+    public static class ValueNot extends Not {
+        private ValueNot(Filter filter) {
             super(filter);
         }
 
@@ -81,11 +73,7 @@ public class ValueFilter {
         return new ValueLtEq(value);
     }
 
-    public static <T extends Comparable<T>> ValueNoRestriction<T> noRestriction() {
-        return new ValueNoRestriction<T>();
-    }
-
-    public static <T extends Comparable<T>> ValueNot<T> not(Filter<T> filter) {
+    public static ValueNot not(Filter filter) {
         return new ValueNot(filter);
     }
 

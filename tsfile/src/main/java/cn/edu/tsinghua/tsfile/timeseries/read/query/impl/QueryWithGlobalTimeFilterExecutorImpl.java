@@ -32,13 +32,13 @@ public class QueryWithGlobalTimeFilterExecutorImpl implements QueryExecutor {
     @Override
     public QueryDataSet execute(QueryExpression queryExpression) throws IOException {
         LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries = new LinkedHashMap<>();
-        Filter<Long> timeFilter = ((GlobalTimeFilter) queryExpression.getQueryFilter()).getFilter();
+        Filter timeFilter = ((GlobalTimeFilter) queryExpression.getQueryFilter()).getFilter();
         initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries(), timeFilter);
         return new MergeQueryDataSet(readersOfSelectedSeries);
     }
 
     private void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries,
-                                             List<Path> selectedSeries, Filter<Long> timeFilter) throws IOException {
+                                             List<Path> selectedSeries, Filter timeFilter) throws IOException {
         for (Path path : selectedSeries) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
             SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(chunkLoader, chunkMetaDataList, timeFilter);

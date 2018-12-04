@@ -5,11 +5,8 @@ import java.io.Serializable;
 
 /**
  * Definition for binary filter operations.
- *
- * @author CGF
  */
-
-public abstract class BinaryFilter<T extends Comparable<T>> implements Filter<T>, Serializable {
+public abstract class BinaryFilter implements Filter, Serializable {
 
     private static final long serialVersionUID = 1039585564327602465L;
 
