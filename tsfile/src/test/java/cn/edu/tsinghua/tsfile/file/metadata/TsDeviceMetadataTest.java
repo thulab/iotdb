@@ -40,5 +40,6 @@ public class TsDeviceMetadataTest {
 
         FileInputStream fis = new FileInputStream(new File(PATH));
         Utils.isTsDeviceMetadataEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
+        fis.close();
     }
 }

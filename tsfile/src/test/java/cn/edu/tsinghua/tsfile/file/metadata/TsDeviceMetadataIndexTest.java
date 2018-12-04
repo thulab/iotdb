@@ -54,5 +54,4 @@ public class TsDeviceMetadataIndexTest {
             outputStream.close();
         }
     }
-
 }
