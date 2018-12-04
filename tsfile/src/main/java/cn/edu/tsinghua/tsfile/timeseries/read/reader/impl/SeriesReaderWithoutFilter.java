@@ -12,25 +12,25 @@ import java.util.List;
 /**
  * Created by zhangjinrui on 2017/12/25.
  */
-public class SeriesReaderFromSingleFileWithoutFilterImpl extends SeriesReaderFromSingleFile {
+public class SeriesReaderWithoutFilter extends SeriesReader {
 
-    public SeriesReaderFromSingleFileWithoutFilterImpl(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public SeriesReaderWithoutFilter(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(chunkLoader, chunkMetaDataList);
     }
 
-    public SeriesReaderFromSingleFileWithoutFilterImpl(TsFileSequenceReader tsFileReader, Path path) throws IOException {
+    public SeriesReaderWithoutFilter(TsFileSequenceReader tsFileReader, Path path) throws IOException {
         super(tsFileReader, path);
     }
 
-    public SeriesReaderFromSingleFileWithoutFilterImpl(TsFileSequenceReader tsFileReader,
-                                                       ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public SeriesReaderWithoutFilter(TsFileSequenceReader tsFileReader,
+                                     ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(tsFileReader, chunkLoader, chunkMetaDataList);
     }
 
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderWithoutFilterImpl(chunk);
- 		this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
+        this.chunkReader = new ChunkReaderWithoutFilter(chunk);
+ 		this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override

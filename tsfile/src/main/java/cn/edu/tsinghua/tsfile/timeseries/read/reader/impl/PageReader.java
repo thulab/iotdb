@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType.*;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
  * @author Jinrui Zhang
  */
 
-public class PageDataReader implements SeriesReader {
+public class PageReader implements Reader {
 
     private TSDataType dataType;
 
@@ -34,7 +34,7 @@ public class PageDataReader implements SeriesReader {
     private ByteBuffer valueBuffer;
 
 
-    public PageDataReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) throws IOException {
+    public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) throws IOException {
         this.dataType = dataType;
         this.valueDecoder = valueDecoder;
         this.timeDecoder = timeDecoder;

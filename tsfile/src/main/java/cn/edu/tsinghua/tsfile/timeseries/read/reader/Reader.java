@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  * @author Jinrui Zhang
  */
-public interface SeriesReader {
+public interface Reader {
 
     /**
      * if there is a next time-value pair

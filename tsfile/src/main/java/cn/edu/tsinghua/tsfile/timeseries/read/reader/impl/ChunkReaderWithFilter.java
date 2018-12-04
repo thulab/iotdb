@@ -7,11 +7,11 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 
-public class SeriesChunkReaderWithFilterImpl extends SeriesChunkReader {
+public class ChunkReaderWithFilter extends ChunkReader {
 
     private Filter filter;
 
-    public SeriesChunkReaderWithFilterImpl(Chunk chunk, Filter filter) {
+    public ChunkReaderWithFilter(Chunk chunk, Filter filter) {
         super(chunk);
         this.filter = filter;
     }

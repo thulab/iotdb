@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.query;
+package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 
