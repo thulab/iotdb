@@ -107,12 +107,8 @@ public class Field {
         return getStringValue();
     }
 
-    public boolean isNull() {
-        return isNull;
-    }
-
-    public void setNull(boolean isNull) {
-        this.isNull = isNull;
+    public void setNull() {
+        this.isNull = true;
     }
 }
 

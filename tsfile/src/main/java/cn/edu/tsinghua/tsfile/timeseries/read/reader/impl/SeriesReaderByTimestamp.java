@@ -1,12 +1,10 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 import java.io.IOException;
@@ -79,6 +77,10 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         return chunkReader.next();
     }
 
+
+    public TSDataType getDataType() {
+        return chunkMetaDataList.get(0).getTsDataType();
+    }
 
     public Object getValueInTimeStamp(long timestamp) throws IOException {
         ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);

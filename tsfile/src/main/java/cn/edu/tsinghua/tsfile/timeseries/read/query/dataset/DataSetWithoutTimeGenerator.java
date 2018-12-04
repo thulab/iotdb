@@ -120,7 +120,7 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
             Field field = new Field(data.getDataType(), path.getDeviceToString(), path.getMeasurementToString());
 
             if (!hasDataRemaining.get(path)) {
-                field.setNull(true);
+                field.setNull();
                 record.addField(field);
                 continue;
             }
@@ -143,11 +143,11 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
                         heapPut(data.getTime());
                     }
                 } else {
-                    field.setNull(true);
+                    field.setNull();
                 }
 
             } else {
-                field.setNull(true);
+                field.setNull();
                 hasDataRemaining.put(path, false);
             }
 
