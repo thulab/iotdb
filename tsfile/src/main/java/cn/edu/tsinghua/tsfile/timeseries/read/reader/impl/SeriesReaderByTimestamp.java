@@ -15,14 +15,19 @@ import java.util.List;
  * <p> Series reader is used to query one series of one tsfile,
  * using this reader to query the value of a series with given timestamps.
  */
-public class SeriesReaderByTimestamp extends SeriesReader {
+public class SeriesReaderByTimestamp {
+    protected ChunkLoader chunkLoader;
+    protected List<ChunkMetaData> chunkMetaDataList;
+    private int currentChunkIndex = 0;
 
+    private ChunkReader chunkReader;
     private long currentTimestamp;
     private int currentSeriesChunkIndex;
     private DynamicOneColumnData data = null; // current batch data
 
     public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        super(chunkLoader, chunkMetaDataList);
+        this.chunkLoader = chunkLoader;
+        this.chunkMetaDataList = chunkMetaDataList;
         currentSeriesChunkIndex = 0;
         currentTimestamp = Long.MIN_VALUE;
     }
@@ -59,7 +64,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                 return null;
             } else {
                 if (chunkReader.hasNextBatch()) { // data does not has next
-                    data = nextBatch();
+                    data = chunkReader.nextBatch();
                 } else if (!constructNextSatisfiedChunkReader()) {
                     return null;
                 }
@@ -81,15 +86,13 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         return false;
     }
 
-    @Override
-    protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+    private void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderByTimestamp(chunk);
         this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
-    @Override
-    protected boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
+    private boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
         return chunkMetaData.getEndTime() >= currentTimestamp;
     }
 
@@ -98,8 +101,9 @@ public class SeriesReaderByTimestamp extends SeriesReader {
 
     private boolean hasCacheLastTimeValuePair;
     private TimeValuePair cachedTimeValuePair;
+    private boolean chunkReaderInitialized;
 
-    @Override
+
     public boolean hasNext() throws IOException {
         if (hasCacheLastTimeValuePair && cachedTimeValuePair.getTimestamp() >= currentTimestamp) {
             return true;
@@ -138,7 +142,6 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         return false;
     }
 
-    @Override
     public TimeValuePair next() throws IOException {
         if (hasCacheLastTimeValuePair) {
             hasCacheLastTimeValuePair = false;
