@@ -186,12 +186,10 @@ public abstract class ChunkReader implements Reader {
 
     @Override
     public void skipCurrentTimeValuePair() {
-
     }
 
     @Override
     public void close() {
-
     }
 
     public void setMaxTombstoneTime(long maxTombStoneTime) {
