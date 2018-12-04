@@ -20,13 +20,13 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     private long currentTimestamp;
     private boolean hasCacheLastTimeValuePair;
     private TimeValuePair cachedTimeValuePair;
-    private int nextSeriesChunkIndex;
+    private int currentSeriesChunkIndex;
 
     private DynamicOneColumnData data = null;
 
     public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(chunkLoader, chunkMetaDataList);
-        nextSeriesChunkIndex = 0;
+        currentSeriesChunkIndex = 0;
         currentTimestamp = Long.MIN_VALUE;
     }
 
@@ -41,15 +41,15 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                 return true;
             }
         }
-        while (nextSeriesChunkIndex < chunkMetaDataList.size()) {
+        while (currentSeriesChunkIndex < chunkMetaDataList.size()) {
             if (!chunkReaderInitialized) {
-                ChunkMetaData chunkMetaData = chunkMetaDataList.get(nextSeriesChunkIndex);
+                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentSeriesChunkIndex);
                 //maxTime >= currentTime
                 if (chunkSatisfied(chunkMetaData)) {
                     initSeriesChunkReader(chunkMetaData);
                     ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
                     chunkReaderInitialized = true;
-                    nextSeriesChunkIndex++;
+                    currentSeriesChunkIndex++;
                 } else {
                     long minTimestamp = chunkMetaData.getStartTime();
                     long maxTimestamp = chunkMetaData.getEndTime();
@@ -84,20 +84,86 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     }
 
     public Object getValueInTimestampV2(long timestamp) throws IOException {
-        ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
-        if (data == null && super.hasNextBatch()) {
-            data = super.nextBatch();
+        this.currentTimestamp = timestamp;
+
+        if (chunkReader == null) {
+            if (currentChunkIndex < chunkMetaDataList.size()) {
+                initSeriesChunkReader(chunkMetaDataList.get(currentChunkIndex++));
+                ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
+            } else
+                return null;
         }
 
-        while (data.getTime() < timestamp) {
-            data.next();
+        if (data == null) {
+            if (super.hasNextBatch())
+                data = super.nextBatch();
+            else
+                return null;
         }
 
-        if (data.getTime() == timestamp) {
-            return data.getValue();
-        } else {
-            return null;
+        while (data != null) {
+            while (data.hasNext()) {
+                if (data.getTime() < timestamp)
+                    data.next();
+                else
+                    break;
+            }
+            if (data.hasNext() && data.getTime() == timestamp)
+                return data.getValue();
+            else if (data.hasNext())
+                return null;
+            else if (super.hasNextBatch())
+                data = super.nextBatch();
+            else
+                return null;
         }
+
+        return null;
+
+    }
+
+    public Object getValueInTimestampV3(long timestamp) throws IOException {
+        this.currentTimestamp = timestamp;
+
+        if(chunkReader == null) {
+            while (currentChunkIndex < chunkMetaDataList.size()) {
+                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+                if (chunkSatisfied(chunkMetaData)) {
+                    initSeriesChunkReader(chunkMetaData);
+                    ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
+                    break;
+                }
+            }
+            if(currentChunkIndex == chunkMetaDataList.size())
+                return null;
+        }
+
+        if (data == null) {
+            if (chunkReader.hasNextBatch())
+                data = super.nextBatch();
+            else
+                return null;
+        }
+
+        while (data != null) {
+            while (data.hasNext()) {
+                if (data.getTime() < timestamp)
+                    data.next();
+                else
+                    break;
+            }
+            if (data.hasNext() && data.getTime() == timestamp)
+                return data.getValue();
+            else if (data.hasNext())
+                return null;
+            else if (super.hasNextBatch())
+                data = super.nextBatch();
+            else
+                return null;
+        }
+
+
+        return null;
 
     }
 
