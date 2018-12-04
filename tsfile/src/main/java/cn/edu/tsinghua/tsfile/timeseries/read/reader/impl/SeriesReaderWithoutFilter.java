@@ -19,7 +19,7 @@ public class SeriesReaderWithoutFilter extends SeriesReader {
         super(chunkLoader, chunkMetaDataList);
     }
 
-    protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+    protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderWithoutFilter(chunk);
         this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
