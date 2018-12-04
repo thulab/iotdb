@@ -96,8 +96,8 @@ public class TsFileReadPerformanceTest {
         long startTime = System.currentTimeMillis();
         int cnt = 0;
         DataSetWithoutTimeGenerator queryDataSet = (DataSetWithoutTimeGenerator) tsFile.query(queryExpression);
-        while (queryDataSet.hasNextRowRecord()) {
-            RowRecordV2 record = queryDataSet.nextRowRecord();
+        while (queryDataSet.hasNextV2()) {
+            RowRecordV2 record = queryDataSet.nextV2();
 //            System.out.println(record.toString());
 //            if (cnt % 5000 == 0) {
 //                System.out.println(record.toString());

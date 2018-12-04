@@ -110,11 +110,13 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
         }
     }
 
-    public boolean hasNextRowRecord() {
+    @Override
+    public boolean hasNextV2() {
         return timeHeap.size() > 0;
     }
 
-    public RowRecordV2 nextRowRecord() throws IOException {
+    @Override
+    public RowRecordV2 nextV2() throws IOException {
         long minTime = heapGet();
 
         RowRecordV2 record = new RowRecordV2(minTime, null, null);

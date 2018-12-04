@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator;
 
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
@@ -79,8 +80,14 @@ public class NodeTest {
 
         private long[] timestamps;
         private int index;
+        DynamicOneColumnData data;
+        boolean flag = false;
 
         public FakedSeriesReader(long[] timestamps) {
+            data = new DynamicOneColumnData(TSDataType.INT32, true);
+            for (long time : timestamps) {
+                data.putTime(time);
+            }
             this.timestamps = timestamps;
             index = 0;
         }
@@ -102,12 +109,14 @@ public class NodeTest {
 
         @Override
         public boolean hasNextBatch() throws IOException {
-            return false;
+            return !flag;
         }
 
         @Override
         public DynamicOneColumnData nextBatch() {
-            return null;
+
+            flag = true;
+            return data;
         }
 
         @Override

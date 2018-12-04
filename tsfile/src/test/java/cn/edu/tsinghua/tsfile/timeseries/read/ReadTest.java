@@ -10,6 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
@@ -52,8 +53,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int count = 0;
-        while (dataSet.hasNext()) {
-            RowRecord r = dataSet.next();
+        while (dataSet.hasNextV2()) {
+            RowRecordV2 r = dataSet.nextV2();
             if (count == 0) {
                 assertEquals(r.getTimestamp(), 1480562618010L);
             }
@@ -74,8 +75,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int count = 0;
-        while (dataSet.hasNext()) {
-            RowRecord r = dataSet.next();
+        while (dataSet.hasNextV2()) {
+            RowRecordV2 r = dataSet.nextV2();
             if (count == 0) {
                 if (count == 0) {
                     assertEquals(1480562618005L, r.getTimestamp());

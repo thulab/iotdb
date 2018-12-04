@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RowRecordV2 {
-    public long timestamp;
+    private long timestamp;
     public String deltaObjectId;
     public List<Field> fields;
 
@@ -61,6 +61,10 @@ public class RowRecordV2 {
             }
         }
         return r;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     private DataPoint createDataPoint(TSDataType dataType, String measurementId, Field f) {

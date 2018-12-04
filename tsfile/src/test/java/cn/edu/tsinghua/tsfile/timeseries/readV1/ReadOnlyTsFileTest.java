@@ -14,6 +14,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
@@ -78,8 +79,8 @@ public class ReadOnlyTsFileTest {
         queryDataSet = tsFile.query(queryExpression);
         aimedTimestamp = 1480562618000L;
         int count = 0;
-        while (queryDataSet.hasNext()) {
-            RowRecord rowRecord = queryDataSet.next();
+        while (queryDataSet.hasNextV2()) {
+            RowRecordV2 rowRecord = queryDataSet.nextV2();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;
@@ -93,8 +94,8 @@ public class ReadOnlyTsFileTest {
         queryDataSet = tsFile.query(queryExpression);
         aimedTimestamp = 1480562618000L;
         count = 0;
-        while (queryDataSet.hasNext()) {
-            RowRecord rowRecord = queryDataSet.next();
+        while (queryDataSet.hasNextV2()) {
+            RowRecordV2 rowRecord = queryDataSet.nextV2();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;

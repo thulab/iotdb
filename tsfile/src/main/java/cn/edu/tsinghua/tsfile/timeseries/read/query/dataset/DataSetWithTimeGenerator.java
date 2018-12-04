@@ -2,6 +2,7 @@ package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
@@ -34,5 +35,15 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
             rowRecord.putField(path, seriesReaderByTimestamp.getValueInTimestamp(timestamp));
         }
         return rowRecord;
+    }
+
+    @Override
+    public boolean hasNextV2() {
+        return false;
+    }
+
+    @Override
+    public RowRecordV2 nextV2() throws IOException {
+        return null;
     }
 }
