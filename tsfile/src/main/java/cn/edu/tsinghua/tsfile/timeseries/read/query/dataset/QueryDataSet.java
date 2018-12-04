@@ -23,8 +23,14 @@ public interface QueryDataSet {
      */
     RowRecord next() throws IOException;
 
+    /**
+     * This method is used for batch query.
+     */
     boolean hasNextV2() throws IOException;
 
+    /**
+     * This method is used for batch query, return RowRecordV2.
+     */
     RowRecordV2 nextV2() throws IOException;
 
 }

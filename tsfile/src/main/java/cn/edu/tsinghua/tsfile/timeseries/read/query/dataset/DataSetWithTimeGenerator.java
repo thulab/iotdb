@@ -10,6 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestam
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 public class DataSetWithTimeGenerator implements QueryDataSet {
@@ -80,8 +81,10 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
     public RowRecordV2 nextV2() throws IOException {
         long timestamp = timestampGenerator.next();
         RowRecordV2 rowRecord = new RowRecordV2(timestamp);
-        for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
+
+        for (Map.Entry<Path, SeriesReaderByTimestamp> entry : readersOfSelectedSeries.entrySet()) {
+            Path path = entry.getKey();
+            SeriesReaderByTimestamp seriesReaderByTimestamp = entry.getValue();
             TSDataType dataType = seriesReaderByTimestamp.getDataType();
             Field field = new Field(dataType, path.getDeviceToString(), path.getMeasurementToString());
             Object value = seriesReaderByTimestamp.getValueInTimestampV3(timestamp);
@@ -89,12 +92,6 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
                 field.setNull();
             }
             switch (dataType) {
-                case TEXT:
-                    field.setBinaryV((Binary) value);
-                    break;
-                case BOOLEAN:
-                    field.setBoolV((boolean) value);
-                    break;
                 case DOUBLE:
                     field.setDoubleV((double) value);
                     break;
@@ -107,11 +104,18 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
                 case INT32:
                     field.setIntV((int) value);
                     break;
+                case BOOLEAN:
+                    field.setBoolV((boolean) value);
+                    break;
+                case TEXT:
+                    field.setBinaryV((Binary) value);
+                    break;
                 default:
                     throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
             }
             rowRecord.addField(field);
         }
+
         return rowRecord;
     }
 }

@@ -22,8 +22,8 @@ import java.io.IOException;
 public class TsFileReadPerformanceTest {
     static String filePath = "/Users/beyyes/Desktop/test.tsfile";
 
-    static int deviceNum = 1;
-    static int sensorNum = 1;
+    static int deviceNum = 10;
+    static int sensorNum = 50;
     static int SIZE = 10000000;
 
     public static void main(String args[]) throws IOException, InterruptedException {
@@ -33,7 +33,6 @@ public class TsFileReadPerformanceTest {
         //readTestV8WithoutFilter();
 
         readTestWithFilter();
-
     }
 
     private static void dynamicWithTsPrimitiveTest() {
@@ -64,14 +63,14 @@ public class TsFileReadPerformanceTest {
             }
         }
 
-        QueryFilter valueFilter = new SeriesFilter(new Path("d1.s2"), ValueFilter.ltEq(80.0f));
+        QueryFilter valueFilter = new SeriesFilter(new Path("d1.s2"), ValueFilter.ltEq(50.0f));
         queryExpression.setQueryFilter(valueFilter);
 
         long startTime = System.currentTimeMillis();
         int cnt = 0;
         QueryDataSet queryDataSet = tsFile.query(queryExpression);
-        while (queryDataSet.hasNext()) {
-            RowRecord record = queryDataSet.next();
+        while (queryDataSet.hasNextV2()) {
+            RowRecordV2 record = queryDataSet.nextV2();
 //            System.out.println(record.toString());
 //            if (cnt % 5000 == 0) {
 //                System.out.println(record.toString());

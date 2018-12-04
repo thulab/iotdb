@@ -86,7 +86,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     public Object getValueInTimestampV2(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
 
-        if(chunkReader == null) {
+        if (chunkReader == null) {
             while (currentChunkIndex < chunkMetaDataList.size()) {
                 ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
                 if (chunkSatisfied(chunkMetaData)) {
@@ -95,7 +95,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                     break;
                 }
             }
-            if(chunkReader == null)
+            if (chunkReader == null)
                 return null;
         }
 
@@ -130,8 +130,8 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     public Object getValueInTimestampV3(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
 
-        if(chunkReader == null) {
-            if(!constructNextSatisfiedChunkReader())
+        if (chunkReader == null) {
+            if (!constructNextSatisfiedChunkReader())
                 return null;
         }
 
@@ -156,7 +156,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
             else if (chunkReader.hasNextBatch()) // data does not has next
                 data = nextBatch();
             else {
-                if(!constructNextSatisfiedChunkReader())
+                if (!constructNextSatisfiedChunkReader())
                     return null;
             }
         }
