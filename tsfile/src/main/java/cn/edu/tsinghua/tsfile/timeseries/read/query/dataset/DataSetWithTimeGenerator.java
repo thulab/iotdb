@@ -32,7 +32,7 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
         RowRecord rowRecord = new RowRecord(timestamp);
         for (Path path : readersOfSelectedSeries.keySet()) {
             SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
-            rowRecord.putField(path, seriesReaderByTimestamp.getValueInTimestamp(timestamp));
+            rowRecord.putField(path, seriesReaderByTimestamp.getValueInTimeStamp(timestamp));
         }
         return rowRecord;
     }

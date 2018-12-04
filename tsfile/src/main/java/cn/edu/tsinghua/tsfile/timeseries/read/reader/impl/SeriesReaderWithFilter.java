@@ -25,18 +25,6 @@ public class SeriesReaderWithFilter extends SeriesReader {
         this.filter = filter;
     }
 
-    public SeriesReaderWithFilter(TsFileSequenceReader tsFileReader, ChunkLoader chunkLoader,
-                                  List<ChunkMetaData> chunkMetaDataList, Filter filter) {
-        super(tsFileReader, chunkLoader, chunkMetaDataList);
-        this.filter = filter;
-    }
-
-    public SeriesReaderWithFilter(TsFileSequenceReader tsFileReader
-            , Path path, Filter filter) throws IOException {
-        super(tsFileReader, path);
-        this.filter = filter;
-    }
-
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderWithFilter(chunk, filter);

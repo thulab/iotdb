@@ -25,22 +25,6 @@ public abstract class SeriesReader implements Reader {
     protected boolean chunkReaderInitialized;
     protected int currentChunkIndex;
 
-    protected TsFileSequenceReader fileReader;
-
-    public SeriesReader(TsFileSequenceReader fileReader, Path path) throws IOException {
-        this.fileReader = fileReader;
-        this.chunkLoader = new ChunkLoaderImpl(fileReader);
-        this.chunkMetaDataList = new MetadataQuerierByFileImpl(fileReader).getChunkMetaDataList(path);
-        this.currentChunkIndex = 0;
-        this.chunkReaderInitialized = false;
-    }
-
-    public SeriesReader(TsFileSequenceReader fileReader,
-                        ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        this(chunkLoader, chunkMetaDataList);
-        this.fileReader = fileReader;
-    }
-
     public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
@@ -118,10 +102,7 @@ public abstract class SeriesReader implements Reader {
     protected abstract boolean chunkSatisfied(ChunkMetaData chunkMetaData);
 
     public void close() throws IOException {
-        if (fileReader != null) {
-            fileReader.close();
-        }
+        chunkLoader.close();
     }
-
 
 }
