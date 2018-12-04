@@ -30,32 +30,32 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.IntDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 
 public class TsFileReadWriteTest {
-	private String path = "read_write_rle.tsfile";
-	private File f;
-	private TsFileWriter tsFileWriter;
-	private final double delta = 0.0000001;
+    private String path = "read_write_rle.tsfile";
+    private File f;
+    private TsFileWriter tsFileWriter;
+    private final double delta = 0.0000001;
 
-	
-	@Before
-	public void setUp() throws Exception {
-		f = new File(path);
+
+    @Before
+    public void setUp() throws Exception {
+        f = new File(path);
         if (f.exists()) {
             f.delete();
         }
         tsFileWriter = new TsFileWriter(f);
-	}
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		f = new File(path);
+    @After
+    public void tearDown() throws Exception {
+        f = new File(path);
         if (f.exists()) {
             f.delete();
         }
-	}
-	
-	@Test
-	public void intTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    }
+
+    @Test
+    public void intTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.INT32, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -67,7 +67,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -80,18 +80,18 @@ public class TsFileReadWriteTest {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             for (Field field : r.getFields()) {
-                if (field.deltaObjectId.equals("device_1") && field.measurementId.equals("sensor_1")) {
+                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals(i, field.getIntV(), delta);
                 }
             }
             i++;
         }
         reader.close();
-	}
+    }
 
-	@Test
-	public void longTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    @Test
+    public void longTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.INT64, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -103,7 +103,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -116,18 +116,18 @@ public class TsFileReadWriteTest {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             for (Field field : r.getFields()) {
-                if (field.deltaObjectId.equals("device_1") && field.measurementId.equals("sensor_1")) {
+                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals(i, field.getLongV(), delta);
                 }
             }
             i++;
         }
         reader.close();
-	}
+    }
 
-	@Test
-	public void floatTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    @Test
+    public void floatTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.FLOAT, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -139,7 +139,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -153,18 +153,18 @@ public class TsFileReadWriteTest {
             assertEquals(i, r.getTimestamp());
 
             for (Field field : r.getFields()) {
-                if (field.deltaObjectId.equals("device_1") && field.measurementId.equals("sensor_1")) {
+                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals((float)i, field.getFloatV(), delta);
                 }
             }
             i++;
         }
         reader.close();
-	}
+    }
 
-	@Test
-	public void doubleTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    @Test
+    public void doubleTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.DOUBLE, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -176,7 +176,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -189,13 +189,13 @@ public class TsFileReadWriteTest {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             for (Field field : r.getFields()) {
-                if (field.deltaObjectId.equals("device_1") && field.measurementId.equals("sensor_1")) {
+                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals((double) i, field.getDoubleV(), delta);
                 }
             }
             i++;
         }
         reader.close();
-	}
-	
+    }
+
 }

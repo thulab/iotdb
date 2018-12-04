@@ -8,7 +8,6 @@ import java.io.IOException;
 
 public class LeafNode implements Node {
 
-    // TODO make next method implementation of seriesReader using DOC
     private Reader seriesReader;
 
     private DynamicOneColumnData data = null;

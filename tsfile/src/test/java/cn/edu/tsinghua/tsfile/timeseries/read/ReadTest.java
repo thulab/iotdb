@@ -47,7 +47,7 @@ public class ReadTest {
 
     @Test
     public void queryOneMeasurementWithoutFilterTest() throws IOException {
-        List<Path> pathList = new ArrayList<>(); 
+        List<Path> pathList = new ArrayList<>();
         pathList.add(new Path("d1.s1"));
         QueryExpression queryExpression = QueryExpression.create(pathList, null);
         QueryDataSet dataSet = roTsFile.query(queryExpression);
@@ -205,7 +205,7 @@ public class ReadTest {
         valFilter = new SeriesFilter(new Path("d2.s2"), ValueFilter.ltEq(9082L));
         tFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618906L)),
                 new GlobalTimeFilter(TimeFilter.ltEq(1480562618915L)));
-        tFilter = QueryFilterFactory.or(tFilter, 
+        tFilter = QueryFilterFactory.or(tFilter,
                 QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(1480562618928L)),
                         new GlobalTimeFilter(TimeFilter.ltEq(1480562618933L))));
         finalFilter = QueryFilterFactory.and(valFilter, tFilter);
