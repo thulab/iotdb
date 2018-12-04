@@ -92,8 +92,7 @@ public class QueryExecutorRouter implements QueryExecutor {
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(
-                    chunkLoader, chunkMetaDataList);
+            SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.put(path, seriesReader);
         }
         return new DataSetWithTimeGenerator(timestampGenerator, readersOfSelectedSeries);

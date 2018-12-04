@@ -5,8 +5,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 /**
- * <p> Field is the components of one {@code OldRowRecord} which store a value in
- * specific data type. The value type of FieldV1 is primitive.
+ * <p> Field is the components of one {@code RowRecordV2} which store a value in
+ * specific data type. The value type of Field is primitive.
  */
 public class Field {
 
@@ -81,7 +81,7 @@ public class Field {
         this.binaryV = binaryV;
     }
 
-    public String getStringValue() {
+    private String getStringValue() {
         if (isNull) {
             return "null";
         }

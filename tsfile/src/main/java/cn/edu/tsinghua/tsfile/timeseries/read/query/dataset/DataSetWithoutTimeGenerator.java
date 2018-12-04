@@ -67,7 +67,7 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
         }
     }
 
-    public LinkedHashMap<Path, DynamicOneColumnData> seriesDataMap;
+    private LinkedHashMap<Path, DynamicOneColumnData> seriesDataMap;
 
     private Map<Path, Boolean> hasDataRemaining;
 
@@ -112,8 +112,6 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
 
         RowRecordV2 record = new RowRecordV2(minTime);
 
-        record.setTimestamp(minTime);
-
         for (Map.Entry<Path, DynamicOneColumnData> entry : seriesDataMap.entrySet()) {
 
             Path path = entry.getKey();
@@ -126,7 +124,6 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
                 record.addField(field);
                 continue;
             }
-
 
             if (data.hasNext()) {
                 if (data.getTime() == minTime) {
@@ -161,20 +158,20 @@ public class DataSetWithoutTimeGenerator implements QueryDataSet {
     }
 
     // for the reason that heap stores duplicate elements
-    protected void heapPut(long time) {
+    private void heapPut(long time) {
         if (!timeSet.contains(time)) {
             timeSet.add(time);
             timeHeap.add(time);
         }
     }
 
-    protected Long heapGet() {
+    private Long heapGet() {
         Long t = timeHeap.poll();
         timeSet.remove(t);
         return t;
     }
 
-    public void putValueToField(DynamicOneColumnData col, Field field) {
+    private void putValueToField(DynamicOneColumnData col, Field field) {
         switch (col.getDataType()) {
             case BOOLEAN:
                 field.setBoolV(col.getBoolean());

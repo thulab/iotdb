@@ -1,8 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.*;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
@@ -38,12 +37,20 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
     }
 
     @Override
-    public boolean hasNextV2() {
-        return false;
+    public boolean hasNextV2() throws IOException {
+        return timestampGenerator.hasNext();
     }
 
     @Override
     public RowRecordV2 nextV2() throws IOException {
-        return null;
+        long timestamp = timestampGenerator.next();
+        RowRecordV2 rowRecord = new RowRecordV2(timestamp);
+        for (Path path : readersOfSelectedSeries.keySet()) {
+            SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
+            Field field = new Field(null, path.getDeviceToString(), path.getMeasurementToString());
+            TsPrimitiveType value = seriesReaderByTimestamp.getValueInTimestamp(timestamp);
+            rowRecord.addField(field);
+        }
+        return rowRecord;
     }
 }
