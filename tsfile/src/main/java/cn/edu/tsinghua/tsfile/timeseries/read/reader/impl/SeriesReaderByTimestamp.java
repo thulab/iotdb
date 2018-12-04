@@ -46,7 +46,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                 ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentSeriesChunkIndex);
                 //maxTime >= currentTime
                 if (chunkSatisfied(chunkMetaData)) {
-                    initSeriesChunkReader(chunkMetaData);
+                    initChunkReader(chunkMetaData);
                     ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
                     chunkReaderInitialized = true;
                     currentSeriesChunkIndex++;
@@ -86,11 +86,16 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     public Object getValueInTimestampV2(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
 
-        if (chunkReader == null) {
-            if (currentChunkIndex < chunkMetaDataList.size()) {
-                initSeriesChunkReader(chunkMetaDataList.get(currentChunkIndex++));
-                ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
-            } else
+        if(chunkReader == null) {
+            while (currentChunkIndex < chunkMetaDataList.size()) {
+                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+                if (chunkSatisfied(chunkMetaData)) {
+                    initChunkReader(chunkMetaData);
+                    ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
+                    break;
+                }
+            }
+            if(chunkReader == null)
                 return null;
         }
 
@@ -126,21 +131,13 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         this.currentTimestamp = timestamp;
 
         if(chunkReader == null) {
-            while (currentChunkIndex < chunkMetaDataList.size()) {
-                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
-                if (chunkSatisfied(chunkMetaData)) {
-                    initSeriesChunkReader(chunkMetaData);
-                    ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
-                    break;
-                }
-            }
-            if(currentChunkIndex == chunkMetaDataList.size())
+            if(!constructNextSatisfiedChunkReader())
                 return null;
         }
 
         if (data == null) {
             if (chunkReader.hasNextBatch())
-                data = super.nextBatch();
+                data = chunkReader.nextBatch();
             else
                 return null;
         }
@@ -156,15 +153,27 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                 return data.getValue();
             else if (data.hasNext())
                 return null;
-            else if (super.hasNextBatch())
-                data = super.nextBatch();
-            else
-                return null;
+            else if (chunkReader.hasNextBatch()) // data does not has next
+                data = nextBatch();
+            else {
+                if(!constructNextSatisfiedChunkReader())
+                    return null;
+            }
         }
 
-
         return null;
+    }
 
+    private boolean constructNextSatisfiedChunkReader() throws IOException {
+        while (currentChunkIndex < chunkMetaDataList.size()) {
+            ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+            if (chunkSatisfied(chunkMetaData)) {
+                initChunkReader(chunkMetaData);
+                ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -193,7 +202,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
     }
 
     @Override
-    protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+    protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderByTimestamp(chunk);
         this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());

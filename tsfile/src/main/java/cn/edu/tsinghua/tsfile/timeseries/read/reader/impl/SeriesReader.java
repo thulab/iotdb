@@ -1,12 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
@@ -42,7 +37,7 @@ public abstract class SeriesReader implements Reader {
             if (!chunkReaderInitialized) {
                 ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
                 if (chunkSatisfied(chunkMetaData)) {
-                    initSeriesChunkReader(chunkMetaData);
+                    initChunkReader(chunkMetaData);
                     chunkReaderInitialized = true;
                 } else {
                     continue;
@@ -76,7 +71,7 @@ public abstract class SeriesReader implements Reader {
             ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
             if (chunkSatisfied(chunkMetaData)) {
                 // chunk metadata satisfy the condition
-                initSeriesChunkReader(chunkMetaData);
+                initChunkReader(chunkMetaData);
 
                 if (chunkReader.hasNextBatch())
                     return true;
@@ -98,7 +93,7 @@ public abstract class SeriesReader implements Reader {
         next();
     }
 
-    protected abstract void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException;
+    protected abstract void initChunkReader(ChunkMetaData chunkMetaData) throws IOException;
 
     protected abstract boolean chunkSatisfied(ChunkMetaData chunkMetaData);
 
