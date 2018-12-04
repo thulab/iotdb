@@ -61,6 +61,11 @@ public class TestHelper {
         return metaData;
     }
 
+    public static ChunkGroupMetaData createEmptySeriesChunkGroupMetaData(){
+        ChunkGroupMetaData metaData = new ChunkGroupMetaData("d1",new ArrayList<>());
+        return metaData;
+    }
+
     public static ChunkGroupMetaData createSimpleChunkGroupMetaData() {
         ChunkGroupMetaData metaData = new ChunkGroupMetaData(ChunkGroupMetaDataTest.DELTA_OBJECT_UID, new ArrayList<>());
         metaData.addTimeSeriesChunkMetaData(TestHelper.createSimpleTimeSeriesChunkMetaData());
