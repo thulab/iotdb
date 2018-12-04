@@ -1,12 +1,11 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/13.
- */
+
 public interface QueryDataSet {
 
     /**
@@ -23,5 +22,15 @@ public interface QueryDataSet {
      * @throws IOException
      */
     RowRecord next() throws IOException;
+
+    /**
+     * This method is used for batch query.
+     */
+    boolean hasNextV2() throws IOException;
+
+    /**
+     * This method is used for batch query, return RowRecordV2.
+     */
+    RowRecordV2 nextV2() throws IOException;
 
 }

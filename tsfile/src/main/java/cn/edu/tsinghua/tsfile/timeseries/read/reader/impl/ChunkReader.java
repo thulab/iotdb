@@ -7,8 +7,10 @@ import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
@@ -32,9 +34,17 @@ public abstract class ChunkReader implements Reader {
     private Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
             , TSDataType.INT64);
 
+    private DynamicOneColumnData data = null;
+    private Filter filter = null;
+
     private long maxTombstoneTime;
 
     public ChunkReader(Chunk chunk) {
+        this(chunk, null);
+    }
+
+    public ChunkReader(Chunk chunk, Filter filter) {
+        this.filter = filter;
         this.chunkDataBuffer = chunk.getData();
         this.pageReaderInitialized = false;
         chunkHeader = chunk.getHeader();
@@ -83,12 +93,40 @@ public abstract class ChunkReader implements Reader {
     }
 
     @Override
+    public boolean hasNextBatch() throws IOException {
+
+        // construct next satisfied page header
+        while (chunkDataBuffer.remaining() > 0) {
+            // deserialize a PageHeader from chunkDataBuffer
+            PageHeader pageHeader = getNextPageHeader();
+
+            // if the current page satisfies
+            if (pageSatisfied(pageHeader)) {
+                pageReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
+                if (pageReader.hasNextBatch()) {
+                    data = pageReader.nextBatch();
+                    return true;
+                }
+            } else {
+                skipBytesInStreamByLength(pageHeader.getCompressedSize());
+            }
+        }
+        return false;
+    }
+
+
+    @Override
     public TimeValuePair next() throws IOException {
         if (hasNext()) {
             hasCachedTimeValuePair = false;
             return cachedTimeValuePair;
         }
         throw new IOException("No more timeValuePair in current Chunk");
+    }
+
+    @Override
+    public DynamicOneColumnData nextBatch() {
+        return data;
     }
 
     /**
@@ -117,6 +155,7 @@ public abstract class ChunkReader implements Reader {
         return gotNextPageReader;
     }
 
+
     private void skipBytesInStreamByLength(long length) {
         chunkDataBuffer.position(chunkDataBuffer.position() + (int) length);
     }
@@ -138,7 +177,7 @@ public abstract class ChunkReader implements Reader {
         chunkDataBuffer.get(compressedPageBody, 0, compressedPageBodyLength);
         valueDecoder.reset();
         return new PageReader(ByteBuffer.wrap(unCompressor.uncompress(compressedPageBody)),
-                chunkHeader.getDataType(), valueDecoder, timeDecoder);
+                chunkHeader.getDataType(), valueDecoder, timeDecoder, filter);
     }
 
     private PageHeader getNextPageHeader() throws IOException {
@@ -147,12 +186,10 @@ public abstract class ChunkReader implements Reader {
 
     @Override
     public void skipCurrentTimeValuePair() {
-
     }
 
     @Override
     public void close() {
-
     }
 
     public void setMaxTombstoneTime(long maxTombStoneTime) {
@@ -162,4 +199,6 @@ public abstract class ChunkReader implements Reader {
     public long getMaxTombstoneTime() {
         return this.maxTombstoneTime;
     }
+
+
 }

@@ -51,4 +51,8 @@ public class ChunkLoaderImpl implements ChunkLoader {
         }
     }
 
+    public void close() throws IOException {
+        reader.close();
+    }
+
 }

@@ -12,7 +12,10 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import java.io.IOException;
 import java.util.List;
 
-
+/**
+ * <p> Series reader is used to query one series of one tsfile,
+ * this reader has a filter which has the same series as the querying series.
+ */
 public class SeriesReaderWithFilter extends SeriesReader {
 
     private Filter filter;
@@ -22,26 +25,14 @@ public class SeriesReaderWithFilter extends SeriesReader {
         this.filter = filter;
     }
 
-    public SeriesReaderWithFilter(TsFileSequenceReader tsFileReader, ChunkLoader chunkLoader,
-                                  List<ChunkMetaData> chunkMetaDataList, Filter filter) {
-        super(tsFileReader, chunkLoader, chunkMetaDataList);
-        this.filter = filter;
-    }
-
-    public SeriesReaderWithFilter(TsFileSequenceReader tsFileReader
-            , Path path, Filter filter) throws IOException {
-        super(tsFileReader, path);
-        this.filter = filter;
-    }
-
-    protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+    protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderWithFilter(chunk, filter);
         this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override
-    protected boolean seriesChunkSatisfied(ChunkMetaData chunkMetaData) {
+    protected boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
         DigestForFilter digest = new DigestForFilter(
                 chunkMetaData.getStartTime(),
                 chunkMetaData.getEndTime(),
@@ -50,4 +41,5 @@ public class SeriesReaderWithFilter extends SeriesReader {
                 chunkMetaData.getTsDataType());
         return filter.satisfy(digest);
     }
+
 }

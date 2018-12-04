@@ -1,16 +1,18 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
+import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.*;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class DataSetWithTimeGenerator implements QueryDataSet {
 
     private TimestampGenerator timestampGenerator;
@@ -31,9 +33,89 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
         long timestamp = timestampGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
         for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReaderByTimestamp seriesChunkReaderByTimestamp = readersOfSelectedSeries.get(path);
-            rowRecord.putField(path, seriesChunkReaderByTimestamp.getValueInTimestamp(timestamp));
+            SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
+            TsPrimitiveType tsPrimitiveType;
+            Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
+
+            if(value == null) {
+                rowRecord.putField(path, null);
+                continue;
+            }
+
+            TSDataType dataType = seriesReaderByTimestamp.getDataType();
+
+            switch (dataType) {
+                case INT32:
+                    tsPrimitiveType = new TsPrimitiveType.TsInt((int) value);
+                    break;
+                case INT64:
+                    tsPrimitiveType = new TsPrimitiveType.TsLong((long) value);
+                    break;
+                case FLOAT:
+                    tsPrimitiveType = new TsPrimitiveType.TsFloat((float) value);
+                    break;
+                case DOUBLE:
+                    tsPrimitiveType = new TsPrimitiveType.TsDouble((double) value);
+                    break;
+                case BOOLEAN:
+                    tsPrimitiveType = new TsPrimitiveType.TsBoolean((boolean) value);
+                    break;
+                case TEXT:
+                    tsPrimitiveType = new TsPrimitiveType.TsBinary((Binary) value);
+                    break;
+                default:
+                    throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
+
+            }
+            rowRecord.putField(path, tsPrimitiveType);
         }
+        return rowRecord;
+    }
+
+    @Override
+    public boolean hasNextV2() throws IOException {
+        return timestampGenerator.hasNext();
+    }
+
+    @Override
+    public RowRecordV2 nextV2() throws IOException {
+        long timestamp = timestampGenerator.next();
+        RowRecordV2 rowRecord = new RowRecordV2(timestamp);
+
+        for (Map.Entry<Path, SeriesReaderByTimestamp> entry : readersOfSelectedSeries.entrySet()) {
+            Path path = entry.getKey();
+            SeriesReaderByTimestamp seriesReaderByTimestamp = entry.getValue();
+            TSDataType dataType = seriesReaderByTimestamp.getDataType();
+            Field field = new Field(dataType, path.getDeviceToString(), path.getMeasurementToString());
+            Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
+            if (value == null) {
+                field.setNull();
+            }
+            switch (dataType) {
+                case DOUBLE:
+                    field.setDoubleV((double) value);
+                    break;
+                case FLOAT:
+                    field.setFloatV((float) value);
+                    break;
+                case INT64:
+                    field.setLongV((long) value);
+                    break;
+                case INT32:
+                    field.setIntV((int) value);
+                    break;
+                case BOOLEAN:
+                    field.setBoolV((boolean) value);
+                    break;
+                case TEXT:
+                    field.setBinaryV((Binary) value);
+                    break;
+                default:
+                    throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
+            }
+            rowRecord.addField(field);
+        }
+
         return rowRecord;
     }
 }

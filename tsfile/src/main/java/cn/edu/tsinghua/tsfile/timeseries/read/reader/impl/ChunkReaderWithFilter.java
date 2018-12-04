@@ -5,6 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 
 public class ChunkReaderWithFilter extends ChunkReader {
@@ -12,7 +13,7 @@ public class ChunkReaderWithFilter extends ChunkReader {
     private Filter filter;
 
     public ChunkReaderWithFilter(Chunk chunk, Filter filter) {
-        super(chunk);
+        super(chunk, filter);
         this.filter = filter;
     }
 

@@ -1,21 +1,20 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType.*;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- *
- * @author Jinrui Zhang
- */
 
 public class PageReader implements Reader {
 
@@ -33,6 +32,15 @@ public class PageReader implements Reader {
     // value column in memory
     private ByteBuffer valueBuffer;
 
+    private DynamicOneColumnData data = null;
+
+    private Filter filter = null;
+
+    public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder, Filter filter) throws IOException {
+        this(pageData, dataType, valueDecoder, timeDecoder);
+        this.filter = filter;
+    }
+
 
     public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) throws IOException {
         this.dataType = dataType;
@@ -43,16 +51,17 @@ public class PageReader implements Reader {
 
     /**
      * split pageContent into two stream: time and value
+     *
      * @param pageData uncompressed bytes size of time column, time column, value column
      * @throws IOException exception in reading data from pageContent
      */
     private void splitDataToTimeStampAndValue(ByteBuffer pageData) throws IOException {
         int timeBufferLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
 
-        timeBuffer= pageData.slice();
+        timeBuffer = pageData.slice();
         timeBuffer.limit(timeBufferLength);
 
-        valueBuffer= pageData.slice();
+        valueBuffer = pageData.slice();
         valueBuffer.position(timeBufferLength);
     }
 
@@ -60,6 +69,7 @@ public class PageReader implements Reader {
     public boolean hasNext() throws IOException {
         return timeDecoder.hasNext(timeBuffer);
     }
+
 
     @Override
     public TimeValuePair next() throws IOException {
@@ -104,5 +114,109 @@ public class PageReader implements Reader {
         throw new UnSupportedDataTypeException("Unsupported data type :" + dataType);
     }
 
+    @Override
+    public boolean hasNextBatch() throws IOException {
+        if (filter == null)
+            data = getNextBatch();
+        else
+            data = getNextBatch(filter);
+        return data.hasNext();
+    }
+
+    private DynamicOneColumnData getNextBatch() throws IOException {
+
+        DynamicOneColumnData pageData = new DynamicOneColumnData(dataType, true);
+
+        while (timeDecoder.hasNext(timeBuffer)) {
+            long timestamp = timeDecoder.readLong(timeBuffer);
+
+            pageData.putTime(timestamp);
+            switch (dataType) {
+                case BOOLEAN:
+                    pageData.putBoolean(valueDecoder.readBoolean(valueBuffer));
+                    break;
+                case INT32:
+                    pageData.putInt(valueDecoder.readInt(valueBuffer));
+                    break;
+                case INT64:
+                    pageData.putLong(valueDecoder.readLong(valueBuffer));
+                    break;
+                case FLOAT:
+                    pageData.putFloat(valueDecoder.readFloat(valueBuffer));
+                    break;
+                case DOUBLE:
+                    pageData.putDouble(valueDecoder.readDouble(valueBuffer));
+                    break;
+                case TEXT:
+                    pageData.putBinary(valueDecoder.readBinary(valueBuffer));
+                    break;
+                default:
+                    break;
+            }
+        }
+        return pageData;
+    }
+
+    private DynamicOneColumnData getNextBatch(Filter filter) throws IOException {
+        DynamicOneColumnData pageData = new DynamicOneColumnData(dataType, true);
+
+        while (timeDecoder.hasNext(timeBuffer)) {
+            long timestamp = timeDecoder.readLong(timeBuffer);
+
+            switch (dataType) {
+                case BOOLEAN:
+                    boolean aBoolean = valueDecoder.readBoolean(valueBuffer);
+                    if (filter.satisfy(timestamp, aBoolean)) {
+                        pageData.putTime(timestamp);
+                        pageData.putBoolean(aBoolean);
+                    }
+                    break;
+                case INT32:
+                    int anInt = valueDecoder.readInt(valueBuffer);
+                    if (filter.satisfy(timestamp, anInt)) {
+                        pageData.putTime(timestamp);
+                        pageData.putInt(anInt);
+                    }
+                    break;
+                case INT64:
+                    long aLong = valueDecoder.readLong(valueBuffer);
+                    if (filter.satisfy(timestamp, aLong)) {
+                        pageData.putTime(timestamp);
+                        pageData.putLong(aLong);
+                    }
+                    break;
+                case FLOAT:
+                    float aFloat = valueDecoder.readFloat(valueBuffer);
+                    if (filter.satisfy(timestamp, aFloat)) {
+                        pageData.putTime(timestamp);
+                        pageData.putFloat(aFloat);
+                    }
+                    break;
+                case DOUBLE:
+                    double aDouble = valueDecoder.readDouble(valueBuffer);
+                    if (filter.satisfy(timestamp, aDouble)) {
+                        pageData.putTime(timestamp);
+                        pageData.putDouble(aDouble);
+                    }
+                    break;
+                case TEXT:
+                    Binary aBinary = valueDecoder.readBinary(valueBuffer);
+                    if (filter.satisfy(timestamp, aBinary)) {
+                        pageData.putTime(timestamp);
+                        pageData.putBinary(aBinary);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return pageData;
+    }
+
+    @Override
+    public DynamicOneColumnData nextBatch() {
+        return data;
+    }
 
 }

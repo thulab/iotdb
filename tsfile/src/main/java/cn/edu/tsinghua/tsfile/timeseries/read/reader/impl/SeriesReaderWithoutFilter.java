@@ -10,7 +10,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by zhangjinrui on 2017/12/25.
+ * <p> Series reader is used to query one series of one tsfile,
+ * this reader has no filter.
  */
 public class SeriesReaderWithoutFilter extends SeriesReader {
 
@@ -18,23 +19,15 @@ public class SeriesReaderWithoutFilter extends SeriesReader {
         super(chunkLoader, chunkMetaDataList);
     }
 
-    public SeriesReaderWithoutFilter(TsFileSequenceReader tsFileReader, Path path) throws IOException {
-        super(tsFileReader, path);
-    }
-
-    public SeriesReaderWithoutFilter(TsFileSequenceReader tsFileReader,
-                                     ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        super(tsFileReader, chunkLoader, chunkMetaDataList);
-    }
-
-    protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+    protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderWithoutFilter(chunk);
- 		this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
+        this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override
-    protected boolean seriesChunkSatisfied(ChunkMetaData chunkMetaData) {
+    protected boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
         return true;
     }
+
 }

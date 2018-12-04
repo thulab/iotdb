@@ -1,63 +1,128 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by zhangjinrui on 2017/12/26.
+ * <p> Series reader is used to query one series of one tsfile,
+ * using this reader to query the value of a series with given timestamps.
  */
-public class SeriesReaderByTimestamp extends SeriesReader {
+public class SeriesReaderByTimestamp {
+    protected ChunkLoader chunkLoader;
+    protected List<ChunkMetaData> chunkMetaDataList;
+    private int currentChunkIndex = 0;
 
+    private ChunkReader chunkReader;
     private long currentTimestamp;
-    private boolean hasCacheLastTimeValuePair;
-    private TimeValuePair cachedTimeValuePair;
-    private int nextSeriesChunkIndex;
+    private int currentSeriesChunkIndex;
+    private DynamicOneColumnData data = null; // current batch data
 
     public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        super(chunkLoader, chunkMetaDataList);
-        nextSeriesChunkIndex = 0;
+        this.chunkLoader = chunkLoader;
+        this.chunkMetaDataList = chunkMetaDataList;
+        currentSeriesChunkIndex = 0;
         currentTimestamp = Long.MIN_VALUE;
     }
 
-    public SeriesReaderByTimestamp(TsFileSequenceReader tsFileReader, Path path) throws IOException {
-        super(tsFileReader, path);
-        currentTimestamp = Long.MIN_VALUE;
+    public TSDataType getDataType() {
+        return chunkMetaDataList.get(0).getTsDataType();
     }
 
-    public SeriesReaderByTimestamp(TsFileSequenceReader tsFileReader,
-                                   ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
-        super(tsFileReader, chunkLoader, chunkMetaDataList);
-        currentTimestamp = Long.MIN_VALUE;
+    public Object getValueInTimestampV2(long timestamp) throws IOException {
+        this.currentTimestamp = timestamp;
+
+        // first initialization, only invoked in the first time
+        if (chunkReader == null) {
+            if (!constructNextSatisfiedChunkReader())
+                return null;
+
+            if (chunkReader.hasNextBatch())
+                data = chunkReader.nextBatch();
+            else
+                return null;
+        }
+
+        while (data != null) {
+            while (data.hasNext()) {
+                if (data.getTime() < timestamp)
+                    data.next();
+                else
+                    break;
+            }
+
+            if (data.hasNext()) {
+                if (data.getTime() == timestamp)
+                    return data.getValue();
+                return null;
+            } else {
+                if (chunkReader.hasNextBatch()) { // data does not has next
+                    data = chunkReader.nextBatch();
+                } else if (!constructNextSatisfiedChunkReader()) {
+                    return null;
+                }
+            }
+        }
+
+        return null;
     }
 
-    @Override
+    private boolean constructNextSatisfiedChunkReader() throws IOException {
+        while (currentChunkIndex < chunkMetaDataList.size()) {
+            ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+            if (chunkSatisfied(chunkMetaData)) {
+                initChunkReader(chunkMetaData);
+                ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+        Chunk chunk = chunkLoader.getChunk(chunkMetaData);
+        this.chunkReader = new ChunkReaderByTimestamp(chunk);
+        this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
+    }
+
+    private boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
+        return chunkMetaData.getEndTime() >= currentTimestamp;
+    }
+
+
+    // ============= These methods below are deprecated ==========================
+
+    private boolean hasCacheLastTimeValuePair;
+    private TimeValuePair cachedTimeValuePair;
+    private boolean chunkReaderInitialized;
+
+
     public boolean hasNext() throws IOException {
         if (hasCacheLastTimeValuePair && cachedTimeValuePair.getTimestamp() >= currentTimestamp) {
             return true;
         }
-        if (seriesChunkReaderInitialized) {
+        if (chunkReaderInitialized) {
             ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
-            if(chunkReader.hasNext()){
+            if (chunkReader.hasNext()) {
                 return true;
             }
         }
-        while (nextSeriesChunkIndex < chunkMetaDataList.size()) {
-            if (!seriesChunkReaderInitialized) {
-                ChunkMetaData chunkMetaData = chunkMetaDataList.get(nextSeriesChunkIndex);
-                //maxTime >= currentTime
-                if (seriesChunkSatisfied(chunkMetaData)) {
-                    initSeriesChunkReader(chunkMetaData);
+        while (currentSeriesChunkIndex < chunkMetaDataList.size()) {
+            if (!chunkReaderInitialized) {
+                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentSeriesChunkIndex);
+                // maxTime >= currentTime
+                if (chunkSatisfied(chunkMetaData)) {
+                    initChunkReader(chunkMetaData);
                     ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(currentTimestamp);
-                    seriesChunkReaderInitialized = true;
-                    nextSeriesChunkIndex++;
+                    chunkReaderInitialized = true;
+                    currentSeriesChunkIndex++;
                 } else {
                     long minTimestamp = chunkMetaData.getStartTime();
                     long maxTimestamp = chunkMetaData.getEndTime();
@@ -71,13 +136,12 @@ public class SeriesReaderByTimestamp extends SeriesReader {
             if (chunkReader.hasNext()) {
                 return true;
             } else {
-                seriesChunkReaderInitialized = false;
+                chunkReaderInitialized = false;
             }
         }
         return false;
     }
 
-    @Override
     public TimeValuePair next() throws IOException {
         if (hasCacheLastTimeValuePair) {
             hasCacheLastTimeValuePair = false;
@@ -86,11 +150,6 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         return chunkReader.next();
     }
 
-    /**
-     * @param timestamp
-     * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
-     * @throws IOException
-     */
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         this.currentTimestamp = timestamp;
         if (hasCacheLastTimeValuePair) {
@@ -101,7 +160,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
                 return null;
             }
         }
-        if(hasNext()){
+        if (hasNext()) {
             cachedTimeValuePair = next();
             if (cachedTimeValuePair.getTimestamp() == timestamp) {
                 return cachedTimeValuePair.getValue();
@@ -111,18 +170,5 @@ public class SeriesReaderByTimestamp extends SeriesReader {
             }
         }
         return null;
-    }
-
-    @Override
-    protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-        Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-        this.chunkReader = new ChunkReaderByTimestamp(chunk);
-        this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
-    }
-
-    @Override
-    protected boolean seriesChunkSatisfied(ChunkMetaData chunkMetaData) {
-        long maxTimestamp = chunkMetaData.getEndTime();
-        return  maxTimestamp >= currentTimestamp;
     }
 }

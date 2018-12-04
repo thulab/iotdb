@@ -7,9 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
 
     private QueryFilter queryFilter;

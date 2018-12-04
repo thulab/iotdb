@@ -6,9 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class QueryExpression {
     private List<Path> selectedSeries;
     private QueryFilter queryFilter;
