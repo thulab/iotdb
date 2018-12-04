@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.encoding.decoder.*;
 import cn.edu.tsinghua.tsfile.encoding.encoder.*;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageDataReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.PageWriter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
-public class PageDataReaderTest {
+public class PageReaderTest {
 
     private static final int POINTS_COUNT_IN_ONE_PAGE = 1000000;
 
@@ -139,7 +139,7 @@ public class PageDataReaderTest {
 
                 ByteBuffer page = ByteBuffer.wrap(pageWriter.getUncompressedBytes().array());
 
-                PageDataReader pageReader = new PageDataReader(page, dataType, decoder, new DeltaBinaryDecoder.LongDeltaDecoder());
+                PageReader pageReader = new PageReader(page, dataType, decoder, new DeltaBinaryDecoder.LongDeltaDecoder());
 
                 int index = 0;
                 long startTimestamp = System.currentTimeMillis();

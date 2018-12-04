@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 
@@ -33,6 +33,6 @@ public abstract class NodeConstructor {
         throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + queryFilter.getType());
     }
 
-    public abstract SeriesReader generateSeriesReader(SeriesFilter seriesFilter) throws IOException;
+    public abstract Reader generateSeriesReader(SeriesFilter seriesFilter) throws IOException;
 
 }

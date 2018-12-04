@@ -13,22 +13,22 @@ import java.io.IOException;
 import java.util.List;
 
 
-public class SeriesReaderFromSingleFileWithFilterImpl extends SeriesReaderFromSingleFile {
+public class SeriesReaderWithFilter extends SeriesReader {
 
     private Filter filter;
 
-    public SeriesReaderFromSingleFileWithFilterImpl(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList, Filter filter) {
+    public SeriesReaderWithFilter(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList, Filter filter) {
         super(chunkLoader, chunkMetaDataList);
         this.filter = filter;
     }
 
-    public SeriesReaderFromSingleFileWithFilterImpl(TsFileSequenceReader tsFileReader, ChunkLoader chunkLoader,
-                                                    List<ChunkMetaData> chunkMetaDataList, Filter filter) {
+    public SeriesReaderWithFilter(TsFileSequenceReader tsFileReader, ChunkLoader chunkLoader,
+                                  List<ChunkMetaData> chunkMetaDataList, Filter filter) {
         super(tsFileReader, chunkLoader, chunkMetaDataList);
         this.filter = filter;
     }
 
-    public SeriesReaderFromSingleFileWithFilterImpl(TsFileSequenceReader tsFileReader
+    public SeriesReaderWithFilter(TsFileSequenceReader tsFileReader
             , Path path, Filter filter) throws IOException {
         super(tsFileReader, path);
         this.filter = filter;
@@ -36,8 +36,8 @@ public class SeriesReaderFromSingleFileWithFilterImpl extends SeriesReaderFromSi
 
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-        this.seriesChunkReader = new SeriesChunkReaderWithFilterImpl(chunk, filter);
-        this.seriesChunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
+        this.chunkReader = new ChunkReaderWithFilter(chunk, filter);
+        this.chunkReader.setMaxTombstoneTime(chunkMetaData.getMaxTombstoneTime());
     }
 
     @Override

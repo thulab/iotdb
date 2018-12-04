@@ -4,19 +4,17 @@ import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * Created by zhangjinrui on 2017/12/26.
  */
-public class SeriesChunkReaderByTimestampImpl extends SeriesChunkReader implements SeriesReaderByTimeStamp{
+public class ChunkReaderByTimestamp extends ChunkReader{
 
     private long currentTimestamp;
 
-    public SeriesChunkReaderByTimestampImpl(Chunk chunk) {
+    public ChunkReaderByTimestamp(Chunk chunk) {
         super(chunk);
     }
 
@@ -39,7 +37,11 @@ public class SeriesChunkReaderByTimestampImpl extends SeriesChunkReader implemen
         }
     }
 
-    @Override
+    /**
+     * @param timestamp
+     * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
+     * @throws IOException
+     */
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         setCurrentTimestamp(timestamp);
         if(hasCachedTimeValuePair && cachedTimeValuePair.getTimestamp() == timestamp){

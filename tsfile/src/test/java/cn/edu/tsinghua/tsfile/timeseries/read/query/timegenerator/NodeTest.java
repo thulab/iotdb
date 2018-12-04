@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class NodeTest {
     public void testLeafNode() throws IOException {
         int index = 0;
         long[] timestamps = new long[]{1, 2, 3, 4, 5, 6, 7};
-        SeriesReader seriesReader = new FakedSeriesReader(timestamps);
+        Reader seriesReader = new FakedSeriesReader(timestamps);
         Node leafNode = new LeafNode(seriesReader);
         while (leafNode.hasNext()) {
             Assert.assertEquals(timestamps[index++], leafNode.next());
@@ -74,7 +74,7 @@ public class NodeTest {
     }
 
 
-    private static class FakedSeriesReader implements SeriesReader {
+    private static class FakedSeriesReader implements Reader {
 
         private long[] timestamps;
         private int index;

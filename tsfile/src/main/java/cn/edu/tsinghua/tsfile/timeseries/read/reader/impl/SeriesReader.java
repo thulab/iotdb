@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileIm
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,18 +15,18 @@ import java.util.List;
 /**
  * Created by zhangjinrui on 2017/12/25.
  */
-public abstract class SeriesReaderFromSingleFile implements SeriesReader {
+public abstract class SeriesReader implements Reader {
 
     protected ChunkLoader chunkLoader;
     protected List<ChunkMetaData> chunkMetaDataList;
 
-    protected SeriesChunkReader seriesChunkReader;
+    protected ChunkReader chunkReader;
     protected boolean seriesChunkReaderInitialized;
     protected int currentReadSeriesChunkIndex;
 
     protected TsFileSequenceReader fileReader;
 
-    public SeriesReaderFromSingleFile(TsFileSequenceReader fileReader, Path path) throws IOException {
+    public SeriesReader(TsFileSequenceReader fileReader, Path path) throws IOException {
         this.fileReader = fileReader;
         this.chunkLoader = new ChunkLoaderImpl(fileReader);
         this.chunkMetaDataList = new MetadataQuerierByFileImpl(fileReader).getChunkMetaDataList(path);
@@ -34,8 +34,8 @@ public abstract class SeriesReaderFromSingleFile implements SeriesReader {
         this.seriesChunkReaderInitialized = false;
     }
 
-    public SeriesReaderFromSingleFile(TsFileSequenceReader fileReader,
-                                      ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public SeriesReader(TsFileSequenceReader fileReader,
+                        ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this(chunkLoader, chunkMetaDataList);
         this.fileReader = fileReader;
     }
@@ -45,7 +45,7 @@ public abstract class SeriesReaderFromSingleFile implements SeriesReader {
      * @param chunkLoader
      * @param chunkMetaDataList
      */
-    public SeriesReaderFromSingleFile(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
         this.currentReadSeriesChunkIndex = -1;
@@ -54,7 +54,7 @@ public abstract class SeriesReaderFromSingleFile implements SeriesReader {
 
     @Override
     public boolean hasNext() throws IOException {
-        if (seriesChunkReaderInitialized && seriesChunkReader.hasNext()) {
+        if (seriesChunkReaderInitialized && chunkReader.hasNext()) {
             return true;
         }
         while ((currentReadSeriesChunkIndex + 1) < chunkMetaDataList.size()) {
@@ -67,7 +67,7 @@ public abstract class SeriesReaderFromSingleFile implements SeriesReader {
                     continue;
                 }
             }
-            if (seriesChunkReader.hasNext()) {
+            if (chunkReader.hasNext()) {
                 return true;
             } else {
                 seriesChunkReaderInitialized = false;
@@ -78,7 +78,7 @@ public abstract class SeriesReaderFromSingleFile implements SeriesReader {
 
     @Override
     public TimeValuePair next() throws IOException {
-        return seriesChunkReader.next();
+        return chunkReader.next();
     }
 
     @Override
