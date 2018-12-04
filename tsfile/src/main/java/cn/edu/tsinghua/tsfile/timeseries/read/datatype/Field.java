@@ -5,14 +5,14 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 /**
- * <p> Field is the components of one {@code RowRecordV2} which store a value in
- * specific data type. The value type of Field is primitive.
+ * <p> Field is component of one {@code RowRecordV2} which stores a value in
+ * specific data type. The value type of Field is primitive(int long, float, double, binary, boolean).
  */
 public class Field {
 
-    public TSDataType dataType;
-    public String deltaObjectId;
-    public String measurementId;
+    private TSDataType dataType;
+    private String deltaObjectId;
+    private String measurementId;
     private boolean boolV;
     private int intV;
     private long longV;
@@ -24,13 +24,24 @@ public class Field {
     public Field(TSDataType dataType, String measurementId) {
         this.dataType = dataType;
         this.measurementId = measurementId;
-        this.deltaObjectId = "default";
     }
 
     public Field(TSDataType dataType, String deltaObjectId, String measurementId) {
         this.dataType = dataType;
         this.deltaObjectId = deltaObjectId;
         this.measurementId = measurementId;
+    }
+
+    public String getDeltaObjectId() {
+        return deltaObjectId;
+    }
+
+    public String getMeasurementId() {
+        return measurementId;
+    }
+
+    public TSDataType getDataType() {
+        return dataType;
     }
 
     public boolean getBoolV() {
