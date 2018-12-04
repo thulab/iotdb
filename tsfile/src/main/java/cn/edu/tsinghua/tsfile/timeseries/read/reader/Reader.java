@@ -25,5 +25,6 @@ public interface Reader {
     void skipCurrentTimeValuePair() throws IOException;
 
     void close() throws IOException;
+
 }
 
