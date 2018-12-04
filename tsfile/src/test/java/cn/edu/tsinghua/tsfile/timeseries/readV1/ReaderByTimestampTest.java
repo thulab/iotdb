@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/25.
- */
+
 public class ReaderByTimestampTest {
 
     private static final String FILE_PATH = TsFileGeneratorForSeriesReaderByTimestamp.outputDataFile;

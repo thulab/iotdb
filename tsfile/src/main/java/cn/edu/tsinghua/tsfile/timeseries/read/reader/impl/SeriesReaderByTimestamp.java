@@ -5,6 +5,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
 
 import java.io.IOException;
@@ -82,7 +83,7 @@ public class SeriesReaderByTimestamp extends SeriesReader {
         return chunkMetaDataList.get(0).getTsDataType();
     }
 
-    public Object getValueInTimeStamp(long timestamp) throws IOException {
+    public Object getValueInTimestampV2(long timestamp) throws IOException {
         ((ChunkReaderByTimestamp) chunkReader).setCurrentTimestamp(timestamp);
         if (data == null && super.hasNextBatch()) {
             data = super.nextBatch();
@@ -100,30 +101,30 @@ public class SeriesReaderByTimestamp extends SeriesReader {
 
     }
 
-//    /**
-//     * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
-//     */
-//    public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
-//        this.currentTimestamp = timestamp;
-//        if (hasCacheLastTimeValuePair) {
-//            if (cachedTimeValuePair.getTimestamp() == timestamp) {
-//                hasCacheLastTimeValuePair = false;
-//                return cachedTimeValuePair.getValue();
-//            } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
-//                return null;
-//            }
-//        }
-//        if (hasNext()) {
-//            cachedTimeValuePair = next();
-//            if (cachedTimeValuePair.getTimestamp() == timestamp) {
-//                return cachedTimeValuePair.getValue();
-//            } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
-//                hasCacheLastTimeValuePair = true;
-//                return null;
-//            }
-//        }
-//        return null;
-//    }
+    /**
+     * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
+     */
+    public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
+        this.currentTimestamp = timestamp;
+        if (hasCacheLastTimeValuePair) {
+            if (cachedTimeValuePair.getTimestamp() == timestamp) {
+                hasCacheLastTimeValuePair = false;
+                return cachedTimeValuePair.getValue();
+            } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
+                return null;
+            }
+        }
+        if (hasNext()) {
+            cachedTimeValuePair = next();
+            if (cachedTimeValuePair.getTimestamp() == timestamp) {
+                return cachedTimeValuePair.getValue();
+            } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
+                hasCacheLastTimeValuePair = true;
+                return null;
+            }
+        }
+        return null;
+    }
 
     @Override
     protected void initSeriesChunkReader(ChunkMetaData chunkMetaData) throws IOException {
