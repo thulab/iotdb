@@ -54,6 +54,21 @@ public class TsFileIOWriter {
         startFile();
     }
 
+    /**
+     * for writing data into an existing and incomplete Tsfile. The caller need to guarantee existing data in the TsFileOutput matches the given metadata list
+     *
+     * @param out the target output
+     * @param  chunkGroupMetaDataList existing chunkgroups' metadata
+     * @throws IOException if I/O error occurs
+     */
+    public TsFileIOWriter(TsFileOutput out, List<ChunkGroupMetaData> chunkGroupMetaDataList) throws IOException {
+        this.out = out;
+        this.chunkGroupMetaDataList = chunkGroupMetaDataList;
+        if(chunkGroupMetaDataList.size() == 0) {
+            startFile();
+        }
+    }
+
 
     /**
      * Writes given bytes to output stream.
