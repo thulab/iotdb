@@ -26,9 +26,6 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
         this.tsFileReader = tsFileReader;
         this.fileMetaData = tsFileReader.readFileMetadata();
         seriesChunkDescriptorCache = new LRUCache<Path, List<ChunkMetaData>>(SERIESCHUNK_DESCRIPTOR_CACHE_SIZE) {
-            @Override
-            public void beforeRemove(List<ChunkMetaData> object) {
-            }
 
             @Override
             public List<ChunkMetaData> loadObjectByKey(Path key) throws IOException {

@@ -9,67 +9,18 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGener
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 
-public class DataSetWithTimeGenerator implements QueryDataSet {
+public class DataSetWithTimeGenerator extends QueryDataSet {
 
     private TimestampGenerator timestampGenerator;
-    private LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries;
+    private List<SeriesReaderByTimestamp> readers;
 
-    public DataSetWithTimeGenerator(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries) {
+    public DataSetWithTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, TimestampGenerator timestampGenerator, List<SeriesReaderByTimestamp> readers) {
+        super(paths, dataTypes);
         this.timestampGenerator = timestampGenerator;
-        this.readersOfSelectedSeries = readersOfSelectedSeries;
-    }
-
-    @Override
-    public boolean hasNext() throws IOException {
-        return timestampGenerator.hasNext();
-    }
-
-    @Override
-    public RowRecord next() throws IOException {
-        long timestamp = timestampGenerator.next();
-        RowRecord rowRecord = new RowRecord(timestamp);
-        for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReaderByTimestamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
-            TsPrimitiveType tsPrimitiveType;
-            Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
-
-            if(value == null) {
-                rowRecord.putField(path, null);
-                continue;
-            }
-
-            TSDataType dataType = seriesReaderByTimestamp.getDataType();
-
-            switch (dataType) {
-                case INT32:
-                    tsPrimitiveType = new TsPrimitiveType.TsInt((int) value);
-                    break;
-                case INT64:
-                    tsPrimitiveType = new TsPrimitiveType.TsLong((long) value);
-                    break;
-                case FLOAT:
-                    tsPrimitiveType = new TsPrimitiveType.TsFloat((float) value);
-                    break;
-                case DOUBLE:
-                    tsPrimitiveType = new TsPrimitiveType.TsDouble((double) value);
-                    break;
-                case BOOLEAN:
-                    tsPrimitiveType = new TsPrimitiveType.TsBoolean((boolean) value);
-                    break;
-                case TEXT:
-                    tsPrimitiveType = new TsPrimitiveType.TsBinary((Binary) value);
-                    break;
-                default:
-                    throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
-
-            }
-            rowRecord.putField(path, tsPrimitiveType);
-        }
-        return rowRecord;
+        this.readers = readers;
     }
 
     @Override
@@ -82,14 +33,14 @@ public class DataSetWithTimeGenerator implements QueryDataSet {
         long timestamp = timestampGenerator.next();
         RowRecordV2 rowRecord = new RowRecordV2(timestamp);
 
-        for (Map.Entry<Path, SeriesReaderByTimestamp> entry : readersOfSelectedSeries.entrySet()) {
-            Path path = entry.getKey();
-            SeriesReaderByTimestamp seriesReaderByTimestamp = entry.getValue();
+        for(int i = 0; i < paths.size(); i++) {
+            SeriesReaderByTimestamp seriesReaderByTimestamp = readers.get(i);
             TSDataType dataType = seriesReaderByTimestamp.getDataType();
-            Field field = new Field(dataType, path.getDeviceToString(), path.getMeasurementToString());
+            Field field = new Field(dataType);
             Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
             if (value == null) {
                 field.setNull();
+                continue;
             }
             switch (dataType) {
                 case DOUBLE:

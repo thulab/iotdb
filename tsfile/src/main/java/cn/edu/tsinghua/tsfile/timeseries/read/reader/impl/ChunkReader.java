@@ -10,7 +10,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public abstract class ChunkReader implements Reader {
     private Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
             , TSDataType.INT64);
 
-    private DynamicOneColumnData data = null;
+    private BatchData data = null;
     private Filter filter = null;
 
     private long maxTombstoneTime;
@@ -125,7 +125,7 @@ public abstract class ChunkReader implements Reader {
     }
 
     @Override
-    public DynamicOneColumnData nextBatch() {
+    public BatchData nextBatch() {
         return data;
     }
 

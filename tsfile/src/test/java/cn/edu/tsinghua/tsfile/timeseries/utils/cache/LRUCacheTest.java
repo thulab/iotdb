@@ -19,10 +19,6 @@ public class LRUCacheTest {
             int testCount = 1000;
             int cacheSize = 5;
             cache = new LRUCache<Integer, Integer>(cacheSize) {
-                @Override
-                public void beforeRemove(Integer object) {
-                    return;
-                }
 
                 @Override
                 public Integer loadObjectByKey(Integer key) {

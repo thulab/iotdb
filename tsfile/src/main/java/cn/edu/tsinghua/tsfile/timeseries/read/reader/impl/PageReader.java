@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType.*;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class PageReader implements Reader {
     // value column in memory
     private ByteBuffer valueBuffer;
 
-    private DynamicOneColumnData data = null;
+    private BatchData data = null;
 
     private Filter filter = null;
 
@@ -123,9 +123,9 @@ public class PageReader implements Reader {
         return data.hasNext();
     }
 
-    private DynamicOneColumnData getNextBatch() throws IOException {
+    private BatchData getNextBatch() throws IOException {
 
-        DynamicOneColumnData pageData = new DynamicOneColumnData(dataType, true);
+        BatchData pageData = new BatchData(dataType, true);
 
         while (timeDecoder.hasNext(timeBuffer)) {
             long timestamp = timeDecoder.readLong(timeBuffer);
@@ -157,8 +157,8 @@ public class PageReader implements Reader {
         return pageData;
     }
 
-    private DynamicOneColumnData getNextBatch(Filter filter) throws IOException {
-        DynamicOneColumnData pageData = new DynamicOneColumnData(dataType, true);
+    private BatchData getNextBatch(Filter filter) throws IOException {
+        BatchData pageData = new BatchData(dataType, true);
 
         while (timeDecoder.hasNext(timeBuffer)) {
             long timestamp = timeDecoder.readLong(timeBuffer);
@@ -215,7 +215,7 @@ public class PageReader implements Reader {
     }
 
     @Override
-    public DynamicOneColumnData nextBatch() {
+    public BatchData nextBatch() {
         return data;
     }
 

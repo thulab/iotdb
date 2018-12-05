@@ -128,7 +128,7 @@ public class TSFileConfig {
     public static final String CONFIG_FILE_NAME = "tsfile-format.properties";
 
     /**
-     * The default grow size of class DynamicOneColumnData
+     * The default grow size of class BatchData
      */
     public static int dynamicDataSize = 1000;
     

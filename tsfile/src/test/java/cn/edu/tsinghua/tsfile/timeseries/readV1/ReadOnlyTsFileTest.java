@@ -65,9 +65,9 @@ public class ReadOnlyTsFileTest {
                 .setQueryFilter(queryFilter);
         QueryDataSet queryDataSet = tsFile.query(queryExpression);
         long aimedTimestamp = 1480562618000L;
-        while (queryDataSet.hasNext()) {
+        while (queryDataSet.hasNextV2()) {
             //System.out.println("find next!");
-            RowRecord rowRecord = queryDataSet.next();
+            RowRecordV2 rowRecord = queryDataSet.nextV2();
             //System.out.println("result datum: "+rowRecord.getTimestamp()+"," +rowRecord.getFields());
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;

@@ -39,8 +39,8 @@ public class TsFileRead {
 		paths.add(new Path("device_1.sensor_3"));
 		QueryExpression queryExpression = QueryExpression.create(paths, null);
 		QueryDataSet queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
+		while (queryDataSet.hasNextV2()) {
+			System.out.println(queryDataSet.nextV2());
 		}
 		System.out.println("------------");
 		reader.close();
@@ -56,8 +56,8 @@ public class TsFileRead {
 		paths.add(new Path("device_1.sensor_3"));
 		queryExpression = QueryExpression.create(paths, timeFilter);
 		queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
+		while (queryDataSet.hasNextV2()) {
+			System.out.println(queryDataSet.nextV2());
 		}
 		System.out.println("------------");
 		reader.close();
@@ -72,8 +72,8 @@ public class TsFileRead {
 		paths.add(new Path("device_1.sensor_3"));
 		queryExpression = QueryExpression.create(paths, valueFilter);
 		queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
+		while (queryDataSet.hasNextV2()) {
+			System.out.println(queryDataSet.nextV2());
 		}
 		System.out.println("------------");
 		reader.close();
@@ -91,8 +91,8 @@ public class TsFileRead {
 		QueryFilter finalFilter = QueryFilterFactory.and(timeFilter, valueFilter);
 		queryExpression = QueryExpression.create(paths, finalFilter);
 		queryDataSet = readTsFile.query(queryExpression);
-		while (queryDataSet.hasNext()) {
-			System.out.println(queryDataSet.next());
+		while (queryDataSet.hasNextV2()) {
+			System.out.println(queryDataSet.nextV2());
 		}
 		reader.close();
 	}

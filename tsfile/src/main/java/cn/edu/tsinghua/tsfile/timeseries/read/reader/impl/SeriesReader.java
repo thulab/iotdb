@@ -3,7 +3,7 @@ package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
@@ -83,7 +83,7 @@ public abstract class SeriesReader implements Reader {
     }
 
     @Override
-    public DynamicOneColumnData nextBatch() {
+    public BatchData nextBatch() {
         return chunkReader.nextBatch();
     }
 

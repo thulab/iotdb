@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.exception.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
@@ -20,7 +21,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -59,28 +60,33 @@ public class QueryExecutorRouter implements QueryExecutor {
      * Without time generator, with global time filter.
      */
     private QueryDataSet execute(List<Path> selectedPathList, Filter timeFilter) throws IOException {
-        LinkedHashMap<Path, Reader> readersOfSelectedSeries = new LinkedHashMap<>();
+        List<Reader> readersOfSelectedSeries = new ArrayList<>();
+        List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
             Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter);
-            readersOfSelectedSeries.put(path, seriesReader);
+            readersOfSelectedSeries.add(seriesReader);
+            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
-        return new DataSetWithoutTimeGenerator(readersOfSelectedSeries);
+
+        return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
     }
 
     /**
      * Without time generator, without filter.
      */
     private QueryDataSet execute(List<Path> selectedPathList) throws IOException {
-        LinkedHashMap<Path, Reader> readersOfSelectedSeries = new LinkedHashMap<>();
+        List<Reader> readersOfSelectedSeries = new ArrayList<>();
+        List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
             Reader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
-            readersOfSelectedSeries.put(path, seriesReader);
+            readersOfSelectedSeries.add(seriesReader);
+            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
-        return new DataSetWithoutTimeGenerator(readersOfSelectedSeries);
+        return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
     }
 
     /**
@@ -88,13 +94,16 @@ public class QueryExecutorRouter implements QueryExecutor {
      */
     public QueryDataSet executeWithFilter(List<Path> selectedPathList, QueryFilter queryFilter) throws IOException {
         TimestampGenerator timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerier);
-        LinkedHashMap<Path, SeriesReaderByTimestamp> readersOfSelectedSeries = new LinkedHashMap<>();
+        List<SeriesReaderByTimestamp> readersOfSelectedSeries = new ArrayList<>();
+        List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
             SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(chunkLoader, chunkMetaDataList);
-            readersOfSelectedSeries.put(path, seriesReader);
+            readersOfSelectedSeries.add(seriesReader);
+            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
-        return new DataSetWithTimeGenerator(timestampGenerator, readersOfSelectedSeries);
+        return new DataSetWithTimeGenerator(selectedPathList, dataTypes, timestampGenerator, readersOfSelectedSeries);
     }
+
 }

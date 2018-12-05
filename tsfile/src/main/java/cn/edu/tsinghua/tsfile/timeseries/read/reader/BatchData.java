@@ -8,11 +8,11 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import java.util.ArrayList;
 
 /**
- * <p> <code>DynamicOneColumnData</code> is a self-defined data structure
+ * <p> <code>BatchData</code> is a self-defined data structure
  * which is optimized for different type of values.
  * This class can be viewed as a collection which is more efficient than ArrayList.
  */
-public class DynamicOneColumnData {
+public class BatchData {
 
     private int TIME_CAPACITY = 1;
     private int VALUE_CAPACITY = 1;
@@ -39,23 +39,23 @@ public class DynamicOneColumnData {
     private ArrayList<double[]> doubleRet;
     private ArrayList<Binary[]> binaryRet;
 
-    public DynamicOneColumnData() {
+    public BatchData() {
         dataType = null;
     }
 
-    public DynamicOneColumnData(TSDataType type) {
+    public BatchData(TSDataType type) {
         dataType = type;
     }
 
     /**
-     * @param type       Data type to record for this DynamicOneColumnData
-     * @param recordTime whether to record time value for this DynamicOneColumnData
+     * @param type       Data type to record for this BatchData
+     * @param recordTime whether to record time value for this BatchData
      */
-    public DynamicOneColumnData(TSDataType type, boolean recordTime) {
+    public BatchData(TSDataType type, boolean recordTime) {
         init(type, recordTime, false);
     }
 
-    public DynamicOneColumnData(TSDataType type, boolean recordTime, boolean hasEmptyTime) {
+    public BatchData(TSDataType type, boolean recordTime, boolean hasEmptyTime) {
         init(type, recordTime, hasEmptyTime);
     }
 
@@ -283,10 +283,10 @@ public class DynamicOneColumnData {
      */
     private void rangeCheck(int idx) {
         if (idx < 0) {
-            throw new IndexOutOfBoundsException("DynamicOneColumnData value range check, Index is negative: " + idx);
+            throw new IndexOutOfBoundsException("BatchData value range check, Index is negative: " + idx);
         }
         if (idx >= valueLength) {
-            throw new IndexOutOfBoundsException("DynamicOneColumnData value range check, Index : " + idx + ". Length : " + valueLength);
+            throw new IndexOutOfBoundsException("BatchData value range check, Index : " + idx + ". Length : " + valueLength);
         }
     }
 
@@ -296,16 +296,16 @@ public class DynamicOneColumnData {
      */
     private void rangeCheckForTime(int idx) {
         if (idx < 0) {
-            throw new IndexOutOfBoundsException("DynamicOneColumnData time range check, Index is negative: " + idx);
+            throw new IndexOutOfBoundsException("BatchData time range check, Index is negative: " + idx);
         }
         if (idx >= timeLength) {
-            throw new IndexOutOfBoundsException("DynamicOneColumnData time range check, Index : " + idx + ". Length : " + timeLength);
+            throw new IndexOutOfBoundsException("BatchData time range check, Index : " + idx + ". Length : " + timeLength);
         }
     }
 
     private void rangeCheckForEmptyTime(int idx) {
         if (idx < 0) {
-            throw new IndexOutOfBoundsException("DynamicOneColumnData empty time range check, Index is negative: " + idx);
+            throw new IndexOutOfBoundsException("BatchData empty time range check, Index is negative: " + idx);
         }
     }
 

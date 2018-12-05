@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- *
- * Created by zhangjinrui on 2017/12/25.
- */
+
 public abstract class LRUCache<K, T> implements Cache<K, T> {
 
     private int cacheSize;
@@ -52,16 +49,8 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
             return;
         }
         K key = cache.keySet().iterator().next();
-        beforeRemove(cache.get(key));
         cache.remove(key);
     }
-
-    /**
-     * Do something before remove object from cache.
-     *
-     * @param object
-     */
-    public abstract void beforeRemove(T object) throws CacheException;
 
     public abstract T loadObjectByKey(K key) throws CacheException, IOException;
 }

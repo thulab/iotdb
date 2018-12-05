@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader;
 
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 import java.io.IOException;
@@ -32,7 +30,7 @@ public interface Reader {
     /**
      * get next batch data
      */
-    DynamicOneColumnData nextBatch();
+    BatchData nextBatch();
 
 
     void close() throws IOException;

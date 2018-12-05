@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +23,7 @@ public class SeriesReaderByTimestamp {
     private ChunkReader chunkReader;
     private long currentTimestamp;
     private int currentSeriesChunkIndex;
-    private DynamicOneColumnData data = null; // current batch data
+    private BatchData data = null; // current batch data
 
     public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;

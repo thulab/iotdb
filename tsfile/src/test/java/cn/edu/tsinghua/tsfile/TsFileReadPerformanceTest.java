@@ -7,15 +7,13 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 
@@ -36,7 +34,7 @@ public class TsFileReadPerformanceTest {
     }
 
     private static void dynamicWithTsPrimitiveTest() {
-        DynamicOneColumnData dynamicData = new DynamicOneColumnData(TSDataType.INT32, true);
+        BatchData dynamicData = new BatchData(TSDataType.INT32, true);
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < SIZE; i++) {
             dynamicData.putTime(i);

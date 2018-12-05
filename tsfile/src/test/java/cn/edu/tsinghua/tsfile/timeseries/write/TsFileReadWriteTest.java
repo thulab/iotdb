@@ -74,15 +74,15 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNextV2()) {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
-            for (Field field : r.getFields()) {
-                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
-                    assertEquals(i, field.getIntV(), delta);
-                }
-            }
+            assertEquals(i, r.getFields().get(0).getIntV());
             i++;
         }
         reader.close();
@@ -110,15 +110,15 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNextV2()) {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
-            for (Field field : r.getFields()) {
-                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
-                    assertEquals(i, field.getLongV(), delta);
-                }
-            }
+            assertEquals(i, r.getFields().get(0).getLongV());
             i++;
         }
         reader.close();
@@ -146,16 +146,16 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNextV2()) {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
 
-            for (Field field : r.getFields()) {
-                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
-                    assertEquals((float)i, field.getFloatV(), delta);
-                }
-            }
+            assertEquals((float) i, r.getFields().get(0).getFloatV(), delta);
             i++;
         }
         reader.close();
@@ -183,15 +183,15 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNextV2()) {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
-            for (Field field : r.getFields()) {
-                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
-                    assertEquals((double) i, field.getDoubleV(), delta);
-                }
-            }
+            assertEquals((double) i, r.getFields().get(0).getDoubleV(), delta);
             i++;
         }
         reader.close();

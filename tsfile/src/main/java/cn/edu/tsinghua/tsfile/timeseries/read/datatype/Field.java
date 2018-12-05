@@ -9,9 +9,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
  * specific data type. The value type of Field is primitive.
  */
 public class Field {
+
     private TSDataType dataType;
-    private String deviceId;
-    private String measurementId;
     private boolean boolV;
     private int intV;
     private long longV;
@@ -20,23 +19,8 @@ public class Field {
     private Binary binaryV;
     private boolean isNull;
 
-    public Field(TSDataType dataType, String measurementId) {
+    public Field(TSDataType dataType) {
         this.dataType = dataType;
-        this.measurementId = measurementId;
-    }
-
-    public Field(TSDataType dataType, String deviceId, String measurementId) {
-        this.dataType = dataType;
-        this.deviceId = deviceId;
-        this.measurementId = measurementId;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public String getMeasurementId() {
-        return measurementId;
     }
 
     public TSDataType getDataType() {

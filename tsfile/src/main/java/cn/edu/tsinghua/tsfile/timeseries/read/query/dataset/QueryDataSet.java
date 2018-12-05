@@ -1,36 +1,40 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 
 import java.io.IOException;
+import java.util.List;
 
 
-public interface QueryDataSet {
+public abstract class QueryDataSet {
 
-    /**
-     * check if unread data still exists
-     * @return
-     * @throws IOException
-     */
-    boolean hasNext() throws IOException;
+    protected List<Path> paths;
+    protected List<TSDataType> dataTypes;
 
-    /**
-     * get the next unread data
-     * another data will be returned when calling this method next time
-     * @return
-     * @throws IOException
-     */
-    RowRecord next() throws IOException;
+    public QueryDataSet(List<Path> paths, List<TSDataType> dataTypes) {
+        this.paths = paths;
+        this.dataTypes = dataTypes;
+    }
 
     /**
      * This method is used for batch query.
      */
-    boolean hasNextV2() throws IOException;
+    public abstract boolean hasNextV2() throws IOException;
 
     /**
      * This method is used for batch query, return RowRecordV2.
      */
-    RowRecordV2 nextV2() throws IOException;
+    public abstract RowRecordV2 nextV2() throws IOException;
+
+
+    public List<Path> getPaths() {
+        return paths;
+    }
+
+    public List<TSDataType> getDataTypes() {
+        return dataTypes;
+    }
 
 }

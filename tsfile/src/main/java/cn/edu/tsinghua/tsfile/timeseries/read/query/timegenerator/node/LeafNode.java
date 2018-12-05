@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class LeafNode implements Node {
 
     private Reader seriesReader;
 
-    private DynamicOneColumnData data = null;
+    private BatchData data = null;
 
     public LeafNode(Reader seriesReader) {
         this.seriesReader = seriesReader;

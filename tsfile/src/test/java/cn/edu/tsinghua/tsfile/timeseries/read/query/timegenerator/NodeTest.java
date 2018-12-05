@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -78,11 +78,11 @@ public class NodeTest {
 
         private long[] timestamps;
         private int index;
-        DynamicOneColumnData data;
+        BatchData data;
         boolean flag = false;
 
         public FakedSeriesReader(long[] timestamps) {
-            data = new DynamicOneColumnData(TSDataType.INT32, true);
+            data = new BatchData(TSDataType.INT32, true);
             for (long time : timestamps) {
                 data.putTime(time);
             }
@@ -111,7 +111,7 @@ public class NodeTest {
         }
 
         @Override
-        public DynamicOneColumnData nextBatch() {
+        public BatchData nextBatch() {
 
             flag = true;
             return data;

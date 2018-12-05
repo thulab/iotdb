@@ -26,10 +26,6 @@ public class ChunkLoaderImpl implements ChunkLoader {
         this.reader = fileSequenceReader;
 
         chunkCache = new LRUCache<ChunkMetaData, Chunk>(cacheSize) {
-            @Override
-            public void beforeRemove(Chunk object) {
-                return;
-            }
 
             @Override
             public Chunk loadObjectByKey(ChunkMetaData metaData) throws CacheException {
