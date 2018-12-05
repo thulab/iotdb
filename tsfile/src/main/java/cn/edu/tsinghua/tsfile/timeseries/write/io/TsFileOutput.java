@@ -46,4 +46,11 @@ public interface TsFileOutput {
      */
     public OutputStream wrapAsStream() throws IOException;
 
+    /**
+     * the same with {@link OutputStream#flush()}
+     *
+     * @exception  IOException  if an I/O error occurs.
+     */
+    public void flush() throws IOException;
+
 }
