@@ -14,7 +14,7 @@ import java.util.List;
 
 public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
-    private static final int SERIESCHUNK_DESCRIPTOR_CACHE_SIZE = 100000;
+    private static final int CHUNK_DESCRIPTOR_CACHE_SIZE = 100000;
 
     private TsFileMetaData fileMetaData;
 
@@ -25,7 +25,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
     public MetadataQuerierByFileImpl(TsFileSequenceReader tsFileReader) throws IOException {
         this.tsFileReader = tsFileReader;
         this.fileMetaData = tsFileReader.readFileMetadata();
-        seriesChunkDescriptorCache = new LRUCache<Path, List<ChunkMetaData>>(SERIESCHUNK_DESCRIPTOR_CACHE_SIZE) {
+        seriesChunkDescriptorCache = new LRUCache<Path, List<ChunkMetaData>>(CHUNK_DESCRIPTOR_CACHE_SIZE) {
 
             @Override
             public List<ChunkMetaData> loadObjectByKey(Path key) throws IOException {

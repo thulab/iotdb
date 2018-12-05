@@ -12,6 +12,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
@@ -55,26 +56,34 @@ public class ReaderTest {
         Reader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         long startTime = TsFileGeneratorForTest.START_TIMESTAMP;
         long startTimestamp = System.currentTimeMillis();
-        while (seriesReader.hasNext()) {
-            TimeValuePair timeValuePair = seriesReader.next();
-            Assert.assertEquals(startTime, timeValuePair.getTimestamp());
-            startTime++;
-            count++;
+        BatchData data = null;
+
+        while(seriesReader.hasNextBatch()) {
+            data = seriesReader.nextBatch();
+            while (data.hasNext()) {
+                Assert.assertEquals(startTime, data.getTime());
+                data.next();
+                startTime++;
+                count++;
+            }
         }
         long endTimestamp = System.currentTimeMillis();
         Assert.assertEquals(rowCount, count);
         System.out.println("SeriesReadTest. [Time used]: " + (endTimestamp - startTimestamp) +
                 " ms. [Read Count]: " + count);
 
-
         chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s4"));
         seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         count = 0;
         startTimestamp = System.currentTimeMillis();
-        while (seriesReader.hasNext()) {
-            seriesReader.next();
-            startTime++;
-            count++;
+
+        while(seriesReader.hasNextBatch()) {
+            data = seriesReader.nextBatch();
+            while (data.hasNext()) {
+                data.next();
+                startTime ++;
+                count++;
+            }
         }
         endTimestamp = System.currentTimeMillis();
         System.out.println("SeriesReadTest. [Time used]: " + (endTimestamp - startTimestamp) +
@@ -94,12 +103,21 @@ public class ReaderTest {
 
         long startTimestamp = System.currentTimeMillis();
         int count = 0;
+
+        BatchData data;
+
         long aimedTimestamp = 1480563570030L;
-        while (seriesReader.hasNext()) {
-            TimeValuePair timeValuePair = seriesReader.next();
-            count++;
-            Assert.assertEquals(aimedTimestamp++, timeValuePair.getTimestamp());
+
+        while(seriesReader.hasNextBatch()) {
+            data = seriesReader.nextBatch();
+            while (data.hasNext()) {
+                Assert.assertEquals(aimedTimestamp++, data.getTime());
+                data.next();
+                count++;
+            }
         }
+
+
         long endTimestamp = System.currentTimeMillis();
         System.out.println("SeriesReadWithFilterTest. [Time used]: " + (endTimestamp - startTimestamp) +
                 " ms. [Read Count]: " + count);

@@ -24,7 +24,7 @@ public class TsFileReadPerformanceTest {
     static int sensorNum = 50;
     static int SIZE = 10000000;
 
-    public static void main(String args[]) throws IOException, InterruptedException {
+    public static void main(String args[]) throws IOException {
 
         //TimeUnit.SECONDS.sleep(10);
 
@@ -33,23 +33,6 @@ public class TsFileReadPerformanceTest {
         readTestWithFilter();
     }
 
-    private static void dynamicWithTsPrimitiveTest() {
-        BatchData dynamicData = new BatchData(TSDataType.INT32, true);
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < SIZE; i++) {
-            dynamicData.putTime(i);
-            dynamicData.putInt(i);
-        }
-        long endTime = System.currentTimeMillis();
-        System.out.println(String.format("before, consume time : %sms", endTime - startTime));
-
-        startTime = System.currentTimeMillis();
-        for (int i = 0; i < SIZE; i++) {
-            TimeValuePair tp = new TimeValuePair(i, new TsPrimitiveType.TsInt(i));
-        }
-        endTime = System.currentTimeMillis();
-        System.out.println(String.format("after, consume time : %sms", endTime - startTime));
-    }
 
     private static void readTestWithFilter() throws IOException {
         TsFileSequenceReader reader = new TsFileSequenceReader(filePath);
@@ -68,11 +51,7 @@ public class TsFileReadPerformanceTest {
         int cnt = 0;
         QueryDataSet queryDataSet = tsFile.query(queryExpression);
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 record = queryDataSet.nextV2();
-//            System.out.println(record.toString());
-//            if (cnt % 5000 == 0) {
-//                System.out.println(record.toString());
-//            }
+            queryDataSet.nextV2();
             cnt++;
         }
         long endTime = System.currentTimeMillis();

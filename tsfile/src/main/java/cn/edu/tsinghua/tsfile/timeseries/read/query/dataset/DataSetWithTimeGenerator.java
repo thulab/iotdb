@@ -37,7 +37,7 @@ public class DataSetWithTimeGenerator extends QueryDataSet {
             SeriesReaderByTimestamp seriesReaderByTimestamp = readers.get(i);
             TSDataType dataType = seriesReaderByTimestamp.getDataType();
             Field field = new Field(dataType);
-            Object value = seriesReaderByTimestamp.getValueInTimestampV2(timestamp);
+            Object value = seriesReaderByTimestamp.getValueInTimestamp(timestamp);
             if (value == null) {
                 field.setNull();
                 continue;

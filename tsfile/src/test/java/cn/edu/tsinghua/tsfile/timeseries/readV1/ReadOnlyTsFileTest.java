@@ -13,7 +13,6 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;

@@ -16,8 +16,4 @@ public class ChunkReaderWithoutFilter extends ChunkReader {
         return pageHeader.getMax_timestamp() > getMaxTombstoneTime();
     }
 
-    @Override
-    public boolean timeValuePairSatisfied(TimeValuePair timeValuePair) {
-        return timeValuePair.getTimestamp() > getMaxTombstoneTime();
-    }
 }

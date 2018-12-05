@@ -23,11 +23,7 @@ public abstract class ChunkReader implements Reader {
     ChunkHeader chunkHeader;
     private ByteBuffer chunkDataBuffer;
 
-    private boolean pageReaderInitialized;
     private PageReader pageReader;
-
-    boolean hasCachedTimeValuePair;
-    TimeValuePair cachedTimeValuePair;
 
     private UnCompressor unCompressor;
     private Decoder valueDecoder;
@@ -46,51 +42,11 @@ public abstract class ChunkReader implements Reader {
     public ChunkReader(Chunk chunk, Filter filter) {
         this.filter = filter;
         this.chunkDataBuffer = chunk.getData();
-        this.pageReaderInitialized = false;
         chunkHeader = chunk.getHeader();
         this.unCompressor = UnCompressor.getUnCompressor(chunkHeader.getCompressionType());
         valueDecoder = Decoder.getDecoderByType(chunkHeader.getEncodingType(), chunkHeader.getDataType());
     }
 
-    @Override
-    public boolean hasNext() throws IOException {
-        if (hasCachedTimeValuePair) {
-            return true;
-        }
-
-        //Judge whether next satisfied page exists
-        while (true) {
-            if (!pageReaderInitialized) {
-
-                // construct next satisfied page header
-                boolean hasMoreSatisfiedPage = constructPageReaderIfNextSatisfiedPageExists();
-
-                // if there does not exist a satisfied page, return false
-                if (!hasMoreSatisfiedPage) {
-                    return false;
-                }
-                pageReaderInitialized = true;
-            }
-
-            // check whether there exists a satisfied time value pair in current page
-            while (pageReader.hasNext()) {
-
-                // read next time value pair
-                TimeValuePair timeValuePair = pageReader.next();
-
-                // check if next time value pair satisfy the condition
-                if (timeValuePairSatisfied(timeValuePair) && timeValuePair.getTimestamp() > maxTombstoneTime) {
-
-                    // cache next satisfied time value pair
-                    this.cachedTimeValuePair = timeValuePair;
-                    this.hasCachedTimeValuePair = true;
-
-                    return true;
-                }
-            }
-            pageReaderInitialized = false;
-        }
-    }
 
     @Override
     public boolean hasNextBatch() throws IOException {
@@ -116,53 +72,15 @@ public abstract class ChunkReader implements Reader {
 
 
     @Override
-    public TimeValuePair next() throws IOException {
-        if (hasNext()) {
-            hasCachedTimeValuePair = false;
-            return cachedTimeValuePair;
-        }
-        throw new IOException("No more timeValuePair in current Chunk");
-    }
-
-    @Override
     public BatchData nextBatch() {
         return data;
     }
-
-    /**
-     * Read page one by one from ByteBuffer and check the page header whether this page satisfies the filter.
-     * Skip the unsatisfied pages and construct PageReader for the first page satisfied.
-     *
-     * @return whether there exists a satisfied page
-     * @throws IOException exception when reading page
-     */
-    private boolean constructPageReaderIfNextSatisfiedPageExists() throws IOException {
-
-        boolean gotNextPageReader = false;
-
-        while (chunkDataBuffer.remaining() > 0 && !gotNextPageReader) {
-            // deserialize a PageHeader from chunkDataBuffer
-            PageHeader pageHeader = getNextPageHeader();
-
-            // if the current page satisfies the filter
-            if (pageSatisfied(pageHeader)) {
-                pageReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
-                gotNextPageReader = true;
-            } else {
-                skipBytesInStreamByLength(pageHeader.getCompressedSize());
-            }
-        }
-        return gotNextPageReader;
-    }
-
 
     private void skipBytesInStreamByLength(long length) {
         chunkDataBuffer.position(chunkDataBuffer.position() + (int) length);
     }
 
     public abstract boolean pageSatisfied(PageHeader pageHeader);
-
-    public abstract boolean timeValuePairSatisfied(TimeValuePair timeValuePair);
 
 
     private PageReader constructPageReaderForNextPage(int compressedPageBodyLength)

@@ -1,14 +1,10 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
-import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType.*;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
@@ -36,13 +32,13 @@ public class PageReader implements Reader {
 
     private Filter filter = null;
 
-    public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder, Filter filter) throws IOException {
+    public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder, Filter filter) {
         this(pageData, dataType, valueDecoder, timeDecoder);
         this.filter = filter;
     }
 
 
-    public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) throws IOException {
+    public PageReader(ByteBuffer pageData, TSDataType dataType, Decoder valueDecoder, Decoder timeDecoder) {
         this.dataType = dataType;
         this.valueDecoder = valueDecoder;
         this.timeDecoder = timeDecoder;
@@ -55,7 +51,7 @@ public class PageReader implements Reader {
      * @param pageData uncompressed bytes size of time column, time column, value column
      * @throws IOException exception in reading data from pageContent
      */
-    private void splitDataToTimeStampAndValue(ByteBuffer pageData) throws IOException {
+    private void splitDataToTimeStampAndValue(ByteBuffer pageData) {
         int timeBufferLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
 
         timeBuffer = pageData.slice();
@@ -66,25 +62,8 @@ public class PageReader implements Reader {
     }
 
     @Override
-    public boolean hasNext() throws IOException {
-        return timeDecoder.hasNext(timeBuffer);
-    }
-
-
-    @Override
-    public TimeValuePair next() throws IOException {
-        if (hasNext()) {
-            long timestamp = timeDecoder.readLong(timeBuffer);
-            TsPrimitiveType value = readOneValue();
-            return new TimeValuePair(timestamp, value);
-        } else {
-            throw new IOException("No more TimeValuePair in current page");
-        }
-    }
-
-    @Override
-    public void skipCurrentTimeValuePair() throws IOException {
-        next();
+    public void skipCurrentTimeValuePair() {
+        data.next();
     }
 
     @Override
@@ -93,26 +72,6 @@ public class PageReader implements Reader {
         valueBuffer = null;
     }
 
-    // read one value according to data type
-    private TsPrimitiveType readOneValue() {
-        switch (dataType) {
-            case BOOLEAN:
-                return new TsBoolean(valueDecoder.readBoolean(valueBuffer));
-            case INT32:
-                return new TsInt(valueDecoder.readInt(valueBuffer));
-            case INT64:
-                return new TsLong(valueDecoder.readLong(valueBuffer));
-            case FLOAT:
-                return new TsFloat(valueDecoder.readFloat(valueBuffer));
-            case DOUBLE:
-                return new TsDouble(valueDecoder.readDouble(valueBuffer));
-            case TEXT:
-                return new TsBinary(valueDecoder.readBinary(valueBuffer));
-            default:
-                break;
-        }
-        throw new UnSupportedDataTypeException("Unsupported data type :" + dataType);
-    }
 
     @Override
     public boolean hasNextBatch() throws IOException {

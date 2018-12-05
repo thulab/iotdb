@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
@@ -91,18 +89,8 @@ public class NodeTest {
         }
 
         @Override
-        public boolean hasNext() throws IOException {
-            return index < timestamps.length;
-        }
-
-        @Override
-        public TimeValuePair next() throws IOException {
-            return new TimeValuePair(timestamps[index++], new TsPrimitiveType.TsLong(1L));
-        }
-
-        @Override
         public void skipCurrentTimeValuePair() throws IOException {
-            next();
+            data.next();
         }
 
         @Override

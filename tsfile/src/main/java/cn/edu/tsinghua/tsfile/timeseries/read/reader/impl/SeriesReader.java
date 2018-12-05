@@ -29,35 +29,6 @@ public abstract class SeriesReader implements Reader {
     }
 
     @Override
-    public boolean hasNext() throws IOException {
-        if (chunkReaderInitialized && chunkReader.hasNext()) {
-            return true;
-        }
-        while (currentChunkIndex < chunkMetaDataList.size()) {
-            if (!chunkReaderInitialized) {
-                ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
-                if (chunkSatisfied(chunkMetaData)) {
-                    initChunkReader(chunkMetaData);
-                    chunkReaderInitialized = true;
-                } else {
-                    continue;
-                }
-            }
-            if (chunkReader.hasNext()) {
-                return true;
-            } else {
-                chunkReaderInitialized = false;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public TimeValuePair next() throws IOException {
-        return chunkReader.next();
-    }
-
-    @Override
     public boolean hasNextBatch() throws IOException {
 
         // current chunk has additional batch
@@ -89,8 +60,8 @@ public abstract class SeriesReader implements Reader {
 
 
     @Override
-    public void skipCurrentTimeValuePair() throws IOException {
-        next();
+    public void skipCurrentTimeValuePair() {
+        chunkReader.skipCurrentTimeValuePair();
     }
 
     protected abstract void initChunkReader(ChunkMetaData chunkMetaData) throws IOException;

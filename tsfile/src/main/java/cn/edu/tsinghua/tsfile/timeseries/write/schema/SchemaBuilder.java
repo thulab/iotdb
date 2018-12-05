@@ -9,8 +9,6 @@ import java.util.Map;
 
 /**
  * This class is used to build FileSchema of tsfile
- *
- * @author qiaojialin
  */
 public class SchemaBuilder {
     /** the FileSchema which is being built **/

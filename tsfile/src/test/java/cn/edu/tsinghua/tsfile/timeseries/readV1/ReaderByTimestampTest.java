@@ -6,8 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
@@ -50,15 +49,21 @@ public class ReaderByTimestampTest {
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
         Reader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
 
-        List<TimeValuePair> timeValuePairList = new ArrayList<>();
+        List<Long> timeList = new ArrayList<>();
+        List<Object> valueList = new ArrayList<>();
         int count = 0;
-        while (seriesReader.hasNext()) {
-            TimeValuePair timeValuePair = seriesReader.next();
-            if (count % 100 == 0) {
-                timeValuePairList.add(new TimeValuePair(timeValuePair.getTimestamp() - 1, null));
-                timeValuePairList.add(timeValuePair);
+        BatchData data = null;
+
+        while(seriesReader.hasNextBatch()) {
+            data = seriesReader.nextBatch();
+            while (data.hasNext()) {
+                timeList.add(data.getTime() - 1);
+                valueList.add(null);
+                timeList.add(data.getTime());
+                valueList.add(data.getValue());
+                data.next();
+                count++;
             }
-            count++;
         }
 
         long startTimestamp = System.currentTimeMillis();
@@ -66,9 +71,12 @@ public class ReaderByTimestampTest {
 
         SeriesReaderByTimestamp seriesReaderFromSingleFileByTimestamp = new SeriesReaderByTimestamp(seriesChunkLoader, chunkMetaDataList);
 
-        for (TimeValuePair timeValuePair : timeValuePairList) {
-            TsPrimitiveType value = seriesReaderFromSingleFileByTimestamp.getValueInTimestamp(timeValuePair.getTimestamp());
-            Assert.assertEquals(timeValuePair.getValue(), value);
+        for (long time : timeList) {
+            Object value = seriesReaderFromSingleFileByTimestamp.getValueInTimestamp(time);
+            if(value == null)
+                assert valueList.get(count) == null;
+            else
+                Assert.assertEquals(valueList.get(count), value);
             count ++;
         }
         long endTimestamp = System.currentTimeMillis();

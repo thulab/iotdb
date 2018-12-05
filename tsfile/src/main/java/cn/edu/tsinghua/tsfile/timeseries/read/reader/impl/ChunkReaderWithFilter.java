@@ -29,10 +29,4 @@ public class ChunkReaderWithFilter extends ChunkReader {
         return filter.satisfy(digest);
     }
 
-    @Override
-    public boolean timeValuePairSatisfied(TimeValuePair timeValuePair) {
-        if (timeValuePair.getTimestamp() < getMaxTombstoneTime())
-            return false;
-        return filter.satisfy(timeValuePair);
-    }
 }

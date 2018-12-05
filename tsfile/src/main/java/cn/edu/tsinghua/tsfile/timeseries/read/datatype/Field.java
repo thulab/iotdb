@@ -76,7 +76,7 @@ public class Field {
     }
 
     private String getStringValue() {
-        if (isNull) {
+        if (isNull || dataType == null) {
             return "null";
         }
         switch (dataType) {
