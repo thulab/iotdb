@@ -38,7 +38,7 @@ public class TsFileIOWriter {
         magicStringBytes = BytesUtils.StringToBytes(TSFileConfig.MAGIC_STRING);
     }
 
-    private FileOutputStream out;
+    private TsFileOutput out;
     protected List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
     private ChunkGroupMetaData currentChunkGroupMetaData;
     private ChunkMetaData currentChunkMetaData;
@@ -50,7 +50,7 @@ public class TsFileIOWriter {
      * @throws IOException if I/O error occurs
      */
     public TsFileIOWriter(File file) throws IOException {
-        this.out = new FileOutputStream(file);
+        this.out = new DefaultTsFileOutput(file);
         startFile();
     }
 
@@ -64,7 +64,7 @@ public class TsFileIOWriter {
      * @throws IOException if an I/O error occurs.
      */
     public void writeBytesToStream(PublicBAOS bytes) throws IOException {
-        bytes.writeTo(out);
+        bytes.writeTo(out.wrapAsStream());
     }
 
     private void startFile() throws IOException {
@@ -79,10 +79,10 @@ public class TsFileIOWriter {
      * @return the serialized size of ChunkGroupFooter
      */
     public ChunkGroupFooter startFlushChunkGroup(String deviceId, long dataSize, int numberOfChunks) throws IOException {
-        LOG.debug("start chunk group:{}, file position {}", deviceId, out.getChannel().position());
+        LOG.debug("start chunk group:{}, file position {}", deviceId, out.getPosition());
         currentChunkGroupMetaData = new ChunkGroupMetaData(deviceId, new ArrayList<>());
         ChunkGroupFooter footer = new ChunkGroupFooter(deviceId, dataSize, numberOfChunks);
-        LOG.debug("finishing writing chunk group header {}, file position {}", footer, out.getChannel().position());
+        LOG.debug("finishing writing chunk group header {}, file position {}", footer, out.getPosition());
         return footer;
     }
 
@@ -101,13 +101,13 @@ public class TsFileIOWriter {
      */
     public int startFlushChunk(MeasurementSchema descriptor, CompressionType compressionCodecName,
                                TSDataType tsDataType, TSEncoding encodingType, Statistics<?> statistics, long maxTime, long minTime, int datasize, int numOfPages) throws IOException {
-        LOG.debug("start series chunk:{}, file position {}", descriptor, out.getChannel().position());
+        LOG.debug("start series chunk:{}, file position {}", descriptor, out.getPosition());
 
-        currentChunkMetaData = new ChunkMetaData(descriptor.getMeasurementId(), tsDataType, out.getChannel().position(), minTime, maxTime);
+        currentChunkMetaData = new ChunkMetaData(descriptor.getMeasurementId(), tsDataType, out.getPosition(), minTime, maxTime);
 
         ChunkHeader header = new ChunkHeader(descriptor.getMeasurementId(), datasize, tsDataType, compressionCodecName, encodingType, numOfPages);
-        header.serializeTo(out);
-        LOG.debug("finish series chunk:{} header, file position {}", header, out.getChannel().position());
+        header.serializeTo(out.wrapAsStream());
+        LOG.debug("finish series chunk:{} header, file position {}", header, out.getPosition());
 
         TsDigest tsDigest = new TsDigest();
         Map<String, ByteBuffer> statisticsMap = new HashMap<>();
@@ -133,7 +133,7 @@ public class TsFileIOWriter {
     }
 
     public void endChunkGroup(ChunkGroupFooter chunkGroupFooter) throws IOException {
-        chunkGroupFooter.serializeTo(out);
+        chunkGroupFooter.serializeTo(out.wrapAsStream());
         chunkGroupMetaDataList.add(currentChunkGroupMetaData);
         LOG.debug("end chunk group:{}", currentChunkGroupMetaData);
         currentChunkGroupMetaData = null;
@@ -149,7 +149,7 @@ public class TsFileIOWriter {
     public void endFile(FileSchema schema) throws IOException {
 
         // serialize the Separator of MetaData and ChunkGroups
-        ReadWriteIOUtils.write(MetaMarker.Separator, out);
+        ReadWriteIOUtils.write(MetaMarker.Separator, out.wrapAsStream());
 
         // get all measurementSchema of this TsFile
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
@@ -160,15 +160,15 @@ public class TsFileIOWriter {
         TsFileMetaData tsFileMetaData = new TsFileMetaData(tsDeviceMetadataIndexMap, schemaDescriptors,
                 TSFileConfig.currentVersion);
 
-        long footerIndex = out.getChannel().position();
+        long footerIndex = out.getPosition();
         LOG.debug("start to flush the footer,file pos:{}", footerIndex);
 
         // write TsFileMetaData
-        int size = tsFileMetaData.serializeTo(out);
-        LOG.debug("finish flushing the footer {}, file pos:{}", tsFileMetaData, out.getChannel().position());
+        int size = tsFileMetaData.serializeTo(out.wrapAsStream());
+        LOG.debug("finish flushing the footer {}, file pos:{}", tsFileMetaData, out.getPosition());
 
         // write TsFileMetaData size
-        ReadWriteIOUtils.write(size, out);//write the size of the file metadata.
+        ReadWriteIOUtils.write(size, out.wrapAsStream());//write the size of the file metadata.
 
         // write magic string
         out.write(magicStringBytes);
@@ -200,8 +200,8 @@ public class TsFileIOWriter {
             currentTsDeviceMetadata = entry.getValue();
 
             // flush tsChunkGroupBlockMetaData
-            offset = out.getChannel().position();
-            int size = currentTsDeviceMetadata.serializeTo(out);
+            offset = out.getPosition();
+            int size = currentTsDeviceMetadata.serializeTo(out.wrapAsStream());
 
             TsDeviceMetadataIndex tsDeviceMetadataIndex = new TsDeviceMetadataIndex(offset, size, currentTsDeviceMetadata);
             tsDeviceMetadataIndexMap.put(entry.getKey(), tsDeviceMetadataIndex);
@@ -240,7 +240,7 @@ public class TsFileIOWriter {
      * @throws IOException if I/O error occurs
      */
     public long getPos() throws IOException {
-        return out.getChannel().position();
+        return out.getPosition();
     }
 
 }
