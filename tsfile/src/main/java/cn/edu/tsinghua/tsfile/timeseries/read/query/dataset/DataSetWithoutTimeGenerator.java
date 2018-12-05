@@ -27,10 +27,10 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
     public DataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<Reader> readers) throws IOException {
         super(paths, dataTypes);
         this.readers = readers;
-        initHeapV2();
+        initHeap();
     }
 
-    private void initHeapV2() throws IOException {
+    private void initHeap() throws IOException {
         hasDataRemaining = new ArrayList<>();
         batchDataList = new ArrayList<>();
         timeHeap = new PriorityQueue<>();
@@ -104,7 +104,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         return record;
     }
 
-    // for the reason that heap stores duplicate elements
+    // keep heap from storing duplicate time
     private void heapPut(long time) {
         if (!timeSet.contains(time)) {
             timeSet.add(time);

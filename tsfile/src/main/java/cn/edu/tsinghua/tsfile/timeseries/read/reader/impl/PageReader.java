@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
+import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
@@ -110,7 +111,7 @@ public class PageReader implements Reader {
                     pageData.putBinary(valueDecoder.readBinary(valueBuffer));
                     break;
                 default:
-                    break;
+                    throw new UnSupportedDataTypeException(String.valueOf(dataType));
             }
         }
         return pageData;
@@ -166,7 +167,7 @@ public class PageReader implements Reader {
                     }
                     break;
                 default:
-                    break;
+                    throw new UnSupportedDataTypeException(String.valueOf(dataType));
             }
         }
 

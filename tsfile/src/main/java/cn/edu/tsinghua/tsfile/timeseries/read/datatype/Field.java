@@ -5,8 +5,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 /**
- * <p> Field is the components of one {@code RowRecord} which store a value in
- * specific data type. The value type of Field is primitive.
+ * <p> Field is component of one {@code RowRecord} which stores a value in
+ * specific data type. The value type of Field is primitive(int long, float, double, binary, boolean).
  */
 public class Field {
 
