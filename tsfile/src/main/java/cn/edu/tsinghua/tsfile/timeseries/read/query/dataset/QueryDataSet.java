@@ -21,12 +21,12 @@ public abstract class QueryDataSet {
     /**
      * This method is used for batch query.
      */
-    public abstract boolean hasNextV2() throws IOException;
+    public abstract boolean hasNext() throws IOException;
 
     /**
      * This method is used for batch query, return RowRecord.
      */
-    public abstract RowRecord nextV2() throws IOException;
+    public abstract RowRecord next() throws IOException;
 
 
     public List<Path> getPaths() {

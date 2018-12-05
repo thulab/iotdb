@@ -24,12 +24,12 @@ public class DataSetWithTimeGenerator extends QueryDataSet {
     }
 
     @Override
-    public boolean hasNextV2() throws IOException {
+    public boolean hasNext() throws IOException {
         return timestampGenerator.hasNext();
     }
 
     @Override
-    public RowRecord nextV2() throws IOException {
+    public RowRecord next() throws IOException {
         long timestamp = timestampGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
 

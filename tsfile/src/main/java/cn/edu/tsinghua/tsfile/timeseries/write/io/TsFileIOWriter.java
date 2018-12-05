@@ -195,6 +195,7 @@ public class TsFileIOWriter {
 
         TsDeviceMetadata currentTsDeviceMetadata;
 
+        // flush TsDeviceMetadata by string order of deviceId
         for (Map.Entry<String, TsDeviceMetadata> entry : getAllTsDeviceMetadata(chunkGroupMetaDataList).entrySet()) {
             // update statistics in TsDeviceMetadata
             currentTsDeviceMetadata = entry.getValue();
@@ -217,9 +218,9 @@ public class TsFileIOWriter {
      * @param chunkGroupMetaDataList all chunk group metadata
      * @return TsDeviceMetadata of all devices
      */
-    private LinkedHashMap<String, TsDeviceMetadata> getAllTsDeviceMetadata(List<ChunkGroupMetaData> chunkGroupMetaDataList) {
+    private TreeMap<String, TsDeviceMetadata> getAllTsDeviceMetadata(List<ChunkGroupMetaData> chunkGroupMetaDataList) {
         String currentDevice;
-        LinkedHashMap<String, TsDeviceMetadata> tsDeviceMetadataMap = new LinkedHashMap<>();
+        TreeMap<String, TsDeviceMetadata> tsDeviceMetadataMap = new TreeMap<>();
 
         for (ChunkGroupMetaData chunkGroupMetaData : chunkGroupMetaDataList) {
             currentDevice = chunkGroupMetaData.getDeviceID();

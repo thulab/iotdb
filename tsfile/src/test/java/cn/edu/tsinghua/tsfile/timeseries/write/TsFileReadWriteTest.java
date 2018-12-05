@@ -78,8 +78,8 @@ public class TsFileReadWriteTest {
         }
 
         int i = 1;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord r = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
             assertEquals(i, r.getFields().get(0).getIntV());
             i++;
@@ -114,8 +114,8 @@ public class TsFileReadWriteTest {
         }
 
         int i = 1;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord r = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
             assertEquals(i, r.getFields().get(0).getLongV());
             i++;
@@ -150,8 +150,8 @@ public class TsFileReadWriteTest {
         }
 
         int i = 1;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord r = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
 
             assertEquals((float) i, r.getFields().get(0).getFloatV(), delta);
@@ -187,8 +187,8 @@ public class TsFileReadWriteTest {
         }
 
         int i = 1;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord r = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
             assertEquals((double) i, r.getFields().get(0).getDoubleV(), delta);
             i++;

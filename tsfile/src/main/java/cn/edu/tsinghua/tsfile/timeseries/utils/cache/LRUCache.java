@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.tsfile.timeseries.utils.cache;
 
-import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -18,7 +17,7 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
     }
 
     @Override
-    public T get(K key) throws CacheException, IOException {
+    public T get(K key) throws IOException {
         if (cache.containsKey(key)) {
             moveObjectToTail(key);
         } else {
@@ -38,13 +37,13 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
         cache.put(key, value);
     }
 
-    private void removeFirstObjectIfCacheIsFull() throws CacheException {
+    private void removeFirstObjectIfCacheIsFull() {
         if (cache.size() == this.cacheSize) {
             removeFirstObject();
         }
     }
 
-    private void removeFirstObject() throws CacheException {
+    private void removeFirstObject() {
         if (cache.size() == 0) {
             return;
         }
@@ -52,5 +51,13 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
         cache.remove(key);
     }
 
-    public abstract T loadObjectByKey(K key) throws CacheException, IOException;
+
+    public void put(K key, T value) {
+        cache.remove(key);
+        removeFirstObjectIfCacheIsFull();
+        cache.put(key, value);
+    }
+
+    public abstract T loadObjectByKey(K key) throws IOException;
+
 }

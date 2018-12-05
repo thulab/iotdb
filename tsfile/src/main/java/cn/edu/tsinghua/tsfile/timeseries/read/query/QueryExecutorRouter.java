@@ -37,6 +37,9 @@ public class QueryExecutorRouter implements QueryExecutor {
 
     @Override
     public QueryDataSet execute(QueryExpression queryExpression) throws IOException {
+
+        metadataQuerier.loadChunkMetaDatas(queryExpression.getSelectedSeries());
+
         if (queryExpression.hasQueryFilter()) {
             try {
                 QueryFilter queryFilter = queryExpression.getQueryFilter();
@@ -56,6 +59,7 @@ public class QueryExecutorRouter implements QueryExecutor {
         }
     }
 
+
     /**
      * Without time generator, with global time filter.
      */
@@ -73,6 +77,7 @@ public class QueryExecutorRouter implements QueryExecutor {
         return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
     }
 
+
     /**
      * Without time generator, without filter.
      */
@@ -89,10 +94,11 @@ public class QueryExecutorRouter implements QueryExecutor {
         return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
     }
 
+
     /**
      * With time generator.
      */
-    public QueryDataSet executeWithFilter(List<Path> selectedPathList, QueryFilter queryFilter) throws IOException {
+    private QueryDataSet executeWithFilter(List<Path> selectedPathList, QueryFilter queryFilter) throws IOException {
         TimestampGenerator timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerier);
         List<SeriesReaderByTimestamp> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();

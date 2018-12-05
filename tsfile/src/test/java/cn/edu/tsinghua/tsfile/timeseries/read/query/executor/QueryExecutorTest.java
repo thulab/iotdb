@@ -75,8 +75,8 @@ public class QueryExecutorTest {
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutorWithQueryFilter.execute(queryExpression);
         long aimedTimestamp = 1480562618000L;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord rowRecord = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord rowRecord = queryDataSet.next();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             System.out.println(rowRecord);
             aimedTimestamp += 8;
@@ -92,7 +92,7 @@ public class QueryExecutorTest {
         QueryExpression queryExpression = QueryExpression.create()
                 .addSelectedPath(new Path("d1.s1"))
                 .addSelectedPath(new Path("d1.s2"))
-                .addSelectedPath(new Path("d1.s2"))
+                .addSelectedPath(new Path("d1.s3"))
                 .addSelectedPath(new Path("d1.s4"))
                 .addSelectedPath(new Path("d1.s5"));
 
@@ -100,8 +100,8 @@ public class QueryExecutorTest {
         int count = 0;
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutor.execute(queryExpression);
-        while (queryDataSet.hasNextV2()) {
-            RowRecord rowRecord = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord rowRecord = queryDataSet.next();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;
@@ -119,7 +119,7 @@ public class QueryExecutorTest {
         QueryExpression queryExpression = QueryExpression.create()
                 .addSelectedPath(new Path("d1.s1"))
                 .addSelectedPath(new Path("d1.s2"))
-                .addSelectedPath(new Path("d1.s2"))
+                .addSelectedPath(new Path("d1.s3"))
                 .addSelectedPath(new Path("d1.s4"))
                 .addSelectedPath(new Path("d1.s5"))
                 .setQueryFilter(queryFilter);
@@ -129,8 +129,8 @@ public class QueryExecutorTest {
         int count = 0;
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutor.execute(queryExpression);
-        while (queryDataSet.hasNextV2()) {
-            RowRecord rowRecord = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord rowRecord = queryDataSet.next();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;

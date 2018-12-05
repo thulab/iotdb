@@ -52,8 +52,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int count = 0;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (count == 0) {
                 assertEquals(r.getTimestamp(), 1480562618010L);
             }
@@ -74,8 +74,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int count = 0;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (count == 0) {
                 if (count == 0) {
                     assertEquals(1480562618005L, r.getTimestamp());
@@ -98,8 +98,8 @@ public class ReadTest {
         QueryExpression queryExpression = QueryExpression.create(pathList, finalFilter);
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
-        while (dataSet.hasNextV2()) {
-            dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            dataSet.next();
         }
     }
 
@@ -112,8 +112,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int cnt = 0;
-        while (dataSet.hasNextV2()) {
-            RowRecord record = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord record = dataSet.next();
             Field value = record.getFields().get(0);
             if (cnt == 0) {
                 assertEquals(record.getTimestamp(), 1480562618973L);
@@ -146,8 +146,8 @@ public class ReadTest {
         // time filter & value filter
         // verify d1.s1, d2.s1
         int cnt = 1;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618970L);
             } else if (cnt == 2) {
@@ -182,8 +182,8 @@ public class ReadTest {
          1480562618956	9561	9562
          */
         int cnt = 1;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618970L);
             } else if (cnt == 2) {
@@ -214,8 +214,8 @@ public class ReadTest {
         // time filter & value filter
         // verify d1.s1, d2.s1
         cnt = 1;
-        while (dataSet.hasNextV2()) {
-            dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            dataSet.next();
             cnt++;
         }
         assertEquals(cnt, 4);
@@ -233,8 +233,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int cnt = 1;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618972L);
                 Field f1 = r.getFields().get(0);
@@ -261,8 +261,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int cnt = 0;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 0) {
                 assertEquals(r.getTimestamp(), 1480562618976L);
                 Field f1 = r.getFields().get(0);
@@ -282,8 +282,8 @@ public class ReadTest {
         queryExpression = QueryExpression.create(pathList, finalFilter);
         dataSet = roTsFile.query(queryExpression);
         cnt = 0;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618976L);
                 Field f1 = r.getFields().get(0);
@@ -308,8 +308,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int cnt = 0;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618980L);
                 Field f1 = r.getFields().get(0);
@@ -336,8 +336,8 @@ public class ReadTest {
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
         int cnt = 1;
-        while (dataSet.hasNextV2()) {
-            RowRecord r = dataSet.nextV2();
+        while (dataSet.hasNext()) {
+            RowRecord r = dataSet.next();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618022L);
                 Field f1 = r.getFields().get(0);

@@ -64,9 +64,9 @@ public class ReadOnlyTsFileTest {
                 .setQueryFilter(queryFilter);
         QueryDataSet queryDataSet = tsFile.query(queryExpression);
         long aimedTimestamp = 1480562618000L;
-        while (queryDataSet.hasNextV2()) {
+        while (queryDataSet.hasNext()) {
             //System.out.println("find next!");
-            RowRecord rowRecord = queryDataSet.nextV2();
+            RowRecord rowRecord = queryDataSet.next();
             //System.out.println("result datum: "+rowRecord.getTimestamp()+"," +rowRecord.getFields());
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
@@ -78,8 +78,8 @@ public class ReadOnlyTsFileTest {
         queryDataSet = tsFile.query(queryExpression);
         aimedTimestamp = 1480562618000L;
         int count = 0;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord rowRecord = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord rowRecord = queryDataSet.next();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;
@@ -93,8 +93,8 @@ public class ReadOnlyTsFileTest {
         queryDataSet = tsFile.query(queryExpression);
         aimedTimestamp = 1480562618000L;
         count = 0;
-        while (queryDataSet.hasNextV2()) {
-            RowRecord rowRecord = queryDataSet.nextV2();
+        while (queryDataSet.hasNext()) {
+            RowRecord rowRecord = queryDataSet.next();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;
