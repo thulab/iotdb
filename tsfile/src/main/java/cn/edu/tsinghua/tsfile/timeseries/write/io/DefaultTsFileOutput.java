@@ -48,4 +48,9 @@ public class DefaultTsFileOutput implements TsFileOutput{
         return outputStream;
     }
 
+    @Override
+    public void flush() throws IOException {
+        this.outputStream.flush();
+    }
+
 }
