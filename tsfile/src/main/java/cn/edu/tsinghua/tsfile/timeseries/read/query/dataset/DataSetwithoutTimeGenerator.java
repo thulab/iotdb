@@ -1,11 +1,10 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.query.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -14,12 +13,12 @@ import java.util.PriorityQueue;
 /**
  * Created by zhangjinrui on 2017/12/27.
  */
-public class MergeQueryDataSet implements QueryDataSet {
+public class DataSetwithoutTimeGenerator implements QueryDataSet {
 
-    private LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries;
+    private LinkedHashMap<Path, Reader> readersOfSelectedSeries;
     private PriorityQueue<Point> heap;
 
-    public MergeQueryDataSet(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries) throws IOException {
+    public DataSetwithoutTimeGenerator(LinkedHashMap<Path, Reader> readersOfSelectedSeries) throws IOException {
         this.readersOfSelectedSeries = readersOfSelectedSeries;
         initHeap();
     }
@@ -27,7 +26,7 @@ public class MergeQueryDataSet implements QueryDataSet {
     private void initHeap() throws IOException {
         heap = new PriorityQueue<>();
         for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReader seriesReader = readersOfSelectedSeries.get(path);
+            Reader seriesReader = readersOfSelectedSeries.get(path);
             if (seriesReader.hasNext()) {
                 TimeValuePair timeValuePair = seriesReader.next();
                 heap.add(new Point(path, timeValuePair.getTimestamp(), timeValuePair.getValue()));

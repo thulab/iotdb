@@ -4,12 +4,10 @@ import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
-import java.nio.ByteBuffer;
 
+public class ChunkReaderWithoutFilter extends ChunkReader {
 
-public class SeriesChunkReaderWithoutFilterImpl extends SeriesChunkReader {
-
-    public SeriesChunkReaderWithoutFilterImpl(Chunk chunk) {
+    public ChunkReaderWithoutFilter(Chunk chunk) {
         super(chunk);
     }
 

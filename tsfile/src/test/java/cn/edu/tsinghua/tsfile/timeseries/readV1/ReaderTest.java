@@ -12,9 +12,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
 import org.junit.Assert;
@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.List;
 
 
-public class SeriesReaderTest {
+public class ReaderTest {
 
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
     private TsFileSequenceReader fileReader;
@@ -52,7 +52,7 @@ public class SeriesReaderTest {
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
 
-        SeriesReader seriesReader = new SeriesReaderFromSingleFileWithoutFilterImpl(seriesChunkLoader, chunkMetaDataList);
+        Reader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         long startTime = TsFileGeneratorForTest.START_TIMESTAMP;
         long startTimestamp = System.currentTimeMillis();
         while (seriesReader.hasNext()) {
@@ -68,7 +68,7 @@ public class SeriesReaderTest {
 
 
         chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s4"));
-        seriesReader = new SeriesReaderFromSingleFileWithoutFilterImpl(seriesChunkLoader, chunkMetaDataList);
+        seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         count = 0;
         startTimestamp = System.currentTimeMillis();
         while (seriesReader.hasNext()) {
@@ -90,7 +90,7 @@ public class SeriesReaderTest {
                 FilterFactory.and(TimeFilter.gt(1480563570029L), TimeFilter.lt(1480563570033L)),
                 FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
         SeriesFilter seriesFilter = new SeriesFilter(new Path("d1.s1"), filter);
-        SeriesReader seriesReader = new SeriesReaderFromSingleFileWithFilterImpl(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
+        Reader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
 
         long startTimestamp = System.currentTimeMillis();
         int count = 0;

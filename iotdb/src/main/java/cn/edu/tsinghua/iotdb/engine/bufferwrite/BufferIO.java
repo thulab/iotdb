@@ -1,7 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,7 @@ public class BufferIO extends TsFileIOWriter {
 
 	public BufferIO(File output, long offset, List<ChunkGroupMetaData> rowGroups)
 			throws IOException {
+
 		super(output, offset, rowGroups);
 		lastRowGroupIndex = rowGroups.size();
 		append = new ArrayList<>();

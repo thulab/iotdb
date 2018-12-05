@@ -11,7 +11,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageDataReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageReader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -45,7 +45,7 @@ public class TsFileSequenceRead {
                         ByteBuffer pageData = reader.readPage(pageHeader, header.getCompressionType());
                         System.out.println("position: " + reader.getChannel().position());
                         System.out.println("page data size: " + pageHeader.getUncompressedSize() + "," + pageData.remaining());
-                        PageDataReader reader1 = new PageDataReader(pageData, header.getDataType(), valueDecoder, defaultTimeDecoder);
+                        PageReader reader1 = new PageReader(pageData, header.getDataType(), valueDecoder, defaultTimeDecoder);
                         while (reader1.hasNext()) {
                             TimeValuePair pair = reader1.next();
                             System.out.println("time, value: " + pair.getTimestamp() + "," + pair.getValue());
