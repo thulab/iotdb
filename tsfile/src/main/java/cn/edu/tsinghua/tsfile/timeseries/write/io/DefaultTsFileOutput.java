@@ -19,6 +19,10 @@ public class DefaultTsFileOutput implements TsFileOutput{
         this.outputStream = new FileOutputStream(file);
     }
 
+    public DefaultTsFileOutput(FileOutputStream outputStream) throws FileNotFoundException {
+        this.outputStream = outputStream;
+    }
+
     @Override
     public void write(byte[] b) throws IOException {
         outputStream.write(b);
