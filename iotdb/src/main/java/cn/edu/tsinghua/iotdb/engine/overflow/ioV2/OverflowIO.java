@@ -22,13 +22,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
-import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 
 public class OverflowIO extends TsFileIOWriter {
@@ -172,9 +166,7 @@ public class OverflowIO extends TsFileIOWriter {
 			implements ITsRandomAccessFileReader, ITsRandomAccessFileWriter {
 
 		private RandomAccessFile raf;
-		private static final int onePassCopySize = 4 * 1024 * 1024;
 		private static final String RW_MODE = "rw";
-		private static final String R_MODE = "r";
 
 		public OverflowReadWriter(String filepath) throws FileNotFoundException {
 			this.raf = new RandomAccessFile(filepath, RW_MODE);
@@ -238,46 +230,6 @@ public class OverflowIO extends TsFileIOWriter {
 
 		public void close() throws IOException {
 			raf.close();
-		}
-
-		/**
-		 * Delete the bytes from the position of lastUpdateOffset to the end of
-		 * the file
-		 * 
-		 * @param filePath
-		 * @param lastUpdatePosition
-		 * @throws IOException
-		 */
-		public static void cutOff(String filePath, long lastUpdatePosition) throws IOException {
-			RandomAccessFile raf;
-			String tempFilePath = filePath + ".backup";
-			File tempFile = new File(tempFilePath);
-			File normalFile = new File(filePath);
-			if (normalFile.exists() && normalFile.length() > 0) {
-				if (normalFile.length() == lastUpdatePosition) {
-					return;
-				}
-				raf = new RandomAccessFile(normalFile, R_MODE);
-				if (tempFile.exists()) {
-					tempFile.delete();
-				}
-				RandomAccessFile tempraf = new RandomAccessFile(tempFile, RW_MODE);
-				long offset = 0;
-				byte[] tempBytes = new byte[onePassCopySize];
-
-				while (lastUpdatePosition - offset >= onePassCopySize) {
-					raf.read(tempBytes);
-					tempraf.write(tempBytes);
-					offset += onePassCopySize;
-				}
-				raf.read(tempBytes, 0, (int) (lastUpdatePosition - offset));
-				tempraf.write(tempBytes, 0, (int) (lastUpdatePosition - offset));
-
-				tempraf.close();
-				raf.close();
-			}
-			normalFile.delete();
-			tempFile.renameTo(normalFile);
 		}
 	}
 }

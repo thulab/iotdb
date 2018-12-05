@@ -39,7 +39,7 @@ public class OverflowSupport {
 
 	public void insert(TSRecord tsRecord) {
 		for (DataPoint dataPoint : tsRecord.dataPointList) {
-			memTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+			memTable.write(tsRecord.deviceId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
 					dataPoint.getValue().toString());
 		}
 	}

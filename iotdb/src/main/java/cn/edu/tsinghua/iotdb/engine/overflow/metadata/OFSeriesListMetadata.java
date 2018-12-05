@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +22,12 @@ public class OFSeriesListMetadata implements IConverter<cn.edu.tsinghua.iotdb.en
 	private static final Logger LOGGER = LoggerFactory.getLogger(OFSeriesListMetadata.class);
 
 	private String measurementId;
-	private List<TimeSeriesChunkMetaData> timeSeriesList;
+	private List<ChunkMetaData> timeSeriesList;
 
 	public OFSeriesListMetadata() {
 	}
 
-	public OFSeriesListMetadata(String measurementId, List<TimeSeriesChunkMetaData> timeSeriesList) {
+	public OFSeriesListMetadata(String measurementId, List<ChunkMetaData> timeSeriesList) {
 		this.measurementId = measurementId;
 		this.timeSeriesList = timeSeriesList;
 	}
@@ -36,14 +37,14 @@ public class OFSeriesListMetadata implements IConverter<cn.edu.tsinghua.iotdb.en
 	 * 
 	 * @param timeSeries
 	 */
-	public void addSeriesMetaData(TimeSeriesChunkMetaData timeSeries) {
+	public void addSeriesMetaData(ChunkMetaData timeSeries) {
 		if (timeSeriesList == null) {
-			timeSeriesList = new ArrayList<TimeSeriesChunkMetaData>();
+			timeSeriesList = new ArrayList<ChunkMetaData>();
 		}
 		timeSeriesList.add(timeSeries);
 	}
 
-	public List<TimeSeriesChunkMetaData> getMetaDatas() {
+	public List<ChunkMetaData> getMetaDatas() {
 		return timeSeriesList == null ? null : Collections.unmodifiableList(timeSeriesList);
 	}
 

@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +52,10 @@ public class OverflowResource {
 	private static final int FOOTER_LENGTH = 4;
 	private static final int POS_LENGTH = 8;
 
-	private Map<String, Map<String, List<TimeSeriesChunkMetaData>>> insertMetadatas;
-	private Map<String, Map<String, List<TimeSeriesChunkMetaData>>> updateDeleteMetadatas;
+	private Map<String, Map<String, List<ChunkMetaData>>> insertMetadatas;
+	private Map<String, Map<String, List<ChunkMetaData>>> updateDeleteMetadatas;
 
-	private List<RowGroupMetaData> appendInsertMetadatas;
+	private List<ChunkGroupMetaData> appendInsertMetadatas;
 	private List<OFRowGroupListMetadata> appendUpdateDeleteMetadats;
 
 	public OverflowResource(String parentPath, String dataPath) throws IOException {
@@ -181,14 +183,14 @@ public class OverflowResource {
 		}
 	}
 
-	public List<TimeSeriesChunkMetaData> getInsertMetadatas(String deltaObjectId, String measurementId,
-			TSDataType dataType) {
-		List<TimeSeriesChunkMetaData> chunkMetaDatas = new ArrayList<>();
+	public List<ChunkMetaData> getInsertMetadatas(String deltaObjectId, String measurementId,
+												  TSDataType dataType) {
+		List<ChunkMetaData> chunkMetaDatas = new ArrayList<>();
 		if (insertMetadatas.containsKey(deltaObjectId)) {
 			if (insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-				for (TimeSeriesChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
+				for (ChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
 					// filter
-					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
+					if (chunkMetaData.getTsDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
 					}
 				}
@@ -197,15 +199,15 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	public List<TimeSeriesChunkMetaData> getUpdateDeleteMetadatas(String deltaObjectId, String measurementId,
+	public List<ChunkMetaData> getUpdateDeleteMetadatas(String deltaObjectId, String measurementId,
 			TSDataType dataType) {
-		List<TimeSeriesChunkMetaData> chunkMetaDatas = new ArrayList<>();
+		List<ChunkMetaData> chunkMetaDatas = new ArrayList<>();
 		if (updateDeleteMetadatas.containsKey(deltaObjectId)) {
 			if (updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-				for (TimeSeriesChunkMetaData chunkMetaData : updateDeleteMetadatas.get(deltaObjectId)
+				for (ChunkMetaData chunkMetaData : updateDeleteMetadatas.get(deltaObjectId)
 						.get(measurementId)) {
 					// filter
-					if (chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType().equals(dataType)) {
+					if (chunkMetaData.getTsDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
 					}
 				}
@@ -246,7 +248,7 @@ public class OverflowResource {
 			insertIO.toTail();
 			long lastPosition = insertIO.getPos();
 			MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
-			List<RowGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
+			List<ChunkGroupMetaData> rowGroupMetaDatas = insertIO.getRowGroups();
 			appendInsertMetadatas.addAll(rowGroupMetaDatas);
 			if (!rowGroupMetaDatas.isEmpty()) {
 				insertIO.getWriter().write(BytesUtils.longToBytes(lastPosition));
