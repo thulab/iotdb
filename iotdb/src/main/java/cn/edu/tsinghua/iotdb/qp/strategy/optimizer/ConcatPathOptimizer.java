@@ -53,7 +53,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         concatSelect(prefixPaths, select); // concat select paths
 
         if (operator instanceof QueryOperator) {
-            if (((QueryOperator) operator).isSlimit()) {
+            if (((QueryOperator) operator).hasSlimit()) {
                 checkSlimitUsageConstraint(select, initialSuffixPaths, prefixPaths);
 
                 // Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of the selectOperator

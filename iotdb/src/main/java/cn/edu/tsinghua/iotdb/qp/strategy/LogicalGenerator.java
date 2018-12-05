@@ -218,14 +218,14 @@ public class LogicalGenerator {
             // and seriesLimit is further required to be a positive integer here.
             throw new LogicalOperatorException("SLIMIT <SN>: SN must be a positive integer and can not be zero.");
         }
-        ((QueryOperator) initializedOperator).setSlimit(seriesLimit);
+        ((QueryOperator) initializedOperator).setSeriesLimit(seriesLimit);
     }
 
     private void analyzeSoffset(ASTNode astNode) throws LogicalOperatorException {
         ASTNode unit = astNode.getChild(0);
         try {
             // NOTE seriesOffset is ensured to be a non negative integer after the lexical examination.
-            ((QueryOperator) initializedOperator).setSoffset(Integer.parseInt(unit.getText().trim()));
+            ((QueryOperator) initializedOperator).setSeriesOffset(Integer.parseInt(unit.getText().trim()));
         } catch (NumberFormatException e) {
             throw new LogicalOperatorException("SOFFSET <SOFFSETValue>: SOFFSETValue should be Int32.");
         }

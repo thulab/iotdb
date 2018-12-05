@@ -29,7 +29,7 @@ public class QueryOperator extends SFWOperator {
 
     private int seriesLimit;
     private int seriesOffset;
-    private boolean isSlimit = false; // false if sql does not contain SLIMIT clause
+    private boolean hasSlimit = false; // false if sql does not contain SLIMIT clause
 
     public boolean isFill() {
         return isFill;
@@ -55,15 +55,15 @@ public class QueryOperator extends SFWOperator {
         return isGroupBy;
     }
 
-    public void setSlimit(int seriesLimit) {
+    public void setSeriesLimit(int seriesLimit) {
         this.seriesLimit = seriesLimit;
-        this.isSlimit = true;
+        this.hasSlimit = true;
     }
 
-    public void setSoffset(int seriesOffset) {
+    public void setSeriesOffset(int seriesOffset) {
         /*
          Since soffset cannot be set alone without slimit,
-         `isSlimit` only need to be set true in the `setSlimit` function.
+         `hasSlimit` only need to be set true in the `setSeriesLimit` function.
          */
         this.seriesOffset = seriesOffset;
     }
@@ -76,8 +76,8 @@ public class QueryOperator extends SFWOperator {
         return seriesOffset;
     }
 
-    public boolean isSlimit() {
-        return isSlimit;
+    public boolean hasSlimit() {
+        return hasSlimit;
     }
 
     public long getUnit() {
