@@ -17,7 +17,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
@@ -80,7 +79,7 @@ public class TsFileReadWriteTest {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             for (Field field : r.getFields()) {
-                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
+                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals(i, field.getIntV(), delta);
                 }
             }
@@ -116,7 +115,7 @@ public class TsFileReadWriteTest {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             for (Field field : r.getFields()) {
-                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
+                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals(i, field.getLongV(), delta);
                 }
             }
@@ -153,7 +152,7 @@ public class TsFileReadWriteTest {
             assertEquals(i, r.getTimestamp());
 
             for (Field field : r.getFields()) {
-                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
+                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals((float)i, field.getFloatV(), delta);
                 }
             }
@@ -189,7 +188,7 @@ public class TsFileReadWriteTest {
             RowRecordV2 r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             for (Field field : r.getFields()) {
-                if (field.getDeltaObjectId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
+                if (field.getDeviceId().equals("device_1") && field.getMeasurementId().equals("sensor_1")) {
                     assertEquals((double) i, field.getDoubleV(), delta);
                 }
             }

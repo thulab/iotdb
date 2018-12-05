@@ -39,7 +39,7 @@ public class QueryExecutorRouter implements QueryExecutor {
         if (queryExpression.hasQueryFilter()) {
             try {
                 QueryFilter queryFilter = queryExpression.getQueryFilter();
-                QueryFilter regularQueryFilter = QueryFilterOptimizer.getInstance().convertGlobalTimeFilter(queryFilter, queryExpression.getSelectedSeries());
+                QueryFilter regularQueryFilter = QueryFilterOptimizer.getInstance().optimize(queryFilter, queryExpression.getSelectedSeries());
                 queryExpression.setQueryFilter(regularQueryFilter);
 
                 if (regularQueryFilter instanceof GlobalTimeFilter) {

@@ -24,7 +24,14 @@ public class QueryFilterOptimizer {
 
     }
 
-    public QueryFilter convertGlobalTimeFilter(QueryFilter queryFilter, List<Path> selectedSeries) throws QueryFilterOptimizationException {
+    /**
+     * try to remove GlobalTimeFilter
+     *
+     * @param queryFilter queryFilter to be transferred
+     * @param selectedSeries selected series
+     * @return an executable query filter, whether a GlobalTimeFilter or All leaf nodes are SeriesFilter
+     */
+    public QueryFilter optimize(QueryFilter queryFilter, List<Path> selectedSeries) throws QueryFilterOptimizationException {
         if (queryFilter instanceof UnaryQueryFilter) {
             return queryFilter;
         } else if (queryFilter instanceof BinaryQueryFilter) {
@@ -38,8 +45,8 @@ public class QueryFilterOptimizer {
             } else if (left.getType() != QueryFilterType.GLOBAL_TIME && right.getType() == QueryFilterType.GLOBAL_TIME) {
                 return handleOneGlobalTimeFilter((GlobalTimeFilter) right, left, selectedSeries, relation);
             } else if (left.getType() != QueryFilterType.GLOBAL_TIME && right.getType() != QueryFilterType.GLOBAL_TIME) {
-                QueryFilter regularLeft = convertGlobalTimeFilter(left, selectedSeries);
-                QueryFilter regularRight = convertGlobalTimeFilter(right, selectedSeries);
+                QueryFilter regularLeft = optimize(left, selectedSeries);
+                QueryFilter regularRight = optimize(right, selectedSeries);
                 BinaryQueryFilter midRet = null;
                 if (relation == QueryFilterType.AND) {
                     midRet = QueryFilterFactory.and(regularLeft, regularRight);
@@ -49,7 +56,7 @@ public class QueryFilterOptimizer {
                     throw new UnsupportedOperationException("unsupported queryFilter type: " + relation);
                 }
                 if (midRet.getLeft().getType() == QueryFilterType.GLOBAL_TIME || midRet.getRight().getType() == QueryFilterType.GLOBAL_TIME) {
-                    return convertGlobalTimeFilter(midRet, selectedSeries);
+                    return optimize(midRet, selectedSeries);
                 } else {
                     return midRet;
                 }
@@ -63,7 +70,7 @@ public class QueryFilterOptimizer {
 
     private QueryFilter handleOneGlobalTimeFilter(GlobalTimeFilter globalTimeFilter, QueryFilter queryFilter
             , List<Path> selectedSeries, QueryFilterType relation) throws QueryFilterOptimizationException {
-        QueryFilter regularRightQueryFilter = convertGlobalTimeFilter(queryFilter, selectedSeries);
+        QueryFilter regularRightQueryFilter = optimize(queryFilter, selectedSeries);
         if (regularRightQueryFilter instanceof GlobalTimeFilter) {
             return combineTwoGlobalTimeFilter(globalTimeFilter, (GlobalTimeFilter) regularRightQueryFilter, relation);
         }
@@ -76,19 +83,45 @@ public class QueryFilterOptimizer {
         throw new QueryFilterOptimizationException("unknown relation in queryFilter:" + relation);
     }
 
+
+    /**
+     * Combine GlobalTimeFilter with all selected series
+     *
+     * example:
+     *
+     * input:
+     *
+     * GlobalTimeFilter(timeFilter)
+     * Selected Series: path1, path2, path3
+     *
+     * output:
+     *
+     * QueryFilterOR(
+     *      QueryFilterOR(
+     *              SeriesFilter(path1, timeFilter),
+     *              SeriesFilter(path2, timeFilter)
+     *              ),
+     *      SeriesFilter(path3, timeFilter)
+     * )
+     *
+     * @return a DNF query filter without GlobalTimeFilter
+     */
     private QueryFilter convertGlobalTimeFilterToQueryFilterBySeriesList(
             GlobalTimeFilter timeFilter, List<Path> selectedSeries) throws QueryFilterOptimizationException {
         if (selectedSeries.size() == 0) {
             throw new QueryFilterOptimizationException("size of selectSeries could not be 0");
         }
-        SeriesFilter firstSeriesFilter = new SeriesFilter(selectedSeries.get(0), timeFilter.getFilter());
-        QueryFilter queryFilter = firstSeriesFilter;
+        QueryFilter queryFilter = new SeriesFilter(selectedSeries.get(0), timeFilter.getFilter());
         for (int i = 1; i < selectedSeries.size(); i++) {
             queryFilter = QueryFilterFactory.or(queryFilter, new SeriesFilter(selectedSeries.get(i), timeFilter.getFilter()));
         }
         return queryFilter;
     }
 
+
+    /**
+     * Combine TimeFilter with all SeriesFilters in the QueryFilter
+     */
     private void addTimeFilterToQueryFilter(Filter timeFilter, QueryFilter queryFilter) {
         if (queryFilter instanceof SeriesFilter) {
             addTimeFilterToSeriesFilter(timeFilter, (SeriesFilter) queryFilter);
@@ -101,10 +134,48 @@ public class QueryFilterOptimizer {
         }
     }
 
+
+    /**
+     * combine two GlobalTimeFilter by merge the TimeFilter in each
+     *
+     * example:
+     *
+     * input:
+     *
+     * timeFilter
+     * SeriesFilter(path, filter)
+     *
+     * output:
+     *
+     * SeriesFilter(
+     *      path,
+     *      And(filter, timeFilter)
+     *      )
+     *
+     */
     private void addTimeFilterToSeriesFilter(Filter timeFilter, SeriesFilter seriesFilter) {
         seriesFilter.setFilter(FilterFactory.and(seriesFilter.getFilter(), timeFilter));
     }
 
+
+    /**
+     * combine two GlobalTimeFilter by merge the TimeFilter in each
+     *
+     * example:
+     *
+     * input:
+     * QueryFilterAnd/OR(
+     *      GlobalTimeFilter(timeFilter1),
+     *      GlobalTimeFilter(timeFilter2)
+     *      )
+     *
+     * output:
+     *
+     * GlobalTimeFilter(
+     *      And/OR(timeFilter1, timeFilter2)
+     *      )
+     *
+     */
     private GlobalTimeFilter combineTwoGlobalTimeFilter(GlobalTimeFilter left, GlobalTimeFilter right, QueryFilterType type) {
         if (type == QueryFilterType.AND) {
             return new GlobalTimeFilter(FilterFactory.and(left.getFilter(), right.getFilter()));

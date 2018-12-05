@@ -13,6 +13,10 @@ public interface ChunkLoader {
      */
     Chunk getChunk(ChunkMetaData chunkMetaData) throws IOException;
 
+
+    /**
+     * close the file reader
+     */
     void close() throws IOException;
 
 }
