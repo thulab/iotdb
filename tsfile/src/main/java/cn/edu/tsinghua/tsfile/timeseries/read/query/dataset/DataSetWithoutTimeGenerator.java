@@ -56,10 +56,10 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
     }
 
     @Override
-    public RowRecordV2 nextV2() throws IOException {
+    public RowRecord nextV2() throws IOException {
         long minTime = heapGet();
 
-        RowRecordV2 record = new RowRecordV2(minTime);
+        RowRecord record = new RowRecord(minTime);
 
         for(int i = 0; i < paths.size(); i++) {
             BatchData data = batchDataList.get(i);

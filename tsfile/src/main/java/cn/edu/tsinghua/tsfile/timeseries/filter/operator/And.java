@@ -3,7 +3,6 @@ package cn.edu.tsinghua.tsfile.timeseries.filter.operator;
 import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.BinaryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 /**
  * Both the left and right operators of And must satisfy the condition.
@@ -19,11 +18,6 @@ public class And extends BinaryFilter {
     @Override
     public boolean satisfy(DigestForFilter digest) {
         return left.satisfy(digest) && right.satisfy(digest);
-    }
-
-    @Override
-    public boolean satisfy(TimeValuePair pair) {
-        return left.satisfy(pair) && right.satisfy(pair);
     }
 
     @Override

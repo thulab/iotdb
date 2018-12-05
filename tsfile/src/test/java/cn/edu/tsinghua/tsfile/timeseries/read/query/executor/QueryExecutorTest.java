@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutorRouter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
@@ -76,7 +76,7 @@ public class QueryExecutorTest {
         QueryDataSet queryDataSet = queryExecutorWithQueryFilter.execute(queryExpression);
         long aimedTimestamp = 1480562618000L;
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 rowRecord = queryDataSet.nextV2();
+            RowRecord rowRecord = queryDataSet.nextV2();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             System.out.println(rowRecord);
             aimedTimestamp += 8;
@@ -101,7 +101,7 @@ public class QueryExecutorTest {
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutor.execute(queryExpression);
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 rowRecord = queryDataSet.nextV2();
+            RowRecord rowRecord = queryDataSet.nextV2();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;
@@ -130,7 +130,7 @@ public class QueryExecutorTest {
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutor.execute(queryExpression);
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 rowRecord = queryDataSet.nextV2();
+            RowRecord rowRecord = queryDataSet.nextV2();
             Assert.assertEquals(aimedTimestamp, rowRecord.getTimestamp());
             aimedTimestamp++;
             count++;

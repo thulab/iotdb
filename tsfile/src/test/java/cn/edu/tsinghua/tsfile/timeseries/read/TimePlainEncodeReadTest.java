@@ -11,7 +11,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
@@ -55,7 +55,7 @@ public class TimePlainEncodeReadTest {
 
 		int count = 0;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (count == 0) {
 				assertEquals(r.getTimestamp(), 1480562618010L);
 			}
@@ -77,7 +77,7 @@ public class TimePlainEncodeReadTest {
 
 		int count = 0;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (count == 0) {
 				if (count == 0) {
 					assertEquals(1480562618005L, r.getTimestamp());
@@ -121,7 +121,7 @@ public class TimePlainEncodeReadTest {
 		// verify d1.s1, d2.s1
 		int cnt = 1;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618970L);
 			} else if (cnt == 2) {
@@ -157,7 +157,7 @@ public class TimePlainEncodeReadTest {
 		 */
 		int cnt = 1;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618973L);
 			} else if (cnt == 2) {
@@ -203,7 +203,7 @@ public class TimePlainEncodeReadTest {
 		 */
 		cnt = 1;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			//System.out.println(r);
 			if (cnt == 4) {
 				assertEquals(r.getTimestamp(), 1480562618913L);
@@ -228,7 +228,7 @@ public class TimePlainEncodeReadTest {
 
 		int cnt = 1;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			System.out.println(r);
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618972L);
@@ -257,7 +257,7 @@ public class TimePlainEncodeReadTest {
 
 		int cnt = 0;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (cnt == 0) {
 				assertEquals(r.getTimestamp(), 1480562618976L);
 				Field f1 = r.getFields().get(0);
@@ -278,7 +278,7 @@ public class TimePlainEncodeReadTest {
 		dataSet = roTsFile.query(queryExpression);
 		cnt = 0;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618976L);
 				Field f1 = r.getFields().get(0);
@@ -304,7 +304,7 @@ public class TimePlainEncodeReadTest {
 
 		int cnt = 0;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618980L);
 				Field f1 = r.getFields().get(0);
@@ -332,7 +332,7 @@ public class TimePlainEncodeReadTest {
 
 		int cnt = 1;
 		while (dataSet.hasNextV2()) {
-			RowRecordV2 r = dataSet.nextV2();
+			RowRecord r = dataSet.nextV2();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618022L);
 				Field f1 = r.getFields().get(0);

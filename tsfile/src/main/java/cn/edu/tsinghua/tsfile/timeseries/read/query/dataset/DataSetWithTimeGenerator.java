@@ -29,9 +29,9 @@ public class DataSetWithTimeGenerator extends QueryDataSet {
     }
 
     @Override
-    public RowRecordV2 nextV2() throws IOException {
+    public RowRecord nextV2() throws IOException {
         long timestamp = timestampGenerator.next();
-        RowRecordV2 rowRecord = new RowRecordV2(timestamp);
+        RowRecord rowRecord = new RowRecord(timestamp);
 
         for(int i = 0; i < paths.size(); i++) {
             SeriesReaderByTimestamp seriesReaderByTimestamp = readers.get(i);

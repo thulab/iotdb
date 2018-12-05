@@ -3,11 +3,11 @@ package cn.edu.tsinghua.tsfile.timeseries.read.datatype;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RowRecordV2 {
+public class RowRecord {
     private long timestamp;
     private List<Field> fields;
 
-    public RowRecordV2(long timestamp) {
+    public RowRecord(long timestamp) {
         this.timestamp = timestamp;
         this.fields = new ArrayList<>();
     }

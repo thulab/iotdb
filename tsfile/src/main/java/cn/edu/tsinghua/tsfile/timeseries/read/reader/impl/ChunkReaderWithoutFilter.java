@@ -2,7 +2,6 @@ package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 
 public class ChunkReaderWithoutFilter extends ChunkReader {

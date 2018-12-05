@@ -1,19 +1,15 @@
 package cn.edu.tsinghua.tsfile;
 
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 
@@ -73,7 +69,7 @@ public class TsFileReadPerformanceTest {
         int cnt = 0;
         DataSetWithoutTimeGenerator queryDataSet = (DataSetWithoutTimeGenerator) tsFile.query(queryExpression);
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 record = queryDataSet.nextV2();
+            RowRecord record = queryDataSet.nextV2();
 //            System.out.println(record.toString());
 //            if (cnt % 5000 == 0) {
 //                System.out.println(record.toString());

@@ -6,8 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,7 +79,7 @@ public class TsFileReadWriteTest {
 
         int i = 1;
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 r = queryDataSet.nextV2();
+            RowRecord r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             assertEquals(i, r.getFields().get(0).getIntV());
             i++;
@@ -116,7 +115,7 @@ public class TsFileReadWriteTest {
 
         int i = 1;
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 r = queryDataSet.nextV2();
+            RowRecord r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             assertEquals(i, r.getFields().get(0).getLongV());
             i++;
@@ -152,7 +151,7 @@ public class TsFileReadWriteTest {
 
         int i = 1;
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 r = queryDataSet.nextV2();
+            RowRecord r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
 
             assertEquals((float) i, r.getFields().get(0).getFloatV(), delta);
@@ -189,7 +188,7 @@ public class TsFileReadWriteTest {
 
         int i = 1;
         while (queryDataSet.hasNextV2()) {
-            RowRecordV2 r = queryDataSet.nextV2();
+            RowRecord r = queryDataSet.nextV2();
             assertEquals(i, r.getTimestamp());
             assertEquals((double) i, r.getFields().get(0).getDoubleV(), delta);
             i++;

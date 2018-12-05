@@ -6,7 +6,6 @@ import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.encoding.decoder.*;
 import cn.edu.tsinghua.tsfile.encoding.encoder.*;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.PageWriter;

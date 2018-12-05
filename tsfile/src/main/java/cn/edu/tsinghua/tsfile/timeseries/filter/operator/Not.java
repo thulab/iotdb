@@ -2,7 +2,6 @@ package cn.edu.tsinghua.tsfile.timeseries.filter.operator;
 
 import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 import java.io.Serializable;
 
@@ -21,11 +20,6 @@ public class Not implements Filter, Serializable {
     @Override
     public boolean satisfy(DigestForFilter digest) {
         return !that.satisfy(digest);
-    }
-
-    @Override
-    public boolean satisfy(TimeValuePair pair) {
-        return !that.satisfy(pair);
     }
 
     @Override

@@ -2,7 +2,7 @@ package cn.edu.tsinghua.tsfile.timeseries.read.query.dataset;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,9 +24,9 @@ public abstract class QueryDataSet {
     public abstract boolean hasNextV2() throws IOException;
 
     /**
-     * This method is used for batch query, return RowRecordV2.
+     * This method is used for batch query, return RowRecord.
      */
-    public abstract RowRecordV2 nextV2() throws IOException;
+    public abstract RowRecord nextV2() throws IOException;
 
 
     public List<Path> getPaths() {

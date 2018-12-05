@@ -10,7 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecordV2;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
@@ -53,7 +53,7 @@ public class ReadTest {
 
         int count = 0;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (count == 0) {
                 assertEquals(r.getTimestamp(), 1480562618010L);
             }
@@ -75,7 +75,7 @@ public class ReadTest {
 
         int count = 0;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (count == 0) {
                 if (count == 0) {
                     assertEquals(1480562618005L, r.getTimestamp());
@@ -113,7 +113,7 @@ public class ReadTest {
 
         int cnt = 0;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 record = dataSet.nextV2();
+            RowRecord record = dataSet.nextV2();
             Field value = record.getFields().get(0);
             if (cnt == 0) {
                 assertEquals(record.getTimestamp(), 1480562618973L);
@@ -147,7 +147,7 @@ public class ReadTest {
         // verify d1.s1, d2.s1
         int cnt = 1;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618970L);
             } else if (cnt == 2) {
@@ -183,7 +183,7 @@ public class ReadTest {
          */
         int cnt = 1;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618970L);
             } else if (cnt == 2) {
@@ -234,7 +234,7 @@ public class ReadTest {
 
         int cnt = 1;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618972L);
                 Field f1 = r.getFields().get(0);
@@ -262,7 +262,7 @@ public class ReadTest {
 
         int cnt = 0;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 0) {
                 assertEquals(r.getTimestamp(), 1480562618976L);
                 Field f1 = r.getFields().get(0);
@@ -283,7 +283,7 @@ public class ReadTest {
         dataSet = roTsFile.query(queryExpression);
         cnt = 0;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618976L);
                 Field f1 = r.getFields().get(0);
@@ -309,7 +309,7 @@ public class ReadTest {
 
         int cnt = 0;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618980L);
                 Field f1 = r.getFields().get(0);
@@ -337,7 +337,7 @@ public class ReadTest {
 
         int cnt = 1;
         while (dataSet.hasNextV2()) {
-            RowRecordV2 r = dataSet.nextV2();
+            RowRecord r = dataSet.nextV2();
             if (cnt == 1) {
                 assertEquals(r.getTimestamp(), 1480562618022L);
                 Field f1 = r.getFields().get(0);
