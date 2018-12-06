@@ -136,7 +136,7 @@ public class QueryFilterOptimizer {
 
 
     /**
-     * combine two GlobalTimeFilter by merge the TimeFilter in each GlobalTimeFilter
+     * Merge the timeFilter with the filter in SeriesFilter with And
      *
      * example:
      *
@@ -159,7 +159,7 @@ public class QueryFilterOptimizer {
 
 
     /**
-     * combine two GlobalTimeFilter by merge the TimeFilter in each
+     * combine two GlobalTimeFilter by merge the TimeFilter in each GlobalTimeFilter
      *
      * example:
      *
