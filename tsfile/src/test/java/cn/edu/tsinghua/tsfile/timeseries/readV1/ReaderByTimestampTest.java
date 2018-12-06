@@ -54,7 +54,7 @@ public class ReaderByTimestampTest {
         int count = 0;
         BatchData data = null;
 
-        while(seriesReader.hasNextBatch()) {
+        while (seriesReader.hasNextBatch()) {
             data = seriesReader.nextBatch();
             while (data.hasNext()) {
                 timeList.add(data.getTime() - 1);
@@ -73,11 +73,11 @@ public class ReaderByTimestampTest {
 
         for (long time : timeList) {
             Object value = seriesReaderFromSingleFileByTimestamp.getValueInTimestamp(time);
-            if(value == null)
-                assert valueList.get(count) == null;
+            if (value == null)
+                Assert.assertNull(valueList.get(count));
             else
                 Assert.assertEquals(valueList.get(count), value);
-            count ++;
+            count++;
         }
         long endTimestamp = System.currentTimeMillis();
         System.out.println("SeriesReadWithFilterTest. [Time used]: " + (endTimestamp - startTimestamp) +

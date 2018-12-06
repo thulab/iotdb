@@ -54,7 +54,6 @@ public class ReaderTest {
 
         Reader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         long startTime = TsFileGeneratorForTest.START_TIMESTAMP;
-        long startTimestamp = System.currentTimeMillis();
         BatchData data = null;
 
         while(seriesReader.hasNextBatch()) {
@@ -66,15 +65,11 @@ public class ReaderTest {
                 count++;
             }
         }
-        long endTimestamp = System.currentTimeMillis();
         Assert.assertEquals(rowCount, count);
-        System.out.println("SeriesReadTest. [Time used]: " + (endTimestamp - startTimestamp) +
-                " ms. [Read Count]: " + count);
 
         chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s4"));
         seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         count = 0;
-        startTimestamp = System.currentTimeMillis();
 
         while(seriesReader.hasNextBatch()) {
             data = seriesReader.nextBatch();
@@ -84,9 +79,6 @@ public class ReaderTest {
                 count++;
             }
         }
-        endTimestamp = System.currentTimeMillis();
-        System.out.println("SeriesReadTest. [Time used]: " + (endTimestamp - startTimestamp) +
-                " ms. [Read Count]: " + count);
     }
 
     @Test
@@ -100,9 +92,6 @@ public class ReaderTest {
         SeriesFilter seriesFilter = new SeriesFilter(new Path("d1.s1"), filter);
         Reader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
 
-        long startTimestamp = System.currentTimeMillis();
-        int count = 0;
-
         BatchData data;
 
         long aimedTimestamp = 1480563570030L;
@@ -112,13 +101,7 @@ public class ReaderTest {
             while (data.hasNext()) {
                 Assert.assertEquals(aimedTimestamp++, data.getTime());
                 data.next();
-                count++;
             }
         }
-
-
-        long endTimestamp = System.currentTimeMillis();
-        System.out.println("SeriesReadWithFilterTest. [Time used]: " + (endTimestamp - startTimestamp) +
-                " ms. [Read Count]: " + count);
     }
 }

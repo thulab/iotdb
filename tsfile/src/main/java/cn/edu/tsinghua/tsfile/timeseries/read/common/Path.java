@@ -35,6 +35,12 @@ public class Path {
         init(splits);
     }
 
+    public Path(String device, String measurement) {
+        assert device != null && measurement != null;
+        String[] splits = (device + SystemConstant.PATH_SEPARATOR + measurement).split(SystemConstant.PATH_SEPARATER_NO_REGEX);
+        init(splits);
+    }
+
     private void init(String[] splitedPathArray) {
         StringContainer sc = new StringContainer(splitedPathArray, SystemConstant.PATH_SEPARATOR);
         if (sc.size() <= 1) {

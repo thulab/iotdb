@@ -39,11 +39,15 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         timeHeap = new PriorityQueue<>();
         timeSet = new HashSet<>();
 
-        for(int i = 0; i < paths.size(); i++) {
+        for (int i = 0; i < paths.size(); i++) {
             Reader reader = readers.get(i);
-            reader.hasNextBatch();
-            batchDataList.add(reader.nextBatch());
-            hasDataRemaining.add(true);
+            if (!reader.hasNextBatch()) {
+                batchDataList.add(new BatchData());
+                hasDataRemaining.add(false);
+            } else {
+                batchDataList.add(reader.nextBatch());
+                hasDataRemaining.add(true);
+            }
         }
 
         for (BatchData data : batchDataList) {
@@ -64,7 +68,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
         RowRecord record = new RowRecord(minTime);
 
-        for(int i = 0; i < paths.size(); i++) {
+        for (int i = 0; i < paths.size(); i++) {
             BatchData data = batchDataList.get(i);
             Field field = new Field(data.getDataType());
 
@@ -76,19 +80,22 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
             if (data.hasNext()) {
                 if (data.getTime() == minTime) {
-                    putValueToField(data, field);
 
+                    putValueToField(data, field);
                     data.next();
+
                     if (!data.hasNext()) {
+
                         Reader reader = readers.get(i);
-                        reader.hasNextBatch();
-                        data = reader.nextBatch();
-                        batchDataList.set(i, data);
-                        if (!data.hasNext()) {
-                            hasDataRemaining.set(i, false);
-                        } else {
+
+                        if (reader.hasNextBatch()) {
+                            data = reader.nextBatch();
+                            batchDataList.set(i, data);
                             heapPut(data.getTime());
+                        } else {
+                            hasDataRemaining.set(i, false);
                         }
+
                     } else {
                         heapPut(data.getTime());
                     }

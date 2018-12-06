@@ -43,17 +43,27 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
 
     public void loadChunkMetaDatas(List<Path> paths) throws IOException {
-        // get the index information of TsDeviceMetadata
 
-        TreeSet<String> devices = new TreeSet<>();
-        for (Path path : paths)
-            devices.add(path.getDevice());
+        // group measurements by device
+        TreeMap<String, Set<String>> device_measurementsMap = new TreeMap<>();
+        for (Path path : paths) {
+            if (!device_measurementsMap.containsKey(path.getDevice()))
+                device_measurementsMap.put(path.getDevice(), new HashSet<>());
+            device_measurementsMap.get(path.getDevice()).add(path.getMeasurement());
+        }
 
         Map<Path, List<ChunkMetaData>> tempChunkMetaDatas = new HashMap<>();
 
         // get all TsDeviceMetadataIndex by string order
-        for (String device : devices) {
-            TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(device);
+        for (Map.Entry<String, Set<String>> device_measurements : device_measurementsMap.entrySet()) {
+
+            // d1
+            String selectedDevice = device_measurements.getKey();
+            // s1, s2, s3
+            Set<String> selectedMeasurements = device_measurements.getValue();
+
+            // get the index information of TsDeviceMetadata
+            TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(selectedDevice);
             TsDeviceMetadata tsDeviceMetadata = tsFileReader.readTsDeviceMetaData(index);
 
             // d1
@@ -62,23 +72,25 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
                 // s1, s2
                 for (ChunkMetaData chunkMetaData : chunkGroupMetaData.getChunkMetaDataList()) {
 
-                    // d1.s1, d1.s2, d2.s3, d2.s4
-                    for(Path path: paths) {
+                    String currentMeasurement = chunkMetaData.getMeasurementUID();
 
-                        // d1.s1, d1.s2
-                        if(chunkGroupMetaData.getDeviceID().equals(path.getDevice())
-                                && chunkMetaData.getMeasurementUID().equals(path.getMeasurement())) {
-                            if(!tempChunkMetaDatas.containsKey(path))
-                                tempChunkMetaDatas.put(path, new ArrayList<>());
-                            tempChunkMetaDatas.get(path).add(chunkMetaData);
-                        }
+                    if (selectedMeasurements.contains(currentMeasurement)) {
+                        Path path = new Path(selectedDevice, currentMeasurement);
+                        if (!tempChunkMetaDatas.containsKey(path))
+                            tempChunkMetaDatas.put(path, new ArrayList<>());
+                        tempChunkMetaDatas.get(path).add(chunkMetaData);
                     }
                 }
             }
         }
 
-        for(Map.Entry<Path, List<ChunkMetaData>> entry: tempChunkMetaDatas.entrySet())
+        int count = 0;
+        for (Map.Entry<Path, List<ChunkMetaData>> entry : tempChunkMetaDatas.entrySet()) {
             chunkMetaDataCache.put(entry.getKey(), entry.getValue());
+            count++;
+            if (count == CHUNK_METADATA_CACHE_SIZE)
+                break;
+        }
 
     }
 
