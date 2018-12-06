@@ -1,45 +1,18 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.datatype;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
 public class RowRecord {
-    /** time stamp of this record **/
     private long timestamp;
-    /** all value fields of this record **/
-    private LinkedHashMap<Path, TsPrimitiveType> fields;
+    private List<Field> fields;
 
-    /**
-     * init this.fields
-     */
-    private RowRecord() {
-        fields = new LinkedHashMap<>();
-    }
-
-    /**
-     * init this.fields and set time stamp
-     * @param timestamp
-     */
     public RowRecord(long timestamp) {
-        this();
         this.timestamp = timestamp;
+        this.fields = new ArrayList<>();
     }
 
-    /**
-     * add one <path, field>
-     * @param path
-     * @param tsPrimitiveType
-     */
-    public void putField(Path path, TsPrimitiveType tsPrimitiveType) {
-        fields.put(path, tsPrimitiveType);
-    }
-
-    public long getTimestamp() {
+    public long getTime() {
         return timestamp;
     }
 
@@ -47,19 +20,24 @@ public class RowRecord {
         this.timestamp = timestamp;
     }
 
-    public LinkedHashMap<Path, TsPrimitiveType> getFields() {
-        return fields;
-    }
-
-    public void setFields(LinkedHashMap<Path, TsPrimitiveType> fields) {
-        this.fields = fields;
+    public void addField(Field f) {
+        this.fields.add(f);
     }
 
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("[Timestamp]:").append(timestamp);
-        for (Map.Entry<Path, TsPrimitiveType> entry : fields.entrySet()) {
-            stringBuilder.append("\t[").append(entry.getKey()).append("]:").append(entry.getValue());
+        StringBuilder sb = new StringBuilder();
+        sb.append(timestamp);
+        for (Field f : fields) {
+            sb.append("\t");
+            sb.append(f);
         }
-        return stringBuilder.toString();
+        return sb.toString();
+    }
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public List<Field> getFields() {
+        return fields;
     }
 }

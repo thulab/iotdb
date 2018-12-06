@@ -10,9 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class NodeConstructorForSingleFileImpl extends NodeConstructor {
     private MetadataQuerier metadataQuerier;
     private ChunkLoader chunkLoader;

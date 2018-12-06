@@ -7,8 +7,8 @@ import static org.junit.Assert.*;
 
 public class PathTest {
     private void testPath(Path path, String device, String measurement, String full) {
-        assertEquals(device, path.getDeviceToString());
-        assertEquals(measurement, path.getMeasurementToString());
+        assertEquals(device, path.getDevice());
+        assertEquals(measurement, path.getMeasurement());
         assertEquals(full, path.getFullPath());
     }
 

@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.tsfile.timeseries.utils.cache;
 
-import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,10 +18,6 @@ public class LRUCacheTest {
             int testCount = 1000;
             int cacheSize = 5;
             cache = new LRUCache<Integer, Integer>(cacheSize) {
-                @Override
-                public void beforeRemove(Integer object) {
-                    return;
-                }
 
                 @Override
                 public Integer loadObjectByKey(Integer key) {
@@ -34,7 +29,7 @@ public class LRUCacheTest {
                 Assert.assertEquals(i * 10, (int) cache.get(i));
                 Assert.assertEquals((i - 1) * 10, (int) cache.get(i - 1));
             }
-        } catch (CacheException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             Assert.fail();
         }

@@ -10,8 +10,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFacto
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
@@ -101,7 +101,7 @@ public class TimePlainEncodeReadTest {
 		QueryDataSet dataSet = roTsFile.query(queryExpression);
 
 		while (dataSet.hasNext()) {
-			RowRecord r = dataSet.next();
+			dataSet.next();
 		}
 
 	}
@@ -232,13 +232,13 @@ public class TimePlainEncodeReadTest {
 			System.out.println(r);
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618972L);
-				TsPrimitiveType f1 = r.getFields().get(new Path("d1.s5"));
-				assertEquals(f1.getBoolean(), false);
+				Field f1 = r.getFields().get(0);
+				assertEquals(f1.getBoolV(), false);
 			}
 			if (cnt == 2) {
 				assertEquals(r.getTimestamp(), 1480562618981L);
-				TsPrimitiveType f2 = r.getFields().get(new Path("d1.s5"));
-				assertEquals(f2.getBoolean(), false);
+				Field f2 = r.getFields().get(0);
+				assertEquals(f2.getBoolV(), false);
 			}
 			cnt++;
 		}
@@ -260,8 +260,8 @@ public class TimePlainEncodeReadTest {
 			RowRecord r = dataSet.next();
 			if (cnt == 0) {
 				assertEquals(r.getTimestamp(), 1480562618976L);
-				TsPrimitiveType f1 = r.getFields().get(new Path("d1.s4"));
-				assertEquals(f1.getStringValue(), "dog976");
+				Field f1 = r.getFields().get(0);
+				assertEquals(f1.toString(), "dog976");
 			}
 			// System.out.println(r);
 			cnt++;
@@ -281,8 +281,8 @@ public class TimePlainEncodeReadTest {
 			RowRecord r = dataSet.next();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618976L);
-				TsPrimitiveType f1 = r.getFields().get(new Path("d1.s4"));
-				assertEquals(f1.getBinary(), "dog976");
+				Field f1 = r.getFields().get(0);
+				assertEquals(f1.getBinaryV(), "dog976");
 			}
 			// System.out.println(r);
 			cnt++;
@@ -307,13 +307,13 @@ public class TimePlainEncodeReadTest {
 			RowRecord r = dataSet.next();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618980L);
-				TsPrimitiveType f1 = r.getFields().get(new Path("d1.s6"));
-				assertEquals(f1.getFloat(), 108.0, 0.0);
+				Field f1 = r.getFields().get(0);
+				assertEquals(f1.getFloatV(), 108.0, 0.0);
 			}
 			if (cnt == 2) {
 				assertEquals(r.getTimestamp(), 1480562618990L);
-				TsPrimitiveType f2 = r.getFields().get(new Path("d1.s6"));
-				assertEquals(f2.getFloat(), 110.0, 0.0);
+				Field f2 = r.getFields().get(0);
+				assertEquals(f2.getFloatV(), 110.0, 0.0);
 			}
 			cnt++;
 		}
@@ -335,13 +335,13 @@ public class TimePlainEncodeReadTest {
 			RowRecord r = dataSet.next();
 			if (cnt == 1) {
 				assertEquals(r.getTimestamp(), 1480562618022L);
-				TsPrimitiveType f1 = r.getFields().get(0);
-				assertEquals(f1.getDouble(), 2.0, 0.0);
+				Field f1 = r.getFields().get(0);
+				assertEquals(f1.getDoubleV(), 2.0, 0.0);
 			}
 			if (cnt == 2) {
 				assertEquals(r.getTimestamp(), 1480562618033L);
-				TsPrimitiveType f1 = r.getFields().get(0);
-				assertEquals(f1.getDouble(), 3.0, 0.0);
+				Field f1 = r.getFields().get(0);
+				assertEquals(f1.getDoubleV(), 3.0, 0.0);
 			}
 			cnt++;
 		}

@@ -1,28 +1,19 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.reader;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-
 import java.io.IOException;
 
-/**
- * @author Jinrui Zhang
- */
 public interface Reader {
 
     /**
-     * if there is a next time-value pair
+     * whether this page has data
      */
-    boolean hasNext() throws IOException;
+    boolean hasNextBatch() throws IOException;
 
     /**
-     * @return next time value pair
+     * get next batch data
      */
-    TimeValuePair next() throws IOException;
+    BatchData nextBatch();
 
-    /**
-     * skip the current time value pair, just call next()
-     */
-    void skipCurrentTimeValuePair() throws IOException;
 
     void close() throws IOException;
 }

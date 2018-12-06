@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
@@ -28,32 +28,32 @@ import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.IntDataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.LongDataPoint;
 
 public class TsFileReadWriteTest {
-	private String path = "read_write_rle.tsfile";
-	private File f;
-	private TsFileWriter tsFileWriter;
-	private final double delta = 0.0000001;
+    private String path = "read_write_rle.tsfile";
+    private File f;
+    private TsFileWriter tsFileWriter;
+    private final double delta = 0.0000001;
 
-	
-	@Before
-	public void setUp() throws Exception {
-		f = new File(path);
+
+    @Before
+    public void setUp() throws Exception {
+        f = new File(path);
         if (f.exists()) {
             f.delete();
         }
         tsFileWriter = new TsFileWriter(f);
-	}
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		f = new File(path);
+    @After
+    public void tearDown() throws Exception {
+        f = new File(path);
         if (f.exists()) {
             f.delete();
         }
-	}
-	
-	@Test
-	public void intTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    }
+
+    @Test
+    public void intTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.INT32, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -65,7 +65,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -73,19 +73,23 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNext()) {
             RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
-            assertEquals(i, r.getFields().get(new Path("device_1.sensor_1")).getInt(), delta);
+            assertEquals(i, r.getFields().get(0).getIntV());
             i++;
         }
         reader.close();
-	}
+    }
 
-	@Test
-	public void longTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    @Test
+    public void longTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.INT64, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -97,7 +101,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -105,19 +109,23 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNext()) {
             RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
-            assertEquals(i, r.getFields().get(new Path("device_1.sensor_1")).getLong(), delta);
+            assertEquals(i, r.getFields().get(0).getLongV());
             i++;
         }
         reader.close();
-	}
+    }
 
-	@Test
-	public void floatTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    @Test
+    public void floatTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.FLOAT, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -129,7 +137,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -137,19 +145,24 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNext()) {
             RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
-            assertEquals((float)i, r.getFields().get(new Path("device_1.sensor_1")).getFloat(), delta);
+
+            assertEquals((float) i, r.getFields().get(0).getFloatV(), delta);
             i++;
         }
         reader.close();
-	}
+    }
 
-	@Test
-	public void doubleTest() throws IOException, WriteProcessException {
-		int floatCount = 1024*1024*13+1023;
+    @Test
+    public void doubleTest() throws IOException, WriteProcessException {
+        int floatCount = 1024*1024*13+1023;
         // add measurements into file schema
         tsFileWriter.addMeasurement(new MeasurementSchema("sensor_1", TSDataType.DOUBLE, TSEncoding.RLE));
         for (long i = 1; i < floatCount; i++) {
@@ -161,7 +174,7 @@ public class TsFileReadWriteTest {
             tsFileWriter.write(tsRecord);
         }
         // close TsFile
-        tsFileWriter.close();    
+        tsFileWriter.close();
         TsFileSequenceReader reader = new TsFileSequenceReader(path);
         ReadOnlyTsFile readTsFile = new ReadOnlyTsFile(reader);
         ArrayList<Path> paths = new ArrayList<>();
@@ -169,14 +182,18 @@ public class TsFileReadWriteTest {
         QueryExpression queryExpression = QueryExpression.create(paths, null);
 
         QueryDataSet queryDataSet = readTsFile.query(queryExpression);
+        for(int j = 0; j< paths.size(); j++) {
+            assertEquals(paths.get(j), queryDataSet.getPaths().get(j));
+        }
+
         int i = 1;
         while (queryDataSet.hasNext()) {
             RowRecord r = queryDataSet.next();
             assertEquals(i, r.getTimestamp());
-            assertEquals((double)i, r.getFields().get(new Path("device_1.sensor_1")).getDouble(), delta);
+            assertEquals((double) i, r.getFields().get(0).getDoubleV(), delta);
             i++;
         }
         reader.close();
-	}
-	
+    }
+
 }

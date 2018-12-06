@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.encoding.decoder.*;
 import cn.edu.tsinghua.tsfile.encoding.encoder.*;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.series.PageWriter;
 import org.junit.Assert;
@@ -143,10 +143,15 @@ public class PageReaderTest {
 
                 int index = 0;
                 long startTimestamp = System.currentTimeMillis();
-                while (pageReader.hasNext()) {
-                    TimeValuePair timeValuePair = pageReader.next();
-                    Assert.assertEquals(Long.valueOf(index), (Long) timeValuePair.getTimestamp());
-                    Assert.assertEquals(generateValueByIndex(index), timeValuePair.getValue().getValue());
+                BatchData data = null;
+                if(pageReader.hasNextBatch())
+                    data = pageReader.nextBatch();
+                assert data != null;
+
+                while (data.hasNext()) {
+                    Assert.assertEquals(Long.valueOf(index), (Long) data.getTime());
+                    Assert.assertEquals(generateValueByIndex(index), data.getValue());
+                    data.next();
                     index++;
                 }
                 long endTimestamp = System.currentTimeMillis();

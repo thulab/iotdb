@@ -1,20 +1,18 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/26.
- */
+
 public class NodeTest {
 
     @Test
@@ -78,25 +76,28 @@ public class NodeTest {
 
         private long[] timestamps;
         private int index;
+        BatchData data;
+        boolean flag = false;
 
         public FakedSeriesReader(long[] timestamps) {
+            data = new BatchData(TSDataType.INT32, true);
+            for (long time : timestamps) {
+                data.putTime(time);
+            }
             this.timestamps = timestamps;
             index = 0;
         }
 
         @Override
-        public boolean hasNext() throws IOException {
-            return index < timestamps.length;
+        public boolean hasNextBatch() throws IOException {
+            return !flag;
         }
 
         @Override
-        public TimeValuePair next() throws IOException {
-            return new TimeValuePair(timestamps[index++], new TsPrimitiveType.TsLong(1L));
-        }
+        public BatchData nextBatch() {
 
-        @Override
-        public void skipCurrentTimeValuePair() throws IOException {
-            next();
+            flag = true;
+            return data;
         }
 
         @Override

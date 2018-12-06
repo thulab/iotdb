@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TsDeviceMetadata {
+public class TsDeviceMetadata{
 
     /**
      * size of ChunkGroupMetadataBlock in byte
@@ -165,4 +165,5 @@ public class TsDeviceMetadata {
                 ", chunkGroupMetadataList=" + chunkGroupMetadataList +
                 '}';
     }
+
 }

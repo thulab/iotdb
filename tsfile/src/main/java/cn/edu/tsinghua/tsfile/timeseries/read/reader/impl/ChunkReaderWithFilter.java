@@ -4,7 +4,6 @@ import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 
 public class ChunkReaderWithFilter extends ChunkReader {
@@ -12,7 +11,7 @@ public class ChunkReaderWithFilter extends ChunkReader {
     private Filter filter;
 
     public ChunkReaderWithFilter(Chunk chunk, Filter filter) {
-        super(chunk);
+        super(chunk, filter);
         this.filter = filter;
     }
 
@@ -29,10 +28,4 @@ public class ChunkReaderWithFilter extends ChunkReader {
         return filter.satisfy(digest);
     }
 
-    @Override
-    public boolean timeValuePairSatisfied(TimeValuePair timeValuePair) {
-        if (timeValuePair.getTimestamp() < getMaxTombstoneTime())
-            return false;
-        return filter.satisfy(timeValuePair);
-    }
 }

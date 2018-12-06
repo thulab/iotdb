@@ -11,9 +11,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExecutorRouter;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/27.
- */
+
 public class ReadOnlyTsFile {
 
     private TsFileSequenceReader fileReader;

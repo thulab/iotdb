@@ -43,12 +43,12 @@ public class QueryFilterOptimizerTest {
         try {
             Filter timeFilter = TimeFilter.lt(100L);
             QueryFilter queryFilter = new GlobalTimeFilter(timeFilter);
-            System.out.println(queryFilterOptimizer.convertGlobalTimeFilter(queryFilter, selectedSeries));
+            System.out.println(queryFilterOptimizer.optimize(queryFilter, selectedSeries));
 
             QueryFilter queryFilter2 = QueryFilterFactory.or(
                     QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.lt(50L)), new GlobalTimeFilter(TimeFilter.gt(10L))),
                     new GlobalTimeFilter(TimeFilter.gt(200L)));
-            QueryFilterPrinter.print(queryFilterOptimizer.convertGlobalTimeFilter(queryFilter2, selectedSeries));
+            QueryFilterPrinter.print(queryFilterOptimizer.optimize(queryFilter2, selectedSeries));
 
         } catch (QueryFilterOptimizationException e) {
             e.printStackTrace();
@@ -74,7 +74,7 @@ public class QueryFilterOptimizerTest {
 
             QueryFilter queryFilter = QueryFilterFactory.and(QueryFilterFactory.or(seriesFilter1, seriesFilter2), seriesFilter3);
             Assert.assertEquals(true, queryFilter.toString().equals(
-                    queryFilterOptimizer.convertGlobalTimeFilter(queryFilter, selectedSeries).toString()));
+                    queryFilterOptimizer.optimize(queryFilter, selectedSeries).toString()));
 
         } catch (QueryFilterOptimizationException e) {
             e.printStackTrace();
@@ -98,7 +98,7 @@ public class QueryFilterOptimizerTest {
         QueryFilterPrinter.print(queryFilter);
         try {
             String rightRet = "[[d2.s1:((value > 100 || value < 50) && time < 14001234)] || [d1.s2:((value > 100.5 || value < 50.6) && time < 14001234)]]";
-            QueryFilter regularFilter = queryFilterOptimizer.convertGlobalTimeFilter(queryFilter, selectedSeries);
+            QueryFilter regularFilter = queryFilterOptimizer.optimize(queryFilter, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
             QueryFilterPrinter.print(regularFilter);
         } catch (QueryFilterOptimizationException e) {
@@ -127,7 +127,7 @@ public class QueryFilterOptimizerTest {
         try {
             String rightRet = "[[[[[d1.s1:time < 14001234] || [d2.s1:time < 14001234]] || [d1.s2:time < 14001234]] || " +
                     "[d1.s2:time < 14001234]] || [[d2.s1:(value > 100 || value < 50)] || [d1.s2:(value > 100.5 || value < 50.6)]]]";
-            QueryFilter regularFilter = queryFilterOptimizer.convertGlobalTimeFilter(queryFilter, selectedSeries);
+            QueryFilter regularFilter = queryFilterOptimizer.optimize(queryFilter, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
             QueryFilterPrinter.print(regularFilter);
         } catch (QueryFilterOptimizationException e) {
@@ -155,7 +155,7 @@ public class QueryFilterOptimizerTest {
             String rightRet = "[[[[[d1.s1:(time < 14001234 && time > 14001000)] || [d2.s1:(time < 14001234 && time > 14001000)]] " +
                     "|| [d1.s2:(time < 14001234 && time > 14001000)]] || [d1.s2:(time < 14001234 && time > 14001000)]] " +
                     "|| [[d2.s1:(value > 100 || value < 50)] || [d1.s2:(value > 100.5 || value < 50.6)]]]";
-            QueryFilter regularFilter = queryFilterOptimizer.convertGlobalTimeFilter(queryFilter, selectedSeries);
+            QueryFilter regularFilter = queryFilterOptimizer.optimize(queryFilter, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
@@ -167,7 +167,7 @@ public class QueryFilterOptimizerTest {
         try {
             String rightRet2 = "[[d2.s1:((value > 100 || value < 50) && (time < 14001234 && time > 14001000))] || " +
                     "[d1.s2:((value > 100.5 || value < 50.6) && (time < 14001234 && time > 14001000))]]";
-            QueryFilter regularFilter2 = queryFilterOptimizer.convertGlobalTimeFilter(queryFilter2, selectedSeries);
+            QueryFilter regularFilter2 = queryFilterOptimizer.optimize(queryFilter2, selectedSeries);
             Assert.assertEquals(true, rightRet2.equals(regularFilter2.toString()));
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
@@ -176,7 +176,7 @@ public class QueryFilterOptimizerTest {
         QueryFilter queryFilter3 = QueryFilterFactory.or(queryFilter2, queryFilter);
         QueryFilterPrinter.print(queryFilter3);
         try {
-            QueryFilter regularFilter3 = queryFilterOptimizer.convertGlobalTimeFilter(queryFilter3, selectedSeries);
+            QueryFilter regularFilter3 = queryFilterOptimizer.optimize(queryFilter3, selectedSeries);
             QueryFilterPrinter.print(regularFilter3);
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();

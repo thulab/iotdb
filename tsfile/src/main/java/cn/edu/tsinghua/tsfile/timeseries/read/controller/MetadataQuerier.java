@@ -14,4 +14,14 @@ public interface MetadataQuerier {
 
     TsFileMetaData getWholeFileMetadata();
 
+
+    /**
+     * this will load all chunk metadata of given paths into cache.
+     *
+     * call this method before calling getChunkMetaDataList() will
+     * accelerate the reading of chunk metadata, which will only
+     * read TsDeviceMetaData once
+     */
+    void loadChunkMetaDatas(List<Path> paths) throws IOException;
+
 }
