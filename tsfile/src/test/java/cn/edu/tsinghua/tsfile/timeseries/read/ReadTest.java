@@ -126,7 +126,7 @@ public class ReadTest {
                 assertEquals(value.getLongV(), 9852);
             }
 
-            cnt ++;
+            cnt++;
             //System.out.println(record.toString());
         }
     }

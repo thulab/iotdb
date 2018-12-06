@@ -28,13 +28,13 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
     private MetadataQuerier metadataQuerier;
     private Node operatorNode;
 
-    private HashMap<Path, List<SeriesReader>> valueCache;
+    private HashMap<Path, List<Reader>> readerCache;
 
     public TimestampGeneratorByQueryFilterImpl(QueryFilter queryFilter, ChunkLoader chunkLoader
             , MetadataQuerier metadataQuerier) throws IOException {
         this.chunkLoader = chunkLoader;
         this.metadataQuerier = metadataQuerier;
-        this.valueCache = new HashMap<>();
+        this.readerCache = new HashMap<>();
 
         operatorNode = construct(queryFilter);
     }
@@ -52,8 +52,10 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
     @Override
     public Object getValue(Path path, long time) {
 
-        for(SeriesReader reader: valueCache.get(path)) {
-            if(reader.nextBatch().getTime() == time)
+        for (Reader reader : readerCache.get(path)) {
+            if(!reader.nextBatch().hasNext())
+                return null;
+            if (reader.nextBatch().getTime() == time)
                 return reader.nextBatch().getValue();
         }
 
@@ -70,7 +72,7 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
             return new LeafNode(
                     generateSeriesReader((SeriesFilter) queryFilter),
                     ((SeriesFilter) queryFilter).getSeriesPath(),
-                    valueCache);
+                    readerCache);
 
         } else if (queryFilter.getType() == QueryFilterType.OR) {
             Node leftChild = construct(((BinaryQueryFilter) queryFilter).getLeft());

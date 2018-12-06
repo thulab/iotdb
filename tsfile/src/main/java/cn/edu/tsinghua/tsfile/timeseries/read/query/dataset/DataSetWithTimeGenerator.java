@@ -37,10 +37,10 @@ public class DataSetWithTimeGenerator extends QueryDataSet {
         long timestamp = timestampGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
 
-        for(int i = 0; i < paths.size(); i++) {
+        for (int i = 0; i < paths.size(); i++) {
 
             // get value from readers in time generator
-            if(cached.get(i)) {
+            if (cached.get(i)) {
                 Object value = timestampGenerator.getValue(paths.get(i), timestamp);
                 rowRecord.addField(getField(value, dataTypes.get(i)));
                 continue;

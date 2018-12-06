@@ -75,8 +75,6 @@ public class NodeTest {
 
     private static class FakedSeriesReader implements Reader {
 
-        private long[] timestamps;
-        private int index;
         BatchData data;
         boolean flag = false;
 
@@ -85,12 +83,10 @@ public class NodeTest {
             for (long time : timestamps) {
                 data.putTime(time);
             }
-            this.timestamps = timestamps;
-            index = 0;
         }
 
         @Override
-        public boolean hasNextBatch() throws IOException {
+        public boolean hasNextBatch() {
             return !flag;
         }
 
@@ -102,7 +98,7 @@ public class NodeTest {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
 
         }
     }
