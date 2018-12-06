@@ -7,6 +7,8 @@ import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadataIndex;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -76,6 +78,14 @@ public class TsFileSequenceReader {
         return TsFileMetaData.deserializeFrom(buffer);
     }
 
+
+    public TsDeviceMetadata readTsDeviceMetaData(TsDeviceMetadataIndex index) throws IOException {
+        channel.position(index.getOffset());
+        ByteBuffer buffer = ByteBuffer.allocate(index.getLen());
+        channel.read(buffer);
+        buffer.flip();
+        return TsDeviceMetadata.deserializeFrom(buffer);
+    }
 
     public ChunkGroupFooter readChunkGroupFooter() throws IOException {
         return ChunkGroupFooter.deserializeFrom(Channels.newInputStream(channel), true);

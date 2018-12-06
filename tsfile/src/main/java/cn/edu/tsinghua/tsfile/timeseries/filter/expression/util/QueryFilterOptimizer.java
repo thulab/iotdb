@@ -78,7 +78,7 @@ public class QueryFilterOptimizer {
             addTimeFilterToQueryFilter((globalTimeFilter).getFilter(), regularRightQueryFilter);
             return regularRightQueryFilter;
         } else if (relation == QueryFilterType.OR) {
-            return QueryFilterFactory.or(convertGlobalTimeFilterToQueryFilterBySeriesList(globalTimeFilter, selectedSeries), queryFilter);
+            return QueryFilterFactory.or(pushGlobalTimeFilterToAllSeries(globalTimeFilter, selectedSeries), queryFilter);
         }
         throw new QueryFilterOptimizationException("unknown relation in queryFilter:" + relation);
     }
@@ -106,7 +106,7 @@ public class QueryFilterOptimizer {
      *
      * @return a DNF query filter without GlobalTimeFilter
      */
-    private QueryFilter convertGlobalTimeFilterToQueryFilterBySeriesList(
+    private QueryFilter pushGlobalTimeFilterToAllSeries(
             GlobalTimeFilter timeFilter, List<Path> selectedSeries) throws QueryFilterOptimizationException {
         if (selectedSeries.size() == 0) {
             throw new QueryFilterOptimizationException("size of selectSeries could not be 0");
@@ -136,7 +136,7 @@ public class QueryFilterOptimizer {
 
 
     /**
-     * combine two GlobalTimeFilter by merge the TimeFilter in each
+     * combine two GlobalTimeFilter by merge the TimeFilter in each GlobalTimeFilter
      *
      * example:
      *

@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.util.*;
 
 
+/**
+ * multi-way merging data set ,no need to use TimeGenerator
+ */
 public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     private List<Reader> readers;

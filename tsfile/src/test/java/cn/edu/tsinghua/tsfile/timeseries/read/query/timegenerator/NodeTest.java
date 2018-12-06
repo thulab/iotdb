@@ -89,11 +89,6 @@ public class NodeTest {
         }
 
         @Override
-        public void skipCurrentTimeValuePair() throws IOException {
-            data.next();
-        }
-
-        @Override
         public boolean hasNextBatch() throws IOException {
             return !flag;
         }

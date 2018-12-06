@@ -52,11 +52,11 @@ public class Path {
         return fullPath;
     }
 
-    public String getDeviceToString() {
+    public String getDevice() {
         return device;
     }
 
-    public String getMeasurementToString() {
+    public String getMeasurement() {
         return measurement;
     }
 

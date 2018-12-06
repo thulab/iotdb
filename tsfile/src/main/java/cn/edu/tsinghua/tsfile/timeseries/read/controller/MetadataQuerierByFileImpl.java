@@ -47,19 +47,14 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
         TreeSet<String> devices = new TreeSet<>();
         for (Path path : paths)
-            devices.add(path.getDeviceToString());
+            devices.add(path.getDevice());
 
         Map<Path, List<ChunkMetaData>> tempChunkMetaDatas = new HashMap<>();
 
         // get all TsDeviceMetadataIndex by string order
         for (String device : devices) {
             TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(device);
-            FileChannel channel = tsFileReader.getChannel();
-            channel.position(index.getOffset());
-            ByteBuffer buffer = ByteBuffer.allocate(index.getLen());
-            channel.read(buffer);
-            buffer.flip();
-            TsDeviceMetadata tsDeviceMetadata = TsDeviceMetadata.deserializeFrom(buffer);
+            TsDeviceMetadata tsDeviceMetadata = tsFileReader.readTsDeviceMetaData(index);
 
             // d1
             for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
@@ -71,8 +66,8 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
                     for(Path path: paths) {
 
                         // d1.s1, d1.s2
-                        if(chunkGroupMetaData.getDeviceID().equals(path.getDeviceToString())
-                                && chunkMetaData.getMeasurementUID().equals(path.getMeasurementToString())) {
+                        if(chunkGroupMetaData.getDeviceID().equals(path.getDevice())
+                                && chunkMetaData.getMeasurementUID().equals(path.getMeasurement())) {
                             if(!tempChunkMetaDatas.containsKey(path))
                                 tempChunkMetaDatas.put(path, new ArrayList<>());
                             tempChunkMetaDatas.get(path).add(chunkMetaData);
@@ -91,7 +86,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
     private List<ChunkMetaData> loadChunkMetadata(Path path) throws IOException {
 
         // get the index information of TsDeviceMetadata
-        TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(path.getDeviceToString());
+        TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(path.getDevice());
 
         // read TsDeviceMetadata from file
         FileChannel channel = tsFileReader.getChannel();
@@ -107,7 +102,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
         for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
             List<ChunkMetaData> chunkMetaDataListInOneChunkGroup = chunkGroupMetaData.getChunkMetaDataList();
             for (ChunkMetaData chunkMetaData : chunkMetaDataListInOneChunkGroup) {
-                if (path.getMeasurementToString().equals(chunkMetaData.getMeasurementUID())) {
+                if (path.getMeasurement().equals(chunkMetaData.getMeasurementUID())) {
                     chunkMetaDataList.add(chunkMetaData);
                 }
             }

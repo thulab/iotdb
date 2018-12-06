@@ -63,11 +63,6 @@ public class PageReader implements Reader {
     }
 
     @Override
-    public void skipCurrentTimeValuePair() {
-        data.next();
-    }
-
-    @Override
     public void close() {
         timeBuffer = null;
         valueBuffer = null;

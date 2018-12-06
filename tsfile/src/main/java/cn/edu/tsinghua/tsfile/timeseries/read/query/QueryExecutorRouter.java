@@ -2,7 +2,6 @@ package cn.edu.tsinghua.tsfile.timeseries.read.query;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.exception.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
@@ -47,7 +46,7 @@ public class QueryExecutorRouter implements QueryExecutor {
                 queryExpression.setQueryFilter(regularQueryFilter);
 
                 if (regularQueryFilter instanceof GlobalTimeFilter) {
-                    return execute(queryExpression.getSelectedSeries(), ((GlobalTimeFilter) regularQueryFilter).getFilter());
+                    return execute(queryExpression.getSelectedSeries(), (GlobalTimeFilter) regularQueryFilter);
                 } else {
                     return executeWithFilter(queryExpression.getSelectedSeries(), queryExpression.getQueryFilter());
                 }
@@ -61,25 +60,11 @@ public class QueryExecutorRouter implements QueryExecutor {
 
 
     /**
-     * Without time generator, with global time filter.
-     */
-    private QueryDataSet execute(List<Path> selectedPathList, Filter timeFilter) throws IOException {
-        List<Reader> readersOfSelectedSeries = new ArrayList<>();
-        List<TSDataType> dataTypes = new ArrayList<>();
-
-        for (Path path : selectedPathList) {
-            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter);
-            readersOfSelectedSeries.add(seriesReader);
-            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
-        }
-
-        return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
-    }
-
-
-    /**
-     * Without time generator, without filter.
+     *
+     * no filter, can use multi-way merge
+     *
+     * @param selectedPathList all selected paths
+     * @return DataSet without TimeGenerator
      */
     private QueryDataSet execute(List<Path> selectedPathList) throws IOException {
         List<Reader> readersOfSelectedSeries = new ArrayList<>();
@@ -96,7 +81,36 @@ public class QueryExecutorRouter implements QueryExecutor {
 
 
     /**
-     * With time generator.
+     *
+     * has a GlobalTimeFilter, can use multi-way merge
+     *
+     * @param selectedPathList all selected paths
+     * @param timeFilter GlobalTimeFilter that takes effect to all selected paths
+     * @return DataSet without TimeGenerator
+     */
+    private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeFilter timeFilter) throws IOException {
+        List<Reader> readersOfSelectedSeries = new ArrayList<>();
+        List<TSDataType> dataTypes = new ArrayList<>();
+
+        for (Path path : selectedPathList) {
+            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
+            Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter.getFilter());
+            readersOfSelectedSeries.add(seriesReader);
+            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
+        }
+
+        return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
+    }
+
+
+
+    /**
+     *
+     * Has SeriesFilters, need to generate time by these filters first
+     *
+     * @param selectedPathList all selected paths
+     * @param queryFilter all leaf nodes of queryFilter are SeriesFilters
+     * @return DataSet with TimeGenerator
      */
     private QueryDataSet executeWithFilter(List<Path> selectedPathList, QueryFilter queryFilter) throws IOException {
         TimestampGenerator timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerier);

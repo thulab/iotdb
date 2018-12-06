@@ -57,12 +57,6 @@ public abstract class SeriesReader implements Reader {
         return chunkReader.nextBatch();
     }
 
-
-    @Override
-    public void skipCurrentTimeValuePair() {
-        chunkReader.skipCurrentTimeValuePair();
-    }
-
     protected abstract void initChunkReader(ChunkMetaData chunkMetaData) throws IOException;
 
     protected abstract boolean chunkSatisfied(ChunkMetaData chunkMetaData);
