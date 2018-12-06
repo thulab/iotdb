@@ -24,7 +24,7 @@ public class LeafNode implements Node {
         if (!readerCache.containsKey(path))
             readerCache.put(path, new ArrayList<>());
 
-        // put the current reader to valueCache
+        // put the current reader to readerCache
         readerCache.get(path).add(reader);
     }
 

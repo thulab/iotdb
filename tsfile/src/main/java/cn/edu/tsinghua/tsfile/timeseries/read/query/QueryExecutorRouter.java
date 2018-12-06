@@ -5,26 +5,18 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.exception.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.util.QueryFilterOptimizer;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGeneratorByQueryFilterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 

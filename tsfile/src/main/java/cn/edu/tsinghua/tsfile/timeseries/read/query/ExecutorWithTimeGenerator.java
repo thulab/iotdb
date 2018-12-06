@@ -30,8 +30,10 @@ public class ExecutorWithTimeGenerator implements QueryExecutor{
 
 
     /**
-     * Has SeriesFilters, need to generate time by these filters first
-     * all leaf nodes of queryFilter in queryExpression are SeriesFilters
+     * All leaf nodes of queryFilter in queryExpression are SeriesFilters,
+     * We use a TimeGenerator to control query processing.
+     *
+     * for more information, see DataSetWithTimeGenerator
      *
      * @return DataSet with TimeGenerator
      */
@@ -40,23 +42,28 @@ public class ExecutorWithTimeGenerator implements QueryExecutor{
         QueryFilter queryFilter = queryExpression.getQueryFilter();
         List<Path> selectedPathList = queryExpression.getSelectedSeries();
 
-        List<Boolean> cached = removeFilteredPaths(queryFilter, selectedPathList);
-
+        // get TimeGenerator by queryFilter
         TimestampGenerator timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerier);
 
+        // the size of hasFilter is equal to selectedPathList, if a series has a filter, it is true, otherwise false
+        List<Boolean> cached = removeFilteredPaths(queryFilter, selectedPathList);
         List<SeriesReaderByTimestamp> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 
-        for (Path path : selectedPathList) {
-            if (path == null) {
+        for(int i = 0; i < cached.size(); i++) {
+
+            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(selectedPathList.get(i));
+            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
+
+            if(cached.get(i)) {
                 readersOfSelectedSeries.add(null);
                 continue;
             }
-            List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
+
             SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.add(seriesReader);
-            dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
+
         return new DataSetWithTimeGenerator(selectedPathList, cached, dataTypes, timestampGenerator, readersOfSelectedSeries);
     }
 
