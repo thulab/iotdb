@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.BinaryQueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 
-/**
- * Created by zhangjinrui on 2017/12/18.
- */
+
 public abstract class QueryFilterFactory implements BinaryQueryFilter {
 
     protected static class And extends QueryFilterFactory {

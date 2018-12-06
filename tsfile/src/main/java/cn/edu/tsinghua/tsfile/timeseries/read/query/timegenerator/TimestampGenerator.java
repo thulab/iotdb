@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator;
 
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+
 import java.io.IOException;
 
 /**
@@ -13,5 +15,7 @@ public interface TimestampGenerator {
     boolean hasNext() throws IOException;
 
     long next() throws IOException;
+
+    Object getValue(Path path, long time);
 
 }
