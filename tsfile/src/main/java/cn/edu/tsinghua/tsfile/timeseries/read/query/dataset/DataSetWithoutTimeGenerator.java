@@ -69,8 +69,8 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         RowRecord record = new RowRecord(minTime);
 
         for (int i = 0; i < paths.size(); i++) {
-            BatchData data = batchDataList.get(i);
-            Field field = new Field(data.getDataType());
+
+            Field field = new Field(dataTypes.get(i));
 
             if (!hasDataRemaining.get(i)) {
                 field.setNull();
@@ -78,34 +78,27 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
                 continue;
             }
 
-            if (data.hasNext()) {
-                if (data.getTime() == minTime) {
+            BatchData data = batchDataList.get(i);
 
-                    putValueToField(data, field);
-                    data.next();
+            if (data.getTime() == minTime) {
+                putValueToField(data, field);
+                data.next();
 
-                    if (!data.hasNext()) {
-
-                        Reader reader = readers.get(i);
-
-                        if (reader.hasNextBatch()) {
-                            data = reader.nextBatch();
-                            batchDataList.set(i, data);
-                            heapPut(data.getTime());
-                        } else {
-                            hasDataRemaining.set(i, false);
-                        }
-
-                    } else {
+                if (!data.hasNext()) {
+                    Reader reader = readers.get(i);
+                    if (reader.hasNextBatch()) {
+                        data = reader.nextBatch();
+                        batchDataList.set(i, data);
                         heapPut(data.getTime());
+                    } else {
+                        hasDataRemaining.set(i, false);
                     }
                 } else {
-                    field.setNull();
+                    heapPut(data.getTime());
                 }
 
             } else {
                 field.setNull();
-                hasDataRemaining.set(i, false);
             }
 
             record.addField(field);
