@@ -54,8 +54,13 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
         Map<Path, List<ChunkMetaData>> tempChunkMetaDatas = new HashMap<>();
 
+        int count = 0;
+        boolean enough = false;
+
         // get all TsDeviceMetadataIndex by string order
         for (Map.Entry<String, Set<String>> device_measurements : device_measurementsMap.entrySet()) {
+
+            if (enough) break;
 
             // d1
             String selectedDevice = device_measurements.getKey();
@@ -69,28 +74,38 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
             // d1
             for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
 
+                if (enough) break;
+
                 // s1, s2
                 for (ChunkMetaData chunkMetaData : chunkGroupMetaData.getChunkMetaDataList()) {
 
                     String currentMeasurement = chunkMetaData.getMeasurementUID();
 
+                    // s1
                     if (selectedMeasurements.contains(currentMeasurement)) {
+
+                        // d1.s1
                         Path path = new Path(selectedDevice, currentMeasurement);
+
+                        // add into tempChunkMetaDatas
                         if (!tempChunkMetaDatas.containsKey(path))
                             tempChunkMetaDatas.put(path, new ArrayList<>());
                         tempChunkMetaDatas.get(path).add(chunkMetaData);
+
+                        // check cache size, stop when reading enough
+                        count++;
+                        if (count == CHUNK_METADATA_CACHE_SIZE) {
+                            enough = true;
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        int count = 0;
-        for (Map.Entry<Path, List<ChunkMetaData>> entry : tempChunkMetaDatas.entrySet()) {
+
+        for (Map.Entry<Path, List<ChunkMetaData>> entry : tempChunkMetaDatas.entrySet())
             chunkMetaDataCache.put(entry.getKey(), entry.getValue());
-            count++;
-            if (count == CHUNK_METADATA_CACHE_SIZE)
-                break;
-        }
 
     }
 
