@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 
 public class NodeTest {
@@ -21,7 +20,7 @@ public class NodeTest {
         int index = 0;
         long[] timestamps = new long[]{1, 2, 3, 4, 5, 6, 7};
         Reader seriesReader = new FakedSeriesReader(timestamps);
-        Node leafNode = new LeafNode(seriesReader, null, new HashMap<>());
+        Node leafNode = new LeafNode(seriesReader);
         while (leafNode.hasNext()) {
             Assert.assertEquals(timestamps[index++], leafNode.next());
         }
@@ -43,8 +42,8 @@ public class NodeTest {
 
     private void testOr(long[] ret, long[] left, long[] right) throws IOException {
         int index = 0;
-        Node orNode = new OrNode(new LeafNode(new FakedSeriesReader(left), null, new HashMap<>()),
-                new LeafNode(new FakedSeriesReader(right), null, new HashMap<>()));
+        Node orNode = new OrNode(new LeafNode(new FakedSeriesReader(left)),
+                new LeafNode(new FakedSeriesReader(right)));
         while (orNode.hasNext()) {
             long value = orNode.next();
             Assert.assertEquals(ret[index++], value);
@@ -63,8 +62,8 @@ public class NodeTest {
 
     private void testAnd(long[] ret, long[] left, long[] right) throws IOException {
         int index = 0;
-        Node andNode = new AndNode(new LeafNode(new FakedSeriesReader(left), null, new HashMap<>()),
-                new LeafNode(new FakedSeriesReader(right), null, new HashMap<>()));
+        Node andNode = new AndNode(new LeafNode(new FakedSeriesReader(left)),
+                new LeafNode(new FakedSeriesReader(right)));
         while (andNode.hasNext()) {
             long value = andNode.next();
             Assert.assertEquals(ret[index++], value);

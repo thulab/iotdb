@@ -13,11 +13,11 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,13 +28,13 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
     private MetadataQuerier metadataQuerier;
     private Node operatorNode;
 
-    private HashMap<Path, List<Reader>> readerCache;
+    private HashMap<Path, List<LeafNode>> leafCache;
 
     public TimestampGeneratorByQueryFilterImpl(QueryFilter queryFilter, ChunkLoader chunkLoader
             , MetadataQuerier metadataQuerier) throws IOException {
         this.chunkLoader = chunkLoader;
         this.metadataQuerier = metadataQuerier;
-        this.readerCache = new HashMap<>();
+        this.leafCache = new HashMap<>();
 
         operatorNode = construct(queryFilter);
     }
@@ -52,11 +52,10 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
     @Override
     public Object getValue(Path path, long time) {
 
-        for (Reader reader : readerCache.get(path)) {
-            if(!reader.currentBatch().hasNext())
-                return null;
-            if (reader.currentBatch().currentTime() == time)
-                return reader.currentBatch().currentValue();
+        for (LeafNode leafNode : leafCache.get(path)) {
+            if(!leafNode.currentTimeIs(time))
+                continue;
+            return leafNode.currentValue(time);
         }
 
         return null;
@@ -69,10 +68,18 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
     private Node construct(QueryFilter queryFilter) throws IOException {
 
         if (queryFilter.getType() == QueryFilterType.SERIES) {
-            return new LeafNode(
-                    generateSeriesReader((SeriesFilter) queryFilter),
-                    ((SeriesFilter) queryFilter).getSeriesPath(),
-                    readerCache);
+            SeriesFilter seriesFilter = (SeriesFilter) queryFilter;
+            SeriesReader seriesReader = generateSeriesReader(seriesFilter);
+            Path path = seriesFilter.getSeriesPath();
+
+            if (!leafCache.containsKey(path))
+                leafCache.put(path, new ArrayList<>());
+
+            // put the current reader to valueCache
+            LeafNode leafNode = new LeafNode(seriesReader);
+            leafCache.get(path).add(leafNode);
+
+            return leafNode;
 
         } else if (queryFilter.getType() == QueryFilterType.OR) {
             Node leftChild = construct(((BinaryQueryFilter) queryFilter).getLeft());

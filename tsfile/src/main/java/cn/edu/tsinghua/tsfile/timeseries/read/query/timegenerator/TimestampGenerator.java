@@ -16,6 +16,6 @@ public interface TimestampGenerator {
 
     long next() throws IOException;
 
-    Object getValue(Path path, long time);
+    Object getValue(Path path, long time) throws IOException;
 
 }

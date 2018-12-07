@@ -5,10 +5,6 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 
 public class LeafNode implements Node {
 
@@ -18,14 +14,8 @@ public class LeafNode implements Node {
 
     private boolean gotData = false;
 
-    public LeafNode(Reader reader, Path path, HashMap<Path, List<Reader>> readerCache) {
+    public LeafNode(Reader reader) {
         this.reader = reader;
-
-        if (!readerCache.containsKey(path))
-            readerCache.put(path, new ArrayList<>());
-
-        // put the current reader to valueCache
-        readerCache.get(path).add(reader);
     }
 
     @Override
@@ -52,6 +42,19 @@ public class LeafNode implements Node {
         long time = data.currentTime();
         gotData = true;
         return time;
+    }
+
+    public boolean currentTimeIs(long time) {
+        if(!reader.currentBatch().hasNext())
+            return false;
+        return reader.currentBatch().currentTime() == time;
+    }
+
+    public Object currentValue(long time) {
+
+        if(data.hasNext() && data.currentTime() == time)
+            return data.currentValue();
+        return null;
     }
 
     @Override
