@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 /**
@@ -56,8 +56,8 @@ public interface IIntervalTreeOperator {
      * @param newerData   - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryFileBlock(SingleSeriesFilterExpression timeFilter,
-                                        SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, InputStream in,
+    DynamicOneColumnData queryFileBlock(SeriesFilter timeFilter,
+                                        SeriesFilter valueFilter, SeriesFilter freqFilter, InputStream in,
                                         DynamicOneColumnData newerData) throws IOException;
 
     /**
@@ -70,8 +70,8 @@ public interface IIntervalTreeOperator {
      * @param data        - a DynamicOneColumnData information.
      * @return - List<Object>
      */
-    List<Object> getDynamicList(SingleSeriesFilterExpression timeFilter,
-                                SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter,
+    List<Object> getDynamicList(SeriesFilter timeFilter,
+                                SeriesFilter valueFilter, SeriesFilter freqFilter,
                                 DynamicOneColumnData data);
 
     /**

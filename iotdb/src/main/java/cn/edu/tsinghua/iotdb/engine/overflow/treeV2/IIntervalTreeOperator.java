@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.overflow.treeV2;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 import java.io.IOException;
@@ -46,8 +46,8 @@ public interface IIntervalTreeOperator {
      * @param newerMemoryData - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryMemory(SingleSeriesFilterExpression timeFilter,
-                                     SingleSeriesFilterExpression valueFilter, DynamicOneColumnData newerMemoryData);
+    DynamicOneColumnData queryMemory(SeriesFilter timeFilter,
+                                     SeriesFilter valueFilter, DynamicOneColumnData newerMemoryData);
 
     /**
      * This function merges the older data which deserialized from given parameter <em>in</em> into <em>newerData</em>
@@ -60,8 +60,8 @@ public interface IIntervalTreeOperator {
      * @param newerData   - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryFileBlock(SingleSeriesFilterExpression timeFilter,
-                                        SingleSeriesFilterExpression valueFilter, InputStream in,
+    DynamicOneColumnData queryFileBlock(SeriesFilter timeFilter,
+                                        SeriesFilter valueFilter, InputStream in,
                                         DynamicOneColumnData newerData) throws IOException;
 
     /**

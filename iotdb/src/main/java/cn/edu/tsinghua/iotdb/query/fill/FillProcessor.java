@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
@@ -43,7 +43,7 @@ public class FillProcessor {
      * @throws IOException TsFile read error
      */
     public static boolean getPreviousFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
-                                                      long beforeTime, long queryTime, SingleSeriesFilterExpression timeFilter,
+                                                      long beforeTime, long queryTime, SeriesFilter timeFilter,
                                                       OverflowOperationReader updateOperationReader)
             throws IOException {
 
@@ -448,7 +448,7 @@ public class FillProcessor {
      * @throws IOException TsFile read error
      */
     public static boolean getLinearFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
-                                                    long beforeTime, long queryTime, long afterTime, SingleSeriesFilterExpression timeFilter,
+                                                    long beforeTime, long queryTime, long afterTime, SeriesFilter timeFilter,
                                                     OverflowOperationReader updateOperationReader)
             throws IOException {
 

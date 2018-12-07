@@ -27,8 +27,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.LongFilterVerifier;
@@ -181,13 +181,13 @@ public class PhysicalGenerator {
         // transfer the filter operator to FilterExpression
         FilterExpression timeFilter;
         try {
-            timeFilter = filterOperator.transformToFilterExpression(executor, FilterSeriesType.TIME_FILTER);
+            timeFilter = filterOperator.transformToFilterExpression(executor, QueryFilterType.TIME_FILTER);
         } catch (QueryProcessorException e) {
             e.printStackTrace();
             throw new LogicalOperatorException(e.getMessage());
         }
         LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
-        LongInterval longInterval = filterVerifier.getInterval((SingleSeriesFilterExpression) timeFilter);
+        LongInterval longInterval = filterVerifier.getInterval((SeriesFilter) timeFilter);
         long startTime;
         long endTime;
         for (int i = 0; i < longInterval.count; i = i + 2) {

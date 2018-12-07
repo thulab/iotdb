@@ -8,7 +8,7 @@ import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
@@ -53,9 +53,9 @@ public class PreviousFill extends IFill {
             beforeTime = queryTime - beforeRange;
         }
 
-        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
-        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
-        SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
+        SeriesFilter leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
+        SeriesFilter rightFilter = ltEq(timeFilterSeries(), queryTime, true);
+        SeriesFilter fillTimeFilter = (SeriesFilter) and(leftFilter, rightFilter);
 
         String deltaObjectId = path.getDevice();
         String measurementId = path.getMeasurement();

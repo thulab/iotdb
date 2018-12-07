@@ -11,8 +11,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -445,7 +445,7 @@ public class IntervalTree {
 	 *            TSDataType
 	 * @return DynamicOneColumnData
 	 */
-	public DynamicOneColumnData dynamicQuery(SingleSeriesFilterExpression timeFilter, TSDataType dataType) {
+	public DynamicOneColumnData dynamicQuery(SeriesFilter timeFilter, TSDataType dataType) {
 
 		DynamicOneColumnData crudResult = new DynamicOneColumnData(dataType, true);
 

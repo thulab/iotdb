@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
@@ -692,9 +692,9 @@ public class IntervalTreeOperationFileBlockTest {
         }
 
         GtEq<Long> timeFilter =  FilterFactory.gtEq(FilterFactory.longFilterSeries(
-                "d1", "s1", FilterSeriesType.TIME_FILTER), 0L, true);
+                "d1", "s1", QueryFilterType.TIME_FILTER), 0L, true);
         GtEq<Integer> valueFilter =  FilterFactory.gtEq(FilterFactory.intFilterSeries(
-                "d1", "s1", FilterSeriesType.VALUE_FILTER), 0, true);
+                "d1", "s1", QueryFilterType.VALUE_FILTER), 0, true);
 
         List<Object> ans = tree.getDynamicList(timeFilter, valueFilter, null, doc);
         DynamicOneColumnData insertAdopt = (DynamicOneColumnData) ans.get(0);

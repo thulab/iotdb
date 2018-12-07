@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -27,7 +27,7 @@ public class ReaderUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ReaderUtils.class);
 
-    public static SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SingleSeriesFilterExpression filter) {
+    public static SingleValueVisitor<?> getSingleValueVisitorByDataType(TSDataType type, SeriesFilter filter) {
         if (filter == null) {
             return new SingleValueVisitor<>();
         }
@@ -65,7 +65,7 @@ public class ReaderUtils {
      */
     public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimestamps,
                                                    Decoder decoder, InputStream page, DynamicOneColumnData res,
-                                                   SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
+                                                   SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter,
                                                    InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader)
             throws IOException {
         SingleValueVisitor<?> singleTimeVisitor = null;
@@ -378,7 +378,7 @@ public class ReaderUtils {
      */
     public static Pair<DynamicOneColumnData, Integer> readOnePageUsingCommonTime(TSDataType dataType, long[] pageTimestamps,
                 Decoder decoder, InputStream page,
-                SingleSeriesFilterExpression queryTimeFilter, List<Long> commonTimestamps, int commonTimestampsIndex,
+                SeriesFilter queryTimeFilter, List<Long> commonTimestamps, int commonTimestampsIndex,
                 InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check

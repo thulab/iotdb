@@ -6,7 +6,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.operator.NoRestriction;
@@ -44,7 +44,7 @@ public class RecordReaderFactory {
      * @return <code>RecordReader</code>
      */
     public synchronized RecordReader getRecordReader(String deltaObjectUID, String measurementID,
-                                        SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
+                                        SeriesFilter timeFilter, SeriesFilter valueFilter,
                                         Integer readLock, String prefix, ReaderType readerType)
             throws ProcessorException, PathErrorException, IOException {
         int readToken = 0;
@@ -72,7 +72,7 @@ public class RecordReaderFactory {
     }
 
     private RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
-                                                SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
+                                                SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter,
                                                 QueryDataSource queryDataSource, ReaderType readerType, int readToken) throws PathErrorException, IOException {
         switch (readerType) {
             case QUERY:

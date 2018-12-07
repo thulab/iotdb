@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,21 +11,21 @@ import org.slf4j.LoggerFactory;
 public class FilterStructure {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FilterStructure.class);
-    private SingleSeriesFilterExpression timeFilter;
+    private SeriesFilter timeFilter;
     private FilterExpression valueFilter, frequencyFilter;
 
     public FilterStructure(FilterExpression timeFilter, FilterExpression frequencyFilter, FilterExpression valueFilter) {
-        if (timeFilter != null && !(timeFilter instanceof SingleSeriesFilterExpression)) {
+        if (timeFilter != null && !(timeFilter instanceof SeriesFilter)) {
             LOGGER.error("Time filter is not single!");
             return;
         }
 
-        this.timeFilter = (SingleSeriesFilterExpression) timeFilter;
+        this.timeFilter = (SeriesFilter) timeFilter;
         this.valueFilter = valueFilter;
         this.frequencyFilter = frequencyFilter;
     }
 
-    public SingleSeriesFilterExpression getTimeFilter() {
+    public SeriesFilter getTimeFilter() {
         return this.timeFilter;
     }
 
@@ -33,8 +33,8 @@ public class FilterStructure {
         return this.valueFilter;
     }
 
-    public SingleSeriesFilterExpression getFrequencyFilter() {
-        return (SingleSeriesFilterExpression) this.frequencyFilter;
+    public SeriesFilter getFrequencyFilter() {
+        return (SeriesFilter) this.frequencyFilter;
     }
 
     public boolean noFilter() {

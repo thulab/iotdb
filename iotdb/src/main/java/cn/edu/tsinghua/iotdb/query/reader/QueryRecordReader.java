@@ -11,7 +11,7 @@ import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
@@ -33,7 +33,7 @@ public class QueryRecordReader extends RecordReader {
     
     public QueryRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                              String deltaObjectId, String measurementId,
-                             SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter, int readToken)
+                             SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
             throws PathErrorException, IOException {
         super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter, readToken);
 
@@ -55,8 +55,8 @@ public class QueryRecordReader extends RecordReader {
     /**
      * Query the data of one given series.
      */
-    public DynamicOneColumnData queryOneSeries(SingleSeriesFilterExpression queryTimeFilter,
-                                               SingleSeriesFilterExpression queryValueFilter,
+    public DynamicOneColumnData queryOneSeries(SeriesFilter queryTimeFilter,
+                                               SeriesFilter queryValueFilter,
                                                DynamicOneColumnData res, int fetchSize) throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
@@ -116,8 +116,8 @@ public class QueryRecordReader extends RecordReader {
      * @return
      * @throws IOException
      */
-    private boolean queryOneSeries(ValueReader valueReader, SingleSeriesFilterExpression queryTimeFilter,
-                                   SingleSeriesFilterExpression queryValueFilter, DynamicOneColumnData res,
+    private boolean queryOneSeries(ValueReader valueReader, SeriesFilter queryTimeFilter,
+                                   SeriesFilter queryValueFilter, DynamicOneColumnData res,
                                    int fetchSize) throws IOException {
 
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;

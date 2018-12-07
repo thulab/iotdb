@@ -11,9 +11,8 @@ import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 
@@ -65,61 +64,43 @@ public class BasicFunctionOperator extends FunctionOperator {
     }
 
     @Override
-    protected Pair<SingleSeriesFilterExpression, String> transformToSingleFilter(QueryProcessExecutor executor, FilterSeriesType filterType)
+    protected Pair<SeriesFilter, String> transformToSingleFilter(QueryProcessExecutor executor, QueryFilterType filterType)
             throws LogicalOperatorException, PathErrorException {
         TSDataType type = executor.getSeriesType(path);
         if (type == null) {
             throw new PathErrorException("given path:{" + path.getFullPath()
                     + "} don't exist in metadata");
         }
-        SingleSeriesFilterExpression ret;
+        SeriesFilter ret;
         switch (type) {
             case INT32:
                 ret = funcToken.getValueFilter(
-                        FilterFactory.intFilterSeries(
-                                path.getDevice(),
-                                path.getMeasurement(),
-                                filterType),
+                        path,
                         Integer.valueOf(value));
                 break;
             case INT64:
                 ret = funcToken.getValueFilter(
-                        FilterFactory.longFilterSeries(
-                                path.getDevice(),
-                                path.getMeasurement(),
-                                filterType),
+                        path,
                         Long.valueOf(value));
                 break;
             case BOOLEAN:
                 ret = funcToken.getValueFilter(
-                        FilterFactory.booleanFilterSeries(
-                                path.getDevice(),
-                                path.getMeasurement(),
-                                filterType),
+                        path,
                         Boolean.valueOf(value));
                 break;
             case FLOAT:
                 ret = funcToken.getValueFilter(
-                        FilterFactory.floatFilterSeries(
-                                path.getDevice(),
-                                path.getMeasurement(),
-                                filterType),
+                        path,
                         Float.valueOf(value));
                 break;
             case DOUBLE:
                 ret = funcToken.getValueFilter(
-                        FilterFactory.doubleFilterSeries(
-                                path.getDevice(),
-                                path.getMeasurement(),
-                                filterType),
+                        path,
                         Double.valueOf(value));
                 break;
             case TEXT:
             		ret = funcToken.getValueFilter(
-            				FilterFactory.stringFilterSeries(
-            						path.getDevice(),
-            						path.getMeasurement(),
-                                filterType),            
+            				path,
             						(value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\"")) ?
             							new Binary(value.substring(1, value.length()-1)) : new Binary(value));
             		break;

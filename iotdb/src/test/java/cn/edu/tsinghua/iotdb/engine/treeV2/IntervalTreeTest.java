@@ -5,9 +5,9 @@ import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowOpType;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TimePair;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -254,8 +254,8 @@ public class IntervalTreeTest {
         u2 = new TimePair(7L, 10L, IntervalTreeTest.i2, OverflowOpType.UPDATE);
         tree.update(d1);
         tree.update(u2);
-        SingleSeriesFilterExpression filter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
-                "Any", "Any", FilterSeriesType.TIME_FILTER), 7L, true);
+        SeriesFilter filter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
+                "Any", "Any", QueryFilterType.TIME_FILTER), 7L, true);
         crudResult = tree.dynamicQuery(filter,  TSDataType.INT32);
         Assert.assertEquals(crudResult.valueLength, 1);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -301,12 +301,12 @@ public class IntervalTreeTest {
         tree.update(u1);
         tree.update(u2);
         filter = FilterFactory.ltEq(FilterFactory.longFilterSeries(
-                "Any", "Any", FilterSeriesType.TIME_FILTER), 4L, true);
+                "Any", "Any", QueryFilterType.TIME_FILTER), 4L, true);
         crudResult = tree.dynamicQuery(filter,  TSDataType.INT32);
         Assert.assertEquals(crudResult.valueLength, 0);
 
         filter = FilterFactory.ltEq(FilterFactory.longFilterSeries(
-                "Any", "Any", FilterSeriesType.TIME_FILTER), 5L, true);
+                "Any", "Any", QueryFilterType.TIME_FILTER), 5L, true);
         crudResult = tree.dynamicQuery(filter,  TSDataType.INT32);
         Assert.assertEquals(crudResult.valueLength, 1);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -325,10 +325,10 @@ public class IntervalTreeTest {
         tree.update(d1);
         tree.update(u2);
         filter = FilterFactory.ltEq(FilterFactory.longFilterSeries(
-                "Any", "Any", FilterSeriesType.TIME_FILTER), 6L, true);
-        SingleSeriesFilterExpression filter2 = FilterFactory.gtEq(FilterFactory.longFilterSeries(
-                "Any", "Any", FilterSeriesType.TIME_FILTER), 6L, true);
-        SingleSeriesFilterExpression filterAnd = (SingleSeriesFilterExpression) FilterFactory.and(filter, filter2);
+                "Any", "Any", QueryFilterType.TIME_FILTER), 6L, true);
+        SeriesFilter filter2 = FilterFactory.gtEq(FilterFactory.longFilterSeries(
+                "Any", "Any", QueryFilterType.TIME_FILTER), 6L, true);
+        SeriesFilter filterAnd = (SeriesFilter) FilterFactory.and(filter, filter2);
         crudResult = tree.dynamicQuery(filterAnd,  TSDataType.INT32);
         Assert.assertEquals(crudResult.valueLength, 1);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -338,7 +338,7 @@ public class IntervalTreeTest {
             }
         }
         filter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
-                "Any", "Any", FilterSeriesType.TIME_FILTER), 6L, true);
+                "Any", "Any", QueryFilterType.TIME_FILTER), 6L, true);
         crudResult = tree.dynamicQuery(filter,  TSDataType.INT32);
         Assert.assertEquals(crudResult.valueLength, 1);
         for (int i = 0; i < crudResult.valueLength; i++) {

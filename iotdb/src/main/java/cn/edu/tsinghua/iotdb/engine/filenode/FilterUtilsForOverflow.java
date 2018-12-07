@@ -8,18 +8,18 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.DoubleFilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FloatFilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.IntFilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.LongFilterSeries;
 
 public class FilterUtilsForOverflow {
 
-	public static SingleSeriesFilterExpression construct(String exp) {
+	public static SeriesFilter construct(String exp) {
 		if (exp.equals("null")) {
 			return null;
 		}
@@ -31,20 +31,20 @@ public class FilterUtilsForOverflow {
 
 	}
 
-	public static SingleSeriesFilterExpression construct(String device, String sensor, String filterType, String exp) {
+	public static SeriesFilter construct(String device, String sensor, String filterType, String exp) {
 
 		if (exp.equals("null")) {
 			return null;
 		}
 		if (exp.charAt(0) != '(') {
 			boolean ifEq = exp.charAt(1) == '=' ? true : false;
-			FilterSeriesType type = FilterSeriesType.TIME_FILTER;
+			QueryFilterType type = QueryFilterType.TIME_FILTER;
 			int offset = ifEq ? 2 : 1;
 			if (exp.charAt(0) == '=') {
-				if (type == FilterSeriesType.TIME_FILTER) {
+				if (type == QueryFilterType.TIME_FILTER) {
 					long v = Long.valueOf(exp.substring(offset, exp.length()).trim());
 					return FilterFactory.eq(FilterFactory.longFilterSeries(device, sensor, type), v);
-				} else if (type == FilterSeriesType.FREQUENCY_FILTER) {
+				} else if (type == QueryFilterType.FREQUENCY_FILTER) {
 					float v = Float.valueOf(exp.substring(offset, exp.length()).trim());
 					return FilterFactory.eq(FilterFactory.floatFilterSeries(device, sensor, type), v);
 				} else {
@@ -67,10 +67,10 @@ public class FilterUtilsForOverflow {
 
 				}
 			} else if (exp.charAt(0) == '>') {
-				if (type == FilterSeriesType.TIME_FILTER) {
+				if (type == QueryFilterType.TIME_FILTER) {
 					long v = Long.valueOf(exp.substring(offset, exp.length()).trim());
 					return FilterFactory.gtEq(FilterFactory.longFilterSeries(device, sensor, type), v, ifEq);
-				} else if (type == FilterSeriesType.FREQUENCY_FILTER) {
+				} else if (type == QueryFilterType.FREQUENCY_FILTER) {
 					float v = Float.valueOf(exp.substring(offset, exp.length()).trim());
 					return FilterFactory.gtEq(FilterFactory.floatFilterSeries(device, sensor, type), v, ifEq);
 				} else {
@@ -93,10 +93,10 @@ public class FilterUtilsForOverflow {
 
 				}
 			} else if (exp.charAt(0) == '<') {
-				if (type == FilterSeriesType.TIME_FILTER) {
+				if (type == QueryFilterType.TIME_FILTER) {
 					long v = Long.valueOf(exp.substring(offset, exp.length()).trim());
 					return FilterFactory.ltEq(FilterFactory.longFilterSeries(device, sensor, type), v, ifEq);
-				} else if (type == FilterSeriesType.FREQUENCY_FILTER) {
+				} else if (type == QueryFilterType.FREQUENCY_FILTER) {
 					float v = Float.valueOf(exp.substring(offset, exp.length()).trim());
 					return FilterFactory.ltEq(FilterFactory.floatFilterSeries(device, sensor, type), v, ifEq);
 				} else {
@@ -123,7 +123,7 @@ public class FilterUtilsForOverflow {
 		}
 
 		List<Character> operators = new ArrayList<Character>();
-		List<SingleSeriesFilterExpression> filters = new ArrayList<>();
+		List<SeriesFilter> filters = new ArrayList<>();
 
 		int idx = 0;
 		int numbracket = 0;
@@ -151,7 +151,7 @@ public class FilterUtilsForOverflow {
 			}
 
 			if (ltgtFlag && numbracket == 0 && operFlag) {
-				SingleSeriesFilterExpression filter = construct(device, sensor, filterType,
+				SeriesFilter filter = construct(device, sensor, filterType,
 						texp.substring(1, texp.length() - 1));
 				filters.add(filter);
 				operators.add(c);
@@ -171,12 +171,12 @@ public class FilterUtilsForOverflow {
 			return null;
 		}
 
-		SingleSeriesFilterExpression filter = filters.get(0);
+		SeriesFilter filter = filters.get(0);
 		for (int i = 0; i < operators.size(); i++) {
 			if (operators.get(i) == '|') {
-				filter = (SingleSeriesFilterExpression) FilterFactory.or(filter, filters.get(i + 1));
+				filter = (SeriesFilter) FilterFactory.or(filter, filters.get(i + 1));
 			} else if (operators.get(i) == '&') {
-				filter = (SingleSeriesFilterExpression) FilterFactory.and(filter, filters.get(i + 1));
+				filter = (SeriesFilter) FilterFactory.and(filter, filters.get(i + 1));
 			}
 		}
 
@@ -260,15 +260,15 @@ public class FilterUtilsForOverflow {
 		try {
 			type = MManager.getInstance().getSeriesType(deltaObjectUID + "." + measurementID);
 			if (type == TSDataType.INT32) {
-				return FilterFactory.intFilterSeries(deltaObjectUID, measurementID, FilterSeriesType.VALUE_FILTER);
+				return FilterFactory.intFilterSeries(deltaObjectUID, measurementID, QueryFilterType.VALUE_FILTER);
 			} else if (type == TSDataType.INT64) {
-				return FilterFactory.longFilterSeries(deltaObjectUID, measurementID, FilterSeriesType.VALUE_FILTER);
+				return FilterFactory.longFilterSeries(deltaObjectUID, measurementID, QueryFilterType.VALUE_FILTER);
 			} else if (type == TSDataType.FLOAT) {
-				return FilterFactory.floatFilterSeries(deltaObjectUID, measurementID, FilterSeriesType.VALUE_FILTER);
+				return FilterFactory.floatFilterSeries(deltaObjectUID, measurementID, QueryFilterType.VALUE_FILTER);
 			} else if (type == TSDataType.DOUBLE) {
-				return FilterFactory.doubleFilterSeries(deltaObjectUID, measurementID, FilterSeriesType.VALUE_FILTER);
+				return FilterFactory.doubleFilterSeries(deltaObjectUID, measurementID, QueryFilterType.VALUE_FILTER);
 			} else if (type == TSDataType.BOOLEAN) {
-				return FilterFactory.booleanFilterSeries(deltaObjectUID, measurementID, FilterSeriesType.VALUE_FILTER);
+				return FilterFactory.booleanFilterSeries(deltaObjectUID, measurementID, QueryFilterType.VALUE_FILTER);
 			}
 		} catch (PathErrorException e) {
 			e.printStackTrace();

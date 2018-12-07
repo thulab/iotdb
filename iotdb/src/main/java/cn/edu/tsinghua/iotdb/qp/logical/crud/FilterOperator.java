@@ -13,9 +13,9 @@ import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 
@@ -98,10 +98,10 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
      * @return filter in TsFile
      * @throws QueryProcessorException
      */
-    public FilterExpression transformToFilterExpression(QueryProcessExecutor executor, FilterSeriesType type)
+    public FilterExpression transformToFilterExpression(QueryProcessExecutor executor, QueryFilterType type)
             throws QueryProcessorException {
         if (isSingle) {
-            Pair<SingleSeriesFilterExpression, String> ret = transformToSingleFilter(executor, type);
+            Pair<SeriesFilter, String> ret = transformToSingleFilter(executor, type);
             return ret.left;
         } else {
             if (childOperators.isEmpty()) {
@@ -132,20 +132,20 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
     /**
      * it will be used in BasicFunction Operator
      *
-     * @return - pair.left:SingleSeriesFilterExpression constructed by its one child; - pair.right: Path
+     * @return - pair.left:SeriesFilter constructed by its one child; - pair.right: Path
      *         represented by this child.
      * @throws QueryProcessorException exception in filter transforming
      */
-    protected Pair<SingleSeriesFilterExpression, String> transformToSingleFilter(QueryProcessExecutor executor, FilterSeriesType type)
+    protected Pair<SeriesFilter, String> transformToSingleFilter(QueryProcessExecutor executor, QueryFilterType type)
             throws QueryProcessorException {
         if (childOperators.isEmpty()) {
             throw new LogicalOperatorException(
                     ("transformToSingleFilter: this filter is not leaf, but it's empty:{}" + tokenIntType));
         }
-        Pair<SingleSeriesFilterExpression, String> currentPair =
+        Pair<SeriesFilter, String> currentPair =
                 childOperators.get(0).transformToSingleFilter(executor, type);
 
-        SingleSeriesFilterExpression retFilter = currentPair.left;
+        SeriesFilter retFilter = currentPair.left;
         String path = currentPair.right;
         //
         for (int i = 1; i < childOperators.size(); i++) {
@@ -156,10 +156,10 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
                                 + path + ",another is:" + currentPair.right));
             switch (tokenIntType) {
                 case KW_AND:
-                    retFilter = (SingleSeriesFilterExpression) FilterFactory.and(retFilter, currentPair.left);
+                    retFilter = (SeriesFilter) FilterFactory.and(retFilter, currentPair.left);
                     break;
                 case KW_OR:
-                    retFilter = (SingleSeriesFilterExpression) FilterFactory.or(retFilter, currentPair.left);
+                    retFilter = (SeriesFilter) FilterFactory.or(retFilter, currentPair.left);
                     break;
                 default:
                     throw new LogicalOperatorException("unknown binary tokenIntType:"

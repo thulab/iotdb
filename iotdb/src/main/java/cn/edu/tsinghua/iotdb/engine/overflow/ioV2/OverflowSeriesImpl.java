@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.IntervalTreeOperation;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.LongStatistics;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 
 /**

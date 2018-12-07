@@ -10,7 +10,7 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -44,7 +44,7 @@ public class  GroupByEngineNoFilter {
     /** group by unit **/
     private long unit;
 
-    /** SingleSeriesFilterExpression intervals is transformed to longInterval, all the split time intervals **/
+    /** SeriesFilter intervals is transformed to longInterval, all the split time intervals **/
     private LongInterval longInterval;
 
     /** represent the usage count of longInterval **/
@@ -64,10 +64,10 @@ public class  GroupByEngineNoFilter {
 
     private OnePassQueryDataSet groupByResult = new OnePassQueryDataSet();
 
-    private SingleSeriesFilterExpression queryTimeFilter;
+    private SeriesFilter queryTimeFilter;
 
-    public GroupByEngineNoFilter(List<Pair<Path, AggregateFunction>> aggregations, SingleSeriesFilterExpression queryTimeFilter,
-                                  long origin, long unit, SingleSeriesFilterExpression intervals, int partitionFetchSize) {
+    public GroupByEngineNoFilter(List<Pair<Path, AggregateFunction>> aggregations, SeriesFilter queryTimeFilter,
+                                  long origin, long unit, SeriesFilter intervals, int partitionFetchSize) {
         this.aggregations = aggregations;
         this.queryTimeFilter = queryTimeFilter;
         this.queryPathResult = new HashMap<>();

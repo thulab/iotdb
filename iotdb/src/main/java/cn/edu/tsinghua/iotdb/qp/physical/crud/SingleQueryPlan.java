@@ -8,10 +8,10 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
@@ -98,15 +98,15 @@ public class SingleQueryPlan extends PhysicalPlan {
     private FilterExpression[] transformToFilterExpressions(QueryProcessExecutor executor)
             throws QueryProcessorException {
         FilterExpression timeFilter =
-                timeFilterOperator == null ? null : timeFilterOperator.transformToFilterExpression(executor, FilterSeriesType.TIME_FILTER);
+                timeFilterOperator == null ? null : timeFilterOperator.transformToFilterExpression(executor, QueryFilterType.TIME_FILTER);
         FilterExpression freqFilter =
-                freqFilterOperator == null ? null : freqFilterOperator.transformToFilterExpression(executor, FilterSeriesType.FREQUENCY_FILTER);
+                freqFilterOperator == null ? null : freqFilterOperator.transformToFilterExpression(executor, QueryFilterType.FREQUENCY_FILTER);
         FilterExpression valueFilter =
-                valueFilterOperator == null ? null : valueFilterOperator.transformToFilterExpression(executor, FilterSeriesType.VALUE_FILTER);
+                valueFilterOperator == null ? null : valueFilterOperator.transformToFilterExpression(executor, QueryFilterType.VALUE_FILTER);
 
-        if (valueFilter instanceof SingleSeriesFilterExpression) {
+        if (valueFilter instanceof SeriesFilter) {
             if (paths.size() == 1) {
-                FilterSeries<?> series = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries();
+                FilterSeries<?> series = ((SeriesFilter) valueFilter).getFilterSeries();
                 Path path = paths.get(0);
                 if (!series.getDeltaObjectUID().equals(path.getDevice())
                         || !series.getMeasurementUID().equals(path.getMeasurement())) {

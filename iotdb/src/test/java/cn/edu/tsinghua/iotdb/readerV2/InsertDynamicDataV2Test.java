@@ -10,9 +10,9 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePai
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
@@ -32,9 +32,9 @@ public class InsertDynamicDataV2Test {
     private String measurementId = "sensor";
     private MeasurementSchema descriptor = new MeasurementSchema(measurementId, TSDataType.FLOAT, TSEncoding.RLE);
     private FilterSeries<Long> timeSeries = timeFilterSeries();
-    private FilterSeries<Double> valueSeries = doubleFilterSeries(deltaObjectId, measurementId, FilterSeriesType.VALUE_FILTER);
-    SingleSeriesFilterExpression timeFilter = ltEq(timeSeries, 197L, true);
-    SingleSeriesFilterExpression valueFilter = gtEq(valueSeries, -333.0, false);
+    private FilterSeries<Double> valueSeries = doubleFilterSeries(deltaObjectId, measurementId, QueryFilterType.VALUE_FILTER);
+    SeriesFilter timeFilter = ltEq(timeSeries, 197L, true);
+    SeriesFilter valueFilter = gtEq(valueSeries, -333.0, false);
 
     @Test
     public void queryTest() throws IOException {

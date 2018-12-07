@@ -14,7 +14,7 @@ import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.Interval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
@@ -71,11 +71,11 @@ public class RecordReader {
     protected OverflowOperationReader overflowOperationReaderCopy;
 
     /** series time filter, this filter is the filter **/
-    protected SingleSeriesFilterExpression queryTimeFilter;
+    protected SeriesFilter queryTimeFilter;
     protected SingleValueVisitor<?> singleTimeVisitor;
 
     /** series value filter **/
-    protected SingleSeriesFilterExpression queryValueFilter;
+    protected SeriesFilter queryValueFilter;
     protected SingleValueVisitor<?> singleValueVisitor;
 
     /** memRawSeriesChunk + overflowSeriesInsertReader + overflowOperationReader **/
@@ -85,7 +85,7 @@ public class RecordReader {
 
     public RecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                         String deltaObjectId, String measurementId,
-                        SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter, int readToken)
+                        SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
             throws PathErrorException, IOException {
 
         List<String> sealedFilePathList = new ArrayList<>();

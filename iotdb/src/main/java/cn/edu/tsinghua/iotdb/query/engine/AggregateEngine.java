@@ -18,7 +18,7 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
@@ -106,7 +106,7 @@ public class AggregateEngine {
                     filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {
                 @Override
                 public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
-                                                               SingleSeriesFilterExpression valueFilter, int valueFilterNumber)
+                                                               SeriesFilter valueFilter, int valueFilterNumber)
                         throws ProcessorException, IOException {
                     try {
                         return getDataUseSingleValueFilter(valueFilter, res, fetchSize, valueFilterNumber);
@@ -238,7 +238,7 @@ public class AggregateEngine {
      * @throws ProcessorException
      * @throws IOException
      */
-    private void multiAggregateWithoutFilter(List<Pair<Path, AggregateFunction>> aggres, SingleSeriesFilterExpression queryTimeFilter)
+    private void multiAggregateWithoutFilter(List<Pair<Path, AggregateFunction>> aggres, SeriesFilter queryTimeFilter)
             throws PathErrorException, ProcessorException, IOException {
 
         int aggreNumber = 0;
@@ -297,7 +297,7 @@ public class AggregateEngine {
 
     /**
      * This function is only used for CrossQueryTimeGenerator.
-     * A CrossSeriesFilterExpression is consist of many SingleSeriesFilterExpression.
+     * A CrossSeriesFilterExpression is consist of many SeriesFilter.
      * e.g. CSAnd(d1.s1, d2.s1) is consist of d1.s1 and d2.s1, so this method would be invoked twice,
      * once for querying d1.s1, once for querying d2.s1.
      * <p>
@@ -305,12 +305,12 @@ public class AggregateEngine {
      * <code>RecordReaderCacheManager</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    private DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter,
+    private DynamicOneColumnData getDataUseSingleValueFilter(SeriesFilter queryValueFilter,
                                                              DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
-        String deltaObjectUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getDeltaObjectUID();
-        String measurementUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getMeasurementUID();
+        String deltaObjectUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getDeltaObjectUID();
+        String measurementUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getMeasurementUID();
 
         // query prefix here must not be conflict with query in multiAggregate method
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix("AggFilterStructure", valueFilterNumber);

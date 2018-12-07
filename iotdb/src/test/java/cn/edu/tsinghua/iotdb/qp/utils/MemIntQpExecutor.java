@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
@@ -154,8 +154,8 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
 
     private Boolean satisfyValue(SingleValueVisitor<Integer> v, FilterExpression expr, String path,
                                  int value) {
-        if (expr instanceof SingleSeriesFilterExpression) {
-            SingleSeriesFilterExpression single = (SingleSeriesFilterExpression) expr;
+        if (expr instanceof SeriesFilter) {
+            SeriesFilter single = (SeriesFilter) expr;
             StringContainer sc = new StringContainer(SystemConstant.PATH_SEPARATOR);
             sc.addTail(single.getFilterSeries().getDeltaObjectUID(), single.getFilterSeries().getMeasurementUID());
             String filterPath = sc.toString();
@@ -210,7 +210,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                         .getLastRowRecordTimeStamp();
         int haveSize = 0;
 
-        SingleSeriesFilterExpression timeSingleFilter = (SingleSeriesFilterExpression) timeFilter;
+        SeriesFilter timeSingleFilter = (SeriesFilter) timeFilter;
 
         for (long time : timeStampUnion) {
             if (time <= lastGetTimeStamp)

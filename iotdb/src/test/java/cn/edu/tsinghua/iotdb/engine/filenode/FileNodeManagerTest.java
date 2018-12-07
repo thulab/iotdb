@@ -26,7 +26,7 @@
 //import cn.edu.tsinghua.tsfile.common.utils.Pair;
 //import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-//import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+//import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 //import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
 //import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 //import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -277,7 +277,7 @@
 //			fManager.delete(deltaObjectId, measurementId, overflowDelete1, dataType);
 //			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 //			List<Object> overflowResult = queryResult.getAllOverflowData();
-//			SingleSeriesFilterExpression timeFilter = (SingleSeriesFilterExpression) overflowResult.get(3);
+//			SeriesFilter timeFilter = (SeriesFilter) overflowResult.get(3);
 //			System.out.println(timeFilter);
 //			fManager.deleteAll();
 //

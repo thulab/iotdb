@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
@@ -17,7 +17,7 @@ public class FillRecordReader extends RecordReader{
 
     public FillRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                              String deltaObjectId, String measurementId,
-                             SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter, int readToken)
+                             SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
             throws PathErrorException, IOException {
         super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter, readToken);
     }
@@ -30,7 +30,7 @@ public class FillRecordReader extends RecordReader{
      * @param result fill query result
      * @throws IOException file read error
      */
-    public void getPreviousFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter, long beforeTime, long queryTime)
+    public void getPreviousFillResult(DynamicOneColumnData result, SeriesFilter fillTimeFilter, long beforeTime, long queryTime)
             throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
@@ -72,7 +72,7 @@ public class FillRecordReader extends RecordReader{
      * @param result fill query result
      * @throws IOException file read error
      */
-    public void getLinearFillResult(DynamicOneColumnData result, SingleSeriesFilterExpression fillTimeFilter,
+    public void getLinearFillResult(DynamicOneColumnData result, SeriesFilter fillTimeFilter,
                                     long beforeTime, long queryTime, long afterTime) throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);

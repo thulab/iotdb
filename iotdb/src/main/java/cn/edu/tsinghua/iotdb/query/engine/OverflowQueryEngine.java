@@ -20,8 +20,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.Or;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.BatchReadRecordGenerator;
@@ -71,11 +71,11 @@ public class OverflowQueryEngine {
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
             return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, readLock);
         } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
-            return crossSeriesQuery(paths, (SingleSeriesFilterExpression) timeFilter,
+            return crossSeriesQuery(paths, (SeriesFilter) timeFilter,
                     (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
         } else {
-            return querySeriesUsingFilter(paths, (SingleSeriesFilterExpression) timeFilter, (SingleSeriesFilterExpression) freqFilter,
-                    (SingleSeriesFilterExpression) valueFilter, queryDataSet, fetchSize, readLock);
+            return querySeriesUsingFilter(paths, (SeriesFilter) timeFilter, (SeriesFilter) freqFilter,
+                    (SeriesFilter) valueFilter, queryDataSet, fetchSize, readLock);
         }
     }
 
@@ -148,15 +148,15 @@ public class OverflowQueryEngine {
             LOGGER.debug("calculate aggregations the 1 time");
             groupByCalcTime.set(2);
 
-            SingleSeriesFilterExpression intervalFilter = null;
+            SeriesFilter intervalFilter = null;
             for (Pair<Long, Long> pair : intervals) {
                 if (intervalFilter == null) {
-                    SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
-                    SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
+                    SeriesFilter left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
+                    SeriesFilter right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
                     intervalFilter = (And) FilterFactory.and(left, right);
                 } else {
-                    SingleSeriesFilterExpression left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
-                    SingleSeriesFilterExpression right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
+                    SeriesFilter left = FilterFactory.gtEq(FilterFactory.timeFilterSeries(), pair.left, true);
+                    SeriesFilter right = FilterFactory.ltEq(FilterFactory.timeFilterSeries(), pair.right, true);
                     intervalFilter = (Or) FilterFactory.or(intervalFilter, FilterFactory.and(left, right));
                 }
             }
@@ -170,7 +170,7 @@ public class OverflowQueryEngine {
                 }
 
                 if (noFilterOrOnlyHasTimeFilter(filterStructures)) {
-                    SingleSeriesFilterExpression timeFilter = null;
+                    SeriesFilter timeFilter = null;
                     if (filterStructures != null && filterStructures.size() == 1 && filterStructures.get(0).onlyHasTimeFilter()) {
                         timeFilter = filterStructures.get(0).getTimeFilter();
                     }
@@ -308,8 +308,8 @@ public class OverflowQueryEngine {
     /**
      * Query type 2: query with filter.
      */
-    private OnePassQueryDataSet querySeriesUsingFilter(List<Path> paths, SingleSeriesFilterExpression timeFilter,
-                                                SingleSeriesFilterExpression freqFilter, SingleSeriesFilterExpression valueFilter,
+    private OnePassQueryDataSet querySeriesUsingFilter(List<Path> paths, SeriesFilter timeFilter,
+                                                SeriesFilter freqFilter, SeriesFilter valueFilter,
                                                 OnePassQueryDataSet queryDataSet, int fetchSize, Integer readLock) throws ProcessorException, IOException {
         if (queryDataSet == null) {
             queryDataSet = new OnePassQueryDataSet();
@@ -336,7 +336,7 @@ public class OverflowQueryEngine {
     }
 
     private DynamicOneColumnData queryOneSeriesUsingFilter(Path path,
-                                                           SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
+                                                           SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter,
                                                            DynamicOneColumnData res, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
 
@@ -360,7 +360,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 3: cross series read.
      */
-    private OnePassQueryDataSet crossSeriesQuery(List<Path> paths, SingleSeriesFilterExpression queryTimeFilter, CrossSeriesFilterExpression queryValueFilter,
+    private OnePassQueryDataSet crossSeriesQuery(List<Path> paths, SeriesFilter queryTimeFilter, CrossSeriesFilterExpression queryValueFilter,
                                           OnePassQueryDataSet queryDataSet, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
@@ -372,7 +372,7 @@ public class OverflowQueryEngine {
             queryDataSet = new OnePassQueryDataSet();
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(queryTimeFilter, null, queryValueFilter, fetchSize) {
                 @Override
-                public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize, SingleSeriesFilterExpression valueFilter,
+                public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize, SeriesFilter valueFilter,
                                                                int valueFilterNumber) throws ProcessorException, IOException {
                     try {
                         return querySeriesForCross(valueFilter, res, fetchSize, valueFilterNumber);
@@ -413,7 +413,7 @@ public class OverflowQueryEngine {
 
     /**
      * This function is only used for CrossQueryTimeGenerator.
-     * A CrossSeriesFilterExpression is consist of many SingleSeriesFilterExpression.
+     * A CrossSeriesFilterExpression is consist of many SeriesFilter.
      * e.g. CSAnd(d1.s1, d2.s1) is consist of d1.s1 and d2.s1, so this method would be invoked twice,
      * once for querying d1.s1, once for querying d2.s1.
      * <p>
@@ -421,13 +421,13 @@ public class OverflowQueryEngine {
      * <code>RecordReaderCacheManager</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    private DynamicOneColumnData querySeriesForCross(SingleSeriesFilterExpression queryValueFilter,
+    private DynamicOneColumnData querySeriesForCross(SeriesFilter queryValueFilter,
                                                     DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
         // form.V.valueFilterNumber.deltaObjectId.measurementId
-        String deltaObjectUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getDeltaObjectUID();
-        String measurementUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getMeasurementUID();
+        String deltaObjectUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getDeltaObjectUID();
+        String measurementUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getMeasurementUID();
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(ReadCachePrefix.addFilterPrefix(valueFilterNumber), formNumber);
 
         QueryRecordReader recordReader = (QueryRecordReader)

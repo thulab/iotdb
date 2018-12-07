@@ -11,7 +11,7 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
@@ -50,7 +50,7 @@ public class GroupByEngineWithFilter {
     /** group by unit **/
     private long unit;
 
-    /** SingleSeriesFilterExpression intervals is transformed to longInterval, all the split time intervals **/
+    /** SeriesFilter intervals is transformed to longInterval, all the split time intervals **/
     private LongInterval longInterval;
 
     /** represent the usage count of longInterval **/
@@ -96,7 +96,7 @@ public class GroupByEngineWithFilter {
     private boolean queryCalcFlag = true;
 
     public GroupByEngineWithFilter(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures,
-                                 long origin, long unit, SingleSeriesFilterExpression intervals, int partitionFetchSize)
+                                 long origin, long unit, SeriesFilter intervals, int partitionFetchSize)
             throws IOException, ProcessorException {
         this.aggregations = aggregations;
         this.filterStructures = filterStructures;
@@ -132,7 +132,7 @@ public class GroupByEngineWithFilter {
                     filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {
                 @Override
                 public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
-                                                               SingleSeriesFilterExpression valueFilter, int valueFilterNumber)
+                                                               SeriesFilter valueFilter, int valueFilterNumber)
                         throws ProcessorException, IOException {
                     try {
                         return getDataUseSingleValueFilter(valueFilter, res, fetchSize, valueFilterNumber);
@@ -376,7 +376,7 @@ public class GroupByEngineWithFilter {
 
     /**
      * This function is only used for CrossQueryTimeGenerator.
-     * A CrossSeriesFilterExpression is consist of many SingleSeriesFilterExpression.
+     * A CrossSeriesFilterExpression is consist of many SeriesFilter.
      * e.g. CSAnd(d1.s1, d2.s1) is consist of d1.s1 and d2.s1, so this method would be invoked twice,
      * once for querying d1.s1, once for querying d2.s1.
      * <p>
@@ -384,12 +384,12 @@ public class GroupByEngineWithFilter {
      * <code>RecordReaderCacheManager</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
      * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleFilterExpression.
      */
-    private static DynamicOneColumnData getDataUseSingleValueFilter(SingleSeriesFilterExpression queryValueFilter,
+    private static DynamicOneColumnData getDataUseSingleValueFilter(SeriesFilter queryValueFilter,
                                                                     DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
-        String deltaObjectUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getDeltaObjectUID();
-        String measurementUID = ((SingleSeriesFilterExpression) queryValueFilter).getFilterSeries().getMeasurementUID();
+        String deltaObjectUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getDeltaObjectUID();
+        String measurementUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getMeasurementUID();
         //TODO may have dnf conflict
         String valueFilterPrefix = ReadCachePrefix.addFilterPrefix(valueFilterNumber);
 

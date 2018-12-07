@@ -21,9 +21,9 @@ import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
@@ -291,8 +291,8 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     @Override
-    public DynamicOneColumnData queryFileBlock(SingleSeriesFilterExpression timeFilter,
-                                               SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, InputStream inputStream,
+    public DynamicOneColumnData queryFileBlock(SeriesFilter timeFilter,
+                                               SeriesFilter valueFilter, SeriesFilter freqFilter, InputStream inputStream,
                                                DynamicOneColumnData newData) throws IOException {
 
         DynamicOneColumnData ans = new DynamicOneColumnData(dataType, true); // merge answer
@@ -877,14 +877,14 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      * @return - List<Object>
      */
     @Override
-    public List<Object> getDynamicList(SingleSeriesFilterExpression timeFilter,
-                                       SingleSeriesFilterExpression valueFilter, SingleSeriesFilterExpression freqFilter, DynamicOneColumnData overflowData) {
+    public List<Object> getDynamicList(SeriesFilter timeFilter,
+                                       SeriesFilter valueFilter, SeriesFilter freqFilter, DynamicOneColumnData overflowData) {
 
         long deleteMaxLength = -1;
 
         if (timeFilter == null) {
             timeFilter = FilterFactory.gtEq(FilterFactory.longFilterSeries(
-                    "NoName", "NoName", FilterSeriesType.TIME_FILTER), 0L, true);
+                    "NoName", "NoName", QueryFilterType.TIME_FILTER), 0L, true);
         }
         List<Object> ans = new ArrayList<>();
         DynamicOneColumnData insertAdopt = new DynamicOneColumnData(dataType, true);

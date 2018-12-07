@@ -2,12 +2,11 @@ package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 
 /**
@@ -19,9 +18,9 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 public enum BasicOperatorType {
     EQ {
         @Override
-        public <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-                C column, T value) {
-            return FilterFactory.eq(column, value);
+        public <T extends Comparable<T>> SeriesFilter getValueFilter(
+                Path column, T value) {
+            return new SeriesFilter(column, ValueFilter.eq(value));
         }
 
         @Override
@@ -36,9 +35,9 @@ public enum BasicOperatorType {
     },
     LTEQ {
         @Override
-        public <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-                C column, T value) {
-            return FilterFactory.ltEq(column, value, true);
+        public <T extends Comparable<T>> SeriesFilter getValueFilter(
+                Path column, T value) {
+            return new SeriesFilter(column, ValueFilter.ltEq(value));
         }
 
         @Override
@@ -53,9 +52,9 @@ public enum BasicOperatorType {
     },
     LT {
         @Override
-        public <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-                C column, T value) {
-            return FilterFactory.ltEq(column, value, false);
+        public <T extends Comparable<T>> SeriesFilter getValueFilter(
+                Path column, T value) {
+            return new SeriesFilter(column, ValueFilter.lt(value));
         }
 
         @Override
@@ -70,9 +69,9 @@ public enum BasicOperatorType {
     },
     GTEQ {
         @Override
-        public <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-                C column, T value) {
-            return FilterFactory.gtEq(column, value, true);
+        public <T extends Comparable<T>> SeriesFilter getValueFilter(
+                Path column, T value) {
+            return new SeriesFilter(column, ValueFilter.gtEq(value));
         }
 
         @Override
@@ -87,9 +86,9 @@ public enum BasicOperatorType {
     },
     GT {
         @Override
-        public <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-                C column, T value) {
-            return FilterFactory.gtEq(column, value, false);
+        public <T extends Comparable<T>> SeriesFilter getValueFilter(
+                Path column, T value) {
+            return new SeriesFilter(column, ValueFilter.gt(value));
         }
 
         @Override
@@ -104,9 +103,9 @@ public enum BasicOperatorType {
     },
     NOTEQUAL {
         @Override
-        public <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-                C column, T value) {
-            return FilterFactory.noteq(column, value);
+        public <T extends Comparable<T>> SeriesFilter getValueFilter(
+                Path column, T value) {
+            return new SeriesFilter(column, ValueFilter.notEq(value));
         }
 
         @Override
@@ -141,8 +140,8 @@ public enum BasicOperatorType {
         }
     }
 
-    public abstract <T extends Comparable<T>, C extends FilterSeries<T>> SingleSeriesFilterExpression getValueFilter(
-            C column, T value);
+    public abstract <T extends Comparable<T>> SeriesFilter getValueFilter(
+            Path column, T value);
 
     public abstract <T extends Comparable<T>> Filter getValueFilter(T tsPrimitiveType);
 
