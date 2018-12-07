@@ -23,9 +23,9 @@ import java.util.List;
 
 /***/
 public class SequenceInsertDataWithOrWithOutFilterReader extends SequenceInsertDataReader {
-    private SeriesFilter<?> filter;
+    private SeriesFilter filter;
 
-    public SequenceInsertDataWithOrWithOutFilterReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SeriesFilter<?> filter)
+    public SequenceInsertDataWithOrWithOutFilterReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SeriesFilter filter)
             throws IOException {
         super(sortedSeriesDataSource);
 
@@ -55,7 +55,7 @@ public class SequenceInsertDataWithOrWithOutFilterReader extends SequenceInsertD
         }
 
         protected boolean singleTsFileSatisfied(IntervalFileNode fileNode){
-            if(fileNode.getStartTime(path.getDeltaObjectToString()) == -1){
+            if(fileNode.getStartTime(path.getDevice()) == -1){
                 return false;
             }
             //no filter
@@ -65,8 +65,8 @@ public class SequenceInsertDataWithOrWithOutFilterReader extends SequenceInsertD
 
             if(filter.getType() == QueryFilterType.GLOBAL_TIME){//filter time
                 DigestFilterVisitor digestFilterVisitor = new DigestFilterVisitor();
-                DigestForFilter timeDigest = new DigestForFilter(fileNode.getStartTime(path.getDeltaObjectToString()),
-                        fileNode.getEndTime(path.getDeltaObjectToString()));
+                DigestForFilter timeDigest = new DigestForFilter(fileNode.getStartTime(path.getDevice()),
+                        fileNode.getEndTime(path.getDevice()));
                 return digestFilterVisitor.satisfy(timeDigest, null, filter.getFilter());
             }
             else{//fileNode doesn't hold the value scope for series

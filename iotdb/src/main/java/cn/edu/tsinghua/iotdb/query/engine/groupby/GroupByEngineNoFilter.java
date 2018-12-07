@@ -206,8 +206,8 @@ public class  GroupByEngineNoFilter {
         // this read process is batch read
         // every time the ```partitionFetchSize``` data size will be return
 
-        String deltaObjectID = path.getDeltaObjectToString();
-        String measurementID = path.getMeasurementToString();
+        String deltaObjectID = path.getDevice();
+        String measurementID = path.getMeasurement();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
 
         QueryRecordReader recordReader = (QueryRecordReader)

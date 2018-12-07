@@ -124,7 +124,7 @@ public class KvMatchIndex  implements IoTIndex {
             // 1. build index for every data file
             if (fileList.isEmpty()) {
                 // beginQuery fileList contains path, get FileNodeManager.MulPassLock.readLock
-                token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
+                token = FileNodeManager.getInstance().beginQuery(path.getDevice());
                 fileList = FileNodeManager.getInstance().indexBuildQuery(path, indexConfig.getSinceTime(), -1);
             }
 
@@ -199,7 +199,7 @@ public class KvMatchIndex  implements IoTIndex {
             if (token != -1) {
                 try {
                     // endQuery. remove FileNodeManager.MultiPassLock.readLock
-                    FileNodeManager.getInstance().endQuery(path.getDeltaObjectToString(), token);
+                    FileNodeManager.getInstance().endQuery(path.getDevice(), token);
                 } catch (FileNodeManagerException e) {
                     logger.error("failed to unlock ReadLock while building index file" + e.getMessage(), e.getCause());
                 }
@@ -376,7 +376,7 @@ public class KvMatchIndex  implements IoTIndex {
         int token = -1;
         try {
             // beginQuery fileList contains path, get FileNodeManager.MulPassLock.readLock
-            token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
+            token = FileNodeManager.getInstance().beginQuery(path.getDevice());
 
             // startTime=0, endTime=-1 means allTimeInterval
             List<DataFileInfo> fileInfoList = FileNodeManager.getInstance().indexBuildQuery(path, 0, -1);
@@ -411,7 +411,7 @@ public class KvMatchIndex  implements IoTIndex {
             if (token != -1) {
                 try {
                     // endQuery. remove FileNodeManager.MultiPassLock.readLock
-                    FileNodeManager.getInstance().endQuery(path.getDeltaObjectToString(), token);
+                    FileNodeManager.getInstance().endQuery(path.getDevice(), token);
                 } catch (FileNodeManagerException e) {
                     logger.error("failed to unlock ReadLock while droping index" + e.getMessage(), e.getCause());
                 }
@@ -435,7 +435,7 @@ public class KvMatchIndex  implements IoTIndex {
         int token = -1;
         try {
             // beginQuery fileList contains path, get FileNodeManager.MulPassLock.readLock
-            token = FileNodeManager.getInstance().beginQuery(path.getDeltaObjectToString());
+            token = FileNodeManager.getInstance().beginQuery(path.getDevice());
 
             // 0. get configuration from store
             IndexConfig indexConfig = indexConfigStore.getOrDefault(path.getFullPath(), new IndexConfig());
@@ -529,7 +529,7 @@ public class KvMatchIndex  implements IoTIndex {
             if (token != -1) {
                 try {
                     // endQuery. remove FileNodeManager.MultiPassLock.readLock
-                    FileNodeManager.getInstance().endQuery(path.getDeltaObjectToString(), token);
+                    FileNodeManager.getInstance().endQuery(path.getDevice(), token);
                 } catch (FileNodeManagerException e) {
                     logger.error("failed to unlock ReadLock while querying index" + e.getMessage(), e.getCause());
                 }
@@ -546,7 +546,7 @@ public class KvMatchIndex  implements IoTIndex {
             keyPoints.add(new Pair<>(row.getTime(), SeriesUtils.getValue(row.getFields().get(0))));
         }
         String prefix = ReadCachePrefix.addQueryPrefix(0);
-        RecordReaderFactory.getInstance().removeRecordReader(prefix + path.getDeltaObjectToString(), path.getMeasurementToString());
+        RecordReaderFactory.getInstance().removeRecordReader(prefix + path.getDevice(), path.getMeasurement());
         if (keyPoints.isEmpty()) {
             throw new IllegalArgumentException(String.format("There is no value in the given time interval [%s, %s] for the query series %s.", startTime, endTime, path));
         }
@@ -610,8 +610,8 @@ public class KvMatchIndex  implements IoTIndex {
      */
     public OverflowBufferWriteInfo getDataInBufferWriteSeparateWithOverflow(Path path, int readToken)
             throws PathErrorException, IOException, ProcessorException {
-        String deltaObjectUID = path.getDeltaObjectToString();
-        String measurementUID = path.getMeasurementToString();
+        String deltaObjectUID = path.getDevice();
+        String measurementUID = path.getMeasurement();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(0);
 
         RecordReader recordReader = RecordReaderFactory.getInstance().

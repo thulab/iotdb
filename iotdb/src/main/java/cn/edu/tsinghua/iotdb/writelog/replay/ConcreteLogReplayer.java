@@ -57,7 +57,7 @@ public class ConcreteLogReplayer implements LogReplayer {
     private void update(UpdatePlan updatePlan) throws FileNodeManagerException, PathErrorException {
         TSDataType dataType = MManager.getInstance().getSeriesType(updatePlan.getPath().getFullPath());
         for (Pair<Long, Long> timePair : updatePlan.getIntervals()) {
-            FileNodeManager.getInstance().update(updatePlan.getPath().getDeltaObjectToString(), updatePlan.getPath().getMeasurementToString(),
+            FileNodeManager.getInstance().update(updatePlan.getPath().getDevice(), updatePlan.getPath().getMeasurement(),
                     timePair.left, timePair.right, dataType, updatePlan.getValue());
         }
     }
@@ -65,7 +65,7 @@ public class ConcreteLogReplayer implements LogReplayer {
     private void delete(DeletePlan deletePlan) throws FileNodeManagerException, PathErrorException {
         MManager mManager = MManager.getInstance();
         for (Path path : deletePlan.getPaths()) {
-            FileNodeManager.getInstance().delete(path.getDeltaObjectToString(), path.getMeasurementToString(),
+            FileNodeManager.getInstance().delete(path.getDevice(), path.getMeasurement(),
                     deletePlan.getDeleteTime(), mManager.getSeriesType(path.getFullPath()));
         }
     }

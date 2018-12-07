@@ -362,8 +362,8 @@ public class GroupByEngineWithFilter {
                 continue;
             }
 
-            String deltaObjectId = path.getDeltaObjectToString();
-            String measurementId = path.getMeasurementToString();
+            String deltaObjectId = path.getDevice();
+            String measurementId = path.getMeasurement();
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(aggregationOrdinal);
             QueryRecordReader recordReader = (QueryRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
                     null, null,  null, recordReaderPrefix, ReaderType.QUERY);

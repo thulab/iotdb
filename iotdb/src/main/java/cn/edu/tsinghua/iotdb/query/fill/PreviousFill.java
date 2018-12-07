@@ -57,8 +57,8 @@ public class PreviousFill extends IFill {
         SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
         SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
 
-        String deltaObjectId = path.getDeltaObjectToString();
-        String measurementId = path.getMeasurementToString();
+        String deltaObjectId = path.getDevice();
+        String measurementId = path.getMeasurement();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("PreviousFill", -1);
 
         FillRecordReader recordReader = (FillRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,

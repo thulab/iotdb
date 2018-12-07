@@ -10,7 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 public class QueryDataSourceExecutor {
     private static FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
-    public static QueryDataSource getQueryDataSource(SeriesFilter<?> seriesFilter) throws FileNodeManagerException {
+    public static QueryDataSource getQueryDataSource(SeriesFilter seriesFilter) throws FileNodeManagerException {
         return fileNodeManager.query(seriesFilter);
     }
 

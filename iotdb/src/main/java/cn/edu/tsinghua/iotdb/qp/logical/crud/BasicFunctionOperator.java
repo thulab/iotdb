@@ -77,48 +77,48 @@ public class BasicFunctionOperator extends FunctionOperator {
             case INT32:
                 ret = funcToken.getValueFilter(
                         FilterFactory.intFilterSeries(
-                                path.getDeltaObjectToString(),
-                                path.getMeasurementToString(),
+                                path.getDevice(),
+                                path.getMeasurement(),
                                 filterType),
                         Integer.valueOf(value));
                 break;
             case INT64:
                 ret = funcToken.getValueFilter(
                         FilterFactory.longFilterSeries(
-                                path.getDeltaObjectToString(),
-                                path.getMeasurementToString(),
+                                path.getDevice(),
+                                path.getMeasurement(),
                                 filterType),
                         Long.valueOf(value));
                 break;
             case BOOLEAN:
                 ret = funcToken.getValueFilter(
                         FilterFactory.booleanFilterSeries(
-                                path.getDeltaObjectToString(),
-                                path.getMeasurementToString(),
+                                path.getDevice(),
+                                path.getMeasurement(),
                                 filterType),
                         Boolean.valueOf(value));
                 break;
             case FLOAT:
                 ret = funcToken.getValueFilter(
                         FilterFactory.floatFilterSeries(
-                                path.getDeltaObjectToString(),
-                                path.getMeasurementToString(),
+                                path.getDevice(),
+                                path.getMeasurement(),
                                 filterType),
                         Float.valueOf(value));
                 break;
             case DOUBLE:
                 ret = funcToken.getValueFilter(
                         FilterFactory.doubleFilterSeries(
-                                path.getDeltaObjectToString(),
-                                path.getMeasurementToString(),
+                                path.getDevice(),
+                                path.getMeasurement(),
                                 filterType),
                         Double.valueOf(value));
                 break;
             case TEXT:
             		ret = funcToken.getValueFilter(
             				FilterFactory.stringFilterSeries(
-            						path.getDeltaObjectToString(),
-            						path.getMeasurementToString(), 
+            						path.getDevice(),
+            						path.getMeasurement(),
                                 filterType),            
             						(value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\"")) ?
             							new Binary(value.substring(1, value.length()-1)) : new Binary(value));

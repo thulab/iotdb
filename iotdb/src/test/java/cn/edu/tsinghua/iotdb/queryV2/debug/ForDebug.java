@@ -21,7 +21,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
@@ -63,8 +63,8 @@ public class ForDebug {
 
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
         TsFileMetaData tsFileMetaData = getTsFileMetadata(randomAccessFileReader);
-        long startTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).startTime;
-        long endTime = tsFileMetaData.getDeltaObject(path.getDeltaObjectToString()).endTime;
+        long startTime = tsFileMetaData.getDeltaObject(path.getDevice()).startTime;
+        long endTime = tsFileMetaData.getDeltaObject(path.getDevice()).endTime;
         System.out.println(startTime + " - " + endTime);
 
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(path);
@@ -76,7 +76,7 @@ public class ForDebug {
 //        Directories.getInstance().setFolderForTest("");
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
         Filter<?> filter = TimeFilter.gtEq(0L);
-        SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
+        SeriesFilter seriesFilter = new SeriesFilter<>(path, filter);
         IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
         System.out.println(intervalFileNode.getFilePath());
         TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
@@ -248,7 +248,7 @@ public class ForDebug {
         OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(path);
         OverflowInsertFile overflowInsertFile = new OverflowInsertFile();
         overflowInsertFile.setPath(unseqTsfilePath);
-        overflowInsertFile.setTimeSeriesChunkMetaDatas(metadata.get(path.getDeltaObjectToString()).get(path.getMeasurementToString()));
+        overflowInsertFile.setTimeSeriesChunkMetaDatas(metadata.get(path.getDevice()).get(path.getMeasurement()));
         List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
         overflowInsertFileList.add(overflowInsertFile);
         overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFileList);

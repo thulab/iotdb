@@ -188,8 +188,8 @@ public class AggregateEngine {
             for (Pair<Path, AggregateFunction> pair : aggregations) {
                 Path path = pair.left;
                 AggregateFunction aggregateFunction = pair.right;
-                String deltaObjectUID = path.getDeltaObjectToString();
-                String measurementUID = path.getMeasurementToString();
+                String deltaObjectUID = path.getDevice();
+                String measurementUID = path.getMeasurement();
                 TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
                 aggregationPathOrdinal++;
 
@@ -252,8 +252,8 @@ public class AggregateEngine {
             Path path = pair.left;
             AggregateFunction aggregateFunction = pair.right;
 
-            String deltaObjectUID = path.getDeltaObjectToString();
-            String measurementUID = path.getMeasurementToString();
+            String deltaObjectUID = path.getDevice();
+            String measurementUID = path.getMeasurement();
             AggregateRecordReader recordReader = (AggregateRecordReader)
                     RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
                             queryTimeFilter, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber), ReaderType.AGGREGATE);

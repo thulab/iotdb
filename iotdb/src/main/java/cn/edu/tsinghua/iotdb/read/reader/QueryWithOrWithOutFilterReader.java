@@ -20,7 +20,7 @@ public class QueryWithOrWithOutFilterReader implements SeriesReader {
 
     private SeriesWithOverflowOpReader seriesWithOverflowOpReader;
 
-    public QueryWithOrWithOutFilterReader(QueryDataSource queryDataSource, SeriesFilter<?> filter) throws IOException {
+    public QueryWithOrWithOutFilterReader(QueryDataSource queryDataSource, SeriesFilter filter) throws IOException {
         int priority = 1;
         //sequence insert data
         SequenceInsertDataWithOrWithOutFilterReader tsFilesReader = new SequenceInsertDataWithOrWithOutFilterReader(queryDataSource.getSeriesDataSource(), filter);

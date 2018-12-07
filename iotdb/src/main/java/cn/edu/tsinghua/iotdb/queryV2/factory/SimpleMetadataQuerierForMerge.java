@@ -52,12 +52,12 @@ public class SimpleMetadataQuerierForMerge implements MetadataQuerier {
     @Override
     public List<EncodedSeriesChunkDescriptor> getSeriesChunkDescriptorList(Path path) throws IOException {
         try {
-            List<RowGroupMetaData> rowGroupMetaDataList = rowGroupMetadataCache.get(path.getDeltaObjectToString());
+            List<RowGroupMetaData> rowGroupMetaDataList = rowGroupMetadataCache.get(path.getDevice());
             List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList = new ArrayList<>();
             for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDataList) {
                 List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataListInOneRowGroup = rowGroupMetaData.getTimeSeriesChunkMetaDataList();
                 for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataListInOneRowGroup) {
-                    if (path.getMeasurementToString().equals(timeSeriesChunkMetaData.getProperties().getMeasurementUID())) {
+                    if (path.getMeasurement().equals(timeSeriesChunkMetaData.getProperties().getMeasurementUID())) {
                         encodedSeriesChunkDescriptorList.add(generateSeriesChunkDescriptorByMetadata(timeSeriesChunkMetaData));
                     }
                 }

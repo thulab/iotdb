@@ -23,7 +23,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoaderImpl;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReaderByTimeStamp;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.impl.*;
 import org.slf4j.Logger;
@@ -139,7 +139,7 @@ public class SeriesReaderFactory {
     }
 
     public SeriesReader createSeriesReaderForMerge(
-            IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SeriesFilter<?> seriesFilter)
+            IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SeriesFilter seriesFilter)
             throws IOException {
         logger.debug("create seriesReaders for merge. SeriesFilter = {}. TsFilePath = {}", seriesFilter, intervalFileNode.getFilePath());
         SeriesReader seriesInTsFileReader = genTsFileSeriesReader(intervalFileNode.getFilePath(), seriesFilter);
@@ -162,7 +162,7 @@ public class SeriesReaderFactory {
         return seriesWithUpdateOpReader;
     }
 
-    public SeriesReader genTsFileSeriesReader(String filePath, SeriesFilter<?> seriesFilter) throws IOException {
+    public SeriesReader genTsFileSeriesReader(String filePath, SeriesFilter seriesFilter) throws IOException {
         ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(filePath);
         List<EncodedSeriesChunkDescriptor> seriesChunkDescriptors = getMetadataQuerier(filePath)
                 .getSeriesChunkDescriptorList(seriesFilter.getSeriesPath());

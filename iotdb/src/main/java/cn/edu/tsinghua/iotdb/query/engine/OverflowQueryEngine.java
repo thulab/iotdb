@@ -288,8 +288,8 @@ public class OverflowQueryEngine {
     private DynamicOneColumnData queryOneSeriesWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
 
-        String deltaObjectID = path.getDeltaObjectToString();
-        String measurementID = path.getMeasurementToString();
+        String deltaObjectID = path.getDevice();
+        String measurementID = path.getMeasurement();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
         QueryRecordReader recordReader = (QueryRecordReader)
@@ -340,8 +340,8 @@ public class OverflowQueryEngine {
                                                            DynamicOneColumnData res, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
 
-        String deltaObjectId = path.getDeltaObjectToString();
-        String measurementId = path.getMeasurementToString();
+        String deltaObjectId = path.getDevice();
+        String measurementId = path.getMeasurement();
         String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 
         QueryRecordReader recordReader = (QueryRecordReader)
@@ -391,8 +391,8 @@ public class OverflowQueryEngine {
         OnePassQueryDataSet ret = queryDataSet;
         for (Path path : paths) {
 
-            String deltaObjectId = path.getDeltaObjectToString();
-            String measurementId = path.getMeasurementToString();
+            String deltaObjectId = path.getDevice();
+            String measurementId = path.getMeasurement();
             String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("CrossQuery", formNumber);
             String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 

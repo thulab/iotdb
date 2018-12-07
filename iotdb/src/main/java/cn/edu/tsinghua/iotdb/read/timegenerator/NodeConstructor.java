@@ -43,7 +43,7 @@ public class NodeConstructor {
         }
     }
 
-    public SeriesReader generateSeriesReader(SeriesFilter<?> seriesFilter) throws IOException, FileNodeManagerException {
+    public SeriesReader generateSeriesReader(SeriesFilter seriesFilter) throws IOException, FileNodeManagerException {
         QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(seriesFilter);
         return new QueryWithOrWithOutFilterReader(queryDataSource, seriesFilter);
     }

@@ -83,7 +83,7 @@ public class SeriesMetadataQuerierIoTDBImpl {
         try {
             List<SeriesChunkDescriptor> seriesChunkDescriptors = new ArrayList<>();
             for (IntervalFileNode fileNode : intervalFileNodeList) {
-                List<RowGroupMetaData> rowGroupMetaDataList = rowGroupMetadataInFilesCache.get(new RowGroupMetadataCacheKey(path.getDeltaObjectToString(), fileNode.getFilePath()));
+                List<RowGroupMetaData> rowGroupMetaDataList = rowGroupMetadataInFilesCache.get(new RowGroupMetadataCacheKey(path.getDevice(), fileNode.getFilePath()));
                 for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDataList) {
                     seriesChunkDescriptors.addAll(loadSeriesChunkDescriptorFromOneRowMetadata(path, fileNode.getFilePath(), rowGroupMetaData));
                 }
@@ -98,7 +98,7 @@ public class SeriesMetadataQuerierIoTDBImpl {
         List<SeriesChunkDescriptor> seriesChunkDescriptorList = new ArrayList<>();
         List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataListInOneRowGroup = rowGroupMetaData.getTimeSeriesChunkMetaDataList();
         for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataListInOneRowGroup) {
-            if (path.getMeasurementToString().equals(timeSeriesChunkMetaData.getProperties().getMeasurementUID())) {
+            if (path.getMeasurement().equals(timeSeriesChunkMetaData.getProperties().getMeasurementUID())) {
                 seriesChunkDescriptorList.add(generateSeriesChunkDescriptorByMetadata(filePath, timeSeriesChunkMetaData));
             }
         }

@@ -234,8 +234,8 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                                 // no filter
                                 rowRecord.addSensor(fullPath, v.toString());
                                 isInputed = true;
-                                Field f = new Field(TSDataType.INT32, path.getDeltaObjectToString(), path
-                                        .getMeasurementToString());
+                                Field f = new Field(TSDataType.INT32, path.getDevice(), path
+                                        .getMeasurement());
                                 f.setNull(true);
                                 rowRecord.addField(f);
                             } else {
@@ -244,8 +244,8 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                                 if (satisfyResult == null) {
                                     // not my filter, I add it but don't set inputed
                                     rowRecord.addSensor(fullPath, v.toString());
-                                    Field f = new Field(TSDataType.INT32, path.getDeltaObjectToString(), path
-                                            .getMeasurementToString());
+                                    Field f = new Field(TSDataType.INT32, path.getDevice(), path
+                                            .getMeasurement());
                                     f.setIntV(v);
                                     rowRecord.addField(f);
                                 } else if (satisfyResult) {
@@ -253,8 +253,8 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                                     rowRecord.addSensor(fullPath, v.toString());
                                     isInputed = true;
 
-                                    Field f = new Field(TSDataType.INT32, path.getDeltaObjectToString(), path
-                                            .getMeasurementToString());
+                                    Field f = new Field(TSDataType.INT32, path.getDevice(), path
+                                            .getMeasurement());
                                     f.setIntV(v);
                                     rowRecord.addField(f);
                                 } else {
@@ -267,8 +267,8 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                         } else {
                             // this series has not this path
                             rowRecord.addSensor(fullPath, "null");
-                            Field f = new Field(TSDataType.INT32, path.getDeltaObjectToString(), path
-                                    .getMeasurementToString());
+                            Field f = new Field(TSDataType.INT32, path.getDevice(), path
+                                    .getMeasurement());
                             f.setNull(true);
                             rowRecord.addField(f);
                         }

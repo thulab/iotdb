@@ -108,8 +108,8 @@ public class SingleQueryPlan extends PhysicalPlan {
             if (paths.size() == 1) {
                 FilterSeries<?> series = ((SingleSeriesFilterExpression) valueFilter).getFilterSeries();
                 Path path = paths.get(0);
-                if (!series.getDeltaObjectUID().equals(path.getDeltaObjectToString())
-                        || !series.getMeasurementUID().equals(path.getMeasurementToString())) {
+                if (!series.getDeltaObjectUID().equals(path.getDevice())
+                        || !series.getMeasurementUID().equals(path.getMeasurement())) {
                     valueFilter = FilterFactory.csAnd(valueFilter, valueFilter);
                 }
             } else

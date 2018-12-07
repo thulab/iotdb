@@ -230,8 +230,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     public boolean update(Path path, long startTime, long endTime, String value) throws ProcessorException {
-        String deltaObjectId = path.getDeltaObjectToString();
-        String measurementId = path.getMeasurementToString();
+        String deltaObjectId = path.getDevice();
+        String measurementId = path.getMeasurement();
         try {
             String fullPath = deltaObjectId + "." + measurementId;
             if (!mManager.pathExist(fullPath)) {
@@ -252,8 +252,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     protected boolean delete(Path path, long timestamp) throws ProcessorException {
-        String deltaObjectId = path.getDeltaObjectToString();
-        String measurementId = path.getMeasurementToString();
+        String deltaObjectId = path.getDevice();
+        String measurementId = path.getMeasurement();
         try {
             if (!mManager.pathExist(path.getFullPath())) {
                 throw new ProcessorException(String.format("Timeseries %s does not exist.", path.getFullPath()));
@@ -273,8 +273,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     @Override
     // return 0: failed, 1: Overflow, 2:Bufferwrite
     public int insert(Path path, long timestamp, String value) throws ProcessorException {
-        String deltaObjectId = path.getDeltaObjectToString();
-        String measurementId = path.getMeasurementToString();
+        String deltaObjectId = path.getDevice();
+        String measurementId = path.getMeasurement();
 
         try {
             TSDataType type = mManager.getSeriesType(deltaObjectId + "," + measurementId);
@@ -530,7 +530,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                      */
                     Map<String, ColumnSchema> schemaMap = mManager.getSchemaMapForOneFileNode(fileNodePath);
                     Map<String, Integer> numSchemaMap = mManager.getNumSchemaMapForOneFileNode(fileNodePath);
-                    String lastNode = path.getMeasurementToString();
+                    String lastNode = path.getMeasurement();
                     boolean isNewMeasurement = true;
                     /**
                      * Thread safety: just one thread can access/modify the
@@ -622,7 +622,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                                 // TODO: don't delete the storage group path
                                 // recursively
                                 path = new Path(p);
-                                String measurementId = path.getMeasurementToString();
+                                String measurementId = path.getMeasurement();
                                 if (numSchemaMap.get(measurementId) == 1) {
                                     numSchemaMap.remove(measurementId);
                                     schemaMap.remove(measurementId);

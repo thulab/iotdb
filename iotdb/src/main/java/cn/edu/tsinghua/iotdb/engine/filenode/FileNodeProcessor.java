@@ -1141,7 +1141,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	private List<DataFileInfo> getDataFileInfoForIndex(Path path, List<IntervalFileNode> sourceFileNodes) {
-		String deltaObjectId = path.getDeltaObjectToString();
+		String deltaObjectId = path.getDevice();
 		List<DataFileInfo> dataFileInfos = new ArrayList<>();
 		for (IntervalFileNode intervalFileNode : sourceFileNodes) {
 			if (intervalFileNode.isClosed()) {
@@ -1420,7 +1420,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 			for (Path path : pathList) {
 				// query one measurenment in the special deltaObjectId
-				String measurementId = path.getMeasurementToString();
+				String measurementId = path.getMeasurement();
 				TSDataType dataType = mManager.getSeriesType(path.getFullPath());
 				OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.queryMerge(deltaObjectId,
 						measurementId, dataType, true);
@@ -1748,7 +1748,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							getProcessorName(), "kvindex", allIndexSeries);
 					for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
 						Path path = new Path(entry.getKey());
-						String deltaObjectId = path.getDeltaObjectToString();
+						String deltaObjectId = path.getDevice();
 						if (currentIntervalFileNode.getStartTime(deltaObjectId) != -1) {
 							DataFileInfo dataFileInfo = new DataFileInfo(
 									currentIntervalFileNode.getStartTime(deltaObjectId),

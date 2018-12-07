@@ -116,7 +116,7 @@ public class KvMatchCandidateValidator implements Callable<List<Pair<Pair<Long, 
             }
         }
         String prefix = ReadCachePrefix.addQueryPrefix(0);
-        RecordReaderFactory.getInstance().removeRecordReader(prefix + columnPath.getDeltaObjectToString(), columnPath.getMeasurementToString());
+        RecordReaderFactory.getInstance().removeRecordReader(prefix + columnpath.getDevice(), columnPath.getMeasurement());
 
         logger.info("Finished validating candidate intervals: {}", scanIntervals);
         return result;

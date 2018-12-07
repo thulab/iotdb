@@ -12,7 +12,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import org.junit.Assert;
@@ -129,7 +129,7 @@ public class SeriesReaderFactoryTest {
         ByteArrayInputStream metadataInputStream = new ByteArrayInputStream(buf);
         TsFileMetaData fileMetaData = new TsFileMetaDataConverter().toTsFileMetadata(ReadWriteThriftFormatUtils.readFileMetaData(metadataInputStream));
 
-        String deltaObjectID = path.getDeltaObjectToString();
+        String deltaObjectID = path.getDevice();
         TsDeltaObject deltaObject = fileMetaData.getDeltaObject(deltaObjectID);
         TsRowGroupBlockMetaData rowGroupBlockMetaData = new TsRowGroupBlockMetaData();
         rowGroupBlockMetaData.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(randomAccessFileReader,
@@ -141,7 +141,7 @@ public class SeriesReaderFactoryTest {
         for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDataList) {
             List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataListInOneRowGroup = rowGroupMetaData.getTimeSeriesChunkMetaDataList();
             for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataListInOneRowGroup) {
-                if (path.getMeasurementToString().equals(timeSeriesChunkMetaData.getProperties().getMeasurementUID())) {
+                if (path.getMeasurement().equals(timeSeriesChunkMetaData.getProperties().getMeasurementUID())) {
                     timeSeriesChunkMetaDataList.add(timeSeriesChunkMetaData);
                 }
             }

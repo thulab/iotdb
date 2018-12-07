@@ -50,7 +50,6 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
@@ -258,7 +257,7 @@ public class FileNodeManager implements IStatistic, IService {
 			LOGGER.error("The insert time lt 0, {}.", tsRecord);
 			throw new FileNodeManagerException("The insert time lt 0, the tsrecord is " + tsRecord);
 		}
-		String deltaObjectId = tsRecord.deltaObjectId;
+		String deltaObjectId = tsRecord.deviceId;
 
 		if (!isMonitor) {
 			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
@@ -293,7 +292,7 @@ public class FileNodeManager implements IStatistic, IService {
 							measurementList.add(dp.getMeasurementId());
 							insertValues.add(dp.getValue().toString());
 						}
-						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deviceId, tsRecord.time,
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
@@ -360,7 +359,7 @@ public class FileNodeManager implements IStatistic, IService {
 							measurementList.add(dp.getMeasurementId());
 							insertValues.add(dp.getValue().toString());
 						}
-						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deviceId, tsRecord.time,
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
@@ -529,10 +528,10 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public QueryDataSource query(SeriesFilter<?> seriesFilter)
+	public QueryDataSource query(SeriesFilter seriesFilter)
 			throws FileNodeManagerException {
-		String deltaObjectId = seriesFilter.getSeriesPath().getDeltaObjectToString();
-		String measurementId = seriesFilter.getSeriesPath().getMeasurementToString();
+		String deltaObjectId = seriesFilter.getSeriesPath().getDevice();
+		String measurementId = seriesFilter.getSeriesPath().getMeasurement();
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		LOGGER.debug("Get the FileNodeProcessor: filenode is {}, query.", fileNodeProcessor.getProcessorName());
 		try {
@@ -571,7 +570,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * @throws FileNodeManagerException
 	 */
 	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
-		String deltaObjectId = path.getDeltaObjectToString();
+		String deltaObjectId = path.getDevice();
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		try {
 			LOGGER.debug("Get the FileNodeProcessor: the filenode is {}, query.", fileNodeProcessor.getProcessorName());
@@ -817,7 +816,7 @@ public class FileNodeManager implements IStatistic, IService {
 			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(path.getFullPath(), true);
 		try {
-			fileNodeProcessor.addTimeSeries(path.getMeasurementToString(), dataType, encoding, encodingArgs);
+			fileNodeProcessor.addTimeSeries(path.getMeasurement(), dataType, encoding, encodingArgs);
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}

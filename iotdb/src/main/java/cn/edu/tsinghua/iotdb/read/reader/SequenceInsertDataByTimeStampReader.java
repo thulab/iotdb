@@ -160,10 +160,10 @@ public class SequenceInsertDataByTimeStampReader extends SequenceInsertDataReade
 
         protected boolean singleTsFileSatisfied(IntervalFileNode fileNode){
 
-            if(fileNode.getStartTime(path.getDeltaObjectToString()) == -1){
+            if(fileNode.getStartTime(path.getDevice()) == -1){
                 return false;
             }
-            long maxTime = fileNode.getEndTime(path.getDeltaObjectToString());
+            long maxTime = fileNode.getEndTime(path.getDevice());
             return currentTimestamp <= maxTime;
         }
 

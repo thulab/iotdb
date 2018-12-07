@@ -21,7 +21,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
@@ -253,7 +253,7 @@ public class WriteAnalysis {
                             String measurementId = timeSeriesMetadata.getMeasurementUID();
                             Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
                             Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
-                            SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
+                            SeriesFilter seriesFilter = new SeriesFilter<>(seriesPath, filter);
                             TimeValuePairReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 
                             //long tmpRecordCount = 0;
@@ -329,7 +329,7 @@ public class WriteAnalysis {
                                 String measurementId = timeSeriesMetadata.getMeasurementUID();
                                 Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
                                 Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
-                                SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
+                                SeriesFilter seriesFilter = new SeriesFilter<>(seriesPath, filter);
                                 TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
                                 while (tsFileReader.hasNext()) {
                                     TimeValuePair tp = tsFileReader.next();
