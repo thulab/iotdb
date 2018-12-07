@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.metadata.enums;
 
-import cn.edu.tsinghua.tsfile.exception.compress.CompressionTypeNotSupportedException;
+import cn.edu.tsinghua.tsfile.common.exception.CompressionTypeNotSupportedException;
 
 public enum CompressionType {
         UNCOMPRESSED,

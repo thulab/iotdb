@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.tsfile.file.metadata.statistics;
 
-import cn.edu.tsinghua.tsfile.exception.TsFileRuntimeException;
+import cn.edu.tsinghua.tsfile.common.exception.TSFileRuntimeException;
 
-public class StatisticsClassException extends TsFileRuntimeException {
+public class StatisticsClassException extends TSFileRuntimeException {
     private static final long serialVersionUID = -5445795844780183770L;
 
     public StatisticsClassException(Class<?> className1, Class<?> className2) {

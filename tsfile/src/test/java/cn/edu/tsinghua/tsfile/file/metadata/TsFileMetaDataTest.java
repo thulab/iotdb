@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.utils.MetadataGenerator;
-import cn.edu.tsinghua.tsfile.utils.CompareUtils;
+import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
+import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class TsFileMetaDataTest {
 
     @Test
     public void testWriteFileMetaData() throws IOException {
-    TsFileMetaData tsfMetaData = MetadataGenerator.createSimpleFileMetaData();
+    TsFileMetaData tsfMetaData = TestHelper.createSimpleFileMetaData();
     File file = new File(PATH);
     if (file.exists())
       file.delete();
@@ -38,6 +38,6 @@ public class TsFileMetaDataTest {
     fos.close();
 
     FileInputStream fis = new FileInputStream(new File(PATH));
-    CompareUtils.isFileMetaDataEqual(tsfMetaData, TsFileMetaData.deserializeFrom(fis));
+    Utils.isFileMetaDataEqual(tsfMetaData, TsFileMetaData.deserializeFrom(fis));
     }
 }

@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.encoding.encoder;
 
-import cn.edu.tsinghua.tsfile.exception.encoding.TsFileEncodingException;
-import cn.edu.tsinghua.tsfile.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.common.exception.TSFileEncodingException;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
@@ -52,7 +52,7 @@ public class FloatEncoder extends Encoder {
             } else if (dataType == TSDataType.DOUBLE) {
                 encoder = new LongRleEncoder(EndianType.LITTLE_ENDIAN);
             } else {
-                throw new TsFileEncodingException(
+                throw new TSFileEncodingException(
                         String.format("data type %s is not supported by FloatEncoder", dataType));
             }
         } else if (encodingType == TSEncoding.TS_2DIFF) {
@@ -61,11 +61,11 @@ public class FloatEncoder extends Encoder {
             } else if (dataType == TSDataType.DOUBLE) {
                 encoder = new DeltaBinaryEncoder.LongDeltaEncoder();
             } else {
-                throw new TsFileEncodingException(
+                throw new TSFileEncodingException(
                         String.format("data type %s is not supported by FloatEncoder", dataType));
             }
         } else {
-            throw new TsFileEncodingException(
+            throw new TSFileEncodingException(
                     String.format("%s encoding is not supported by FloatEncoder", encodingType));
         }
     }

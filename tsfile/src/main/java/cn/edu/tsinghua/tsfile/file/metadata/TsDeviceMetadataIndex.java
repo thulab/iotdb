@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

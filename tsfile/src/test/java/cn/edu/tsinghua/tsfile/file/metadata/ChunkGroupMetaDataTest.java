@@ -5,8 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import cn.edu.tsinghua.tsfile.utils.MetadataGenerator;
-import cn.edu.tsinghua.tsfile.utils.CompareUtils;
+import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
+import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +29,7 @@ public class ChunkGroupMetaDataTest {
 
   @Test
   public void testWriteIntoFile() throws IOException {
-    ChunkGroupMetaData metaData = MetadataGenerator.createSimpleChunkGroupMetaData();
+    ChunkGroupMetaData metaData = TestHelper.createSimpleChunkGroupMetaData();
     File file = new File(PATH);
     if (file.exists())
       file.delete();
@@ -38,6 +38,6 @@ public class ChunkGroupMetaDataTest {
     fos.close();
 
     FileInputStream fis = new FileInputStream(new File(PATH));
-    CompareUtils.isChunkGroupMetaDataEqual(metaData, ChunkGroupMetaData.deserializeFrom(fis));
+    Utils.isChunkGroupMetaDataEqual(metaData, ChunkGroupMetaData.deserializeFrom(fis));
   }
 }

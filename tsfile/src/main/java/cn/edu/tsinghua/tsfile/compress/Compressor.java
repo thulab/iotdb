@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.compress;
 
-import cn.edu.tsinghua.tsfile.exception.compress.CompressionTypeNotSupportedException;
+import cn.edu.tsinghua.tsfile.common.exception.CompressionTypeNotSupportedException;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import org.slf4j.Logger;

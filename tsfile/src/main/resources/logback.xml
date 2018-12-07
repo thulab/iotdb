@@ -92,7 +92,7 @@
 		</filter>
 	</appender>
 
-	<!--<logger name="ChunkWriterImpl level="debug" />-->
+	<!--<logger name="cn.edu.tsinghua.tsfile.timeseries.write.series.ChunkWriterImpl level="debug" />-->
 
 	<root level="ERROR">
 		<appender-ref ref="FILEDEBUG" />

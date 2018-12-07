@@ -3,7 +3,7 @@ package cn.edu.tsinghua.tsfile.encoding.decoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

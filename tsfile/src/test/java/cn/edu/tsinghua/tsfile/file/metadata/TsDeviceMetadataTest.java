@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.utils.MetadataGenerator;
-import cn.edu.tsinghua.tsfile.utils.CompareUtils;
+import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
+import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class TsDeviceMetadataTest {
 
     @Test
     public void testWriteIntoFile() throws IOException {
-        TsDeviceMetadata metaData = MetadataGenerator.createSimpleDeviceMetaData();
+        TsDeviceMetadata metaData = TestHelper.createSimpleDeviceMetaData();
         File file = new File(PATH);
         if (file.exists())
             file.delete();
@@ -39,6 +39,6 @@ public class TsDeviceMetadataTest {
         fos.close();
 
         FileInputStream fis = new FileInputStream(new File(PATH));
-        CompareUtils.isTsDeviceMetadataEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
+        Utils.isTsDeviceMetadataEqual(metaData, TsDeviceMetadata.deserializeFrom(fis));
     }
 }
