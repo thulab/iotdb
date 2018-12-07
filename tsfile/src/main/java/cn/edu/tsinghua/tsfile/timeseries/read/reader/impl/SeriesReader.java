@@ -16,55 +16,54 @@ public abstract class SeriesReader implements Reader {
     protected ChunkLoader chunkLoader;
     protected List<ChunkMetaData> chunkMetaDataList;
     protected ChunkReader chunkReader;
-    protected boolean chunkReaderInitialized;
-    protected int currentChunkIndex;
+    private int chunkToRead;
 
     private BatchData data;
-    private boolean hasCachedData;
 
     public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
-        this.currentChunkIndex = 0;
-        this.chunkReaderInitialized = false;
+        this.chunkToRead = 0;
     }
 
     @Override
-    public boolean hasNextBatch() throws IOException {
+    public boolean hasNextBatch() {
 
-        if(hasCachedData)
+        // current chunk has data
+        if (chunkReader != null && chunkReader.hasNextBatch()) {
             return true;
+
+            // has additional chunk to read
+        } else {
+            return chunkToRead < chunkMetaDataList.size();
+        }
+
+    }
+
+    @Override
+    public BatchData nextBatch() throws IOException {
 
         // current chunk has additional batch
         if (chunkReader != null && chunkReader.hasNextBatch()) {
             data = chunkReader.nextBatch();
-            hasCachedData = true;
-            return true;
+            return data;
         }
 
         // current chunk does not have additional batch, init new chunk reader
-        while (currentChunkIndex < chunkMetaDataList.size()) {
+        while (chunkToRead < chunkMetaDataList.size()) {
 
-            ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+            ChunkMetaData chunkMetaData = chunkMetaDataList.get(chunkToRead++);
             if (chunkSatisfied(chunkMetaData)) {
                 // chunk metadata satisfy the condition
                 initChunkReader(chunkMetaData);
 
                 if (chunkReader.hasNextBatch()) {
-                    this.data = chunkReader.nextBatch();
-                    hasCachedData = true;
-                    return true;
+                    data = chunkReader.nextBatch();
+                    return data;
                 }
             }
-
         }
 
-        return false;
-    }
-
-    @Override
-    public BatchData nextBatch() {
-        hasCachedData = false;
         return data;
     }
 

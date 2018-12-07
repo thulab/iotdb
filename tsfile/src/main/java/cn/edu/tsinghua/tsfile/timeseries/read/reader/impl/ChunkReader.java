@@ -22,17 +22,14 @@ public abstract class ChunkReader implements Reader {
     ChunkHeader chunkHeader;
     private ByteBuffer chunkDataBuffer;
 
-    private PageReader pageReader;
-
     private UnCompressor unCompressor;
     private Decoder valueDecoder;
     private Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
             , TSDataType.INT64);
 
-    private Filter filter = null;
+    private Filter filter;
 
-    private BatchData data = null;
-    private boolean hasCachedData;
+    private BatchData data;
 
     private long maxTombstoneTime;
 
@@ -43,43 +40,40 @@ public abstract class ChunkReader implements Reader {
 
     public ChunkReader(Chunk chunk, Filter filter) {
         this.filter = filter;
-        this.hasCachedData = false;
         this.chunkDataBuffer = chunk.getData();
         chunkHeader = chunk.getHeader();
         this.unCompressor = UnCompressor.getUnCompressor(chunkHeader.getCompressionType());
         valueDecoder = Decoder.getDecoderByType(chunkHeader.getEncodingType(), chunkHeader.getDataType());
+        data = new BatchData(chunkHeader.getDataType());
     }
 
 
     @Override
-    public boolean hasNextBatch() throws IOException {
+    public boolean hasNextBatch() {
+        return chunkDataBuffer.remaining() > 0;
+    }
 
-        if (hasCachedData)
-            return true;
+
+    @Override
+    public BatchData nextBatch() throws IOException {
 
         // construct next satisfied page header
         while (chunkDataBuffer.remaining() > 0) {
             // deserialize a PageHeader from chunkDataBuffer
-            PageHeader pageHeader = getNextPageHeader();
+            PageHeader pageHeader = PageHeader.deserializeFrom(chunkDataBuffer, chunkHeader.getDataType());
 
             // if the current page satisfies
             if (pageSatisfied(pageHeader)) {
-                pageReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
+                PageReader pageReader = constructPageReaderForNextPage(pageHeader.getCompressedSize());
                 if (pageReader.hasNextBatch()) {
                     data = pageReader.nextBatch();
-                    return true;
+                    return data;
                 }
             } else {
                 skipBytesInStreamByLength(pageHeader.getCompressedSize());
             }
         }
-        return false;
-    }
 
-
-    @Override
-    public BatchData nextBatch() {
-        hasCachedData = false;
         return data;
     }
 
@@ -108,10 +102,6 @@ public abstract class ChunkReader implements Reader {
         valueDecoder.reset();
         return new PageReader(ByteBuffer.wrap(unCompressor.uncompress(compressedPageBody)),
                 chunkHeader.getDataType(), valueDecoder, timeDecoder, filter);
-    }
-
-    private PageHeader getNextPageHeader() throws IOException {
-        return PageHeader.deserializeFrom(chunkDataBuffer, chunkHeader.getDataType());
     }
 
     @Override

@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 

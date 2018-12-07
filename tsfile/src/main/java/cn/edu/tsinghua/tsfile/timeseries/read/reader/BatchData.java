@@ -63,6 +63,10 @@ public class BatchData {
         return curIdx < timeLength;
     }
 
+    public void next() {
+        curIdx++;
+    }
+
     public long currentTime() {
         rangeCheckForTime(curIdx);
         return this.timeRet.get(curIdx / TIME_CAPACITY)[curIdx % TIME_CAPACITY];
@@ -85,10 +89,6 @@ public class BatchData {
             default:
                 return null;
         }
-    }
-
-    public void next() {
-        curIdx++;
     }
 
     public TSDataType getDataType() {

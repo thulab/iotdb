@@ -30,7 +30,6 @@ public class PageReader implements Reader {
     private ByteBuffer valueBuffer;
 
     private BatchData data = null;
-    private boolean hasCachedData;
 
     private Filter filter = null;
 
@@ -44,7 +43,6 @@ public class PageReader implements Reader {
         this.dataType = dataType;
         this.valueDecoder = valueDecoder;
         this.timeDecoder = timeDecoder;
-        this.hasCachedData = false;
         splitDataToTimeStampAndValue(pageData);
     }
 
@@ -64,27 +62,29 @@ public class PageReader implements Reader {
         valueBuffer.position(timeBufferLength);
     }
 
-    @Override
-    public void close() {
-        timeBuffer = null;
-        valueBuffer = null;
-    }
-
 
     @Override
     public boolean hasNextBatch() throws IOException {
-        if (hasCachedData)
-            return true;
+        return timeDecoder.hasNext(timeBuffer);
+    }
 
+    /**
+     * may return an empty BatchData
+     */
+    @Override public BatchData nextBatch() throws IOException {
         if (filter == null)
             data = getAllPageData();
         else
             data = getAllPageData(filter);
 
-        hasCachedData = data.hasNext();
-
-        return hasCachedData;
+        return data;
     }
+
+    @Override
+    public BatchData currentBatch() {
+        return data;
+    }
+
 
     private BatchData getAllPageData() throws IOException {
 
@@ -178,14 +178,9 @@ public class PageReader implements Reader {
     }
 
     @Override
-    public BatchData nextBatch() {
-        hasCachedData = false;
-        return data;
-    }
-
-    @Override
-    public BatchData currentBatch() {
-        return data;
+    public void close() {
+        timeBuffer = null;
+        valueBuffer = null;
     }
 
 }

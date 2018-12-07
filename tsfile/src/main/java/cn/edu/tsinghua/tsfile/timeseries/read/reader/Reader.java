@@ -12,7 +12,7 @@ public interface Reader {
     /**
      * get next batch data
      */
-    BatchData nextBatch();
+    BatchData nextBatch() throws IOException;
 
     BatchData currentBatch();
 
