@@ -49,7 +49,7 @@ public class TsFileSequenceRead {
                         while (reader1.hasNextBatch()) {
                             BatchData batchData = reader1.nextBatch();
                             while (batchData.hasNext()) {
-                                System.out.println("time, value: " + batchData.getTime() + "," + batchData.getValue());
+                                System.out.println("time, value: " + batchData.currentTime() + "," + batchData.currentValue());
                                 batchData.next();
                             }
                         }
