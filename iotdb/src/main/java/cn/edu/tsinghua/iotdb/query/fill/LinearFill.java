@@ -7,13 +7,14 @@ import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.io.IOException;
-
-import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
 
 
 public class LinearFill extends IFill{
@@ -72,9 +73,9 @@ public class LinearFill extends IFill{
             afterTime = queryTime + afterRange;
         }
 
-        SeriesFilter leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
-        SeriesFilter rightFilter = ltEq(timeFilterSeries(), afterTime, true);
-        SeriesFilter fillTimeFilter = (SeriesFilter) and(leftFilter, rightFilter);
+        Filter leftFilter = TimeFilter.gtEq(beforeTime);
+        Filter rightFilter = TimeFilter.ltEq(afterTime);
+        GlobalTimeFilter fillTimeFilter = new GlobalTimeFilter(FilterFactory.and(leftFilter, rightFilter));
 
         String deltaObjectId = path.getDevice();
         String measurementId = path.getMeasurement();

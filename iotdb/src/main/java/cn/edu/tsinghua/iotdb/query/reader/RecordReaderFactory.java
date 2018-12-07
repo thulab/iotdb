@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
@@ -44,8 +45,8 @@ public class RecordReaderFactory {
      * @return <code>RecordReader</code>
      */
     public synchronized RecordReader getRecordReader(String deltaObjectUID, String measurementID,
-                                        SeriesFilter timeFilter, SeriesFilter valueFilter,
-                                        Integer readLock, String prefix, ReaderType readerType)
+                                                     GlobalTimeFilter timeFilter, SeriesFilter valueFilter,
+                                                     Integer readLock, String prefix, ReaderType readerType)
             throws ProcessorException, PathErrorException, IOException {
         int readToken = 0;
         if (readLock == null) {

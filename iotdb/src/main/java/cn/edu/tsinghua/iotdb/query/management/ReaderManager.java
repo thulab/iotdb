@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
@@ -35,7 +36,7 @@ public class ReaderManager {
         this.sealedFilePathList = sealedFilePathList;
     }
 
-    public List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, SeriesFilter timeFilter) throws IOException {
+    public List<RowGroupReader> getRowGroupReaderListByDeltaObject(String deltaObjectUID, GlobalTimeFilter timeFilter) throws IOException {
         if (rowGroupReaderMap.containsKey(deltaObjectUID)) {
             return rowGroupReaderMap.get(deltaObjectUID);
         } else {

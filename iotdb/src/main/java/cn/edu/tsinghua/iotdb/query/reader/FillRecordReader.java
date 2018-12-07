@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.UnSupportedFillTypeException;
 import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
@@ -72,7 +73,7 @@ public class FillRecordReader extends RecordReader{
      * @param result fill query result
      * @throws IOException file read error
      */
-    public void getLinearFillResult(BatchData result, SeriesFilter fillTimeFilter,
+    public void getLinearFillResult(BatchData result, GlobalTimeFilter fillTimeFilter,
                                     long beforeTime, long queryTime, long afterTime) throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
