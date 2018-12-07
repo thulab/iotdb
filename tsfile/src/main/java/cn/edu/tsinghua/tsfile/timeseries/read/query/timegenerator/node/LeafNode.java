@@ -24,7 +24,7 @@ public class LeafNode implements Node {
         if (!readerCache.containsKey(path))
             readerCache.put(path, new ArrayList<>());
 
-        // put the current reader to readerCache
+        // put the current reader to valueCache
         readerCache.get(path).add(reader);
     }
 
@@ -49,7 +49,7 @@ public class LeafNode implements Node {
 
     @Override
     public long next() {
-        long time = data.getTime();
+        long time = data.currentTime();
         gotData = true;
         return time;
     }

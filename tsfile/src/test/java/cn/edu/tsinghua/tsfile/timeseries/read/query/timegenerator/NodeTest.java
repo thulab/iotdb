@@ -76,24 +76,29 @@ public class NodeTest {
     private static class FakedSeriesReader implements Reader {
 
         BatchData data;
-        boolean flag = false;
+        boolean hasCachedData;
 
         public FakedSeriesReader(long[] timestamps) {
             data = new BatchData(TSDataType.INT32, true);
             for (long time : timestamps) {
                 data.putTime(time);
             }
+            hasCachedData = true;
         }
 
         @Override
         public boolean hasNextBatch() {
-            return !flag;
+            return hasCachedData;
         }
 
         @Override
         public BatchData nextBatch() {
+            hasCachedData = false;
+            return data;
+        }
 
-            flag = true;
+        @Override
+        public BatchData currentBatch() {
             return data;
         }
 

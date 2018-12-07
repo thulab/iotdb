@@ -29,10 +29,13 @@ public abstract class ChunkReader implements Reader {
     private Decoder timeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder)
             , TSDataType.INT64);
 
-    private BatchData data = null;
     private Filter filter = null;
 
+    private BatchData data = null;
+    private boolean hasCachedData;
+
     private long maxTombstoneTime;
+
 
     public ChunkReader(Chunk chunk) {
         this(chunk, null);
@@ -40,6 +43,7 @@ public abstract class ChunkReader implements Reader {
 
     public ChunkReader(Chunk chunk, Filter filter) {
         this.filter = filter;
+        this.hasCachedData = false;
         this.chunkDataBuffer = chunk.getData();
         chunkHeader = chunk.getHeader();
         this.unCompressor = UnCompressor.getUnCompressor(chunkHeader.getCompressionType());
@@ -49,6 +53,9 @@ public abstract class ChunkReader implements Reader {
 
     @Override
     public boolean hasNextBatch() throws IOException {
+
+        if (hasCachedData)
+            return true;
 
         // construct next satisfied page header
         while (chunkDataBuffer.remaining() > 0) {
@@ -72,6 +79,12 @@ public abstract class ChunkReader implements Reader {
 
     @Override
     public BatchData nextBatch() {
+        hasCachedData = false;
+        return data;
+    }
+
+    @Override
+    public BatchData currentBatch() {
         return data;
     }
 

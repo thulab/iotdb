@@ -52,7 +52,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
         for (BatchData data : batchDataList) {
             if (data.hasNext()) {
-                heapPut(data.getTime());
+                heapPut(data.currentTime());
             }
         }
     }
@@ -80,7 +80,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
             BatchData data = batchDataList.get(i);
 
-            if (data.getTime() == minTime) {
+            if (data.currentTime() == minTime) {
                 putValueToField(data, field);
                 data.next();
 
@@ -88,13 +88,17 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
                     Reader reader = readers.get(i);
                     if (reader.hasNextBatch()) {
                         data = reader.nextBatch();
-                        batchDataList.set(i, data);
-                        heapPut(data.getTime());
+                        if(data.hasNext()) {
+                            batchDataList.set(i, data);
+                            heapPut(data.currentTime());
+                        } else {
+                            hasDataRemaining.set(i, false);
+                        }
                     } else {
                         hasDataRemaining.set(i, false);
                     }
                 } else {
-                    heapPut(data.getTime());
+                    heapPut(data.currentTime());
                 }
 
             } else {

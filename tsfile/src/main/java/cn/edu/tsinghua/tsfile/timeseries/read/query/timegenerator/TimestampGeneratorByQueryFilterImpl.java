@@ -53,10 +53,10 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
     public Object getValue(Path path, long time) {
 
         for (Reader reader : readerCache.get(path)) {
-            if(!reader.nextBatch().hasNext())
+            if(!reader.currentBatch().hasNext())
                 return null;
-            if (reader.nextBatch().getTime() == time)
-                return reader.nextBatch().getValue();
+            if (reader.currentBatch().currentTime() == time)
+                return reader.currentBatch().currentValue();
         }
 
         return null;

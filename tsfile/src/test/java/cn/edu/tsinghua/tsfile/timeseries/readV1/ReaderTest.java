@@ -59,7 +59,7 @@ public class ReaderTest {
         while(seriesReader.hasNextBatch()) {
             data = seriesReader.nextBatch();
             while (data.hasNext()) {
-                Assert.assertEquals(startTime, data.getTime());
+                Assert.assertEquals(startTime, data.currentTime());
                 data.next();
                 startTime++;
                 count++;
@@ -99,7 +99,7 @@ public class ReaderTest {
         while(seriesReader.hasNextBatch()) {
             data = seriesReader.nextBatch();
             while (data.hasNext()) {
-                Assert.assertEquals(aimedTimestamp++, data.getTime());
+                Assert.assertEquals(aimedTimestamp++, data.currentTime());
                 data.next();
             }
         }

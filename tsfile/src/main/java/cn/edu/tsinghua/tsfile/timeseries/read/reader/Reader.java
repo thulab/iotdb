@@ -14,6 +14,7 @@ public interface Reader {
      */
     BatchData nextBatch();
 
+    BatchData currentBatch();
 
     void close() throws IOException;
 }

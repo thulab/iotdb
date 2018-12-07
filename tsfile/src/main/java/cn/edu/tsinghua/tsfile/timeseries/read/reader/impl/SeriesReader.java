@@ -19,6 +19,9 @@ public abstract class SeriesReader implements Reader {
     protected boolean chunkReaderInitialized;
     protected int currentChunkIndex;
 
+    private BatchData data;
+    private boolean hasCachedData;
+
     public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
@@ -29,8 +32,13 @@ public abstract class SeriesReader implements Reader {
     @Override
     public boolean hasNextBatch() throws IOException {
 
+        if(hasCachedData)
+            return true;
+
         // current chunk has additional batch
         if (chunkReader != null && chunkReader.hasNextBatch()) {
+            data = chunkReader.nextBatch();
+            hasCachedData = true;
             return true;
         }
 
@@ -42,8 +50,11 @@ public abstract class SeriesReader implements Reader {
                 // chunk metadata satisfy the condition
                 initChunkReader(chunkMetaData);
 
-                if (chunkReader.hasNextBatch())
+                if (chunkReader.hasNextBatch()) {
+                    this.data = chunkReader.nextBatch();
+                    hasCachedData = true;
                     return true;
+                }
             }
 
         }
@@ -53,7 +64,13 @@ public abstract class SeriesReader implements Reader {
 
     @Override
     public BatchData nextBatch() {
-        return chunkReader.nextBatch();
+        hasCachedData = false;
+        return data;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return data;
     }
 
     protected abstract void initChunkReader(ChunkMetaData chunkMetaData) throws IOException;

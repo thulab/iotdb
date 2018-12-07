@@ -63,12 +63,12 @@ public class BatchData {
         return curIdx < timeLength;
     }
 
-    public long getTime() {
+    public long currentTime() {
         rangeCheckForTime(curIdx);
         return this.timeRet.get(curIdx / TIME_CAPACITY)[curIdx % TIME_CAPACITY];
     }
 
-    public Object getValue() {
+    public Object currentValue() {
         switch (dataType) {
             case INT32:
                 return getInt();

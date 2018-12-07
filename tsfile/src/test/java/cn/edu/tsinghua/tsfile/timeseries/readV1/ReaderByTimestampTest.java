@@ -57,10 +57,10 @@ public class ReaderByTimestampTest {
         while (seriesReader.hasNextBatch()) {
             data = seriesReader.nextBatch();
             while (data.hasNext()) {
-                timeList.add(data.getTime() - 1);
+                timeList.add(data.currentTime() - 1);
                 valueList.add(null);
-                timeList.add(data.getTime());
-                valueList.add(data.getValue());
+                timeList.add(data.currentTime());
+                valueList.add(data.currentValue());
                 data.next();
                 count++;
             }
