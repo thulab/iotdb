@@ -11,9 +11,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/2/1.
- */
+
 public class SimpleMetadataQuerierForMergeTest {
 
     @Test

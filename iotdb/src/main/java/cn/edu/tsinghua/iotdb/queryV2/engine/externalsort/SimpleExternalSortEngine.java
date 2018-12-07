@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/20.
- */
+
 public class SimpleExternalSortEngine implements ExternalSortJobEngine {
 
     private ExternalSortJobScheduler scheduler;

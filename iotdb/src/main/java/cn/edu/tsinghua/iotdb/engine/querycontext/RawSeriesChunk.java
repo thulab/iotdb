@@ -6,9 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
 import java.util.Iterator;
 
-/**
- * Created by zhangjinrui on 2018/1/21.
- */
+
 public interface RawSeriesChunk {
 
     TSDataType getDataType();

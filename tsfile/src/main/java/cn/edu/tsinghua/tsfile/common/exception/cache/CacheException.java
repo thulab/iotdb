@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.tsfile.common.exception.cache;
 
-/**
- * Created by zhangjinrui on 2017/12/25.
- */
+
 public class CacheException extends Exception {
     public CacheException() {
     }

@@ -5,9 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class GlobalSortedSeriesDataSource {
     private Path seriesPath;
     private List<IntervalFileNode> sealedTsFiles;

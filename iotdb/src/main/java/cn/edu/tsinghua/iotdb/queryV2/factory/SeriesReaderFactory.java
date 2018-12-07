@@ -33,9 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class SeriesReaderFactory {
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
     private OverflowSeriesChunkLoader overflowSeriesChunkLoader;

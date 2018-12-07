@@ -23,9 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-/**
- * Created by zhangjinrui on 2018/1/19.
- */
 @Ignore
 public class TsFileGenerator {
 

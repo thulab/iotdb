@@ -3,9 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
-/**
- * Created by zhangjinrui on 2018/1/26.
- */
+
 public class TimeValuePairInMemTable extends TimeValuePair implements Comparable<TimeValuePairInMemTable> {
 
     public TimeValuePairInMemTable(long timestamp, TsPrimitiveType value) {

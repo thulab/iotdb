@@ -7,9 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by zhangjinrui on 2018/1/29.
- */
+
 public abstract class RandomDeleteCache<K, V> implements Cache<K, V> {
 
     private int cacheSize;

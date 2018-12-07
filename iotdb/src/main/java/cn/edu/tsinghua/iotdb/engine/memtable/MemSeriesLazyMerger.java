@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/26.
- */
+
 public class MemSeriesLazyMerger implements TimeValuePairSorter{
 
     private List<IMemSeries> memSeriesList;

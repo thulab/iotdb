@@ -11,9 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-/**
- * Created by zhangjinrui on 2018/1/15.
- */
+
 public class SegmentInputStreamTest {
     private static final String PATH = "fileStreamManagerTestFile";
     private static int count = 10000;

@@ -8,7 +8,6 @@ import java.io.IOException;
 /**
  * Read TimeValuePair in one SeriesChunkGroup.
  * This reader may use external sort to reduce the usage of memory
- * Created by zhangjinrui on 2018/1/15.
  */
 public class SeriesInOneGroupReaderImpl implements SeriesReader {
     @Override

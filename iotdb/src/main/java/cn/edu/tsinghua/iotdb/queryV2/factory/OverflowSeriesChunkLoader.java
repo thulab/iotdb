@@ -16,7 +16,6 @@ import java.nio.MappedByteBuffer;
 
 /**
  * This class is used to load one SeriesChunk according to the SeriesChunkDescriptor
- * Created by zhangjinrui on 2018/1/18.
  */
 public class OverflowSeriesChunkLoader {
     private static final Logger logger = LoggerFactory.getLogger(OverflowSeriesChunkLoader.class);

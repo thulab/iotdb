@@ -13,9 +13,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2017/12/25.
- */
+
 public class MetadataQuerierByFileImplTest {
 
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;

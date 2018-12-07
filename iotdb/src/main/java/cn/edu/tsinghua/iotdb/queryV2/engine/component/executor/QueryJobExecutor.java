@@ -6,9 +6,7 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobExecutionMessa
 import cn.edu.tsinghua.iotdb.queryV2.engine.impl.QueryEngineImpl;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 
-/**
- * Created by zhangjinrui on 2018/1/10.
- */
+
 public abstract class QueryJobExecutor implements Runnable {
 
     private QueryJob queryJob;

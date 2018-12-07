@@ -10,9 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import java.io.IOException;
 import java.util.Iterator;
 
-/**
- * Created by zhangjinrui on 2018/1/23.
- */
+
 public class RawSeriesChunkReaderWithFilter implements TimeValuePairReader, SeriesReader {
 
     private RawSeriesChunk rawSeriesChunk;

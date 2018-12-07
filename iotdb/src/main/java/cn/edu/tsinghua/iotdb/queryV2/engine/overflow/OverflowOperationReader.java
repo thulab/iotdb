@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/11.
- */
+
 public interface OverflowOperationReader {
 
     boolean hasNext();

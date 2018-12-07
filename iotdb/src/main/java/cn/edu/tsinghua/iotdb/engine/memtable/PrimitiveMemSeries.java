@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-/**
- * Created by zhangjinrui on 2018/1/25.
- */
+
 public class PrimitiveMemSeries implements IMemSeries {
     private TSDataType dataType;
     private PrimitiveArrayList list;

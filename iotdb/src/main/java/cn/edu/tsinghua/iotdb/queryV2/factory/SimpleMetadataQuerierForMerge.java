@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/2/1.
- */
+
 public class SimpleMetadataQuerierForMerge implements MetadataQuerier {
     private static final int FOOTER_LENGTH = 4;
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;

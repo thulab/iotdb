@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * This class is used to generate SeriesChunkDescriptors according to given SeriesChunkMetadata.
- * Created by zhangjinrui on 2018/1/18.
  */
 public class SeriesDescriptorGenerator {
     public static List<EncodedSeriesChunkDescriptor> genSeriesChunkDescriptorList(List<OverflowInsertFile> overflowInsertFileList) {

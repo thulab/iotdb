@@ -4,9 +4,7 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/20.
- */
+
 public abstract class ExternalSortJobPart {
 
     private ExternalSortJobPartType type;

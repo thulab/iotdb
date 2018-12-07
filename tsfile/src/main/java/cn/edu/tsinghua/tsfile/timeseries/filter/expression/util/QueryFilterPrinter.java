@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.BinaryQueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.UnaryQueryFilter;
 
-/**
- * Created by zhangjinrui on 2017/12/19.
- */
+
 public class QueryFilterPrinter {
 
     private static final int MAX_DEPTH = 100;

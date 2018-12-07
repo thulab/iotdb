@@ -14,9 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-/**
- * Created by zhangjinrui on 2018/1/9.
- */
+
 public class QueryEngineImpl implements QueryEngine, Runnable {
     private static final Logger logger = LoggerFactory.getLogger(QueryEngineImpl.class);
     private static final int PENDING_QUEUE_SIZE = 100000;

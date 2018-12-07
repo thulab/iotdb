@@ -7,7 +7,6 @@ import java.io.IOException;
 
 /**
  * Read TimeValuePair for one Series in BufferWrite which concludes all seriesChunks in TsFile and MemTable.
- * Created by zhangjinrui on 2018/1/15.
  */
 public class SequentialSeriesReaderImpl implements SeriesReader {
     @Override

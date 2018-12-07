@@ -12,7 +12,6 @@ import java.io.IOException;
 
 /**
  * This class is used to combine one series with corresponding update operations
- * Created by zhangjinrui on 2018/1/15.
  */
 public class SeriesWithOverflowOpReader implements SeriesReader {
 

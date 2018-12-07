@@ -45,7 +45,6 @@ import java.util.Map;
 
 /**
  * Dear Kuner, do you remember the night we find the big bug ?
- * Created by zhangjinrui on 2018/1/26.
  */
 @Ignore
 public class ForDebug {

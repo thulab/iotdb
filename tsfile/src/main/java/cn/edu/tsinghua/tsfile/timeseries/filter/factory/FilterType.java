@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.tsfile.timeseries.filter.factory;
 
-/**
- * Created by zhangjinrui on 2017/12/15.
- */
+
 public enum FilterType {
     VALUE_FILTER("value"), TIME_FILTER("time");
 

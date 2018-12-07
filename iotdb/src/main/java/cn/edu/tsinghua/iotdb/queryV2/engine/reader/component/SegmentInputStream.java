@@ -14,7 +14,6 @@ import java.nio.channels.FileChannel;
  * <p>
  * IMPORTANT: Multiple SegmentInputStream with same RandomAccessFile reference could not be used in different thread.
  * </p>
- * Created by zhangjinrui on 2018/1/14.
  */
 public class SegmentInputStream extends InputStream {
     private RandomAccessFile randomAccessFile;

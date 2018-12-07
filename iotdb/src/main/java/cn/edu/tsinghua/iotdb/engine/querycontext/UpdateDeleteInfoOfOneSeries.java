@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class UpdateDeleteInfoOfOneSeries {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDeleteInfoOfOneSeries.class);
     private TSDataType dataType;

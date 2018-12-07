@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-/**
- * Created by zhangjinrui on 2018/1/11.
- */
+
 public class PriorityMergeSortTimeValuePairReader <T extends PriorityTimeValuePairReader>
         implements TimeValuePairReader, SeriesReader {
 

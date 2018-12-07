@@ -6,9 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/15.
- */
 @Ignore
 public class SimpleFileWriter {
 

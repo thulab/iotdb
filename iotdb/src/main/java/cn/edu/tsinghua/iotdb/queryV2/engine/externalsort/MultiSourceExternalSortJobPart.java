@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/20.
- */
+
 public class MultiSourceExternalSortJobPart extends ExternalSortJobPart {
     private String tmpFilePath;
     private List<ExternalSortJobPart> source;

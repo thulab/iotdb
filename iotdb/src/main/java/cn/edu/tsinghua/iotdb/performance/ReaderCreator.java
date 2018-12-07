@@ -33,9 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by zhangjinrui on 2018/3/13.
- */
+
 public class ReaderCreator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReaderCreator.class);

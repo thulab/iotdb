@@ -8,9 +8,6 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/26.
- */
 //TODO: merge RawSeriesChunkLazyLoadImpl and PrimitiveMemSeries, RawSeriesChunk and IMemSeries
 public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
 

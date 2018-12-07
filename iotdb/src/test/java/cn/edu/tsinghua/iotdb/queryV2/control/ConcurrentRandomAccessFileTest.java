@@ -12,9 +12,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/13.
- */
+
 public class ConcurrentRandomAccessFileTest {
 
     private static final String PATH = "concurrentFile.io";

@@ -14,7 +14,6 @@ import java.io.IOException;
  * IMPORTANT: Remember invoke {@code close()} to close the file stream(s) opened.
  * <p/>
  * <p>
- * Created by zhangjinrui on 2018/1/18.
  */
 public class OverflowInsertDataReader implements SeriesReader {
 

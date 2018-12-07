@@ -5,9 +5,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2017/12/25.
- */
+
 public class LRUCacheTest {
 
     private LRUCache<Integer, Integer> cache;

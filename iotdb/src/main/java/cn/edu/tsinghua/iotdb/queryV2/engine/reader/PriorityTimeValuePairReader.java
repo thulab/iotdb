@@ -5,9 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/11.
- */
+
 public class PriorityTimeValuePairReader implements SeriesReader {
 
     protected SeriesReader seriesReader;

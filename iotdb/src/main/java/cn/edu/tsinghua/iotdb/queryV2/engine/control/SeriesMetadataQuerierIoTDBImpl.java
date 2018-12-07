@@ -19,9 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/12.
- */
+
 public class SeriesMetadataQuerierIoTDBImpl {
 
     private static final int FOOTER_LENGTH = 4;

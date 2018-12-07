@@ -10,9 +10,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Random;
 
-/**
- * Created by zhangjinrui on 2018/1/27.
- */
 @Ignore
 public class MManagerEfficiencyTest {
 

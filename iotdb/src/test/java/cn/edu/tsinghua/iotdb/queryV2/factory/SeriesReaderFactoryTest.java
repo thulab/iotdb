@@ -24,9 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * Created by zhangjinrui on 2018/1/19.
- */
 public class SeriesReaderFactoryTest {
 
     @Test
