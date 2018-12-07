@@ -1,12 +1,13 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class NodeTest {
     public void testLeafNode() throws IOException {
         int index = 0;
         long[] timestamps = new long[]{1, 2, 3, 4, 5, 6, 7};
-        Reader seriesReader = new FakedSeriesReader(timestamps);
+        SeriesReader seriesReader = new FakedSeriesReader(timestamps);
         Node leafNode = new LeafNode(seriesReader);
         while (leafNode.hasNext()) {
             Assert.assertEquals(timestamps[index++], leafNode.next());
@@ -72,12 +73,13 @@ public class NodeTest {
     }
 
 
-    private static class FakedSeriesReader implements Reader {
+    private static class FakedSeriesReader extends SeriesReader {
 
         BatchData data;
         boolean hasCachedData;
 
         public FakedSeriesReader(long[] timestamps) {
+            super(null, null);
             data = new BatchData(TSDataType.INT32, true);
             for (long time : timestamps) {
                 data.putTime(time);
@@ -99,6 +101,16 @@ public class NodeTest {
         @Override
         public BatchData currentBatch() {
             return data;
+        }
+
+        @Override
+        protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
+
+        }
+
+        @Override
+        protected boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
+            return false;
         }
 
         @Override

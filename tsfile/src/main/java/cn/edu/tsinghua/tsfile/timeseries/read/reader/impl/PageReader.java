@@ -7,13 +7,12 @@ import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
-public class PageReader implements Reader {
+public class PageReader {
 
     private TSDataType dataType;
 
@@ -62,8 +61,6 @@ public class PageReader implements Reader {
         valueBuffer.position(timeBufferLength);
     }
 
-
-    @Override
     public boolean hasNextBatch() throws IOException {
         return timeDecoder.hasNext(timeBuffer);
     }
@@ -71,7 +68,7 @@ public class PageReader implements Reader {
     /**
      * may return an empty BatchData
      */
-    @Override public BatchData nextBatch() throws IOException {
+    public BatchData nextBatch() throws IOException {
         if (filter == null)
             data = getAllPageData();
         else
@@ -80,7 +77,6 @@ public class PageReader implements Reader {
         return data;
     }
 
-    @Override
     public BatchData currentBatch() {
         return data;
     }
@@ -177,7 +173,6 @@ public class PageReader implements Reader {
         return pageData;
     }
 
-    @Override
     public void close() {
         timeBuffer = null;
         valueBuffer = null;

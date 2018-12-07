@@ -12,7 +12,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
@@ -52,7 +52,7 @@ public class ReaderTest {
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
 
-        Reader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
+        SeriesReader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         long startTime = TsFileGeneratorForTest.START_TIMESTAMP;
         BatchData data = null;
 
@@ -90,7 +90,7 @@ public class ReaderTest {
                 FilterFactory.and(TimeFilter.gt(1480563570029L), TimeFilter.lt(1480563570033L)),
                 FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
         SeriesFilter seriesFilter = new SeriesFilter(new Path("d1.s1"), filter);
-        Reader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
+        SeriesReader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
 
         BatchData data;
 

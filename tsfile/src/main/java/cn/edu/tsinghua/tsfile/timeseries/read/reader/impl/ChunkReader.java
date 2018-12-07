@@ -10,14 +10,13 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 
-public abstract class ChunkReader implements Reader {
+public abstract class ChunkReader {
 
     ChunkHeader chunkHeader;
     private ByteBuffer chunkDataBuffer;
@@ -48,13 +47,10 @@ public abstract class ChunkReader implements Reader {
     }
 
 
-    @Override
     public boolean hasNextBatch() {
         return chunkDataBuffer.remaining() > 0;
     }
 
-
-    @Override
     public BatchData nextBatch() throws IOException {
 
         // construct next satisfied page header
@@ -77,7 +73,6 @@ public abstract class ChunkReader implements Reader {
         return data;
     }
 
-    @Override
     public BatchData currentBatch() {
         return data;
     }
@@ -104,7 +99,6 @@ public abstract class ChunkReader implements Reader {
                 chunkHeader.getDataType(), valueDecoder, timeDecoder, filter);
     }
 
-    @Override
     public void close() {
     }
 

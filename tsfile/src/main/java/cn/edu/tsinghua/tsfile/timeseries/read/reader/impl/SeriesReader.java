@@ -3,7 +3,6 @@ package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
 /**
  * <p> Series reader is used to query one series of one tsfile.
  */
-public abstract class SeriesReader implements Reader {
+public abstract class SeriesReader {
 
     protected ChunkLoader chunkLoader;
     protected List<ChunkMetaData> chunkMetaDataList;
@@ -26,7 +25,6 @@ public abstract class SeriesReader implements Reader {
         this.chunkToRead = 0;
     }
 
-    @Override
     public boolean hasNextBatch() {
 
         // current chunk has data
@@ -40,7 +38,6 @@ public abstract class SeriesReader implements Reader {
 
     }
 
-    @Override
     public BatchData nextBatch() throws IOException {
 
         // current chunk has additional batch
@@ -67,7 +64,6 @@ public abstract class SeriesReader implements Reader {
         return data;
     }
 
-    @Override
     public BatchData currentBatch() {
         return data;
     }

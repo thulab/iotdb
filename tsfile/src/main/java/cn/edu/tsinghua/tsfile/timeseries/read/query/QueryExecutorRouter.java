@@ -11,7 +11,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
 
@@ -62,12 +62,12 @@ public class QueryExecutorRouter implements QueryExecutor {
      * @return DataSet without TimeGenerator
      */
     private QueryDataSet execute(List<Path> selectedPathList) throws IOException {
-        List<Reader> readersOfSelectedSeries = new ArrayList<>();
+        List<SeriesReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            Reader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
+            SeriesReader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.add(seriesReader);
             dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
@@ -83,12 +83,12 @@ public class QueryExecutorRouter implements QueryExecutor {
      * @return DataSet without TimeGenerator
      */
     private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeFilter timeFilter) throws IOException {
-        List<Reader> readersOfSelectedSeries = new ArrayList<>();
+        List<SeriesReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            Reader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter.getFilter());
+            SeriesReader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter.getFilter());
             readersOfSelectedSeries.add(seriesReader);
             dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
