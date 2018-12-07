@@ -6,7 +6,7 @@ import java.util.List;
 
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 
 public class BufferIO extends TsFileIOWriter {
 

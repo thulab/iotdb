@@ -29,7 +29,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 
 public class OverflowIO extends TsFileIOWriter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowIO.class);

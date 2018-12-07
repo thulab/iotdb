@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.engine;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFuture;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
 
 
 public interface QueryEngine {

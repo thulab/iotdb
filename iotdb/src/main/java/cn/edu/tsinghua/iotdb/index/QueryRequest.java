@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.index;
 
 
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * The abstract class for a query request with specific parameters.

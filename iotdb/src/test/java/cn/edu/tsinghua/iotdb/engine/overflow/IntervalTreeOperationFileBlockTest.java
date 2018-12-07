@@ -10,10 +10,10 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory;
+import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.read.filter.definition.operators.GtEq;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
 /**
  * @author CGF.

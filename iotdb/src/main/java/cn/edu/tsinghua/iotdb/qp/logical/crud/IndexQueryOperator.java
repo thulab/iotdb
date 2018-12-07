@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
 
 import cn.edu.tsinghua.iotdb.index.IndexManager;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 public class IndexQueryOperator extends SFWOperator {
 

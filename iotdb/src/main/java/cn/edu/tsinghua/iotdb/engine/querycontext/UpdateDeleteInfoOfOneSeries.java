@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.querycontext;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReaderImpl;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -9,13 +9,13 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
 import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
+import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,8 +29,8 @@ import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
 import cn.edu.tsinghua.iotdb.qp.utils.MemIntQpExecutor;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
 public class PhysicalPlanTest {
 

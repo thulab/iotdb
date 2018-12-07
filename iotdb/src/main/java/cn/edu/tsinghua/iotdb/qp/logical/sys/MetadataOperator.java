@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.logical.sys;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.qp.logical.RootOperator;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * this class maintains information in Metadata.namespace statement

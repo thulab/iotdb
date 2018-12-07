@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteForEncodingUtils;
 import org.junit.Test;
 
 

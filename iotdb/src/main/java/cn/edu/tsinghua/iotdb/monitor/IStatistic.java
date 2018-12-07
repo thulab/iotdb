@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.monitor;
 
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 
 import java.util.HashMap;
 import java.util.List;

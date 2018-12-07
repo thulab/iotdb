@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.util;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.common.SeriesChunkDescriptor;
+import cn.edu.tsinghua.tsfile.read.common.SeriesChunkDescriptor;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.List;
 

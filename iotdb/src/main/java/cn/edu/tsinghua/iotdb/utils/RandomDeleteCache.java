@@ -1,9 +1,8 @@
 package cn.edu.tsinghua.iotdb.utils;
 
-import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
-import cn.edu.tsinghua.tsfile.timeseries.utils.cache.Cache;
+import cn.edu.tsinghua.tsfile.exception.cache.CacheException;
+import cn.edu.tsinghua.tsfile.common.cache.Cache;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

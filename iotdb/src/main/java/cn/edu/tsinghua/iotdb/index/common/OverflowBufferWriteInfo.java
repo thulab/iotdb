@@ -2,9 +2,8 @@ package cn.edu.tsinghua.iotdb.index.common;
 
 import cn.edu.fudan.dsm.kvmatch.iotdb.utils.IntervalUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

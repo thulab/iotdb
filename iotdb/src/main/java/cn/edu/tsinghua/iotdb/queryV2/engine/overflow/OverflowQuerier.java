@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.overflow;
 
-import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 
 public interface OverflowQuerier {

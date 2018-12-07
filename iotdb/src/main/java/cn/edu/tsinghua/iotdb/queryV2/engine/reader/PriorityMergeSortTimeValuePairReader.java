@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.TimeValuePairReader;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.TimeValuePairReader;
 
 import java.io.IOException;
 import java.util.ArrayList;

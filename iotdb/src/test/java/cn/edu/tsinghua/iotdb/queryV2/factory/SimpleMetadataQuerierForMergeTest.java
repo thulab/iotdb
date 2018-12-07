@@ -2,9 +2,9 @@ package cn.edu.tsinghua.iotdb.queryV2.factory;
 
 import cn.edu.tsinghua.iotdb.queryV2.TsFileGenerator;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
 import org.junit.Assert;
 import org.junit.Test;
 

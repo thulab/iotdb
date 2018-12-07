@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.treeV2.IntervalTreeOperation;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

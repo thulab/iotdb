@@ -9,11 +9,11 @@ import java.io.File;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.*;
+import cn.edu.tsinghua.tsfile.write.TsFileWriter;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.*;
 
 /**
  * An example of writing data to TsFile

@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.control;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

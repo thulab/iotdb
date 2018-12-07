@@ -14,8 +14,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.Digest;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.PageReader;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
 /**
  * @author CGF.

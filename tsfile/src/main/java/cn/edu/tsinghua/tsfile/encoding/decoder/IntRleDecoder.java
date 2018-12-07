@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.encoding.decoder;
 
-import cn.edu.tsinghua.tsfile.common.exception.TSFileDecodingException;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.exception.encoding.TSFileDecodingException;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.bitpacking.IntPacker;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import org.slf4j.Logger;

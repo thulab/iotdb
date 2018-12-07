@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.file.metadata.utils;
 
 import cn.edu.tsinghua.tsfile.file.metadata.*;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 
 import java.nio.ByteBuffer;
 import java.util.List;

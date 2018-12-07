@@ -9,8 +9,8 @@ import org.json.JSONObject;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 public class FileSchemaUtils {
 

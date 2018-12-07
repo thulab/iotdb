@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.control;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.ConcurrentRandomAccessFile;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

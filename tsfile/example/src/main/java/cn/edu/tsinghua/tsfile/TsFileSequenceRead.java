@@ -9,9 +9,9 @@ import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.page.PageReader;
+import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
+import cn.edu.tsinghua.tsfile.read.reader.page.PageReader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

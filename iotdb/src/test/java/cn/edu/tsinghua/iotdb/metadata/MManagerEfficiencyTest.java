@@ -2,10 +2,9 @@ package cn.edu.tsinghua.iotdb.metadata;
 
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
+import cn.edu.tsinghua.tsfile.exception.cache.CacheException;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Random;
