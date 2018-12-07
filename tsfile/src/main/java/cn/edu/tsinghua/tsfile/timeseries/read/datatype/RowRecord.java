@@ -12,10 +12,6 @@ public class RowRecord {
         this.fields = new ArrayList<>();
     }
 
-    public long getTime() {
-        return timestamp;
-    }
-
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }

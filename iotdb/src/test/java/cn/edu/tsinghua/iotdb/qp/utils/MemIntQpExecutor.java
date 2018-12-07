@@ -20,7 +20,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,7 +325,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
      *
      * @author kangrong
      */
-    private class TestIntegerRowRecord extends OldRowRecord {
+    private class TestIntegerRowRecord extends RowRecord {
         //pair<path, value>
         public List<Pair<String, String>> measurementData = new ArrayList<>();
 
@@ -338,7 +338,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
             measurementData.add(new Pair<>(path, value));
         }
 
-        public void putARowRecord(OldRowRecord record) {
+        public void putARowRecord(RowRecord record) {
             TestIntegerRowRecord tmpRecord = (TestIntegerRowRecord) record;
             for (Pair<String, String> pair : tmpRecord.getMeasureMentData()) {
                 this.addSensor(pair.left, pair.right);

@@ -7,6 +7,7 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataRead
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
@@ -48,7 +49,7 @@ public class InsertDynamicData {
     private OverflowOperationReader overflowOperationReader;
 
     /** time filter for this series **/
-    public SeriesFilter timeFilter;
+    public GlobalTimeFilter timeFilter;
 
     /** value filter for this series **/
     public SeriesFilter valueFilter;
@@ -67,7 +68,7 @@ public class InsertDynamicData {
     private SingleValueVisitor singleValueVisitor;
     private SingleValueVisitor singleTimeVisitor;
 
-    public InsertDynamicData(TSDataType dataType, SeriesFilter timeFilter, SeriesFilter valueFilter,
+    public InsertDynamicData(TSDataType dataType, GlobalTimeFilter timeFilter, SeriesFilter valueFilter,
                              RawSeriesChunk memRawSeriesChunk, OverflowInsertDataReader overflowInsertDataReader, OverflowOperationReader overflowOperationReader) {
         this.dataType = dataType;
         this.timeFilter = timeFilter;

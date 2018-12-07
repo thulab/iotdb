@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.FilterUtils;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 
 /**
@@ -55,7 +55,7 @@ public class MemIntQpExecutorTest {
             if (!ret.hasNextRecord())
                 break;
             while (ret.hasNextRecord()) {
-                OldRowRecord r = ret.getNextRecord();
+                RowRecord r = ret.getNextRecord();
                 System.out.println(r);
             }
         }
@@ -78,7 +78,7 @@ public class MemIntQpExecutorTest {
             if (!ret.hasNextRecord())
                 break;
             while (ret.hasNextRecord()) {
-                OldRowRecord r = ret.getNextRecord();
+                RowRecord r = ret.getNextRecord();
                 System.out.println(r);
             }
         }
@@ -99,7 +99,7 @@ public class MemIntQpExecutorTest {
             if (!ret.hasNextRecord())
                 break;
             while (ret.hasNextRecord()) {
-                OldRowRecord r = ret.getNextRecord();
+                RowRecord r = ret.getNextRecord();
                 System.out.println(r);
             }
         }

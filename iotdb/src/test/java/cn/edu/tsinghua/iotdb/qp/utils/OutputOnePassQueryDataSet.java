@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.qp.utils;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
 /**
  * This getIndex data set is used for getIndex processing. getIndex processing merges a list of OnePassQueryDataSet
@@ -14,13 +14,13 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
  */
 public class OutputOnePassQueryDataSet extends OnePassQueryDataSet {
     protected final int fetchSize;
-    protected OldRowRecord[] data;
+    protected RowRecord[] data;
     protected int size;
     protected int index;
 
     public OutputOnePassQueryDataSet(int fetchSize) {
         this.fetchSize = fetchSize;
-        data = new OldRowRecord[fetchSize];
+        data = new RowRecord[fetchSize];
         size = 0;
         index = 0;
     }
@@ -32,7 +32,7 @@ public class OutputOnePassQueryDataSet extends OnePassQueryDataSet {
      * @return if amount of exist record equals to fetchSize, return false, otherwise return true.
      * 
      */
-    public boolean addRowRecord(OldRowRecord r) {
+    public boolean addRowRecord(RowRecord r) {
         if (size < fetchSize) {
             data[size++] = r;
             return true;
@@ -45,7 +45,7 @@ public class OutputOnePassQueryDataSet extends OnePassQueryDataSet {
      * {@code hasNextRecord} before calling this method.
      */
     @Override
-    public OldRowRecord getNextRecord() {
+    public RowRecord getNextRecord() {
         return data[index++];
     }
 

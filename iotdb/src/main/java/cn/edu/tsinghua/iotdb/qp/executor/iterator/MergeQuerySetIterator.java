@@ -8,10 +8,13 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
 /**
  * This class implements the interface {@code Iterator<OnePassQueryDataSet>}. It is the result of
@@ -23,9 +26,9 @@ import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
  * @author kangrong
  *
  */
-public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
+public class MergeQuerySetIterator implements Iterator<QueryDataSet> {
     private final int mergeFetchSize;
-    private Iterator<OldRowRecord>[] recordIters;
+    private Iterator<RowRecord>[] recordIters;
     private Node[] nodes;
     // it's actually number of series iterators which has next record;
     private int heapSize;
@@ -63,13 +66,13 @@ public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
     }
 
     @Override
-    public OnePassQueryDataSet next() {
-        OnePassQueryDataSet ret = new OnePassQueryDataSet();
+    public QueryDataSet next() {
+        QueryDataSet ret = new QueryDataSet();
         int i = 0;
         while (i < mergeFetchSize && heapSize > 0) {
             Node minNode = nodes[1];
-            if (minNode.rowRecord.timestamp != lastRowTime) {
-                lastRowTime = minNode.rowRecord.timestamp;
+            if (minNode.rowRecord.getTimestamp() != lastRowTime) {
+                lastRowTime = minNode.rowRecord.getTimestamp();
                 i++;
                 // ret.putARowRecord(minNode.r);
                 addNewRecordToOnePassQueryDataSet(ret, minNode.rowRecord);
@@ -103,16 +106,16 @@ public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
     }
 
     private class Node {
-        public OldRowRecord rowRecord;
-        public Iterator<OldRowRecord> iter;
+        public RowRecord rowRecord;
+        public Iterator<RowRecord> iter;
 
-        public Node(OldRowRecord rowRecord, Iterator<OldRowRecord> iter) {
+        public Node(RowRecord rowRecord, Iterator<RowRecord> iter) {
             this.rowRecord = rowRecord;
             this.iter = iter;
         }
 
         public boolean lessThan(Node o) {
-            return rowRecord.timestamp <= o.rowRecord.timestamp;
+            return rowRecord.getTimestamp() <= o.rowRecord.getTimestamp();
         }
 
         @Override
@@ -121,8 +124,8 @@ public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
         }
     }
 
-    private void addNewRecordToOnePassQueryDataSet(OnePassQueryDataSet dataSet, OldRowRecord record) {
-        for (Field f : record.fields) {
+    private void addNewRecordToOnePassQueryDataSet(QueryDataSet dataSet, RowRecord record) {
+        for (Field f : record.getFields()) {
             StringBuilder sb = new StringBuilder();
             sb.append(f.deltaObjectId);
             sb.append(".");
@@ -139,43 +142,43 @@ public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
             switch (f.dataType) {
                 case BOOLEAN:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putBoolean(f.getBoolV());
                     }
                     break;
                 case INT32:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putInt(f.getIntV());
                     }
                     break;
                 case INT64:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putLong(f.getLongV());
                     }
                     break;
                 case FLOAT:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putFloat(f.getFloatV());
                     }
                     break;
                 case DOUBLE:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putDouble(f.getDoubleV());
                     }
                     break;
                 case TEXT:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putBinary(f.getBinaryV());
                     }
                     break;
                 case ENUMS:
                     if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.timestamp);
+                        mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putBinary(f.getBinaryV());
                     }
                     break;

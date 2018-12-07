@@ -13,8 +13,9 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,15 +124,15 @@ public class SingleQueryPlan extends PhysicalPlan {
      * @param executor query process executor
      * @return Iterator<RowRecord>
      */
-    private Iterator<OldRowRecord> getRecordIterator(QueryProcessExecutor executor, int formNumber) throws QueryProcessorException {
+    private Iterator<RowRecord> getRecordIterator(QueryProcessExecutor executor, int formNumber) throws QueryProcessorException {
 
         return new RowRecordIterator(formNumber,paths, executor.getFetchSize(), executor, QueryFilters[0], QueryFilters[1], QueryFilters[2]);
     }
 
 
-    public static Iterator<OldRowRecord>[] getRecordIteratorArray(List<SingleQueryPlan> plans,
+    public static Iterator<RowRecord>[] getRecordIteratorArray(List<SingleQueryPlan> plans,
                                                                QueryProcessExecutor conf) throws QueryProcessorException {
-        Iterator<OldRowRecord>[] ret = new RowRecordIterator[plans.size()];
+        Iterator<RowRecord>[] ret = new RowRecordIterator[plans.size()];
         for (int i = 0; i < plans.size(); i++) {
             ret[i] = plans.get(i).getRecordIterator(conf, i);
         }
@@ -158,7 +159,7 @@ public class SingleQueryPlan extends PhysicalPlan {
         return paths;
     }
 
-    private class RowRecordIterator implements Iterator<OldRowRecord> {
+    private class RowRecordIterator implements Iterator<RowRecord> {
         private boolean noNext = false;
         private List<Path> paths;
         private final int fetchSize;
@@ -200,7 +201,7 @@ public class SingleQueryPlan extends PhysicalPlan {
         }
 
         @Override
-        public OldRowRecord next() {
+        public RowRecord next() {
             return data.getNextRecord();
         }
 

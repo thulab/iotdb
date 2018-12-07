@@ -21,7 +21,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.LongDataPoint;
@@ -140,7 +140,7 @@ public class StatMonitor implements IService{
             OnePassQueryDataSet queryDataSet;
             queryDataSet = overflowQueryEngine.aggregate(pairList, null);
             ReadCacheManager.getInstance().unlockForOneRequest();
-            OldRowRecord rowRecord = queryDataSet.getNextRecord();
+            RowRecord rowRecord = queryDataSet.getNextRecord();
             if (rowRecord!=null) {
                 FileNodeManager fManager = FileNodeManager.getInstance();
                 HashMap<String, AtomicLong> statParamsHashMap = fManager.getStatParamsHashMap();

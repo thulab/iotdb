@@ -116,9 +116,9 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
 
       implicit object RowRecordOrdering extends Ordering[Record] {
         override def compare(r1: Record, r2: Record): Int = {
-          if (r1.record.timestamp == r2.record.timestamp) {
+          if (r1.record.getTimestamp() == r2.record.getTimestamp()) {
             r1.record.getFields.get(0).deltaObjectId.compareTo(r2.record.getFields.get(0).deltaObjectId)
-          } else if (r1.record.timestamp < r2.record.timestamp) {
+          } else if (r1.record.getTimestamp() < r2.record.getTimestamp()) {
             1
           } else {
             -1
@@ -161,7 +161,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
               priorityQueue.enqueue(Record(dataSets(tmpRecord.index).getNextRecord, tmpRecord.index))
             }
 
-            if (curRecord == null || tmpRecord.record.timestamp != curRecord.record.timestamp ||
+            if (curRecord == null || tmpRecord.record.getTimestamp() != curRecord.record.getTimestamp() ||
               !tmpRecord.record.getFields.get(0).deltaObjectId.equals(curRecord.record.getFields.get(0).deltaObjectId)) {
               curRecord = tmpRecord
               deltaObjectId = curRecord.record.getFields.get(0).deltaObjectId
@@ -184,7 +184,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
           var index = 0
           requiredSchema.foreach((field: StructField) => {
             if (field.name == SQLConstant.RESERVED_TIME) {
-              rowBuffer(index) = curRecord.record.timestamp
+              rowBuffer(index) = curRecord.record.getTimestamp()
             } else if (field.name == SQLConstant.RESERVED_DELTA_OBJECT) {
               rowBuffer(index) = deltaObjectId
             } else if (DefaultSource.columnNames.contains(field.name)) {

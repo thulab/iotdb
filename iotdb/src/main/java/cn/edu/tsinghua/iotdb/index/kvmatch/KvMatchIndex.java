@@ -36,7 +36,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -542,7 +542,7 @@ public class KvMatchIndex  implements IoTIndex {
         QueryDataSetIterator queryDataSetIterator = new QueryDataSetIterator(overflowQueryEngine, path, timeInterval, readToken);
         List<Pair<Long, Double>> keyPoints = new ArrayList<>();
         while (queryDataSetIterator.hasNext()) {
-            OldRowRecord row = queryDataSetIterator.getRowRecord();
+            RowRecord row = queryDataSetIterator.getRowRecord();
             keyPoints.add(new Pair<>(row.getTime(), SeriesUtils.getValue(row.getFields().get(0))));
         }
         String prefix = ReadCachePrefix.addQueryPrefix(0);

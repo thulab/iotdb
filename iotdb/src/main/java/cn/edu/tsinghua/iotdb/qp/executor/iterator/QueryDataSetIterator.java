@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
@@ -80,8 +80,8 @@ public class QueryDataSetIterator implements QueryDataSet {
 
     @Override
     public RowRecord next() {
-        OldRowRecord oldRowRecord = data.getNextRecord();
-        return OnePassQueryDataSet.convertToNew(oldRowRecord);
+        RowRecord RowRecord = data.getNextRecord();
+        return OnePassQueryDataSet.convertToNew(RowRecord);
     }
 
 }

@@ -12,6 +12,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.*;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
@@ -34,7 +35,7 @@ public class AggregateRecordReader extends RecordReader {
 
     public AggregateRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                                  String deltaObjectId, String measurementId,
-                                 SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
+                                 GlobalTimeFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
             throws PathErrorException, IOException {
         super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId,
                 queryTimeFilter, queryValueFilter, readToken);

@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.operator.NoRestriction;
+import cn.edu.tsinghua.tsfile.timeseries.filter.operator.None;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 public class QueryDataSourceExecutor {
@@ -15,7 +15,7 @@ public class QueryDataSourceExecutor {
     }
 
     public static QueryDataSource getQueryDataSource(Path selectedPath) throws FileNodeManagerException {
-        SeriesFilter seriesFilter = new SeriesFilter(selectedPath, NoRestriction.getInstance());
+        SeriesFilter seriesFilter = new SeriesFilter(selectedPath, None.INSTANCE);
         return fileNodeManager.query(seriesFilter);
     }
 }

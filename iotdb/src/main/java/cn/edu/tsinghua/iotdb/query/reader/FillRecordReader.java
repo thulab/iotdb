@@ -18,7 +18,7 @@ public class FillRecordReader extends RecordReader{
 
     public FillRecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                              String deltaObjectId, String measurementId,
-                             SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
+                             GlobalTimeFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
             throws PathErrorException, IOException {
         super(globalSortedSeriesDataSource, overflowSeriesDataSource, deltaObjectId, measurementId, queryTimeFilter, queryValueFilter, readToken);
     }

@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -387,7 +387,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                 }
                 OnePassQueryDataSet queryDataSet = readTsFile.query(paths, null, null);
                 while (queryDataSet.hasNextRecord()) {
-                    OldRowRecord record = queryDataSet.getNextRecord();
+                    RowRecord record = queryDataSet.getNextRecord();
                     List<Field> fields = record.getFields();
                     String sql_front = null;
                     for (Field field : fields) {
@@ -396,7 +396,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                             break;
                         }
                     }
-                    String sql_rear = ") values(" + record.timestamp;
+                    String sql_rear = ") values(" + record.getTimestamp();
                     for (Field field : fields) {
                         if (field.toString() != "null") {
                             sql_front = sql_front + "," + field.measurementId.toString();
@@ -495,13 +495,13 @@ public class ServerServiceImpl implements ServerService.Iface {
                     String sqlFormat = "insert into %s(timestamp,%s) values(%s,%s)";
                     OnePassQueryDataSet queryDataSet = readTsFile.query(paths, null, null);
                     while (queryDataSet.hasNextRecord()) {
-                        OldRowRecord record = queryDataSet.getNextRecord();
+                        RowRecord record = queryDataSet.getNextRecord();
                         List<Field> fields = record.getFields();
                         String sql;
                         for (Field field : fields) { // get all data with the timesery in the postback file
                             if (field.toString() != "null") {
                                 sql = String.format(sqlFormat, field.deltaObjectId, field.measurementId.toString(),
-                                        record.timestamp, "%s");
+                                        record.getTimestamp(), "%s");
                                 if (field.dataType == TSDataType.TEXT) {
                                     newDataPoint.put(sql, "'" + field.toString() + "'");
                                 } else {
@@ -519,7 +519,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                             TsFile readTsFileOverlap = new TsFile(inputOverlap);
                             OnePassQueryDataSet queryDataSetOverlap = readTsFileOverlap.query(paths, null, null);
                             while (queryDataSetOverlap.hasNextRecord()) {
-                                OldRowRecord recordOverlap = queryDataSetOverlap.getNextRecord();
+                                RowRecord recordOverlap = queryDataSetOverlap.getNextRecord();
                                 List<Field> fields = recordOverlap.getFields();
                                 String sql;
                                 for (Field field : fields) {

@@ -12,8 +12,10 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.Interval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
@@ -44,7 +46,7 @@ public class RecordReader {
     protected TSDataType dataType;
 
     /** compression type in this series **/
-    public CompressionTypeName compressionTypeName;
+    public CompressionType compressionType;
 
     /** TsFile ReaderManager for current (deltaObjectId, measurementId) **/
     protected ReaderManager tsFileReaderManager;
@@ -85,7 +87,7 @@ public class RecordReader {
 
     public RecordReader(GlobalSortedSeriesDataSource globalSortedSeriesDataSource, OverflowSeriesDataSource overflowSeriesDataSource,
                         String deltaObjectId, String measurementId,
-                        SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
+                        GlobalTimeFilter queryTimeFilter, SeriesFilter queryValueFilter, int readToken)
             throws PathErrorException, IOException {
 
         List<String> sealedFilePathList = new ArrayList<>();

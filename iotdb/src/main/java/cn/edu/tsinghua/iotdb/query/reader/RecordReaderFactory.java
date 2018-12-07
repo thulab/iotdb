@@ -6,11 +6,11 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.operator.NoRestriction;
+import cn.edu.tsinghua.tsfile.timeseries.filter.operator.None;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class RecordReaderFactory {
         } else {
             QueryDataSource queryDataSource;
             try {
-                SeriesFilter seriesFilter = new SeriesFilter(new Path(deltaObjectUID+"."+measurementID), new NoRestriction());
+                SeriesFilter seriesFilter = new SeriesFilter(new Path(deltaObjectUID + "." + measurementID), None.INSTANCE);
                 queryDataSource = fileNodeManager.query(seriesFilter);
             } catch (FileNodeManagerException e) {
                 throw new ProcessorException(e.getMessage());
@@ -73,7 +73,7 @@ public class RecordReaderFactory {
     }
 
     private RecordReader createANewRecordReader(String deltaObjectUID, String measurementID,
-                                                SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter,
+                                                GlobalTimeFilter queryTimeFilter, SeriesFilter queryValueFilter,
                                                 QueryDataSource queryDataSource, ReaderType readerType, int readToken) throws PathErrorException, IOException {
         switch (readerType) {
             case QUERY:
