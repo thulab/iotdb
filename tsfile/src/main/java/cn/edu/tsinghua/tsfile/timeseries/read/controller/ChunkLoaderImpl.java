@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.controller;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.utils.cache.LRUCache;
 

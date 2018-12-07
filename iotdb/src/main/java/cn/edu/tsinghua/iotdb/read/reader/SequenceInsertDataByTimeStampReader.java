@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileByTimestampImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.page.SeriesReaderFromSingleFileByTimestampImpl;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

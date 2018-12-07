@@ -11,7 +11,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV1.TsFileGeneratorForTest;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
@@ -24,7 +24,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 
-public class TimestampGeneratorTest {
+public class TimeGeneratorTest {
 
     private static final String FILE_PATH = TsFileGeneratorForTest.outputDataFile;
     private TsFileSequenceReader fileReader;
@@ -60,7 +60,7 @@ public class TimestampGeneratorTest {
                 ),
                 new SeriesFilter(new Path("d1.s1"), filter3));
 
-        TimestampGeneratorByQueryFilterImpl timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerierByFile);
+        TimeGeneratorImpl timestampGenerator = new TimeGeneratorImpl(queryFilter, chunkLoader, metadataQuerierByFile);
         while (timestampGenerator.hasNext()) {
 //            System.out.println(timestampGenerator.next());
             Assert.assertEquals(startTimestamp, timestampGenerator.next());

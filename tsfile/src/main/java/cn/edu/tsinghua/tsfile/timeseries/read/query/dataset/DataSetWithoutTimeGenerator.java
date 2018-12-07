@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.*;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReader;
 
 import java.io.IOException;
 import java.util.*;

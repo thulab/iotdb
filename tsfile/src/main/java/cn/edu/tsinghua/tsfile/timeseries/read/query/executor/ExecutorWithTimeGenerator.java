@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.query;
+package cn.edu.tsinghua.tsfile.timeseries.read.query.executor;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -8,17 +8,18 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithTimeGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGeneratorByQueryFilterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimeGenerator;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimeGeneratorImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class ExecutorWithTimeGenerator implements QueryExecutor{
+public class ExecutorWithTimeGenerator implements QueryExecutor {
 
     private MetadataQuerier metadataQuerier;
     private ChunkLoader chunkLoader;
@@ -43,7 +44,7 @@ public class ExecutorWithTimeGenerator implements QueryExecutor{
         List<Path> selectedPathList = queryExpression.getSelectedSeries();
 
         // get TimeGenerator by queryFilter
-        TimestampGenerator timestampGenerator = new TimestampGeneratorByQueryFilterImpl(queryFilter, chunkLoader, metadataQuerier);
+        TimeGenerator timeGenerator = new TimeGeneratorImpl(queryFilter, chunkLoader, metadataQuerier);
 
         // the size of hasFilter is equal to selectedPathList, if a series has a filter, it is true, otherwise false
         List<Boolean> cached = removeFilteredPaths(queryFilter, selectedPathList);
@@ -64,7 +65,7 @@ public class ExecutorWithTimeGenerator implements QueryExecutor{
             readersOfSelectedSeries.add(seriesReader);
         }
 
-        return new DataSetWithTimeGenerator(selectedPathList, cached, dataTypes, timestampGenerator, readersOfSelectedSeries);
+        return new DataSetWithTimeGenerator(selectedPathList, cached, dataTypes, timeGenerator, readersOfSelectedSeries);
     }
 
     private List<Boolean> removeFilteredPaths(QueryFilter queryFilter, List<Path> selectedPaths) {

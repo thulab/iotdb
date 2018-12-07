@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.basis.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;

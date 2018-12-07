@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.reader.chunk;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.compress.UnCompressor;
@@ -10,6 +10,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.page.PageReader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

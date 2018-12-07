@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.reader.chunk;
 
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.DigestForFilter;

@@ -8,7 +8,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadataTest;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
 import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;

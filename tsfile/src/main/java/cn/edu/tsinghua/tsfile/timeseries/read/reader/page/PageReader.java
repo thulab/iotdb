@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.reader.page;
 
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;

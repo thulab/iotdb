@@ -2,7 +2,7 @@ package cn.edu.tsinghua.tsfile.timeseries.read.controller;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.readV1.TsFileGeneratorForTest;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;

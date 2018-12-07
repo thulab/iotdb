@@ -1,15 +1,15 @@
 package cn.edu.tsinghua.tsfile.timeseries.readV1;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderByTimestamp;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
 import org.junit.Assert;

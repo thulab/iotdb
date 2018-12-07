@@ -4,7 +4,7 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.utils.RecordUtils;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;

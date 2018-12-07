@@ -14,8 +14,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitor.impl.DigestFilterVisitor
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithFilterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderFromSingleFileWithoutFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.page.SeriesReaderFromSingleFileWithFilterImpl;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.page.SeriesReaderFromSingleFileWithoutFilterImpl;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

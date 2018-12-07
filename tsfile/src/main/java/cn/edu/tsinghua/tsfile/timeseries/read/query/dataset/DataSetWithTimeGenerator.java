@@ -5,8 +5,8 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.*;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderByTimestamp;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimeGenerator;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,34 +21,34 @@ import java.util.List;
  */
 public class DataSetWithTimeGenerator extends QueryDataSet {
 
-    private TimestampGenerator timestampGenerator;
+    private TimeGenerator timeGenerator;
     private List<SeriesReaderByTimestamp> readers;
     private List<Boolean> cached;
 
-    public DataSetWithTimeGenerator(List<Path> paths, List<Boolean> cached, List<TSDataType> dataTypes, TimestampGenerator timestampGenerator, List<SeriesReaderByTimestamp> readers) {
+    public DataSetWithTimeGenerator(List<Path> paths, List<Boolean> cached, List<TSDataType> dataTypes, TimeGenerator timeGenerator, List<SeriesReaderByTimestamp> readers) {
         super(paths, dataTypes);
         this.cached = cached;
-        this.timestampGenerator = timestampGenerator;
+        this.timeGenerator = timeGenerator;
         this.readers = readers;
     }
 
 
     @Override
     public boolean hasNext() throws IOException {
-        return timestampGenerator.hasNext();
+        return timeGenerator.hasNext();
     }
 
 
     @Override
     public RowRecord next() throws IOException {
-        long timestamp = timestampGenerator.next();
+        long timestamp = timeGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
 
         for (int i = 0; i < paths.size(); i++) {
 
             // get value from readers in time generator
             if (cached.get(i)) {
-                Object value = timestampGenerator.getValue(paths.get(i), timestamp);
+                Object value = timeGenerator.getValue(paths.get(i), timestamp);
                 rowRecord.addField(getField(value, dataTypes.get(i)));
                 continue;
             }

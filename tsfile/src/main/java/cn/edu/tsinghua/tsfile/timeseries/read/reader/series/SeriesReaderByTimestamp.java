@@ -1,10 +1,12 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
+package cn.edu.tsinghua.tsfile.timeseries.read.reader.series;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.chunk.ChunkReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.chunk.ChunkReaderByTimestamp;
 
 import java.io.IOException;
 import java.util.List;

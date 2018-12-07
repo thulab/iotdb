@@ -13,6 +13,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 import org.junit.After;
 import org.junit.Assert;

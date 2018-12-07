@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReader;
 import org.junit.Assert;
 import org.junit.Test;
 

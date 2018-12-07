@@ -13,8 +13,8 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderWithFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
+public class TimeGeneratorImpl implements TimeGenerator {
 
     private ChunkLoader chunkLoader;
     private MetadataQuerier metadataQuerier;
@@ -30,7 +30,7 @@ public class TimestampGeneratorByQueryFilterImpl implements TimestampGenerator {
 
     private HashMap<Path, List<LeafNode>> leafCache;
 
-    public TimestampGeneratorByQueryFilterImpl(QueryFilter queryFilter, ChunkLoader chunkLoader
+    public TimeGeneratorImpl(QueryFilter queryFilter, ChunkLoader chunkLoader
             , MetadataQuerier metadataQuerier) throws IOException {
         this.chunkLoader = chunkLoader;
         this.metadataQuerier = metadataQuerier;

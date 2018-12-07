@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read.query;
+package cn.edu.tsinghua.tsfile.timeseries.read.query.executor;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -9,23 +9,26 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.util.QueryFilterOptim
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReaderWithoutFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.executor.ExecutorWithTimeGenerator;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.executor.QueryExecutor;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.series.SeriesReaderWithoutFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class QueryExecutorRouter implements QueryExecutor {
+public class TsFileExecutor implements QueryExecutor {
 
     private MetadataQuerier metadataQuerier;
     private ChunkLoader chunkLoader;
 
-    public QueryExecutorRouter(MetadataQuerier metadataQuerier, ChunkLoader chunkLoader) {
+    public TsFileExecutor(MetadataQuerier metadataQuerier, ChunkLoader chunkLoader) {
         this.metadataQuerier = metadataQuerier;
         this.chunkLoader = chunkLoader;
     }

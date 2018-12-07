@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.timeseries.read.controller;
 
 import cn.edu.tsinghua.tsfile.file.metadata.*;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.utils.cache.LRUCache;
 

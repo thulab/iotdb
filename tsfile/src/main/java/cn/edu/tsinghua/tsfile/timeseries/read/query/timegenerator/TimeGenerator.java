@@ -10,7 +10,7 @@ import java.io.IOException;
  *
  * Then we use this timestamp to get values in other series that are not included in QueryFilter
  */
-public interface TimestampGenerator {
+public interface TimeGenerator {
 
     boolean hasNext() throws IOException;
 

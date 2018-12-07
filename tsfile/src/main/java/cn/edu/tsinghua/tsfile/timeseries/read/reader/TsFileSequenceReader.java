@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.tsfile.timeseries.read;
+package cn.edu.tsinghua.tsfile.timeseries.read.reader;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
