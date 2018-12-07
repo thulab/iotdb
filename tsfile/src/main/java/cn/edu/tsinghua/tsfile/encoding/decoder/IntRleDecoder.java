@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.encoding.decoder;
 
-import cn.edu.tsinghua.tsfile.common.exception.TSFileDecodingException;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.exception.encoding.TsFileDecodingException;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.bitpacking.IntPacker;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public class IntRleDecoder extends RleDecoder {
                 result = currentBuffer[bitPackingNum - currentCount - 1];
                 break;
             default:
-                throw new TSFileDecodingException(String.format("tsfile-encoding IntRleDecoder: not a valid mode %s", mode));
+                throw new TsFileDecodingException(String.format("tsfile-encoding IntRleDecoder: not a valid mode %s", mode));
         }
 
         if (!hasNextPackage()) {

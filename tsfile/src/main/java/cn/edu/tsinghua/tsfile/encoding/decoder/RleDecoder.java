@@ -2,10 +2,10 @@ package cn.edu.tsinghua.tsfile.encoding.decoder;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.exception.TSFileDecodingException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.exception.encoding.TsFileDecodingException;
+import cn.edu.tsinghua.tsfile.utils.Binary;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 
@@ -102,13 +102,13 @@ public abstract class RleDecoder extends Decoder {
                     currentCount = (bitPackedGroupCount - 1) * config.RLE_MIN_REPEATED_NUM + lastBitPackedNum;
                     bitPackingNum = currentCount;
                 } else {
-                    throw new TSFileDecodingException(String.format(
+                    throw new TsFileDecodingException(String.format(
                             "tsfile-encoding IntRleDecoder: bitPackedGroupCount %d, smaller than 1", bitPackedGroupCount));
                 }
                 readBitPackingBuffer(bitPackedGroupCount, lastBitPackedNum);
                 break;
             default:
-                throw new TSFileDecodingException(
+                throw new TsFileDecodingException(
                         String.format("tsfile-encoding IntRleDecoder: unknown encoding mode %s", mode));
         }
     }
@@ -174,42 +174,42 @@ public abstract class RleDecoder extends Decoder {
 
     @Override
     public boolean readBoolean(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readBoolean is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readBoolean is not supproted by RleDecoder");
     }
 
     @Override
     public short readShort(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readShort is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readShort is not supproted by RleDecoder");
     }
 
     @Override
     public int readInt(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readInt is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readInt is not supproted by RleDecoder");
     }
 
     @Override
     public long readLong(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readLong is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readLong is not supproted by RleDecoder");
     }
 
     @Override
     public float readFloat(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readFloat is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readFloat is not supproted by RleDecoder");
     }
 
     @Override
     public double readDouble(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readDouble is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readDouble is not supproted by RleDecoder");
     }
 
     @Override
     public Binary readBinary(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readBinary is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readBinary is not supproted by RleDecoder");
     }
 
     @Override
     public BigDecimal readBigDecimal(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readBigDecimal is not supproted by RleDecoder");
+        throw new TsFileDecodingException("Method readBigDecimal is not supproted by RleDecoder");
     }
 
     protected static enum MODE {

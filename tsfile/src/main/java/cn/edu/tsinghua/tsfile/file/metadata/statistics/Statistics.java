@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.tsfile.file.metadata.statistics;
 
-import cn.edu.tsinghua.tsfile.common.exception.UnknownColumnTypeException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.exception.write.UnknownMeasurementTypeException;
+import cn.edu.tsinghua.tsfile.utils.Binary;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public abstract class Statistics<T> {
             case FLOAT:
                 return new FloatStatistics();
             default:
-                throw new UnknownColumnTypeException(type.toString());
+                throw new UnknownMeasurementTypeException(type.toString());
         }
     }
 
@@ -252,7 +252,7 @@ public abstract class Statistics<T> {
                 statistics = new FloatStatistics();
                 break;
             default:
-                throw new UnknownColumnTypeException(dataType.toString());
+                throw new UnknownMeasurementTypeException(dataType.toString());
         }
         statistics.fill(inputStream);
         return statistics;
@@ -280,7 +280,7 @@ public abstract class Statistics<T> {
                 statistics = new FloatStatistics();
                 break;
             default:
-                throw new UnknownColumnTypeException(dataType.toString());
+                throw new UnknownMeasurementTypeException(dataType.toString());
         }
         statistics.fill(buffer);
         return statistics;

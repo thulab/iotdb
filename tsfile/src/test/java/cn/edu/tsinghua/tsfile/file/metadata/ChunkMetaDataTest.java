@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
-import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
+import cn.edu.tsinghua.tsfile.utils.MetadataGenerator;
+import cn.edu.tsinghua.tsfile.utils.CompareUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +34,7 @@ public class ChunkMetaDataTest {
 
   @Test
   public void testWriteIntoFile() throws IOException {
-    ChunkMetaData metaData = TestHelper.createSimpleTimeSeriesChunkMetaData();
+    ChunkMetaData metaData = MetadataGenerator.createSimpleTimeSeriesChunkMetaData();
     File file = new File(PATH);
     if (file.exists())
       file.delete();
@@ -43,6 +43,6 @@ public class ChunkMetaDataTest {
     fos.close();
 
     FileInputStream fis = new FileInputStream(new File(PATH));
-    Utils.isTimeSeriesChunkMetadataEqual(metaData, ChunkMetaData.deserializeFrom(fis));
+    CompareUtils.isTimeSeriesChunkMetadataEqual(metaData, ChunkMetaData.deserializeFrom(fis));
   }
 }

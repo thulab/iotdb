@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
+import cn.edu.tsinghua.tsfile.utils.CompareUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class TsDeviceMetadataIndexTest {
             InputStream inputStream = new FileInputStream(file);
             try {
                 TsDeviceMetadataIndex index2 = TsDeviceMetadataIndex.deserializeFrom(inputStream);
-                Utils.isTsDeviceMetadataIndexEqual(index, index2);
+                CompareUtils.isTsDeviceMetadataIndexEqual(index, index2);
             } finally {
                 inputStream.close();
             }

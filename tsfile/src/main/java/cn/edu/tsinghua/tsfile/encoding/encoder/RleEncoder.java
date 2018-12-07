@@ -2,9 +2,9 @@ package cn.edu.tsinghua.tsfile.encoding.encoder;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.exception.TSFileEncodingException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteForEncodingUtils;
+import cn.edu.tsinghua.tsfile.exception.encoding.TsFileEncodingException;
+import cn.edu.tsinghua.tsfile.utils.Binary;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteForEncodingUtils;
 import cn.edu.tsinghua.tsfile.encoding.common.EndianType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
@@ -272,41 +272,41 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
 
     @Override
     public void encode(boolean value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(short value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(int value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(long value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(float value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(double value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(Binary value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 
     @Override
     public void encode(BigDecimal value, ByteArrayOutputStream out) {
-        throw new TSFileEncodingException(getClass().getName());
+        throw new TsFileEncodingException(getClass().getName());
     }
 }

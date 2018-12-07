@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.file.metadata.statistics;
 
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
