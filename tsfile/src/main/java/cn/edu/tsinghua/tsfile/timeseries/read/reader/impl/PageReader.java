@@ -7,13 +7,12 @@ import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
-public class PageReader implements Reader {
+public class PageReader {
 
     private TSDataType dataType;
 
@@ -62,23 +61,28 @@ public class PageReader implements Reader {
         valueBuffer.position(timeBufferLength);
     }
 
-    @Override
-    public void close() {
-        timeBuffer = null;
-        valueBuffer = null;
-    }
-
-
-    @Override
     public boolean hasNextBatch() throws IOException {
-        if (filter == null)
-            data = getNextBatch();
-        else
-            data = getNextBatch(filter);
-        return data.hasNext();
+        return timeDecoder.hasNext(timeBuffer);
     }
 
-    private BatchData getNextBatch() throws IOException {
+    /**
+     * may return an empty BatchData
+     */
+    public BatchData nextBatch() throws IOException {
+        if (filter == null)
+            data = getAllPageData();
+        else
+            data = getAllPageData(filter);
+
+        return data;
+    }
+
+    public BatchData currentBatch() {
+        return data;
+    }
+
+
+    private BatchData getAllPageData() throws IOException {
 
         BatchData pageData = new BatchData(dataType, true);
 
@@ -112,7 +116,7 @@ public class PageReader implements Reader {
         return pageData;
     }
 
-    private BatchData getNextBatch(Filter filter) throws IOException {
+    private BatchData getAllPageData(Filter filter) throws IOException {
         BatchData pageData = new BatchData(dataType, true);
 
         while (timeDecoder.hasNext(timeBuffer)) {
@@ -169,9 +173,9 @@ public class PageReader implements Reader {
         return pageData;
     }
 
-    @Override
-    public BatchData nextBatch() {
-        return data;
+    public void close() {
+        timeBuffer = null;
+        valueBuffer = null;
     }
 
 }

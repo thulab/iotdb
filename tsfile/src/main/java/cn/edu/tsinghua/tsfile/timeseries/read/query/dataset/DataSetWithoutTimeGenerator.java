@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.*;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 
 import java.io.IOException;
 import java.util.*;
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
-    private List<Reader> readers;
+    private List<SeriesReader> readers;
 
     private List<BatchData> batchDataList;
 
@@ -27,7 +27,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     private Set<Long> timeSet;
 
-    public DataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<Reader> readers) throws IOException {
+    public DataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<SeriesReader> readers) throws IOException {
         super(paths, dataTypes);
         this.readers = readers;
         initHeap();
@@ -40,7 +40,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         timeSet = new HashSet<>();
 
         for (int i = 0; i < paths.size(); i++) {
-            Reader reader = readers.get(i);
+            SeriesReader reader = readers.get(i);
             if (!reader.hasNextBatch()) {
                 batchDataList.add(new BatchData());
                 hasDataRemaining.add(false);
@@ -52,7 +52,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
         for (BatchData data : batchDataList) {
             if (data.hasNext()) {
-                heapPut(data.getTime());
+                heapPut(data.currentTime());
             }
         }
     }
@@ -80,21 +80,25 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
             BatchData data = batchDataList.get(i);
 
-            if (data.getTime() == minTime) {
+            if (data.currentTime() == minTime) {
                 putValueToField(data, field);
                 data.next();
 
                 if (!data.hasNext()) {
-                    Reader reader = readers.get(i);
+                    SeriesReader reader = readers.get(i);
                     if (reader.hasNextBatch()) {
                         data = reader.nextBatch();
-                        batchDataList.set(i, data);
-                        heapPut(data.getTime());
+                        if(data.hasNext()) {
+                            batchDataList.set(i, data);
+                            heapPut(data.currentTime());
+                        } else {
+                            hasDataRemaining.set(i, false);
+                        }
                     } else {
                         hasDataRemaining.set(i, false);
                     }
                 } else {
-                    heapPut(data.getTime());
+                    heapPut(data.currentTime());
                 }
 
             } else {

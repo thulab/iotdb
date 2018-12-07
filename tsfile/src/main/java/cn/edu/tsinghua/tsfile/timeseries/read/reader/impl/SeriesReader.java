@@ -3,7 +3,6 @@ package cn.edu.tsinghua.tsfile.timeseries.read.reader.impl;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.Reader;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,50 +10,62 @@ import java.util.List;
 /**
  * <p> Series reader is used to query one series of one tsfile.
  */
-public abstract class SeriesReader implements Reader {
+public abstract class SeriesReader {
 
     protected ChunkLoader chunkLoader;
     protected List<ChunkMetaData> chunkMetaDataList;
-
     protected ChunkReader chunkReader;
-    protected boolean chunkReaderInitialized;
-    protected int currentChunkIndex;
+    private int chunkToRead;
+
+    private BatchData data;
 
     public SeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         this.chunkLoader = chunkLoader;
         this.chunkMetaDataList = chunkMetaDataList;
-        this.currentChunkIndex = 0;
-        this.chunkReaderInitialized = false;
+        this.chunkToRead = 0;
     }
 
-    @Override
-    public boolean hasNextBatch() throws IOException {
+    public boolean hasNextBatch() {
+
+        // current chunk has data
+        if (chunkReader != null && chunkReader.hasNextBatch()) {
+            return true;
+
+            // has additional chunk to read
+        } else {
+            return chunkToRead < chunkMetaDataList.size();
+        }
+
+    }
+
+    public BatchData nextBatch() throws IOException {
 
         // current chunk has additional batch
         if (chunkReader != null && chunkReader.hasNextBatch()) {
-            return true;
+            data = chunkReader.nextBatch();
+            return data;
         }
 
         // current chunk does not have additional batch, init new chunk reader
-        while (currentChunkIndex < chunkMetaDataList.size()) {
+        while (chunkToRead < chunkMetaDataList.size()) {
 
-            ChunkMetaData chunkMetaData = chunkMetaDataList.get(currentChunkIndex++);
+            ChunkMetaData chunkMetaData = chunkMetaDataList.get(chunkToRead++);
             if (chunkSatisfied(chunkMetaData)) {
                 // chunk metadata satisfy the condition
                 initChunkReader(chunkMetaData);
 
-                if (chunkReader.hasNextBatch())
-                    return true;
+                if (chunkReader.hasNextBatch()) {
+                    data = chunkReader.nextBatch();
+                    return data;
+                }
             }
-
         }
 
-        return false;
+        return data;
     }
 
-    @Override
-    public BatchData nextBatch() {
-        return chunkReader.nextBatch();
+    public BatchData currentBatch() {
+        return data;
     }
 
     protected abstract void initChunkReader(ChunkMetaData chunkMetaData) throws IOException;

@@ -62,7 +62,7 @@ public class ReadTest {
             }
             count++;
         }
-        assertEquals(count, 500);
+        assertEquals(500, count);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class ReadTest {
                 assertEquals(value.getLongV(), 9852);
             }
 
-            cnt ++;
+            cnt++;
             //System.out.println(record.toString());
         }
     }
@@ -149,16 +149,16 @@ public class ReadTest {
         while (dataSet.hasNext()) {
             RowRecord r = dataSet.next();
             if (cnt == 1) {
-                assertEquals(r.getTimestamp(), 1480562618970L);
+                assertEquals(1480562618970L, r.getTimestamp());
             } else if (cnt == 2) {
-                assertEquals(r.getTimestamp(), 1480562618971L);
+                assertEquals(1480562618971L, r.getTimestamp());
             } else if (cnt == 3) {
-                assertEquals(r.getTimestamp(), 1480562618973L);
+                assertEquals(1480562618973L, r.getTimestamp());
             }
             // System.out.println(r);
             cnt++;
         }
-        assertEquals(cnt, 7);
+        assertEquals(7, cnt);
     }
 
     @Test

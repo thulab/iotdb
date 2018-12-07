@@ -48,15 +48,15 @@ public class SeriesReaderByTimestamp {
 
         while (data != null) {
             while (data.hasNext()) {
-                if (data.getTime() < timestamp)
+                if (data.currentTime() < timestamp)
                     data.next();
                 else
                     break;
             }
 
             if (data.hasNext()) {
-                if (data.getTime() == timestamp)
-                    return data.getValue();
+                if (data.currentTime() == timestamp)
+                    return data.currentValue();
                 return null;
             } else {
                 if (chunkReader.hasNextBatch()) { // data does not has next
