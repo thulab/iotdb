@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +60,11 @@ public class ReaderUtils {
      * @param queryValueFilter value filter
      * @param insertMemoryData the memory data(bufferwrite along with overflow)
      *
-     * @return DynamicOneColumnData of the read result
+     * @return BatchData of the read result
      * @throws IOException TsFile read error
      */
-    public static DynamicOneColumnData readOnePage(TSDataType dataType, long[] pageTimestamps,
-                                                   Decoder decoder, InputStream page, DynamicOneColumnData res,
+    public static BatchData readOnePage(TSDataType dataType, long[] pageTimestamps,
+                                                   Decoder decoder, InputStream page, BatchData res,
                                                    SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter,
                                                    InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader)
             throws IOException {
@@ -376,14 +376,14 @@ public class ReaderUtils {
      * @return left represents the data of DataPage which satisfies the restrict condition,
      *         right represents the read time index of commonTimestamps
      */
-    public static Pair<DynamicOneColumnData, Integer> readOnePageUsingCommonTime(TSDataType dataType, long[] pageTimestamps,
+    public static Pair<BatchData, Integer> readOnePageUsingCommonTime(TSDataType dataType, long[] pageTimestamps,
                 Decoder decoder, InputStream page,
                 SeriesFilter queryTimeFilter, List<Long> commonTimestamps, int commonTimestampsIndex,
                 InsertDynamicData insertMemoryData, OverflowOperationReader updateOperationReader) throws IOException {
 
         //TODO optimize the logic, we could read the page data firstly, the make filter about the data, it's easy to check
 
-        DynamicOneColumnData aggregateResult = new DynamicOneColumnData(dataType, true);
+        BatchData aggregateResult = new BatchData(dataType, true);
         int pageTimeIndex = 0;
 
         SingleValueVisitor<?> timeVisitor = null;

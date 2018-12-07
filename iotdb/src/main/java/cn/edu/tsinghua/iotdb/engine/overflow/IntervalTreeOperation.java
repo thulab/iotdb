@@ -30,7 +30,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitorFactory;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import static cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils.readUnsignedVarInt;
 
@@ -116,7 +116,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      * @param overflowOpType - OverflowOpType
      * @param dataType       - TSDataType
      */
-    private void putValueUsingFileData(DynamicOneColumnData doc, long s, long e,
+    private void putValueUsingFileData(BatchData doc, long s, long e,
                                        byte[] value, OverflowOpType overflowOpType, TSDataType dataType) {
         switch (overflowOpType) {
             case INSERT:
@@ -175,7 +175,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     /**
-     * Put value into newer DynamicOneColumnData.
+     * Put value into newer BatchData.
      *
      * @param ansData   new DynamicOneColumn
      * @param startTime - start time
@@ -184,8 +184,8 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      * @param i         - index
      * @param dataType  - TSDataType
      */
-    private void putValueUseDynamic(DynamicOneColumnData ansData, long startTime, long endTime,
-                                    DynamicOneColumnData doc, int i, OverflowOpType overflowOpType, TSDataType dataType) {
+    private void putValueUseDynamic(BatchData ansData, long startTime, long endTime,
+                                    BatchData doc, int i, OverflowOpType overflowOpType, TSDataType dataType) {
 
         // don't care the plus or minus of the value of start time or end time.
         switch (overflowOpType) {
@@ -291,11 +291,11 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     @Override
-    public DynamicOneColumnData queryFileBlock(SeriesFilter timeFilter,
+    public BatchData queryFileBlock(SeriesFilter timeFilter,
                                                SeriesFilter valueFilter, SeriesFilter freqFilter, InputStream inputStream,
-                                               DynamicOneColumnData newData) throws IOException {
+                                               BatchData newData) throws IOException {
 
-        DynamicOneColumnData ans = new DynamicOneColumnData(dataType, true); // merge answer
+        BatchData ans = new BatchData(dataType, true); // merge answer
         int i = 0;
         TimePair oldTimePair = new TimePair(-1, -1, MergeStatus.DONE);
         TimePair newTimePair = constructTimePair(-1, -1, MergeStatus.DONE);
@@ -547,12 +547,12 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     @Override
-    public DynamicOneColumnData queryMemory(DynamicOneColumnData newerMemoryData) {
+    public BatchData queryMemory(BatchData newerMemoryData) {
         if (newerMemoryData == null) {
             return index.dynamicQuery(null, dataType);
         }
-        DynamicOneColumnData ans = new DynamicOneColumnData(dataType, true);
-        DynamicOneColumnData oldData = index.dynamicQuery(null, dataType);
+        BatchData ans = new BatchData(dataType, true);
+        BatchData oldData = index.dynamicQuery(null, dataType);
 
         int i = 0, j = 0; // i represents newMemoryData, j represents oldMemoryData
         TimePair oldTimePair = new TimePair(-1, -1, MergeStatus.DONE);
@@ -825,12 +825,12 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     }
 
     /**
-     * put data from DynamicOneColumnData[data] to DynamicOneColumnData[ope]
+     * put data from BatchData[data] to BatchData[ope]
      * <p>
      * value in ope must > 0
      */
-    private void putDynamicValue(long s, long e, TSDataType dataType, DynamicOneColumnData ope
-            , DynamicOneColumnData data, int i) {
+    private void putDynamicValue(long s, long e, TSDataType dataType, BatchData ope
+            , BatchData data, int i) {
         if (s > 0 && e < 0) {        // INSERT OPERATION, storage single point
             ope.putTime(s < 0 ? -s : s);
 
@@ -867,7 +867,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
     /**
      * Given time filter, value filter and frequency filter,
      * return the correspond data which meet all the filters expression. </br>
-     * List<Object> stores three DynamicOneColumnData structures, insertAdopt, updateAdopt
+     * List<Object> stores three BatchData structures, insertAdopt, updateAdopt
      * and updateNotAdopt.
      *
      * @param timeFilter   - time filter specified by user
@@ -878,7 +878,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
      */
     @Override
     public List<Object> getDynamicList(SeriesFilter timeFilter,
-                                       SeriesFilter valueFilter, SeriesFilter freqFilter, DynamicOneColumnData overflowData) {
+                                       SeriesFilter valueFilter, SeriesFilter freqFilter, BatchData overflowData) {
 
         long deleteMaxLength = -1;
 
@@ -887,8 +887,8 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
                     "NoName", "NoName", QueryFilterType.TIME_FILTER), 0L, true);
         }
         List<Object> ans = new ArrayList<>();
-        DynamicOneColumnData insertAdopt = new DynamicOneColumnData(dataType, true);
-        DynamicOneColumnData updateAdopt = new DynamicOneColumnData(dataType, true);
+        BatchData insertAdopt = new BatchData(dataType, true);
+        BatchData updateAdopt = new BatchData(dataType, true);
         LongInterval filterInterval = (LongInterval) FilterVerifier.create(TSDataType.INT64).getInterval(timeFilter);
 
         for (int i = 0; i < overflowData.valueLength; i++) {
@@ -968,7 +968,7 @@ public class IntervalTreeOperation implements IIntervalTreeOperator {
         return index.isEmpty();
     }
 
-    private void putTimePair(DynamicOneColumnData data, long s, long e) {
+    private void putTimePair(BatchData data, long s, long e) {
         data.putTime(s);
         data.putTime(e);
     }

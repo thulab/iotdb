@@ -14,7 +14,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class FillProcessor {
      * @return false if we haven't get the correct previous value before queryTime.
      * @throws IOException TsFile read error
      */
-    public static boolean getPreviousFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
+    public static boolean getPreviousFillResultInFile(BatchData result, ValueReader valueReader,
                                                       long beforeTime, long queryTime, SeriesFilter timeFilter,
                                                       OverflowOperationReader updateOperationReader)
             throws IOException {
@@ -337,7 +337,7 @@ public class FillProcessor {
      * @param queryTime fill query time
      * @throws IOException file stream read error
      */
-    public static void getPreviousFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
+    public static void getPreviousFillResultInMemory(BatchData result, InsertDynamicData insertMemoryData,
                                                         long beforeTime, long queryTime) throws IOException {
 
         while (insertMemoryData.hasNext()) {
@@ -447,7 +447,7 @@ public class FillProcessor {
      * @return see above
      * @throws IOException TsFile read error
      */
-    public static boolean getLinearFillResultInFile(DynamicOneColumnData result, ValueReader valueReader,
+    public static boolean getLinearFillResultInFile(BatchData result, ValueReader valueReader,
                                                     long beforeTime, long queryTime, long afterTime, SeriesFilter timeFilter,
                                                     OverflowOperationReader updateOperationReader)
             throws IOException {
@@ -728,7 +728,7 @@ public class FillProcessor {
      * @param afterTime linear fill after time
      * @throws IOException file stream read error
      */
-    public static void getLinearFillResultInMemory(DynamicOneColumnData result, InsertDynamicData insertMemoryData,
+    public static void getLinearFillResultInMemory(BatchData result, InsertDynamicData insertMemoryData,
                                                         long beforeTime, long queryTime, long afterTime)
             throws IOException {
 

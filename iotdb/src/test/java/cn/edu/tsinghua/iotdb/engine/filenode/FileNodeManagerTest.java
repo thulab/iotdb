@@ -20,14 +20,14 @@
 //import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 //import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 //import cn.edu.tsinghua.iotdb.metadata.MManager;
-//import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+//import cn.edu.tsinghua.iotdb.interval.EnvironmentUtils;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-//import cn.edu.tsinghua.tsfile.common.utils.Pair;
+//import cn.edu.tsinghua.tsfile.common.interval.Pair;
 //import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 //import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+//import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 //import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 //import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 //
@@ -138,7 +138,7 @@
 //		try {
 //			int token = fManager.beginQuery(deltaObjectId);
 //			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
-//			DynamicOneColumnData bufferwriteinmemory = queryResult.getCurrentPage();
+//			BatchData bufferwriteinmemory = queryResult.getCurrentPage();
 //			List<RowGroupMetaData> bufferwriteinDisk = queryResult.getBufferwriteDataInDisk();
 //			assertEquals(true, bufferwriteinmemory != null);
 //			assertEquals(true, bufferwriteinDisk != null);
@@ -188,7 +188,7 @@
 //			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 //
 //			List<Object> overflowResult = queryResult.getAllOverflowData();
-//			DynamicOneColumnData insertData = (DynamicOneColumnData) overflowResult.get(0);
+//			BatchData insertData = (BatchData) overflowResult.get(0);
 //			assertEquals(overflowInsert1.length, insertData.valueLength);
 //			for (int i = 0; i < overflowInsert1.length; i++) {
 //				assertEquals(overflowInsert1[i], insertData.getTime(i));
@@ -207,7 +207,7 @@
 //			int token = fManager.beginQuery(deltaObjectId);
 //			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 //			List<Object> overflowResult = queryResult.getAllOverflowData();
-//			DynamicOneColumnData insertData = (DynamicOneColumnData) overflowResult.get(0);
+//			BatchData insertData = (BatchData) overflowResult.get(0);
 //			assertEquals(overflowInsert1.length + overflowInsert2.length, insertData.valueLength);
 //			for (int i = 0; i < overflowInsert1.length; i++) {
 //				assertEquals(overflowInsert1[i], insertData.getTime(i));
@@ -245,7 +245,7 @@
 //			int token = fManager.beginQuery(deltaObjectId);
 //			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 //			List<Object> overflowResult = queryResult.getAllOverflowData();
-//			DynamicOneColumnData updateData = (DynamicOneColumnData) overflowResult.get(1);
+//			BatchData updateData = (BatchData) overflowResult.get(1);
 //			assertEquals(1, updateData.valueLength);
 //			assertEquals(2, updateData.timeLength);
 //			assertEquals(150, updateData.getTime(0));
@@ -429,7 +429,7 @@
 //		QueryStructure queryStructure = null;
 //		try {
 //			queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
-//			DynamicOneColumnData bufferwriteindex = queryStructure.getCurrentPage();
+//			BatchData bufferwriteindex = queryStructure.getCurrentPage();
 //			assertEquals(null, bufferwriteindex);
 //			List<RowGroupMetaData> bufferwriteindisk = queryStructure.getBufferwriteDataInDisk();
 //			assertEquals(null, bufferwriteindisk);
@@ -494,7 +494,7 @@
 //		}
 //		try {
 //			queryStructure = fileNodeManager.query(deltaObjectId, measurementId, null, null, null);
-//			DynamicOneColumnData bufferwriteindex = queryStructure.getCurrentPage();
+//			BatchData bufferwriteindex = queryStructure.getCurrentPage();
 //			assertEquals(null, bufferwriteindex);
 //			List<RowGroupMetaData> bufferwriteindisk = queryStructure.getBufferwriteDataInDisk();
 //			assertEquals(null, bufferwriteindisk);
@@ -560,7 +560,7 @@
 //			QueryStructure queryResult = fManager.query(deltaObjectId, measurementId, null, null, null);
 //			fManager.endQuery(deltaObjectId, token);
 //			System.out.println(queryResult);
-//			DynamicOneColumnData bufferwriteindex = queryResult.getCurrentPage();
+//			BatchData bufferwriteindex = queryResult.getCurrentPage();
 //			assertEquals(null, bufferwriteindex);
 //			List<RowGroupMetaData> bufferwriteindisk = queryResult.getBufferwriteDataInDisk();
 //			assertEquals(null, bufferwriteindisk);
@@ -722,7 +722,7 @@
 //			assertEquals(null, queryStructure.getCurrentPage());
 //			assertEquals(null, queryStructure.getBufferwriteDataInDisk());
 //			assertEquals(0, queryStructure.getBufferwriteDataInFiles().size());
-//			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
+//			BatchData insert = (BatchData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(2, insert.valueLength);
 //			assertEquals(5, insert.getTime(0));
 //			assertEquals(10, insert.getTime(1));

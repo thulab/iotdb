@@ -24,14 +24,14 @@
 //import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 //import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 //import cn.edu.tsinghua.iotdb.metadata.MManager;
-//import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+//import cn.edu.tsinghua.iotdb.interval.EnvironmentUtils;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-//import cn.edu.tsinghua.tsfile.common.utils.Pair;
+//import cn.edu.tsinghua.tsfile.common.interval.Pair;
 //import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+//import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 //
 ///**
 // * @author liukun
@@ -141,7 +141,7 @@
 //			processor.getOverflowProcessor(nameSpacePath, parameters);
 //			QueryStructure queryStructure = processor.query(deltaObjectId0, measurementId, null, null, null);
 //
-//			DynamicOneColumnData CachePage = queryStructure.getCurrentPage();
+//			BatchData CachePage = queryStructure.getCurrentPage();
 //			Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList = queryStructure.getPageList();
 //			List<RowGroupMetaData> bufferwriteDataInDisk = queryStructure.getBufferwriteDataInDisk();
 //			List<IntervalFileNode> bufferwriteDataInFiles = queryStructure.getBufferwriteDataInFiles();
@@ -157,7 +157,7 @@
 //			// check memory data
 //			if (CachePage != null) {
 //				for (ByteArrayInputStream stream : pageList.left) {
-//					DynamicOneColumnData pagedata = PageTestUtils.pageToDynamic(stream, pageList.right, deltaObjectId0,
+//					BatchData pagedata = PageTestUtils.pageToDynamic(stream, pageList.right, deltaObjectId0,
 //							measurementId);
 //					CachePage.mergeRecord(pagedata);
 //				}
@@ -261,7 +261,7 @@
 //			processor.getOverflowProcessor(nameSpacePath, parameters);
 //			QueryStructure queryStructure = processor.query(deltaObjectId0, measurementId, null, null, null);
 //			// test origin
-//			DynamicOneColumnData CachePage = queryStructure.getCurrentPage();
+//			BatchData CachePage = queryStructure.getCurrentPage();
 //			Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList = queryStructure.getPageList();
 //			List<IntervalFileNode> bufferwriteDataInFiles = queryStructure.getBufferwriteDataInFiles();
 //			List<Object> allOverflowData = queryStructure.getAllOverflowData();
@@ -292,7 +292,7 @@
 //			queryStructure = processor.query(deltaObjectId0, measurementId, null, null, null);
 //			bufferwriteDataInFiles = queryStructure.getBufferwriteDataInFiles();
 //			allOverflowData = queryStructure.getAllOverflowData();
-//			DynamicOneColumnData insert = (DynamicOneColumnData) allOverflowData.get(0);
+//			BatchData insert = (BatchData) allOverflowData.get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(5, insert.getTime(0));
 //			assertEquals(5, insert.getInt(0));

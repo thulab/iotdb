@@ -8,7 +8,7 @@ import cn.edu.tsinghua.iotdb.query.fill.FillProcessor;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +30,7 @@ public class FillRecordReader extends RecordReader{
      * @param result fill query result
      * @throws IOException file read error
      */
-    public void getPreviousFillResult(DynamicOneColumnData result, SeriesFilter fillTimeFilter, long beforeTime, long queryTime)
+    public void getPreviousFillResult(BatchData result, SeriesFilter fillTimeFilter, long beforeTime, long queryTime)
             throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);
@@ -72,7 +72,7 @@ public class FillRecordReader extends RecordReader{
      * @param result fill query result
      * @throws IOException file read error
      */
-    public void getLinearFillResult(DynamicOneColumnData result, SeriesFilter fillTimeFilter,
+    public void getLinearFillResult(BatchData result, SeriesFilter fillTimeFilter,
                                     long beforeTime, long queryTime, long afterTime) throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, fillTimeFilter);

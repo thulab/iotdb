@@ -8,7 +8,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -125,7 +125,7 @@ public class IntervalTreeTest {
         TimePair u1 = new TimePair(0L, 500L, IntervalTreeTest.i2, OverflowOpType.UPDATE);
         tree.update(d1);
         tree.update(u1);
-        DynamicOneColumnData crudResult = tree.dynamicQuery(null,  TSDataType.INT32);
+        BatchData crudResult = tree.dynamicQuery(null,  TSDataType.INT32);
         for (int i = 0; i < crudResult.valueLength; i++) {
             if (i == 0) {
                 Assert.assertEquals(crudResult.getTime(i * 2), 0);
@@ -429,7 +429,7 @@ public class IntervalTreeTest {
         tree.update(d1);
         tree.update(u2);
 
-        DynamicOneColumnData crudResult = tree.dynamicQuery(null,  TSDataType.INT32);
+        BatchData crudResult = tree.dynamicQuery(null,  TSDataType.INT32);
 
         Assert.assertEquals(crudResult.valueLength, 2);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -465,7 +465,7 @@ public class IntervalTreeTest {
         tree.update(d1);
         tree.update(u2);
 
-        DynamicOneColumnData crudResult = tree.dynamicQuery(null,  TSDataType.FLOAT);
+        BatchData crudResult = tree.dynamicQuery(null,  TSDataType.FLOAT);
 
         Assert.assertEquals(crudResult.valueLength, 2);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -501,7 +501,7 @@ public class IntervalTreeTest {
         tree.update(d1);
         tree.update(u2);
 
-        DynamicOneColumnData crudResult = tree.dynamicQuery(null,  TSDataType.INT64);
+        BatchData crudResult = tree.dynamicQuery(null,  TSDataType.INT64);
 
         Assert.assertEquals(crudResult.valueLength, 2);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -537,7 +537,7 @@ public class IntervalTreeTest {
         tree.update(d1);
         tree.update(u2);
 
-        DynamicOneColumnData crudResult = tree.dynamicQuery(null,  TSDataType.DOUBLE);
+        BatchData crudResult = tree.dynamicQuery(null,  TSDataType.DOUBLE);
 
         Assert.assertEquals(crudResult.valueLength, 2);
         for (int i = 0; i < crudResult.valueLength; i++) {
@@ -573,7 +573,7 @@ public class IntervalTreeTest {
         tree.update(d1);
         tree.update(u2);
 
-        DynamicOneColumnData crudResult = tree.dynamicQuery(null,  TSDataType.TEXT);
+        BatchData crudResult = tree.dynamicQuery(null,  TSDataType.TEXT);
 
         Assert.assertEquals(crudResult.valueLength, 2);
         for (int i = 0; i < crudResult.valueLength; i++) {

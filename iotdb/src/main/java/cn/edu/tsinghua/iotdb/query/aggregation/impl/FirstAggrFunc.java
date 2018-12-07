@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -40,7 +40,7 @@ public class FirstAggrFunc extends AggregateFunction{
     }
 
     @Override
-    public void calculateValueFromDataPage(DynamicOneColumnData dataInThisPage) throws IOException, ProcessorException {
+    public void calculateValueFromDataPage(BatchData dataInThisPage) throws IOException, ProcessorException {
         //logger.error("Using page to aggregate");
         if(resultData.timeLength == 0)
             initFirst();
@@ -94,7 +94,7 @@ public class FirstAggrFunc extends AggregateFunction{
     }
 
     @Override
-    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
+    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) {
         if (resultData.emptyTimeLength == 0) {
             if (resultData.timeLength == 0) {
                 resultData.putEmptyTime(partitionStart);

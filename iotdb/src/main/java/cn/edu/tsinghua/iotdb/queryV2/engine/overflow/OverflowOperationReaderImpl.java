@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.treeV2.IntervalTreeOperation;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowUpdateDeleteFile;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +18,11 @@ public class OverflowOperationReaderImpl implements OverflowOperationReader {
     private List<OverflowOperation> updateOperations = new ArrayList<>();
     private TSDataType dataType;
 
-    public OverflowOperationReaderImpl(DynamicOneColumnData memoryUpdate, List<OverflowUpdateDeleteFile> overflowUpdateFileList,
+    public OverflowOperationReaderImpl(BatchData memoryUpdate, List<OverflowUpdateDeleteFile> overflowUpdateFileList,
                                        TSDataType dataType) {
         this.dataType = dataType;
         IntervalTreeOperation overflowIndex = new IntervalTreeOperation(dataType);
-        DynamicOneColumnData updateDynamic = memoryUpdate == null ? new DynamicOneColumnData(dataType, true) : memoryUpdate;
+        BatchData updateDynamic = memoryUpdate == null ? new BatchData(dataType, true) : memoryUpdate;
 
         InputStream in = null;
         try {

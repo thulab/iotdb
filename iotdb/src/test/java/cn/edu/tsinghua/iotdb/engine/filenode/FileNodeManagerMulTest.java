@@ -14,11 +14,11 @@
 //import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
 //import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 //import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-//import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+//import cn.edu.tsinghua.iotdb.interval.EnvironmentUtils;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+//import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 //import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 //import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 //
@@ -102,10 +102,10 @@
 //			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
 //			fileNodeManager.endQuery(deltaObjectId0, token);
 //			// assert query result
-//			DynamicOneColumnData pagecache = queryStructure.getCurrentPage();
+//			BatchData pagecache = queryStructure.getCurrentPage();
 //			assertEquals(1, queryStructure.getPageList().left.size());
 //			for (ByteArrayInputStream stream : queryStructure.getPageList().left) {
-//				DynamicOneColumnData old = PageTestUtils.pageToDynamic(stream, queryStructure.getPageList().right,
+//				BatchData old = PageTestUtils.pageToDynamic(stream, queryStructure.getPageList().right,
 //						deltaObjectId0, measurementId);
 //				old.mergeRecord(pagecache);
 //				pagecache = old;
@@ -239,7 +239,7 @@
 //			int token = fileNodeManager.beginQuery(deltaObjectId0);
 //			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
 //			fileNodeManager.endQuery(deltaObjectId0, token);
-//			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
+//			BatchData insert = (BatchData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(5, insert.getTime(0));
 //			assertEquals(5, insert.getInt(0));
@@ -403,7 +403,7 @@
 //			fileNodeManager.insert(record, false);
 //			// query check
 //			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
-//			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
+//			BatchData insert = (BatchData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(10, insert.getTime(0));
 //			assertEquals(5, insert.getInt(0));
@@ -485,7 +485,7 @@
 //			fileNodeManager.insert(record, false);
 //			// query check
 //			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
-//			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
+//			BatchData insert = (BatchData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(10, insert.getTime(0));
 //			assertEquals(5, insert.getInt(0));
@@ -626,7 +626,7 @@
 //				} else {
 //					assertEquals(2, temp.getStartTime(deltaObjectId2));
 //					assertEquals(200, temp.getEndTime(deltaObjectId2));
-//					DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0 + 2);
+//					BatchData insert = (BatchData) queryStructure.getAllOverflowData().get(0 + 2);
 //					assertEquals(true, insert != null);
 //					assertEquals(1, insert.valueLength);
 //					assertEquals(2, insert.getTime(0));

@@ -9,7 +9,7 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
@@ -22,13 +22,13 @@ public class PreviousFill extends IFill {
 
     private Path path;
 
-    private DynamicOneColumnData result;
+    private BatchData result;
 
     public PreviousFill(Path path, TSDataType dataType, long queryTime, long beforeRange) {
         super(dataType, queryTime);
         this.path = path;
         this.beforeRange = beforeRange;
-        result = new DynamicOneColumnData(dataType, true, true);
+        result = new BatchData(dataType, true, true);
     }
 
     public PreviousFill(long beforeRange) {
@@ -45,7 +45,7 @@ public class PreviousFill extends IFill {
     }
 
     @Override
-    public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
+    public BatchData getFillResult() throws ProcessorException, IOException, PathErrorException {
         long beforeTime;
         if (beforeRange == -1) {
             beforeTime = 0;

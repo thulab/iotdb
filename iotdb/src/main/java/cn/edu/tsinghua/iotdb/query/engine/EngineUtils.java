@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.query.engine;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
@@ -21,8 +21,8 @@ public class EngineUtils {
      */
     public static void putRecordFromBatchReadGenerator(OnePassQueryDataSet dataSet) {
         for (Path path : dataSet.getBatchReadGenerator().retMap.keySet()) {
-            DynamicOneColumnData batchReadData = dataSet.getBatchReadGenerator().retMap.get(path);
-            DynamicOneColumnData leftData = batchReadData.sub(batchReadData.curIdx);
+            BatchData batchReadData = dataSet.getBatchReadGenerator().retMap.get(path);
+            BatchData leftData = batchReadData.sub(batchReadData.curIdx);
 
             // copy batch read info from oneColRet to leftRet
             // batchReadData.copyFetchInfoTo(leftData);
@@ -45,13 +45,13 @@ public class EngineUtils {
         return false;
     }
 
-    public static DynamicOneColumnData copy(DynamicOneColumnData data) {
+    public static BatchData copy(BatchData data) {
         if (data == null) {
-            // if data is null, return a DynamicOneColumnData which has no value
-            return new DynamicOneColumnData(TSDataType.INT64, true);
+            // if data is null, return a BatchData which has no value
+            return new BatchData(TSDataType.INT64, true);
         }
 
-        DynamicOneColumnData ans = new DynamicOneColumnData(data.dataType, true);
+        BatchData ans = new BatchData(data.dataType, true);
         for (int i = 0;i < data.timeLength;i ++) {
             ans.putTime(data.getTime(i));
         }

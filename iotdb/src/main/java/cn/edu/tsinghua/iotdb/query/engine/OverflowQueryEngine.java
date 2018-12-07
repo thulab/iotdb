@@ -26,7 +26,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.Or;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.BatchReadRecordGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
@@ -266,7 +266,7 @@ public class OverflowQueryEngine {
             queryDataSet = new OnePassQueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
                 @Override
-                public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
+                public BatchData getMoreRecordsForOneColumn(Path p, BatchData res) throws ProcessorException, IOException {
                     try {
                         return queryOneSeriesWithoutFilter(p, res, fetchSize, readLock);
                     } catch (PathErrorException e) {
@@ -285,7 +285,7 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private DynamicOneColumnData queryOneSeriesWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize, Integer readLock)
+    private BatchData queryOneSeriesWithoutFilter(Path path, BatchData res, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectID = path.getDevice();
@@ -315,7 +315,7 @@ public class OverflowQueryEngine {
             queryDataSet = new OnePassQueryDataSet();
             BatchReadRecordGenerator batchReaderRetGenerator = new BatchReadRecordGenerator(paths, fetchSize) {
                 @Override
-                public DynamicOneColumnData getMoreRecordsForOneColumn(Path p, DynamicOneColumnData res) throws ProcessorException, IOException {
+                public BatchData getMoreRecordsForOneColumn(Path p, BatchData res) throws ProcessorException, IOException {
                     try {
                         return queryOneSeriesUsingFilter(p, timeFilter, valueFilter, res, fetchSize, readLock);
                     } catch (PathErrorException e) {
@@ -335,9 +335,9 @@ public class OverflowQueryEngine {
         return queryDataSet;
     }
 
-    private DynamicOneColumnData queryOneSeriesUsingFilter(Path path,
+    private BatchData queryOneSeriesUsingFilter(Path path,
                                                            SeriesFilter queryTimeFilter, SeriesFilter queryValueFilter,
-                                                           DynamicOneColumnData res, int fetchSize, Integer readLock)
+                                                           BatchData res, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectId = path.getDevice();
@@ -372,7 +372,7 @@ public class OverflowQueryEngine {
             queryDataSet = new OnePassQueryDataSet();
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(queryTimeFilter, null, queryValueFilter, fetchSize) {
                 @Override
-                public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize, SeriesFilter valueFilter,
+                public BatchData getDataInNextBatch(BatchData res, int fetchSize, SeriesFilter valueFilter,
                                                                int valueFilterNumber) throws ProcessorException, IOException {
                     try {
                         return querySeriesForCross(valueFilter, res, fetchSize, valueFilterNumber);
@@ -400,10 +400,10 @@ public class OverflowQueryEngine {
                     null,  null, null, recordReaderPrefix, ReaderType.QUERY);
 
             if (recordReader.getInsertMemoryData() == null) {
-                DynamicOneColumnData queryResult = recordReader.queryUsingTimestamps(timestamps);
+                BatchData queryResult = recordReader.queryUsingTimestamps(timestamps);
                 ret.mapRet.put(queryKey, queryResult);
             } else {
-                DynamicOneColumnData queryAnswer = recordReader.queryUsingTimestamps(timestamps);
+                BatchData queryAnswer = recordReader.queryUsingTimestamps(timestamps);
                 ret.mapRet.put(queryKey, queryAnswer);
             }
         }
@@ -421,8 +421,8 @@ public class OverflowQueryEngine {
      * <code>RecordReaderCacheManager</code>, if the composition of CrossQueryFilter exist same SingleQueryFilter,
      * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleQueryFilter.
      */
-    private DynamicOneColumnData querySeriesForCross(SeriesFilter queryValueFilter,
-                                                    DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
+    private BatchData querySeriesForCross(SeriesFilter queryValueFilter,
+                                                    BatchData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
         // form.V.valueFilterNumber.deltaObjectId.measurementId

@@ -19,7 +19,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,7 +186,7 @@ public class AggregateRecordReader extends RecordReader {
 
     private void aggregate(ValueReader valueReader, AggregateFunction func) throws IOException, ProcessorException {
 
-        DynamicOneColumnData result = new DynamicOneColumnData(dataType, true);
+        BatchData result = new BatchData(dataType, true);
         usedPageOffset = valueReader.fileOffset;
 
         // get series digest
@@ -329,7 +329,7 @@ public class AggregateRecordReader extends RecordReader {
             long[] pageTimestamps = valueReader.initTimeValue(page, pageHeader.data_page_header.num_rows, false);
             valueReader.setDecoder(Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), valueReader.getDataType()));
 
-            Pair<DynamicOneColumnData, Integer> pageData = ReaderUtils.readOnePageUsingCommonTime(
+            Pair<BatchData, Integer> pageData = ReaderUtils.readOnePageUsingCommonTime(
                     dataType, pageTimestamps, valueReader.decoder, page,
                     queryTimeFilter, aggregationTimestamps, timestampsUsedIndex, insertMemoryData, overflowOperationReaderCopy);
 

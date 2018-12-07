@@ -38,7 +38,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
@@ -248,7 +248,7 @@ public class OverflowProcessor extends Processor {
 			// query update/delete data in memory and overflowFiles
 			UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
 			// memory
-			DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
+			BatchData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
 			updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
 			List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
 			// work file
@@ -302,10 +302,10 @@ public class OverflowProcessor extends Processor {
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
-	 * @return update/delete result in DynamicOneColumnData
+	 * @return update/delete result in BatchData
 	 */
-	private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
-		DynamicOneColumnData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, null);
+	private BatchData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
+		BatchData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, null);
 		if (flushStatus.isFlushing()) {
 			columnData = flushSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, columnData);
 		}

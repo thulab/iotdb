@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.LongStatistics;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * This class is only used to store and query overflow overflowIndex
@@ -48,7 +48,7 @@ public class OverflowSeriesImpl {
 		valueCount++;
 	}
 
-	public DynamicOneColumnData query(DynamicOneColumnData data) {
+	public BatchData query(BatchData data) {
 		return overflowIndex.queryMemory(data);
 	}
 

@@ -13,7 +13,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * @author CGF.
@@ -98,7 +98,7 @@ public class IntervalTreeOperationFileBlockTest {
         tree.insert(1463369845095L, b5);
 
         //  calc
-        DynamicOneColumnData d = tree.queryMemory(null);
+        BatchData d = tree.queryMemory(null);
 
         for (int i = 4; i >= 1; i--) {
             d = tree.queryFileBlock(null, null, null, ins[i], d);
@@ -185,13 +185,13 @@ public class IntervalTreeOperationFileBlockTest {
         // old : [1, 10]
         // new : [5, 10]
         tree.update(5L, 10L, l2);
-        DynamicOneColumnData memoryData = tree.queryMemory(null);
+        BatchData memoryData = tree.queryMemory(null);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writeTimePair(outputStream, 1L, 10L, l1);
         outputStream.flush();
         byte[] page = outputStream.toByteArray();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(page);
-        DynamicOneColumnData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
+        BatchData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
         Assert.assertEquals(mergeBlockAns.valueLength, 2);
         for (int i = 0; i < mergeBlockAns.valueLength; i++) {
             if (i == 0) {
@@ -213,13 +213,13 @@ public class IntervalTreeOperationFileBlockTest {
         // old : [1, 10]
         // new : [5, 10]
         tree.update(5L, 10L, f2);
-        DynamicOneColumnData memoryData = tree.queryMemory(null);
+        BatchData memoryData = tree.queryMemory(null);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writeTimePair(outputStream, 1L, 10L, f1);
         outputStream.flush();
         byte[] page = outputStream.toByteArray();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(page);
-        DynamicOneColumnData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
+        BatchData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
         Assert.assertEquals(mergeBlockAns.valueLength, 2);
         for (int i = 0; i < mergeBlockAns.valueLength; i++) {
             if (i == 0) {
@@ -241,13 +241,13 @@ public class IntervalTreeOperationFileBlockTest {
         // old : [1, 10]
         // new : [5, 10]
         tree.update(5L, 10L, d2);
-        DynamicOneColumnData memoryData = tree.queryMemory(null);
+        BatchData memoryData = tree.queryMemory(null);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writeTimePair(outputStream, 1L, 10L, d1);
         outputStream.flush();
         byte[] page = outputStream.toByteArray();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(page);
-        DynamicOneColumnData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
+        BatchData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
         Assert.assertEquals(mergeBlockAns.valueLength, 2);
         for (int i = 0; i < mergeBlockAns.valueLength; i++) {
             if (i == 0) {
@@ -269,7 +269,7 @@ public class IntervalTreeOperationFileBlockTest {
         // old : [1, 10] "s1"
         // new : [5, 10] "s2"
         newTree.update(5L, 10L, s2);
-        DynamicOneColumnData memoryData = newTree.queryMemory(null);
+        BatchData memoryData = newTree.queryMemory(null);
 
         IntervalTreeOperation oldTree = new IntervalTreeOperation(TSDataType.TEXT);
         oldTree.update(1L, 10L, s1);
@@ -277,7 +277,7 @@ public class IntervalTreeOperationFileBlockTest {
         oldTree.toBytes(outputStream);
         byte[] page = outputStream.toByteArray();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(page);
-        DynamicOneColumnData mergeBlockAns = newTree.queryFileBlock(null, null, null, inputStream, memoryData);
+        BatchData mergeBlockAns = newTree.queryFileBlock(null, null, null, inputStream, memoryData);
         Assert.assertEquals(mergeBlockAns.valueLength, 2);
         for (int i = 0; i < mergeBlockAns.valueLength; i++) {
             if (i == 0) {
@@ -310,13 +310,13 @@ public class IntervalTreeOperationFileBlockTest {
         // new : [1, 10]
         IntervalTreeOperation tree = new IntervalTreeOperation(TSDataType.INT32);
         tree.update(5L, 10L, i2);
-        DynamicOneColumnData memoryData = tree.queryMemory(null);
+        BatchData memoryData = tree.queryMemory(null);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writeTimePair(outputStream, 1L, 10L, i1);
         outputStream.flush();
         byte[] page = outputStream.toByteArray();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(page);
-        DynamicOneColumnData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
+        BatchData mergeBlockAns = tree.queryFileBlock(null, null, null, inputStream, memoryData);
         Assert.assertEquals(mergeBlockAns.valueLength, 2);
         for (int i = 0; i < mergeBlockAns.valueLength; i++) {
             if (i == 0) {
@@ -685,7 +685,7 @@ public class IntervalTreeOperationFileBlockTest {
         tree.insert(1463369845095L, b5);
 
         //  calc
-        DynamicOneColumnData doc = tree.queryMemory(null);
+        BatchData doc = tree.queryMemory(null);
 
         for (int i = 4; i >= 1; i--) {
             doc = tree.queryFileBlock(null, null, null, ins[i], doc);
@@ -697,8 +697,8 @@ public class IntervalTreeOperationFileBlockTest {
                 "d1", "s1", QueryFilterType.VALUE_FILTER), 0, true);
 
         List<Object> ans = tree.getDynamicList(timeFilter, valueFilter, null, doc);
-        DynamicOneColumnData insertAdopt = (DynamicOneColumnData) ans.get(0);
-        DynamicOneColumnData updateAdopt = (DynamicOneColumnData) ans.get(1);
+        BatchData insertAdopt = (BatchData) ans.get(0);
+        BatchData updateAdopt = (BatchData) ans.get(1);
 
         for(int i = 0;i < insertAdopt.valueLength;i++) {
             //LOG.info(insertAdopt.getTime(i) + "," + insertAdopt.getInt(i));

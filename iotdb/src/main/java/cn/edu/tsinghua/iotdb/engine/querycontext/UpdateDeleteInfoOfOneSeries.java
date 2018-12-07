@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.querycontext;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReaderImpl;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ public class UpdateDeleteInfoOfOneSeries {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDeleteInfoOfOneSeries.class);
     private TSDataType dataType;
     private List<OverflowUpdateDeleteFile> overflowUpdateFileList;
-    private DynamicOneColumnData overflowUpdateInMem;
+    private BatchData overflowUpdateInMem;
     private OverflowOperationReader overflowUpdateOperationReader;
 
     public OverflowOperationReader getOverflowUpdateOperationReader() {
@@ -38,7 +38,7 @@ public class UpdateDeleteInfoOfOneSeries {
 		this.overflowUpdateFileList = overflowUpdateFileList;
 	}
 
-	public void setOverflowUpdateInMem(DynamicOneColumnData overflowUpdateInMem) {
+	public void setOverflowUpdateInMem(BatchData overflowUpdateInMem) {
 		this.overflowUpdateInMem = overflowUpdateInMem;
 	}
 	
@@ -50,7 +50,7 @@ public class UpdateDeleteInfoOfOneSeries {
 		return overflowUpdateFileList;
 	}
 
-	public DynamicOneColumnData getOverflowUpdateInMem() {
+	public BatchData getOverflowUpdateInMem() {
 		return overflowUpdateInMem;
 	}
 }

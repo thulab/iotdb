@@ -22,6 +22,8 @@ import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.LoadDataPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.MetadataPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
+import cn.edu.tsinghua.iotdb.query.interval.IntervalExtractor;
+import cn.edu.tsinghua.iotdb.query.interval.LongInterval;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
@@ -181,32 +183,31 @@ public class PhysicalGenerator {
             e.printStackTrace();
             throw new LogicalOperatorException(e.getMessage());
         }
-//        LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
-//        LongInterval longInterval = filterVerifier.getInterval((SeriesFilter) timeFilter);
-//        long startTime;
-//        long endTime;
-//        for (int i = 0; i < longInterval.count; i = i + 2) {
-//            if (longInterval.flag[i]) {
-//                startTime = longInterval.v[i];
-//            } else {
-//                startTime = longInterval.v[i] + 1;
-//            }
-//            if (longInterval.flag[i + 1]) {
-//                endTime = longInterval.v[i + 1];
-//            } else {
-//                endTime = longInterval.v[i + 1] - 1;
-//            }
-//            if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
-//                throw new LogicalOperatorException("start and end time must be greater than 0.");
-//            }
-//            if (startTime == Long.MIN_VALUE) {
-//                startTime = 1;
-//            }
-//
-//            if (endTime >= startTime)
-//                intervals.add(new Pair<>(startTime, endTime));
-//        }
-        // TODO: fix this
+        LongInterval longInterval = IntervalExtractor.extractLongInterval((SeriesFilter) timeFilter);
+        long startTime;
+        long endTime;
+        for (int i = 0; i < longInterval.count; i = i + 2) {
+            if (longInterval.flag[i]) {
+                startTime = longInterval.v[i];
+            } else {
+                startTime = longInterval.v[i] + 1;
+            }
+            if (longInterval.flag[i + 1]) {
+                endTime = longInterval.v[i + 1];
+            } else {
+                endTime = longInterval.v[i + 1] - 1;
+            }
+            if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
+                throw new LogicalOperatorException("start and end time must be greater than 0.");
+            }
+            if (startTime == Long.MIN_VALUE) {
+                startTime = 1;
+            }
+
+            if (endTime >= startTime)
+                intervals.add(new Pair<>(startTime, endTime));
+        }
+
         throw new UnsupportedOperationException("extractTimeIntervals");
     }
 

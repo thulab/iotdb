@@ -21,7 +21,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * IntervalTree is a data structure implemented used Treap. </br>
@@ -443,11 +443,11 @@ public class IntervalTree {
 	 *            filter for time
 	 * @param dataType
 	 *            TSDataType
-	 * @return DynamicOneColumnData
+	 * @return BatchData
 	 */
-	public DynamicOneColumnData dynamicQuery(SeriesFilter timeFilter, TSDataType dataType) {
+	public BatchData dynamicQuery(SeriesFilter timeFilter, TSDataType dataType) {
 
-		DynamicOneColumnData crudResult = new DynamicOneColumnData(dataType, true);
+		BatchData crudResult = new BatchData(dataType, true);
 
 		if (timeFilter == null) {
 			timeFilter = FilterFactory
@@ -464,7 +464,7 @@ public class IntervalTree {
 	 * Implemented for above dynamicQuery method.
 	 *
 	 * @param crudResult
-	 *            DynamicOneColumnData
+	 *            BatchData
 	 * @param pNode
 	 *            query root TreeNode
 	 * @param val
@@ -472,7 +472,7 @@ public class IntervalTree {
 	 * @param dataType
 	 *            TSDataType
 	 */
-	private void dynamicQuery(DynamicOneColumnData crudResult, TreeNode pNode, LongInterval val, TSDataType dataType) {
+	private void dynamicQuery(BatchData crudResult, TreeNode pNode, LongInterval val, TSDataType dataType) {
 		if (pNode == null)
 			return;
 
@@ -520,7 +520,7 @@ public class IntervalTree {
 	 * Put TreeNode information into DynamicColumnData crudResult.
 	 *
 	 * @param crudResult
-	 *            DynamicOneColumnData stores operations
+	 *            BatchData stores operations
 	 * @param opType
 	 *            OverflowOpType
 	 * @param s
@@ -532,7 +532,7 @@ public class IntervalTree {
 	 * @param value
 	 *            byte value
 	 */
-	private void putTreeNodeValue(DynamicOneColumnData crudResult, OverflowOpType opType, long s, long e,
+	private void putTreeNodeValue(BatchData crudResult, OverflowOpType opType, long s, long e,
 								  TSDataType dataType, byte[] value) {
 		switch (dataType) {
 			case INT32:
@@ -669,7 +669,7 @@ public class IntervalTree {
 		return root == null;
 	}
 
-	private void putTimePair(DynamicOneColumnData data, long s, long e) {
+	private void putTimePair(BatchData data, long s, long e) {
 		data.putTime(s);
 		data.putTime(e);
 	}

@@ -10,7 +10,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.Digest;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,7 +40,7 @@ public class MinValueAggrFunc extends AggregateFunction {
     }
 
     @Override
-    public void calculateValueFromDataPage(DynamicOneColumnData dataInThisPage) throws IOException, ProcessorException {
+    public void calculateValueFromDataPage(BatchData dataInThisPage) throws IOException, ProcessorException {
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
         }
@@ -92,7 +92,7 @@ public class MinValueAggrFunc extends AggregateFunction {
     }
 
     @Override
-    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
+    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) {
         if (resultData.emptyTimeLength == 0) {
             if (resultData.timeLength == 0) {
                 resultData.putEmptyTime(partitionStart);
@@ -151,7 +151,7 @@ public class MinValueAggrFunc extends AggregateFunction {
         }
     }
 
-    private Comparable<?> getMinValue(DynamicOneColumnData dataInThisPage) {
+    private Comparable<?> getMinValue(BatchData dataInThisPage) {
         Comparable<?> v = dataInThisPage.getAnObject(0);
         for (int i = 1; i < dataInThisPage.valueLength; i++) {
             Comparable<?> nextV = dataInThisPage.getAnObject(i);

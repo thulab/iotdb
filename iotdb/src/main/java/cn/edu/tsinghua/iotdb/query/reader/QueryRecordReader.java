@@ -18,7 +18,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,14 +56,14 @@ public class QueryRecordReader extends RecordReader {
     /**
      * Query the data of one given series.
      */
-    public DynamicOneColumnData queryOneSeries(SeriesFilter queryTimeFilter,
-                                               SeriesFilter queryValueFilter,
-                                               DynamicOneColumnData res, int fetchSize) throws IOException {
+    public BatchData queryOneSeries(SeriesFilter queryTimeFilter,
+                                    SeriesFilter queryValueFilter,
+                                    BatchData res, int fetchSize) throws IOException {
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
 
         if (res == null)
-            res = new DynamicOneColumnData(dataType, true);
+            res = new BatchData(dataType, true);
 
         while (usedRowGroupReaderIndex < rowGroupReaderList.size()) {
             RowGroupReader rowGroupReader = rowGroupReaderList.get(usedRowGroupReaderIndex);
@@ -117,7 +118,7 @@ public class QueryRecordReader extends RecordReader {
      * @throws IOException
      */
     private boolean queryOneSeries(ValueReader valueReader, SeriesFilter queryTimeFilter,
-                                   SeriesFilter queryValueFilter, DynamicOneColumnData res,
+                                   SeriesFilter queryValueFilter, BatchData res,
                                    int fetchSize) throws IOException {
 
         CompressionTypeName compressionTypeName = valueReader.compressionTypeName;
@@ -507,13 +508,13 @@ public class QueryRecordReader extends RecordReader {
      * @return cross query result
      * @throws IOException file read error
      */
-    public DynamicOneColumnData queryUsingTimestamps(long[] commonTimestamps) throws IOException {
+    public BatchData queryUsingTimestamps(long[] commonTimestamps) throws IOException {
 
-        DynamicOneColumnData originalQueryData = queryOriginalDataUsingTimestamps(commonTimestamps);
+        BatchData originalQueryData = queryOriginalDataUsingTimestamps(commonTimestamps);
         if (originalQueryData == null) {
-            originalQueryData = new DynamicOneColumnData(dataType, true);
+            originalQueryData = new BatchData(dataType, true);
         }
-        DynamicOneColumnData queryResult = new DynamicOneColumnData(dataType, true);
+        BatchData queryResult = new BatchData(dataType, true);
 
         int oldDataIdx = 0;
         for (long commonTime : commonTimestamps) {
@@ -554,11 +555,11 @@ public class QueryRecordReader extends RecordReader {
         return queryResult;
     }
 
-    private DynamicOneColumnData queryOriginalDataUsingTimestamps(long[] timestamps) throws IOException{
+    private BatchData queryOriginalDataUsingTimestamps(long[] timestamps) throws IOException{
         if (timestamps.length == 0)
             return null;
 
-        DynamicOneColumnData res = null;
+        BatchData res = null;
 
         List<RowGroupReader> rowGroupReaderList = tsFileReaderManager.getRowGroupReaderListByDeltaObject(deltaObjectId, queryTimeFilter);
 
@@ -573,7 +574,7 @@ public class QueryRecordReader extends RecordReader {
                 if (i == 0) {
                     res = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
                 } else {
-                    DynamicOneColumnData midResult = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
+                    BatchData midResult = rowGroupReader.readValueUseTimestamps(measurementId, timestamps);
                     res.mergeRecord(midResult);
                 }
             }
@@ -585,7 +586,7 @@ public class QueryRecordReader extends RecordReader {
             }
 
             if (valueReader.getDataType().equals(dataType)) {
-                DynamicOneColumnData midResult = valueReader.getValuesForGivenValues(timestamps);
+                BatchData midResult = valueReader.getValuesForGivenValues(timestamps);
                 res.mergeRecord(midResult);
             }
         }
@@ -593,7 +594,7 @@ public class QueryRecordReader extends RecordReader {
         return res;
     }
 
-    private void putMemoryDataToResult(DynamicOneColumnData res, InsertDynamicData insertMemoryData) {
+    private void putMemoryDataToResult(BatchData res, InsertDynamicData insertMemoryData) {
         res.putTime(insertMemoryData.getCurrentMinTime());
 
         switch (insertMemoryData.getDataType()) {
@@ -620,7 +621,7 @@ public class QueryRecordReader extends RecordReader {
         }
     }
 
-    private void putFileDataToResult(DynamicOneColumnData queryResult, DynamicOneColumnData originalQueryData, int dataIdx) {
+    private void putFileDataToResult(BatchData queryResult, BatchData originalQueryData, int dataIdx) {
 
         long time = originalQueryData.getTime(dataIdx);
 

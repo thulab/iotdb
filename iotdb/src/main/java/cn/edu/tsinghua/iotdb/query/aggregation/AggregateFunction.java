@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,14 +13,14 @@ import java.util.List;
 public abstract class AggregateFunction {
 
     public String name;
-    public DynamicOneColumnData resultData;
+    public BatchData resultData;
     public TSDataType dataType;
     public boolean hasSetValue;
 
     public AggregateFunction(String name, TSDataType dataType) {
         this.name = name;
         this.dataType = dataType;
-        resultData = new DynamicOneColumnData(dataType, true, true);
+        resultData = new BatchData(dataType, true, true);
     }
 
     public abstract void putDefaultValue();
@@ -44,7 +44,7 @@ public abstract class AggregateFunction {
      * @throws IOException        TsFile data read exception
      * @throws ProcessorException wrong aggregation method parameter
      */
-    public abstract void calculateValueFromDataPage(DynamicOneColumnData dataInThisPage) throws IOException, ProcessorException;
+    public abstract void calculateValueFromDataPage(BatchData dataInThisPage) throws IOException, ProcessorException;
 
     /**
      * <p>
@@ -83,7 +83,7 @@ public abstract class AggregateFunction {
      * @param data
      */
     public abstract void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd,
-                                                DynamicOneColumnData data) throws ProcessorException;
+                                                BatchData data) throws ProcessorException;
 
     /**
      * Convert a value from string to its real data type and put into return data.

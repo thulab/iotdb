@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * @author CGF.
@@ -74,7 +74,7 @@ public class IntervalTreeOperationMemoryTest {
         tree[5].insert(1463369845095L, b5);
 
         //  calc
-        DynamicOneColumnData doc = tree[5].queryMemory(null);
+        BatchData doc = tree[5].queryMemory(null);
 
         for (int i = 4; i >= 1; i--) {
             doc = tree[i].queryMemory(doc);
@@ -164,11 +164,11 @@ public class IntervalTreeOperationMemoryTest {
         // old : [1, 10] 1
         IntervalTreeOperation newTree = new IntervalTreeOperation(TSDataType.INT64);
         newTree.update(5L, 10L, l2);
-        DynamicOneColumnData newMemoryData = newTree.queryMemory(null);
+        BatchData newMemoryData = newTree.queryMemory(null);
 
         IntervalTreeOperation oldTree = new IntervalTreeOperation(TSDataType.INT64);
         oldTree.update(1L, 10L, l1);
-        DynamicOneColumnData mergeAns = oldTree.queryMemory(newMemoryData);
+        BatchData mergeAns = oldTree.queryMemory(newMemoryData);
 
         Assert.assertEquals(mergeAns.valueLength, 2);
         for (int i = 0; i < mergeAns.valueLength; i++) {
@@ -191,11 +191,11 @@ public class IntervalTreeOperationMemoryTest {
         // old : [1, 10] 1.0f
         IntervalTreeOperation newTree = new IntervalTreeOperation(TSDataType.FLOAT);
         newTree.update(5L, 10L, f2);
-        DynamicOneColumnData newMemoryData = newTree.queryMemory(null);
+        BatchData newMemoryData = newTree.queryMemory(null);
 
         IntervalTreeOperation oldTree = new IntervalTreeOperation(TSDataType.FLOAT);
         oldTree.update(1L, 10L, f1);
-        DynamicOneColumnData mergeAns = oldTree.queryMemory(newMemoryData);
+        BatchData mergeAns = oldTree.queryMemory(newMemoryData);
 
         Assert.assertEquals(mergeAns.valueLength, 2);
         for (int i = 0; i < mergeAns.valueLength; i++) {
@@ -217,11 +217,11 @@ public class IntervalTreeOperationMemoryTest {
         // old : [1, 10] 1.0
         IntervalTreeOperation newTree = new IntervalTreeOperation(TSDataType.DOUBLE);
         newTree.update(5L, 10L, d2);
-        DynamicOneColumnData newMemoryData = newTree.queryMemory(null);
+        BatchData newMemoryData = newTree.queryMemory(null);
 
         IntervalTreeOperation oldTree = new IntervalTreeOperation(TSDataType.DOUBLE);
         oldTree.update(1L, 10L, d1);
-        DynamicOneColumnData mergeAns = oldTree.queryMemory(newMemoryData);
+        BatchData mergeAns = oldTree.queryMemory(newMemoryData);
 
         Assert.assertEquals(mergeAns.valueLength, 2);
         for (int i = 0; i < mergeAns.valueLength; i++) {
@@ -244,11 +244,11 @@ public class IntervalTreeOperationMemoryTest {
         // new : [1, 10] 1
         IntervalTreeOperation newTree = new IntervalTreeOperation(TSDataType.INT32);
         newTree.update(5L, 10L, i2);
-        DynamicOneColumnData memoryData = newTree.queryMemory(null);
+        BatchData memoryData = newTree.queryMemory(null);
 
         IntervalTreeOperation oldTree = new IntervalTreeOperation(TSDataType.INT32);
         oldTree.update(1L, 10L, i1);
-        DynamicOneColumnData mergeAnswer = oldTree.queryMemory(memoryData);
+        BatchData mergeAnswer = oldTree.queryMemory(memoryData);
         Assert.assertEquals(mergeAnswer.valueLength, 2);
         for (int i = 0; i < mergeAnswer.valueLength; i++) {
             if (i == 0) {

@@ -33,7 +33,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
@@ -580,9 +580,9 @@ public class KvMatchIndex  implements IoTIndex {
 
     private OnePassQueryDataSet constructOnePassQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers, int limitSize) throws IOException, ProcessorException {
         OnePassQueryDataSet dataSet = new OnePassQueryDataSet();
-        DynamicOneColumnData startTime = new DynamicOneColumnData(TSDataType.INT64, true);
-        DynamicOneColumnData endTime = new DynamicOneColumnData(TSDataType.INT64, true);
-        DynamicOneColumnData distance = new DynamicOneColumnData(TSDataType.DOUBLE, true);
+        BatchData startTime = new BatchData(TSDataType.INT64, true);
+        BatchData endTime = new BatchData(TSDataType.INT64, true);
+        BatchData distance = new BatchData(TSDataType.DOUBLE, true);
         for (int i = 0; i < Math.min(limitSize, answers.size()); i++) {
             Pair<Pair<Long, Long>, Double> answer = answers.get(i);
             startTime.putTime(i);

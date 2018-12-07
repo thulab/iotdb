@@ -8,7 +8,7 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
@@ -129,13 +129,13 @@ public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
             sb.append(f.measurementId);
             String key = sb.toString();
 
-            LinkedHashMap<String, DynamicOneColumnData> mapRet = dataSet.mapRet;
+            LinkedHashMap<String, BatchData> mapRet = dataSet.mapRet;
             if (!mapRet.containsKey(key)) {
-                DynamicOneColumnData oneCol = new DynamicOneColumnData(f.dataType, true);
+                BatchData oneCol = new BatchData(f.dataType, true);
                 mapRet.put(key, oneCol);
             }
 
-            // only when f is not null, the value of f could be put into DynamicOneColumnData.
+            // only when f is not null, the value of f could be put into BatchData.
             switch (f.dataType) {
                 case BOOLEAN:
                     if (!f.isNull()) {

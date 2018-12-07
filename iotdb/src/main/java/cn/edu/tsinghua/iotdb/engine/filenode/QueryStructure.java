@@ -6,12 +6,12 @@ import java.util.List;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * This is a structure for a query result. The result of query contains four
  * parts. The first part is data in memory which contain the
- * {@code DynamicOneColumnData}currentPage and
+ * {@code BatchData}currentPage and
  * {@code Pair<List<ByteArrayInputStream>, CompressionTypeName>} pageList. The
  * second part is data in the no closed file which contain
  * {@code List<RowGroupMetaData>} bufferwriteDataInDisk. The third part is data
@@ -24,7 +24,7 @@ import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
  */
 public class QueryStructure {
 
-	private final DynamicOneColumnData currentPage;
+	private final BatchData currentPage;
 
 	private final Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList;
 
@@ -34,7 +34,7 @@ public class QueryStructure {
 
 	private final List<Object> allOverflowData;
 
-	public QueryStructure(DynamicOneColumnData currentPage,
+	public QueryStructure(BatchData currentPage,
 			Pair<List<ByteArrayInputStream>, CompressionTypeName> pageList,
 			List<RowGroupMetaData> bufferwriteDataInDisk, List<IntervalFileNode> bufferwriteDataInFiles,
 			List<Object> allOverflowData) {
@@ -45,7 +45,7 @@ public class QueryStructure {
 		this.allOverflowData = allOverflowData;
 	}
 
-	public DynamicOneColumnData getCurrentPage() {
+	public BatchData getCurrentPage() {
 		return currentPage;
 	}
 

@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.query.fill;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ public abstract class IFill {
 
     public abstract IFill copy(Path path);
 
-    public abstract DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException;
+    public abstract BatchData getFillResult() throws ProcessorException, IOException, PathErrorException;
 
     public void setQueryTime(long queryTime) {
         this.queryTime = queryTime;

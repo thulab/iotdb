@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * we advise the implementation class of this interface can be constructed by two ways:<br>
@@ -42,7 +42,7 @@ public interface IIntervalTreeOperator {
      * @param newerMemoryData - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryMemory(DynamicOneColumnData newerMemoryData);
+    BatchData queryMemory(BatchData newerMemoryData);
 
     /**
      * This function merges the older data which deserialized from given parameter <em>in</em> into <em>newerData</em>
@@ -56,23 +56,23 @@ public interface IIntervalTreeOperator {
      * @param newerData   - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryFileBlock(SeriesFilter timeFilter,
+    BatchData queryFileBlock(SeriesFilter timeFilter,
                                         SeriesFilter valueFilter, SeriesFilter freqFilter, InputStream in,
-                                        DynamicOneColumnData newerData) throws IOException;
+                                        BatchData newerData) throws IOException;
 
     /**
      * Get List<Object>(insert operations, update operations and delete operations which meet the expression of time filter,
-     * value filter and frequency filter in DynamicOneColumnData data.)
+     * value filter and frequency filter in BatchData data.)
      *
      * @param timeFilter  - timeFilter is specified by user.
      * @param valueFilter - valueFilter is specified by user.
      * @param freqFilter  - freqFilter is specified by user.
-     * @param data        - a DynamicOneColumnData information.
+     * @param data        - a BatchData information.
      * @return - List<Object>
      */
     List<Object> getDynamicList(SeriesFilter timeFilter,
                                 SeriesFilter valueFilter, SeriesFilter freqFilter,
-                                DynamicOneColumnData data);
+                                BatchData data);
 
     /**
      * delete all values earlier than timestamp.

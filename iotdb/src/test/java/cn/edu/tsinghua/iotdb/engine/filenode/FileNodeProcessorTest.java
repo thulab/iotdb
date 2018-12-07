@@ -27,14 +27,14 @@
 //import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 //import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 //import cn.edu.tsinghua.iotdb.metadata.MManager;
-//import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+//import cn.edu.tsinghua.iotdb.interval.EnvironmentUtils;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-//import cn.edu.tsinghua.tsfile.common.utils.Pair;
+//import cn.edu.tsinghua.tsfile.common.interval.Pair;
 //import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+//import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 //
 ///**
 // * @author liukun
@@ -202,7 +202,7 @@
 //			int token = processor.addMultiPassLock();
 //			QueryStructure queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
 //			processor.removeMultiPassLock(token);
-//			DynamicOneColumnData bufferwritedataindex = queryResult.getCurrentPage();
+//			BatchData bufferwritedataindex = queryResult.getCurrentPage();
 //			Pair<List<ByteArrayInputStream>, CompressionTypeName> right = queryResult.getPageList();
 //			List<RowGroupMetaData> bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 //			List<IntervalFileNode> bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
@@ -211,7 +211,7 @@
 //			assertEquals(true, right != null);
 //			assertEquals(1, right.left.size());
 //			for (ByteArrayInputStream stream : right.left) {
-//				DynamicOneColumnData columnData = PageTestUtils.pageToDynamic(stream, right.right, deltaObjectId,
+//				BatchData columnData = PageTestUtils.pageToDynamic(stream, right.right, deltaObjectId,
 //						measurementId);
 //				columnData.mergeRecord(bufferwritedataindex);
 //				bufferwritedataindex = columnData;
@@ -361,7 +361,7 @@
 //			assertEquals(OverflowChangeType.NO_CHANGE, bufferwritedatainfiles.get(1).overflowChangeType);
 //			assertEquals(OverflowChangeType.CHANGED, bufferwritedatainfiles.get(2).overflowChangeType);
 //			assertEquals(OverflowChangeType.NO_CHANGE, bufferwritedatainfiles.get(3).overflowChangeType);
-//			DynamicOneColumnData updateDate = (DynamicOneColumnData) overflowResult.get(1);
+//			BatchData updateDate = (BatchData) overflowResult.get(1);
 //			assertEquals(2, updateDate.valueLength);
 //			assertEquals(4, updateDate.timeLength);
 //			assertEquals(2, updateDate.getTime(0));

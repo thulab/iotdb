@@ -20,7 +20,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
@@ -105,7 +105,7 @@ public class AggregateEngine {
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(filterStructure.getTimeFilter(),
                     filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {
                 @Override
-                public DynamicOneColumnData getDataInNextBatch(DynamicOneColumnData res, int fetchSize,
+                public BatchData getDataInNextBatch(BatchData res, int fetchSize,
                                                                SeriesFilter valueFilter, int valueFilterNumber)
                         throws ProcessorException, IOException {
                     try {
@@ -305,8 +305,8 @@ public class AggregateEngine {
      * <code>RecordReaderCacheManager</code>, if the composition of CrossQueryFilter exist same SingleQueryFilter,
      * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleQueryFilter.
      */
-    private DynamicOneColumnData getDataUseSingleValueFilter(SeriesFilter queryValueFilter,
-                                                             DynamicOneColumnData res, int fetchSize, int valueFilterNumber)
+    private BatchData getDataUseSingleValueFilter(SeriesFilter queryValueFilter,
+                                                             BatchData res, int fetchSize, int valueFilterNumber)
             throws ProcessorException, IOException, PathErrorException {
 
         String deltaObjectUID = ((SeriesFilter) queryValueFilter).getFilterSeries().getDeltaObjectUID();

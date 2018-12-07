@@ -8,7 +8,7 @@ import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 
@@ -70,8 +70,8 @@ public class OverflowSupport {
 		return memTable.query(deltaObjectId, measurementId, dataType);
 	}
 
-	public DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
-															TSDataType dataType, DynamicOneColumnData data) {
+	public BatchData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId,
+															TSDataType dataType, BatchData data) {
 		if (indexTrees.containsKey(deltaObjectId)) {
 			if (indexTrees.get(deltaObjectId).containsKey(measurementId)
 					&& indexTrees.get(deltaObjectId).get(measurementId).getDataType().equals(dataType)) {

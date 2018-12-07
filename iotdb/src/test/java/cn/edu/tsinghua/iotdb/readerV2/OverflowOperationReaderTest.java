@@ -10,7 +10,7 @@ import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import org.junit.After;
 import org.junit.Assert;
@@ -82,7 +82,7 @@ public class OverflowOperationReaderTest {
                 .getTimeSeriesChunkMetaDataList().size());
         assertEquals(OverflowTestUtils.dataType1,
                 overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getDataType());
-        DynamicOneColumnData updateMem = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries()
+        BatchData updateMem = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries()
                 .getOverflowUpdateInMem();
         // time :[2,10] [20,30] value: int [10,10] int[20,20]
         assertEquals(2, updateMem.getTime(0));

@@ -13,7 +13,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
@@ -57,7 +57,7 @@ public class  GroupByEngineNoFilter {
     private int partitionFetchSize;
 
     /** HashMap to record the query result of each aggregation Path **/
-    private Map<String, DynamicOneColumnData> queryPathResult = new HashMap<>();
+    private Map<String, BatchData> queryPathResult = new HashMap<>();
 
     /** represent duplicated path index **/
     private Set<Integer> duplicatedPaths = new HashSet<>();
@@ -74,7 +74,7 @@ public class  GroupByEngineNoFilter {
         for (int i = 0; i < aggregations.size(); i++) {
             String aggregateKey = aggregationKey(aggregations.get(i).right, aggregations.get(i).left);
             if (!groupByResult.mapRet.containsKey(aggregateKey)) {
-                groupByResult.mapRet.put(aggregateKey, new DynamicOneColumnData(aggregations.get(i).right.dataType, true, true));
+                groupByResult.mapRet.put(aggregateKey, new BatchData(aggregations.get(i).right.dataType, true, true));
                 queryPathResult.put(aggregateKey, null);
             } else {
                 duplicatedPaths.add(i);
@@ -144,7 +144,7 @@ public class  GroupByEngineNoFilter {
                     Path path = pair.left;
                     AggregateFunction aggregateFunction = pair.right;
                     String aggregationKey = aggregationKey(aggregateFunction, path);
-                    DynamicOneColumnData data = queryPathResult.get(aggregationKey);
+                    BatchData data = queryPathResult.get(aggregationKey);
                     if (data == null || (data.curIdx >= data.timeLength && !data.hasReadAll)) {
                         data = readOneColumnWithoutFilter(path, data, null, aggregationOrdinal);
                         queryPathResult.put(aggregationKey, data);
@@ -200,7 +200,7 @@ public class  GroupByEngineNoFilter {
         return groupByResult;
     }
 
-    private DynamicOneColumnData readOneColumnWithoutFilter(Path path, DynamicOneColumnData res, Integer readLock, int aggregationOrdinal)
+    private BatchData readOneColumnWithoutFilter(Path path, BatchData res, Integer readLock, int aggregationOrdinal)
             throws ProcessorException, IOException, PathErrorException {
 
         // this read process is batch read

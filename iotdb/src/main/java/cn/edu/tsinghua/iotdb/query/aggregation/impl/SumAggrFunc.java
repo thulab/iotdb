@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -44,7 +44,7 @@ public class SumAggrFunc extends AggregateFunction {
     }
 
     @Override
-    public void calculateValueFromDataPage(DynamicOneColumnData dataInThisPage) throws IOException, ProcessorException {
+    public void calculateValueFromDataPage(BatchData dataInThisPage) throws IOException, ProcessorException {
         // TODO : update mean or update sum?
         if (resultData.timeLength == 0) {
             resultData.putTime(0);
@@ -93,7 +93,7 @@ public class SumAggrFunc extends AggregateFunction {
     }
 
     @Override
-    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) throws ProcessorException {
+    public void calcGroupByAggregation(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) throws ProcessorException {
         if (resultData.emptyTimeLength == 0) {
             if (resultData.timeLength == 0) {
                 resultData.putEmptyTime(partitionStart);
@@ -141,7 +141,7 @@ public class SumAggrFunc extends AggregateFunction {
      * @param data
      * @throws ProcessorException
      */
-    private void updateSum(DynamicOneColumnData data) throws ProcessorException {
+    private void updateSum(BatchData data) throws ProcessorException {
         switch (data.dataType) {
             case INT32:
                 for(; data.curIdx < data.timeLength; data.curIdx++) {
@@ -339,7 +339,7 @@ public class SumAggrFunc extends AggregateFunction {
      * @param intervalEnd
      * @param data
      */
-    private void groupUpdateMeanWithInt(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
+    private void groupUpdateMeanWithInt(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) {
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -356,7 +356,7 @@ public class SumAggrFunc extends AggregateFunction {
         groupUpdateMean(partitionStart);
     }
 
-    private void groupUpdateMeanWithLong(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
+    private void groupUpdateMeanWithLong(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) {
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -373,7 +373,7 @@ public class SumAggrFunc extends AggregateFunction {
         groupUpdateMean(partitionStart);
     }
 
-    private void groupUpdateMeanWithFloat(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
+    private void groupUpdateMeanWithFloat(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) {
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {
@@ -390,7 +390,7 @@ public class SumAggrFunc extends AggregateFunction {
         groupUpdateMean(partitionStart);
     }
 
-    private void groupUpdateMeanWithDouble(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, DynamicOneColumnData data) {
+    private void groupUpdateMeanWithDouble(long partitionStart, long partitionEnd, long intervalStart, long intervalEnd, BatchData data) {
         while (data.curIdx < data.timeLength) {
             long time = data.getTime(data.curIdx);
             if (time > intervalEnd || time > partitionEnd) {

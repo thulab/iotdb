@@ -18,7 +18,7 @@ import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 public class OverflowIOTest {
 
@@ -55,7 +55,7 @@ public class OverflowIOTest {
 		index.update(4, 20, BytesUtils.intToBytes(20));
 		index.update(30, 40, BytesUtils.intToBytes(30));
 		index.update(50, 60, BytesUtils.intToBytes(40));
-		DynamicOneColumnData originData = index.query(null);
+		BatchData originData = index.query(null);
 		assertEquals(2, originData.getTime(0));
 		assertEquals(3, originData.getTime(1));
 		assertEquals(4, originData.getTime(2));
@@ -80,7 +80,7 @@ public class OverflowIOTest {
 		// query index
 		InputStream input = OverflowIO.readOneTimeSeriesChunk(chunkMetadata, reader);
 		IntervalTreeOperation overflowIndex = new IntervalTreeOperation(TSDataType.INT32);
-		DynamicOneColumnData one = new DynamicOneColumnData(TSDataType.INT32);
+		BatchData one = new BatchData(TSDataType.INT32);
 		one = overflowIndex.queryFileBlock(null, null, null, input, one);
 		assertEquals(2, one.getTime(0));
 		assertEquals(3, one.getTime(1));
@@ -133,8 +133,8 @@ public class OverflowIOTest {
 
 		// d1 s1
 		IntervalTreeOperation index = new IntervalTreeOperation(dataType1);
-		DynamicOneColumnData d1s1 = index.queryFileBlock(null, null, null,
-				OverflowIO.readOneTimeSeriesChunk(d1s1metadata, reader), new DynamicOneColumnData());
+		BatchData d1s1 = index.queryFileBlock(null, null, null,
+				OverflowIO.readOneTimeSeriesChunk(d1s1metadata, reader), new BatchData());
 		assertEquals(2, d1s1.getTime(0));
 		assertEquals(10, d1s1.getTime(1));
 		assertEquals(20, d1s1.getTime(2));
@@ -144,8 +144,8 @@ public class OverflowIOTest {
 		assertEquals(20, d1s1.getInt(1));
 		// d1 s2
 		index = new IntervalTreeOperation(dataType1);
-		DynamicOneColumnData d1s2 = index.queryFileBlock(null, null, null,
-				OverflowIO.readOneTimeSeriesChunk(d1s2metadata, reader), new DynamicOneColumnData());
+		BatchData d1s2 = index.queryFileBlock(null, null, null,
+				OverflowIO.readOneTimeSeriesChunk(d1s2metadata, reader), new BatchData());
 		assertEquals(0, d1s2.getTime(0));
 		assertEquals(-10, d1s2.getTime(1));
 		assertEquals(20, d1s2.getTime(2));
@@ -155,8 +155,8 @@ public class OverflowIOTest {
 		assertEquals(20, d1s2.getInt(1));
 		// d2 s1
 		index = new IntervalTreeOperation(dataType2);
-		DynamicOneColumnData d2s1 = index.queryFileBlock(null, null, null,
-				OverflowIO.readOneTimeSeriesChunk(d2s1metadata, reader), new DynamicOneColumnData());
+		BatchData d2s1 = index.queryFileBlock(null, null, null,
+				OverflowIO.readOneTimeSeriesChunk(d2s1metadata, reader), new BatchData());
 		assertEquals(10, d2s1.getTime(0));
 		assertEquals(14, d2s1.getTime(1));
 		assertEquals(15, d2s1.getTime(2));
@@ -166,8 +166,8 @@ public class OverflowIOTest {
 		assertEquals(20.5f, d2s1.getFloat(1), error);
 		// d2 s2
 		index = new IntervalTreeOperation(dataType2);
-		DynamicOneColumnData d2s2 = index.queryFileBlock(null, null, null,
-				OverflowIO.readOneTimeSeriesChunk(d2s2metadata, reader), new DynamicOneColumnData());
+		BatchData d2s2 = index.queryFileBlock(null, null, null,
+				OverflowIO.readOneTimeSeriesChunk(d2s2metadata, reader), new BatchData());
 
 		assertEquals(0, d2s2.getTime(0));
 		assertEquals(-20, d2s2.getTime(1));

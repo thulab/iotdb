@@ -8,7 +8,7 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class LinearFill extends IFill{
 
     private Path path;
 
-    private DynamicOneColumnData result;
+    private BatchData result;
 
     public LinearFill(long beforeRange, long afterRange) {
         this.beforeRange = beforeRange;
@@ -34,7 +34,7 @@ public class LinearFill extends IFill{
         this.path = path;
         this.beforeRange = beforeRange;
         this.afterRange = afterRange;
-        result = new DynamicOneColumnData(dataType, true, true);
+        result = new BatchData(dataType, true, true);
     }
 
     public long getBeforeRange() {
@@ -59,7 +59,7 @@ public class LinearFill extends IFill{
     }
 
     @Override
-    public DynamicOneColumnData getFillResult() throws ProcessorException, IOException, PathErrorException {
+    public BatchData getFillResult() throws ProcessorException, IOException, PathErrorException {
         long beforeTime, afterTime;
         if (beforeRange == -1) {
             beforeTime = 0;

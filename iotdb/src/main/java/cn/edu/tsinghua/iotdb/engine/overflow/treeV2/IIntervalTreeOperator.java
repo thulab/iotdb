@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.engine.overflow.treeV2;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,8 +46,8 @@ public interface IIntervalTreeOperator {
      * @param newerMemoryData - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryMemory(SeriesFilter timeFilter,
-                                     SeriesFilter valueFilter, DynamicOneColumnData newerMemoryData);
+    BatchData queryMemory(SeriesFilter timeFilter,
+                                     SeriesFilter valueFilter, BatchData newerMemoryData);
 
     /**
      * This function merges the older data which deserialized from given parameter <em>in</em> into <em>newerData</em>
@@ -60,18 +60,18 @@ public interface IIntervalTreeOperator {
      * @param newerData   - newer overflow data.
      * @return merged result.
      */
-    DynamicOneColumnData queryFileBlock(SeriesFilter timeFilter,
+    BatchData queryFileBlock(SeriesFilter timeFilter,
                                         SeriesFilter valueFilter, InputStream in,
-                                        DynamicOneColumnData newerData) throws IOException;
+                                        BatchData newerData) throws IOException;
 
     /**
      * Get List<OverflowOperation>(insert operations, update operations and delete operations which meet the expression of time filter,
-     * value filter and frequency filter in DynamicOneColumnData data.)
+     * value filter and frequency filter in BatchData data.)
      *
-     * @param data        - a DynamicOneColumnData information.
+     * @param data        - a BatchData information.
      * @return - List<OverflowOperation>
      */
-    List<OverflowOperation> getDynamicList(DynamicOneColumnData data);
+    List<OverflowOperation> getDynamicList(BatchData data);
 
     /**
      * delete all values earlier than timestamp.

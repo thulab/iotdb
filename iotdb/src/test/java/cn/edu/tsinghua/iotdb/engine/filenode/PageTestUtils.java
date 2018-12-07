@@ -15,7 +15,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.Digest;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
 
 /**
  * @author CGF.
@@ -24,7 +24,7 @@ public class PageTestUtils {
 
     private static Decoder timeDecoder = new DeltaBinaryDecoder.LongDeltaDecoder();
 
-    public static DynamicOneColumnData pageToDynamic(ByteArrayInputStream stream, CompressionTypeName compressionTypeName,
+    public static BatchData pageToDynamic(ByteArrayInputStream stream, CompressionTypeName compressionTypeName,
                                                      String deltaObjectId, String measurementId) throws IOException, PathErrorException {
 
         PageReader pageReader = new PageReader(stream, compressionTypeName);
@@ -36,7 +36,7 @@ public class PageTestUtils {
         long[] timeValues = initTimeValue(page, pageHeader.data_page_header.num_rows, false);
         Decoder valueDecoder = Decoder.getDecoderByType(pageHeader.getData_page_header().getEncoding(), dataType);
 
-        DynamicOneColumnData ans = new DynamicOneColumnData(dataType, true);
+        BatchData ans = new BatchData(dataType, true);
 
         int i = 0;
         while (valueDecoder.hasNext(page)) {
