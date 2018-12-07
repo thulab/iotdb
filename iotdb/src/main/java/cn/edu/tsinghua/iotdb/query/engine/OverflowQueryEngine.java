@@ -18,8 +18,8 @@ import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesQueryFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
@@ -61,8 +61,8 @@ public class OverflowQueryEngine {
      * @throws ProcessorException series resolve error
      * @throws IOException        TsFile read error
      */
-    public OnePassQueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-                              FilterExpression valueFilter, OnePassQueryDataSet queryDataSet, int fetchSize, Integer readLock)
+    public OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter, QueryFilter freqFilter,
+                              QueryFilter valueFilter, OnePassQueryDataSet queryDataSet, int fetchSize, Integer readLock)
             throws ProcessorException, IOException, PathErrorException {
         this.formNumber = formNumber;
         if (queryDataSet != null) {
@@ -70,9 +70,9 @@ public class OverflowQueryEngine {
         }
         if (timeFilter == null && freqFilter == null && valueFilter == null) {
             return querySeriesWithoutFilter(paths, queryDataSet, fetchSize, readLock);
-        } else if (valueFilter != null && valueFilter instanceof CrossSeriesFilterExpression) {
+        } else if (valueFilter != null && valueFilter instanceof CrossSeriesQueryFilter) {
             return crossSeriesQuery(paths, (SeriesFilter) timeFilter,
-                    (CrossSeriesFilterExpression) valueFilter, queryDataSet, fetchSize);
+                    (CrossSeriesQueryFilter) valueFilter, queryDataSet, fetchSize);
         } else {
             return querySeriesUsingFilter(paths, (SeriesFilter) timeFilter, (SeriesFilter) freqFilter,
                     (SeriesFilter) valueFilter, queryDataSet, fetchSize, readLock);
@@ -360,7 +360,7 @@ public class OverflowQueryEngine {
     /**
      * Query type 3: cross series read.
      */
-    private OnePassQueryDataSet crossSeriesQuery(List<Path> paths, SeriesFilter queryTimeFilter, CrossSeriesFilterExpression queryValueFilter,
+    private OnePassQueryDataSet crossSeriesQuery(List<Path> paths, SeriesFilter queryTimeFilter, CrossSeriesQueryFilter queryValueFilter,
                                           OnePassQueryDataSet queryDataSet, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
@@ -413,13 +413,13 @@ public class OverflowQueryEngine {
 
     /**
      * This function is only used for CrossQueryTimeGenerator.
-     * A CrossSeriesFilterExpression is consist of many SeriesFilter.
+     * A CrossSeriesQueryFilter is consist of many SeriesFilter.
      * e.g. CSAnd(d1.s1, d2.s1) is consist of d1.s1 and d2.s1, so this method would be invoked twice,
      * once for querying d1.s1, once for querying d2.s1.
      * <p>
      * When this method is invoked, need add the filter index as a new parameter, for the reason of exist of
-     * <code>RecordReaderCacheManager</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
-     * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleFilterExpression.
+     * <code>RecordReaderCacheManager</code>, if the composition of CrossQueryFilter exist same SingleQueryFilter,
+     * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleQueryFilter.
      */
     private DynamicOneColumnData querySeriesForCross(SeriesFilter queryValueFilter,
                                                     DynamicOneColumnData res, int fetchSize, int valueFilterNumber)

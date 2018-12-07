@@ -39,7 +39,7 @@ import cn.edu.tsinghua.iotdb.utils.LoadDataUtils;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
@@ -216,8 +216,8 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     }
 
     @Override
-    public OnePassQueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter,
-                              FilterExpression freqFilter, FilterExpression valueFilter, int fetchSize, OnePassQueryDataSet lastData)
+    public OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter,
+                              QueryFilter freqFilter, QueryFilter valueFilter, int fetchSize, OnePassQueryDataSet lastData)
             throws ProcessorException {
 
         try {

@@ -6,8 +6,8 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesQueryFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.DoubleFilterSeries;
@@ -183,7 +183,7 @@ public class FilterUtilsForOverflow {
 		return filter;
 	}
 
-	public static FilterExpression constructCrossFilter(String exp) {
+	public static QueryFilter constructCrossFilter(String exp) {
 		exp = exp.trim();
 
 		if (exp.equals("null")) {
@@ -196,7 +196,7 @@ public class FilterUtilsForOverflow {
 
 		int numbraket = 0;
 		boolean operator = false;
-		ArrayList<FilterExpression> filters = new ArrayList<>();
+		ArrayList<QueryFilter> filters = new ArrayList<>();
 		ArrayList<Character> operators = new ArrayList<>();
 		String texp = "";
 
@@ -218,7 +218,7 @@ public class FilterUtilsForOverflow {
 			}
 
 			if (numbraket == 0 && operator) {
-				FilterExpression filter = constructCrossFilter(texp.substring(1, texp.length() - 1));
+				QueryFilter filter = constructCrossFilter(texp.substring(1, texp.length() - 1));
 				filters.add(filter);
 				operators.add(c);
 
@@ -235,21 +235,21 @@ public class FilterUtilsForOverflow {
 
 		if (operators.size() == 0) {
 			// Warning TODO
-			return FilterFactory.csAnd(filters.get(0), filters.get(0));
+			return FilterFactory.and(filters.get(0), filters.get(0));
 		}
 
-		CrossSeriesFilterExpression csf;
+		CrossSeriesQueryFilter csf;
 		if (operators.get(0) == '|') {
-			csf = (CrossSeriesFilterExpression) FilterFactory.or(filters.get(0), filters.get(1));
+			csf = (CrossSeriesQueryFilter) FilterFactory.or(filters.get(0), filters.get(1));
 		} else {
-			csf = FilterFactory.csAnd(filters.get(0), filters.get(1));
+			csf = FilterFactory.and(filters.get(0), filters.get(1));
 		}
 
 		for (int i = 2; i < filters.size(); i++) {
 			if (operators.get(i - 1) == '|') {
-				csf = (CrossSeriesFilterExpression) FilterFactory.or(csf, filters.get(i));
+				csf = (CrossSeriesQueryFilter) FilterFactory.or(csf, filters.get(i));
 			} else {
-				csf = FilterFactory.csAnd(csf, filters.get(i));
+				csf = FilterFactory.and(csf, filters.get(i));
 			}
 		}
 		return csf;
@@ -278,7 +278,7 @@ public class FilterUtilsForOverflow {
 
 	public static void main(String args[]) {
 		String exp = "[[2,device1,sensor1,(>10)&(<100)]&[2,device2,sensor2,(>100)|(<102)]]| [2,device2,sensor2,(>100)|(<102)]";
-		CrossSeriesFilterExpression csf = (CrossSeriesFilterExpression) constructCrossFilter(exp);
+		CrossSeriesQueryFilter csf = (CrossSeriesQueryFilter) constructCrossFilter(exp);
 		System.out.println(csf);
 	}
 }

@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.index.common;
 
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
@@ -33,7 +33,7 @@ public class QueryDataSetIterator {
 
     private List<Path> pathList;
 
-    private FilterExpression filterExpression;
+    private QueryFilter QueryFilter;
 
     private int readToken;
 
@@ -47,16 +47,16 @@ public class QueryDataSetIterator {
             GtEq gtEq = FilterFactory.gtEq(timeSeries, pair.left, true);
             LtEq ltEq = FilterFactory.ltEq(timeSeries, pair.right, true);
             if (i == 0) {
-                filterExpression = FilterFactory.and(gtEq, ltEq);
+                QueryFilter = FilterFactory.and(gtEq, ltEq);
             } else {
                 And tmpAnd = (And) FilterFactory.and(gtEq, ltEq);
-                filterExpression = FilterFactory.or(filterExpression, tmpAnd);
+                QueryFilter = FilterFactory.or(QueryFilter, tmpAnd);
             }
         }
 
         this.overflowQueryEngine = overflowQueryEngine;
         this.readToken = readToken;
-        this.queryDataSet = this.overflowQueryEngine.query(0, pathList, filterExpression, null, null,
+        this.queryDataSet = this.overflowQueryEngine.query(0, pathList, QueryFilter, null, null,
                 null, TsfileDBDescriptor.getInstance().getConfig().fetchSize, readToken);
 //        formNumber++;
     }
@@ -65,7 +65,7 @@ public class QueryDataSetIterator {
         if (queryDataSet.hasNextRecord()) {
             return true;
         } else {
-            queryDataSet = overflowQueryEngine.query(0, pathList, filterExpression, null, null,
+            queryDataSet = overflowQueryEngine.query(0, pathList, QueryFilter, null, null,
                     queryDataSet, TsfileDBDescriptor.getInstance().getConfig().fetchSize, readToken);
 //            formNumber++;
             return queryDataSet.hasNextRecord();

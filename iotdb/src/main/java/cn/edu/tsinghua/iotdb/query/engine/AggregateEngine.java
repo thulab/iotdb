@@ -297,13 +297,13 @@ public class AggregateEngine {
 
     /**
      * This function is only used for CrossQueryTimeGenerator.
-     * A CrossSeriesFilterExpression is consist of many SeriesFilter.
+     * A CrossSeriesQueryFilter is consist of many SeriesFilter.
      * e.g. CSAnd(d1.s1, d2.s1) is consist of d1.s1 and d2.s1, so this method would be invoked twice,
      * once for querying d1.s1, once for querying d2.s1.
      * <p>
      * When this method is invoked, need add the filter index as a new parameter, for the reason of exist of
-     * <code>RecordReaderCacheManager</code>, if the composition of CrossFilterExpression exist same SingleFilterExpression,
-     * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleFilterExpression.
+     * <code>RecordReaderCacheManager</code>, if the composition of CrossQueryFilter exist same SingleQueryFilter,
+     * we must guarantee that the <code>RecordReaderCacheManager</code> doesn't cause conflict to the same SingleQueryFilter.
      */
     private DynamicOneColumnData getDataUseSingleValueFilter(SeriesFilter queryValueFilter,
                                                              DynamicOneColumnData res, int fetchSize, int valueFilterNumber)

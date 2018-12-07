@@ -12,8 +12,8 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
@@ -98,7 +98,7 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
      * @return filter in TsFile
      * @throws QueryProcessorException
      */
-    public FilterExpression transformToFilterExpression(QueryProcessExecutor executor, QueryFilterType type)
+    public QueryFilter transformToQueryFilter(QueryProcessExecutor executor, QueryFilterType type)
             throws QueryProcessorException {
         if (isSingle) {
             Pair<SeriesFilter, String> ret = transformToSingleFilter(executor, type);
@@ -108,16 +108,16 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
                 throw new LogicalOperatorException("this filter is not leaf, but it's empty:"
                         + tokenIntType);
             }
-            FilterExpression retFilter = childOperators.get(0).transformToFilterExpression(executor, type);
-            FilterExpression currentFilter;
+            QueryFilter retFilter = childOperators.get(0).transformToQueryFilter(executor, type);
+            QueryFilter currentFilter;
             for (int i = 1; i < childOperators.size(); i++) {
-                currentFilter = childOperators.get(i).transformToFilterExpression(executor, type);
+                currentFilter = childOperators.get(i).transformToQueryFilter(executor, type);
                 switch (tokenIntType) {
                     case KW_AND:
-                        retFilter = FilterFactory.csAnd(retFilter, currentFilter);
+                        retFilter = QueryFilterFactory.and(retFilter, currentFilter);
                         break;
                     case KW_OR:
-                        retFilter = FilterFactory.csOr(retFilter, currentFilter);
+                        retFilter = QueryFilterFactory.or(retFilter, currentFilter);
                         break;
                     default:
                         throw new LogicalOperatorException("unknown binary tokenIntType:"
@@ -156,10 +156,10 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
                                 + path + ",another is:" + currentPair.right));
             switch (tokenIntType) {
                 case KW_AND:
-                    retFilter = (SeriesFilter) FilterFactory.and(retFilter, currentPair.left);
+                    retFilter = (SeriesFilter) QueryFilterFactory.and(retFilter, currentPair.left);
                     break;
                 case KW_OR:
-                    retFilter = (SeriesFilter) FilterFactory.or(retFilter, currentPair.left);
+                    retFilter = (SeriesFilter) QueryFilterFactory.or(retFilter, currentPair.left);
                     break;
                 default:
                     throw new LogicalOperatorException("unknown binary tokenIntType:"

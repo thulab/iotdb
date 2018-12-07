@@ -13,8 +13,8 @@ import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesQueryFilter;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
@@ -152,7 +152,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
         return 0;
     }
 
-    private Boolean satisfyValue(SingleValueVisitor<Integer> v, FilterExpression expr, String path,
+    private Boolean satisfyValue(SingleValueVisitor<Integer> v, QueryFilter expr, String path,
                                  int value) {
         if (expr instanceof SeriesFilter) {
             SeriesFilter single = (SeriesFilter) expr;
@@ -165,10 +165,10 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                 // not me, return true
                 return null;
         } else {
-            Boolean left = satisfyValue(v, ((CrossSeriesFilterExpression) expr).getLeft(), path, value);
+            Boolean left = satisfyValue(v, ((CrossSeriesQueryFilter) expr).getLeft(), path, value);
             if (left != null)
                 return left;
-            return satisfyValue(v, ((CrossSeriesFilterExpression) expr).getLeft(), path, value);
+            return satisfyValue(v, ((CrossSeriesQueryFilter) expr).getLeft(), path, value);
         }
     }
 
@@ -197,8 +197,8 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
      * doesn't support frequency filter.
      */
     @Override
-    public OnePassQueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter,
-                              FilterExpression freqFilter, FilterExpression valueFilter,
+    public OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter,
+                              QueryFilter freqFilter, QueryFilter valueFilter,
                               int fetchSize, OnePassQueryDataSet lastData) {
         if (fetchSize == 0) {
             LOG.error("cannot specify fetchSize to zero,exit");

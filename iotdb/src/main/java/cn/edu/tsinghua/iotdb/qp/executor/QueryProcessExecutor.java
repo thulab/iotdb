@@ -15,7 +15,7 @@ import cn.edu.tsinghua.iotdb.read.QueryEngine;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
@@ -105,7 +105,7 @@ public abstract class QueryProcessExecutor {
 	private List<FilterStructure> getFilterStructure(List<SingleQueryPlan> selectPlans) {
 		List<FilterStructure> filterStructures = new ArrayList<>();
 		for(SingleQueryPlan selectPlan: selectPlans) {
-			FilterExpression[] expressions = selectPlan.getFilterExpressions();
+			QueryFilter[] expressions = selectPlan.getQueryFilters();
 			FilterStructure filterStructure = new FilterStructure(expressions[0], expressions[1], expressions[2]);
 			filterStructures.add(filterStructure);
 		}
@@ -133,8 +133,8 @@ public abstract class QueryProcessExecutor {
 	public abstract OnePassQueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-			FilterExpression valueFilter, int fetchSize, OnePassQueryDataSet lastData) throws ProcessorException;
+	public abstract OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter, QueryFilter freqFilter,
+			QueryFilter valueFilter, int fetchSize, OnePassQueryDataSet lastData) throws ProcessorException;
 
 	/**
 	 * execute update command and return whether the operator is successful.

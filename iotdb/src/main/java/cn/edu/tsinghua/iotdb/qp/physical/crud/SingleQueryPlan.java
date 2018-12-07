@@ -7,7 +7,7 @@ import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
@@ -40,7 +40,7 @@ public class SingleQueryPlan extends PhysicalPlan {
     private FilterOperator timeFilterOperator;
     private FilterOperator freqFilterOperator;
     private FilterOperator valueFilterOperator;
-    private FilterExpression[] filterExpressions;
+    private QueryFilter[] QueryFilters;
 
     //TODO 合并多种 filter
     public SingleQueryPlan(List<Path> paths, FilterOperator timeFilter,
@@ -52,7 +52,7 @@ public class SingleQueryPlan extends PhysicalPlan {
         this.freqFilterOperator = freqFilter;
         this.valueFilterOperator = valueFilter;
         checkPaths(executor);
-        filterExpressions = transformToFilterExpressions(executor);
+        QueryFilters = transformToQueryFilters(executor);
         this.aggregations = aggregations;
     }
 
@@ -69,13 +69,13 @@ public class SingleQueryPlan extends PhysicalPlan {
     }
 
     /**
-     * filterExpressions include three FilterExpression: TIME_FILTER, FREQUENCY_FILTER, VALUE_FILTER
+     * QueryFilters include three QueryFilter: TIME_FILTER, FREQUENCY_FILTER, VALUE_FILTER
      * These filters is for querying data in TsFile
      *
      * @return three filter expressions
      */
-    public FilterExpression[] getFilterExpressions() {
-        return filterExpressions;
+    public QueryFilter[] getQueryFilters() {
+        return QueryFilters;
     }
 
     /**
@@ -95,14 +95,14 @@ public class SingleQueryPlan extends PhysicalPlan {
      * @return three filter expressions
      * @throws QueryProcessorException exceptions in transforming filter operators
      */
-    private FilterExpression[] transformToFilterExpressions(QueryProcessExecutor executor)
+    private QueryFilter[] transformToQueryFilters(QueryProcessExecutor executor)
             throws QueryProcessorException {
-        FilterExpression timeFilter =
-                timeFilterOperator == null ? null : timeFilterOperator.transformToFilterExpression(executor, QueryFilterType.TIME_FILTER);
-        FilterExpression freqFilter =
-                freqFilterOperator == null ? null : freqFilterOperator.transformToFilterExpression(executor, QueryFilterType.FREQUENCY_FILTER);
-        FilterExpression valueFilter =
-                valueFilterOperator == null ? null : valueFilterOperator.transformToFilterExpression(executor, QueryFilterType.VALUE_FILTER);
+        QueryFilter timeFilter =
+                timeFilterOperator == null ? null : timeFilterOperator.transformToQueryFilter(executor, QueryFilterType.TIME_FILTER);
+        QueryFilter freqFilter =
+                freqFilterOperator == null ? null : freqFilterOperator.transformToQueryFilter(executor, QueryFilterType.FREQUENCY_FILTER);
+        QueryFilter valueFilter =
+                valueFilterOperator == null ? null : valueFilterOperator.transformToQueryFilter(executor, QueryFilterType.VALUE_FILTER);
 
         if (valueFilter instanceof SeriesFilter) {
             if (paths.size() == 1) {
@@ -110,12 +110,12 @@ public class SingleQueryPlan extends PhysicalPlan {
                 Path path = paths.get(0);
                 if (!series.getDeltaObjectUID().equals(path.getDevice())
                         || !series.getMeasurementUID().equals(path.getMeasurement())) {
-                    valueFilter = FilterFactory.csAnd(valueFilter, valueFilter);
+                    valueFilter = FilterFactory.and(valueFilter, valueFilter);
                 }
             } else
-                valueFilter = FilterFactory.csAnd(valueFilter, valueFilter);
+                valueFilter = FilterFactory.and(valueFilter, valueFilter);
         }
-        return new FilterExpression[]{timeFilter, freqFilter, valueFilter};
+        return new QueryFilter[]{timeFilter, freqFilter, valueFilter};
     }
 
 
@@ -125,7 +125,7 @@ public class SingleQueryPlan extends PhysicalPlan {
      */
     private Iterator<OldRowRecord> getRecordIterator(QueryProcessExecutor executor, int formNumber) throws QueryProcessorException {
 
-        return new RowRecordIterator(formNumber,paths, executor.getFetchSize(), executor, filterExpressions[0], filterExpressions[1], filterExpressions[2]);
+        return new RowRecordIterator(formNumber,paths, executor.getFetchSize(), executor, QueryFilters[0], QueryFilters[1], QueryFilters[2]);
     }
 
 
@@ -164,14 +164,14 @@ public class SingleQueryPlan extends PhysicalPlan {
         private final int fetchSize;
         private final QueryProcessExecutor executor;
         private OnePassQueryDataSet data = null;
-        private FilterExpression timeFilter;
-        private FilterExpression freqFilter;
-        private FilterExpression valueFilter;
+        private QueryFilter timeFilter;
+        private QueryFilter freqFilter;
+        private QueryFilter valueFilter;
         private int formNumber;
 
         public RowRecordIterator(int formNumber, List<Path> paths, int fetchSize, QueryProcessExecutor executor,
-                                 FilterExpression timeFilter, FilterExpression freqFilter,
-                                 FilterExpression valueFilter) {
+                                 QueryFilter timeFilter, QueryFilter freqFilter,
+                                 QueryFilter valueFilter) {
             this.formNumber = formNumber;
             this.paths = paths;
             this.fetchSize = fetchSize;

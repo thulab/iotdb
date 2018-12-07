@@ -26,7 +26,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
@@ -178,10 +178,10 @@ public class PhysicalGenerator {
         if (!filterOperator.isSingle() || !filterOperator.getSinglePath().equals(RESERVED_TIME)) {
             throw new LogicalOperatorException("filter Operator must be a time filter");
         }
-        // transfer the filter operator to FilterExpression
-        FilterExpression timeFilter;
+        // transfer the filter operator to QueryFilter
+        QueryFilter timeFilter;
         try {
-            timeFilter = filterOperator.transformToFilterExpression(executor, QueryFilterType.TIME_FILTER);
+            timeFilter = filterOperator.transformToQueryFilter(executor, QueryFilterType.TIME_FILTER);
         } catch (QueryProcessorException e) {
             e.printStackTrace();
             throw new LogicalOperatorException(e.getMessage());
