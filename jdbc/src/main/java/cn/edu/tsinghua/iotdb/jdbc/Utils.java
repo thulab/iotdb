@@ -9,11 +9,10 @@ import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -66,37 +65,44 @@ public class Utils {
     		List<RowRecord> records = new ArrayList<>();
     		for(TSRowRecord ts : tsQueryDataSet.getRecords()) {
     			RowRecord r = new RowRecord(ts.getTimestamp());
-    			r.setFields(new LinkedHashMap<Path, TsPrimitiveType>());
     			int l = ts.getKeysSize();
     			for(int i = 0; i < l;i++) {
     				Path path = new Path(ts.getKeys().get(i));
     				if(ts.getValues().get(i).is_empty) {
-    					r.getFields().put(path, null);
+    					r.addField(new Field(null));
     				} else {
     					TSDataValue value = ts.getValues().get(i);
     					TSDataType dataType = TSDataType.valueOf(value.getType());
+    					Field f = null;
 					switch (dataType) {
 					case BOOLEAN:
-						r.getFields().put(path, new TsPrimitiveType.TsBoolean(value.isBool_val()));
+						f = new Field(TSDataType.BOOLEAN);
+						f.setBoolV(value.isBool_val());
 						break;
 					case INT32:
-						r.getFields().put(path, new TsPrimitiveType.TsInt(value.getInt_val()));
+						f = new Field(TSDataType.INT32);
+						f.setIntV(value.getInt_val());
 						break;
 					case INT64:
-						r.getFields().put(path, new TsPrimitiveType.TsLong(value.getLong_val()));
+						f = new Field(TSDataType.INT64);
+						f.setLongV(value.getLong_val());
 						break;
 					case FLOAT:
-						r.getFields().put(path, new TsPrimitiveType.TsFloat((float)value.getFloat_val()));
+						f = new Field(TSDataType.FLOAT);
+						f.setFloatV((float) value.getFloat_val());
 						break;
 					case DOUBLE:
-						r.getFields().put(path, new TsPrimitiveType.TsDouble(value.getDouble_val()));
+						f = new Field(TSDataType.DOUBLE);
+						f.setDoubleV(value.getDouble_val());
 						break;
 					case TEXT:
-						r.getFields().put(path, new TsPrimitiveType.TsBinary(new Binary((value.getBinary_val()))));
+						f = new Field(TSDataType.TEXT);
+						f.setBinaryV(new Binary(value.getBinary_val()));
 						break;
 					default:
 						throw new UnSupportedDataTypeException(String.format("data type %s is not supported when convert data at client", dataType));
 					}
+					r.addField(f);
     				}
     			}
     			records.add(r);

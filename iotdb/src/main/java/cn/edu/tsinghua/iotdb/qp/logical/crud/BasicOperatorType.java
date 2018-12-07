@@ -8,7 +8,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSe
 import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+
 
 /**
  * all basic operator in filter

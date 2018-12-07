@@ -20,7 +20,7 @@ import cn.edu.tsinghua.service.rpc.thrift.TS_StatusCode;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+
 
 public class UtilsTest {
 

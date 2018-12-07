@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
 
