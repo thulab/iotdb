@@ -29,14 +29,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
-import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.LongFilterVerifier;
 import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
@@ -181,37 +176,38 @@ public class PhysicalGenerator {
         // transfer the filter operator to QueryFilter
         QueryFilter timeFilter;
         try {
-            timeFilter = filterOperator.transformToQueryFilter(executor, QueryFilterType.TIME_FILTER);
+            timeFilter = filterOperator.transformToQueryFilter(executor, QueryFilterType.GLOBAL_TIME);
         } catch (QueryProcessorException e) {
             e.printStackTrace();
             throw new LogicalOperatorException(e.getMessage());
         }
-        LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
-        LongInterval longInterval = filterVerifier.getInterval((SeriesFilter) timeFilter);
-        long startTime;
-        long endTime;
-        for (int i = 0; i < longInterval.count; i = i + 2) {
-            if (longInterval.flag[i]) {
-                startTime = longInterval.v[i];
-            } else {
-                startTime = longInterval.v[i] + 1;
-            }
-            if (longInterval.flag[i + 1]) {
-                endTime = longInterval.v[i + 1];
-            } else {
-                endTime = longInterval.v[i + 1] - 1;
-            }
-            if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
-                throw new LogicalOperatorException("start and end time must be greater than 0.");
-            }
-            if (startTime == Long.MIN_VALUE) {
-                startTime = 1;
-            }
-
-            if (endTime >= startTime)
-                intervals.add(new Pair<>(startTime, endTime));
-        }
-        return intervals;
+//        LongFilterVerifier filterVerifier = (LongFilterVerifier) FilterVerifier.create(TSDataType.INT64);
+//        LongInterval longInterval = filterVerifier.getInterval((SeriesFilter) timeFilter);
+//        long startTime;
+//        long endTime;
+//        for (int i = 0; i < longInterval.count; i = i + 2) {
+//            if (longInterval.flag[i]) {
+//                startTime = longInterval.v[i];
+//            } else {
+//                startTime = longInterval.v[i] + 1;
+//            }
+//            if (longInterval.flag[i + 1]) {
+//                endTime = longInterval.v[i + 1];
+//            } else {
+//                endTime = longInterval.v[i + 1] - 1;
+//            }
+//            if ((startTime <= 0 && startTime != Long.MIN_VALUE) || endTime <= 0) {
+//                throw new LogicalOperatorException("start and end time must be greater than 0.");
+//            }
+//            if (startTime == Long.MIN_VALUE) {
+//                startTime = 1;
+//            }
+//
+//            if (endTime >= startTime)
+//                intervals.add(new Pair<>(startTime, endTime));
+//        }
+        // TODO: fix this
+        throw new UnsupportedOperationException("extractTimeIntervals");
     }
 
     private PhysicalPlan transformQuery(QueryOperator queryOperator) throws QueryProcessorException, ProcessorException {
@@ -316,7 +312,7 @@ public class PhysicalGenerator {
             return new GlobalTimeFilter(convertSingleFilterNode(operator));
         } else {
             if (operator.isSingle()) {  // e.g. s1 > 0 or s1 < 10
-                return new SeriesFilter<>(operator.getSinglePath(), convertSingleFilterNode(operator));
+                return new SeriesFilter(operator.getSinglePath(), convertSingleFilterNode(operator));
             }
 
             List<FilterOperator> children = operator.getChildren();

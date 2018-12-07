@@ -76,7 +76,7 @@ public class ForDebug {
 //        Directories.getInstance().setFolderForTest("");
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
         Filter<?> filter = TimeFilter.gtEq(0L);
-        SeriesFilter seriesFilter = new SeriesFilter<>(path, filter);
+        SeriesFilter seriesFilter = new SeriesFilter(path, filter);
         IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
         System.out.println(intervalFileNode.getFilePath());
         TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
@@ -143,7 +143,7 @@ public class ForDebug {
                 String deviceId = new StringBuilder("root.performf.group_23.d_").append(2300 + i).toString();
                 String sensorId = "s_" + j;
 
-                SeriesFilter<Long> seriesFilter = new SeriesFilter<>(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
+                SeriesFilter<Long> seriesFilter = new SeriesFilter(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
                 ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(tsfilePath);
                 SeriesReader seriesInTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(
                         randomAccessFileReader, seriesFilter.getSeriesPath(), seriesFilter.getFilter());
@@ -177,7 +177,7 @@ public class ForDebug {
                 String deviceId = new StringBuilder("root.performf.group_7.d_").append(700 + i).toString();
                 String sensorId = "s_" + j;
 
-                SeriesFilter<Long> seriesFilter = new SeriesFilter<>(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
+                SeriesFilter<Long> seriesFilter = new SeriesFilter(new Path(deviceId + "." + sensorId), TimeFilter.gt(0L));
                 SeriesReader seriesInTsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(tsfilePath, seriesFilter);
 
 

@@ -59,7 +59,7 @@ public class RecordReaderFactory {
         } else {
             QueryDataSource queryDataSource;
             try {
-                SeriesFilter seriesFilter = new SeriesFilter<>(new Path(deltaObjectUID+"."+measurementID), new NoRestriction());
+                SeriesFilter seriesFilter = new SeriesFilter(new Path(deltaObjectUID+"."+measurementID), new NoRestriction());
                 queryDataSource = fileNodeManager.query(seriesFilter);
             } catch (FileNodeManagerException e) {
                 throw new ProcessorException(e.getMessage());

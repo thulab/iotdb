@@ -253,7 +253,7 @@ public class WriteAnalysis {
                             String measurementId = timeSeriesMetadata.getMeasurementUID();
                             Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
                             Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
-                            SeriesFilter seriesFilter = new SeriesFilter<>(seriesPath, filter);
+                            SeriesFilter seriesFilter = new SeriesFilter(seriesPath, filter);
                             TimeValuePairReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 
                             //long tmpRecordCount = 0;
@@ -329,7 +329,7 @@ public class WriteAnalysis {
                                 String measurementId = timeSeriesMetadata.getMeasurementUID();
                                 Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
                                 Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
-                                SeriesFilter seriesFilter = new SeriesFilter<>(seriesPath, filter);
+                                SeriesFilter seriesFilter = new SeriesFilter(seriesPath, filter);
                                 TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
                                 while (tsFileReader.hasNext()) {
                                     TimeValuePair tp = tsFileReader.next();

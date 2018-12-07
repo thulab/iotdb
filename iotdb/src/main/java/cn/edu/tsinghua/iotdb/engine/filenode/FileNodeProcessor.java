@@ -1427,7 +1427,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				Filter<Long> timeFilter = FilterFactory.and(
 						TimeFilter.gtEq(backupIntervalFile.getStartTime(deltaObjectId)),
 						TimeFilter.ltEq(backupIntervalFile.getEndTime(deltaObjectId)));
-				SeriesFilter<Long> seriesFilter = new SeriesFilter<>(path, timeFilter);
+				SeriesFilter<Long> seriesFilter = new SeriesFilter(path, timeFilter);
 				SeriesReader seriesReader = SeriesReaderFactory.getInstance()
 						.createSeriesReaderForMerge(backupIntervalFile, overflowSeriesDataSource, seriesFilter);
 				try {
