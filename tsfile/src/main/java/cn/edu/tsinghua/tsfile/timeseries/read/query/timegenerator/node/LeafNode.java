@@ -50,8 +50,7 @@ public class LeafNode implements Node {
     }
 
     public Object currentValue(long time) {
-
-        if(data.hasNext() && data.currentTime() == time)
+        if(data.currentTime() == time)
             return data.currentValue();
         return null;
     }
