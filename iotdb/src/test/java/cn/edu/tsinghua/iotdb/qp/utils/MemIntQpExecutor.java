@@ -17,7 +17,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.CrossSeriesQueryFilte
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
@@ -174,20 +174,20 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
 
 
     @Override
-    public OnePassQueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+    public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
         throw new ProcessorException("Do not support");
     }
 
     @Override
-    public OnePassQueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+    public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
                                 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
         throw new ProcessorException("Do not support");
     }
 
     @Override
-    public OnePassQueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
+    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
             throws ProcessorException, IOException, PathErrorException {
         throw new ProcessorException("Do not support");
     }
@@ -197,16 +197,16 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
      * doesn't support frequency filter.
      */
     @Override
-    public OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter,
+    public QueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter,
                               QueryFilter freqFilter, QueryFilter valueFilter,
-                              int fetchSize, OnePassQueryDataSet lastData) {
+                              int fetchSize, QueryDataSet lastData) {
         if (fetchSize == 0) {
             LOG.error("cannot specify fetchSize to zero,exit");
             System.exit(0);
         }
-        TestOutputOnePassQueryDataSet ret = new TestOutputOnePassQueryDataSet(fetchSize);
+        TestOutputQueryDataSet ret = new TestOutputQueryDataSet(fetchSize);
         long lastGetTimeStamp =
-                (lastData == null) ? -1 : ((TestOutputOnePassQueryDataSet) lastData)
+                (lastData == null) ? -1 : ((TestOutputQueryDataSet) lastData)
                         .getLastRowRecordTimeStamp();
         int haveSize = 0;
 
@@ -299,9 +299,9 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
         return 0;
     }
 
-    private class TestOutputOnePassQueryDataSet extends OutputOnePassQueryDataSet {
+    private class TestOutputQueryDataSet extends OutputQueryDataSet {
 
-        public TestOutputOnePassQueryDataSet(int fetchSize) {
+        public TestOutputQueryDataSet(int fetchSize) {
             super(fetchSize);
         }
 

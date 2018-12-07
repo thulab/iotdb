@@ -1,24 +1,24 @@
 package cn.edu.tsinghua.iotdb.qp.utils;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
 /**
- * This getIndex data set is used for getIndex processing. getIndex processing merges a list of OnePassQueryDataSet
- * and construct a new OutputOnePassQueryDataSet by adding {@code RowRecord}. This class provides two
+ * This getIndex data set is used for getIndex processing. getIndex processing merges a list of QueryDataSet
+ * and construct a new OutputQueryDataSet by adding {@code RowRecord}. This class provides two
  * methods for caller {@code getNextRecord} and {@code hasNextRecord} just same as
- * {@code OnePassQueryDataSet}.
+ * {@code QueryDataSet}.
  * 
  * @author kangrong
  *
  */
-public class OutputOnePassQueryDataSet extends OnePassQueryDataSet {
+public class OutputQueryDataSet extends QueryDataSet {
     protected final int fetchSize;
     protected RowRecord[] data;
     protected int size;
     protected int index;
 
-    public OutputOnePassQueryDataSet(int fetchSize) {
+    public OutputQueryDataSet(int fetchSize) {
         this.fetchSize = fetchSize;
         data = new RowRecord[fetchSize];
         size = 0;

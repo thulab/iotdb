@@ -1,6 +1,8 @@
 package cn.edu.tsinghua.iotdb.qp.physical.crud;
 
 import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.lineFeedSignal;
+
+import java.io.IOException;
 import java.util.*;
 
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
@@ -8,14 +10,12 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +28,9 @@ import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
  * Up to now, Single Query that {@code TsFile reading API} supports is a conjunction among time
  * filter, frequency filter and value filter. <br>
  * This class provide two public function. If the whole SingleQueryPlan has exactly one single path,
- * {@code SingleQueryPlan} return a {@code Iterator<OnePassQueryDataSet>} directly. Otherwise
+ * {@code SingleQueryPlan} return a {@code Iterator<QueryDataSet>} directly. Otherwise
  * {@code SingleQueryPlan} is regard as a portion of {@code MultiQueryPlan}. This class provide
  * a {@code Iterator<RowRecord>}in the latter case.
- *
  */
 public class SingleQueryPlan extends PhysicalPlan {
 
@@ -99,24 +98,22 @@ public class SingleQueryPlan extends PhysicalPlan {
     private QueryFilter[] transformToQueryFilters(QueryProcessExecutor executor)
             throws QueryProcessorException {
         QueryFilter timeFilter =
-                timeFilterOperator == null ? null : timeFilterOperator.transformToQueryFilter(executor, QueryFilterType.TIME_FILTER);
-        QueryFilter freqFilter =
-                freqFilterOperator == null ? null : freqFilterOperator.transformToQueryFilter(executor, QueryFilterType.FREQUENCY_FILTER);
+                timeFilterOperator == null ? null : timeFilterOperator.transformToQueryFilter(executor, QueryFilterType.GLOBAL_TIME);
         QueryFilter valueFilter =
-                valueFilterOperator == null ? null : valueFilterOperator.transformToQueryFilter(executor, QueryFilterType.VALUE_FILTER);
+                valueFilterOperator == null ? null : valueFilterOperator.transformToQueryFilter(executor, QueryFilterType.SERIES);
 
         if (valueFilter instanceof SeriesFilter) {
             if (paths.size() == 1) {
-                FilterSeries<?> series = ((SeriesFilter) valueFilter).getFilterSeries();
+                Path series = ((SeriesFilter) valueFilter).getSeriesPath();
                 Path path = paths.get(0);
-                if (!series.getDeltaObjectUID().equals(path.getDevice())
-                        || !series.getMeasurementUID().equals(path.getMeasurement())) {
-                    valueFilter = FilterFactory.and(valueFilter, valueFilter);
+                if (!series.getMeasurement().equals(path.getDevice())
+                        || !series.getMeasurement().equals(path.getMeasurement())) {
+                    valueFilter = QueryFilterFactory.and(valueFilter, valueFilter);
                 }
             } else
-                valueFilter = FilterFactory.and(valueFilter, valueFilter);
+                valueFilter = QueryFilterFactory.and(valueFilter, valueFilter);
         }
-        return new QueryFilter[]{timeFilter, freqFilter, valueFilter};
+        return new QueryFilter[]{timeFilter, null, valueFilter};
     }
 
 
@@ -126,7 +123,7 @@ public class SingleQueryPlan extends PhysicalPlan {
      */
     private Iterator<RowRecord> getRecordIterator(QueryProcessExecutor executor, int formNumber) throws QueryProcessorException {
 
-        return new RowRecordIterator(formNumber,paths, executor.getFetchSize(), executor, QueryFilters[0], QueryFilters[1], QueryFilters[2]);
+        return new RowRecordIterator(formNumber, paths, executor.getFetchSize(), executor, QueryFilters[0], QueryFilters[1], QueryFilters[2]);
     }
 
 
@@ -164,7 +161,7 @@ public class SingleQueryPlan extends PhysicalPlan {
         private List<Path> paths;
         private final int fetchSize;
         private final QueryProcessExecutor executor;
-        private OnePassQueryDataSet data = null;
+        private QueryDataSet data = null;
         private QueryFilter timeFilter;
         private QueryFilter freqFilter;
         private QueryFilter valueFilter;
@@ -186,23 +183,32 @@ public class SingleQueryPlan extends PhysicalPlan {
         public boolean hasNext() {
             if (noNext)
                 return false;
-            if (data == null || !data.hasNextRecord())
-                try {
+            try {
+                if (data == null || !data.hasNext()) {
                     data = executor.query(formNumber, paths, timeFilter, freqFilter, valueFilter, fetchSize, data);
-                } catch (ProcessorException e) {
-                    throw new RuntimeException(e.getMessage());
                 }
-            if (data.hasNextRecord())
-                return true;
-            else {
-                noNext = true;
-                return false;
+            } catch (ProcessorException | IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            try {
+                if (data.hasNext())
+                    return true;
+                else {
+                    noNext = true;
+                    return false;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage());
             }
         }
 
         @Override
         public RowRecord next() {
-            return data.getNextRecord();
+            try {
+                return data.next();
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
         }
 
     }

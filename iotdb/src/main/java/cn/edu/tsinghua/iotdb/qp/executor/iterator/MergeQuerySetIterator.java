@@ -12,12 +12,12 @@ import cn.edu.tsinghua.tsfile.timeseries.read.datatype.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 
 /**
- * This class implements the interface {@code Iterator<OnePassQueryDataSet>}. It is the result of
+ * This class implements the interface {@code Iterator<QueryDataSet>}. It is the result of
  * {@code MultiQueryPlan}(for multi-pass getIndex). {@code MultiQueryPlan} provides it with a
  * list of {@code SingleQueryPlan}.<br>
  * This class merge row record data set from a list of {@code Iterator<RowRecord>} provided by
@@ -75,7 +75,7 @@ public class MergeQuerySetIterator implements Iterator<QueryDataSet> {
                 lastRowTime = minNode.rowRecord.getTimestamp();
                 i++;
                 // ret.putARowRecord(minNode.r);
-                addNewRecordToOnePassQueryDataSet(ret, minNode.rowRecord);
+                addNewRecordToQueryDataSet(ret, minNode.rowRecord);
             }
             if (minNode.iter.hasNext()) {
                 nodes[1].rowRecord = nodes[1].iter.next();
@@ -124,7 +124,7 @@ public class MergeQuerySetIterator implements Iterator<QueryDataSet> {
         }
     }
 
-    private void addNewRecordToOnePassQueryDataSet(QueryDataSet dataSet, RowRecord record) {
+    private void addNewRecordToQueryDataSet(QueryDataSet dataSet, RowRecord record) {
         for (Field f : record.getFields()) {
             StringBuilder sb = new StringBuilder();
             sb.append(f.deltaObjectId);
@@ -171,12 +171,6 @@ public class MergeQuerySetIterator implements Iterator<QueryDataSet> {
                     }
                     break;
                 case TEXT:
-                    if (!f.isNull()) {
-                        mapRet.get(key).putTime(record.getTimestamp());
-                        mapRet.get(key).putBinary(f.getBinaryV());
-                    }
-                    break;
-                case ENUMS:
                     if (!f.isNull()) {
                         mapRet.get(key).putTime(record.getTimestamp());
                         mapRet.get(key).putBinary(f.getBinaryV());

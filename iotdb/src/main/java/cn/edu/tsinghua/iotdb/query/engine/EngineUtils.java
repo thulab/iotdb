@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.query.aggregation.AggregateFunction;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.List;
@@ -15,11 +15,11 @@ import java.util.List;
 public class EngineUtils {
 
     /**
-     * OnePassQueryDataSet.BatchReadGenerator has calculated and removed the common RowRecord timestamps in the top of heap.
+     * QueryDataSet.BatchReadGenerator has calculated and removed the common RowRecord timestamps in the top of heap.
      * For the reason of that the RowRecord number is greater than fetch size,
-     * so there may be remaining data in OnePassQueryDataSet.BatchReadGenerator,
+     * so there may be remaining data in QueryDataSet.BatchReadGenerator,
      */
-    public static void putRecordFromBatchReadGenerator(OnePassQueryDataSet dataSet) {
+    public static void putRecordFromBatchReadGenerator(QueryDataSet dataSet) {
         for (Path path : dataSet.getBatchReadGenerator().retMap.keySet()) {
             BatchData batchReadData = dataSet.getBatchReadGenerator().retMap.get(path);
             BatchData leftData = batchReadData.sub(batchReadData.curIdx);

@@ -8,8 +8,8 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.exception.QueryFilterOptimizatio
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.util.QueryFilterOptimizer;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

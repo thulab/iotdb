@@ -34,7 +34,7 @@ import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import org.apache.commons.io.FileUtils;
@@ -164,7 +164,7 @@ public class KvMatchIndex  implements IoTIndex {
                 }
 
 				Map<String,Object> map = getDataInTsFile(path, fileInfo.getFilePath());
-                OnePassQueryDataSet dataSet = (OnePassQueryDataSet)(map.get("data"));
+                QueryDataSet dataSet = (QueryDataSet)(map.get("data"));
 //                Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
 				
 //                indexFls.add(indexFile);
@@ -260,7 +260,7 @@ public class KvMatchIndex  implements IoTIndex {
 //
 //            // 1. build index asynchronously
 //			Map<String,Object> map = getDataInTsFile(path, newFile.getFilePath());
-//            OnePassQueryDataSet dataSet = (OnePassQueryDataSet)(map.get("data"));
+//            QueryDataSet dataSet = (QueryDataSet)(map.get("data"));
 ////            Future<Boolean> result = executor.submit(new KvMatchIndexBuilder(indexConfig, path, dataSet, indexFile));
 ////            try {
 ////                result.get();
@@ -517,7 +517,7 @@ public class KvMatchIndex  implements IoTIndex {
             answers.sort(Comparator.comparingDouble(o -> o.right));
             logger.trace("Answers: {}", answers);
 
-            return constructOnePassQueryDataSet(answers, limitSize);
+            return constructQueryDataSet(answers, limitSize);
         } catch (FileNodeManagerException | InterruptedException | ExecutionException | ProcessorException | IOException | PathErrorException | IllegalArgumentException e) {
             logger.error("failed to query index" + e.getMessage(), e.getCause());
             throw new IndexManagerException(e);
@@ -578,8 +578,8 @@ public class KvMatchIndex  implements IoTIndex {
         return overallResult;
     }
 
-    private OnePassQueryDataSet constructOnePassQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers, int limitSize) throws IOException, ProcessorException {
-        OnePassQueryDataSet dataSet = new OnePassQueryDataSet();
+    private QueryDataSet constructQueryDataSet(List<Pair<Pair<Long, Long>, Double>> answers, int limitSize) throws IOException, ProcessorException {
+        QueryDataSet dataSet = new QueryDataSet();
         BatchData startTime = new BatchData(TSDataType.INT64, true);
         BatchData endTime = new BatchData(TSDataType.INT64, true);
         BatchData distance = new BatchData(TSDataType.DOUBLE, true);

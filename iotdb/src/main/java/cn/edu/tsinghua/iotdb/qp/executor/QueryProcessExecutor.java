@@ -16,11 +16,10 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 
 import java.io.IOException;
 import java.util.*;
@@ -106,7 +105,7 @@ public abstract class QueryProcessExecutor {
 		List<FilterStructure> filterStructures = new ArrayList<>();
 		for(SingleQueryPlan selectPlan: selectPlans) {
 			QueryFilter[] expressions = selectPlan.getQueryFilters();
-			FilterStructure filterStructure = new FilterStructure(expressions[0], expressions[1], expressions[2]);
+			FilterStructure filterStructure = new FilterStructure((GlobalTimeFilter) expressions[0], expressions[1], expressions[2]);
 			filterStructures.add(filterStructure);
 		}
 		return filterStructures;
@@ -123,18 +122,18 @@ public abstract class QueryProcessExecutor {
 		return fetchSize.get();
 	}
 
-	public abstract OnePassQueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+	public abstract QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+	public abstract QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
 										 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
+	public abstract QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter, QueryFilter freqFilter,
-			QueryFilter valueFilter, int fetchSize, OnePassQueryDataSet lastData) throws ProcessorException;
+	public abstract QueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter, QueryFilter freqFilter,
+			QueryFilter valueFilter, int fetchSize, QueryDataSet lastData) throws ProcessorException;
 
 	/**
 	 * execute update command and return whether the operator is successful.

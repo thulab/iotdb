@@ -40,8 +40,8 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
 import org.slf4j.Logger;
@@ -197,13 +197,13 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     }
 
     @Override
-    public OnePassQueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+    public QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
             throws ProcessorException, IOException, PathErrorException {
         return queryEngine.aggregate(aggres, filterStructures);
     }
 
     @Override
-    public OnePassQueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures, long unit,
+    public QueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures, long unit,
                                 long origin, List<Pair<Long, Long>> intervals, int fetchSize)
             throws ProcessorException, IOException, PathErrorException {
 
@@ -211,13 +211,13 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     }
 
     @Override
-    public OnePassQueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillTypes) throws ProcessorException, IOException, PathErrorException {
+    public QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillTypes) throws ProcessorException, IOException, PathErrorException {
         return queryEngine.fill(fillPaths, queryTime, fillTypes);
     }
 
     @Override
-    public OnePassQueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter,
-                              QueryFilter freqFilter, QueryFilter valueFilter, int fetchSize, OnePassQueryDataSet lastData)
+    public QueryDataSet query(int formNumber, List<Path> paths, QueryFilter timeFilter,
+                              QueryFilter freqFilter, QueryFilter valueFilter, int fetchSize, QueryDataSet lastData)
             throws ProcessorException {
 
         try {

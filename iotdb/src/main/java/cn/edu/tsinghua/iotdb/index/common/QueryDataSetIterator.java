@@ -10,7 +10,7 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.And;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.LtEq;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -29,7 +29,7 @@ public class QueryDataSetIterator {
 
     private OverflowQueryEngine overflowQueryEngine;
 
-    private OnePassQueryDataSet queryDataSet;
+    private QueryDataSet queryDataSet;
 
     private List<Path> pathList;
 

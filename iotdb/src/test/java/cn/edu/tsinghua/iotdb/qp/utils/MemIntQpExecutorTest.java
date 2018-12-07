@@ -14,7 +14,7 @@ import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.utils.FilterUtils;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import cn.edu.tsinghua.tsfile.timeseries.utils.StringContainer;
 
@@ -48,7 +48,7 @@ public class MemIntQpExecutorTest {
         List<Path> pathList = new ArrayList<Path>();
         pathList.add(path1);
         pathList.add(path2);
-        OnePassQueryDataSet ret = null;
+        QueryDataSet ret = null;
 
         while (true) {
             ret = processor.getExecutor().query(0, pathList, null, null, null, 1, ret);
@@ -69,7 +69,7 @@ public class MemIntQpExecutorTest {
         pathList.add(path2);
         pathList.add(path1);
 
-        OnePassQueryDataSet ret = null;
+        QueryDataSet ret = null;
         String filterString = "2,device_1.sensor_1,(>=80)&(<=110)";
         // default filter type is integer
         SeriesFilter valueFilter = FilterUtils.construct(filterString, null);
@@ -90,7 +90,7 @@ public class MemIntQpExecutorTest {
         List<Path> pathList = new ArrayList<Path>();
         // pathList.add(path1);
         pathList.add(path2);
-        OnePassQueryDataSet ret = null;
+        QueryDataSet ret = null;
         String filterString = "2,device_1.sensor_2,((>=100)&(<=200))";
         // default filter type is integer
         SeriesFilter valueFilter = FilterUtils.construct(filterString, null);

@@ -21,7 +21,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.CrossQueryTimeGenerator;
 import cn.edu.tsinghua.tsfile.timeseries.read.reader.BatchData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,8 +83,8 @@ public class AggregateEngine {
     private void multiAggregateWithFilter(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
             throws IOException, PathErrorException, ProcessorException {
 
-        // stores the query OnePassQueryDataSet of each FilterStructure in filterStructures
-        List<OnePassQueryDataSet> fsDataSets = new ArrayList<>();
+        // stores the query QueryDataSet of each FilterStructure in filterStructures
+        List<QueryDataSet> fsDataSets = new ArrayList<>();
 
         // stores calculated common timestamps of each FilterStructure answer
         List<long[]> fsTimeList = new ArrayList<>();
@@ -100,7 +100,7 @@ public class AggregateEngine {
 
         for (int idx = 0; idx < filterStructures.size(); idx++) {
             FilterStructure filterStructure = filterStructures.get(idx);
-            OnePassQueryDataSet queryDataSet = new OnePassQueryDataSet();
+            QueryDataSet queryDataSet = new QueryDataSet();
 
             queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(filterStructure.getTimeFilter(),
                     filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {

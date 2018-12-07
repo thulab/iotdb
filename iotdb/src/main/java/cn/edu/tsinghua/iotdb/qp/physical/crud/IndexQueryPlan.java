@@ -6,7 +6,7 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public abstract class IndexQueryPlan extends PhysicalPlan {
 		this.endTime = endTime;
 	}
 
-	public abstract Iterator<OnePassQueryDataSet> fetchQueryDateSet(int fetchSize) throws QueryProcessorException;
+	public abstract Iterator<QueryDataSet> fetchQueryDateSet(int fetchSize) throws QueryProcessorException;
 
     public abstract List<String> getColumnHeader();
 }

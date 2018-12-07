@@ -69,12 +69,12 @@ public class GroupByEngineWithFilter {
     private Set<Integer> duplicatedPaths = new HashSet<>();
 
     /** group by result **/
-    // private OnePassQueryDataSet groupByResult = new OnePassQueryDataSet();
+    // private QueryDataSet groupByResult = new QueryDataSet();
     private QueryDataSet groupByResult = null;
 
     // variables below are used to calculate the common timestamps of FilterStructures
 
-    /** stores the query OnePassQueryDataSet of each FilterStructure in filterStructures **/
+    /** stores the query QueryDataSet of each FilterStructure in filterStructures **/
      private List<QueryDataSet> fsDataSets = new ArrayList<>();
 
     /** stores calculated common timestamps of each FilterStructure**/
@@ -127,7 +127,7 @@ public class GroupByEngineWithFilter {
 //
 //        for (int idx = 0; idx < filterStructures.size(); idx++) {
 //            FilterStructure filterStructure = filterStructures.get(idx);
-//            OnePassQueryDataSet queryDataSet = new OnePassQueryDataSet();
+//            QueryDataSet queryDataSet = new QueryDataSet();
 //            queryDataSet.crossQueryTimeGenerator = new CrossQueryTimeGenerator(filterStructure.getTimeFilter(),
 //                    filterStructure.getFrequencyFilter(), filterStructure.getValueFilter(), crossQueryFetchSize) {
 //                @Override

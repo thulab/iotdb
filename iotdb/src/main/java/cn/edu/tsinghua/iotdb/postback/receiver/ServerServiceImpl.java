@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -385,7 +385,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                 for (String timesery : timeseries) {
                     paths.add(new Path(timesery));
                 }
-                OnePassQueryDataSet queryDataSet = readTsFile.query(paths, null, null);
+                QueryDataSet queryDataSet = readTsFile.query(paths, null, null);
                 while (queryDataSet.hasNextRecord()) {
                     RowRecord record = queryDataSet.getNextRecord();
                     List<Field> fields = record.getFields();
@@ -493,7 +493,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                     Map<String, String> originDataPoint = new HashMap<>();
                     Map<String, String> newDataPoint = new HashMap<>();
                     String sqlFormat = "insert into %s(timestamp,%s) values(%s,%s)";
-                    OnePassQueryDataSet queryDataSet = readTsFile.query(paths, null, null);
+                    QueryDataSet queryDataSet = readTsFile.query(paths, null, null);
                     while (queryDataSet.hasNextRecord()) {
                         RowRecord record = queryDataSet.getNextRecord();
                         List<Field> fields = record.getFields();
@@ -517,7 +517,7 @@ public class ServerServiceImpl implements ServerService.Iface {
                         try {
                             inputOverlap = new TsRandomAccessLocalFileReader(overlapFile);
                             TsFile readTsFileOverlap = new TsFile(inputOverlap);
-                            OnePassQueryDataSet queryDataSetOverlap = readTsFileOverlap.query(paths, null, null);
+                            QueryDataSet queryDataSetOverlap = readTsFileOverlap.query(paths, null, null);
                             while (queryDataSetOverlap.hasNextRecord()) {
                                 RowRecord recordOverlap = queryDataSetOverlap.getNextRecord();
                                 List<Field> fields = recordOverlap.getFields();

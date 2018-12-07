@@ -8,10 +8,9 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.GlobalTimeFilter;
 import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.impl.MergeQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.timeseries.read.reader.impl.SeriesReader;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -28,15 +27,15 @@ public class QueryWithGlobalTimeFilterExecutorImpl {
     public static QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
         LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries = new LinkedHashMap<>();
-        Filter<Long> timeFilter = ((GlobalTimeFilter) queryExpression.getQueryFilter()).getFilter();
+        Filter timeFilter = ((GlobalTimeFilter) queryExpression.getQueryFilter()).getFilter();
         initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries(), timeFilter);
         return new MergeQueryDataSet(readersOfSelectedSeries);
     }
 
     private static void initReadersOfSelectedSeries(LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries,
-                                             List<Path> selectedSeries, Filter<Long> timeFilter) throws IOException, FileNodeManagerException {
+                                             List<Path> selectedSeries, Filter timeFilter) throws IOException, FileNodeManagerException {
         for (Path path : selectedSeries) {
-            SeriesFilter<Long> seriesFilter = new SeriesFilter<Long>(path, timeFilter);
+            SeriesFilter seriesFilter = new SeriesFilter(path, timeFilter);
             QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(seriesFilter);
             SeriesReader seriesReader = new QueryWithOrWithOutFilterReader(queryDataSource, seriesFilter);
             readersOfSelectedSeries.put(path, seriesReader);
