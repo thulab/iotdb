@@ -2,10 +2,10 @@ package cn.edu.tsinghua.tsfile.read.query.timegenerator;
 
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.read.expression.BinaryQueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.ExpressionType;
+import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
@@ -30,13 +30,13 @@ public class TimeGeneratorImpl implements TimeGenerator {
 
     private HashMap<Path, List<LeafNode>> leafCache;
 
-    public TimeGeneratorImpl(QueryFilter queryFilter, ChunkLoader chunkLoader
+    public TimeGeneratorImpl(IExpression IExpression, ChunkLoader chunkLoader
             , MetadataQuerier metadataQuerier) throws IOException {
         this.chunkLoader = chunkLoader;
         this.metadataQuerier = metadataQuerier;
         this.leafCache = new HashMap<>();
 
-        operatorNode = construct(queryFilter);
+        operatorNode = construct(IExpression);
     }
 
     @Override
@@ -65,12 +65,12 @@ public class TimeGeneratorImpl implements TimeGenerator {
     /**
      * construct the tree that generate timestamp
      */
-    private Node construct(QueryFilter queryFilter) throws IOException {
+    private Node construct(IExpression IExpression) throws IOException {
 
-        if (queryFilter.getType() == QueryFilterType.SERIES) {
-            SeriesFilter seriesFilter = (SeriesFilter) queryFilter;
-            SeriesReader seriesReader = generateSeriesReader(seriesFilter);
-            Path path = seriesFilter.getSeriesPath();
+        if (IExpression.getType() == ExpressionType.SERIES) {
+            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) IExpression;
+            SeriesReader seriesReader = generateSeriesReader(singleSeriesExp);
+            Path path = singleSeriesExp.getSeriesPath();
 
             if (!leafCache.containsKey(path))
                 leafCache.put(path, new ArrayList<>());
@@ -81,22 +81,22 @@ public class TimeGeneratorImpl implements TimeGenerator {
 
             return leafNode;
 
-        } else if (queryFilter.getType() == QueryFilterType.OR) {
-            Node leftChild = construct(((BinaryQueryFilter) queryFilter).getLeft());
-            Node rightChild = construct(((BinaryQueryFilter) queryFilter).getRight());
+        } else if (IExpression.getType() == ExpressionType.OR) {
+            Node leftChild = construct(((IBinaryExpression) IExpression).getLeft());
+            Node rightChild = construct(((IBinaryExpression) IExpression).getRight());
             return new OrNode(leftChild, rightChild);
 
-        } else if (queryFilter.getType() == QueryFilterType.AND) {
-            Node leftChild = construct(((BinaryQueryFilter) queryFilter).getLeft());
-            Node rightChild = construct(((BinaryQueryFilter) queryFilter).getRight());
+        } else if (IExpression.getType() == ExpressionType.AND) {
+            Node leftChild = construct(((IBinaryExpression) IExpression).getLeft());
+            Node rightChild = construct(((IBinaryExpression) IExpression).getRight());
             return new AndNode(leftChild, rightChild);
         }
-        throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + queryFilter.getType());
+        throw new UnSupportedDataTypeException("Unsupported ExpressionType when construct OperatorNode: " + IExpression.getType());
     }
 
-    private SeriesReader generateSeriesReader(SeriesFilter seriesFilter) throws IOException {
+    private SeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExp) throws IOException {
         List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(
-                seriesFilter.getSeriesPath());
-        return new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, seriesFilter.getFilter());
+                singleSeriesExp.getSeriesPath());
+        return new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
     }
 }

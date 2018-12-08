@@ -3,13 +3,13 @@ package cn.edu.tsinghua.tsfile.read.query.executor;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
 import cn.edu.tsinghua.tsfile.read.expression.util.QueryFilterOptimizer;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
@@ -38,12 +38,12 @@ public class TsFileExecutor implements QueryExecutor {
 
         if (queryExpression.hasQueryFilter()) {
             try {
-                QueryFilter queryFilter = queryExpression.getQueryFilter();
-                QueryFilter regularQueryFilter = QueryFilterOptimizer.getInstance().optimize(queryFilter, queryExpression.getSelectedSeries());
-                queryExpression.setQueryFilter(regularQueryFilter);
+                IExpression IExpression = queryExpression.getIExpression();
+                IExpression regularIExpression = QueryFilterOptimizer.getInstance().optimize(IExpression, queryExpression.getSelectedSeries());
+                queryExpression.setIExpression(regularIExpression);
 
-                if (regularQueryFilter instanceof GlobalTimeFilter) {
-                    return execute(queryExpression.getSelectedSeries(), (GlobalTimeFilter) regularQueryFilter);
+                if (regularIExpression instanceof GlobalTimeExpression) {
+                    return execute(queryExpression.getSelectedSeries(), (GlobalTimeExpression) regularIExpression);
                 } else {
                     return new ExecutorWithTimeGenerator(metadataQuerier, chunkLoader).execute(queryExpression);
                 }
@@ -77,13 +77,13 @@ public class TsFileExecutor implements QueryExecutor {
 
 
     /**
-     * has a GlobalTimeFilter, can use multi-way merge
+     * has a GlobalTimeExpression, can use multi-way merge
      *
      * @param selectedPathList all selected paths
-     * @param timeFilter       GlobalTimeFilter that takes effect to all selected paths
+     * @param timeFilter       GlobalTimeExpression that takes effect to all selected paths
      * @return DataSet without TimeGenerator
      */
-    private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeFilter timeFilter) throws IOException {
+    private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeExpression timeFilter) throws IOException {
         List<SeriesReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 

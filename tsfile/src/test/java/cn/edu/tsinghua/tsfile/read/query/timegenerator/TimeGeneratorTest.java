@@ -1,13 +1,13 @@
 package cn.edu.tsinghua.tsfile.read.query.timegenerator;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.BinaryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.utils.Binary;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.utils.TsFileGeneratorForTest;
@@ -53,14 +53,14 @@ public class TimeGeneratorTest {
         Filter filter2 = ValueFilter.gt(new Binary("dog"));
         Filter filter3 = FilterFactory.and(TimeFilter.gtEq(1480562618000L), TimeFilter.ltEq(1480562618100L));
 
-        QueryFilter queryFilter = QueryFilterFactory.or(
-                QueryFilterFactory.and(
-                        new SeriesFilter(new Path("d1.s1"), filter),
-                        new SeriesFilter(new Path("d1.s4"), filter2)
+        IExpression IExpression = BinaryExpression.or(
+                BinaryExpression.and(
+                        new SingleSeriesExpression(new Path("d1.s1"), filter),
+                        new SingleSeriesExpression(new Path("d1.s4"), filter2)
                 ),
-                new SeriesFilter(new Path("d1.s1"), filter3));
+                new SingleSeriesExpression(new Path("d1.s1"), filter3));
 
-        TimeGeneratorImpl timestampGenerator = new TimeGeneratorImpl(queryFilter, chunkLoader, metadataQuerierByFile);
+        TimeGeneratorImpl timestampGenerator = new TimeGeneratorImpl(IExpression, chunkLoader, metadataQuerierByFile);
         while (timestampGenerator.hasNext()) {
 //            System.out.println(timestampGenerator.next());
             Assert.assertEquals(startTimestamp, timestampGenerator.next());

@@ -1,14 +1,14 @@
 package cn.edu.tsinghua.tsfile.read.query.executor;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.utils.Binary;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.BinaryExpression;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -16,7 +16,7 @@ import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.utils.TsFileGeneratorForTest;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
@@ -59,9 +59,9 @@ public class QueryExecutorTest {
         Filter filter = TimeFilter.lt(1480562618100L);
         Filter filter2 = ValueFilter.gt(new Binary("dog"));
 
-        QueryFilter queryFilter = QueryFilterFactory.and(
-                new SeriesFilter(new Path("d1.s1"), filter),
-                new SeriesFilter(new Path("d1.s4"), filter2)
+        IExpression IExpression = BinaryExpression.and(
+                new SingleSeriesExpression(new Path("d1.s1"), filter),
+                new SingleSeriesExpression(new Path("d1.s4"), filter2)
         );
 
         QueryExpression queryExpression = QueryExpression.create()
@@ -69,7 +69,7 @@ public class QueryExecutorTest {
                 .addSelectedPath(new Path("d1.s2"))
                 .addSelectedPath(new Path("d1.s4"))
                 .addSelectedPath(new Path("d1.s5"))
-                .setQueryFilter(queryFilter);
+                .setIExpression(IExpression);
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutorWithQueryFilter.execute(queryExpression);
         long aimedTimestamp = 1480562618000L;
@@ -113,14 +113,14 @@ public class QueryExecutorTest {
     public void queryWithGlobalTimeFilter() throws IOException {
         QueryExecutor queryExecutor = new TsFileExecutor(metadataQuerierByFile, chunkLoader);
 
-        QueryFilter queryFilter = new GlobalTimeFilter(FilterFactory.and(TimeFilter.gtEq(1480562618100L), TimeFilter.lt(1480562618200L)));
+        IExpression IExpression = new GlobalTimeExpression(FilterFactory.and(TimeFilter.gtEq(1480562618100L), TimeFilter.lt(1480562618200L)));
         QueryExpression queryExpression = QueryExpression.create()
                 .addSelectedPath(new Path("d1.s1"))
                 .addSelectedPath(new Path("d1.s2"))
                 .addSelectedPath(new Path("d1.s3"))
                 .addSelectedPath(new Path("d1.s4"))
                 .addSelectedPath(new Path("d1.s5"))
-                .setQueryFilter(queryFilter);
+                .setIExpression(IExpression);
 
 
         long aimedTimestamp = 1480562618100L;

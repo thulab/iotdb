@@ -44,8 +44,8 @@ public class TimeFilter {
     }
 
 
-    public static class TimeNot extends Not {
-        private TimeNot(Filter filter) {
+    public static class TimeNotFilter extends NotFilter {
+        private TimeNotFilter(Filter filter) {
             super(filter);
         }
     }
@@ -70,8 +70,8 @@ public class TimeFilter {
         return new TimeLtEq(value);
     }
 
-    public static TimeNot not(Filter filter) {
-        return new TimeNot(filter);
+    public static TimeNotFilter not(Filter filter) {
+        return new TimeNotFilter(filter);
     }
 
     public static TimeNotEq notEq(long value) {

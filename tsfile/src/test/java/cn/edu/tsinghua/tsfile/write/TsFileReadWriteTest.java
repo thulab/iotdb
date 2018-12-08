@@ -17,7 +17,7 @@ import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;

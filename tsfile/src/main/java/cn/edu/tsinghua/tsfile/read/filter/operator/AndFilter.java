@@ -5,13 +5,13 @@ import cn.edu.tsinghua.tsfile.read.filter.basic.BinaryFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 
 /**
- * Both the left and right operators of And must satisfy the condition.
+ * Both the left and right operators of AndExpression must satisfy the condition.
  */
-public class And extends BinaryFilter {
+public class AndFilter extends BinaryFilter {
 
     private static final long serialVersionUID = 6705254093824897938L;
 
-    public And(Filter left, Filter right) {
+    public AndFilter(Filter left, Filter right) {
         super(left, right);
     }
 

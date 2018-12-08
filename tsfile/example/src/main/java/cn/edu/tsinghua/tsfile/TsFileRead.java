@@ -1,16 +1,16 @@
 package cn.edu.tsinghua.tsfile;
 
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.BinaryExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.ReadOnlyTsFile;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ public class TsFileRead {
 		reader.close();
 
 		// time filter : 4 <= time <= 10
-		QueryFilter timeFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq( 4L)),
-				new GlobalTimeFilter(TimeFilter.ltEq(10L)));
+		IExpression timeFilter = BinaryExpression.and(new GlobalTimeExpression(TimeFilter.gtEq( 4L)),
+				new GlobalTimeExpression(TimeFilter.ltEq(10L)));
 		reader = new TsFileSequenceReader(path);
 		readTsFile = new ReadOnlyTsFile(reader);
 		paths = new ArrayList<>();
@@ -63,7 +63,7 @@ public class TsFileRead {
 		reader.close();
 
 		// value filter : device_1.sensor_2 <= 20
-		QueryFilter valueFilter = new SeriesFilter(new Path("device_1.sensor_2"), ValueFilter.ltEq(20));
+		IExpression valueFilter = new SingleSeriesExpression(new Path("device_1.sensor_2"), ValueFilter.ltEq(20));
 		reader = new TsFileSequenceReader(path);
 		readTsFile = new ReadOnlyTsFile(reader);
 		paths = new ArrayList<>();
@@ -79,16 +79,16 @@ public class TsFileRead {
 		reader.close();
 
 		// time filter : 4 <= time <= 10, value filter : device_1.sensor_3 >= 20
-		timeFilter = QueryFilterFactory.and(new GlobalTimeFilter(TimeFilter.gtEq(4L)),
-				new GlobalTimeFilter(TimeFilter.ltEq(10L)));
-		valueFilter = new SeriesFilter(new Path("device_1.sensor_3"), ValueFilter.gtEq(20));
+		timeFilter = BinaryExpression.and(new GlobalTimeExpression(TimeFilter.gtEq(4L)),
+				new GlobalTimeExpression(TimeFilter.ltEq(10L)));
+		valueFilter = new SingleSeriesExpression(new Path("device_1.sensor_3"), ValueFilter.gtEq(20));
 		reader = new TsFileSequenceReader(path);
 		readTsFile = new ReadOnlyTsFile(reader);
 		paths = new ArrayList<>();
 		paths.add(new Path("device_1.sensor_1"));
 		paths.add(new Path("device_1.sensor_2"));
 		paths.add(new Path("device_1.sensor_3"));
-		QueryFilter finalFilter = QueryFilterFactory.and(timeFilter, valueFilter);
+		IExpression finalFilter = BinaryExpression.and(timeFilter, valueFilter);
 		queryExpression = QueryExpression.create(paths, finalFilter);
 		queryDataSet = readTsFile.query(queryExpression);
 		while (queryDataSet.hasNext()) {

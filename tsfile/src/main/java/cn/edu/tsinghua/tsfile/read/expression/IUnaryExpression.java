@@ -2,6 +2,6 @@ package cn.edu.tsinghua.tsfile.read.expression;
 
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 
-public interface UnaryQueryFilter extends QueryFilter{
+public interface IUnaryExpression extends IExpression {
     Filter getFilter();
 }

@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.read.filter.basic.UnaryFilter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterType;
 
 /**
- * Not Equals
+ * NotFilter Equals
  *
  * @param <T> comparable data type
  */

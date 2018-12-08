@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.tsfile.read.expression.util;
 
-import cn.edu.tsinghua.tsfile.read.expression.BinaryQueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.UnaryQueryFilter;
+import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.IUnaryExpression;
 
 
 public class QueryFilterPrinter {
@@ -19,17 +19,17 @@ public class QueryFilterPrinter {
         }
     }
 
-    public static void print(QueryFilter queryFilter) {
-        print(queryFilter, 0);
+    public static void print(IExpression IExpression) {
+        print(IExpression, 0);
     }
 
-    private static void print(QueryFilter queryFilter, int level) {
-        if (queryFilter instanceof UnaryQueryFilter) {
-            System.out.println(getPrefix(level) + queryFilter);
+    private static void print(IExpression IExpression, int level) {
+        if (IExpression instanceof IUnaryExpression) {
+            System.out.println(getPrefix(level) + IExpression);
         } else {
-            System.out.println(getPrefix(level) + queryFilter.getType() + ":");
-            print(((BinaryQueryFilter)queryFilter).getLeft(), level + 1);
-            print(((BinaryQueryFilter)queryFilter).getRight(), level + 1);
+            System.out.println(getPrefix(level) + IExpression.getType() + ":");
+            print(((IBinaryExpression) IExpression).getLeft(), level + 1);
+            print(((IBinaryExpression) IExpression).getRight(), level + 1);
         }
     }
 

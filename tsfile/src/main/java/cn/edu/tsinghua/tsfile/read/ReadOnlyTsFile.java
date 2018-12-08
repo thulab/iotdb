@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.executor.TsFileExecutor;
 
 import java.io.IOException;

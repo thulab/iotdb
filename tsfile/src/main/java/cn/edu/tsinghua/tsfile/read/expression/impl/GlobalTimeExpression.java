@@ -1,14 +1,14 @@
 package cn.edu.tsinghua.tsfile.read.expression.impl;
 
+import cn.edu.tsinghua.tsfile.read.expression.ExpressionType;
+import cn.edu.tsinghua.tsfile.read.expression.IUnaryExpression;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.read.expression.UnaryQueryFilter;
 
 
-public class GlobalTimeFilter implements UnaryQueryFilter {
+public class GlobalTimeExpression implements IUnaryExpression {
     private Filter filter;
 
-    public GlobalTimeFilter(Filter filter) {
+    public GlobalTimeExpression(Filter filter) {
         this.filter = filter;
     }
 
@@ -21,8 +21,8 @@ public class GlobalTimeFilter implements UnaryQueryFilter {
     }
 
     @Override
-    public QueryFilterType getType() {
-        return QueryFilterType.GLOBAL_TIME;
+    public ExpressionType getType() {
+        return ExpressionType.GLOBAL_TIME;
     }
 
     public String toString() {

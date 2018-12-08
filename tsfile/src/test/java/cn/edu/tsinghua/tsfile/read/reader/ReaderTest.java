@@ -4,7 +4,7 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -90,8 +90,8 @@ public class ReaderTest {
         Filter filter = new FilterFactory().or(
                 FilterFactory.and(TimeFilter.gt(1480563570029L), TimeFilter.lt(1480563570033L)),
                 FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
-        SeriesFilter seriesFilter = new SeriesFilter(new Path("d1.s1"), filter);
-        SeriesReader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, seriesFilter.getFilter());
+        SingleSeriesExpression singleSeriesExp = new SingleSeriesExpression(new Path("d1.s1"), filter);
+        SeriesReader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
 
         BatchData data;
 

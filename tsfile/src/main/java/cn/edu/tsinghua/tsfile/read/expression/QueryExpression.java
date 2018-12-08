@@ -1,6 +1,5 @@
-package cn.edu.tsinghua.tsfile.read.query;
+package cn.edu.tsinghua.tsfile.read.expression;
 
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ import java.util.List;
 
 public class QueryExpression {
     private List<Path> selectedSeries;
-    private QueryFilter queryFilter;
+    private IExpression IExpression;
     private boolean hasQueryFilter;
 
     private QueryExpression() {
@@ -21,10 +20,10 @@ public class QueryExpression {
         return new QueryExpression();
     }
 
-    public static QueryExpression create(List<Path> selectedSeries, QueryFilter filter) {
+    public static QueryExpression create(List<Path> selectedSeries, IExpression filter) {
         QueryExpression ret = new QueryExpression();
         ret.selectedSeries = selectedSeries;
-        ret.queryFilter = filter;
+        ret.IExpression = filter;
         ret.hasQueryFilter = filter != null;
         return ret;
     }
@@ -34,9 +33,9 @@ public class QueryExpression {
         return this;
     }
 
-    public QueryExpression setQueryFilter(QueryFilter queryFilter) {
-        if (queryFilter != null) {
-            this.queryFilter = queryFilter;
+    public QueryExpression setIExpression(IExpression IExpression) {
+        if (IExpression != null) {
+            this.IExpression = IExpression;
             hasQueryFilter = true;
         }
         return this;
@@ -47,8 +46,8 @@ public class QueryExpression {
         return this;
     }
 
-    public QueryFilter getQueryFilter() {
-        return queryFilter;
+    public IExpression getIExpression() {
+        return IExpression;
     }
 
     public List<Path> getSelectedSeries() {
@@ -57,7 +56,7 @@ public class QueryExpression {
 
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder("\n\t[Selected Series]:").append(selectedSeries)
-                .append("\n\t[QueryFilter]:").append(queryFilter);
+                .append("\n\t[IExpression]:").append(IExpression);
         return stringBuilder.toString();
     }
 

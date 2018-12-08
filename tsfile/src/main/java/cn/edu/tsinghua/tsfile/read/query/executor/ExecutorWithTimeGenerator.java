@@ -2,13 +2,13 @@ package cn.edu.tsinghua.tsfile.read.query.executor;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.BinaryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.DataSetWithTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGeneratorImpl;
@@ -40,14 +40,14 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
      */
     public DataSetWithTimeGenerator execute(QueryExpression queryExpression) throws IOException {
 
-        QueryFilter queryFilter = queryExpression.getQueryFilter();
+        IExpression IExpression = queryExpression.getIExpression();
         List<Path> selectedPathList = queryExpression.getSelectedSeries();
 
-        // get TimeGenerator by queryFilter
-        TimeGenerator timeGenerator = new TimeGeneratorImpl(queryFilter, chunkLoader, metadataQuerier);
+        // get TimeGenerator by IExpression
+        TimeGenerator timeGenerator = new TimeGeneratorImpl(IExpression, chunkLoader, metadataQuerier);
 
         // the size of hasFilter is equal to selectedPathList, if a series has a filter, it is true, otherwise false
-        List<Boolean> cached = removeFilteredPaths(queryFilter, selectedPathList);
+        List<Boolean> cached = removeFilteredPaths(IExpression, selectedPathList);
         List<SeriesReaderByTimestamp> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 
@@ -68,11 +68,11 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
         return new DataSetWithTimeGenerator(selectedPathList, cached, dataTypes, timeGenerator, readersOfSelectedSeries);
     }
 
-    private List<Boolean> removeFilteredPaths(QueryFilter queryFilter, List<Path> selectedPaths) {
+    private List<Boolean> removeFilteredPaths(IExpression IExpression, List<Path> selectedPaths) {
 
         List<Boolean> cached = new ArrayList<>();
         HashSet<Path> filteredPaths = new HashSet<>();
-        getAllFilteredPaths(queryFilter, filteredPaths);
+        getAllFilteredPaths(IExpression, filteredPaths);
 
         for (Path selectedPath : selectedPaths) {
             cached.add(filteredPaths.contains(selectedPath));
@@ -82,12 +82,12 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
 
     }
 
-    private void getAllFilteredPaths(QueryFilter queryFilter, HashSet<Path> paths) {
-        if (queryFilter instanceof QueryFilterFactory) {
-            getAllFilteredPaths(((QueryFilterFactory) queryFilter).getLeft(), paths);
-            getAllFilteredPaths(((QueryFilterFactory) queryFilter).getRight(), paths);
-        } else if (queryFilter instanceof SeriesFilter) {
-            paths.add(((SeriesFilter) queryFilter).getSeriesPath());
+    private void getAllFilteredPaths(IExpression IExpression, HashSet<Path> paths) {
+        if (IExpression instanceof BinaryExpression) {
+            getAllFilteredPaths(((BinaryExpression) IExpression).getLeft(), paths);
+            getAllFilteredPaths(((BinaryExpression) IExpression).getRight(), paths);
+        } else if (IExpression instanceof SingleSeriesExpression) {
+            paths.add(((SingleSeriesExpression) IExpression).getSeriesPath());
         }
     }
 

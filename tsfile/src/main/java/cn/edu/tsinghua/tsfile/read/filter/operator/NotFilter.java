@@ -6,14 +6,14 @@ import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import java.io.Serializable;
 
 /**
- * Not necessary. Use InvertExpressionVisitor
+ * NotFilter necessary. Use InvertExpressionVisitor
  */
-public class Not implements Filter, Serializable {
+public class NotFilter implements Filter, Serializable {
 
     private static final long serialVersionUID = 584860326604020881L;
     private Filter that;
 
-    public Not(Filter that) {
+    public NotFilter(Filter that) {
         this.that = that;
     }
 
@@ -34,7 +34,7 @@ public class Not implements Filter, Serializable {
 
     @Override
     public String toString() {
-        return "Not: " + that;
+        return "NotFilter: " + that;
     }
 
 }

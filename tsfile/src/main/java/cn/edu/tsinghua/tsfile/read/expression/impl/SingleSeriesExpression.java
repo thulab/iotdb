@@ -1,23 +1,23 @@
 package cn.edu.tsinghua.tsfile.read.expression.impl;
 
+import cn.edu.tsinghua.tsfile.read.expression.ExpressionType;
+import cn.edu.tsinghua.tsfile.read.expression.IUnaryExpression;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.read.expression.UnaryQueryFilter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 
-public class SeriesFilter implements UnaryQueryFilter {
+public class SingleSeriesExpression implements IUnaryExpression {
     private Path seriesPath;
     private Filter filter;
 
-    public SeriesFilter(Path seriesDescriptor, Filter filter) {
+    public SingleSeriesExpression(Path seriesDescriptor, Filter filter) {
         this.seriesPath = seriesDescriptor;
         this.filter = filter;
     }
 
     @Override
-    public QueryFilterType getType() {
-        return QueryFilterType.SERIES;
+    public ExpressionType getType() {
+        return ExpressionType.SERIES;
     }
 
     public Filter getFilter() {
