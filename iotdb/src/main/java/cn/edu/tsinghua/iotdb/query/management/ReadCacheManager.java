@@ -1,14 +1,12 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineNoFilter;
-import cn.edu.tsinghua.iotdb.query.engine.groupby.GroupByEngineWithFilter;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
 /**
  * <p>
