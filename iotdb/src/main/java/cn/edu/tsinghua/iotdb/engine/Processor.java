@@ -1,12 +1,12 @@
 package cn.edu.tsinghua.iotdb.engine;
 
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
+
 import java.io.IOException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 
 /**
  * <p>

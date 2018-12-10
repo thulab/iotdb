@@ -6,10 +6,9 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.FixLengt
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.FixLengthTimeValuePairSerializer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.SimpleTimeValuePairDeserializer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.SimpleTimeValuePairSerializer;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.utils.Binary;
 import org.junit.Assert;
 import org.junit.Test;
 
