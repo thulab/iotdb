@@ -7,11 +7,11 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataRead
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.DigestVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.visitorImpl.DigestVisitor;
+import cn.edu.tsinghua.tsfile.read.filter.visitorImpl.IntervalTimeVisitor;
+import cn.edu.tsinghua.tsfile.read.filter.visitorImpl.SingleValueVisitor;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

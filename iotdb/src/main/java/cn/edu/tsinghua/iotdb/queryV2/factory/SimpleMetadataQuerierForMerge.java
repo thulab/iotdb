@@ -1,25 +1,23 @@
 package cn.edu.tsinghua.iotdb.queryV2.factory;
 
-import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
+import cn.edu.tsinghua.tsfile.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.MetadataQuerier;
-import cn.edu.tsinghua.tsfile.timeseries.utils.cache.LRUCache;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.common.cache.LRUCache;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/2/1.
- */
+
 public class SimpleMetadataQuerierForMerge implements MetadataQuerier {
     private static final int FOOTER_LENGTH = 4;
     private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;

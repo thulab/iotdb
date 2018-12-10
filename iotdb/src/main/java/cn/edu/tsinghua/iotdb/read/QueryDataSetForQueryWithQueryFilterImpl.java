@@ -1,10 +1,10 @@
 package cn.edu.tsinghua.iotdb.read;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.TimestampGenerator;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.datatype.RowRecord;
+import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimestampGenerator;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

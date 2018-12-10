@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
@@ -319,7 +319,7 @@ public class FileSenderImpl implements FileSender{
 
 			for (String filePath : snapshotFileList) {
 				input = new TsRandomAccessLocalFileReader(filePath);
-				cn.edu.tsinghua.tsfile.timeseries.read.FileReader reader = new cn.edu.tsinghua.tsfile.timeseries.read.FileReader(
+				cn.edu.tsinghua.tsfile.read.FileReader reader = new cn.edu.tsinghua.tsfile.read.FileReader(
 						input);
 				Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
 				Iterator<String> it = deltaObjectMap.keySet().iterator();

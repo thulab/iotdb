@@ -24,7 +24,7 @@ import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
 
 public class BufferWriteProcessorNewTest {
 

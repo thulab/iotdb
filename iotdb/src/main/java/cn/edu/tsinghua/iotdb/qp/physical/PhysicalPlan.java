@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.qp.physical;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * This class is a abstract class for all type of PhysicalPlan.

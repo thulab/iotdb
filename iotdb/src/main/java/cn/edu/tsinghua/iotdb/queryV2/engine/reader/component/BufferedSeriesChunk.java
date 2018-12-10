@@ -5,9 +5,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunkDescriptor;
 
 import java.io.InputStream;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class BufferedSeriesChunk implements SeriesChunk {
 
     private SegmentInputStream seriesChunkInputStream;

@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.component.job;
 
-/**
- * Created by zhangjinrui on 2018/1/10.
- */
+
 public class QueryJobExecutionMessage {
 
     private String message;

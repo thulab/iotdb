@@ -12,8 +12,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 
 /**
  * This class is used to read metadata(<code>TsFileMetaData</code> and

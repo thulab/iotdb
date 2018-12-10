@@ -15,13 +15,13 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.factory.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by zhangjinrui on 2018/3/13.
- */
+
 public class ReaderCreator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReaderCreator.class);

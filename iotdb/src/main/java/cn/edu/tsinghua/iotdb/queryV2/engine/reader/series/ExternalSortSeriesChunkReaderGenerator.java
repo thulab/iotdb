@@ -6,7 +6,6 @@ import java.util.List;
 
 /**
  * Merge all SeriesChunks to one SeriesChunk using external sort and return corresponding SeriesChunkReader
- * Created by zhangjinrui on 2018/1/15.
  */
 public class ExternalSortSeriesChunkReaderGenerator {
 

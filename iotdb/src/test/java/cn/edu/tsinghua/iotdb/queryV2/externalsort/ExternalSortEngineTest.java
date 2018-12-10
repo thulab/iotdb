@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Created by zhangjinrui on 2018/1/20.
- */
+
 public class ExternalSortEngineTest {
 
     private String baseDir = "externalSortTestTmp";

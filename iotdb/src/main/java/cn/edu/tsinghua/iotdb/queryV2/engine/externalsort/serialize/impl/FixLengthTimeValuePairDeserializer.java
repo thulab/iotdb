@@ -14,7 +14,6 @@ import java.io.*;
  * [Header][Body]
  * [Header] = [DataTypeLength] + [DataTypeInStringBytes]
  * [DataTypeLength] = 4 bytes
- * Created by zhangjinrui on 2018/1/21.
  */
 public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserializer {
 

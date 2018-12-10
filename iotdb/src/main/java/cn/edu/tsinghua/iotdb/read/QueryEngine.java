@@ -4,12 +4,12 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithGlobalTimeFilterExecutorImpl;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithFilterExecutorImpl;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithoutFilterExecutorImpl;
-import cn.edu.tsinghua.tsfile.timeseries.filter.exception.QueryFilterOptimizationException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.util.QueryFilterOptimizer;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.filter.exception.QueryFilterOptimizationException;
+import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
+import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
+import cn.edu.tsinghua.tsfile.read.expression.util.QueryFilterOptimizer;
+import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

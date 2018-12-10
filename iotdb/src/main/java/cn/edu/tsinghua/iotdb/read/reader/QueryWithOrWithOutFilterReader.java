@@ -7,9 +7,9 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithOverflowOpReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;
 

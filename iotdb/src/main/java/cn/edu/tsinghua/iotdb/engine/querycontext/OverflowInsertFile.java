@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class OverflowInsertFile {
     private String path;  //Full path of current OverflowInsertFile
     private List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDatas; //seriesChunkMetadata of selected series

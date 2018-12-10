@@ -2,15 +2,12 @@ package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
 
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/26.
- */
 //TODO: merge RawSeriesChunkLazyLoadImpl and PrimitiveMemSeries, RawSeriesChunk and IMemSeries
 public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
 

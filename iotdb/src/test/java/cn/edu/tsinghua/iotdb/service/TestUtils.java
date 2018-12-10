@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.service;
 
 
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 
 public class TestUtils {
 

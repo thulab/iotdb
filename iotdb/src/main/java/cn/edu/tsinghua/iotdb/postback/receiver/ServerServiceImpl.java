@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +44,11 @@ import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.timeseries.basis.TsFile;
-import cn.edu.tsinghua.tsfile.timeseries.read.FileReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.FileReader;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.support.Field;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 
 /**

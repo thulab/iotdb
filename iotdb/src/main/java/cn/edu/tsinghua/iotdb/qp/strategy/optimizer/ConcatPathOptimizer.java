@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * concat paths in select and from clause

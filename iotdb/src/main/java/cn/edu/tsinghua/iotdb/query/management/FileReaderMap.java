@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.management;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 
 import java.io.IOException;
 import java.util.HashMap;

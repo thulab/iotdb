@@ -14,9 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/14.
- */
+
 public class TsFileStreamManagerTest {
 
     private static final String PATH = "fileStreamManagerTestFile";

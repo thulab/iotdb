@@ -6,11 +6,11 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.operator.NoRestriction;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.filter.operator.NoRestriction;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

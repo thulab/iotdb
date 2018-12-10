@@ -15,12 +15,12 @@ import cn.edu.tsinghua.iotdb.read.QueryEngine;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryExpression;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+//import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
 
 import java.io.IOException;
 import java.util.*;

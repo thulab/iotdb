@@ -8,10 +8,10 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.Field;
-import cn.edu.tsinghua.tsfile.timeseries.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.support.Field;
+import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
 
 /**
  * This class implements the interface {@code Iterator<OnePassQueryDataSet>}. It is the result of

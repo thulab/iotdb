@@ -5,9 +5,9 @@ import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
-import cn.edu.tsinghua.tsfile.common.exception.cache.CacheException;
+import cn.edu.tsinghua.tsfile.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.io.*;
 import java.util.*;

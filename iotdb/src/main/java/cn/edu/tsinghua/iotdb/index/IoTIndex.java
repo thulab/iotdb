@@ -3,8 +3,8 @@ package cn.edu.tsinghua.iotdb.index;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.List;
 import java.util.Map;

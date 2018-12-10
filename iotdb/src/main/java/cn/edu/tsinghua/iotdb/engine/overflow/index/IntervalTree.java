@@ -16,12 +16,12 @@ import cn.edu.tsinghua.tsfile.common.utils.Binary;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.LongInterval;
-import cn.edu.tsinghua.tsfile.timeseries.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.read.filter.utils.LongInterval;
+import cn.edu.tsinghua.tsfile.read.filter.verifier.FilterVerifier;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
 /**
  * IntervalTree is a data structure implemented used Treap. </br>
