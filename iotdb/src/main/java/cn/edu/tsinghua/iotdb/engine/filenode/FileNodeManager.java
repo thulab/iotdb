@@ -1,59 +1,47 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
-import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.exception.StartupException;
+import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FileNodeManager implements IStatistic, IService {
 
@@ -258,7 +246,7 @@ public class FileNodeManager implements IStatistic, IService {
 			LOGGER.error("The insert time lt 0, {}.", tsRecord);
 			throw new FileNodeManagerException("The insert time lt 0, the tsrecord is " + tsRecord);
 		}
-		String deltaObjectId = tsRecord.deltaObjectId;
+		String deltaObjectId = tsRecord.deviceId;
 
 		if (!isMonitor) {
 			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
@@ -293,7 +281,7 @@ public class FileNodeManager implements IStatistic, IService {
 							measurementList.add(dp.getMeasurementId());
 							insertValues.add(dp.getValue().toString());
 						}
-						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deviceId, tsRecord.time,
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
@@ -571,7 +559,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * @throws FileNodeManagerException
 	 */
 	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
-		String deltaObjectId = path.getDeltaObjectToString();
+		String deltaObjectId = path.getDevice();
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		try {
 			LOGGER.debug("Get the FileNodeProcessor: the filenode is {}, query.", fileNodeProcessor.getProcessorName());
@@ -817,7 +805,7 @@ public class FileNodeManager implements IStatistic, IService {
 			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(path.getFullPath(), true);
 		try {
-			fileNodeProcessor.addTimeSeries(path.getMeasurementToString(), dataType, encoding, encodingArgs);
+			fileNodeProcessor.addTimeSeries(path.getMeasurement(), dataType, encoding, encodingArgs);
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}

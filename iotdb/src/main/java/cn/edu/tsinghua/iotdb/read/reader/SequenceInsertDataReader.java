@@ -12,7 +12,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.read.controller.SeriesChunkLoader;
 import cn.edu.tsinghua.tsfile.read.controller.SeriesChunkLoaderImpl;
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;

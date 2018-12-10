@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.treeV2;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
 import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 

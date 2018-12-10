@@ -111,7 +111,7 @@ public class LoadDataUtils {
 		totalPointCount += record.dataPointList.size();
 		String nsPath = null;
 		try {
-			nsPath = mManager.getFileNameByPath(record.deltaObjectId);
+			nsPath = mManager.getFileNameByPath(record.deviceId);
 		} catch (PathErrorException e) {
 			LOG.error("given path not found.{}", e.getMessage());
 		}

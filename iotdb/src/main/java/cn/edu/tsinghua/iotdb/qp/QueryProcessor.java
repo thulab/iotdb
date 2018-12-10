@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.qp;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.qp.exception.IllegalASTFormatException;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
@@ -23,7 +24,6 @@ import cn.edu.tsinghua.iotdb.sql.ParseGenerator;
 import cn.edu.tsinghua.iotdb.sql.parse.ASTNode;
 import cn.edu.tsinghua.iotdb.sql.parse.ParseException;
 import cn.edu.tsinghua.iotdb.sql.parse.ParseUtils;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import org.joda.time.DateTimeZone;
 
 /**
@@ -48,7 +48,7 @@ public class QueryProcessor {
     }
     
     public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr, DateTimeZone timeZone)
-            throws QueryProcessorException, ArgsErrorException, ProcessorException {
+            throws QueryProcessorException, ArgsErrorException {
         ASTNode astNode = parseSQLToAST(sqlStr);
         Operator operator = parseASTToOperator(astNode, timeZone);
         operator = logicalOptimize(operator, executor);

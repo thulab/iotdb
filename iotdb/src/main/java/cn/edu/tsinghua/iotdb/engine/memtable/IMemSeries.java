@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.utils.Binary;
 
 /**
  * @author Rong Kang

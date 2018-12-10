@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
 
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 public class TimeValuePairInMemTable extends TimeValuePair implements Comparable<TimeValuePairInMemTable> {
 
