@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.overflow;
 
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 
 public class OverflowDeleteOperation extends OverflowOperation {
