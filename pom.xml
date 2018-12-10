@@ -20,9 +20,21 @@
 
 	<name>IoTDB Root</name>
 
+	<modules>
+		<module>tsfile</module>
+		<module>jdbc</module>
+		<module>iotdb</module>
+		<!--<module>grafana</module>-->
+		<module>service-rpc</module>
+		<module>iotdb-cli</module>
+		<!-- <module>hadoop</module> -->
+		<!-- <module>spark</module> -->
+	</modules>
+
+
 	<description>
-    This is the top level project that builds, packages the tsfile, iotdb engine, jdbc, and integration libs.
-  </description>
+    	This is the top level project that builds, packages the tsfile, iotdb engine, jdbc, and integration libs.
+  	</description>
 
 	<licenses>
 		<license>
@@ -135,16 +147,6 @@
 		<commons.collections4>4.0</commons.collections4>
 	</properties>
 
-	<modules>
-		<module>tsfile</module>
-		<!--<module>jdbc</module>
-		<module>iotdb</module>
-		<module>grafana</module>
-		<module>service-rpc</module>
-		<module>iotdb-cli</module> -->
-		<!-- <module>hadoop</module> -->
-		<!-- <module>spark</module> -->
-	</modules>
 
 	<build>
 		<pluginManagement>

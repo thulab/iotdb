@@ -12,15 +12,10 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.read.QueryEngine;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
-//import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 
 import java.io.IOException;
 import java.util.*;
@@ -105,7 +100,7 @@ public abstract class QueryProcessExecutor {
 	private List<FilterStructure> getFilterStructure(List<SingleQueryPlan> selectPlans) {
 		List<FilterStructure> filterStructures = new ArrayList<>();
 		for(SingleQueryPlan selectPlan: selectPlans) {
-			FilterExpression[] expressions = selectPlan.getFilterExpressions();
+			FilterExpression[] expressions = selectPlan.getFilters();
 			FilterStructure filterStructure = new FilterStructure(expressions[0], expressions[1], expressions[2]);
 			filterStructures.add(filterStructure);
 		}
@@ -123,7 +118,7 @@ public abstract class QueryProcessExecutor {
 		return fetchSize.get();
 	}
 
-	public abstract OnePassQueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+	public abstract QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
 			throws ProcessorException, IOException, PathErrorException;
 
 	public abstract OnePassQueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,

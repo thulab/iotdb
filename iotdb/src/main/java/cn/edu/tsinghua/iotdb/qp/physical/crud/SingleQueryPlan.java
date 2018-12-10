@@ -6,15 +6,11 @@ import java.util.*;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.read.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterType;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +36,7 @@ public class SingleQueryPlan extends PhysicalPlan {
     private FilterOperator timeFilterOperator;
     private FilterOperator freqFilterOperator;
     private FilterOperator valueFilterOperator;
-    private FilterExpression[] filterExpressions;
+    private Filter[] filters;
 
     //TODO 合并多种 filter
     public SingleQueryPlan(List<Path> paths, FilterOperator timeFilter,
@@ -52,7 +48,7 @@ public class SingleQueryPlan extends PhysicalPlan {
         this.freqFilterOperator = freqFilter;
         this.valueFilterOperator = valueFilter;
         checkPaths(executor);
-        filterExpressions = transformToFilterExpressions(executor);
+        filters = transformToFilterExpressions(executor);
         this.aggregations = aggregations;
     }
 
@@ -69,13 +65,13 @@ public class SingleQueryPlan extends PhysicalPlan {
     }
 
     /**
-     * filterExpressions include three FilterExpression: TIME_FILTER, FREQUENCY_FILTER, VALUE_FILTER
+     * filters include three FilterExpression: TIME_FILTER, FREQUENCY_FILTER, VALUE_FILTER
      * These filters is for querying data in TsFile
      *
      * @return three filter expressions
      */
-    public FilterExpression[] getFilterExpressions() {
-        return filterExpressions;
+    public IExpression[] getFilters() {
+        return filters;
     }
 
     /**
@@ -95,13 +91,11 @@ public class SingleQueryPlan extends PhysicalPlan {
      * @return three filter expressions
      * @throws QueryProcessorException exceptions in transforming filter operators
      */
-    private FilterExpression[] transformToFilterExpressions(QueryProcessExecutor executor)
+    private Filter[] transformToFilterExpressions(QueryProcessExecutor executor)
             throws QueryProcessorException {
-        FilterExpression timeFilter =
-                timeFilterOperator == null ? null : timeFilterOperator.transformToFilterExpression(executor, FilterSeriesType.TIME_FILTER);
-        FilterExpression freqFilter =
-                freqFilterOperator == null ? null : freqFilterOperator.transformToFilterExpression(executor, FilterSeriesType.FREQUENCY_FILTER);
-        FilterExpression valueFilter =
+        Filter timeFilter =
+                timeFilterOperator == null ? null : timeFilterOperator.transformToFilterExpression(executor, FilterType.TIME_FILTER);
+        Filter valueFilter =
                 valueFilterOperator == null ? null : valueFilterOperator.transformToFilterExpression(executor, FilterSeriesType.VALUE_FILTER);
 
         if (valueFilter instanceof SingleSeriesFilterExpression) {
@@ -125,13 +119,13 @@ public class SingleQueryPlan extends PhysicalPlan {
      */
     private Iterator<OldRowRecord> getRecordIterator(QueryProcessExecutor executor, int formNumber) throws QueryProcessorException {
 
-        return new RowRecordIterator(formNumber,paths, executor.getFetchSize(), executor, filterExpressions[0], filterExpressions[1], filterExpressions[2]);
+        return new RowRecordIterator(formNumber,paths, executor.getFetchSize(), executor, filters[0], filters[1], filters[2]);
     }
 
 
-    public static Iterator<OldRowRecord>[] getRecordIteratorArray(List<SingleQueryPlan> plans,
+    public static Iterator<RowRecord>[] getRecordIteratorArray(List<SingleQueryPlan> plans,
                                                                QueryProcessExecutor conf) throws QueryProcessorException {
-        Iterator<OldRowRecord>[] ret = new RowRecordIterator[plans.size()];
+        Iterator<RowRecord>[] ret = new RowRecord[plans.size()];
         for (int i = 0; i < plans.size(); i++) {
             ret[i] = plans.get(i).getRecordIterator(conf, i);
         }

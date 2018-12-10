@@ -2,15 +2,14 @@ package cn.edu.tsinghua.iotdb.qp.executor.iterator;
 
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -19,7 +18,7 @@ public class QueryDataSetIterator implements QueryDataSet {
     private static final Logger logger = LoggerFactory.getLogger(QueryDataSetIterator.class);
     private final int fetchSize;
     private final QueryProcessExecutor executor;
-    private OnePassQueryDataSet data = null;
+    private QueryDataSet data = null;
     private List<Path> paths;
     private List<String> aggregations;
     private List<FilterStructure> filterStructures = new ArrayList<>();
@@ -47,13 +46,13 @@ public class QueryDataSetIterator implements QueryDataSet {
 
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNext() throws IOException {
         if(!hasNext)
             return false;
-        if (data == null || !data.hasNextRecord()) {
+        if (data == null || !data.hasNext()) {
             try {
                 data = executor.groupBy(getAggrePair(), filterStructures, unit, origin, intervals, fetchSize);
-                if(data.hasNextRecord()) {
+                if(data.hasNext()) {
                     return true;
                 } else {
                     hasNext = false;
@@ -79,9 +78,8 @@ public class QueryDataSetIterator implements QueryDataSet {
     }
 
     @Override
-    public RowRecord next() {
-        OldRowRecord oldRowRecord = data.getNextRecord();
-        return OnePassQueryDataSet.convertToNew(oldRowRecord);
+    public RowRecord next() throws IOException {
+        return data.next();
     }
 
 }

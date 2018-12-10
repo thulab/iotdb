@@ -1,17 +1,13 @@
 package cn.edu.tsinghua.iotdb.qp.executor.iterator;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
-import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.read.support.Field;
-import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 
 /**
  * This class implements the interface {@code Iterator<OnePassQueryDataSet>}. It is the result of
@@ -23,9 +19,9 @@ import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
  * @author kangrong
  *
  */
-public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
+public class MergeQuerySetIterator implements Iterator<QueryDataSet> {
     private final int mergeFetchSize;
-    private Iterator<OldRowRecord>[] recordIters;
+    private Iterator<RowRecord>[] recordIters;
     private Node[] nodes;
     // it's actually number of series iterators which has next record;
     private int heapSize;
@@ -63,8 +59,8 @@ public class MergeQuerySetIterator implements Iterator<OnePassQueryDataSet> {
     }
 
     @Override
-    public OnePassQueryDataSet next() {
-        OnePassQueryDataSet ret = new OnePassQueryDataSet();
+    public QueryDataSet next() {
+        QueryDataSet ret = new OnePassQueryDataSet();
         int i = 0;
         while (i < mergeFetchSize && heapSize > 0) {
             Node minNode = nodes[1];
