@@ -131,9 +131,9 @@ public class PhysicalGenerator {
             throw new LogicalOperatorException("filter Operator must be a time filter");
         }
         // transfer the filter operator to FilterExpression
-        FilterExpression timeFilter;
+        IExpression timeFilter;
         try {
-            timeFilter = filterOperator.transformToFilterExpression(executor, FilterSeriesType.TIME_FILTER);
+            timeFilter = filterOperator.transformToExpression(executor);
         } catch (QueryProcessorException e) {
             e.printStackTrace();
             throw new LogicalOperatorException(e.getMessage());
@@ -240,7 +240,7 @@ public class PhysicalGenerator {
 
 
         if (filterOperator != null) {
-            IExpression expression = filterOperator.transformToQueryFilter(executor);
+            IExpression expression = filterOperator.transformToExpression(executor);
             queryPlan.setExpression(expression);
         }
 

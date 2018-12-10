@@ -5,8 +5,8 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
 import cn.edu.tsinghua.iotdb.read.reader.QueryWithOrWithOutFilterReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.read.query.impl.MergeQueryDataSet;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 

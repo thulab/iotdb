@@ -8,19 +8,22 @@ import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -131,7 +134,7 @@ public class IoTDBQueryReaderTest {
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s5"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
-        queryExpression.setQueryFilter(null);
+        queryExpression.setExpression(null);
 
         QueryDataSet queryDataSet = queryEngine.query(queryExpression);
 
@@ -154,8 +157,8 @@ public class IoTDBQueryReaderTest {
         QueryExpression queryExpression = QueryExpression.create();
         Path p = new Path("root.vehicle.d0.s0");
         queryExpression.addSelectedPath(p);
-        SeriesFilter seriesFilter = new SeriesFilter(p, ValueFilter.gtEq(20));
-        queryExpression.setQueryFilter(seriesFilter);
+        SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(p, ValueFilter.gtEq(20));
+        queryExpression.setExpression(singleSeriesExpression);
 
         QueryDataSet queryDataSet = queryEngine.query(queryExpression);
 
@@ -181,8 +184,8 @@ public class IoTDBQueryReaderTest {
         QueryExpression queryExpression = QueryExpression.create();
         Path p = new Path("root.vehicle.d0.s0");
         queryExpression.addSelectedPath(p);
-        SeriesFilter seriesFilter = new SeriesFilter(p, TimeFilter.gt((long)22987));
-        queryExpression.setQueryFilter(seriesFilter);
+        SingleSeriesExpression expression = new SingleSeriesExpression(p, TimeFilter.gt((long)22987));
+        queryExpression.setExpression(expression);
 
         QueryDataSet queryDataSet = queryEngine.query(queryExpression);
 
@@ -204,8 +207,8 @@ public class IoTDBQueryReaderTest {
         Path p0 = new Path("root.vehicle.d0.s0");
         Path p1 = new Path("root.vehicle.d0.s1");
         queryExpression.addSelectedPath(p1);
-        SeriesFilter seriesFilter = new SeriesFilter(p0, ValueFilter.lt(111));
-        queryExpression.setQueryFilter(seriesFilter);
+        SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(p0, ValueFilter.lt(111));
+        queryExpression.setExpression(singleSeriesExpression);
 
         QueryDataSet queryDataSet = queryEngine.query(queryExpression);
 
@@ -214,7 +217,7 @@ public class IoTDBQueryReaderTest {
             RowRecord rowRecord = queryDataSet.next();
             System.out.println("~~~~" + rowRecord);
             long time = rowRecord.getTimestamp();
-            String value = rowRecord.getFields().get(p1).getStringValue();
+            String value = rowRecord.getFields().get(1).getStringValue();
             if (time > 23000 && time < 100100) {
                 System.out.println("~~~~" + time + "," + value);
                 assertEquals("11111111", value);

@@ -65,10 +65,10 @@ public class TimeGeneratorImpl implements TimeGenerator {
     /**
      * construct the tree that generate timestamp
      */
-    private Node construct(IExpression IExpression) throws IOException {
+    private Node construct(IExpression expression) throws IOException {
 
-        if (IExpression.getType() == ExpressionType.SERIES) {
-            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) IExpression;
+        if (expression.getType() == ExpressionType.SERIES) {
+            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) expression;
             SeriesReader seriesReader = generateSeriesReader(singleSeriesExp);
             Path path = singleSeriesExp.getSeriesPath();
 
@@ -81,17 +81,17 @@ public class TimeGeneratorImpl implements TimeGenerator {
 
             return leafNode;
 
-        } else if (IExpression.getType() == ExpressionType.OR) {
-            Node leftChild = construct(((IBinaryExpression) IExpression).getLeft());
-            Node rightChild = construct(((IBinaryExpression) IExpression).getRight());
+        } else if (expression.getType() == ExpressionType.OR) {
+            Node leftChild = construct(((IBinaryExpression) expression).getLeft());
+            Node rightChild = construct(((IBinaryExpression) expression).getRight());
             return new OrNode(leftChild, rightChild);
 
-        } else if (IExpression.getType() == ExpressionType.AND) {
-            Node leftChild = construct(((IBinaryExpression) IExpression).getLeft());
-            Node rightChild = construct(((IBinaryExpression) IExpression).getRight());
+        } else if (expression.getType() == ExpressionType.AND) {
+            Node leftChild = construct(((IBinaryExpression) expression).getLeft());
+            Node rightChild = construct(((IBinaryExpression) expression).getRight());
             return new AndNode(leftChild, rightChild);
         }
-        throw new UnSupportedDataTypeException("Unsupported ExpressionType when construct OperatorNode: " + IExpression.getType());
+        throw new UnSupportedDataTypeException("Unsupported ExpressionType when construct OperatorNode: " + expression.getType());
     }
 
     private SeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExp) throws IOException {

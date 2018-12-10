@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.component.job;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.impl.QueryEngineImpl;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

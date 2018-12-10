@@ -5,14 +5,14 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSetForQueryWithQueryFilterImpl;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
 import cn.edu.tsinghua.iotdb.read.reader.QueryByTimestampsReader;
-import cn.edu.tsinghua.iotdb.read.timegenerator.TimeGenerator;
+import cn.edu.tsinghua.iotdb.read.timegenerator.IoTTimeGenerator;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.read.filter.expression.BinaryQueryFilter;
 import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
 
@@ -29,7 +29,7 @@ public class QueryWithFilterExecutorImpl {
 
     public static QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
-        TimestampGenerator  timestampGenerator = new TimeGenerator(queryExpression.getQueryFilter());
+        TimestampGenerator  timestampGenerator = new IoTTimeGenerator(queryExpression.getQueryFilter());
 
         LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries = new LinkedHashMap<>();
         initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries(), queryExpression.getQueryFilter());

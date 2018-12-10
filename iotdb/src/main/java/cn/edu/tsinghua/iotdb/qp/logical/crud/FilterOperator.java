@@ -93,7 +93,7 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
      *
      * @return QueryFilter in TsFile
      */
-    public IExpression transformToQueryFilter(QueryProcessExecutor executor)
+    public IExpression transformToExpression(QueryProcessExecutor executor)
             throws QueryProcessorException {
         if (isSingle) {
             Pair<IUnaryExpression, String> ret = transformToSingleQueryFilter(executor);
@@ -103,10 +103,10 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
                 throw new LogicalOperatorException("this filter is not leaf, but it's empty:"
                         + tokenIntType);
             }
-            IExpression retFilter = childOperators.get(0).transformToQueryFilter(executor);
+            IExpression retFilter = childOperators.get(0).transformToExpression(executor);
             IExpression currentFilter;
             for (int i = 1; i < childOperators.size(); i++) {
-                currentFilter = childOperators.get(i).transformToQueryFilter(executor);
+                currentFilter = childOperators.get(i).transformToExpression(executor);
                 switch (tokenIntType) {
                     case KW_AND:
                         retFilter = BinaryExpression.and(retFilter, currentFilter);

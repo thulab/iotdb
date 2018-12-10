@@ -8,14 +8,8 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePai
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderByTimestamp;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
-import cn.edu.tsinghua.tsfile.read.common.EncodedSeriesChunkDescriptor;
-import cn.edu.tsinghua.tsfile.read.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
-import cn.edu.tsinghua.tsfile.read.reader.page.SeriesReaderFromSingleFileByTimestampImpl;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -160,10 +154,10 @@ public class SequenceInsertDataByTimeStampReader extends SequenceInsertDataReade
 
         protected boolean singleTsFileSatisfied(IntervalFileNode fileNode){
 
-            if(fileNode.getStartTime(path.getDeltaObjectToString()) == -1){
+            if(fileNode.getStartTime(path.getDevice()) == -1){
                 return false;
             }
-            long maxTime = fileNode.getEndTime(path.getDeltaObjectToString());
+            long maxTime = fileNode.getEndTime(path.getDevice());
             return currentTimestamp <= maxTime;
         }
 

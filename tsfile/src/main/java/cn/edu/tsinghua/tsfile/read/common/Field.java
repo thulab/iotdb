@@ -75,7 +75,7 @@ public class Field {
         this.binaryV = binaryV;
     }
 
-    private String getStringValue() {
+    public String getStringValue() {
         if (isNull || dataType == null) {
             return "null";
         }
