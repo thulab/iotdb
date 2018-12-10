@@ -26,3 +26,17 @@ The following provides more details on the included cryptographic software:
 This software uses Apache Commons Crypto (https://commons.apache.org/proper/commons-crypto/) to
 support authentication, and encryption and decryption of data sent across the network between
 services.
+
+
+IoTDB project uses 4 Chinese Patents:
+*
+*
+*
+According to the Apache 2.0 License. The owner of the patents, Tsinghua University, grant the users which are defined in Apache 2.0 License the right to the use of patent.
+and add Patent Claim into the Notice file. Yo can get the template from Tika (). (make sure the sentence and the content in Tika are coherent.
+
+Here is the list:
+* 201711384490X
+* 201810111712.9
+* 201711322631.5
+* 201711319331.1
