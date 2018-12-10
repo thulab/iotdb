@@ -5,10 +5,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
 import cn.edu.tsinghua.iotdb.read.reader.QueryWithOrWithOutFilterReader;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.BinaryQueryFilter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
@@ -17,27 +14,29 @@ import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;
 
+import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.*;
+
 public class NodeConstructor {
 
   public NodeConstructor() {
   }
 
-  public Node construct(QueryFilter queryFilter) throws IOException, FileNodeManagerException {
-    if (queryFilter.getType() == QueryFilterType.SERIES) {
-      return new LeafNode(this.generateSeriesReader((SeriesFilter) queryFilter));
+  public Node construct(IExpression expression) throws IOException, FileNodeManagerException {
+    if (expression.getType() == SERIES) {
+      return new LeafNode(this.generateSeriesReader((SeriesFilter) expression));
     } else {
       Node leftChild;
       Node rightChild;
-      if (queryFilter.getType() == QueryFilterType.OR) {
-        leftChild = this.construct(((BinaryQueryFilter) queryFilter).getLeft());
-        rightChild = this.construct(((BinaryQueryFilter) queryFilter).getRight());
+      if (expression.getType() == OR) {
+        leftChild = this.construct(((BinaryQueryFilter) expression).getLeft());
+        rightChild = this.construct(((BinaryQueryFilter) expression).getRight());
         return new OrNode(leftChild, rightChild);
-      } else if (queryFilter.getType() == QueryFilterType.AND) {
-        leftChild = this.construct(((BinaryQueryFilter) queryFilter).getLeft());
-        rightChild = this.construct(((BinaryQueryFilter) queryFilter).getRight());
+      } else if (expression.getType() == AND) {
+        leftChild = this.construct(((BinaryQueryFilter) expression).getLeft());
+        rightChild = this.construct(((BinaryQueryFilter) expression).getRight());
         return new AndNode(leftChild, rightChild);
       } else {
-        throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + queryFilter.getType());
+        throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + expression.getType());
       }
     }
   }

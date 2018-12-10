@@ -11,7 +11,6 @@ import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.*;
-import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
@@ -27,7 +26,7 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import org.apache.commons.io.FileUtils;
@@ -348,7 +347,7 @@ public class FileNodeManager implements IStatistic, IService {
 							measurementList.add(dp.getMeasurementId());
 							insertValues.add(dp.getValue().toString());
 						}
-						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deviceId, tsRecord.time,
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
@@ -517,10 +516,10 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public QueryDataSource query(SeriesFilter<?> seriesFilter)
+	public QueryDataSource query(SingleSeriesExpression seriesExpression)
 			throws FileNodeManagerException {
-		String deltaObjectId = seriesFilter.getSeriesPath().getDeltaObjectToString();
-		String measurementId = seriesFilter.getSeriesPath().getMeasurementToString();
+		String deltaObjectId = seriesExpression.getSeriesPath().getDevice();
+		String measurementId = seriesExpression.getSeriesPath().getMeasurement();
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		LOGGER.debug("Get the FileNodeProcessor: filenode is {}, query.", fileNodeProcessor.getProcessorName());
 		try {
@@ -536,7 +535,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 			}
 			try {
-				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, seriesFilter.getFilter());
+				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, seriesExpression.getFilter());
 			} catch (FileNodeProcessorException e) {
 				LOGGER.error("Query error: the deltaObjectId {}, the measurementId {}", deltaObjectId, measurementId,
 						e);
@@ -544,26 +543,6 @@ public class FileNodeManager implements IStatistic, IService {
 			}
 			// return query structure
 			return queryDataSource;
-		} finally {
-			fileNodeProcessor.readUnlock();
-		}
-	}
-
-	/**
-	 * @param path
-	 *            : the column path
-	 * @param startTime
-	 *            : the startTime of index
-	 * @param endTime
-	 *            : the endTime of index
-	 * @throws FileNodeManagerException
-	 */
-	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
-		String deltaObjectId = path.getDevice();
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
-		try {
-			LOGGER.debug("Get the FileNodeProcessor: the filenode is {}, query.", fileNodeProcessor.getProcessorName());
-			return fileNodeProcessor.indexQuery(deltaObjectId, startTime, endTime);
 		} finally {
 			fileNodeProcessor.readUnlock();
 		}

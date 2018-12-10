@@ -1,6 +1,8 @@
 package cn.edu.tsinghua.iotdb.read.timegenerator;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 
@@ -13,17 +15,17 @@ import java.io.IOException;
  */
 public class IoTTimeGenerator implements TimeGenerator {
 
-    private QueryFilter queryFilter;
+    private IExpression expression;
     private Node operatorNode;
 
-    public IoTTimeGenerator(QueryFilter queryFilter) throws IOException, FileNodeManagerException {
-        this.queryFilter = queryFilter;
+    public IoTTimeGenerator(IExpression expression) throws IOException, FileNodeManagerException {
+        this.expression = expression;
         initNode();
     }
 
     private void initNode() throws IOException, FileNodeManagerException {
         NodeConstructor nodeConstructor = new NodeConstructor();
-        this.operatorNode = nodeConstructor.construct(queryFilter);
+        this.operatorNode = nodeConstructor.construct(expression);
     }
 
     @Override
@@ -34,5 +36,10 @@ public class IoTTimeGenerator implements TimeGenerator {
     @Override
     public long next() throws IOException {
         return operatorNode.next();
+    }
+
+    // TODO implement the optimization
+    @Override public Object getValue(Path path, long time) throws IOException {
+        return null;
     }
 }
