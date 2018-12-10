@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +24,6 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.utils.FileUtils;
-import cn.edu.tsinghua.tsfile.utils.RecordUtils;
-import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 

@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
