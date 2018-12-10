@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.IUnaryExpression;
 
 
-public class QueryFilterPrinter {
+public class ExpressionPrinter {
 
     private static final int MAX_DEPTH = 100;
     private static final char PREFIX_CHAR = '\t';

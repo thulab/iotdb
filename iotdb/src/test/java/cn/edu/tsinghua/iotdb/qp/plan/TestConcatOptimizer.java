@@ -95,7 +95,7 @@ public class TestConcatOptimizer {
         String inputSQL = "select s1 from root.laptop.d1 where s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(inputSQL);
         SeriesFilter seriesFilter = new SeriesFilter(new Path("root.laptop.d1.s1"), ValueFilter.lt(10));
-        assertEquals(seriesFilter.toString(), ((QueryPlan)plan).getQueryFilter().toString());
+        assertEquals(seriesFilter.toString(), ((QueryPlan)plan).getExpression().toString());
     }
 
 }

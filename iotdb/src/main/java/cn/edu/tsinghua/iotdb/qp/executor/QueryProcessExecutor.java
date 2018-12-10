@@ -75,7 +75,7 @@ public abstract class QueryProcessExecutor {
 
 		QueryExpression queryExpression = QueryExpression.create()
 				.setSelectSeries(queryPlan.getPaths())
-				.setQueryFilter(queryPlan.getQueryFilter());
+				.setQueryFilter(queryPlan.getExpression());
 
 		return queryEngine.query(queryExpression);
 	}

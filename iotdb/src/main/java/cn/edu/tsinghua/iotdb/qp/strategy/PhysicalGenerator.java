@@ -1,44 +1,28 @@
 package cn.edu.tsinghua.iotdb.qp.strategy;
 
 import cn.edu.tsinghua.iotdb.auth.AuthException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.GeneratePhysicalPlanException;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
-import cn.edu.tsinghua.iotdb.qp.executor.OverflowQPExecutor;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.*;
-import cn.edu.tsinghua.iotdb.qp.logical.index.KvMatchIndexQueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.LoadDataOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.MetadataOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.PropertyOperator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.*;
-import cn.edu.tsinghua.iotdb.qp.physical.index.KvMatchIndexQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.LoadDataPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.MetadataPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.filter.definition.FilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeriesType;
-import cn.edu.tsinghua.tsfile.read.filter.utils.LongInterval;
-import cn.edu.tsinghua.tsfile.read.filter.verifier.FilterVerifier;
-import cn.edu.tsinghua.tsfile.read.filter.verifier.LongFilterVerifier;
-import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,43 +100,11 @@ public class PhysicalGenerator {
             case QUERY:
                 QueryOperator query = (QueryOperator) operator;
                 return transformQuery(query);
-            case INDEX:
-                IndexOperator indexOperator = (IndexOperator) operator;
-                return new IndexPlan(indexOperator.getPath(), indexOperator.getParameters(),
-                        indexOperator.getStartTime(), indexOperator.getIndexOperatorType(), indexOperator.getIndexType());
-            case INDEXQUERY:
-                switch (((IndexQueryOperator) operator).getIndexType()) {
-                    case KvIndex:
-                        KvMatchIndexQueryOperator indexQueryOperator = (KvMatchIndexQueryOperator) operator;
-                        KvMatchIndexQueryPlan indexQueryPlan = new KvMatchIndexQueryPlan(indexQueryOperator.getPath(),
-                                indexQueryOperator.getPatternPath(), indexQueryOperator.getEpsilon(),
-                                indexQueryOperator.getStartTime(), indexQueryOperator.getEndTime());
-                        indexQueryPlan.setAlpha(indexQueryOperator.getAlpha());
-                        indexQueryPlan.setBeta(indexQueryOperator.getBeta());
-                        parseIndexTimeFilter(indexQueryOperator, indexQueryPlan);
-                        return indexQueryPlan;
-                    default:
-                        throw new LogicalOperatorException("not support index type:" + ((IndexQueryOperator) operator).getIndexType());
-                }
             default:
                 throw new LogicalOperatorException("not supported operator type: " + operator.getType());
         }
     }
 
-    private void parseIndexTimeFilter(IndexQueryOperator indexQueryOperator, IndexQueryPlan indexQueryPlan)
-            throws LogicalOperatorException {
-        FilterOperator filterOperator = indexQueryOperator.getFilterOperator();
-        if (filterOperator == null) {
-            indexQueryPlan.setInterval(new Pair<>(0L, Long.MAX_VALUE));
-            return;
-        }
-
-        List<Pair<Long, Long>> intervals = extractTimeIntervals(filterOperator);
-        if (intervals.size() != 1) {
-            throw new LogicalOperatorException("For index query statement, the time filter must be an interval and start time must be less than ene time.");
-        }
-        indexQueryPlan.setInterval(intervals.get(0));
-    }
 
     /**
      * for update command, time should have start and end time range.
@@ -279,138 +231,21 @@ public class PhysicalGenerator {
             queryPlan = new QueryPlan();
         }
 
+        // set selected paths
         List<Path> paths = queryOperator.getSelectedPaths();
         queryPlan.setPaths(paths);
+
+        // transform filter operator to expression
         FilterOperator filterOperator = queryOperator.getFilterOperator();
+
+
         if (filterOperator != null) {
-            List<FilterOperator> parts = splitFilter(queryOperator.getFilterOperator());
-            queryPlan.setQueryFilter(convertDNF2QueryFilter(parts));
+            IExpression expression = filterOperator.transformToQueryFilter(executor);
+            queryPlan.setExpression(expression);
         }
 
         queryPlan.checkPaths(executor);
         return queryPlan;
-    }
-
-
-    private QueryFilter convertDNF2QueryFilter(List<FilterOperator> parts) throws LogicalOperatorException, PathErrorException, GeneratePhysicalPlanException, ProcessorException {
-        QueryFilter ret = null;
-        List<QueryFilter> queryFilters = new ArrayList<>();
-        for (FilterOperator filter : parts) {
-            queryFilters.add(convertCNF2QueryFilter(filter));
-        }
-
-        for (QueryFilter queryFilter : queryFilters) {
-            if (ret == null) {
-                ret = queryFilter;
-            } else {
-                ret = QueryFilterFactory.or(ret, queryFilter);
-            }
-        }
-        return ret;
-    }
-
-    private QueryFilter convertCNF2QueryFilter(FilterOperator operator) throws LogicalOperatorException, PathErrorException, GeneratePhysicalPlanException, ProcessorException {
-
-        // e.g. time < 10 and time > 5 ,   time > 10
-        if (operator.isSingle() && operator.getSinglePath().toString().equalsIgnoreCase(SQLConstant.RESERVED_TIME)) {
-            return new GlobalTimeFilter(convertSingleFilterNode(operator));
-        } else {
-            if (operator.isSingle()) {  // e.g. s1 > 0 or s1 < 10
-                return new SeriesFilter<>(operator.getSinglePath(), convertSingleFilterNode(operator));
-            }
-
-            List<FilterOperator> children = operator.getChildren();
-            List<SeriesFilter> seriesFilters = new ArrayList<>();
-            Filter timeFilter = null;
-            List<Pair<Path, Filter>> series2Filters = new ArrayList<>();
-            for (FilterOperator child : children) {
-                if (!child.isSingle()) {
-                    throw new GeneratePhysicalPlanException(
-                            "in format:[(a) and () and ()] or [] or [], a is not single! a:" + child);
-                }
-                Filter currentFilter = convertSingleFilterNode(child);
-                if (child.getSinglePath().toString().equalsIgnoreCase(SQLConstant.RESERVED_TIME)) {
-                    if (timeFilter != null) {
-                        throw new GeneratePhysicalPlanException("time filter has been specified more than once");
-                    }
-                    timeFilter = currentFilter;
-                } else {
-                    series2Filters.add(new Pair<>(child.getSinglePath(), currentFilter));
-                }
-            }
-
-            if (timeFilter == null) {
-                for (Pair<Path, Filter> pair : series2Filters) {
-                    seriesFilters.add(new SeriesFilter(pair.left, pair.right));
-                }
-            } else {
-                for (Pair<Path, Filter> pair : series2Filters) {
-                    seriesFilters.add(new SeriesFilter(pair.left, FilterFactory.and(timeFilter, pair.right)));
-                }
-            }
-
-            QueryFilter ret = null;
-            for (SeriesFilter seriesFilter : seriesFilters) {
-                if (ret == null) {
-                    ret = seriesFilter;
-                } else {
-                    ret = QueryFilterFactory.and(ret, seriesFilter);
-                }
-            }
-            return ret;
-
-        }
-    }
-
-    private Filter convertSingleFilterNode(FilterOperator node) throws LogicalOperatorException, PathErrorException, ProcessorException {
-        if (node.isLeaf()) {
-            Path path = node.getSinglePath();
-            TSDataType type = executor.getSeriesType(path);
-            if (type == null) {
-                throw new PathErrorException("given path:{" + path.getFullPath() + "} doesn't exist in metadata");
-            }
-
-            BasicFunctionOperator basicOperator = (BasicFunctionOperator) node;
-            BasicOperatorType funcToken = BasicOperatorType.getBasicOpBySymbol(node.getTokenIntType());
-            boolean isTime = path.equals(SQLConstant.RESERVED_TIME);
-
-            // check value
-            String value = basicOperator.getValue();
-            if (!path.toString().equalsIgnoreCase(SQLConstant.RESERVED_TIME)) {
-                TSDataType dataType = executor.getSeriesType(path);
-                value = OverflowQPExecutor.checkValue(dataType, value);
-            }
-
-            switch (type) {
-                case BOOLEAN:
-                    return funcToken.getValueFilter(Boolean.valueOf(value));
-                case INT32:
-                    return funcToken.getValueFilter(Integer.valueOf(value));
-                case INT64:
-                    return isTime ? funcToken.getTimeFilter(Long.valueOf(value)) : funcToken.getValueFilter(Long.valueOf(value));
-                case FLOAT:
-                    return funcToken.getValueFilter(Float.valueOf(value));
-                case DOUBLE:
-                    return funcToken.getValueFilter(Double.valueOf(value));
-                case TEXT:
-                    return funcToken.getValueFilter(new Binary(value));
-                default:
-                    throw new LogicalOperatorException("not supported type: " + type);
-            }
-        } else {
-            int tokenIntType = node.getTokenIntType();
-            List<FilterOperator> children = node.getChildren();
-            switch (tokenIntType) {
-                case KW_AND:
-                    return FilterFactory.and(convertSingleFilterNode(children.get(0)), convertSingleFilterNode(children.get(1)));
-                case KW_OR:
-                    return FilterFactory.or(convertSingleFilterNode(children.get(0)), convertSingleFilterNode(children.get(1)));
-                default:
-                    throw new LogicalOperatorException("unknown binary tokenIntType:"
-                            + tokenIntType + ",maybe it means "
-                            + SQLConstant.tokenNames.get(tokenIntType));
-            }
-        }
     }
 
 

@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
-import cn.edu.tsinghua.tsfile.read.expression.util.QueryFilterOptimizer;
+import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionOptimizer;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
@@ -39,7 +39,7 @@ public class TsFileExecutor implements QueryExecutor {
         if (queryExpression.hasQueryFilter()) {
             try {
                 IExpression IExpression = queryExpression.getIExpression();
-                IExpression regularIExpression = QueryFilterOptimizer.getInstance().optimize(IExpression, queryExpression.getSelectedSeries());
+                IExpression regularIExpression = ExpressionOptimizer.getInstance().optimize(IExpression, queryExpression.getSelectedSeries());
                 queryExpression.setIExpression(regularIExpression);
 
                 if (regularIExpression instanceof GlobalTimeExpression) {

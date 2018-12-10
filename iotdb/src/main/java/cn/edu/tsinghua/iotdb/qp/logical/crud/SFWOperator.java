@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
-import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 import cn.edu.tsinghua.iotdb.qp.logical.RootOperator;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.List;
@@ -53,9 +51,8 @@ public abstract class SFWOperator extends RootOperator {
      * get information from SelectOperator and FromOperator and generate all table paths.
      * 
      * @return - a list of path
-     * @throws LogicalOperatorException
      */
-    public List<Path> getSelectedPaths() throws LogicalOperatorException {
+    public List<Path> getSelectedPaths() {
         List<Path> suffixPaths = null;
         if (selectOperator != null)
             suffixPaths = selectOperator.getSuffixPaths();

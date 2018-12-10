@@ -7,7 +7,7 @@ import cn.edu.tsinghua.iotdb.read.executor.QueryWithoutFilterExecutorImpl;
 import cn.edu.tsinghua.tsfile.read.filter.exception.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.read.expression.util.QueryFilterOptimizer;
+import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionOptimizer;
 import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.read.query.QueryExpression;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class QueryEngine {
         if (queryExpression.hasQueryFilter()) {
             try {
                 QueryFilter queryFilter = queryExpression.getQueryFilter();
-                QueryFilter regularQueryFilter = QueryFilterOptimizer.getInstance().convertGlobalTimeFilter(queryFilter, queryExpression.getSelectedSeries());
+                QueryFilter regularQueryFilter = ExpressionOptimizer.getInstance().convertGlobalTimeFilter(queryFilter, queryExpression.getSelectedSeries());
                 queryExpression.setQueryFilter(regularQueryFilter);
                 if (regularQueryFilter.getType() == QueryFilterType.GLOBAL_TIME) {
                     return QueryWithGlobalTimeFilterExecutorImpl.execute(queryExpression);

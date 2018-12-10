@@ -13,13 +13,13 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.List;
 
-public class QueryFilterOptimizer {
+public class ExpressionOptimizer {
 
     private static class QueryFilterOptimizerHelper {
-        private static final QueryFilterOptimizer INSTANCE = new QueryFilterOptimizer();
+        private static final ExpressionOptimizer INSTANCE = new ExpressionOptimizer();
     }
 
-    private QueryFilterOptimizer() {
+    private ExpressionOptimizer() {
 
     }
 
@@ -184,7 +184,7 @@ public class QueryFilterOptimizer {
         throw new UnsupportedOperationException("unrecognized QueryFilterOperatorType :" + type);
     }
 
-    public static QueryFilterOptimizer getInstance() {
+    public static ExpressionOptimizer getInstance() {
         return QueryFilterOptimizerHelper.INSTANCE;
     }
 }

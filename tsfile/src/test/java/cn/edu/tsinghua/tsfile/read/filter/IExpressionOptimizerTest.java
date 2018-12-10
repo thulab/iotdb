@@ -6,8 +6,8 @@ import cn.edu.tsinghua.tsfile.read.expression.impl.BinaryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
-import cn.edu.tsinghua.tsfile.read.expression.util.QueryFilterOptimizer;
-import cn.edu.tsinghua.tsfile.read.expression.util.QueryFilterPrinter;
+import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionOptimizer;
+import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionPrinter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import org.junit.After;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class IExpressionOptimizerTest {
 
-    private QueryFilterOptimizer queryFilterOptimizer = QueryFilterOptimizer.getInstance();
+    private ExpressionOptimizer expressionOptimizer = ExpressionOptimizer.getInstance();
     private List<Path> selectedSeries;
 
     @Before
@@ -43,12 +43,12 @@ public class IExpressionOptimizerTest {
         try {
             Filter timeFilter = TimeFilter.lt(100L);
             IExpression expression = new GlobalTimeExpression(timeFilter);
-            System.out.println(queryFilterOptimizer.optimize(expression, selectedSeries));
+            System.out.println(expressionOptimizer.optimize(expression, selectedSeries));
 
             IExpression expression2 = BinaryExpression.or(
                     BinaryExpression.and(new GlobalTimeExpression(TimeFilter.lt(50L)), new GlobalTimeExpression(TimeFilter.gt(10L))),
                     new GlobalTimeExpression(TimeFilter.gt(200L)));
-            QueryFilterPrinter.print(queryFilterOptimizer.optimize(expression2, selectedSeries));
+            ExpressionPrinter.print(expressionOptimizer.optimize(expression2, selectedSeries));
 
         } catch (QueryFilterOptimizationException e) {
             e.printStackTrace();
@@ -74,7 +74,7 @@ public class IExpressionOptimizerTest {
 
             IExpression expression = BinaryExpression.and(BinaryExpression.or(singleSeriesExp1, singleSeriesExp2), singleSeriesExp3);
             Assert.assertEquals(true, expression.toString().equals(
-                    queryFilterOptimizer.optimize(expression, selectedSeries).toString()));
+                    expressionOptimizer.optimize(expression, selectedSeries).toString()));
 
         } catch (QueryFilterOptimizationException e) {
             e.printStackTrace();
@@ -92,12 +92,12 @@ public class IExpressionOptimizerTest {
         Filter timeFilter = TimeFilter.lt(14001234L);
         IExpression globalTimeFilter = new GlobalTimeExpression(timeFilter);
         IExpression expression = BinaryExpression.and(BinaryExpression.or(singleSeriesExp1, singleSeriesExp2), globalTimeFilter);
-        QueryFilterPrinter.print(expression);
+        ExpressionPrinter.print(expression);
         try {
             String rightRet = "[[d2.s1:((value > 100 || value < 50) && time < 14001234)] || [d1.s2:((value > 100.5 || value < 50.6) && time < 14001234)]]";
-            IExpression regularFilter = queryFilterOptimizer.optimize(expression, selectedSeries);
+            IExpression regularFilter = expressionOptimizer.optimize(expression, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
-            QueryFilterPrinter.print(regularFilter);
+            ExpressionPrinter.print(regularFilter);
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
         }
@@ -116,12 +116,12 @@ public class IExpressionOptimizerTest {
         IExpression globalTimeFilter2 = new GlobalTimeExpression(timeFilter2);
 
         IExpression expression = BinaryExpression.or(BinaryExpression.and(singleSeriesExp1, globalTimeFilter), globalTimeFilter2);
-        QueryFilterPrinter.print(expression);
+        ExpressionPrinter.print(expression);
         try {
             String rightRet = "[[[[[d1.s1:time > 1] || [d2.s1:time > 1]] || [d1.s2:time > 1]] || [d2.s2:time > 1]] || [d2.s1:((value > 100 || value < 50) && time < 14001234)]]";
-            IExpression regularFilter = queryFilterOptimizer.optimize(expression, selectedSeries);
+            IExpression regularFilter = expressionOptimizer.optimize(expression, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
-            QueryFilterPrinter.print(regularFilter);
+            ExpressionPrinter.print(regularFilter);
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
         }
@@ -140,9 +140,9 @@ public class IExpressionOptimizerTest {
 
         try {
             String rightRet = "[d2.s1:((value > 100 || value < 50) && time < 14001234)]";
-            IExpression regularFilter = queryFilterOptimizer.optimize(expression, selectedSeries);
+            IExpression regularFilter = expressionOptimizer.optimize(expression, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
-            QueryFilterPrinter.print(regularFilter);
+            ExpressionPrinter.print(regularFilter);
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
         }
@@ -162,14 +162,14 @@ public class IExpressionOptimizerTest {
         Filter timeFilter = TimeFilter.lt(14001234L);
         IExpression globalTimeFilter = new GlobalTimeExpression(timeFilter);
         IExpression expression = BinaryExpression.or(BinaryExpression.or(singleSeriesExp1, singleSeriesExp2), globalTimeFilter);
-        QueryFilterPrinter.print(expression);
+        ExpressionPrinter.print(expression);
 
         try {
             String rightRet = "[[[[[d1.s1:time < 14001234] || [d2.s1:time < 14001234]] || [d1.s2:time < 14001234]] " +
                     "|| [d2.s2:time < 14001234]] || [[d2.s1:(value > 100 || value < 50)] || [d1.s2:(value > 100.5 || value < 50.6)]]]";
-            IExpression regularFilter = queryFilterOptimizer.optimize(expression, selectedSeries);
+            IExpression regularFilter = expressionOptimizer.optimize(expression, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
-            QueryFilterPrinter.print(regularFilter);
+            ExpressionPrinter.print(regularFilter);
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
         }
@@ -192,7 +192,7 @@ public class IExpressionOptimizerTest {
             String rightRet = "[[[[[d1.s1:(time < 14001234 && time > 14001000)] || [d2.s1:(time < 14001234 " +
                     "&& time > 14001000)]] || [d1.s2:(time < 14001234 && time > 14001000)]] || [d2.s2:(time < 14001234 " +
                     "&& time > 14001000)]] || [[d2.s1:(value > 100 || value < 50)] || [d1.s2:(value > 100.5 || value < 50.6)]]]";
-            IExpression regularFilter = queryFilterOptimizer.optimize(expression, selectedSeries);
+            IExpression regularFilter = expressionOptimizer.optimize(expression, selectedSeries);
             Assert.assertEquals(true, rightRet.equals(regularFilter.toString()));
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
@@ -204,17 +204,17 @@ public class IExpressionOptimizerTest {
         try {
             String rightRet2 = "[[d2.s1:((value > 100 || value < 50) && (time < 14001234 && time > 14001000))] || " +
                     "[d1.s2:((value > 100.5 || value < 50.6) && (time < 14001234 && time > 14001000))]]";
-            IExpression regularFilter2 = queryFilterOptimizer.optimize(expression2, selectedSeries);
+            IExpression regularFilter2 = expressionOptimizer.optimize(expression2, selectedSeries);
             Assert.assertEquals(true, rightRet2.equals(regularFilter2.toString()));
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
         }
 
         IExpression expression3 = BinaryExpression.or(expression2, expression);
-        QueryFilterPrinter.print(expression3);
+        ExpressionPrinter.print(expression3);
         try {
-            IExpression regularFilter3 = queryFilterOptimizer.optimize(expression3, selectedSeries);
-            QueryFilterPrinter.print(regularFilter3);
+            IExpression regularFilter3 = expressionOptimizer.optimize(expression3, selectedSeries);
+            ExpressionPrinter.print(regularFilter3);
         } catch (QueryFilterOptimizationException e) {
             Assert.fail();
         }

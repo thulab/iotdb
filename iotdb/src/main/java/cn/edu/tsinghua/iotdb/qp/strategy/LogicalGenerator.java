@@ -2,8 +2,6 @@ package cn.edu.tsinghua.iotdb.qp.strategy;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
-import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
-import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.constant.TSParserConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.IllegalASTFormatException;
@@ -14,13 +12,11 @@ import cn.edu.tsinghua.iotdb.qp.logical.crud.BasicFunctionOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.DeleteOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FromOperator;
-import cn.edu.tsinghua.iotdb.qp.logical.crud.IndexOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.InsertOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.QueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.SFWOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.SelectOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.UpdateOperator;
-import cn.edu.tsinghua.iotdb.qp.logical.index.KvMatchIndexQueryOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.AuthorOperator.AuthorType;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.LoadDataOperator;
@@ -34,11 +30,9 @@ import cn.edu.tsinghua.iotdb.sql.parse.ASTNode;
 import cn.edu.tsinghua.iotdb.sql.parse.Node;
 import cn.edu.tsinghua.iotdb.sql.parse.TSParser;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 import org.antlr.runtime.Token;
 import org.joda.time.DateTime;
@@ -146,9 +140,6 @@ public class LogicalGenerator {
                     case TSParser.TOK_PROPERTY:
                         analyzePropertyCreate(astNode);
                         break;
-                    case TSParser.TOK_INDEX:
-                        analyzeIndexCreate(astNode);
-                        break;
                     default:
                         break;
                 }
@@ -159,8 +150,6 @@ public class LogicalGenerator {
                     case TSParser.TOK_ROLE:
                         analyzeAuthorDrop(astNode);
                         break;
-                    case TSParser.TOK_INDEX:
-                        analyzeIndexDrop(astNode);
                 }
                 return;
             case TSParser.TOK_GRANT:
@@ -176,15 +165,8 @@ public class LogicalGenerator {
                 // for TSParser.TOK_QUERY might appear in both query and insert
                 // command. Thus, do
                 // nothing and call analyze() with children nodes recursively.
-                if (astNode.getChild(0).getType() == TSParser.TOK_SELECT_INDEX) {
-                    initializedOperator = new KvMatchIndexQueryOperator(SQLConstant.TOK_QUERY_INDEX);
-                    break;
-                }
                 initializedOperator = new QueryOperator(SQLConstant.TOK_QUERY);
                 break;
-            case TSParser.TOK_SELECT_INDEX:
-                analyzeIndexSelect(astNode);
-                return;
             case TSParser.TOK_LIST:
                 analyzeList(astNode);
                 return;
@@ -463,29 +445,6 @@ public class LogicalGenerator {
         ((DeleteOperator) initializedOperator).setTime(deleteTime);
     }
 
-    private long parseIndexTimeFilter(IndexOperator operator) throws LogicalOperatorException {
-        FilterOperator filterOperator = operator.getFilterOperator();
-        if (filterOperator == null) {
-            return 0;
-        }
-        if (!(filterOperator.isLeaf())) {
-            throw new LogicalOperatorException(
-                    "For delete command, where clause must be like : time < XXX or time <= XXX");
-        }
-        if (filterOperator.getTokenIntType() != GREATERTHAN
-                && filterOperator.getTokenIntType() != GREATERTHANOREQUALTO) {
-            throw new LogicalOperatorException(
-                    "For delete command, time filter must be less than or less than or equal to");
-        }
-        long time = Long.valueOf(((BasicFunctionOperator) filterOperator).getValue());
-        if (filterOperator.getTokenIntType() == GREATERTHAN) {
-            time = time + 1;
-        }
-        if (time < 0) {
-            throw new LogicalOperatorException("index Time:" + time + ", time must >= 0");
-        }
-        return time;
-    }
 
     /**
      * for delete command, time should only have an end time.
@@ -649,7 +608,7 @@ public class LogicalGenerator {
         ((QueryOperator) initializedOperator).setIntervals(intervals);
 
         //parse time origin
-        long originTime = 0;
+        long originTime;
         if (childCount == 3) {
             ASTNode originNode = astNode.getChild(1).getChild(0);
             if (originNode.getType() == TSParser.TOK_DATETIME) {
@@ -668,9 +627,6 @@ public class LogicalGenerator {
      * <p>
      * PreviousClause : PREVIOUS COMMA <ValidPreviousTime>
      * LinearClause : LINEAR COMMA <ValidPreviousTime> COMMA <ValidBehindTime>
-     *
-     * @param node
-     * @throws LogicalOperatorException
      */
     private void analyzeFill(ASTNode node) throws LogicalOperatorException {
         FilterOperator filterOperator = ((SFWOperator) initializedOperator).getFilterOperator();
@@ -733,10 +689,6 @@ public class LogicalGenerator {
 
     /**
      * parse datatype node
-     *
-     * @param typeNode
-     * @return TSDataType
-     * @throws LogicalOperatorException
      */
     private TSDataType parseTypeNode(ASTNode typeNode) throws LogicalOperatorException {
         String type = typeNode.getText().toLowerCase();
@@ -1063,12 +1015,6 @@ public class LogicalGenerator {
                             String.format("encoding %s does not support %s", encoding, dataType));
                 }
                 break;
-//		case ENUMS:
-//			if ((!encoding.equals(PLAIN) && !encoding.equals(BITMAP))) {
-//				throw new MetadataArgsErrorException(
-//						String.format("encoding %s does not support %s", encoding, dataType));
-//			}
-//			break;
             case TEXT:
                 if (!encoding.equals(PLAIN)) {
                     throw new MetadataArgsErrorException(
@@ -1080,120 +1026,5 @@ public class LogicalGenerator {
         }
     }
 
-
-    private Map<String, Integer> parseIndexWithParameters(ASTNode astNode) {
-        Map<String, Integer> indexParameters = new HashMap<String, Integer>();
-        for (int i = 0; i < astNode.getChildCount(); i++) {
-            ASTNode child = astNode.getChild(i);
-            String key = child.getChild(0).getText();
-            Integer value = Integer.valueOf(child.getChild(1).getText());
-            indexParameters.put(key, value);
-        }
-        return indexParameters;
-    }
-
-    private void analyzeIndexCreate(ASTNode astNode) throws LogicalOperatorException {
-        ASTNode indexNode = astNode.getChild(0);
-        Path path = parsePath(indexNode.getChild(0));
-        ASTNode funcNode = indexNode.getChild(1);
-        String indexName = funcNode.getChild(0).getText();
-        IndexType indexType = null;
-        try {
-            indexType = IndexType.getIndexType(indexName);
-        } catch (IndexManagerException e) {
-            throw new LogicalOperatorException(e.getMessage());
-        }
-        IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_CREATE_INDEX, IndexOperator.IndexOperatorType.CREATE_INDEX, indexType);
-        initializedOperator = indexOperator;
-        indexOperator.setPath(path);
-        int childCount = funcNode.getChildCount();
-        // the first child is index name, when child count > 1, the rest nodes represent parameters and where clause
-        if (childCount > 1) {
-            for (int i = 1; i < childCount; i++) {
-                ASTNode child = funcNode.getChild(i);
-                if (child.getToken().getType() == TSParser.TOK_WITH) {
-                    Map<String, Integer> indexParameters = parseIndexWithParameters(child);
-                    indexOperator.setParameters(indexParameters);
-                } else if (child.getToken().getType() == TSParser.TOK_WHERE) {
-                    analyzeWhere(child);
-                } else {
-                    throw new LogicalOperatorException(
-                            String.format("Not support keyword %s in create index", child.getToken().getText()));
-                }
-            }
-        }
-        
-        //further process index operator
-        switch (indexType) {
-            case KvIndex:
-                long indexTime = parseIndexTimeFilter((IndexOperator) initializedOperator);
-                indexOperator.setStartTime(indexTime);
-                break;
-            default:
-                throw new LogicalOperatorException(
-                        String.format("Not support the index %s", indexName));
-        }
-    }
-
-    private void analyzeIndexDrop(ASTNode astNode) throws LogicalOperatorException {
-        ASTNode indexNode = astNode.getChild(0);
-        Path path = parsePath(indexNode.getChild(0));
-        ASTNode funcNode = indexNode.getChild(1);
-        String indexName = funcNode.getChild(0).getText();
-        IndexType indexType;
-        try {
-            indexType = IndexType.getIndexType(indexName);
-        } catch (IndexManagerException e) {
-            throw new LogicalOperatorException(e.getMessage());
-        }
-        IndexOperator indexOperator = new IndexOperator(SQLConstant.TOK_DROP_INDEX, IndexOperator.IndexOperatorType.DROP_INDEX, indexType);
-        indexOperator.setPath(path);
-        initializedOperator = indexOperator;
-    }
-
-    private void analyzeIndexSelect(ASTNode astNode) throws LogicalOperatorException {
-//        astNode = astNode.getChild(0);
-        String indexQueryName = astNode.getChild(0).getText().toLowerCase();
-        switch (indexQueryName) {
-            case "kvindex":
-                KvMatchIndexQueryOperator indexQuery = new KvMatchIndexQueryOperator(SQLConstant.TOK_QUERY_INDEX);;
-                Path path = parsePath(astNode.getChild(1));
-                indexQuery.setPath(path);
-                path = parsePath(astNode.getChild(2));
-                indexQuery.setPatternPath(path);
-                long startTime;
-                long endTime;
-                if (astNode.getChild(3).getType() == TSParser.TOK_DATETIME) {
-                    startTime = Long.valueOf(parseTokenTime(astNode.getChild(3)));
-                } else {
-                    startTime = Long.valueOf(astNode.getChild(3).getText());
-                }
-                if (astNode.getChild(4).getType() == TSParser.TOK_DATETIME) {
-                    endTime = Long.valueOf(parseTokenTime(astNode.getChild(4)));
-                } else {
-                    endTime = Long.valueOf(astNode.getChild(4).getText());
-                }
-
-                if (startTime > endTime || startTime <= 0) {
-                    throw new LogicalOperatorException(
-                            String.format("The start time should be greater than the end time. (%s < %s)", startTime, endTime));
-                }
-                indexQuery.setStartTime(startTime);
-                indexQuery.setEndTime(endTime);
-                double epsilon = Float.valueOf(astNode.getChild(5).getText());
-                indexQuery.setEpsilon(epsilon);
-                if (astNode.getChildCount() > 6) {
-                    double alpha = Float.valueOf(astNode.getChild(6).getText());
-                    double beta = Float.valueOf(astNode.getChild(7).getText());
-                    indexQuery.setAlpha(alpha);
-                    indexQuery.setBeta(beta);
-                }
-                initializedOperator = indexQuery;
-                break;
-            default:
-                throw new LogicalOperatorException(String.format(
-                        "Not support the index query %s, only support subsequence_matching(subm).", indexQueryName));
-        }
-    }
 
 }
