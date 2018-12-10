@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.performance;
 
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
@@ -12,12 +12,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.write.desc.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

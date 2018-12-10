@@ -38,9 +38,9 @@ public class TsFileExecutor implements QueryExecutor {
 
         if (queryExpression.hasQueryFilter()) {
             try {
-                IExpression IExpression = queryExpression.getIExpression();
+                IExpression IExpression = queryExpression.getExpression();
                 IExpression regularIExpression = QueryFilterOptimizer.getInstance().optimize(IExpression, queryExpression.getSelectedSeries());
-                queryExpression.setIExpression(regularIExpression);
+                queryExpression.setExpression(regularIExpression);
 
                 if (regularIExpression instanceof GlobalTimeExpression) {
                     return execute(queryExpression.getSelectedSeries(), (GlobalTimeExpression) regularIExpression);

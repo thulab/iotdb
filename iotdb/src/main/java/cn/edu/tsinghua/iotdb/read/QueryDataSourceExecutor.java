@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.filter.operator.NoRestriction;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 public class QueryDataSourceExecutor {

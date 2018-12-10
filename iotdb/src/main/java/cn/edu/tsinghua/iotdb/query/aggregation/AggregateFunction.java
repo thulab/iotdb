@@ -1,11 +1,11 @@
 package cn.edu.tsinghua.iotdb.query.aggregation;
 
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.format.PageHeader;
 import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.utils.Binary;
 
 import java.io.IOException;
 import java.util.List;
@@ -101,7 +101,6 @@ public abstract class AggregateFunction {
                 case BOOLEAN:
                     resultData.putBoolean(Boolean.parseBoolean(valueStr));
                     break;
-                case ENUMS:
                 case TEXT:
                     resultData.putBinary(new Binary(valueStr));
                     break;

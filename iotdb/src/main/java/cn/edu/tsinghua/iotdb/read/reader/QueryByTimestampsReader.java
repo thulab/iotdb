@@ -8,9 +8,8 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderBy
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithOverflowOpReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 
@@ -18,7 +17,7 @@ import java.io.IOException;
  * A reader that can get the corresponding value of the specified time point.
  * It has considered sequence insert data, overflow data.
  *
- * TODO: updata and delete operation.
+ * TODO: update and delete operation.
  * */
 public class QueryByTimestampsReader implements SeriesReaderByTimeStamp {
 

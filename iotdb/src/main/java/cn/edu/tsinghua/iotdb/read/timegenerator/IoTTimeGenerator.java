@@ -1,8 +1,7 @@
 package cn.edu.tsinghua.iotdb.read.timegenerator;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimestampGenerator;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 
 import java.io.IOException;
@@ -12,12 +11,12 @@ import java.io.IOException;
  * e.g. For query clause "select s1, s2 form root where s3 < 0 and time > 100"，
  * this class can iterate back to every timestamp of the query.
  */
-public class TimeGenerator implements TimestampGenerator {
+public class IoTTimeGenerator implements TimeGenerator {
 
     private QueryFilter queryFilter;
     private Node operatorNode;
 
-    public TimeGenerator(QueryFilter queryFilter) throws IOException, FileNodeManagerException {
+    public IoTTimeGenerator(QueryFilter queryFilter) throws IOException, FileNodeManagerException {
         this.queryFilter = queryFilter;
         initNode();
     }

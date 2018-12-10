@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimestampGenerator;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
 

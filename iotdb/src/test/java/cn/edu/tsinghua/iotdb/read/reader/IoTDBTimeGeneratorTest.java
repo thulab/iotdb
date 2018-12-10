@@ -2,18 +2,17 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.timegenerator.TimeGenerator;
+import cn.edu.tsinghua.iotdb.read.timegenerator.IoTTimeGenerator;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +23,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class IoTDBTimeGeneratorTest {
     private static final String TIMESTAMP_STR = "Time";
@@ -125,8 +122,8 @@ public class IoTDBTimeGeneratorTest {
         ValueFilter.ValueGtEq  valueGtEq = ValueFilter.gtEq(14);
         TimeFilter.TimeGt timeGt = TimeFilter.gt((long)500);
 
-        QueryFilter queryFilter = new SeriesFilter(pd0s0, new cn.edu.tsinghua.tsfile.timeseries.filterV2.operator.And( valueGtEq, timeGt));
-        TimeGenerator timeGenerator = new TimeGenerator(queryFilter);
+        SingleSeriesExpression queryFilter = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
+        IoTTimeGenerator timeGenerator = new IoTTimeGenerator(queryFilter);
         System.out.println("root.vehicle.d0.s0 >= 14 && time > 500 ");
         int cnt = 0;
         while(timeGenerator.hasNext()){
@@ -146,7 +143,7 @@ public class IoTDBTimeGeneratorTest {
         ValueFilter.ValueGtEq  valueGtEq = ValueFilter.gtEq(5);
 
         QueryFilter queryFilter = new SeriesFilter(pd1s0, valueGtEq);
-        TimeGenerator timeGenerator = new TimeGenerator(queryFilter);
+        IoTTimeGenerator timeGenerator = new IoTTimeGenerator(queryFilter);
         System.out.println("root.vehicle.d1.s0 >= 5");
         int cnt = 0;
         while(timeGenerator.hasNext()){
@@ -173,7 +170,7 @@ public class IoTDBTimeGeneratorTest {
         SeriesFilter seriesFilterd0s2 = new SeriesFilter(pd0s2, new cn.edu.tsinghua.tsfile.timeseries.filterV2.operator.Or( valueGtEq11, timeGt));
 
         QueryFilter queryFilter = QueryFilterFactory.and(seriesFilterd0s0, seriesFilterd0s2);
-        TimeGenerator timeGenerator = new TimeGenerator(queryFilter);
+        IoTTimeGenerator timeGenerator = new IoTTimeGenerator(queryFilter);
         System.out.println("root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
         int cnt = 0;
         while(timeGenerator.hasNext()){
