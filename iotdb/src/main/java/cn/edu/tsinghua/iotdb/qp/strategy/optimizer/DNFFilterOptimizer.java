@@ -9,6 +9,7 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 
+
 public class DNFFilterOptimizer implements IFilterOptimizer {
 
     /**

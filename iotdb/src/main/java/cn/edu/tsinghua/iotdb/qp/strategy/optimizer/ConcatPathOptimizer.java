@@ -19,8 +19,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * concat paths in select and from clause
- *
- * @author kangrong
  */
 public class ConcatPathOptimizer implements ILogicalOptimizer {
     private static final Logger LOG = LoggerFactory.getLogger(ConcatPathOptimizer.class);

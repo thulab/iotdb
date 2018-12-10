@@ -5,9 +5,6 @@ import cn.edu.tsinghua.iotdb.qp.logical.crud.UpdateOperator;
 /**
  * This exception is threw while meeting error in
  * {@linkplain UpdateOperator UpdateOperator}
- * 
- * @author kangrong
- *
  */
 public class GeneratePhysicalPlanException extends QueryProcessorException {
 

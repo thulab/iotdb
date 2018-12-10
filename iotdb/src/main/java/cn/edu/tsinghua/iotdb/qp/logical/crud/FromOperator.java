@@ -10,9 +10,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * this class maintains information from {@code FROM} clause
- * 
- * @author kangrong
- *
  */
 public class FromOperator extends Operator {
     private List<Path> prefixList;

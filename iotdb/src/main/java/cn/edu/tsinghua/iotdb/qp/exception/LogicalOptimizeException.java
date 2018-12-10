@@ -2,9 +2,6 @@ package cn.edu.tsinghua.iotdb.qp.exception;
 
 /**
  * This exception is thrown while meeting error in optimizing logical operator
- *
- * @author qiaojialin
- *
  */
 public class LogicalOptimizeException extends LogicalOperatorException {
 

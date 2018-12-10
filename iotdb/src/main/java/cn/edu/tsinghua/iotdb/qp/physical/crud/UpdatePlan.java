@@ -12,10 +12,7 @@ import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
 import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.lineFeedSignal;
 
-/**
- * @author kangrong
- * @author qiaojialin
- */
+
 public class UpdatePlan extends PhysicalPlan {
 	private List<Pair<Long, Long>> intervals = new ArrayList<>();
     private String value;

@@ -5,9 +5,6 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 
 /**
  * provide a context, transform it for optimization.
- * 
- * @author kangrong
- *
  */
 public interface ILogicalOptimizer {
 

@@ -14,8 +14,6 @@ import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
 /**
  * basic operator includes < > >= <= !=.
- *
- * @author kangrong
  */
 public class BasicFunctionOperator extends FunctionOperator {
     private Logger LOG = LoggerFactory.getLogger(BasicFunctionOperator.class);

@@ -24,10 +24,6 @@ import cn.edu.tsinghua.tsfile.utils.StringContainer;
  * {@link Operator} .<br>
  * it may consist of more than two child FilterOperator, but if it's not leaf operator, the relation
  * is same among all of its children.(AND or OR). It's identified by tokenType.
- *
- * @author kangrong
- * @author qiaojialin
- *
  */
 public class FilterOperator extends Operator implements Comparable<FilterOperator> {
     // it is the symbol of token. e.g. AND is & and OR is |

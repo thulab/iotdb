@@ -28,9 +28,6 @@ import org.joda.time.DateTimeZone;
 
 /**
  * provide a integration method for other user.
- *
- * @author kangrong
- * @author qiaojialin
  */
 public class QueryProcessor {
 

@@ -8,11 +8,7 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.MetadataOperator;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
-/**
- *
- * @author kangrong
- * @author qiaojialin
- */
+
 public class MetadataPlan extends PhysicalPlan {
 	private final MetadataOperator.NamespaceType namespaceType;
 	private Path path;

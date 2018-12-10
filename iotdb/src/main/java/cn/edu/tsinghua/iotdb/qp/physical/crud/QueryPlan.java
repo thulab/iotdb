@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.List;

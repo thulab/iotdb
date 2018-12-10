@@ -21,8 +21,6 @@ import java.util.Map;
  * multi-pass SeriesSelectPlans.
  *
  * @see SingleQueryPlan
- * @author kangrong
- * @author qiaojialin
  */
 public class MultiQueryPlan extends PhysicalPlan {
     private static Logger LOG = LoggerFactory.getLogger(MultiQueryPlan.class);

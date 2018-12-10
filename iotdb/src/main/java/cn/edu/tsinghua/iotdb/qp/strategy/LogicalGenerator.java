@@ -54,9 +54,6 @@ import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.*;
 /**
  * This class receives an ASTNode and transform it to an operator which is a
  * logical plan
- *
- * @author kangrong
- * @author qiaojialin
  */
 public class LogicalGenerator {
     private Logger LOG = LoggerFactory.getLogger(LogicalGenerator.class);

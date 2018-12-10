@@ -10,9 +10,6 @@ import java.util.List;
 /**
  * SFWOperator(select-from-where) includes four subclass: INSERT,DELETE,UPDATE,QUERY. All of these four statements has
  * three partition: select clause, from clause and filter clause(where clause).
- * 
- * @author kangrong
- *
  */
 public abstract class SFWOperator extends RootOperator {
 

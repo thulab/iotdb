@@ -15,9 +15,6 @@ import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
  * list of {@code SingleQueryPlan}.<br>
  * This class merge row record data set from a list of {@code Iterator<RowRecord>} provided by
  * {@code SingleQueryPlan} according to the time ascending, using <em>minimum heap</em>
- *
- * @author kangrong
- *
  */
 public class MergeQuerySetIterator implements Iterator<QueryDataSet> {
     private final int mergeFetchSize;
