@@ -7,10 +7,10 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoader;
 import java.io.IOException;
 
 
-public class SeriesChunkLoaderIoTDBImpl implements SeriesChunkLoader{
+public class SeriesChunkLoaderIoTDBImpl implements SeriesChunkLoader {
 
-    @Override
-    public SeriesChunk getMemSeriesChunk(EncodedSeriesChunkDescriptor encodedSeriesChunkDescriptor) throws IOException {
-        return null;
-    }
+  @Override
+  public SeriesChunk getMemSeriesChunk(EncodedSeriesChunkDescriptor encodedSeriesChunkDescriptor) throws IOException {
+    return null;
+  }
 }

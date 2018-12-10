@@ -11,10 +11,6 @@ import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.pool.MergeManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import cn.edu.tsinghua.iotdb.exception.*;
-import cn.edu.tsinghua.iotdb.index.IndexManager;
-import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
-import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
-import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
@@ -37,15 +33,14 @@ import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.write.page.IPageWriter;
 import cn.edu.tsinghua.tsfile.write.page.PageWriterImpl;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint.LongDataPoint;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-import cn.edu.tsinghua.tsfile.write.schema.converter.JsonConverter;
+import cn.edu.tsinghua.tsfile.write.schema.JsonConverter;
 import cn.edu.tsinghua.tsfile.write.series.SeriesWriterImpl;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -693,21 +688,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				bufferwritedata.left);
 		return new QueryDataSource(globalSortedSeriesDataSource, overflowSeriesDataSource);
 
-	}
-
-	public List<DataFileInfo> indexQuery(String deltaObjectId, long startTime, long endTime) {
-		List<DataFileInfo> dataFileInfos = new ArrayList<>();
-		for (IntervalFileNode intervalFileNode : newFileNodes) {
-			if (intervalFileNode.isClosed()) {
-				long s1 = intervalFileNode.getStartTime(deltaObjectId);
-				long e1 = intervalFileNode.getEndTime(deltaObjectId);
-				if (e1 >= startTime && (s1 <= endTime || endTime == -1)) {
-					DataFileInfo dataFileInfo = new DataFileInfo(s1, e1, intervalFileNode.getFilePath());
-					dataFileInfos.add(dataFileInfo);
-				}
-			}
-		}
-		return dataFileInfos;
 	}
 
 	/**

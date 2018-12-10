@@ -2,8 +2,8 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
 import cn.edu.tsinghua.tsfile.read.reader.TimeValuePairReader;
