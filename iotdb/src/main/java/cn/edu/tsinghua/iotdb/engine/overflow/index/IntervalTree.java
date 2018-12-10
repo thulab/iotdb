@@ -1,19 +1,10 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.index;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowOpType;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TimePair;
 import cn.edu.tsinghua.iotdb.exception.OverflowWrongParameterException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.ReadWriteStreamUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory;
@@ -22,6 +13,14 @@ import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeriesTy
 import cn.edu.tsinghua.tsfile.read.filter.utils.LongInterval;
 import cn.edu.tsinghua.tsfile.read.filter.verifier.FilterVerifier;
 import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * IntervalTree is a data structure implemented used Treap. </br>
