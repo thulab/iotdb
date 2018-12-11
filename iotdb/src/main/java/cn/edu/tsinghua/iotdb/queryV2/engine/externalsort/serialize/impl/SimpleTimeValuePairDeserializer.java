@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePairDeserializer;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 
 import java.io.*;
 
@@ -32,10 +32,10 @@ public class SimpleTimeValuePairDeserializer implements TimeValuePairDeserialize
         }
     }
 
-    @Override
-    public void skipCurrentTimeValuePair() throws IOException {
-        next();
-    }
+//    @Override
+//    public void skipCurrentTimeValuePair() throws IOException {
+//        next();
+//    }
 
     /**
      * This method will delete

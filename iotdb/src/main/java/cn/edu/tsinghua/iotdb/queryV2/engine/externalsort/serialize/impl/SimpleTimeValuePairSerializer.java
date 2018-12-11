@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePairSerializer;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 
 import java.io.*;
 

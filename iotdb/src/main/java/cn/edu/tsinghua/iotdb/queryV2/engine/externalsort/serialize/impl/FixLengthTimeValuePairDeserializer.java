@@ -4,6 +4,7 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePair
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.utils.Binary;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 
 import java.io.*;
@@ -35,11 +36,6 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
     @Override
     public TimeValuePair next() throws IOException {
         return reader.read(inputStream);
-    }
-
-    @Override
-    public void skipCurrentTimeValuePair() throws IOException {
-        next();
     }
 
     @Override
