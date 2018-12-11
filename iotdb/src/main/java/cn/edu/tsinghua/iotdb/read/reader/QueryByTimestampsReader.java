@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderByTimestamp;
@@ -19,7 +18,7 @@ import java.io.IOException;
  *
  * TODO: update and delete operation.
  * */
-public class QueryByTimestampsReader implements SeriesReaderByTimeStamp {
+public class QueryByTimestampsReader {
 
     private SeriesWithOverflowOpReader seriesWithOverflowOpReader;
 

@@ -1,18 +1,21 @@
 package cn.edu.tsinghua.iotdb.read;
 
+import cn.edu.tsinghua.iotdb.read.reader.QueryByTimestampsReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
 public class QueryDataSetForQueryWithQueryFilterImpl extends QueryDataSet {
 
-    private TimestampGenerator timestampGenerator;
-    private LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries;
+    private TimeGenerator timestampGenerator;
+    private LinkedHashMap<Path, QueryByTimestampsReader> readersOfSelectedSeries;
 
-    public QueryDataSetForQueryWithQueryFilterImpl(TimestampGenerator timestampGenerator, LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries){
+    public QueryDataSetForQueryWithQueryFilterImpl(TimeGenerator timestampGenerator, LinkedHashMap<Path, QueryByTimestampsReader> readersOfSelectedSeries){
+        super(null, null);
         this.timestampGenerator = timestampGenerator;
         this.readersOfSelectedSeries = readersOfSelectedSeries;
     }
@@ -27,8 +30,8 @@ public class QueryDataSetForQueryWithQueryFilterImpl extends QueryDataSet {
         long timestamp = timestampGenerator.next();
         RowRecord rowRecord = new RowRecord(timestamp);
         for (Path path : readersOfSelectedSeries.keySet()) {
-            SeriesReaderByTimeStamp seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
-            rowRecord.putField(path, seriesReaderByTimestamp.getValueInTimestamp(timestamp));
+            QueryByTimestampsReader seriesReaderByTimestamp = readersOfSelectedSeries.get(path);
+//            rowRecord.addField(path, seriesReaderByTimestamp.getValueInTimestamp(timestamp));
         }
         return rowRecord;
     }
