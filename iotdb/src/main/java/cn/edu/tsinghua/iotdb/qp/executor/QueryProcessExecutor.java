@@ -4,17 +4,14 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
-import cn.edu.tsinghua.iotdb.qp.executor.iterator.QueryDataSetIterator;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.SingleQueryPlan;
-import cn.edu.tsinghua.iotdb.query.management.FilterStructure;
-import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.iotdb.read.QueryEngine;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 
@@ -29,56 +26,61 @@ public abstract class QueryProcessExecutor {
 	public QueryProcessExecutor() {
 	}
 
-	public abstract TSDataType getSeriesType(Path fullPath) throws PathErrorException;
-
-	public abstract boolean judgePathExists(Path fullPath);
-
-
-	//process MultiQueryPlan
-	public QueryDataSet processQuery(PhysicalPlan plan) throws QueryProcessorException, IOException, FileNodeManagerException {
-//		if(plan instanceof IndexQueryPlan){
-//			return ((IndexQueryPlan) plan).fetchQueryDateSet(getFetchSize());
-//		}
-
-		if(plan instanceof MultiQueryPlan) {
-			MultiQueryPlan mergeQuery = (MultiQueryPlan) plan;
-			List<SingleQueryPlan> selectPlans = mergeQuery.getSingleQueryPlans();
-
-			switch (mergeQuery.getType()) {
-				case GROUPBY:
-					return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(),
-							mergeQuery.getAggregations(), getFilterStructure(selectPlans),
-							mergeQuery.getUnit(), mergeQuery.getOrigin(), mergeQuery.getIntervals(), this);
-
-				case AGGREGATION:
-					try {
-						return aggregate(getAggrePair(mergeQuery.getPaths(), mergeQuery.getAggregations()), getFilterStructure(selectPlans));
-					} catch (Exception e) {
-						throw new QueryProcessorException("meet error in get QueryDataSet because " + e.getMessage());
-					}
-				case FILL:
-					try {
-						return fill(mergeQuery.getPaths(), mergeQuery.getQueryTime(), mergeQuery.getFillType());
-					} catch (Exception e) {
-						throw new QueryProcessorException("meet error in get QueryDataSet because " + e.getMessage());
-					}
-				default:
-					throw new UnsupportedOperationException();
-			}
-		} else {
-			return processQueryV2(plan);
-		}
-	}
-
-	public QueryDataSet processQueryV2(PhysicalPlan plan) throws QueryProcessorException, IOException, FileNodeManagerException {
+	public QueryDataSet processQuery(PhysicalPlan plan) throws IOException, FileNodeManagerException {
 		QueryPlan queryPlan = (QueryPlan) plan;
 
 		QueryExpression queryExpression = QueryExpression.create()
 				.setSelectSeries(queryPlan.getPaths())
-				.setQueryFilter(queryPlan.getExpression());
+				.setExpression(queryPlan.getExpression());
 
 		return queryEngine.query(queryExpression);
 	}
+
+	public abstract TSDataType getSeriesType(Path fullPath) throws PathErrorException;
+
+	public abstract boolean judgePathExists(Path fullPath);
+
+	public boolean processNonQuery(PhysicalPlan plan) throws ProcessorException {
+		throw new UnsupportedOperationException();
+	}
+
+	//process MultiQueryPlan
+//	public QueryDataSet processQuery(PhysicalPlan plan) throws QueryProcessorException, IOException, FileNodeManagerException {
+//////		if(plan instanceof IndexQueryPlan){
+//////			return ((IndexQueryPlan) plan).fetchQueryDateSet(getFetchSize());
+//////		}
+////
+////		if(plan instanceof MultiQueryPlan) {
+////			MultiQueryPlan mergeQuery = (MultiQueryPlan) plan;
+////			List<SingleQueryPlan> selectPlans = mergeQuery.getSingleQueryPlans();
+////
+////			switch (mergeQuery.getType()) {
+////				case GROUPBY:
+////					return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(),
+////							mergeQuery.getAggregations(), getFilterStructure(selectPlans),
+////							mergeQuery.getUnit(), mergeQuery.getOrigin(), mergeQuery.getIntervals(), this);
+////
+////				case AGGREGATION:
+////					try {
+////						return aggregate(getAggrePair(mergeQuery.getPaths(), mergeQuery.getAggregations()), getFilterStructure(selectPlans));
+////					} catch (Exception e) {
+////						throw new QueryProcessorException("meet error in get QueryDataSet because " + e.getMessage());
+////					}
+////				case FILL:
+////					try {
+////						return fill(mergeQuery.getPaths(), mergeQuery.getQueryTime(), mergeQuery.getFillType());
+////					} catch (Exception e) {
+////						throw new QueryProcessorException("meet error in get QueryDataSet because " + e.getMessage());
+////					}
+////				default:
+////					throw new UnsupportedOperationException();
+////			}
+////		} else {
+////			return processQuery(plan);
+////		}
+////	}
+
+
 
 
 	//TODO 改 aggres 的结构
@@ -94,19 +96,17 @@ public abstract class QueryProcessExecutor {
 		return aggres;
 	}
 
-	public boolean processNonQuery(PhysicalPlan plan) throws ProcessorException {
-		throw new UnsupportedOperationException();
-	}
 
-	private List<FilterStructure> getFilterStructure(List<SingleQueryPlan> selectPlans) {
-		List<FilterStructure> filterStructures = new ArrayList<>();
-		for(SingleQueryPlan selectPlan: selectPlans) {
-			FilterExpression[] expressions = selectPlan.getFilters();
-			FilterStructure filterStructure = new FilterStructure(expressions[0], expressions[1], expressions[2]);
-			filterStructures.add(filterStructure);
-		}
-		return filterStructures;
-	}
+
+//	private List<FilterStructure> getFilterStructure(List<SingleQueryPlan> selectPlans) {
+//		List<FilterStructure> filterStructures = new ArrayList<>();
+//		for(SingleQueryPlan selectPlan: selectPlans) {
+//			FilterExpression[] expressions = selectPlan.getFilters();
+//			FilterStructure filterStructure = new FilterStructure(expressions[0], expressions[1], expressions[2]);
+//			filterStructures.add(filterStructure);
+//		}
+//		return filterStructures;
+//	}
 
 	public void setFetchSize(int fetchSize) {
 		this.fetchSize.set(fetchSize);
@@ -119,22 +119,20 @@ public abstract class QueryProcessExecutor {
 		return fetchSize.get();
 	}
 
-	public abstract QueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
+	public abstract QueryDataSet aggregate(List<Pair<Path, String>> aggres, IExpression expression)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet groupBy(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures,
+	public abstract QueryDataSet groupBy(List<Pair<Path, String>> aggres, IExpression expression,
 										 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
 			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
-			throws ProcessorException, IOException, PathErrorException;
+//	public abstract QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
+//			throws ProcessorException, IOException, PathErrorException;
 
-	public abstract OnePassQueryDataSet query(int formNumber, List<Path> paths, FilterExpression timeFilter, FilterExpression freqFilter,
-			FilterExpression valueFilter, int fetchSize, OnePassQueryDataSet lastData) throws ProcessorException;
 
 	/**
 	 * execute update command and return whether the operator is successful.
-	 * 
+	 *
 	 * @param path
 	 *            : update series path
 	 * @param startTime
@@ -222,7 +220,7 @@ public abstract class QueryProcessExecutor {
 	 * @return - Operate Type.
 	 */
 	public abstract int multiInsert(String deltaObject, long insertTime, List<String> measurementList,
-			List<String> insertValues) throws ProcessorException;
+									List<String> insertValues) throws ProcessorException;
 
 
 	public abstract List<String> getAllPaths(String originPath) throws PathErrorException;

@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp.physical.crud;
 
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;

@@ -6,7 +6,7 @@ import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.KW_OR;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
+import cn.edu.tsinghua.iotdb.exception.qp.LogicalOptimizeException;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 
 

@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
-import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
+import cn.edu.tsinghua.iotdb.exception.qp.LogicalOperatorException;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.tsfile.read.expression.IUnaryExpression;

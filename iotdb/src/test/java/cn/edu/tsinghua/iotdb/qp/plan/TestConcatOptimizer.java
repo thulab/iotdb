@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.qp.plan;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.qp.utils.MemIntQpExecutor;

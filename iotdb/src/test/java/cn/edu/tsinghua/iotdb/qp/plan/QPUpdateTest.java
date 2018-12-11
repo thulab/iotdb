@@ -18,7 +18,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 import org.junit.After;
 
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;

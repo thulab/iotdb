@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.qp.exception;
+package cn.edu.tsinghua.iotdb.exception.qp;
 
 /**
  * This exception is the basic exception of query process.

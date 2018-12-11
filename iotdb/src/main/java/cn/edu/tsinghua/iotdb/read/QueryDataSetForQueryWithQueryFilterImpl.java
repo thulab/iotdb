@@ -1,8 +1,10 @@
 package cn.edu.tsinghua.iotdb.read;
 
+import cn.edu.tsinghua.iotdb.read.reader.QueryByTimestampsReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
 
 import java.io.IOException;
 
@@ -21,7 +23,7 @@ public class QueryDataSetForQueryWithQueryFilterImpl extends QueryDataSet {
   public boolean hasNext() throws IOException {
     return timestampGenerator.hasNext();
   }
-
+  
   @Override
   public RowRecord next() throws IOException {
     long timestamp = timestampGenerator.next();
