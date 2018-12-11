@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;

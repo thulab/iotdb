@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 
 import java.io.IOException;
 import java.util.ArrayList;

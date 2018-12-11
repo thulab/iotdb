@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.read.timegenerator;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
-import cn.edu.tsinghua.iotdb.read.reader.QueryWithOrWithOutFilterReader;
+import cn.edu.tsinghua.iotdb.read.reader.QueryReader;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.AndNode;
@@ -43,7 +43,7 @@ public class NodeConstructor {
 
   public SeriesReader generateSeriesReader(SeriesFilter<?> seriesFilter) throws IOException, FileNodeManagerException {
     QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(seriesFilter);
-    return new QueryWithOrWithOutFilterReader(queryDataSource, seriesFilter);
+    return new QueryReader(queryDataSource, seriesFilter);
   }
 
 

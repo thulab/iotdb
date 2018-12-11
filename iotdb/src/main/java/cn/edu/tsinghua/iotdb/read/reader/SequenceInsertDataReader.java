@@ -159,7 +159,8 @@ public abstract class SequenceInsertDataReader implements SeriesReader {
       // add unsealed file TimeSeriesChunkMetadata
       List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList = new ArrayList<>();
       for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : unsealedTsFile.getTimeSeriesChunkMetaDatas()) {
-        encodedSeriesChunkDescriptorList.add(generateSeriesChunkDescriptorByMetadata(timeSeriesChunkMetaData, unsealedTsFile.getFilePath()));
+        encodedSeriesChunkDescriptorList.add(generateSeriesChunkDescriptorByMetadata(timeSeriesChunkMetaData,
+                unsealedTsFile.getFilePath()));
       }
 
       // TODO unSealedSeriesChunkReader need to be constructed correctly

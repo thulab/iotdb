@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.read.executor;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
-import cn.edu.tsinghua.iotdb.read.reader.QueryWithOrWithOutFilterReader;
+import cn.edu.tsinghua.iotdb.read.reader.QueryReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
@@ -28,7 +28,7 @@ public class QueryWithGlobalTimeFilterExecutorImpl {
   public static QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
     LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries = new LinkedHashMap<>();
-    Filter<Long> timeFilter = ((GlobalTimeFilter) queryExpression.getQueryFilter()).getFilter();
+    Filter<Long> timeFilter = ((GlobalTimeFilter) queryExpression.getExpression()).getFilter();
     initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries(), timeFilter);
     return new MergeQueryDataSet(readersOfSelectedSeries);
   }
@@ -40,7 +40,7 @@ public class QueryWithGlobalTimeFilterExecutorImpl {
     for (Path path : selectedSeries) {
       SeriesFilter<Long> seriesFilter = new SeriesFilter<Long>(path, timeFilter);
       QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(seriesFilter);
-      SeriesReader seriesReader = new QueryWithOrWithOutFilterReader(queryDataSource, seriesFilter);
+      SeriesReader seriesReader = new QueryReader(queryDataSource, seriesFilter);
       readersOfSelectedSeries.put(path, seriesReader);
     }
   }

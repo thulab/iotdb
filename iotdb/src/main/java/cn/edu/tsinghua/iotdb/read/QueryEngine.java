@@ -1,18 +1,25 @@
 package cn.edu.tsinghua.iotdb.read;
 
+import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithFilterExecutorImpl;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithGlobalTimeFilterExecutorImpl;
-import cn.edu.tsinghua.iotdb.read.executor.QueryWithoutFilterExecutorImpl;
-import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionOptimizer;
+import cn.edu.tsinghua.iotdb.read.reader.QueryReader;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionOptimizer;
+import cn.edu.tsinghua.tsfile.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
 
@@ -23,21 +30,36 @@ public class QueryEngine {
   public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
     if (queryExpression.hasQueryFilter()) {
       try {
-        IExpression queryFilter = queryExpression.getExpression();
-        IExpression expression = ExpressionOptimizer.getInstance().
-                optimize(queryFilter, queryExpression.getSelectedSeries());
-        queryExpression.setExpression(expression);
 
-        if (expression.getType() == GLOBAL_TIME) {
+        IExpression optimizedExpression = ExpressionOptimizer.getInstance().
+                optimize(queryExpression.getExpression(), queryExpression.getSelectedSeries());
+        queryExpression.setExpression(optimizedExpression);
+
+        if (optimizedExpression.getType() == GLOBAL_TIME) {
           return QueryWithGlobalTimeFilterExecutorImpl.execute(queryExpression);
         } else {
           return QueryWithFilterExecutorImpl.execute(queryExpression);
         }
+
       } catch (QueryFilterOptimizationException e) {
         throw new IOException(e);
       }
     } else {
-      return QueryWithoutFilterExecutorImpl.execute(queryExpression);
+      return execute(queryExpression);
     }
   }
+
+  public QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
+    // LinkedHashMap<Path, SeriesReader> readersOfSelectedSeries = new LinkedHashMap<>();
+    List<SeriesReader> readersOfSelectedSeries = new ArrayList<>();
+    List<TSDataType> dataTypes = new ArrayList<>();
+
+    for (Path path : queryExpression.getSelectedSeries()) {
+      QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(path);
+      SeriesReader seriesReader = new QueryReader(queryDataSource);
+    }
+
+    return new DataSetWithoutTimeGenerator(queryExpression.getSelectedSeries(), dataTypes, readersOfSelectedSeries);
+  }
+
 }
