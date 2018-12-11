@@ -1,17 +1,17 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
+import cn.edu.tsinghua.iotdb.read.TimeValuePairReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;
 
 
-public class PriorityTimeValuePairReader implements SeriesReader {
+public class PriorityTimeValuePairReader implements TimeValuePairReader {
 
-    protected SeriesReader seriesReader;
+    protected TimeValuePairReader seriesReader;
     protected Priority priority;
 
-    public PriorityTimeValuePairReader(SeriesReader seriesReader, Priority priority) {
+    public PriorityTimeValuePairReader(TimeValuePairReader seriesReader, Priority priority) {
         this.seriesReader = seriesReader;
         this.priority = priority;
     }

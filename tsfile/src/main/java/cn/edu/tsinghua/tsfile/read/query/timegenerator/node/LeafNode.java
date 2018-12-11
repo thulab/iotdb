@@ -1,19 +1,19 @@
 package cn.edu.tsinghua.tsfile.read.query.timegenerator.node;
 
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
 
 import java.io.IOException;
 
 public class LeafNode implements Node {
 
-    private SeriesReader reader;
+    private FileSeriesReader reader;
 
     private BatchData data = null;
 
     private boolean gotData = false;
 
-    public LeafNode(SeriesReader reader) {
+    public LeafNode(FileSeriesReader reader) {
         this.reader = reader;
     }
 

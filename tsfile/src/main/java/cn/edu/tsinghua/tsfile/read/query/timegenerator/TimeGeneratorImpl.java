@@ -13,8 +13,8 @@ import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class TimeGeneratorImpl implements TimeGenerator {
 
         if (expression.getType() == ExpressionType.SERIES) {
             SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) expression;
-            SeriesReader seriesReader = generateSeriesReader(singleSeriesExp);
+            FileSeriesReader seriesReader = generateSeriesReader(singleSeriesExp);
             Path path = singleSeriesExp.getSeriesPath();
 
             if (!leafCache.containsKey(path))
@@ -94,9 +94,9 @@ public class TimeGeneratorImpl implements TimeGenerator {
         throw new UnSupportedDataTypeException("Unsupported ExpressionType when construct OperatorNode: " + expression.getType());
     }
 
-    private SeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExp) throws IOException {
+    private FileSeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExp) throws IOException {
         List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(
                 singleSeriesExp.getSeriesPath());
-        return new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
+        return new FileSeriesReaderWithFilter(chunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
     }
 }

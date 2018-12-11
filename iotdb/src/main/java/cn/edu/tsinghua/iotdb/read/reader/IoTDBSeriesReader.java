@@ -4,53 +4,54 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.SeriesWithOverflowOpReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.read.TimeValuePairReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 
 import java.io.IOException;
 
 /**
- * A single series data reader with seriesFilter, which has considered sequence insert data, overflow data, updata and delete operation.
+ * <p> A single series data reader with seriesFilter, which has considered sequence insert data, overflow data,
+ * update and delete operation.
  */
-public class QueryReader implements SeriesReader {
+public class IoTDBSeriesReader implements TimeValuePairReader {
 
-  private SeriesWithOverflowOpReader seriesWithOverflowOpReader;
-
-  public QueryReader(QueryDataSource queryDataSource, SeriesFilter<?> filter) throws IOException {
+  public IoTDBSeriesReader(QueryDataSource queryDataSource, SingleSeriesExpression singleSeriesExpression) throws IOException {
     int priority = 1;
-    //sequence insert data
-    SequenceInsertDataWithOrWithOutFilterReader tsFilesReader = new SequenceInsertDataWithOrWithOutFilterReader(queryDataSource.getSeriesDataSource(), filter);
+    // sequence insert data
+    IoTDBSequenceDataReader tsFilesReader =
+            new IoTDBSequenceDataReader(queryDataSource.getSeriesDataSource(), singleSeriesExpression);
     PriorityTimeValuePairReader tsFilesReaderWithPriority = new PriorityTimeValuePairReader(
             tsFilesReader, new PriorityTimeValuePairReader.Priority(priority++));
 
-    //overflow insert data
+    // overflow insert data
     OverflowInsertDataReader overflowInsertDataReader = SeriesReaderFactory.getInstance().
-            createSeriesReaderForOverflowInsert(queryDataSource.getOverflowSeriesDataSource(), filter.getFilter());
+            createSeriesReaderForOverflowInsert(queryDataSource.getOverflowSeriesDataSource(), singleSeriesExpression.getFilter());
     PriorityTimeValuePairReader overflowInsertDataReaderWithPriority = new PriorityTimeValuePairReader(
             overflowInsertDataReader, new PriorityTimeValuePairReader.Priority(priority++));
 
 
-    PriorityMergeSortTimeValuePairReader insertDataReader = new PriorityMergeSortTimeValuePairReader(tsFilesReaderWithPriority, overflowInsertDataReaderWithPriority);
-    seriesWithOverflowOpReader = new SeriesWithOverflowOpReader(insertDataReader, overflowOperationReader);
+    PriorityMergeSortTimeValuePairReader insertDataReader =
+            new PriorityMergeSortTimeValuePairReader(tsFilesReaderWithPriority, overflowInsertDataReaderWithPriority);
   }
 
-  public QueryReader(QueryDataSource queryDataSource) throws IOException {
+  public IoTDBSeriesReader(QueryDataSource queryDataSource) throws IOException {
     int priority = 1;
-    //sequence insert data
-    SequenceInsertDataWithOrWithOutFilterReader tsFilesReader = new SequenceInsertDataWithOrWithOutFilterReader(queryDataSource.getSeriesDataSource(), null);
+    // sequence insert data
+    IoTDBSequenceDataReader tsFilesReader = new IoTDBSequenceDataReader(queryDataSource.getSeriesDataSource(), null);
     PriorityTimeValuePairReader tsFilesReaderWithPriority = new PriorityTimeValuePairReader(
             tsFilesReader, new PriorityTimeValuePairReader.Priority(priority++));
 
-    //overflow insert data
+    // overflow insert data
     OverflowInsertDataReader overflowInsertDataReader = SeriesReaderFactory.getInstance().
             createSeriesReaderForOverflowInsert(queryDataSource.getOverflowSeriesDataSource());
     PriorityTimeValuePairReader overflowInsertDataReaderWithPriority = new PriorityTimeValuePairReader(
             overflowInsertDataReader, new PriorityTimeValuePairReader.Priority(priority++));
 
 
-    PriorityMergeSortTimeValuePairReader insertDataReader = new PriorityMergeSortTimeValuePairReader(tsFilesReaderWithPriority, overflowInsertDataReaderWithPriority);
-    seriesWithOverflowOpReader = new SeriesWithOverflowOpReader(insertDataReader, overflowOperationReader);
+    PriorityMergeSortTimeValuePairReader insertDataReader =
+            new PriorityMergeSortTimeValuePairReader(tsFilesReaderWithPriority, overflowInsertDataReaderWithPriority);
   }
 
   @Override

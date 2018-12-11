@@ -12,9 +12,9 @@ import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithFilter;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithoutFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithoutFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,12 +63,12 @@ public class TsFileExecutor implements QueryExecutor {
      * @return DataSet without TimeGenerator
      */
     private QueryDataSet execute(List<Path> selectedPathList) throws IOException {
-        List<SeriesReader> readersOfSelectedSeries = new ArrayList<>();
+        List<FileSeriesReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            SeriesReader seriesReader = new SeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
+            FileSeriesReader seriesReader = new FileSeriesReaderWithoutFilter(chunkLoader, chunkMetaDataList);
             readersOfSelectedSeries.add(seriesReader);
             dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }
@@ -84,12 +84,12 @@ public class TsFileExecutor implements QueryExecutor {
      * @return DataSet without TimeGenerator
      */
     private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeExpression timeFilter) throws IOException {
-        List<SeriesReader> readersOfSelectedSeries = new ArrayList<>();
+        List<FileSeriesReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
 
         for (Path path : selectedPathList) {
             List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(path);
-            SeriesReader seriesReader = new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter.getFilter());
+            FileSeriesReader seriesReader = new FileSeriesReaderWithFilter(chunkLoader, chunkMetaDataList, timeFilter.getFilter());
             readersOfSelectedSeries.add(seriesReader);
             dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
         }

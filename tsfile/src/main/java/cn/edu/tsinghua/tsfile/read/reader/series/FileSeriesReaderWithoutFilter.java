@@ -12,9 +12,9 @@ import java.util.List;
  * <p> Series reader is used to query one series of one tsfile,
  * this reader has no filter.
  */
-public class SeriesReaderWithoutFilter extends SeriesReader {
+public class FileSeriesReaderWithoutFilter extends FileSeriesReader {
 
-    public SeriesReaderWithoutFilter(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
+    public FileSeriesReaderWithoutFilter(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
         super(chunkLoader, chunkMetaDataList);
     }
 

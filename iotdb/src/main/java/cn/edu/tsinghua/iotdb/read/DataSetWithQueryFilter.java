@@ -8,13 +8,13 @@ import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
 
 import java.io.IOException;
 
-public class QueryDataSetForQueryWithQueryFilterImpl extends QueryDataSet {
+public class DataSetWithQueryFilter extends QueryDataSet {
 
   private TimestampGenerator timestampGenerator;
   private LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries;
 
-  public QueryDataSetForQueryWithQueryFilterImpl(TimestampGenerator timestampGenerator,
-                                                 LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries) {
+  public DataSetWithQueryFilter(TimestampGenerator timestampGenerator,
+                                LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries) {
     this.timestampGenerator = timestampGenerator;
     this.readersOfSelectedSeries = readersOfSelectedSeries;
   }
@@ -23,7 +23,7 @@ public class QueryDataSetForQueryWithQueryFilterImpl extends QueryDataSet {
   public boolean hasNext() throws IOException {
     return timestampGenerator.hasNext();
   }
-  
+
   @Override
   public RowRecord next() throws IOException {
     long timestamp = timestampGenerator.next();

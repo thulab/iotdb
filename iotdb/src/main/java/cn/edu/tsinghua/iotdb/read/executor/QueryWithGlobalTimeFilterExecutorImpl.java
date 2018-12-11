@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.read.executor;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
-import cn.edu.tsinghua.iotdb.read.reader.QueryReader;
+import cn.edu.tsinghua.iotdb.read.reader.IoTDBSeriesReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
@@ -40,7 +40,7 @@ public class QueryWithGlobalTimeFilterExecutorImpl {
     for (Path path : selectedSeries) {
       SeriesFilter<Long> seriesFilter = new SeriesFilter<Long>(path, timeFilter);
       QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(seriesFilter);
-      SeriesReader seriesReader = new QueryReader(queryDataSource, seriesFilter);
+      SeriesReader seriesReader = new IoTDBSeriesReader(queryDataSource, seriesFilter);
       readersOfSelectedSeries.put(path, seriesReader);
     }
   }

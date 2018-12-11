@@ -18,7 +18,7 @@
 //import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 //import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 //import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
+//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.FileSeriesReader;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 //import cn.edu.tsinghua.tsfile.utils.Pair;
 //import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
@@ -169,7 +169,7 @@
 //
 //                                    // write the series data
 //                                    recordCount += writeOneSeries(deltaObjectId, measurementId, seriesWriterImpl, dataType,
-//                                            (SeriesReader) seriesReader, new HashMap<>(), new HashMap<>());
+//                                            (FileSeriesReader) seriesReader, new HashMap<>(), new HashMap<>());
 //                                    // flush the series data
 //                                    seriesWriterImpl.writeToFileWriter(fileIOWriter);
 //
@@ -354,7 +354,7 @@
 //    }
 //
 //    private int writeOneSeries(String deltaObjectId, String measurement, SeriesWriterImpl seriesWriterImpl,
-//                               TSDataType dataType, SeriesReader seriesReader, Map<String, Long> startTimeMap,
+//                               TSDataType dataType, FileSeriesReader seriesReader, Map<String, Long> startTimeMap,
 //                               Map<String, Long> endTimeMap) throws IOException {
 //        int count = 0;
 //        if (!seriesReader.hasNext())

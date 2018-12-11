@@ -5,6 +5,7 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
+import cn.edu.tsinghua.iotdb.read.TimeValuePairReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
@@ -16,19 +17,19 @@ import java.util.List;
 /**
  * A reader for sequentially inserts data，including a list of sealedTsFile, unSealedTsFile, data in MemTable.
  */
-public abstract class SequenceInsertDataReader implements SeriesReader {
+public abstract class SequenceDataReader implements TimeValuePairReader {
 
-  protected List<SeriesReader> seriesReaders;
+  protected List<TimeValuePairReader> seriesReaders;
   protected Path path;
   protected long jobId;
 
   private boolean hasSeriesReaderInitialized;
   private int nextSeriesReaderIndex;
-  private SeriesReader currentSeriesReader;
+  private TimeValuePairReader currentSeriesReader;
 
-  public SequenceInsertDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource) {
+  public SequenceDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource) {
     path = sortedSeriesDataSource.getSeriesPath();
-    seriesReaders = new ArrayList<SeriesReader>();
+    seriesReaders = new ArrayList<>();
     jobId = QueryJobManager.getInstance().addJobForOneQuery();
 
     hasSeriesReaderInitialized = false;
@@ -69,12 +70,13 @@ public abstract class SequenceInsertDataReader implements SeriesReader {
 
   @Override
   public void close() throws IOException {
-    for (SeriesReader seriesReader : seriesReaders) {
+    for (TimeValuePairReader seriesReader : seriesReaders) {
       seriesReader.close();
     }
   }
 
-  private EncodedSeriesChunkDescriptor generateSeriesChunkDescriptorByMetadata(TimeSeriesChunkMetaData timeSeriesChunkMetaData, String filePath) {
+  private EncodedSeriesChunkDescriptor generateSeriesChunkDescriptorByMetadata(
+          TimeSeriesChunkMetaData timeSeriesChunkMetaData, String filePath) {
     EncodedSeriesChunkDescriptor encodedSeriesChunkDescriptor = new EncodedSeriesChunkDescriptor(filePath,
             timeSeriesChunkMetaData.getProperties().getFileOffset(),
             timeSeriesChunkMetaData.getTotalByteSize(),
@@ -88,11 +90,11 @@ public abstract class SequenceInsertDataReader implements SeriesReader {
     return encodedSeriesChunkDescriptor;
   }
 
-  protected abstract class SealedTsFileReader implements SeriesReader {
+  protected abstract class SealedTsFileReader implements TimeValuePairReader {
 
     protected List<IntervalFileNode> sealedTsFiles;
     protected int usedIntervalFileIndex;
-    protected SeriesReader singleTsFileReader;
+    protected TimeValuePairReader singleTsFileReader;
     protected boolean singleTsFileReaderInitialized;
 
     public SealedTsFileReader(List<IntervalFileNode> sealedTsFiles) {
@@ -148,9 +150,9 @@ public abstract class SequenceInsertDataReader implements SeriesReader {
     protected abstract void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException;
   }
 
-  protected abstract class UnSealedTsFileReader implements SeriesReader {
+  protected abstract class UnSealedTsFileReader implements TimeValuePairReader {
     protected UnsealedTsFile unsealedTsFile;
-    protected SeriesReader singleTsFileReader;
+    protected TimeValuePairReader singleTsFileReader;
 
 
     public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile) throws IOException {
@@ -193,6 +195,7 @@ public abstract class SequenceInsertDataReader implements SeriesReader {
       }
     }
 
-    protected abstract void initSingleTsFileReader(ITsRandomAccessFileReader randomAccessFileReader, SeriesChunkLoader seriesChunkLoader, List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList);
+    protected abstract void initSingleTsFileReader(ITsRandomAccessFileReader randomAccessFileReader, SeriesChunkLoader seriesChunkLoader,
+                                                   List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList);
   }
 }

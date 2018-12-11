@@ -12,9 +12,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithFilter;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithoutFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.utils.TsFileGeneratorForTest;
 import org.junit.After;
@@ -53,7 +53,7 @@ public class ReaderTest {
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
 
-        SeriesReader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
+        FileSeriesReader seriesReader = new FileSeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         long startTime = TsFileGeneratorForTest.START_TIMESTAMP;
         BatchData data = null;
 
@@ -69,7 +69,7 @@ public class ReaderTest {
         Assert.assertEquals(rowCount, count);
 
         chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s4"));
-        seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
+        seriesReader = new FileSeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
         count = 0;
 
         while(seriesReader.hasNextBatch()) {
@@ -91,7 +91,7 @@ public class ReaderTest {
                 FilterFactory.and(TimeFilter.gt(1480563570029L), TimeFilter.lt(1480563570033L)),
                 FilterFactory.and(ValueFilter.gtEq(9520331), ValueFilter.ltEq(9520361)));
         SingleSeriesExpression singleSeriesExp = new SingleSeriesExpression(new Path("d1.s1"), filter);
-        SeriesReader seriesReader = new SeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
+        FileSeriesReader seriesReader = new FileSeriesReaderWithFilter(seriesChunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
 
         BatchData data;
 

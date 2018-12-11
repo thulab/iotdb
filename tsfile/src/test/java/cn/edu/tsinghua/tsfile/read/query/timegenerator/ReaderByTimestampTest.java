@@ -7,9 +7,9 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerierByFileImpl;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
 import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderByTimestamp;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithoutFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import org.junit.After;
 import org.junit.Assert;
@@ -47,7 +47,7 @@ public class ReaderByTimestampTest {
     public void readByTimestamp() throws IOException {
         ChunkLoaderImpl seriesChunkLoader = new ChunkLoaderImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d1.s1"));
-        SeriesReader seriesReader = new SeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
+        FileSeriesReader seriesReader = new FileSeriesReaderWithoutFilter(seriesChunkLoader, chunkMetaDataList);
 
         List<Long> timeList = new ArrayList<>();
         List<Object> valueList = new ArrayList<>();

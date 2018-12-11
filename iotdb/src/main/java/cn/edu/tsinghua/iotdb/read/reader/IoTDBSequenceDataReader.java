@@ -7,13 +7,14 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithoutFilter;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.read.filter.utils.DigestForFilter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.filter.visitor.impl.DigestFilterVisitor;
 import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.read.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.read.controller.SeriesChunkLoader;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
+import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
+import cn.edu.tsinghua.tsfile.read.filter.utils.DigestForFilter;
+import cn.edu.tsinghua.tsfile.read.filter.visitor.impl.DigestFilterVisitor;
 import cn.edu.tsinghua.tsfile.read.reader.page.SeriesReaderFromSingleFileWithFilterImpl;
 import cn.edu.tsinghua.tsfile.read.reader.page.SeriesReaderFromSingleFileWithoutFilterImpl;
 
@@ -21,33 +22,35 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.List;
 
-/***/
-public class SequenceInsertDataWithOrWithOutFilterReader extends SequenceInsertDataReader {
-  private SeriesFilter<?> filter;
+public class IoTDBSequenceDataReader extends SequenceDataReader {
 
-  public SequenceInsertDataWithOrWithOutFilterReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SeriesFilter<?> filter)
+  private SingleSeriesExpression singleSeriesExpression;
+
+  public IoTDBSequenceDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SingleSeriesExpression singleSeriesExpression)
           throws IOException {
+
     super(sortedSeriesDataSource);
 
-    this.filter = filter;
+    this.singleSeriesExpression = singleSeriesExpression;
+
     //add data in sealedTsFiles and unSealedTsFile
     if (sortedSeriesDataSource.getSealedTsFiles() != null) {
-      seriesReaders.add(new SequenceInsertDataWithOrWithOutFilterReader.SealedTsFileWithFilterReader(sortedSeriesDataSource.getSealedTsFiles()));
+      seriesReaders.add(new IoTDBSequenceDataReader.SealedTsFileWithFilterReader(sortedSeriesDataSource.getSealedTsFiles()));
     }
     if (sortedSeriesDataSource.getUnsealedTsFile() != null) {
-      seriesReaders.add(new SequenceInsertDataWithOrWithOutFilterReader.UnSealedTsFileWithFilterReader(sortedSeriesDataSource.getUnsealedTsFile()));
+      seriesReaders.add(new IoTDBSequenceDataReader.UnSealedTsFileWithFilterReader(sortedSeriesDataSource.getUnsealedTsFile()));
     }
 
     //add data in memTable
-    if (sortedSeriesDataSource.hasRawSeriesChunk() && filter == null) {
+    if (sortedSeriesDataSource.hasRawSeriesChunk() && singleSeriesExpression == null) {
       seriesReaders.add(new RawSeriesChunkReaderWithoutFilter(sortedSeriesDataSource.getRawSeriesChunk()));
     }
-    if (sortedSeriesDataSource.hasRawSeriesChunk() && filter != null) {
-      seriesReaders.add(new RawSeriesChunkReaderWithFilter(sortedSeriesDataSource.getRawSeriesChunk(), filter.getFilter()));
+    if (sortedSeriesDataSource.hasRawSeriesChunk() && singleSeriesExpression != null) {
+      seriesReaders.add(new RawSeriesChunkReaderWithFilter(sortedSeriesDataSource.getRawSeriesChunk(), singleSeriesExpression.getFilter()));
     }
   }
 
-  protected class SealedTsFileWithFilterReader extends SequenceInsertDataReader.SealedTsFileReader {
+  protected class SealedTsFileWithFilterReader extends SequenceDataReader.SealedTsFileReader {
 
 
     public SealedTsFileWithFilterReader(List<IntervalFileNode> sealedTsFiles) {
@@ -58,16 +61,16 @@ public class SequenceInsertDataWithOrWithOutFilterReader extends SequenceInsertD
       if (fileNode.getStartTime(path.getDevice()) == -1) {
         return false;
       }
-      //no filter
-      if (filter == null) {
+      //no singleSeriesExpression
+      if (singleSeriesExpression == null) {
         return true;
       }
 
-      if (filter.getType() == QueryFilterType.GLOBAL_TIME) {//filter time
+      if (singleSeriesExpression.getType() == QueryFilterType.GLOBAL_TIME) {//singleSeriesExpression time
         DigestFilterVisitor digestFilterVisitor = new DigestFilterVisitor();
         DigestForFilter timeDigest = new DigestForFilter(fileNode.getStartTime(path.getDevice()),
                 fileNode.getEndTime(path.getDeltaObjectToString()));
-        return digestFilterVisitor.satisfy(timeDigest, null, filter.getFilter());
+        return digestFilterVisitor.satisfy(timeDigest, null, singleSeriesExpression.getFilter());
       } else {//fileNode doesn't hold the value scope for series
         return true;
       }
@@ -77,26 +80,26 @@ public class SequenceInsertDataWithOrWithOutFilterReader extends SequenceInsertD
       RandomAccessFile raf = OverflowFileStreamManager.getInstance().get(jobId, fileNode.getFilePath());
       ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(raf);
 
-      if (filter == null) {
+      if (singleSeriesExpression == null) {
         singleTsFileReader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, path);
       } else {
-        singleTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader, path, filter.getFilter());
+        singleTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader, path, singleSeriesExpression.getFilter());
       }
 
     }
   }
 
-  protected class UnSealedTsFileWithFilterReader extends SequenceInsertDataReader.UnSealedTsFileReader {
+  protected class UnSealedTsFileWithFilterReader extends SequenceDataReader.UnSealedTsFileReader {
     public UnSealedTsFileWithFilterReader(UnsealedTsFile unsealedTsFile) throws IOException {
       super(unsealedTsFile);
     }
 
     protected void initSingleTsFileReader(ITsRandomAccessFileReader randomAccessFileReader,
                                           SeriesChunkLoader seriesChunkLoader, List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList) {
-      if (filter == null) {
+      if (singleSeriesExpression == null) {
         singleTsFileReader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList);
       } else {
-        singleTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList, filter.getFilter());
+        singleTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList, singleSeriesExpression.getFilter());
       }
     }
   }

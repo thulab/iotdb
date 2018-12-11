@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Manager all file streams opened by overflow. Every overflow's read job has a unique ID which is saved in corresponding
- * SeriesReader
+ * FileSeriesReader
  */
 public class OverflowFileStreamManager {
 

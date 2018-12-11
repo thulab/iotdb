@@ -8,7 +8,7 @@ import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 import java.io.IOException;
 
 /**
- * A SeriesReader implement which used for read insert data of one series in Overflow.
+ * A FileSeriesReader implement which used for read insert data of one series in Overflow.
  * This class contains a unique jobId which used identify different OverflowInsertDataReader.
  * <p>
  * IMPORTANT: Remember invoke {@code close()} to close the file stream(s) opened.
@@ -48,8 +48,8 @@ public class OverflowInsertDataReader implements SeriesReader {
     }
 
     /**
-     * Retrieves, but does not remove, next {@code TimeValuePair} in this SeriesReader,
-     * or returns {@code null} if this there is no {@code TimeValuePair} in this SeriesReader.
+     * Retrieves, but does not remove, next {@code TimeValuePair} in this FileSeriesReader,
+     * or returns {@code null} if this there is no {@code TimeValuePair} in this FileSeriesReader.
      *
      * @return
      * @throws IOException

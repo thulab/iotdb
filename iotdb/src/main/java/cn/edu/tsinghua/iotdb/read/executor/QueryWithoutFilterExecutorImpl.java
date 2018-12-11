@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.read.executor;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
-import cn.edu.tsinghua.iotdb.read.reader.QueryReader;
+import cn.edu.tsinghua.iotdb.read.reader.IoTDBSeriesReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
@@ -32,7 +32,7 @@ public class QueryWithoutFilterExecutorImpl {
                                              List<Path> selectedSeries) throws IOException, FileNodeManagerException {
         for (Path path : selectedSeries) {
             QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(path);
-            SeriesReader seriesReader = new QueryReader(queryDataSource);
+            SeriesReader seriesReader = new IoTDBSeriesReader(queryDataSource);
             readersOfSelectedSeries.put(path, seriesReader);
         }
     }

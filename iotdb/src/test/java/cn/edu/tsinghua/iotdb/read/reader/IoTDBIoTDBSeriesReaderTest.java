@@ -28,7 +28,7 @@ import java.sql.Statement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class IoTDBQueryReaderTest {
+public class IoTDBIoTDBSeriesReaderTest {
 
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
