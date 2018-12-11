@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.qp.exception;
+package cn.edu.tsinghua.iotdb.exception.qp;
 
 /**
  * This exception is thrown while meeting error in optimizing logical operator

@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.read.QueryEngine;
@@ -26,6 +26,16 @@ public abstract class QueryProcessExecutor {
 	public QueryProcessExecutor() {
 	}
 
+	public QueryDataSet processQuery(PhysicalPlan plan) throws IOException, FileNodeManagerException {
+		QueryPlan queryPlan = (QueryPlan) plan;
+
+		QueryExpression queryExpression = QueryExpression.create()
+				.setSelectSeries(queryPlan.getPaths())
+				.setExpression(queryPlan.getExpression());
+
+		return queryEngine.query(queryExpression);
+	}
+
 	public abstract TSDataType getSeriesType(Path fullPath) throws PathErrorException;
 
 	public abstract boolean judgePathExists(Path fullPath);
@@ -33,7 +43,6 @@ public abstract class QueryProcessExecutor {
 	public boolean processNonQuery(PhysicalPlan plan) throws ProcessorException {
 		throw new UnsupportedOperationException();
 	}
-
 
 	//process MultiQueryPlan
 //	public QueryDataSet processQuery(PhysicalPlan plan) throws QueryProcessorException, IOException, FileNodeManagerException {
@@ -71,15 +80,7 @@ public abstract class QueryProcessExecutor {
 ////		}
 ////	}
 
-	public QueryDataSet processQuery(PhysicalPlan plan) throws QueryProcessorException, IOException, FileNodeManagerException {
-		QueryPlan queryPlan = (QueryPlan) plan;
 
-		QueryExpression queryExpression = QueryExpression.create()
-				.setSelectSeries(queryPlan.getPaths())
-				.setExpression(queryPlan.getExpression());
-
-		return queryEngine.query(queryExpression);
-	}
 
 
 	//TODO 改 aggres 的结构

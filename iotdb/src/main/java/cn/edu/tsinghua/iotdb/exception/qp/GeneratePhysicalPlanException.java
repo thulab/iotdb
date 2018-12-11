@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.qp.exception;
+package cn.edu.tsinghua.iotdb.exception.qp;
 
 import cn.edu.tsinghua.iotdb.qp.logical.crud.UpdateOperator;
 

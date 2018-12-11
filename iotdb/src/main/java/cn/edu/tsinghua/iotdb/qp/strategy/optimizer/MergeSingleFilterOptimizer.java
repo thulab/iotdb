@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp.strategy.optimizer;
 
-import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
+import cn.edu.tsinghua.iotdb.exception.qp.LogicalOptimizeException;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.BasicFunctionOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 import cn.edu.tsinghua.tsfile.read.common.Path;
