@@ -1,19 +1,19 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 
 
 public class SingleSourceExternalSortJobPart extends ExternalSortJobPart {
 
-    private PriorityTimeValuePairReader timeValuePairReader;
+    private PrioritySeriesReader timeValuePairReader;
 
-    public SingleSourceExternalSortJobPart(PriorityTimeValuePairReader timeValuePairReader) {
+    public SingleSourceExternalSortJobPart(PrioritySeriesReader timeValuePairReader) {
         super(ExternalSortJobPartType.SINGLE_SOURCE);
         this.timeValuePairReader = timeValuePairReader;
     }
 
     @Override
-    public PriorityTimeValuePairReader execute() {
+    public PrioritySeriesReader execute() {
         return this.timeValuePairReader;
     }
 }

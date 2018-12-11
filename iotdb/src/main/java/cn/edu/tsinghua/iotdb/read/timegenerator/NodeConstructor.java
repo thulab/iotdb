@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.ISeriesReader;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
-import cn.edu.tsinghua.iotdb.read.reader.EngineSeriesReader;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
@@ -48,6 +47,5 @@ public class NodeConstructor {
     QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(singleSeriesExpression);
     return new EngineSeriesReader(queryDataSource, singleSeriesExpression);
   }
-
 
 }

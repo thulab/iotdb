@@ -4,15 +4,15 @@ import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 
-public class PriorityTimeValuePairReaderByTimestamp extends PriorityTimeValuePairReader
-        implements SeriesReaderByTimeStamp, Comparable<PriorityTimeValuePairReaderByTimestamp>  {
+public class PrioritySeriesReaderByTimestamp extends PrioritySeriesReader
+        implements SeriesReaderByTimeStamp, Comparable<PrioritySeriesReaderByTimestamp>  {
 
-    public PriorityTimeValuePairReaderByTimestamp(SeriesReaderByTimeStamp seriesReader, Priority priority){
+    public PrioritySeriesReaderByTimestamp(SeriesReaderByTimeStamp seriesReader, Priority priority){
         super(seriesReader, priority);
     }
 
     @Override
-    public int compareTo(PriorityTimeValuePairReaderByTimestamp o) {
+    public int compareTo(PrioritySeriesReaderByTimestamp o) {
         return this.priority.compareTo(o.getPriority());
     }
 

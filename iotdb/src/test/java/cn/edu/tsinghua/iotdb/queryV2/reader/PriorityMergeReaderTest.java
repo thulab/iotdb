@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
@@ -17,9 +17,9 @@ import java.util.List;
 public class PriorityMergeReaderTest {
     @Test
     public void test() throws IOException {
-        FakedPriorityTimeValuePairReader reader1 = new FakedPriorityTimeValuePairReader(100, 20, 5, 11, 1);
-        FakedPriorityTimeValuePairReader reader2 = new FakedPriorityTimeValuePairReader(150, 20, 5, 19, 2);
-        FakedPriorityTimeValuePairReader reader3 = new FakedPriorityTimeValuePairReader(180, 20, 5, 31, 3);
+        FakedPrioritySeriesReader reader1 = new FakedPrioritySeriesReader(100, 20, 5, 11, 1);
+        FakedPrioritySeriesReader reader2 = new FakedPrioritySeriesReader(150, 20, 5, 19, 2);
+        FakedPrioritySeriesReader reader3 = new FakedPrioritySeriesReader(180, 20, 5, 31, 3);
 
         PriorityMergeReader priorityMergeReader = new PriorityMergeReader(reader1, reader2, reader3);
         int cnt = 0;
@@ -41,13 +41,13 @@ public class PriorityMergeReaderTest {
         Assert.assertEquals(180/5, cnt);
     }
 
-    public static class FakedPriorityTimeValuePairReader extends PriorityTimeValuePairReader{
+    public static class FakedPrioritySeriesReader extends PrioritySeriesReader {
 
-        public FakedPriorityTimeValuePairReader(TimeValuePairReader seriesReader, Priority priority) {
+        public FakedPrioritySeriesReader(TimeValuePairReader seriesReader, Priority priority) {
             super(seriesReader, priority);
         }
 
-        public FakedPriorityTimeValuePairReader(long startTime, int size, int interval, int modValue, int priority) {
+        public FakedPrioritySeriesReader(long startTime, int size, int interval, int modValue, int priority) {
             this(new FakedTimeValuePairReader(startTime, size, interval, modValue), new Priority(priority));
         }
     }

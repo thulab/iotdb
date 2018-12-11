@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader.Priority;
 import cn.edu.tsinghua.iotdb.read.ISeriesReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 
-public class PriorityMergeReader implements ISeriesReader {
+public class PriorityMergeReader<T extends PrioritySeriesReader> implements ISeriesReader {
 
-    protected List<PriorityTimeValuePairReader> readerList;
+    protected List<T> readerList;
     protected PriorityQueue<Element> heap;
 
-    public PriorityMergeReader(PriorityTimeValuePairReader... readers) throws IOException {
+    public PriorityMergeReader(T... readers) throws IOException {
         readerList = new ArrayList<>();
 
         for (int i = 0; i < readers.length; i++) {
@@ -25,7 +25,7 @@ public class PriorityMergeReader implements ISeriesReader {
         init();
     }
 
-    public PriorityMergeReader(List<PriorityTimeValuePairReader> readerList) throws IOException {
+    public PriorityMergeReader(List<T> readerList) throws IOException {
         this.readerList = readerList;
         init();
     }
@@ -54,9 +54,9 @@ public class PriorityMergeReader implements ISeriesReader {
     private void updateHeap(Element top) throws IOException {
         while (heap.size() > 0 && heap.peek().timeValuePair.getTimestamp() == top.timeValuePair.getTimestamp()) {
             Element e = heap.poll();
-            PriorityTimeValuePairReader priorityTimeValuePairReader = readerList.get(e.index);
-            if (priorityTimeValuePairReader.hasNext()) {
-                heap.add(new Element(e.index, priorityTimeValuePairReader.next(), priorityTimeValuePairReader.getPriority()));
+            PrioritySeriesReader prioritySeriesReader = readerList.get(e.index);
+            if (prioritySeriesReader.hasNext()) {
+                heap.add(new Element(e.index, prioritySeriesReader.next(), prioritySeriesReader.getPriority()));
             }
         }
     }
@@ -70,7 +70,7 @@ public class PriorityMergeReader implements ISeriesReader {
 
     @Override
     public void close() throws IOException {
-        for (PriorityTimeValuePairReader timeValuePairReader : readerList) {
+        for (PrioritySeriesReader timeValuePairReader : readerList) {
             timeValuePairReader.close();
         }
     }

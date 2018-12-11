@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ public abstract class ExternalSortJobPart {
         this.type = type;
     }
 
-    public abstract PriorityTimeValuePairReader execute() throws IOException;
+    public abstract PrioritySeriesReader execute() throws IOException;
 
     public ExternalSortJobPartType getType() {
         return type;

@@ -67,8 +67,8 @@ public class ForDebug {
 
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(path);
 
-//        PriorityTimeValuePairReader reader1 = new PriorityTimeValuePairReader(seriesInTsFileReader, new PriorityTimeValuePairReader.Priority(2));
-//        PriorityTimeValuePairReader reader2 = new PriorityTimeValuePairReader(overflowInsertDataReader, new PriorityTimeValuePairReader.Priority(1));
+//        PrioritySeriesReader reader1 = new PrioritySeriesReader(seriesInTsFileReader, new PrioritySeriesReader.Priority(2));
+//        PrioritySeriesReader reader2 = new PrioritySeriesReader(overflowInsertDataReader, new PrioritySeriesReader.Priority(1));
 //        ISeriesReader reader = new PriorityMergeReader(reader1);
 
 //        Directories.getInstance().setFolderForTest("");

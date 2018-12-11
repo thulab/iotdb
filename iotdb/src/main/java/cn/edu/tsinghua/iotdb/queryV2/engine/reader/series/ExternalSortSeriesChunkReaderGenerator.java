@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 
 import java.util.List;
 
@@ -9,11 +9,11 @@ import java.util.List;
  */
 public class ExternalSortSeriesChunkReaderGenerator {
 
-    public ExternalSortSeriesChunkReaderGenerator(List<PriorityTimeValuePairReader> seriesChunkReaderList) {
+    public ExternalSortSeriesChunkReaderGenerator(List<PrioritySeriesReader> seriesChunkReaderList) {
 
     }
 
-    public PriorityTimeValuePairReader generate() {
+    public PrioritySeriesReader generate() {
         return null;
     }
 }

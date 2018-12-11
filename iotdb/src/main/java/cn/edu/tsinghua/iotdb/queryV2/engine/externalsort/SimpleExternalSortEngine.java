@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class SimpleExternalSortEngine implements ExternalSortJobEngine {
     }
 
     @Override
-    public List<PriorityTimeValuePairReader> execute(List<PriorityTimeValuePairReader> readers) throws IOException {
+    public List<PrioritySeriesReader> execute(List<PrioritySeriesReader> readers) throws IOException {
         if (readers.size() < minExternalSortSourceCount) {
             return readers;
         }
@@ -39,11 +39,11 @@ public class SimpleExternalSortEngine implements ExternalSortJobEngine {
 
     //TODO: this method could be optimized to have a better performance
     @Override
-    public ExternalSortJob createJob(List<PriorityTimeValuePairReader> readers) {
+    public ExternalSortJob createJob(List<PrioritySeriesReader> readers) {
         long jodId = scheduler.genJobId();
         List<ExternalSortJobPart> ret = new ArrayList<>();
         List<ExternalSortJobPart> tmpPartList = new ArrayList<>();
-        for (PriorityTimeValuePairReader reader : readers) {
+        for (PrioritySeriesReader reader : readers) {
             ret.add(new SingleSourceExternalSortJobPart(reader));
         }
 

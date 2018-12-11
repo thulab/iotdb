@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.read;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.read.dataset.DataSetWithoutTimeGenerator;
@@ -62,14 +62,14 @@ public class EngineQueryExecutor {
 
       // sequence insert data
       SeqSeriesReader tsFilesReader = new SeqSeriesReader(queryDataSource.getSeriesDataSource(), null);
-      PriorityTimeValuePairReader tsFilesReaderWithPriority = new PriorityTimeValuePairReader(
-              tsFilesReader, new PriorityTimeValuePairReader.Priority(1));
+      PrioritySeriesReader tsFilesReaderWithPriority = new PrioritySeriesReader(
+              tsFilesReader, new PrioritySeriesReader.Priority(1));
 
       // unseq insert data
       UnSeqSeriesReader unSeqSeriesReader = SeriesReaderFactory.getInstance().
               createSeriesReaderForUnSeq(queryDataSource.getOverflowSeriesDataSource());
-      PriorityTimeValuePairReader unSeqReaderWithPriority = new PriorityTimeValuePairReader(
-              unSeqSeriesReader, new PriorityTimeValuePairReader.Priority(2));
+      PrioritySeriesReader unSeqReaderWithPriority = new PrioritySeriesReader(
+              unSeqSeriesReader, new PrioritySeriesReader.Priority(2));
 
 
       PriorityMergeReader priorityReader = new PriorityMergeReader(tsFilesReaderWithPriority, unSeqReaderWithPriority);

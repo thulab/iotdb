@@ -3,7 +3,6 @@ package cn.edu.tsinghua.iotdb.read.executor;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
-import cn.edu.tsinghua.iotdb.read.reader.EngineSeriesReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;

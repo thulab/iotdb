@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,7 +25,7 @@ public class UnSeqSeriesReaderTest {
         SeriesMergeSortReaderTest.FakedSeriesReader fakedSeriesReader = new SeriesMergeSortReaderTest.FakedSeriesReader(
                 ret);
         UnSeqSeriesReader unSeqSeriesReader = new UnSeqSeriesReader(1L,
-                new PriorityMergeReader(new PriorityTimeValuePairReader(fakedSeriesReader, new PriorityTimeValuePairReader.Priority(1))));
+                new PriorityMergeReader(new PrioritySeriesReader(fakedSeriesReader, new PrioritySeriesReader.Priority(1))));
         for (int i = 0; i < ret.length; i++) {
             for (int j = 0; j < 10; j++) {
                 Assert.assertEquals(ret[i], unSeqSeriesReader.peek().getTimestamp());

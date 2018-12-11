@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,13 +14,13 @@ public interface ExternalSortJobEngine {
      * @param timeValuePairReaderList A list include a set of TimeValuePairReaders
      * @return
      */
-    List<PriorityTimeValuePairReader> execute(List<PriorityTimeValuePairReader> timeValuePairReaderList) throws IOException;
+    List<PrioritySeriesReader> execute(List<PrioritySeriesReader> timeValuePairReaderList) throws IOException;
 
     /**
      * Create an external sort job which contains many parts.
      * @param timeValuePairReaderList
      * @return
      */
-    ExternalSortJob createJob(List<PriorityTimeValuePairReader> timeValuePairReaderList);
+    ExternalSortJob createJob(List<PrioritySeriesReader> timeValuePairReaderList);
 
 }

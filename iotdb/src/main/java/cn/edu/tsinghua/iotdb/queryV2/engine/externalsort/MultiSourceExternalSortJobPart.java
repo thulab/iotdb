@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,12 +27,12 @@ public class MultiSourceExternalSortJobPart extends ExternalSortJobPart {
     }
 
     @Override
-    public PriorityTimeValuePairReader execute() throws IOException {
-        List<PriorityTimeValuePairReader> priorityTimeValuePairReaders = new ArrayList<>();
+    public PrioritySeriesReader execute() throws IOException {
+        List<PrioritySeriesReader> prioritySeriesReaders = new ArrayList<>();
         for (ExternalSortJobPart part : source) {
-            priorityTimeValuePairReaders.add(part.execute());
+            prioritySeriesReaders.add(part.execute());
         }
         LineMerger merger = new LineMerger(tmpFilePath);
-        return merger.merge(priorityTimeValuePairReaders);
+        return merger.merge(prioritySeriesReaders);
     }
 }

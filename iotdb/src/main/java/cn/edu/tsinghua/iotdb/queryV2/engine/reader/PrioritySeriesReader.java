@@ -9,12 +9,12 @@ import java.io.IOException;
 /**
  * <p> The bigger the priority value is, the higher the priority is.
  */
-public class PriorityTimeValuePairReader implements ISeriesReader {
+public class PrioritySeriesReader implements ISeriesReader {
 
     protected ISeriesReader seriesReader;
     protected Priority priority;
 
-    public PriorityTimeValuePairReader(ISeriesReader seriesReader, Priority priority) {
+    public PrioritySeriesReader(ISeriesReader seriesReader, Priority priority) {
         this.seriesReader = seriesReader;
         this.priority = priority;
     }

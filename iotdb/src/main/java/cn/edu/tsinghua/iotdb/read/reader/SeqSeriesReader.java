@@ -10,9 +10,8 @@ import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.read.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.read.controller.SeriesChunkLoader;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.expression.ExpressionType;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
 import cn.edu.tsinghua.tsfile.read.filter.utils.DigestForFilter;
 import cn.edu.tsinghua.tsfile.read.filter.visitor.impl.DigestFilterVisitor;
 import cn.edu.tsinghua.tsfile.read.reader.page.SeriesReaderFromSingleFileWithFilterImpl;
@@ -66,7 +65,7 @@ public class SeqSeriesReader extends SequenceDataReader {
         return true;
       }
 
-      if (singleSeriesExpression.getType() == QueryFilterType.GLOBAL_TIME) {//singleSeriesExpression time
+      if (singleSeriesExpression.getType() == ExpressionType.GLOBAL_TIME) {//singleSeriesExpression time
         DigestFilterVisitor digestFilterVisitor = new DigestFilterVisitor();
         DigestForFilter timeDigest = new DigestForFilter(fileNode.getStartTime(path.getDevice()),
                 fileNode.getEndTime(path.getDeltaObjectToString()));
@@ -95,11 +94,14 @@ public class SeqSeriesReader extends SequenceDataReader {
     }
 
     protected void initSingleTsFileReader(ITsRandomAccessFileReader randomAccessFileReader,
-                                          SeriesChunkLoader seriesChunkLoader, List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList) {
+                                          SeriesChunkLoader seriesChunkLoader,
+                                          List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList) {
       if (singleSeriesExpression == null) {
-        singleTsFileReader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList);
+        singleTsFileReader = new SeriesReaderFromSingleFileWithoutFilterImpl(randomAccessFileReader,
+                seriesChunkLoader, encodedSeriesChunkDescriptorList);
       } else {
-        singleTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList, singleSeriesExpression.getFilter());
+        singleTsFileReader = new SeriesReaderFromSingleFileWithFilterImpl(randomAccessFileReader,
+                seriesChunkLoader, encodedSeriesChunkDescriptorList, singleSeriesExpression.getFilter());
       }
     }
   }
