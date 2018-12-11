@@ -62,7 +62,7 @@
 //     * @param filterStructures list of <code>FilterStructure</code>
 //     * @throws ProcessorException read or write lock error etc
 //     * @throws IOException        read TsFile error
-//     * @throws PathErrorException path resolving error
+//     * @throws PathErrorException seriesPath resolving error
 //     */
 //    public void multiAggregate(List<Pair<Path, AggregateFunction>> aggregations, List<FilterStructure> filterStructures)
 //            throws IOException, PathErrorException, ProcessorException {
@@ -183,11 +183,11 @@
 //            hasAnyUnReadDataFlag = false;
 //            int aggregationPathOrdinal = 0;
 //            for (Pair<Path, AggregateFunction> pair : aggregations) {
-//                Path path = pair.left;
+//                Path seriesPath = pair.left;
 //                AggregateFunction aggregateFunction = pair.right;
-//                String deltaObjectUID = path.getDeltaObjectToString();
-//                String measurementUID = path.getMeasurementToString();
-//                TSDataType dataType = MManager.getInstance().getSeriesType(path.getFullPath());
+//                String deltaObjectUID = seriesPath.getDeltaObjectToString();
+//                String measurementUID = seriesPath.getMeasurementToString();
+//                TSDataType dataType = MManager.getInstance().getSeriesType(seriesPath.getFullPath());
 //                aggregationPathOrdinal++;
 //
 //                // current aggregation has no un read data
@@ -246,11 +246,11 @@
 //
 //        for (Pair<Path, AggregateFunction> pair : aggres) {
 //            aggreNumber++;
-//            Path path = pair.left;
+//            Path seriesPath = pair.left;
 //            AggregateFunction aggregateFunction = pair.right;
 //
-//            String deltaObjectUID = path.getDeltaObjectToString();
-//            String measurementUID = path.getMeasurementToString();
+//            String deltaObjectUID = seriesPath.getDeltaObjectToString();
+//            String measurementUID = seriesPath.getMeasurementToString();
 //            AggregateRecordReader recordReader = (AggregateRecordReader)
 //                    RecordReaderFactory.getInstance().getRecordReader(deltaObjectUID, measurementUID,
 //                            queryTimeFilter, null, null, ReadCachePrefix.addQueryPrefix(aggreNumber), ReaderType.AGGREGATE);

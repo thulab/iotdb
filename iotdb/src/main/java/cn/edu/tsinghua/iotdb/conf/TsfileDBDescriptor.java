@@ -46,7 +46,7 @@ public class TsfileDBDescriptor {
 				url = url + File.separatorChar + "conf" + File.separatorChar + TsfileDBConfig.CONFIG_NAME;
 			} else {
 				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", TsfileDBConfig.CONFIG_NAME);
-				// update all data path
+				// update all data seriesPath
 				conf.updatePath();
 				return;
 			}
@@ -58,7 +58,7 @@ public class TsfileDBDescriptor {
 			inputStream = new FileInputStream(new File(url));
 		} catch (FileNotFoundException e) {
 			LOGGER.warn("Fail to find config file {}", url);
-			// update all data path
+			// update all data seriesPath
 			conf.updatePath();
 			return;
 		}
@@ -164,7 +164,7 @@ public class TsfileDBDescriptor {
 		} catch (Exception e) {
 			LOGGER.warn("Error format in config file because {}, use default configuration", e.getMessage());
 		} finally {
-			// update all data path
+			// update all data seriesPath
 			conf.updatePath();
 			if (inputStream != null) {
 				try {

@@ -49,16 +49,16 @@
 //     *
 //     * @param tsfilePath
 //     * @param unseqTsFilePath
-//     * @param path the path of series to be merge.
+//     * @param seriesPath the seriesPath of series to be merge.
 //     * @return ISeriesReader
 //     * @throws IOException
 //     */
 //    public static ISeriesReader createReaderForMerge(String tsfilePath, String unseqTsFilePath,
-//                                                           Path path, long startTime, long endTime) throws IOException {
-//        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
+//                                                           Path seriesPath, long startTime, long endTime) throws IOException {
+//        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, seriesPath);
 //        TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = new String[] {""};
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
-//        SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
+//        SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
 //        IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
 //        ISeriesReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
 //        return reader;
@@ -66,18 +66,18 @@
 //
 //
 //    public static ISeriesReader createReaderOnlyForOverflowInsert(String unseqTsFilePath,
-//                                                                        Path path, long startTime, long endTime) throws IOException {
-//        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
+//                                                                        Path seriesPath, long startTime, long endTime) throws IOException {
+//        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, seriesPath);
 //        TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = new String[] {""};
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
-//        SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
+//        SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
 //        ISeriesReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource,
 //                filter);
 //        return reader;
 //    }
 //
 //    /**
-//     * Get the metadata of given file path.
+//     * Get the metadata of given file seriesPath.
 //     *
 //     * @param randomAccessFileReader
 //     * @return
@@ -103,16 +103,16 @@
 //        return unSeqFileMetaData;
 //    }
 //
-//    private static OverflowSeriesDataSource genDataSource(String unSeqTsFilePath, Path path) throws IOException {
+//    private static OverflowSeriesDataSource genDataSource(String unSeqTsFilePath, Path seriesPath) throws IOException {
 //        if (unSeqFileMetaData == null) {
 //            File file = new File(unSeqTsFilePath);
 //            OverflowIO overflowIO = new OverflowIO(unSeqTsFilePath, file.length(), true);
 //            unSeqFileMetaData = readMetadata(overflowIO);
 //        }
-//        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(path);
+//        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(seriesPath);
 //        OverflowInsertFile overflowInsertFile = new OverflowInsertFile();
 //        overflowInsertFile.setPath(unSeqTsFilePath);
-//        overflowInsertFile.setTimeSeriesChunkMetaDatas(unSeqFileMetaData.get(path.getDeltaObjectToString()).get(path.getMeasurementToString()));
+//        overflowInsertFile.setTimeSeriesChunkMetaDatas(unSeqFileMetaData.get(seriesPath.getDeltaObjectToString()).get(seriesPath.getMeasurementToString()));
 //        List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
 //        overflowInsertFileList.add(overflowInsertFile);
 //        overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFileList);

@@ -104,7 +104,7 @@ public class CreateDataSender3 {
 
     public static void randomInsertData(Statement statement, Statement statement1, Map<String, String> timeseriesMap) throws Exception {
 
-        String insertDataSql = "INSERT INTO <path> (timestamp, <sensor>) VALUES (<time>, <value>)";
+        String insertDataSql = "INSERT INTO <seriesPath> (timestamp, <sensor>) VALUES (<time>, <value>)";
         RandomNum r = new RandomNum();
         int abnormalCount = 0;
         int abnormalFlag = 1;
@@ -133,7 +133,7 @@ public class CreateDataSender3 {
                     } else {
                         value = r.getRandomInt(MIN_INT, MAX_INT);
                     }
-                    sql = insertDataSql.replace("<path>", path)
+                    sql = insertDataSql.replace("<seriesPath>", path)
                             .replace("<sensor>", sensor)
                             .replace("<time>", time + "")
                             .replace("<value>", value + "");
@@ -144,14 +144,14 @@ public class CreateDataSender3 {
                     } else {
                         value = r.getRandomFloat(MIN_FLOAT, MAX_FLOAT);
                     }
-                    sql = insertDataSql.replace("<path>", path)
+                    sql = insertDataSql.replace("<seriesPath>", path)
                             .replace("<sensor>", sensor)
                             .replace("<time>", time + "")
                             .replace("<value>", value + "");
                 } else if (type.equals("TEXT")) {
                     String value;
                     value = r.getRandomText(STRING_LENGTH);
-                    sql = insertDataSql.replace("<path>", path)
+                    sql = insertDataSql.replace("<seriesPath>", path)
                             .replace("<sensor>", sensor)
                             .replace("<time>", time + "")
                             .replace("<value>", "\"" + value + "\"");

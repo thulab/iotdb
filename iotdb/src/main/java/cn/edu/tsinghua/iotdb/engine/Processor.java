@@ -26,7 +26,7 @@ public abstract class Processor {
 	private final ReadWriteLock lock;
 
 	/**
-	 * Construct processor using name space path
+	 * Construct processor using name space seriesPath
 	 * 
 	 * @param processorName
 	 */
@@ -96,7 +96,7 @@ public abstract class Processor {
 	}
 
 	/**
-	 * Get the name space path
+	 * Get the name space seriesPath
 	 * 
 	 * @return
 	 */

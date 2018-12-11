@@ -77,12 +77,12 @@
 //     * <p> Notice that: this method is invoked only once by <code>QueryProcessExecutor</code>
 //     * in an aggregation query.
 //     *
-//     * @param aggres           a list of aggregations and corresponding path
+//     * @param aggres           a list of aggregations and corresponding seriesPath
 //     * @param filterStructures see <code>FilterStructure</code>, a list of all conjunction form
 //     * @return result OnePassQueryDataSet
 //     * @throws ProcessorException series resolve error
 //     * @throws IOException        TsFile read error
-//     * @throws PathErrorException path resolve error
+//     * @throws PathErrorException seriesPath resolve error
 //     */
 //    public OnePassQueryDataSet aggregate(List<Pair<Path, String>> aggres, List<FilterStructure> filterStructures)
 //            throws ProcessorException, IOException, PathErrorException {
@@ -119,7 +119,7 @@
 //    /**
 //     * Group by function implementation.
 //     *
-//     * @param aggres aggregation path and corresponding function
+//     * @param aggres aggregation seriesPath and corresponding function
 //     * @param filterStructures all filters in where clause
 //     * @param unit
 //     * @param origin
@@ -212,21 +212,21 @@
 //        OnePassQueryDataSet result = new OnePassQueryDataSet();
 //
 //        try {
-//            for (Path path : fillPaths) {
+//            for (Path seriesPath : fillPaths) {
 //
-//                TSDataType dataType = getDataTypeByPath(path);
+//                TSDataType dataType = getDataTypeByPath(seriesPath);
 //                if (!fillType.containsKey(dataType)) {
 //                    switch (dataType) {
 //                        case INT32:
 //                        case INT64:
 //                        case FLOAT:
 //                        case DOUBLE:
-//                            result.mapRet.put(path.getFullPath(),
-//                                    new LinearFill(path, dataType, queryTime, 0, 0).getFillResult());
+//                            result.mapRet.put(seriesPath.getFullPath(),
+//                                    new LinearFill(seriesPath, dataType, queryTime, 0, 0).getFillResult());
 //                            break;
 //                        default:
-//                            result.mapRet.put(path.getFullPath(),
-//                                    new PreviousFill(path, dataType, queryTime, 0).getFillResult());
+//                            result.mapRet.put(seriesPath.getFullPath(),
+//                                    new PreviousFill(seriesPath, dataType, queryTime, 0).getFillResult());
 //                            break;
 //                    }
 //                    continue;
@@ -235,10 +235,10 @@
 //                IFill fill = fillType.get(dataType);
 //                if (fill instanceof PreviousFill) {
 //                    PreviousFill previousFill = (PreviousFill) fill;
-//                    result.mapRet.put(path.getFullPath(), new PreviousFill(path, dataType, queryTime, previousFill.getBeforeRange()).getFillResult());
+//                    result.mapRet.put(seriesPath.getFullPath(), new PreviousFill(seriesPath, dataType, queryTime, previousFill.getBeforeRange()).getFillResult());
 //                } else {
 //                    LinearFill linearFill = (LinearFill) fill;
-//                    result.mapRet.put(path.getFullPath(), new LinearFill(path, dataType, queryTime,
+//                    result.mapRet.put(seriesPath.getFullPath(), new LinearFill(seriesPath, dataType, queryTime,
 //                            linearFill.getBeforeRange(), linearFill.getAfterRange()).getFillResult());
 //                }
 //            }
@@ -276,11 +276,11 @@
 //        return queryDataSet;
 //    }
 //
-//    private DynamicOneColumnData queryOneSeriesWithoutFilter(Path path, DynamicOneColumnData res, int fetchSize, Integer readLock)
+//    private DynamicOneColumnData queryOneSeriesWithoutFilter(Path seriesPath, DynamicOneColumnData res, int fetchSize, Integer readLock)
 //            throws ProcessorException, IOException, PathErrorException {
 //
-//        String deltaObjectID = path.getDeltaObjectToString();
-//        String measurementID = path.getMeasurementToString();
+//        String deltaObjectID = seriesPath.getDeltaObjectToString();
+//        String measurementID = seriesPath.getMeasurementToString();
 //        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 //
 //        QueryRecordReader recordReader = (QueryRecordReader)
@@ -326,13 +326,13 @@
 //        return queryDataSet;
 //    }
 //
-//    private DynamicOneColumnData queryOneSeriesUsingFilter(Path path,
+//    private DynamicOneColumnData queryOneSeriesUsingFilter(Path seriesPath,
 //                                                           SingleSeriesFilterExpression queryTimeFilter, SingleSeriesFilterExpression queryValueFilter,
 //                                                           DynamicOneColumnData res, int fetchSize, Integer readLock)
 //            throws ProcessorException, IOException, PathErrorException {
 //
-//        String deltaObjectId = path.getDeltaObjectToString();
-//        String measurementId = path.getMeasurementToString();
+//        String deltaObjectId = seriesPath.getDeltaObjectToString();
+//        String measurementId = seriesPath.getMeasurementToString();
 //        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix(formNumber);
 //
 //        QueryRecordReader recordReader = (QueryRecordReader)
@@ -380,10 +380,10 @@
 //        LOGGER.debug("calculate common timestamps complete.");
 //
 //        OnePassQueryDataSet ret = queryDataSet;
-//        for (Path path : paths) {
+//        for (Path seriesPath : paths) {
 //
-//            String deltaObjectId = path.getDeltaObjectToString();
-//            String measurementId = path.getMeasurementToString();
+//            String deltaObjectId = seriesPath.getDeltaObjectToString();
+//            String measurementId = seriesPath.getMeasurementToString();
 //            String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("CrossQuery", formNumber);
 //            String queryKey = String.format("%s.%s", deltaObjectId, measurementId);
 //
@@ -434,7 +434,7 @@
 //        return res;
 //    }
 //
-//    private TSDataType getDataTypeByPath(Path path) throws PathErrorException {
-//        return MManager.getInstance().getSeriesType(path.getFullPath());
+//    private TSDataType getDataTypeByPath(Path seriesPath) throws PathErrorException {
+//        return MManager.getInstance().getSeriesType(seriesPath.getFullPath());
 //    }
 //}

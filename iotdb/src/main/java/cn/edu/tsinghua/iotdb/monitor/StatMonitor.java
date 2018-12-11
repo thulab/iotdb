@@ -49,7 +49,7 @@ public class StatMonitor implements IService{
     private final int statMonitorRetainIntervalSec;
 
     /**
-     * key: is the statistics store path
+     * key: is the statistics store seriesPath
      * Value: is an interface that implements statistics function
      */
     private HashMap<String, IStatistic> statisticMap;
@@ -88,7 +88,7 @@ public class StatMonitor implements IService{
 
     /**
      * @param hashMap       key is statParams name, values is AtomicLong type
-     * @param statGroupDeltaName is the deltaObject path of this module
+     * @param statGroupDeltaName is the deltaObject seriesPath of this module
      * @param curTime       TODO need to be fixed because it may contain overflow
      * @return TSRecord contains the DataPoints of a statGroupDeltaName
      */
@@ -159,7 +159,7 @@ public class StatMonitor implements IService{
         } catch (ProcessorException e) {
             LOGGER.error("Can't get the processor when recovering statistics of FileNodeManager,", e);
         } catch (PathErrorException e) {
-            LOGGER.error("When recovering statistics of FileNodeManager, timeseries path does not exist,", e);
+            LOGGER.error("When recovering statistics of FileNodeManager, timeseries seriesPath does not exist,", e);
         } catch (IOException e) {
             LOGGER.error("IO Error occurs when recovering statistics of FileNodeManager,", e);
         }
@@ -222,7 +222,7 @@ public class StatMonitor implements IService{
      * @return TSRecord, query statistics params
      */
     public HashMap<String, TSRecord> getOneStatisticsValue(String key) {
-        // queryPath like fileNode path: root.stats.car1, or FileNodeManager path: FileNodeManager
+        // queryPath like fileNode seriesPath: root.stats.car1, or FileNodeManager seriesPath: FileNodeManager
         String queryPath;
         if (key.contains("\\.")) {
             queryPath = MonitorConstants.statStorageGroupPrefix

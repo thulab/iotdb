@@ -19,17 +19,17 @@
 //        return FileReaderMapHolder.INSTANCE;
 //    }
 //
-//    public TsRandomAccessLocalFileReader get(String path) throws IOException {
+//    public TsRandomAccessLocalFileReader get(String seriesPath) throws IOException {
 //        if (fileReaderMap.get() == null) {
 //            fileReaderMap.set(new HashMap<>());
 //        }
 //
 //        TsRandomAccessLocalFileReader fileReader;
-//        if (!fileReaderMap.get().containsKey(path)) {
-//            fileReader = new TsRandomAccessLocalFileReader(path);
-//            fileReaderMap.get().put(path, fileReader);
+//        if (!fileReaderMap.get().containsKey(seriesPath)) {
+//            fileReader = new TsRandomAccessLocalFileReader(seriesPath);
+//            fileReaderMap.get().put(seriesPath, fileReader);
 //        } else {
-//            fileReader = fileReaderMap.get().get(path);
+//            fileReader = fileReaderMap.get().get(seriesPath);
 //        }
 //
 //        return fileReader;

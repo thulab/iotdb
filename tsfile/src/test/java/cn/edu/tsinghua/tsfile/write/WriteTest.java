@@ -154,7 +154,7 @@ public class WriteTest {
             e.printStackTrace();
         }
         LOG.info("write processing has finished");
-        TsFileSequenceReader reader = new TsFileSequenceReader(outputDataFile);
+        TsFileSequenceReader reader = new TsFileSequenceReader(outputDataFile, true);
         TsFileMetaData metaData = reader.readFileMetadata();
 
         Assert.assertEquals("{s3=[s3,DOUBLE,TS_2DIFF,{max_point_number=3},UNCOMPRESSED], " +

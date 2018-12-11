@@ -369,7 +369,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			String damagedFilePath = newFileNodes.get(newFileNodes.size() - 1).getFilePath();
 			String[] fileNames = damagedFilePath.split("\\" + File.separator);
 			// all information to recovery the damaged file.
-			// contains file path, action parameters and processorName
+			// contains file seriesPath, action parameters and processorName
 			parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bufferwriteFlushAction);
 			parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bufferwriteCloseAction);
 			parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
@@ -696,7 +696,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @param appendFilePath
-	 *            the path of appended file
+	 *            the seriesPath of appended file
 	 * @throws FileNodeProcessorException
 	 */
 	public void appendFile(IntervalFileNode appendFile, String appendFilePath) throws FileNodeProcessorException {
@@ -1122,7 +1122,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		try {
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
-				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index path is {}",
+				LOGGER.info("merge all file and modify index file, the nameSpacePath is {}, the index seriesPath is {}",
 						getProcessorName(), allIndexSeries);
 				for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
 					String series = entry.getKey();
@@ -1149,7 +1149,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		try {
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
-				LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index path is {}",
+				LOGGER.info("mergeswith all file and modify index file, the nameSpacePath is {}, the index seriesPath is {}",
 						getProcessorName(), allIndexSeries);
 				for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
 					String series = entry.getKey();
@@ -1707,7 +1707,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				if (!allIndexSeries.isEmpty()) {
 					LOGGER.info(
 							"Close buffer write file and append index file, the nameSpacePath is {}, the index "
-									+ "type is {}, the index path is {}",
+									+ "type is {}, the index seriesPath is {}",
 							getProcessorName(), "kvindex", allIndexSeries);
 					for (Entry<String, Set<IndexType>> entry : allIndexSeries.entrySet()) {
 						Path path = new Path(entry.getKey());

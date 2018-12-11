@@ -144,12 +144,12 @@ public class OpenFileNumUtil {
     /**
      * return statistic Map，whose key belongs to enum OpenFileNumStatistics：
      * TOTAL_OPEN_FILE_NUM is the current total open file number of IoTDB service process
-     * DATA_OPEN_FILE_NUM is the current open file number under path '/data/delta' of IoTDB service process
-     * DELTA_OPEN_FILE_NUM is the current open file number under path '/data/delta' of IoTDB service process
-     * OVERFLOW_OPEN_FILE_NUM is the current open file number under path '/data/overflow' of IoTDB service process
-     * WAL_OPEN_FILE_NUM is the current open file number under path '/data/wals' of IoTDB service process
-     * METADATA_OPEN_FILE_NUM is the current open file number under path '/data/metadata' of IoTDB service process
-     * DIGEST_OPEN_FILE_NUM is the current open file number under path '/data/digest' of IoTDB service process
+     * DATA_OPEN_FILE_NUM is the current open file number under seriesPath '/data/delta' of IoTDB service process
+     * DELTA_OPEN_FILE_NUM is the current open file number under seriesPath '/data/delta' of IoTDB service process
+     * OVERFLOW_OPEN_FILE_NUM is the current open file number under seriesPath '/data/overflow' of IoTDB service process
+     * WAL_OPEN_FILE_NUM is the current open file number under seriesPath '/data/wals' of IoTDB service process
+     * METADATA_OPEN_FILE_NUM is the current open file number under seriesPath '/data/metadata' of IoTDB service process
+     * DIGEST_OPEN_FILE_NUM is the current open file number under seriesPath '/data/digest' of IoTDB service process
      * SOCKET_OPEN_FILE_NUM is the current open socket connection of IoTDB service process
      *
      * @param pid : IoTDB service pid

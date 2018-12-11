@@ -51,7 +51,7 @@ public class FileNodeManager implements IStatistic, IService {
 	private final String baseDir;
 	/**
 	 * This map is used to manage all filenode processor,<br>
-	 * the key is filenode name which is storage group path.
+	 * the key is filenode name which is storage group seriesPath.
 	 */
 	private ConcurrentHashMap<String, FileNodeProcessor> processorMap;
 	/**
@@ -178,7 +178,7 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			filenodeName = MManager.getInstance().getFileNameByPath(path);
 		} catch (PathErrorException e) {
-			LOGGER.error("MManager get filenode name error, path is {}", path);
+			LOGGER.error("MManager get filenode name error, seriesPath is {}", path);
 			throw new FileNodeManagerException(e);
 		}
 		FileNodeProcessor processor = null;
@@ -202,7 +202,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 			}
 		}
-		// processorMap.putIfAbsent(path, processor);
+		// processorMap.putIfAbsent(seriesPath, processor);
 		return processor;
 	}
 
@@ -565,7 +565,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * provided for transmission module</b>
 	 * 
 	 * @param fileNodeName
-	 *            the path of storage group
+	 *            the seriesPath of storage group
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @return
@@ -598,7 +598,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * get all overlap tsfiles which are conflict with the appendFile
 	 * 
 	 * @param fileNodeName
-	 *            the path of storage group
+	 *            the seriesPath of storage group
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @return
@@ -626,7 +626,7 @@ public class FileNodeManager implements IStatistic, IService {
 			try {
 				allFileNodeNames = MManager.getInstance().getAllFileNames();
 			} catch (PathErrorException e) {
-				LOGGER.error("Get all storage group path error,", e);
+				LOGGER.error("Get all storage group seriesPath error,", e);
 				e.printStackTrace();
 				throw new FileNodeManagerException(e);
 			}

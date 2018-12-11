@@ -32,7 +32,7 @@ public class ReaderByTimestampTest {
     public void before() throws InterruptedException, WriteProcessException, IOException {
         TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder = "TS_2DIFF";
         TsFileGeneratorForSeriesReaderByTimestamp.generateFile(rowCount, 10 * 1024 * 1024, 10000);
-        fileReader = new TsFileSequenceReader(FILE_PATH);//TODO remove this class
+        fileReader = new TsFileSequenceReader(FILE_PATH, true);//TODO remove this class
         metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
 
     }

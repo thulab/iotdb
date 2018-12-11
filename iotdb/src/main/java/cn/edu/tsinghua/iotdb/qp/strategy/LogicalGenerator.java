@@ -238,13 +238,13 @@ public class LogicalGenerator {
         } else if(childrenSize == 3) {
             int tokenType = astNode.getChild(1).getType();
             if(tokenType == TSParser.TOK_USER) {
-                // list user privileges on path
+                // list user privileges on seriesPath
                 AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_USER_PRIVILEGE);
                 initializedOperator = operator;
                 operator.setUserName(astNode.getChild(1).getChild(0).getText());
                 operator.setNodeNameList(parsePath(astNode.getChild(2)));
             } else if(tokenType == TSParser.TOK_ROLE) {
-                // list role privileges on path
+                // list role privileges on seriesPath
                 AuthorOperator operator = new AuthorOperator(SQLConstant.TOK_LIST, AuthorType.LIST_ROLE_PRIVILEGE);
                 initializedOperator = operator;
                 operator.setRoleName(astNode.getChild(1).getChild(0).getText());
@@ -431,7 +431,7 @@ public class LogicalGenerator {
             ASTNode child = astNode.getChild(i);
             if (child.getType() != TSParser.TOK_PATH) {
                 throw new LogicalOperatorException(
-                        "children FROM clause except last one must all be path like root.a.b, actual:" + child.getText());
+                        "children FROM clause except last one must all be seriesPath like root.a.b, actual:" + child.getText());
             }
             Path tablePath = parsePath(child);
             selectOp.addSelectPath(tablePath);
@@ -476,7 +476,7 @@ public class LogicalGenerator {
             ASTNode child = node.getChild(i);
             if (child.getType() != TSParser.TOK_PATH) {
                 throw new LogicalOperatorException(
-                        "children FROM clause must all be path like root.a.b, actual:" + child.getText());
+                        "children FROM clause must all be seriesPath like root.a.b, actual:" + child.getText());
             }
             Path tablePath = parsePath(child);
             from.addPrefixTablePath(tablePath);
@@ -506,7 +506,7 @@ public class LogicalGenerator {
             Path selectPath = parsePath(astNode);
             selectOp.addSelectPath(selectPath);
         } else
-            throw new LogicalOperatorException("children SELECT clause must all be path like root.a.b, actual:" + astNode.dump());
+            throw new LogicalOperatorException("children SELECT clause must all be seriesPath like root.a.b, actual:" + astNode.dump());
         ((SFWOperator) initializedOperator).setSelectOperator(selectOp);
     }
 
@@ -569,7 +569,7 @@ public class LogicalGenerator {
         SelectOperator selectOp = ((QueryOperator) initializedOperator).getSelectOperator();
 
         if(selectOp.getSuffixPaths().size() != selectOp.getAggregations().size())
-            throw new LogicalOperatorException("Group by must bind each path with an aggregation function");
+            throw new LogicalOperatorException("Group by must bind each seriesPath with an aggregation function");
         ((QueryOperator) initializedOperator).setGroupBy(true);
         int childCount = astNode.getChildCount();
 
@@ -806,7 +806,7 @@ public class LogicalGenerator {
 
     private void analyzeDataLoad(ASTNode astNode) throws IllegalASTFormatException {
         int childCount = astNode.getChildCount();
-        // node path should have more than one level and first node level must
+        // node seriesPath should have more than one level and first node level must
         // be root
         // if (childCount < 3 ||
         // !SQLConstant.ROOT.equals(astNode.getChild(1).getText().toLowerCase()))

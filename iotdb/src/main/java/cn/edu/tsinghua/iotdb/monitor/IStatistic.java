@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public interface IStatistic {
     /**
-     * @return A HashMap that contains the module path like: root.stats.write.global,
+     * @return A HashMap that contains the module seriesPath like: root.stats.write.global,
      * and its value is TSRecord format contains all statistics measurement
      */
     HashMap<String, TSRecord> getAllStatisticsValue();
@@ -20,7 +20,7 @@ public interface IStatistic {
     void registStatMetadata();
 
     /**
-     * Get all module's statistics parameters as time-series path
+     * Get all module's statistics parameters as time-series seriesPath
      *
      * @return a list of string like "root.stats.xxx.statisticsParams",
      */

@@ -51,8 +51,8 @@ public class LoadDataUtils {
 
 	/**
 	 * @param inputCsvDataPath
-	 *            - path
-	 * @return - return extra data file in this circle as input csv path in next
+	 *            - seriesPath
+	 * @return - return extra data file in this circle as input csv seriesPath in next
 	 *         circle
 	 */
 	private String loadLocalDataOnePass(String inputCsvDataPath) {
@@ -113,7 +113,7 @@ public class LoadDataUtils {
 		try {
 			nsPath = mManager.getFileNameByPath(record.deviceId);
 		} catch (PathErrorException e) {
-			LOG.error("given path not found.{}", e.getMessage());
+			LOG.error("given seriesPath not found.{}", e.getMessage());
 		}
 		if (!writeInstanceMap.contains(nsPath)) {
 			if (writeInstanceMap.size() < writeInstanceThreshold) {
@@ -181,7 +181,7 @@ public class LoadDataUtils {
 			ArrayList<ColumnSchema> meaSchema = mManager.getSchemaForOneType(measureType);
 			fileSchema = FileSchemaUtils.getFileSchemaFromColumnSchema(meaSchema, measureType);
 		} catch (PathErrorException e) {
-			LOG.error("the path of input measurement schema meet error!", e);
+			LOG.error("the seriesPath of input measurement schema meet error!", e);
 			close();
 			return;
 		} catch (WriteProcessException e) {

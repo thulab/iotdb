@@ -33,7 +33,7 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
     // leaf filter operator means it doesn't have left and right child filterOperator. Leaf filter
     // should set FunctionOperator.
     protected boolean isLeaf = false;
-    // isSingle being true means all recursive children of this filter belong to one series path.
+    // isSingle being true means all recursive children of this filter belong to one series seriesPath.
     protected boolean isSingle = false;
     // if isSingle = false, singlePath must be null
     protected Path singlePath = null;

@@ -9,7 +9,6 @@ import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.read.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithFilterExecutorImpl;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithGlobalTimeFilterExecutorImpl;
-import cn.edu.tsinghua.iotdb.read.reader.SeqSeriesReader;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;

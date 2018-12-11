@@ -28,7 +28,7 @@ public class MManager {
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     // The file storing the serialize info for metadata
     private String datafilePath;
-    // the log file path
+    // the log file seriesPath
     private String logFilePath;
     private MGraph mGraph;
     private BufferedWriter logWriter;
@@ -200,7 +200,7 @@ public class MManager {
      * <code>getFileNameByPath</code> method first to check timeseries.
      * </p>
      *
-     * @param path     the timeseries path
+     * @param path     the timeseries seriesPath
      * @param dataType the datetype {@code DataType} for the timeseries
      * @param encoding the encoding function {@code Encoding} for the timeseries
      * @param args
@@ -345,7 +345,7 @@ public class MManager {
     }
 
     /**
-     * Extract the DeltaObjectId from given path
+     * Extract the DeltaObjectId from given seriesPath
      *
      * @param path
      * @return String represents the DeltaObjectId
@@ -361,7 +361,7 @@ public class MManager {
     }
 
     /**
-     * Get series type for given path
+     * Get series type for given seriesPath
      *
      * @param fullPath
      * @return TSDataType
@@ -459,7 +459,7 @@ public class MManager {
     /**
      * Get all ColumnSchemas for given delta object type
      *
-     * @param path A path represented one Delta object
+     * @param path A seriesPath represented one Delta object
      * @return a list contains all column schema
      * @throws PathErrorException
      */
@@ -475,7 +475,7 @@ public class MManager {
     }
 
     /**
-     * <p>Get all ColumnSchemas for the filenode path</p>
+     * <p>Get all ColumnSchemas for the filenode seriesPath</p>
      *
      * @param path
      * @return ArrayList<ColumnSchema> The list of the schema
@@ -512,7 +512,7 @@ public class MManager {
 
 
     /**
-     * Calculate the count of storage-level nodes included in given path
+     * Calculate the count of storage-level nodes included in given seriesPath
      *
      * @param path
      * @return The total count of storage-level nodes.
@@ -529,8 +529,8 @@ public class MManager {
     }
 
     /**
-     * Get the file name for given path Notice: This method could be called if
-     * and only if the path includes one node whose {@code isStorageLevel} is
+     * Get the file name for given seriesPath Notice: This method could be called if
+     * and only if the seriesPath includes one node whose {@code isStorageLevel} is
      * true
      *
      * @param path
@@ -611,8 +611,8 @@ public class MManager {
     }
 
     /**
-     * Return all paths for given path if the path is abstract.
-     * Or return the path itself.
+     * Return all paths for given seriesPath if the seriesPath is abstract.
+     * Or return the seriesPath itself.
      */
     public ArrayList<String> getPaths(String path) throws PathErrorException {
 
@@ -632,7 +632,7 @@ public class MManager {
     /**
      *
      * @param path
-     * @return metadata info of all timeseries under the given path
+     * @return metadata info of all timeseries under the given seriesPath
      * @throws PathErrorException
      */
     public List<List<String>> getShowTimeseriesPath(String path) throws PathErrorException {
@@ -646,7 +646,7 @@ public class MManager {
 
     /**
      * @param path
-     * @return All leaf nodes' path(s) of given path.
+     * @return All leaf nodes' seriesPath(s) of given seriesPath.
      */
     public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
         lock.readLock().lock();
@@ -658,7 +658,7 @@ public class MManager {
     }
 
     /**
-     * Check whether the path given exists
+     * Check whether the seriesPath given exists
      */
     public boolean pathExist(String path) {
 
@@ -710,7 +710,7 @@ public class MManager {
     }
 
     /**
-     * Get ColumnSchema for given path. Notice: Path must be a complete Path
+     * Get ColumnSchema for given seriesPath. Notice: Path must be a complete Path
      * from root to leaf node.
      */
     public ColumnSchema getSchemaForOnePath(String path) throws PathErrorException {
@@ -754,7 +754,7 @@ public class MManager {
     }
 
     /**
-     * Check whether given path contains a MNode whose
+     * Check whether given seriesPath contains a MNode whose
      * {@code MNode.isStorageLevel} is true
      */
     public boolean checkFileLevel(List<Path> path) throws PathErrorException {
@@ -846,7 +846,7 @@ public class MManager {
     }
 
     /**
-     * Get all timeseries path which have specified index
+     * Get all timeseries seriesPath which have specified index
      *
      * @param path
      * @return
@@ -869,7 +869,7 @@ public class MManager {
     }
 
     /**
-     * Get all timeseries path which have any no-real-time index
+     * Get all timeseries seriesPath which have any no-real-time index
      *
      * @param path
      * @return
@@ -958,7 +958,7 @@ public class MManager {
     }
 
     /**
-     * Check whether {@code path} exists and whether {@code path} has been set storage level.
+     * Check whether {@code seriesPath} exists and whether {@code seriesPath} has been set storage level.
      *
      * @param path
      * @return {@link PathCheckRet}

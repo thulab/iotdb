@@ -65,7 +65,7 @@ public class BasicFunctionOperator extends FunctionOperator {
             throws LogicalOperatorException, PathErrorException {
         TSDataType type = executor.getSeriesType(path);
         if (type == null) {
-            throw new PathErrorException("given path:{" + path.getFullPath()
+            throw new PathErrorException("given seriesPath:{" + path.getFullPath()
                     + "} don't exist in metadata");
         }
         IUnaryExpression ret;

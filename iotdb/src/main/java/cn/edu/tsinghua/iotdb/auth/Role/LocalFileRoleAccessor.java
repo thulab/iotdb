@@ -14,24 +14,24 @@ import java.util.*;
  * Role file schema :
  *      Int32 role name length
  *      Utf-8 role name bytes
- *      Int32 path privilege number n
- *          Int32 path[1] length
- *          Utf-8 path[1] bytes
+ *      Int32 seriesPath privilege number n
+ *          Int32 seriesPath[1] length
+ *          Utf-8 seriesPath[1] bytes
  *          Int32 privilege num k1
  *              Int32 privilege[1][1]
  *              Int32 privilege[1][2]
  *              ...
  *              Int32 privilege[1][k1]
- *          Int32 path[2] length
- *          Utf-8 path[2] bytes
+ *          Int32 seriesPath[2] length
+ *          Utf-8 seriesPath[2] bytes
  *          Int32 privilege num k2
  *              Int32 privilege[2][1]
  *              Int32 privilege[2][2]
  *              ...
  *              Int32 privilege[2][k2]
  *          ...
- *          Int32 path[n] length
- *          Utf-8 path[n] bytes
+ *          Int32 seriesPath[n] length
+ *          Utf-8 seriesPath[n] bytes
  *          Int32 privilege num kn
  *              Int32 privilege[n][1]
  *              Int32 privilege[n][2]

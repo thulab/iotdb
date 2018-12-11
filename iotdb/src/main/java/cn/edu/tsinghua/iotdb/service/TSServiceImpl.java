@@ -240,7 +240,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			case "COLUMN":
 				try {
                     			resp.setDataType(MManager.getInstance().getSeriesType(req.getColumnPath()).toString());
-                		} catch (PathErrorException e) { //TODO aggregate path e.g. last(root.ln.wf01.wt01.status)
+                		} catch (PathErrorException e) { //TODO aggregate seriesPath e.g. last(root.ln.wf01.wt01.status)
 			//                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			//                    status.setErrorMessage(String.format("Failed to fetch %s's data type because: %s", req.getColumnPath(), e));
 			//                    resp.setStatus(status);
@@ -257,7 +257,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
                     			resp.setStatus(status);
                     			return resp;
                 		} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
-                    			LOGGER.error("Failed to fetch path {}'s all columns", req.getColumnPath(), outOfMemoryError);
+                    			LOGGER.error("Failed to fetch seriesPath {}'s all columns", req.getColumnPath(), outOfMemoryError);
                     			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
                     			status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), outOfMemoryError));
                     			break;
@@ -419,7 +419,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			List<Path> paths;
 			paths = plan.getPaths();
 
-			// check path exists
+			// check seriesPath exists
 			if (paths.size() == 0) {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Timeseries does not exist.");
 			}

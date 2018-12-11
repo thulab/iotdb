@@ -479,12 +479,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                 case DELETE_PATH:
                     if (deletePathList != null && !deletePathList.isEmpty()) {
                         Set<String> pathSet = new HashSet<>();
-                        // Attention: Monitor storage group path is not allowed to be deleted
+                        // Attention: Monitor storage group seriesPath is not allowed to be deleted
                         for (Path p : deletePathList) {
                             ArrayList<String> subPaths = mManager.getPaths(p.getFullPath());
                             if (subPaths.isEmpty()) {
                                 throw new ProcessorException(
-                                        String.format("There are no timeseries in the prefix of %s path", p.getFullPath()));
+                                        String.format("There are no timeseries in the prefix of %s seriesPath", p.getFullPath()));
                             }
                             ArrayList<String> newSubPaths = new ArrayList<>();
                             for (String eachSubPath : subPaths) {
@@ -525,7 +525,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                             numSchemaMap = mManager.getNumSchemaMapForOneFileNode(nameSpacePath);
                             // Thread safety: just one thread can access/modify the schemaMap
                             synchronized (schemaMap) {
-                                // TODO: don't delete the storage group path
+                                // TODO: don't delete the storage group seriesPath
                                 // recursively
                                 path = new Path(p);
                                 String measurementId = path.getMeasurement();

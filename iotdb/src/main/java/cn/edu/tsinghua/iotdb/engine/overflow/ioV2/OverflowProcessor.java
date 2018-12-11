@@ -315,7 +315,7 @@ public class OverflowProcessor extends Processor {
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
-	 * @return the path of overflowFile, List of TimeSeriesChunkMetaData for the
+	 * @return the seriesPath of overflowFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryWorkDataInOverflowUpdate(String deltaObjectId,
@@ -332,7 +332,7 @@ public class OverflowProcessor extends Processor {
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
-	 * @return the path of unseqTsFile, List of TimeSeriesChunkMetaData for the
+	 * @return the seriesPath of unseqTsFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryWorkDataInOverflowInsert(String deltaObjectId,
@@ -386,7 +386,7 @@ public class OverflowProcessor extends Processor {
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
-	 * @return the path of overflowFile, List of TimeSeriesChunkMetaData for the
+	 * @return the seriesPath of overflowFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryMergeDataInOverflowUpdate(String deltaObjectId,
@@ -406,7 +406,7 @@ public class OverflowProcessor extends Processor {
 	 * @param deltaObjectId
 	 * @param measurementId
 	 * @param dataType
-	 * @return the path of unseqTsFile, List of TimeSeriesChunkMetaData for the
+	 * @return the seriesPath of unseqTsFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
 	private Pair<String, List<TimeSeriesChunkMetaData>> queryMergeDataInOverflowInsert(String deltaObjectId,

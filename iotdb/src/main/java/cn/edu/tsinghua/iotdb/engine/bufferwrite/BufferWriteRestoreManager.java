@@ -65,7 +65,7 @@ public class BufferWriteRestoreManager {
 
             recoverMetadata(metadatas);
             LOGGER.info(
-                    "Recover the bufferwrite processor {}, the tsfile path is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
+                    "Recover the bufferwrite processor {}, the tsfile seriesPath is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
                     processorName, insertFilePath, position, metadatas.size());
             isNewResource = false;
         } else {

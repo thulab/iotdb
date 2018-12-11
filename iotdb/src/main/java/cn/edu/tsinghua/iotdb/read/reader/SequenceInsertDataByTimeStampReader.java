@@ -93,15 +93,15 @@
 //      if (hasCacheLastTimeValuePair && cachedTimeValuePair.getTimestamp() >= currentTimestamp) {
 //        return true;
 //      }
-//      //singleTsFileReader has initialized
+//      //tsFileReader has initialized
 //      if (singleTsFileReaderInitialized) {
-//        TsPrimitiveType value = ((SeriesReaderFromSingleFileByTimestampImpl) singleTsFileReader).getValueInTimestamp(currentTimestamp);
+//        TsPrimitiveType value = ((SeriesReaderFromSingleFileByTimestampImpl) tsFileReader).getValueInTimestamp(currentTimestamp);
 //        if (value != null) {
 //          hasCacheLastTimeValuePair = true;
 //          cachedTimeValuePair = new TimeValuePair(currentTimestamp, value);
 //          return true;
 //        } else {
-//          if (singleTsFileReader.hasNext()) {
+//          if (tsFileReader.hasNext()) {
 //            return true;
 //          } else {
 //            singleTsFileReaderInitialized = false;
@@ -120,14 +120,14 @@
 //            continue;
 //          }
 //        }
-//        //singleTsFileReader has already initialized
-//        TsPrimitiveType value = ((SeriesReaderFromSingleFileByTimestampImpl) singleTsFileReader).getValueInTimestamp(currentTimestamp);
+//        //tsFileReader has already initialized
+//        TsPrimitiveType value = ((SeriesReaderFromSingleFileByTimestampImpl) tsFileReader).getValueInTimestamp(currentTimestamp);
 //        if (value != null) {
 //          hasCacheLastTimeValuePair = true;
 //          cachedTimeValuePair = new TimeValuePair(currentTimestamp, value);
 //          return true;
 //        } else {
-//          if (singleTsFileReader.hasNext()) {
+//          if (tsFileReader.hasNext()) {
 //            return true;
 //          } else {
 //            singleTsFileReaderInitialized = false;
@@ -143,23 +143,23 @@
 //        hasCacheLastTimeValuePair = false;
 //        return cachedTimeValuePair;
 //      } else {
-//        return singleTsFileReader.next();
+//        return tsFileReader.next();
 //      }
 //    }
 //
 //    protected boolean singleTsFileSatisfied(IntervalFileNode fileNode) {
 //
-//      if (fileNode.getStartTime(path.getDevice()) == -1) {
+//      if (fileNode.getStartTime(seriesPath.getDevice()) == -1) {
 //        return false;
 //      }
-//      long maxTime = fileNode.getEndTime(path.getDevice());
+//      long maxTime = fileNode.getEndTime(seriesPath.getDevice());
 //      return currentTimestamp <= maxTime;
 //    }
 //
 //    protected void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException {
 //      RandomAccessFile raf = OverflowFileStreamManager.getInstance().get(jobId, fileNode.getFilePath());
 //      ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(raf);
-//      singleTsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader, path);
+//      tsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader, seriesPath);
 //    }
 //
 //    @Override
@@ -184,22 +184,22 @@
 //
 //    @Override
 //    public boolean hasNext() throws IOException {
-//      return singleTsFileReader.hasNext();
+//      return tsFileReader.hasNext();
 //    }
 //
 //    @Override
 //    public TimeValuePair next() throws IOException {
-//      return singleTsFileReader.next();
+//      return tsFileReader.next();
 //    }
 //
 //    protected void initSingleTsFileReader(ITsRandomAccessFileReader randomAccessFileReader,
 //                                          SeriesChunkLoader seriesChunkLoader, List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList) {
-//      singleTsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList);
+//      tsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader, seriesChunkLoader, encodedSeriesChunkDescriptorList);
 //    }
 //
 //    @Override
 //    public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
-//      return ((SeriesReaderByTimeStamp) singleTsFileReader).getValueInTimestamp(timestamp);
+//      return ((SeriesReaderByTimeStamp) tsFileReader).getValueInTimestamp(timestamp);
 //    }
 //  }
 //

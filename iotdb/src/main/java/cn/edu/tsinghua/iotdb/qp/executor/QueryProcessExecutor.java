@@ -133,7 +133,7 @@ public abstract class QueryProcessExecutor {
 	 * execute update command and return whether the operator is successful.
 	 *
 	 * @param path
-	 *            : update series path
+	 *            : update series seriesPath
 	 * @param startTime
 	 *            start time in update command
 	 * @param endTime
@@ -185,7 +185,7 @@ public abstract class QueryProcessExecutor {
 	 * execute delete command and return whether the operator is successful.
 	 *
 	 * @param path
-	 *            : delete series path
+	 *            : delete series seriesPath
 	 * @param deleteTime
 	 *            end time in delete command
 	 * @return - whether the operator is successful.
@@ -196,7 +196,7 @@ public abstract class QueryProcessExecutor {
 	 * insert a single value. Only used in test
 	 *
 	 * @param path
-	 *            path to be inserted
+	 *            seriesPath to be inserted
 	 * @param insertTime
 	 *            - it's time point but not a range
 	 * @param value

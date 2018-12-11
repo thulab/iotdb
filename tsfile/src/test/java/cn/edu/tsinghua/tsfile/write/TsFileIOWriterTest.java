@@ -54,7 +54,7 @@ public class TsFileIOWriterTest {
 
     @Test
     public void endFileTest() throws IOException {
-        TsFileSequenceReader reader = new TsFileSequenceReader(tsfile);
+        TsFileSequenceReader reader = new TsFileSequenceReader(tsfile, true);
 
         // magic_string
         Assert.assertEquals(TSFileConfig.MAGIC_STRING, reader.readHeadMagic());

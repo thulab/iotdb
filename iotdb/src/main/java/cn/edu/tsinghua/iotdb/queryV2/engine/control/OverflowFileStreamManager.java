@@ -17,72 +17,72 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class OverflowFileStreamManager {
 
-    private ConcurrentHashMap<Long, Map<String, RandomAccessFile>> fileStreamStore;
+  private ConcurrentHashMap<Long, Map<String, RandomAccessFile>> fileStreamStore;
 
-    private ConcurrentHashMap<String, MappedByteBuffer> memoryStreamStore = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, MappedByteBuffer> memoryStreamStore = new ConcurrentHashMap<>();
 
-    private AtomicInteger mappedByteBufferUsage = new AtomicInteger();
+  private AtomicInteger mappedByteBufferUsage = new AtomicInteger();
 
-    private OverflowFileStreamManager() {
-        fileStreamStore = new ConcurrentHashMap<>();
+  private OverflowFileStreamManager() {
+    fileStreamStore = new ConcurrentHashMap<>();
+  }
+
+  // Using MMap to replace RandomAccessFile
+  public synchronized MappedByteBuffer get(String path) throws IOException {
+    if (!memoryStreamStore.containsKey(path)) {
+      RandomAccessFile randomAccessFile = new RandomAccessFile(path, "r");
+      MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
+      memoryStreamStore.put(path, mappedByteBuffer);
+      mappedByteBufferUsage.set(mappedByteBufferUsage.get() + (int) randomAccessFile.length());
     }
+    return memoryStreamStore.get(path);
+  }
 
-    // Using MMap to replace RandomAccessFile
-    public synchronized MappedByteBuffer get(String path) throws IOException {
-        if (!memoryStreamStore.containsKey(path)) {
-            RandomAccessFile randomAccessFile = new RandomAccessFile(path, "r");
-            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
-            memoryStreamStore.put(path, mappedByteBuffer);
-            mappedByteBufferUsage.set(mappedByteBufferUsage.get() + (int)randomAccessFile.length());
-        }
-        return memoryStreamStore.get(path);
-    }
+  public boolean contains(String path) {
+    return memoryStreamStore.containsKey(path);
+  }
 
-    public boolean contains(String path) {
-        return memoryStreamStore.containsKey(path);
+  /**
+   * Remove the MMap usage of given seriesPath.
+   *
+   * @param path
+   */
+  public synchronized void removeMappedByteBuffer(String path) {
+    if (memoryStreamStore.containsKey(path)) {
+      MappedByteBuffer buffer = memoryStreamStore.get(path);
+      mappedByteBufferUsage.set(mappedByteBufferUsage.get() - buffer.limit());
+      ((DirectBuffer) buffer).cleaner().clean();
     }
+  }
 
-    /**
-     * Remove the MMap usage of given path.
-     *
-     * @param path
-     */
-    public synchronized void removeMappedByteBuffer(String path) {
-        if (memoryStreamStore.containsKey(path)) {
-            MappedByteBuffer buffer = memoryStreamStore.get(path);
-            mappedByteBufferUsage.set(mappedByteBufferUsage.get() - buffer.limit());
-            ((DirectBuffer) buffer).cleaner().clean();
-        }
-    }
+  public AtomicInteger getMappedByteBufferUsage() {
+    return this.mappedByteBufferUsage;
+  }
 
-    public AtomicInteger getMappedByteBufferUsage() {
-        return this.mappedByteBufferUsage;
+  public RandomAccessFile get(Long jobId, String path) throws IOException {
+    if (!fileStreamStore.containsKey(jobId)) {
+      fileStreamStore.put(jobId, new HashMap<>());
     }
+    if (!fileStreamStore.get(jobId).containsKey(path)) {
+      fileStreamStore.get(jobId).put(path, new RandomAccessFile(path, "r"));
+    }
+    return fileStreamStore.get(jobId).get(path);
+  }
 
-    public RandomAccessFile get(Long jobId, String path) throws IOException {
-        if (!fileStreamStore.containsKey(jobId)) {
-            fileStreamStore.put(jobId, new HashMap<>());
-        }
-        if (!fileStreamStore.get(jobId).containsKey(path)) {
-            fileStreamStore.get(jobId).put(path, new RandomAccessFile(path, "r"));
-        }
-        return fileStreamStore.get(jobId).get(path);
+  public void closeAll(Long jobId) throws IOException {
+    if (fileStreamStore.containsKey(jobId)) {
+      for (RandomAccessFile randomAccessFile : fileStreamStore.get(jobId).values()) {
+        randomAccessFile.close();
+      }
+      fileStreamStore.remove(jobId);
     }
+  }
 
-    public void closeAll(Long jobId) throws IOException {
-        if (fileStreamStore.containsKey(jobId)) {
-            for (RandomAccessFile randomAccessFile : fileStreamStore.get(jobId).values()) {
-                randomAccessFile.close();
-            }
-            fileStreamStore.remove(jobId);
-        }
-    }
+  private static class OverflowFileStreamManagerHelper {
+    public static OverflowFileStreamManager INSTANCE = new OverflowFileStreamManager();
+  }
 
-    private static class OverflowFileStreamManagerHelper {
-        public static OverflowFileStreamManager INSTANCE = new OverflowFileStreamManager();
-    }
-
-    public static OverflowFileStreamManager getInstance() {
-        return OverflowFileStreamManagerHelper.INSTANCE;
-    }
+  public static OverflowFileStreamManager getInstance() {
+    return OverflowFileStreamManagerHelper.INSTANCE;
+  }
 }

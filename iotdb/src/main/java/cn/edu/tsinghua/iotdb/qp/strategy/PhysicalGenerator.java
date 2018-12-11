@@ -70,7 +70,7 @@ public class PhysicalGenerator {
                 paths = Insert.getSelectedPaths();
                 if (paths.size() != 1) {
                     throw new LogicalOperatorException(
-                            "For Insert command, cannot specified more than one path:" + paths);
+                            "For Insert command, cannot specified more than one seriesPath:" + paths);
                 }
                 if (Insert.getTime() <= 0) {
                     throw new LogicalOperatorException("For Insert command, time must greater than 0.");
@@ -83,7 +83,7 @@ public class PhysicalGenerator {
 //                updatePlan.setValue(update.getValue());
 //                paths = update.getSelectedPaths();
 //                if (paths.size() > 1) {
-//                    throw new LogicalOperatorException("update command, must have and only have one path:" + paths);
+//                    throw new LogicalOperatorException("update command, must have and only have one seriesPath:" + paths);
 //                }
 //                updatePlan.setPath(paths.get(0));
 //                parseUpdateTimeFilter(update, updatePlan);
@@ -250,7 +250,7 @@ public class PhysicalGenerator {
 //            singleFilterList.add(filterOperator);
 //        } else if (filterOperator.getTokenIntType() == KW_AND) {
 //            // now it has been dealt with merge optimizer, thus all nodes with
-//            // same path have been merged to one node
+//            // same seriesPath have been merged to one node
 //            singleFilterList = filterOperator.getChildren();
 //        } else {
 //            throw new GeneratePhysicalPlanException("for one task, filter cannot be OR if it's not single");

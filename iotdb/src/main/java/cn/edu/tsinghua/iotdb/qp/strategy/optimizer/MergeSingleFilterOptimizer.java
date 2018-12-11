@@ -22,13 +22,13 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
      * merge and extract node with same Path recursively. <br>
      * If a node has more than two children and some children has same paths, remove them from this
      * node and merge them to a new single node, then add the new node to this children list.<br>
-     * if all recursive children of this node have same path, set this node to single node, and
-     * return the same path, otherwise, throw exception;
+     * if all recursive children of this node have same seriesPath, set this node to single node, and
+     * return the same seriesPath, otherwise, throw exception;
      * 
      * @param filter - children is not empty.
      * 
-     * @return - if all recursive children of this node have same path, set this node to single
-     *         node, and return the same path, otherwise, throw exception;
+     * @return - if all recursive children of this node have same seriesPath, set this node to single
+     *         node, and return the same seriesPath, otherwise, throw exception;
      */
     private Path mergeSamePathFilter(FilterOperator filter) throws LogicalOptimizeException {
         if (filter.isLeaf())
@@ -44,7 +44,7 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
         Path tempPath;
         for (int i = 1; i < children.size(); i++) {
             tempPath = mergeSamePathFilter(children.get(i));
-            // if one of children differs from others or is not single node(path = null), filter's path
+            // if one of children differs from others or is not single node(seriesPath = null), filter's seriesPath
             // is null
             if (tempPath == null || !tempPath.equals(childPath))
                 childPath = null;
@@ -55,7 +55,7 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
             return childPath;
         }
 
-        // sort paths of BasicFunction by their single path. We don't sort children on non-leaf layer.
+        // sort paths of BasicFunction by their single seriesPath. We don't sort children on non-leaf layer.
         if(!children.isEmpty() && allIsBasic(children))
             children.sort(Comparator.comparing(o -> o.getSinglePath().getFullPath()));
         List<FilterOperator> ret = new ArrayList<>();
@@ -64,7 +64,7 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
         int i;
         for (i = 0; i < children.size(); i++) {
             tempPath = children.get(i).getSinglePath();
-            // sorted by path, all "null" paths are in the end
+            // sorted by seriesPath, all "null" paths are in the end
             if (tempPath == null) {
                 break;
             }
@@ -74,7 +74,7 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
                 tempExtrNode = new ArrayList<>();
                 tempExtrNode.add(children.get(i));
             } else if (childPath.equals(tempPath)) {
-                // successive next single child with same path,merge it with previous children
+                // successive next single child with same seriesPath,merge it with previous children
                 tempExtrNode.add(children.get(i));
             } else {
                 // not more same, add exist nodes in tempExtrNode into a new node
@@ -113,7 +113,7 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
             ret.add(children.get(i));
         }
         if (ret.size() == 1) {
-            // all children have same path, which means this filter node is a single node
+            // all children have same seriesPath, which means this filter node is a single node
             filter.setIsSingle(true);
             filter.setSinglePath(childPath);
             filter.setChildren(ret.get(0).getChildren());

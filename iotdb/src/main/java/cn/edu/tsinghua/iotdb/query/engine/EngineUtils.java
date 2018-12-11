@@ -20,20 +20,20 @@
 //     * so there may be remaining data in OnePassQueryDataSet.BatchReadGenerator,
 //     */
 //    public static void putRecordFromBatchReadGenerator(OnePassQueryDataSet dataSet) {
-//        for (Path path : dataSet.getBatchReadGenerator().retMap.keySet()) {
-//            DynamicOneColumnData batchReadData = dataSet.getBatchReadGenerator().retMap.get(path);
+//        for (Path seriesPath : dataSet.getBatchReadGenerator().retMap.keySet()) {
+//            DynamicOneColumnData batchReadData = dataSet.getBatchReadGenerator().retMap.get(seriesPath);
 //            DynamicOneColumnData leftData = batchReadData.sub(batchReadData.curIdx);
 //
 //            // copy batch read info from oneColRet to leftRet
 //            // batchReadData.copyFetchInfoTo(leftData);
-//            dataSet.getBatchReadGenerator().retMap.put(path, leftData);
+//            dataSet.getBatchReadGenerator().retMap.put(seriesPath, leftData);
 //            batchReadData.rollBack(batchReadData.valueLength - batchReadData.curIdx);
-//            dataSet.mapRet.put(path.getFullPath(), batchReadData);
+//            dataSet.mapRet.put(seriesPath.getFullPath(), batchReadData);
 //        }
 //    }
 //
-//    public static String aggregationKey(AggregateFunction aggregateFunction, Path path) {
-//        return aggregateFunction.name + "(" + path.getFullPath() + ")";
+//    public static String aggregationKey(AggregateFunction aggregateFunction, Path seriesPath) {
+//        return aggregateFunction.name + "(" + seriesPath.getFullPath() + ")";
 //    }
 //
 //    public static boolean noFilterOrOnlyHasTimeFilter(List<FilterStructure> filterStructures) {

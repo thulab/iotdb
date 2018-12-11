@@ -42,9 +42,9 @@
 //            List<RowGroupReader> rowGroupReaderList = new ArrayList<>();
 //
 //            // to examine whether sealed file has data
-//            for (String path : sealedFilePathList) {
-//                TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(path);
-//                TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(path);
+//            for (String seriesPath : sealedFilePathList) {
+//                TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(seriesPath);
+//                TsFileMetaData tsFileMetaData = TsFileMetaDataCache.getInstance().get(seriesPath);
 //                if (tsFileMetaData.containsDeltaObject(deltaObjectUID)) {
 //
 //                    // to filter some file whose (startTime, endTime) is not satisfied with the overflowTimeFilter
@@ -53,7 +53,7 @@
 //                            tsFileMetaData.getDeltaObject(deltaObjectUID).endTime))
 //                        continue;
 //
-//                    TsRowGroupBlockMetaData tsRowGroupBlockMetaData = RowGroupBlockMetaDataCache.getInstance().get(path, deltaObjectUID, tsFileMetaData);
+//                    TsRowGroupBlockMetaData tsRowGroupBlockMetaData = RowGroupBlockMetaDataCache.getInstance().get(seriesPath, deltaObjectUID, tsFileMetaData);
 //                    for (RowGroupMetaData meta : tsRowGroupBlockMetaData.getRowGroups()) {
 //                        //TODO parallelism could be used to speed up
 //

@@ -209,7 +209,7 @@ public class IoTDBAuthorizationTest {
         }
         assertTrue(caught);
 
-        // grant on a illegal path
+        // grant on a illegal seriesPath
         caught = false;
         try {
             adminStmt.execute("GRANT USER tempuser PRIVILEGES 'DELETE_TIMESERIES' on a.b");
@@ -255,7 +255,7 @@ public class IoTDBAuthorizationTest {
         }
         assertTrue(caught);
 
-        // revoke on a illegal path
+        // revoke on a illegal seriesPath
         caught = false;
         try {
             adminStmt.execute("REVOKE USER tempuser PRIVILEGES 'DELETE_TIMESERIES' on a.b");
