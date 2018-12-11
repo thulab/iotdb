@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
+import cn.edu.tsinghua.iotdb.read.ISeriesReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.read.reader.TimeValuePairReader;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,21 +11,21 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 
-public class PriorityMergeSortTimeValuePairReader <T extends PriorityTimeValuePairReader>
-        implements TimeValuePairReader, SeriesReader {
+public class PriorityMergeReader implements ISeriesReader {
 
-    protected List<T> readerList;
+    protected List<PriorityTimeValuePairReader> readerList;
     protected PriorityQueue<Element> heap;
 
-    public PriorityMergeSortTimeValuePairReader(T... readers) throws IOException {
-        readerList = new ArrayList<T>();
+    public PriorityMergeReader(PriorityTimeValuePairReader... readers) throws IOException {
+        readerList = new ArrayList<>();
+
         for (int i = 0; i < readers.length; i++) {
             readerList.add(readers[i]);
         }
         init();
     }
 
-    public PriorityMergeSortTimeValuePairReader(List<T> readerList) throws IOException {
+    public PriorityMergeReader(List<PriorityTimeValuePairReader> readerList) throws IOException {
         this.readerList = readerList;
         init();
     }
@@ -70,7 +70,7 @@ public class PriorityMergeSortTimeValuePairReader <T extends PriorityTimeValuePa
 
     @Override
     public void close() throws IOException {
-        for (TimeValuePairReader timeValuePairReader : readerList) {
+        for (PriorityTimeValuePairReader timeValuePairReader : readerList) {
             timeValuePairReader.close();
         }
     }
@@ -92,5 +92,20 @@ public class PriorityMergeSortTimeValuePairReader <T extends PriorityTimeValuePa
                     this.timeValuePair.getTimestamp() < o.timeValuePair.getTimestamp() ? -1 :
                             o.priority.compareTo(this.priority);
         }
+    }
+
+    @Override
+    public boolean hasNextBatch() {
+        return false;
+    }
+
+    @Override
+    public BatchData nextBatch() {
+        return null;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return null;
     }
 }

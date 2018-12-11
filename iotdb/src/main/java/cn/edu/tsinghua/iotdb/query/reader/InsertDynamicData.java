@@ -3,7 +3,7 @@
 //import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 //import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
 //import cn.edu.tsinghua.tsfile.common.utils.Binary;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -42,7 +42,7 @@
 //    private TimeValuePair currentTimeValuePair;
 //
 //    /** overflow insert data reader **/
-//    private OverflowInsertDataReader overflowInsertDataReader;
+//    private UnSeqSeriesReader overflowInsertDataReader;
 //
 //    /** overflow update data reader **/
 //    private OverflowOperationReader overflowOperationReader;
@@ -68,7 +68,7 @@
 //    private SingleValueVisitor singleTimeVisitor;
 //
 //    public InsertDynamicData(TSDataType dataType, SingleSeriesFilterExpression timeFilter, SingleSeriesFilterExpression valueFilter,
-//                             RawSeriesChunk memRawSeriesChunk, OverflowInsertDataReader overflowInsertDataReader, OverflowOperationReader overflowOperationReader) {
+//                             RawSeriesChunk memRawSeriesChunk, UnSeqSeriesReader overflowInsertDataReader, OverflowOperationReader overflowOperationReader) {
 //        this.dataType = dataType;
 //        this.timeFilter = timeFilter;
 //        this.valueFilter = valueFilter;

@@ -13,12 +13,12 @@ import java.io.IOException;
  * e.g. For query clause "select s1, s2 form root where s3 < 0 and time > 100"，
  * this class can iterate back to every timestamp of the query.
  */
-public class IoTDBTimeGenerator implements TimeGenerator {
+public class EngineTimeGenerator implements TimeGenerator {
 
     private IExpression expression;
     private Node operatorNode;
 
-    public IoTDBTimeGenerator(IExpression expression) throws IOException, FileNodeManagerException {
+    public EngineTimeGenerator(IExpression expression) throws IOException, FileNodeManagerException {
         this.expression = expression;
         initNode();
     }

@@ -19,7 +19,7 @@
 //import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 //import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.FileSeriesReader;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
+//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.ISeriesReader;
 //import cn.edu.tsinghua.tsfile.utils.Pair;
 //import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 //import cn.edu.tsinghua.tsfile.write.page.IPageWriter;
@@ -144,7 +144,7 @@
 //
 //                            if (unSeqFileMetaData.get(deltaObjectId).containsKey(measurementId)) {
 //
-//                                TimeValuePairReader seriesReader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
+//                                ISeriesReader seriesReader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
 //                                        new Path(deltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
 //                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 //
@@ -247,7 +247,7 @@
 //                            Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
 //                            Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
 //                            SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-//                            TimeValuePairReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+//                            ISeriesReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 //
 //                            //long tmpRecordCount = 0;
 //                            while (reader.hasNext()) {
@@ -323,7 +323,7 @@
 //                                Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
 //                                Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
 //                                SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-//                                TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+//                                ISeriesReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 //                                while (tsFileReader.hasNext()) {
 //                                    TimeValuePair tp = tsFileReader.next();
 //                                    count ++;
@@ -331,7 +331,7 @@
 //                                tsFileReader.close();
 //
 //
-//                                TimeValuePairReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
+//                                ISeriesReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
 //                                        new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
 //                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 //                                while (overflowInsertReader.hasNext()) {

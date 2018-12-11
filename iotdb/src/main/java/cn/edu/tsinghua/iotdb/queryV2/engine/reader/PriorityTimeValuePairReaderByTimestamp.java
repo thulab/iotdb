@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 

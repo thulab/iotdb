@@ -1,30 +1,26 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader;
 
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
-import static java.util.Collections.sort;
-
-public class PriorityMergeSortTimeValuePairReaderByTimestamp extends PriorityMergeSortTimeValuePairReader<PriorityTimeValuePairReaderByTimestamp>
-        implements SeriesReaderByTimeStamp {
+public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implements SeriesReaderByTimeStamp {
 
     private long currentTimestamp;
     private boolean hasCachedTimeValuePair;
     private TimeValuePair cachedTimeValuePair;
 
-    public PriorityMergeSortTimeValuePairReaderByTimestamp(PriorityTimeValuePairReaderByTimestamp... readers) throws IOException {
+    public PriorityMergeReaderByTimestamp(PriorityTimeValuePairReaderByTimestamp... readers) throws IOException {
        super(readers);
        currentTimestamp = Long.MIN_VALUE;
        hasCachedTimeValuePair = false;
     }
 
-    public PriorityMergeSortTimeValuePairReaderByTimestamp(List<PriorityTimeValuePairReaderByTimestamp> readers) throws IOException {
+    public PriorityMergeReaderByTimestamp(List<PriorityTimeValuePairReaderByTimestamp> readers) throws IOException {
         super(readers);
+
         currentTimestamp = Long.MIN_VALUE;
         hasCachedTimeValuePair = false;
     }

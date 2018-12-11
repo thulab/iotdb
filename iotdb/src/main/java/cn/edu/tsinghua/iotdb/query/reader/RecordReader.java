@@ -9,7 +9,7 @@
 //import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
 //import cn.edu.tsinghua.iotdb.query.management.ReaderManager;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 //import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 //import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
@@ -55,7 +55,7 @@
 //    /** memtable data in memory **/
 //    protected RawSeriesChunk memRawSeriesChunk;
 //
-//    public OverflowInsertDataReader getOverflowSeriesInsertReader() {
+//    public UnSeqSeriesReader getOverflowSeriesInsertReader() {
 //        return overflowSeriesInsertReader;
 //    }
 //
@@ -64,7 +64,7 @@
 //    }
 //
 //    /** overflow insert data reader **/
-//    protected OverflowInsertDataReader overflowSeriesInsertReader;
+//    protected UnSeqSeriesReader overflowSeriesInsertReader;
 //
 //    /** overflow update data reader **/
 //    protected OverflowOperationReader overflowOperationReader;
@@ -115,7 +115,7 @@
 //        if (globalSortedSeriesDataSource.getRawSeriesChunk() != null)
 //            memRawSeriesChunk = globalSortedSeriesDataSource.getRawSeriesChunk();
 //
-//        overflowSeriesInsertReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+//        overflowSeriesInsertReader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource);
 //        overflowOperationReader = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateOperationReader();
 //        overflowOperationReaderCopy = overflowOperationReader.copy();
 //

@@ -4,10 +4,9 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
-import cn.edu.tsinghua.iotdb.read.QueryEngine;
+import cn.edu.tsinghua.iotdb.read.EngineQueryExecutor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
@@ -21,7 +20,7 @@ import java.util.*;
 public abstract class QueryProcessExecutor {
 
 	protected ThreadLocal<Integer> fetchSize = new ThreadLocal<>();
-	private QueryEngine queryEngine = new QueryEngine();
+	private EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
 
 	public QueryProcessExecutor() {
 	}
@@ -33,7 +32,7 @@ public abstract class QueryProcessExecutor {
 				.setSelectSeries(queryPlan.getPaths())
 				.setExpression(queryPlan.getExpression());
 
-		return queryEngine.query(queryExpression);
+		return engineExecutor.query(queryExpression);
 	}
 
 	public abstract TSDataType getSeriesType(Path fullPath) throws PathErrorException;

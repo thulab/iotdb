@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
@@ -34,7 +34,7 @@ public class SeriesMergeSortReaderTest {
         for (int i = 0; i < sources.length; i++) {
             priorityTimeValuePairReaders.add(new PriorityTimeValuePairReader(new FakedSeriesReader(sources[i], i + 1), new Priority(i + 1)));
         }
-        PriorityMergeSortTimeValuePairReader seriesMergeSortReader = new PriorityMergeSortTimeValuePairReader(priorityTimeValuePairReaders);
+        PriorityMergeReader seriesMergeSortReader = new PriorityMergeReader(priorityTimeValuePairReaders);
         int i = 0;
         while (seriesMergeSortReader.hasNext()) {
             TimeValuePair timeValuePair = seriesMergeSortReader.next();

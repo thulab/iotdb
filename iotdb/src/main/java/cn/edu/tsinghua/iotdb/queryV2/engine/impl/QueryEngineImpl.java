@@ -19,7 +19,7 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
     private static final Logger logger = LoggerFactory.getLogger(QueryEngineImpl.class);
     private static final int PENDING_QUEUE_SIZE = 100000;
     private static final int THREAD_POOL_SIZE = 50;
-    private static final String THREAD_POOL_NAME = "QueryEngine";
+    private static final String THREAD_POOL_NAME = "EngineQueryExecutor";
     private BlockingQueue<QueryJob> queryJobPendingQueue;
     private QueryJobDispatcher queryJobDispatcher;
     private ConcurrentHashMap<QueryJob, QueryDataSet> queryJobResultSet;

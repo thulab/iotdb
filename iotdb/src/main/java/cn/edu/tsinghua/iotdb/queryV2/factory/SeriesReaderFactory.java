@@ -5,18 +5,18 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.ExternalSortJobEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.SimpleExternalSortEngine;
-import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReaderImpl;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReaderByTimestamp;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.*;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.read.filter.utils.DigestForFilter;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.read.filter.visitor.impl.DigestFilterVisitor;
-import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunkDescriptor;
@@ -34,6 +34,7 @@ import java.util.List;
 
 
 public class SeriesReaderFactory {
+
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
     private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
     private DigestFilterVisitor digestFilterVisitor;
@@ -50,9 +51,9 @@ public class SeriesReaderFactory {
         queryJobManager = QueryJobManager.getInstance();
     }
 
-    public OverflowInsertDataReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource, Filter<?> filter) throws IOException {
+    public UnSeqSeriesReader createSeriesReaderForUnSeq(OverflowSeriesDataSource overflowSeriesDataSource, Filter<?> filter) throws IOException {
         long jobId = queryJobManager.addJobForOneQuery();
-        List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList = SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
+        List<ChunkMetaData> seriesChunkDescriptorList = SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
         int priorityValue = 1;
         List<PriorityTimeValuePairReader> timeValuePairReaders = new ArrayList<>();
         for (EncodedSeriesChunkDescriptor seriesChunkDescriptor : seriesChunkDescriptorList) {
@@ -74,7 +75,7 @@ public class SeriesReaderFactory {
         }
         //Add External Sort
         timeValuePairReaders = externalSortJobEngine.execute(timeValuePairReaders);
-        return new OverflowInsertDataReader(jobId, new PriorityMergeSortTimeValuePairReader(timeValuePairReaders));
+        return new UnSeqSeriesReader(jobId, new PriorityMergeReader(timeValuePairReaders));
     }
 
     public OverflowInsertDataReaderByTimeStamp createSeriesReaderForOverflowInsertByTimestamp(OverflowSeriesDataSource overflowSeriesDataSource) throws IOException {
@@ -98,12 +99,14 @@ public class SeriesReaderFactory {
                     overflowSeriesDataSource.getRawSeriesChunk()), new PriorityTimeValuePairReader.Priority(priorityValue++)));
         }
 
-        return new OverflowInsertDataReaderByTimeStamp(jobId, new PriorityMergeSortTimeValuePairReaderByTimestamp(timeValuePairReaders));
+        return new OverflowInsertDataReaderByTimeStamp(jobId, new PriorityMergeReaderByTimestamp(timeValuePairReaders));
     }
 
     private boolean seriesChunkSatisfied(SeriesChunkDescriptor seriesChunkDescriptor, Filter<?> filter) {
+
         DigestForFilter timeDigest = new DigestForFilter(seriesChunkDescriptor.getMinTimestamp(),
                 seriesChunkDescriptor.getMaxTimestamp());
+
         DigestForFilter valueDigest = new DigestForFilter(
                 seriesChunkDescriptor.getValueDigest().getStatistics().get(StatisticConstant.MIN_VALUE),
                 seriesChunkDescriptor.getValueDigest().getStatistics().get(StatisticConstant.MAX_VALUE),
@@ -111,7 +114,7 @@ public class SeriesReaderFactory {
         return digestFilterVisitor.satisfy(timeDigest, valueDigest, filter);
     }
 
-    public OverflowInsertDataReader createSeriesReaderForOverflowInsert(OverflowSeriesDataSource overflowSeriesDataSource) throws IOException {
+    public UnSeqSeriesReader createSeriesReaderForUnSeq(OverflowSeriesDataSource overflowSeriesDataSource) throws IOException {
         long jobId = queryJobManager.addJobForOneQuery();
         List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList = SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
         int priorityValue = 1;
@@ -132,7 +135,7 @@ public class SeriesReaderFactory {
                     overflowSeriesDataSource.getRawSeriesChunk()), new PriorityTimeValuePairReader.Priority(priorityValue++)));
         }
         timeValuePairReaders = externalSortJobEngine.execute(timeValuePairReaders);
-        return new OverflowInsertDataReader(jobId, new PriorityMergeSortTimeValuePairReader(timeValuePairReaders));
+        return new UnSeqSeriesReader(jobId, new PriorityMergeReader(timeValuePairReaders));
     }
 
     public SeriesReader createSeriesReaderForMerge(
@@ -141,12 +144,12 @@ public class SeriesReaderFactory {
         logger.debug("create seriesReaders for merge. SeriesFilter = {}. TsFilePath = {}", seriesFilter, intervalFileNode.getFilePath());
         SeriesReader seriesInTsFileReader = genTsFileSeriesReader(intervalFileNode.getFilePath(), seriesFilter);
 
-        SeriesReader overflowInsertDataReader = createSeriesReaderForOverflowInsert(overflowSeriesDataSource, seriesFilter.getFilter());
+        SeriesReader overflowInsertDataReader = createSeriesReaderForUnSeq(overflowSeriesDataSource, seriesFilter.getFilter());
         PriorityTimeValuePairReader priorityTimeValuePairReaderForTsFile = new PriorityTimeValuePairReader(seriesInTsFileReader,
                 new PriorityTimeValuePairReader.Priority(1));
         PriorityTimeValuePairReader priorityTimeValuePairReaderForOverflow = new PriorityTimeValuePairReader(overflowInsertDataReader,
                 new PriorityTimeValuePairReader.Priority(2));
-        PriorityMergeSortTimeValuePairReader mergeSeriesReader = new PriorityMergeSortTimeValuePairReader(
+        PriorityMergeReader mergeSeriesReader = new PriorityMergeReader(
                 priorityTimeValuePairReaderForTsFile, priorityTimeValuePairReaderForOverflow);
 
         SeriesWithUpdateOpReader seriesWithUpdateOpReader;

@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
@@ -14,17 +14,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PriorityMergeSortTimeValuePairReaderTest {
+public class PriorityMergeReaderTest {
     @Test
     public void test() throws IOException {
         FakedPriorityTimeValuePairReader reader1 = new FakedPriorityTimeValuePairReader(100, 20, 5, 11, 1);
         FakedPriorityTimeValuePairReader reader2 = new FakedPriorityTimeValuePairReader(150, 20, 5, 19, 2);
         FakedPriorityTimeValuePairReader reader3 = new FakedPriorityTimeValuePairReader(180, 20, 5, 31, 3);
 
-        PriorityMergeSortTimeValuePairReader priorityMergeSortTimeValuePairReader = new PriorityMergeSortTimeValuePairReader(reader1, reader2, reader3);
+        PriorityMergeReader priorityMergeReader = new PriorityMergeReader(reader1, reader2, reader3);
         int cnt = 0;
-        while (priorityMergeSortTimeValuePairReader.hasNext()){
-            TimeValuePair timeValuePair = priorityMergeSortTimeValuePairReader.next();
+        while (priorityMergeReader.hasNext()){
+            TimeValuePair timeValuePair = priorityMergeReader.next();
             long time = timeValuePair.getTimestamp();
             long value = timeValuePair.getValue().getLong();
             if(time < 150){

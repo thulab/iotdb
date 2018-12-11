@@ -27,7 +27,7 @@ public interface QueryJobFuture {
     QueryJobStatus getCurrentStatus();
 
     /**
-     * Retrieve OnePassQueryDataSet from QueryEngine result pool.
+     * Retrieve OnePassQueryDataSet from EngineQueryExecutor result pool.
      * @return null if the queryJob is not finished.
      */
     QueryDataSet retrieveQueryDataSet();

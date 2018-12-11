@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowIO;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
@@ -69,7 +69,7 @@ public class ForDebug {
 
 //        PriorityTimeValuePairReader reader1 = new PriorityTimeValuePairReader(seriesInTsFileReader, new PriorityTimeValuePairReader.Priority(2));
 //        PriorityTimeValuePairReader reader2 = new PriorityTimeValuePairReader(overflowInsertDataReader, new PriorityTimeValuePairReader.Priority(1));
-//        TimeValuePairReader reader = new PriorityMergeSortTimeValuePairReader(reader1);
+//        ISeriesReader reader = new PriorityMergeReader(reader1);
 
 //        Directories.getInstance().setFolderForTest("");
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
@@ -222,8 +222,8 @@ public class ForDebug {
 
     public void readUnseqTsFile() throws IOException {
         OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(path);
-        OverflowInsertDataReader overflowInsertDataReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
-        printTimestamp(overflowInsertDataReader);
+        UnSeqSeriesReader unSeqSeriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource);
+        printTimestamp(unSeqSeriesReader);
     }
 
     private void printTimestamp(TimeValuePairReader reader) throws IOException {

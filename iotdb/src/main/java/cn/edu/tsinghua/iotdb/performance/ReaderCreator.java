@@ -19,7 +19,7 @@
 //import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 //import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 //import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
+//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.ISeriesReader;
 //import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 //import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 //import org.slf4j.Logger;
@@ -50,28 +50,28 @@
 //     * @param tsfilePath
 //     * @param unseqTsFilePath
 //     * @param path the path of series to be merge.
-//     * @return TimeValuePairReader
+//     * @return ISeriesReader
 //     * @throws IOException
 //     */
-//    public static TimeValuePairReader createReaderForMerge(String tsfilePath, String unseqTsFilePath,
+//    public static ISeriesReader createReaderForMerge(String tsfilePath, String unseqTsFilePath,
 //                                                           Path path, long startTime, long endTime) throws IOException {
 //        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
 //        TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = new String[] {""};
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
 //        SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
 //        IntervalFileNode intervalFileNode = new IntervalFileNode(null, tsfilePath);
-//        TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
+//        ISeriesReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForMerge(intervalFileNode, overflowSeriesDataSource, seriesFilter);
 //        return reader;
 //    }
 //
 //
-//    public static TimeValuePairReader createReaderOnlyForOverflowInsert(String unseqTsFilePath,
+//    public static ISeriesReader createReaderOnlyForOverflowInsert(String unseqTsFilePath,
 //                                                                        Path path, long startTime, long endTime) throws IOException {
 //        OverflowSeriesDataSource overflowSeriesDataSource = genDataSource(unseqTsFilePath, path);
 //        TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = new String[] {""};
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
 //        SeriesFilter<?> seriesFilter = new SeriesFilter<>(path, filter);
-//        TimeValuePairReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource,
+//        ISeriesReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource,
 //                filter);
 //        return reader;
 //    }

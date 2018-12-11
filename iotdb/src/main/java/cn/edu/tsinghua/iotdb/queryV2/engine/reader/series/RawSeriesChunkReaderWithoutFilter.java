@@ -1,21 +1,18 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.read.ISeriesReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 import java.util.Iterator;
 
+public class RawSeriesChunkReaderWithoutFilter implements ISeriesReader {
 
-public class RawSeriesChunkReaderWithoutFilter implements TimeValuePairReader, SeriesReader {
-
-    private RawSeriesChunk rawSeriesChunk;
     private Iterator<TimeValuePair> timeValuePairIterator;
 
     public RawSeriesChunkReaderWithoutFilter(RawSeriesChunk rawSeriesChunk) {
-        this.rawSeriesChunk = rawSeriesChunk;
         timeValuePairIterator = rawSeriesChunk.getIterator();
     }
 
@@ -37,5 +34,20 @@ public class RawSeriesChunkReaderWithoutFilter implements TimeValuePairReader, S
     @Override
     public void close() throws IOException {
 
+    }
+
+    @Override
+    public boolean hasNextBatch() {
+        return false;
+    }
+
+    @Override
+    public BatchData nextBatch() {
+        return null;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return null;
     }
 }

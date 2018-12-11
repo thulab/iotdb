@@ -1,9 +1,10 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.SeriesReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -62,4 +63,20 @@ public class RawSeriesChunkReaderByTimestamp implements SeriesReaderByTimeStamp 
         }
         return null;
     }
+
+    @Override
+    public boolean hasNextBatch() {
+        return false;
+    }
+
+    @Override
+    public BatchData nextBatch() {
+        return null;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return null;
+    }
+
 }

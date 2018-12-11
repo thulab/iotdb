@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReaderByTimestamp;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderByTimestamp;
@@ -22,7 +22,7 @@ import java.util.List;
 public class SequenceInsertDataByTimeStampReader extends SequenceDataReader implements SeriesReaderByTimeStamp {
 
   private long currentTimestamp;
-  private PriorityMergeSortTimeValuePairReaderByTimestamp priorityMergeSortTimeValuePairReader;
+  private PriorityMergeReaderByTimestamp priorityMergeSortTimeValuePairReader;
 
   public SequenceInsertDataByTimeStampReader(GlobalSortedSeriesDataSource sortedSeriesDataSource)
           throws IOException {
@@ -46,7 +46,7 @@ public class SequenceInsertDataByTimeStampReader extends SequenceDataReader impl
       priorityTimeValuePairReaderByTimestamps.add(new PriorityTimeValuePairReaderByTimestamp(rawSeriesChunkReaderByTimestamp, new PriorityTimeValuePairReader.Priority(priority++)));
     }
 
-    priorityMergeSortTimeValuePairReader = new PriorityMergeSortTimeValuePairReaderByTimestamp(priorityTimeValuePairReaderByTimestamps);
+    priorityMergeSortTimeValuePairReader = new PriorityMergeReaderByTimestamp(priorityTimeValuePairReaderByTimestamps);
     currentTimestamp = Long.MIN_VALUE;
   }
 

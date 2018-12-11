@@ -18,25 +18,25 @@ import java.nio.MappedByteBuffer;
  * This class is used to load one SeriesChunk according to the SeriesChunkDescriptor
  */
 public class OverflowSeriesChunkLoader {
-    private static final Logger logger = LoggerFactory.getLogger(OverflowSeriesChunkLoader.class);
-    private OverflowFileStreamManager overflowFileStreamManager;
+  private static final Logger logger = LoggerFactory.getLogger(OverflowSeriesChunkLoader.class);
+  private OverflowFileStreamManager overflowFileStreamManager;
 
-    public OverflowSeriesChunkLoader() {
-        overflowFileStreamManager = OverflowFileStreamManager.getInstance();
-    }
+  public OverflowSeriesChunkLoader() {
+    overflowFileStreamManager = OverflowFileStreamManager.getInstance();
+  }
 
-    public SeriesChunk getMemSeriesChunk(Long jobId, EncodedSeriesChunkDescriptor scDescriptor) throws IOException {
-        if (overflowFileStreamManager.contains(scDescriptor.getFilePath()) || (new File(scDescriptor.getFilePath()).length() +
-                overflowFileStreamManager.getMappedByteBufferUsage().get()  < Integer.MAX_VALUE)) {
-            MappedByteBuffer buffer = overflowFileStreamManager.get(scDescriptor.getFilePath());
-            return new BufferedSeriesChunk(
-                    new SegmentInputStreamWithMMap(buffer, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
-                    scDescriptor);
-        } else {
-            RandomAccessFile randomAccessFile = overflowFileStreamManager.get(jobId, scDescriptor.getFilePath());
-            return new BufferedSeriesChunk(
-                    new SegmentInputStream(randomAccessFile, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
-                    scDescriptor);
-        }
+  public SeriesChunk getMemSeriesChunk(Long jobId, EncodedSeriesChunkDescriptor scDescriptor) throws IOException {
+    if (overflowFileStreamManager.contains(scDescriptor.getFilePath()) || (new File(scDescriptor.getFilePath()).length() +
+            overflowFileStreamManager.getMappedByteBufferUsage().get() < Integer.MAX_VALUE)) {
+      MappedByteBuffer buffer = overflowFileStreamManager.get(scDescriptor.getFilePath());
+      return new BufferedSeriesChunk(
+              new SegmentInputStreamWithMMap(buffer, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
+              scDescriptor);
+    } else {
+      RandomAccessFile randomAccessFile = overflowFileStreamManager.get(jobId, scDescriptor.getFilePath());
+      return new BufferedSeriesChunk(
+              new SegmentInputStream(randomAccessFile, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
+              scDescriptor);
     }
+  }
 }

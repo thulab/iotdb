@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePair
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.TimeValuePairSerializer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.FixLengthTimeValuePairDeserializer;
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.serialize.impl.FixLengthTimeValuePairSerializer;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class LineMerger {
 
     public PriorityTimeValuePairReader merge(List<PriorityTimeValuePairReader> priorityTimeValuePairReaders) throws IOException {
         TimeValuePairSerializer serializer = new FixLengthTimeValuePairSerializer(tmpFilePath);
-        PriorityMergeSortTimeValuePairReader reader = new PriorityMergeSortTimeValuePairReader(priorityTimeValuePairReaders);
+        PriorityMergeReader reader = new PriorityMergeReader(priorityTimeValuePairReaders);
         while (reader.hasNext()) {
             serializer.write(reader.next());
         }

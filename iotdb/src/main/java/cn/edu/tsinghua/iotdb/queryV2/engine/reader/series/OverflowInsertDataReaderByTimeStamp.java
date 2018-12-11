@@ -1,18 +1,19 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReaderByTimestamp;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReaderByTimestamp;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.SeriesReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 
 public class OverflowInsertDataReaderByTimeStamp implements SeriesReaderByTimeStamp {
 
     private Long jobId;
-    private PriorityMergeSortTimeValuePairReaderByTimestamp seriesReader;
+    private PriorityMergeReaderByTimestamp seriesReader;
 
-    public OverflowInsertDataReaderByTimeStamp(Long jobId, PriorityMergeSortTimeValuePairReaderByTimestamp seriesReader){
+    public OverflowInsertDataReaderByTimeStamp(Long jobId, PriorityMergeReaderByTimestamp seriesReader){
         this.jobId = jobId;
         this.seriesReader = seriesReader;
     }
@@ -40,5 +41,20 @@ public class OverflowInsertDataReaderByTimeStamp implements SeriesReaderByTimeSt
     @Override
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         return seriesReader.getValueInTimestamp(timestamp);
+    }
+
+    @Override
+    public boolean hasNextBatch() {
+        return false;
+    }
+
+    @Override
+    public BatchData nextBatch() {
+        return null;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return null;
     }
 }

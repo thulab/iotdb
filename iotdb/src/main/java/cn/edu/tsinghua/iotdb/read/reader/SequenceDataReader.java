@@ -5,8 +5,9 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
-import cn.edu.tsinghua.iotdb.read.TimeValuePairReader;
+import cn.edu.tsinghua.iotdb.read.ISeriesReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.io.IOException;
@@ -17,15 +18,15 @@ import java.util.List;
 /**
  * A reader for sequentially inserts data，including a list of sealedTsFile, unSealedTsFile, data in MemTable.
  */
-public abstract class SequenceDataReader implements TimeValuePairReader {
+public abstract class SequenceDataReader implements ISeriesReader {
 
-  protected List<TimeValuePairReader> seriesReaders;
+  protected List<ISeriesReader> seriesReaders;
   protected Path path;
   protected long jobId;
 
   private boolean hasSeriesReaderInitialized;
   private int nextSeriesReaderIndex;
-  private TimeValuePairReader currentSeriesReader;
+  private ISeriesReader currentSeriesReader;
 
   public SequenceDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource) {
     path = sortedSeriesDataSource.getSeriesPath();
@@ -70,14 +71,14 @@ public abstract class SequenceDataReader implements TimeValuePairReader {
 
   @Override
   public void close() throws IOException {
-    for (TimeValuePairReader seriesReader : seriesReaders) {
+    for (ISeriesReader seriesReader : seriesReaders) {
       seriesReader.close();
     }
   }
 
-  private EncodedSeriesChunkDescriptor generateSeriesChunkDescriptorByMetadata(
-          TimeSeriesChunkMetaData timeSeriesChunkMetaData, String filePath) {
-    EncodedSeriesChunkDescriptor encodedSeriesChunkDescriptor = new EncodedSeriesChunkDescriptor(filePath,
+  private ChunkMetaData generateSeriesChunkDescriptorByMetadata(TimeSeriesChunkMetaData timeSeriesChunkMetaData, String filePath) {
+
+    ChunkMetaData encodedSeriesChunkDescriptor = new ChunkMetaData(filePath,
             timeSeriesChunkMetaData.getProperties().getFileOffset(),
             timeSeriesChunkMetaData.getTotalByteSize(),
             timeSeriesChunkMetaData.getProperties().getCompression(),
@@ -87,14 +88,15 @@ public abstract class SequenceDataReader implements TimeValuePairReader {
             timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime(),
             timeSeriesChunkMetaData.getNumRows(),
             timeSeriesChunkMetaData.getVInTimeSeriesChunkMetaData().getEnumValues());
+
     return encodedSeriesChunkDescriptor;
   }
 
-  protected abstract class SealedTsFileReader implements TimeValuePairReader {
+  protected abstract class SealedTsFileReader implements ISeriesReader {
 
     protected List<IntervalFileNode> sealedTsFiles;
     protected int usedIntervalFileIndex;
-    protected TimeValuePairReader singleTsFileReader;
+    protected ISeriesReader singleTsFileReader;
     protected boolean singleTsFileReaderInitialized;
 
     public SealedTsFileReader(List<IntervalFileNode> sealedTsFiles) {
@@ -150,9 +152,9 @@ public abstract class SequenceDataReader implements TimeValuePairReader {
     protected abstract void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException;
   }
 
-  protected abstract class UnSealedTsFileReader implements TimeValuePairReader {
+  protected abstract class UnSealedTsFileReader implements ISeriesReader {
     protected UnsealedTsFile unsealedTsFile;
-    protected TimeValuePairReader singleTsFileReader;
+    protected ISeriesReader singleTsFileReader;
 
 
     public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile) throws IOException {

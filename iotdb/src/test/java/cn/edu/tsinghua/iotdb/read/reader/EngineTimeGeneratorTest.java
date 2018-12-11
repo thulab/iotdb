@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.timegenerator.IoTDBTimeGenerator;
+import cn.edu.tsinghua.iotdb.read.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -25,7 +25,7 @@ import java.sql.Statement;
 
 import static org.junit.Assert.*;
 
-public class IoTDBTimeGeneratorTest {
+public class EngineTimeGeneratorTest {
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
@@ -123,7 +123,7 @@ public class IoTDBTimeGeneratorTest {
         TimeFilter.TimeGt timeGt = TimeFilter.gt((long)500);
 
         SingleSeriesExpression queryFilter = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
-        IoTDBTimeGenerator timeGenerator = new IoTDBTimeGenerator(queryFilter);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(queryFilter);
         System.out.println("root.vehicle.d0.s0 >= 14 && time > 500 ");
         int cnt = 0;
         while(timeGenerator.hasNext()){
@@ -143,7 +143,7 @@ public class IoTDBTimeGeneratorTest {
         ValueFilter.ValueGtEq  valueGtEq = ValueFilter.gtEq(5);
 
         QueryFilter queryFilter = new SeriesFilter(pd1s0, valueGtEq);
-        IoTDBTimeGenerator timeGenerator = new IoTDBTimeGenerator(queryFilter);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(queryFilter);
         System.out.println("root.vehicle.d1.s0 >= 5");
         int cnt = 0;
         while(timeGenerator.hasNext()){
@@ -170,7 +170,7 @@ public class IoTDBTimeGeneratorTest {
         SeriesFilter seriesFilterd0s2 = new SeriesFilter(pd0s2, new cn.edu.tsinghua.tsfile.timeseries.filterV2.operator.Or( valueGtEq11, timeGt));
 
         QueryFilter queryFilter = QueryFilterFactory.and(seriesFilterd0s0, seriesFilterd0s2);
-        IoTDBTimeGenerator timeGenerator = new IoTDBTimeGenerator(queryFilter);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(queryFilter);
         System.out.println("root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
         int cnt = 0;
         while(timeGenerator.hasNext()){

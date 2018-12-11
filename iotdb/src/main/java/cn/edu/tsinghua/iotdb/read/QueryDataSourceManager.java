@@ -6,7 +6,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 
-public class QueryDataSourceExecutor {
+public class QueryDataSourceManager {
 
     private static FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 

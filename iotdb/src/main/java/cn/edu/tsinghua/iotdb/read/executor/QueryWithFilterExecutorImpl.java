@@ -2,10 +2,9 @@ package cn.edu.tsinghua.iotdb.read.executor;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.read.DataSetWithQueryFilter;
-import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
+import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.read.reader.QueryByTimestampsReader;
-import cn.edu.tsinghua.iotdb.read.timegenerator.IoTDBTimeGenerator;
+import cn.edu.tsinghua.iotdb.read.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
@@ -25,7 +24,7 @@ public class QueryWithFilterExecutorImpl {
 
   public static QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
-    TimestampGenerator timestampGenerator = new IoTDBTimeGenerator(queryExpression.getExpression());
+    TimestampGenerator timestampGenerator = new EngineTimeGenerator(queryExpression.getExpression());
 
     LinkedHashMap<Path, SeriesReaderByTimeStamp> readersOfSelectedSeries = new LinkedHashMap<>();
     initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries(), queryExpression.getExpression());
@@ -41,9 +40,9 @@ public class QueryWithFilterExecutorImpl {
     for (Path path : selectedSeries) {
       QueryDataSource queryDataSource = null;
       if (path2SeriesFilter.containsKey(path)) {
-        queryDataSource = QueryDataSourceExecutor.getQueryDataSource(path2SeriesFilter.get(path));
+        queryDataSource = QueryDataSourceManager.getQueryDataSource(path2SeriesFilter.get(path));
       } else {
-        queryDataSource = QueryDataSourceExecutor.getQueryDataSource(path);
+        queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
       }
       SeriesReaderByTimeStamp seriesReader = new QueryByTimestampsReader(queryDataSource);
       readersOfSelectedSeries.put(path, seriesReader);

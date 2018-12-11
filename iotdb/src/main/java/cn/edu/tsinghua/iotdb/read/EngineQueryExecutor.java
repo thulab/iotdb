@@ -2,18 +2,21 @@ package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.read.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithFilterExecutorImpl;
 import cn.edu.tsinghua.iotdb.read.executor.QueryWithGlobalTimeFilterExecutorImpl;
-import cn.edu.tsinghua.iotdb.read.reader.IoTDBSeriesReader;
+import cn.edu.tsinghua.iotdb.read.reader.SeqSeriesReader;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.util.ExpressionOptimizer;
-import cn.edu.tsinghua.tsfile.read.query.dataset.DataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +26,9 @@ import java.util.List;
 
 import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
 
-public class QueryEngine {
+public class EngineQueryExecutor {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(QueryEngine.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryExecutor.class);
 
   public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
     if (queryExpression.hasQueryFilter()) {
@@ -51,12 +54,26 @@ public class QueryEngine {
 
   public QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
-    List<FileSeriesReader> readersOfSelectedSeries = new ArrayList<>();
+    List<ISeriesReader> readersOfSelectedSeries = new ArrayList<>();
     List<TSDataType> dataTypes = new ArrayList<>();
 
     for (Path path : queryExpression.getSelectedSeries()) {
-      QueryDataSource queryDataSource = QueryDataSourceExecutor.getQueryDataSource(path);
-      FileSeriesReader seriesReader = new IoTDBSeriesReader(queryDataSource);
+      QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+
+      // sequence insert data
+      SeqSeriesReader tsFilesReader = new SeqSeriesReader(queryDataSource.getSeriesDataSource(), null);
+      PriorityTimeValuePairReader tsFilesReaderWithPriority = new PriorityTimeValuePairReader(
+              tsFilesReader, new PriorityTimeValuePairReader.Priority(1));
+
+      // unseq insert data
+      UnSeqSeriesReader unSeqSeriesReader = SeriesReaderFactory.getInstance().
+              createSeriesReaderForUnSeq(queryDataSource.getOverflowSeriesDataSource());
+      PriorityTimeValuePairReader unSeqReaderWithPriority = new PriorityTimeValuePairReader(
+              unSeqSeriesReader, new PriorityTimeValuePairReader.Priority(2));
+
+
+      PriorityMergeReader priorityReader = new PriorityMergeReader(tsFilesReaderWithPriority, unSeqReaderWithPriority);
+      readersOfSelectedSeries.add(priorityReader);
     }
 
     return new DataSetWithoutTimeGenerator(queryExpression.getSelectedSeries(), dataTypes, readersOfSelectedSeries);

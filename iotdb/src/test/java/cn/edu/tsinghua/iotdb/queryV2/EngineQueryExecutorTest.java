@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class QueryEngineTest {
+public class EngineQueryExecutorTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(QueryEngineTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(EngineQueryExecutorTest.class);
 
   private QueryEngineImpl queryEngine;
 

@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.queryV2.factory;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.TsFileGenerator;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
@@ -32,7 +32,7 @@ public class SeriesReaderFactoryTest {
         overflowSeriesDataSource.setOverflowInsertFileList(new ArrayList<>());
 
         int count = 10;
-        OverflowInsertDataReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+        UnSeqSeriesReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource);
         int currentJobId = seriesReader.getJobId().intValue();
         int[] map = new int[count + currentJobId];
         for (int i = 0; i < count; i++) {
@@ -65,7 +65,7 @@ public class SeriesReaderFactoryTest {
 
         public void run() {
             try {
-                OverflowInsertDataReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+                UnSeqSeriesReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource);
                 synchronized (map) {
                     map[seriesReader.getJobId().intValue() - 1]++;
                 }
@@ -89,7 +89,7 @@ public class SeriesReaderFactoryTest {
         OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(new Path("d1.s1"));
         overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFiles);
 
-        SeriesReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource);
+        SeriesReader seriesReader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource);
 
         long timestamp = TsFileGenerator.START_TIMESTAMP;
         while (seriesReader.hasNext()) {
@@ -99,7 +99,7 @@ public class SeriesReaderFactoryTest {
         seriesReader.close();
 
         Filter<Long> filter = TimeFilter.lt(TsFileGenerator.START_TIMESTAMP + 10);
-        SeriesReader seriesReader2 = SeriesReaderFactory.getInstance().createSeriesReaderForOverflowInsert(overflowSeriesDataSource, filter);
+        SeriesReader seriesReader2 = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource, filter);
         timestamp = TsFileGenerator.START_TIMESTAMP;
         while (seriesReader2.hasNext()) {
             Assert.assertEquals(timestamp, seriesReader2.next().getTimestamp());

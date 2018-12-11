@@ -22,26 +22,26 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.List;
 
-public class IoTDBSequenceDataReader extends SequenceDataReader {
+public class SeqSeriesReader extends SequenceDataReader {
 
   private SingleSeriesExpression singleSeriesExpression;
 
-  public IoTDBSequenceDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SingleSeriesExpression singleSeriesExpression)
+  public SeqSeriesReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SingleSeriesExpression singleSeriesExpression)
           throws IOException {
 
     super(sortedSeriesDataSource);
 
     this.singleSeriesExpression = singleSeriesExpression;
 
-    //add data in sealedTsFiles and unSealedTsFile
+    // add data in sealedTsFiles and unSealedTsFile
     if (sortedSeriesDataSource.getSealedTsFiles() != null) {
-      seriesReaders.add(new IoTDBSequenceDataReader.SealedTsFileWithFilterReader(sortedSeriesDataSource.getSealedTsFiles()));
+      seriesReaders.add(new SealedTsFileWithFilterReader(sortedSeriesDataSource.getSealedTsFiles()));
     }
     if (sortedSeriesDataSource.getUnsealedTsFile() != null) {
-      seriesReaders.add(new IoTDBSequenceDataReader.UnSealedTsFileWithFilterReader(sortedSeriesDataSource.getUnsealedTsFile()));
+      seriesReaders.add(new UnSealedTsFileWithFilterReader(sortedSeriesDataSource.getUnsealedTsFile()));
     }
 
-    //add data in memTable
+    // add data in memTable
     if (sortedSeriesDataSource.hasRawSeriesChunk() && singleSeriesExpression == null) {
       seriesReaders.add(new RawSeriesChunkReaderWithoutFilter(sortedSeriesDataSource.getRawSeriesChunk()));
     }

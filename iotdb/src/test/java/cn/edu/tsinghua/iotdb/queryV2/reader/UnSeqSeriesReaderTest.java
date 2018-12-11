@@ -1,15 +1,15 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 
 
-public class OverflowInsertDataReaderTest {
+public class UnSeqSeriesReaderTest {
 
     @Test
     public void testPeek() throws IOException {
@@ -24,13 +24,13 @@ public class OverflowInsertDataReaderTest {
     public void test(long[] ret) throws IOException {
         SeriesMergeSortReaderTest.FakedSeriesReader fakedSeriesReader = new SeriesMergeSortReaderTest.FakedSeriesReader(
                 ret);
-        OverflowInsertDataReader overflowInsertDataReader = new OverflowInsertDataReader(1L,
-                new PriorityMergeSortTimeValuePairReader(new PriorityTimeValuePairReader(fakedSeriesReader, new PriorityTimeValuePairReader.Priority(1))));
+        UnSeqSeriesReader unSeqSeriesReader = new UnSeqSeriesReader(1L,
+                new PriorityMergeReader(new PriorityTimeValuePairReader(fakedSeriesReader, new PriorityTimeValuePairReader.Priority(1))));
         for (int i = 0; i < ret.length; i++) {
             for (int j = 0; j < 10; j++) {
-                Assert.assertEquals(ret[i], overflowInsertDataReader.peek().getTimestamp());
+                Assert.assertEquals(ret[i], unSeqSeriesReader.peek().getTimestamp());
             }
-            Assert.assertEquals(ret[i], overflowInsertDataReader.next().getTimestamp());
+            Assert.assertEquals(ret[i], unSeqSeriesReader.next().getTimestamp());
         }
     }
 }

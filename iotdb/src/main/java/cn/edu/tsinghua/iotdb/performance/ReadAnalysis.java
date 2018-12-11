@@ -114,7 +114,7 @@
 //
 //                                // calc file stream load time
 //                                long streamLoadTimeStart = System.currentTimeMillis();
-//                                TimeValuePairReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
+//                                ISeriesReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
 //                                        new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
 //                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 //                                readStreamLoadTime += (System.currentTimeMillis() - streamLoadTimeStart);

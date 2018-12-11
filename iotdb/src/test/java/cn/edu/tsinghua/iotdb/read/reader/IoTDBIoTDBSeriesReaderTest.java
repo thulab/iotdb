@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.QueryEngine;
+import cn.edu.tsinghua.iotdb.read.EngineQueryExecutor;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -124,7 +124,7 @@ public class IoTDBIoTDBSeriesReaderTest {
         String selectSql = "select * from root";
         System.out.println("selectAllTest===" + selectSql);
 
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
@@ -136,7 +136,7 @@ public class IoTDBIoTDBSeriesReaderTest {
         queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
         queryExpression.setExpression(null);
 
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){
@@ -153,14 +153,14 @@ public class IoTDBIoTDBSeriesReaderTest {
         String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
         System.out.println("selectOneSeriesWithValueFilterTest===" + selectSql);
 
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         Path p = new Path("root.vehicle.d0.s0");
         queryExpression.addSelectedPath(p);
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(p, ValueFilter.gtEq(20));
         queryExpression.setExpression(singleSeriesExpression);
 
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){
@@ -180,14 +180,14 @@ public class IoTDBIoTDBSeriesReaderTest {
 
         // [3000, 13599] , [13700,23999]
 
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         Path p = new Path("root.vehicle.d0.s0");
         queryExpression.addSelectedPath(p);
         SingleSeriesExpression expression = new SingleSeriesExpression(p, TimeFilter.gt((long)22987));
         queryExpression.setExpression(expression);
 
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){
@@ -202,7 +202,7 @@ public class IoTDBIoTDBSeriesReaderTest {
 
     private void crossSeriesReadUpdateTest() throws IOException, FileNodeManagerException {
         System.out.println("select s1 from root.vehicle.d0 where s0 < 111");
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         Path p0 = new Path("root.vehicle.d0.s0");
         Path p1 = new Path("root.vehicle.d0.s1");
@@ -210,7 +210,7 @@ public class IoTDBIoTDBSeriesReaderTest {
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(p0, ValueFilter.lt(111));
         queryExpression.setExpression(singleSeriesExpression);
 
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){

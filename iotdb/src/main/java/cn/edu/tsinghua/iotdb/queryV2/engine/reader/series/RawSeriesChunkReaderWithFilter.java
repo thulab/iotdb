@@ -1,30 +1,26 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.read.ISeriesReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.filter.visitor.impl.TimeValuePairFilterVisitorImpl;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
 
 import java.io.IOException;
 import java.util.Iterator;
 
 
-public class RawSeriesChunkReaderWithFilter implements TimeValuePairReader, SeriesReader {
+public class RawSeriesChunkReaderWithFilter implements ISeriesReader {
 
-    private RawSeriesChunk rawSeriesChunk;
     private Iterator<TimeValuePair> timeValuePairIterator;
-    private Filter<?> filter;
-    private TimeValuePairFilterVisitorImpl filterVisitor;
+    private Filter filter;
     private boolean hasCachedTimeValuePair;
     private TimeValuePair cachedTimeValuePair;
 
-    public RawSeriesChunkReaderWithFilter(RawSeriesChunk rawSeriesChunk, Filter<?> filter) {
-        this.rawSeriesChunk = rawSeriesChunk;
+    public RawSeriesChunkReaderWithFilter(RawSeriesChunk rawSeriesChunk, SingleSeriesExpression singleSeriesExpression) {
         timeValuePairIterator = rawSeriesChunk.getIterator();
-        this.filter = filter;
-        this.filterVisitor = new TimeValuePairFilterVisitorImpl();
+        this.filter = singleSeriesExpression.getFilter();
     }
 
     @Override
@@ -34,7 +30,7 @@ public class RawSeriesChunkReaderWithFilter implements TimeValuePairReader, Seri
         }
         while (timeValuePairIterator.hasNext()) {
             TimeValuePair timeValuePair = timeValuePairIterator.next();
-            if (filterVisitor.satisfy(timeValuePair, filter)) {
+            if (filter.satisfy(timeValuePair.getTimestamp(), timeValuePair.getValue().getValue())) {
                 hasCachedTimeValuePair = true;
                 cachedTimeValuePair = timeValuePair;
                 break;
@@ -62,5 +58,20 @@ public class RawSeriesChunkReaderWithFilter implements TimeValuePairReader, Seri
     @Override
     public void close() throws IOException {
 
+    }
+
+    @Override
+    public boolean hasNextBatch() {
+        return false;
+    }
+
+    @Override
+    public BatchData nextBatch() {
+        return null;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return null;
     }
 }

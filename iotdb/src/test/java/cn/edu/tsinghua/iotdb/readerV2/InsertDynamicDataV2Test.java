@@ -6,8 +6,8 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowDeleteOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowUpdateOperation;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -115,12 +115,12 @@ public class InsertDynamicDataV2Test {
         }
     }
 
-    public static class FakedOverflowInsertDataReader extends OverflowInsertDataReader {
+    public static class FakedUnSeqSeriesReader extends UnSeqSeriesReader {
 
         private List<TimeValuePair> timeValuePairList;
         private int index;
 
-        public FakedOverflowInsertDataReader(List<TimeValuePair> timeValuePairList, Long jobId, PriorityMergeSortTimeValuePairReader seriesReader) {
+        public FakedUnSeqSeriesReader(List<TimeValuePair> timeValuePairList, Long jobId, PriorityMergeReader seriesReader) {
             super(jobId, seriesReader);
             this.timeValuePairList = timeValuePairList;
         }
@@ -193,13 +193,13 @@ public class InsertDynamicDataV2Test {
                 new TsPrimitiveType.TsDouble(100.0), new TsPrimitiveType.TsDouble(200.0), list.iterator());
     }
 
-    private static FakedOverflowInsertDataReader buildFakedOverflowInsertDataReader() {
+    private static FakedUnSeqSeriesReader buildFakedOverflowInsertDataReader() {
         List<TimeValuePair> timeValuePairList = new ArrayList<>();
         for (int i = 50;i <= 150;i += 5) {
             timeValuePairList.add(new TimeValuePair(i, new TsPrimitiveType.TsDouble(-i)));
         }
 
-        return new FakedOverflowInsertDataReader(timeValuePairList, 1L, null);
+        return new FakedUnSeqSeriesReader(timeValuePairList, 1L, null);
     }
 
     private static FakedOverflowUpdateOperationReader buildFakedOverflowUpdateOperationReader() {

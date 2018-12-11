@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReaderByTimestamp;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReaderByTimestamp;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
@@ -15,14 +15,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public class PriorityMergeSortTimeValuePairReaderByTimestampTest {
+public class PriorityMergeReaderByTimestampTest {
     @Test
     public void test() throws IOException {
         FakedPriorityTimeValuePairReaderByTimestamp reader1 = new FakedPriorityTimeValuePairReaderByTimestamp(100, 200, 5, 11, 1);
         FakedPriorityTimeValuePairReaderByTimestamp reader2 = new FakedPriorityTimeValuePairReaderByTimestamp(850, 200, 7, 19, 2);
         FakedPriorityTimeValuePairReaderByTimestamp reader3 = new FakedPriorityTimeValuePairReaderByTimestamp(1080, 200, 13, 31, 3);
 
-        PriorityMergeSortTimeValuePairReaderByTimestamp priorityMergeSortTimeValuePairReader = new PriorityMergeSortTimeValuePairReaderByTimestamp(reader1, reader2, reader3);
+        PriorityMergeReaderByTimestamp priorityMergeSortTimeValuePairReader = new PriorityMergeReaderByTimestamp(reader1, reader2, reader3);
         int cnt = 0;
 
         Random random = new Random();

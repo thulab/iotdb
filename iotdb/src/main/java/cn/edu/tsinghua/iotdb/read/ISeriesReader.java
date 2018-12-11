@@ -1,13 +1,14 @@
 package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 
 /**
  * @author Jinrui Zhang
  */
-public interface TimeValuePairReader {
+public interface ISeriesReader {
 
     boolean hasNext() throws IOException;
 
@@ -16,5 +17,11 @@ public interface TimeValuePairReader {
     void skipCurrentTimeValuePair() throws IOException;
 
     void close() throws IOException;
+
+    boolean hasNextBatch();
+
+    BatchData nextBatch();
+
+    BatchData currentBatch();
 }
 

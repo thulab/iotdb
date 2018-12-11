@@ -8,7 +8,7 @@ import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 public interface QueryEngine {
 
     /**
-     * Submit a QueryJob to QueryEngine
+     * Submit a QueryJob to EngineQueryExecutor
      *
      * @param job
      * @return QueryJobFuture for submitted QueryJob

@@ -10,7 +10,7 @@
 //import java.util.List;
 //
 ///**
-// * Take out some common methods used for QueryEngine.
+// * Take out some common methods used for EngineQueryExecutor.
 // */
 //public class EngineUtils {
 //
