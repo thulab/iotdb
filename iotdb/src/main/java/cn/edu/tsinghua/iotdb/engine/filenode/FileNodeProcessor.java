@@ -16,7 +16,7 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
+import cn.edu.tsinghua.iotdb.queryV2.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;

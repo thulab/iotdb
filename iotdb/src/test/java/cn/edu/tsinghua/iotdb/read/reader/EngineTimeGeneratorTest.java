@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.timegenerator.EngineTimeGenerator;
+import cn.edu.tsinghua.iotdb.queryV2.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;

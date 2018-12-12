@@ -108,7 +108,7 @@ public class FileNodeProcessorTest {
 				assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
 				assertEquals(0, overflowSeriesDataSource.getOverflowInsertFileList().get(0)
 						.getChunkMetaDataList().size());
-				assertEquals(true, overflowSeriesDataSource.getRawSeriesChunk().isEmpty());
+				assertEquals(true, overflowSeriesDataSource.getRawChunk().isEmpty());
 				UpdateDeleteInfoOfOneSeries deleteInfoOfOneSeries = overflowSeriesDataSource
 						.getUpdateDeleteInfoOfOneSeries();
 				assertEquals(dataType, deleteInfoOfOneSeries.getDataType());
@@ -117,7 +117,7 @@ public class FileNodeProcessorTest {
 				assertEquals(0, deleteInfoOfOneSeries.getOverflowUpdateFileList().get(0)
 						.getTimeSeriesChunkMetaDataList().size());
 				// bufferwrite data | sorted tsfile data
-				GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeriesDataSource();
+				GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeqDataSource();
 				assertEquals(processorName + "." + measurementId,
 						globalSortedSeriesDataSource.getSeriesPath().toString());
 				assertEquals(0, globalSortedSeriesDataSource.getSealedTsFiles().size());
@@ -157,7 +157,7 @@ public class FileNodeProcessorTest {
 						// query and insert time = 86
 						QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null);
 						// insert overflow data
-						RawSeriesChunk rawSeriesChunk = dataSource.getOverflowSeriesDataSource().getRawSeriesChunk();
+						RawSeriesChunk rawSeriesChunk = dataSource.getOverflowSeriesDataSource().getRawChunk();
 						assertEquals(false, rawSeriesChunk.isEmpty());
 						assertEquals(daType1, rawSeriesChunk.getDataType());
 						assertEquals(66, rawSeriesChunk.getMinTimestamp());
@@ -188,14 +188,14 @@ public class FileNodeProcessorTest {
 						// TimeUnit.SECONDS.sleep(2);
 						// query data
 						QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null);
-						RawSeriesChunk rawSeriesChunk = dataSource.getOverflowSeriesDataSource().getRawSeriesChunk();
+						RawSeriesChunk rawSeriesChunk = dataSource.getOverflowSeriesDataSource().getRawChunk();
 						assertEquals(false, rawSeriesChunk.isEmpty());
 						assertEquals(1, dataSource.getOverflowSeriesDataSource().getOverflowInsertFileList().size());
 						assertEquals(1, dataSource.getOverflowSeriesDataSource().getOverflowInsertFileList().get(0)
 								.getChunkMetaDataList().size());
 						// bufferwrite data
 						dataSource = fileNodeProcessor.query(processorName, measurementId, null);
-						rawSeriesChunk = dataSource.getSeriesDataSource().getRawSeriesChunk();
+						rawSeriesChunk = dataSource.getSeqDataSource().getRawSeriesChunk();
 						assertEquals(false, rawSeriesChunk.isEmpty());
 						Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();
 						for (int j = 87; j <= 100; j++) {
@@ -210,7 +210,7 @@ public class FileNodeProcessorTest {
 			}
 		}
 		QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null);
-		GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeriesDataSource();
+		GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeqDataSource();
 		RawSeriesChunk rawSeriesChunk = globalSortedSeriesDataSource.getRawSeriesChunk();
 		assertEquals(true, rawSeriesChunk.isEmpty());
 		// Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();

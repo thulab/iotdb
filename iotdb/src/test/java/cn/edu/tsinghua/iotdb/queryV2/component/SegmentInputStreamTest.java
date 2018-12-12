@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.component;
 
 import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStream;
+import cn.edu.tsinghua.iotdb.queryV2.reader.component.SegmentInputStream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

@@ -130,7 +130,7 @@ public abstract class QueryProcessExecutor {
 
 
 	/**
-	 * execute update command and return whether the operator is successful.
+	 * executeWithGlobalTimeFilter update command and return whether the operator is successful.
 	 *
 	 * @param path
 	 *            : update series seriesPath
@@ -145,7 +145,7 @@ public abstract class QueryProcessExecutor {
 	public abstract boolean update(Path path, long startTime, long endTime, String value) throws ProcessorException;
 
 	/**
-	 * execute delete command and return whether the operator is successful.
+	 * executeWithGlobalTimeFilter delete command and return whether the operator is successful.
 	 *
 	 * @param paths
 	 *            : delete series paths
@@ -182,7 +182,7 @@ public abstract class QueryProcessExecutor {
 	}
 
 	/**
-	 * execute delete command and return whether the operator is successful.
+	 * executeWithGlobalTimeFilter delete command and return whether the operator is successful.
 	 *
 	 * @param path
 	 *            : delete series seriesPath
@@ -206,7 +206,7 @@ public abstract class QueryProcessExecutor {
 	public abstract int insert(Path path, long insertTime, String value) throws ProcessorException;
 
 	/**
-	 * execute insert command and return whether the operator is successful.
+	 * executeWithGlobalTimeFilter insert command and return whether the operator is successful.
 	 *
 	 * @param deltaObject
 	 *            deltaObject to be inserted

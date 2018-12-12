@@ -14,7 +14,7 @@ public class QueryDataSource {
 		this.overflowSeriesDataSource = overflowSeriesDataSource;
 	}
 
-	public GlobalSortedSeriesDataSource getSeriesDataSource() {
+	public GlobalSortedSeriesDataSource getSeqDataSource() {
 		return seriesDataSource;
 	}
 

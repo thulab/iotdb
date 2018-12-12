@@ -76,16 +76,16 @@
 //                                                QueryDataSource queryDataSource, ReaderType readerType, int readToken) throws PathErrorException, IOException {
 //        switch (readerType) {
 //            case QUERY:
-//                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+//                return new QueryRecordReader(queryDataSource.getSeqDataSource(), queryDataSource.getOverflowSeriesDataSource(),
 //                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter, readToken);
 //            case AGGREGATE:
-//                return new AggregateRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+//                return new AggregateRecordReader(queryDataSource.getSeqDataSource(), queryDataSource.getOverflowSeriesDataSource(),
 //                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter, readToken);
 //            case FILL:
-//                return new FillRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+//                return new FillRecordReader(queryDataSource.getSeqDataSource(), queryDataSource.getOverflowSeriesDataSource(),
 //                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter, readToken);
 //            case GROUPBY:
-//                return new QueryRecordReader(queryDataSource.getSeriesDataSource(), queryDataSource.getOverflowSeriesDataSource(),
+//                return new QueryRecordReader(queryDataSource.getSeqDataSource(), queryDataSource.getOverflowSeriesDataSource(),
 //                        deltaObjectUID, measurementID, queryTimeFilter, queryValueFilter, readToken);
 //        }
 //

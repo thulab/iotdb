@@ -1,12 +1,11 @@
 package cn.edu.tsinghua.iotdb.queryV2;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.QueryJobDispatcher;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.executor.QueryJobExecutor;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob.SelectQueryJob;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobFuture;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJobStatus;
-import cn.edu.tsinghua.iotdb.queryV2.engine.impl.QueryEngineImpl;
+import cn.edu.tsinghua.iotdb.queryV2.component.executor.QueryJobExecutor;
+import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob.SelectQueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJobFuture;
+import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJobStatus;
+import cn.edu.tsinghua.iotdb.queryV2.job.QueryEngineImpl;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.junit.Assert;

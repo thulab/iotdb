@@ -24,7 +24,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
-import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
+import cn.edu.tsinghua.iotdb.queryV2.control.QueryJobManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -274,7 +274,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	}
 
 	/**
-	 * Judge whether the statement is ADMIN COMMAND and if true, execute it.
+	 * Judge whether the statement is ADMIN COMMAND and if true, executeWithGlobalTimeFilter it.
 	 *
 	 * @param statement
 	 *            command
@@ -344,7 +344,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 						batchErrorMessage = resp.getStatus().getErrorMessage();
 					}
 				} catch (Exception e) {
-					String errMessage = String.format("Fail to generate physcial plan and execute for statement %s beacuse %s", statement, e.getMessage());
+					String errMessage = String.format("Fail to generate physcial plan and executeWithGlobalTimeFilter for statement %s beacuse %s", statement, e.getMessage());
 					//LOGGER.error(errMessage);
 					result.add(Statement.EXECUTE_FAILED);
 					isAllSuccessful = false;

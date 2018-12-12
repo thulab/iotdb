@@ -368,7 +368,7 @@ public class OverflowProcessor extends Processor {
 				measurementId, dataType);
 		OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(
 				new Path(deltaObjectId + "." + measurementId));
-		overflowSeriesDataSource.setRawSeriesChunk(null);
+		overflowSeriesDataSource.setRawChunk(null);
 		overflowSeriesDataSource
 				.setOverflowInsertFileList(Arrays.asList(new OverflowInsertFile(mergeInsert.left, mergeInsert.right)));
 		UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();

@@ -1,11 +1,11 @@
 //package cn.edu.tsinghua.iotdb.queryV2.reader;
 //
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReaderByTimestamp;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReaderByTimestamp;
+//import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReaderByTimestamp;
+//import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PrioritySeriesReaderByTimestamp;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReaderByTimeStamp;
+//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.EngineSeriesReaderByTimeStamp;
 //import org.junit.Assert;
 //import org.junit.Test;
 //
@@ -94,7 +94,7 @@
 //
 //
 //
-//    public static class FakedPrioritySeriesReaderByTimestamp implements SeriesReaderByTimeStamp {
+//    public static class FakedPrioritySeriesReaderByTimestamp implements EngineSeriesReaderByTimeStamp {
 //        private Iterator<TimeValuePair> iterator;
 //        private long currentTimeStamp = Long.MIN_VALUE;
 //        private boolean hasCachedTimeValuePair;

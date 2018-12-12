@@ -38,7 +38,7 @@
 //    /** this is no need to set as ThreadLocal, RecordReaderCacheManager has ThreadLocal variable**/
 //    private RecordReaderCacheManager recordReaderCacheManager = new RecordReaderCacheManager();
 //
-//    /** represents the execute time of group by method**/
+//    /** represents the executeWithGlobalTimeFilter time of group by method**/
 //    private ThreadLocal<Integer> groupByCalcTime;
 //
 //    /** ThreadLocal, due to the usage of OverflowQPExecutor **/

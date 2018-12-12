@@ -71,7 +71,7 @@
 //        TsfileDBDescriptor.getInstance().getConfig().bufferWriteDirs = new String[] {""};
 //        Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(startTime), TimeFilter.ltEq(endTime));
 //        SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-//        IReader reader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource,
+//        IReader reader = SeriesReaderFactory.getInstance().createUnSeqMergeReader(overflowSeriesDataSource,
 //                filter);
 //        return reader;
 //    }
@@ -116,7 +116,7 @@
 //        List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
 //        overflowInsertFileList.add(overflowInsertFile);
 //        overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFileList);
-//        overflowSeriesDataSource.setRawSeriesChunk(null);
+//        overflowSeriesDataSource.setRawChunk(null);
 //        return overflowSeriesDataSource;
 //    }
 //

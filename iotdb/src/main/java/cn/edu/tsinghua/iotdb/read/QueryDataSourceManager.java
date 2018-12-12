@@ -10,8 +10,8 @@ public class QueryDataSourceManager {
 
     private static FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
-    public static QueryDataSource getQueryDataSource(SingleSeriesExpression seriesFilter) throws FileNodeManagerException {
-        return fileNodeManager.query(seriesFilter);
+    public static QueryDataSource getQueryDataSource(SingleSeriesExpression singleSeriesExpression) throws FileNodeManagerException {
+        return fileNodeManager.query(singleSeriesExpression);
     }
 
     public static QueryDataSource getQueryDataSource(Path selectedPath) throws FileNodeManagerException {

@@ -9,7 +9,7 @@
 //import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
 //import cn.edu.tsinghua.iotdb.query.management.ReaderManager;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence.UnSeqSeriesReader;
+//import cn.edu.tsinghua.iotdb.queryV2.reader.unsequence.UnSeqSeriesReader;
 //import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 //import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
@@ -112,15 +112,15 @@
 //            }
 //        }
 //
-//        if (globalSortedSeriesDataSource.getRawSeriesChunk() != null)
-//            memRawSeriesChunk = globalSortedSeriesDataSource.getRawSeriesChunk();
+//        if (globalSortedSeriesDataSource.getRawChunk() != null)
+//            memRawSeriesChunk = globalSortedSeriesDataSource.getRawChunk();
 //
-//        overflowSeriesInsertReader = SeriesReaderFactory.getInstance().createSeriesReaderForUnSeq(overflowSeriesDataSource);
+//        overflowSeriesInsertReader = SeriesReaderFactory.getInstance().createUnSeqMergeReader(overflowSeriesDataSource);
 //        overflowOperationReader = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateOperationReader();
 //        overflowOperationReaderCopy = overflowOperationReader.copy();
 //
 //        this.dataType = MManager.getInstance().getSeriesType(deltaObjectId + "." + measurementId);
-//        insertMemoryData = new InsertDynamicData(dataType, queryTimeFilter, queryValueFilter, globalSortedSeriesDataSource.getRawSeriesChunk(),
+//        insertMemoryData = new InsertDynamicData(dataType, queryTimeFilter, queryValueFilter, globalSortedSeriesDataSource.getRawChunk(),
 //                overflowSeriesInsertReader, overflowOperationReader);
 //        this.deltaObjectId = deltaObjectId;
 //        this.measurementId = measurementId;
