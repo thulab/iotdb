@@ -11,7 +11,7 @@ jdk:
 before_install:
 
 script: 
-  - mvn clean test
+  - mvn clean test -Dit.test.excludes="**/IoTDB*Test.java"
   
 after_success:
 
