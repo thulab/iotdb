@@ -39,12 +39,12 @@ import java.util.List;
 public class SeriesReaderFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
-    private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
+//    private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
     //  private ExternalSortJobEngine externalSortJobEngine;
     private QueryJobManager queryJobManager;
 
     private SeriesReaderFactory() {
-        overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
+//        overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
 //    externalSortJobEngine = SimpleExternalSortEngine.getInstance();
         queryJobManager = QueryJobManager.getInstance();
     }
@@ -122,21 +122,22 @@ public class SeriesReaderFactory {
     public UnSeqSeriesReader createSeriesReaderForUnSeq(OverflowSeriesDataSource overflowSeriesDataSource) throws IOException {
         long jobId = queryJobManager.addJobForOneQuery();
 
-        List<ChunkMetaData> metaDataList = new ArrayList<>();
-        for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList())
-            metaDataList.addAll(overflowInsertFile.getChunkMetaDataList());
-
+        PriorityMergeReader priorityMergeReader = new PriorityMergeReader();
 
         int priorityValue = 1;
 
-        PriorityMergeReader priorityMergeReader = new PriorityMergeReader();
+        for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList()) {
+            TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(overflowInsertFile.getFilePath(), false);
+            ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
 
-        for (ChunkMetaData seriesChunkDescriptor : metaDataList) {
-            Chunk seriesChunk = overflowSeriesChunkLoader.getChunk(jobId, seriesChunkDescriptor);
-            ChunkReader seriesChunkReader = new ChunkReaderWithoutFilter(seriesChunk);
-            priorityMergeReader.addReaderWithPriority(new EngineChunkReader(seriesChunkReader), priorityValue);
-            priorityValue++;
+            for (ChunkMetaData chunkMetaData : overflowInsertFile.getChunkMetaDataList()) {
+                Chunk chunk = chunkLoader.getChunk(chunkMetaData);
+                ChunkReader chunkReader = new ChunkReaderWithoutFilter(chunk);
+                priorityMergeReader.addReaderWithPriority(new EngineChunkReader(chunkReader), priorityValue);
+                priorityValue++;
+            }
         }
+
 
         //TODO: add SeriesChunkReader in MemTable
         if (overflowSeriesDataSource.hasRawSeriesChunk()) {
