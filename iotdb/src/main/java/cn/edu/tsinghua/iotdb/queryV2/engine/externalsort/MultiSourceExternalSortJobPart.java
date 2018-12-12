@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ public class MultiSourceExternalSortJobPart extends ExternalSortJobPart {
         this.tmpFilePath = tmpFilePath;
     }
 
-    public MultiSourceExternalSortJobPart(String tmpFilePath, ExternalSortJobPart... externalSortJobParts) {
-        super(ExternalSortJobPartType.MULTIPLE_SOURCE);
-        source = new ArrayList<>();
-        for (ExternalSortJobPart externalSortJobPart : externalSortJobParts) {
-            source.add(externalSortJobPart);
-        }
-        this.tmpFilePath = tmpFilePath;
-    }
+//    public MultiSourceExternalSortJobPart(String tmpFilePath, ExternalSortJobPart... externalSortJobParts) {
+//        super(ExternalSortJobPartType.MULTIPLE_SOURCE);
+//        source = new ArrayList<>();
+//        for (ExternalSortJobPart externalSortJobPart : externalSortJobParts) {
+//            source.add(externalSortJobPart);
+//        }
+//        this.tmpFilePath = tmpFilePath;
+//    }
 
     @Override
     public PrioritySeriesReader execute() throws IOException {

@@ -7,6 +7,8 @@ import java.util.List;
 
 public class OverflowInsertFile {
 
+    private String filePath;
+
     // seriesChunkMetadata of selected series
     private List<ChunkMetaData> timeSeriesChunkMetaDatas;
 
@@ -14,10 +16,15 @@ public class OverflowInsertFile {
     }
 
     public OverflowInsertFile(String path, List<ChunkMetaData> timeSeriesChunkMetaDatas) {
+        this.filePath = path;
         this.timeSeriesChunkMetaDatas = timeSeriesChunkMetaDatas;
     }
 
-    public List<ChunkMetaData> getTimeSeriesChunkMetaDatas() {
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public List<ChunkMetaData> getChunkMetaDataList() {
         return timeSeriesChunkMetaDatas;
     }
 

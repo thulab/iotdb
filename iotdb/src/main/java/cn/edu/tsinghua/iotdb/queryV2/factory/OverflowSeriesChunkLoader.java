@@ -4,8 +4,8 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.BufferedSeriesChunk;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStream;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStreamWithMMap;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.EncodedSeriesChunkDescriptor;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.common.SeriesChunk;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.read.common.Chunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 
 /**
- * This class is used to load one SeriesChunk according to the SeriesChunkDescriptor
+ * This class is used to load one SeriesChunk according to the ChunkMetaData
  */
 public class OverflowSeriesChunkLoader {
   private static final Logger logger = LoggerFactory.getLogger(OverflowSeriesChunkLoader.class);
@@ -25,18 +25,21 @@ public class OverflowSeriesChunkLoader {
     overflowFileStreamManager = OverflowFileStreamManager.getInstance();
   }
 
-  public SeriesChunk getMemSeriesChunk(Long jobId, EncodedSeriesChunkDescriptor scDescriptor) throws IOException {
-    if (overflowFileStreamManager.contains(scDescriptor.getFilePath()) || (new File(scDescriptor.getFilePath()).length() +
+  public Chunk getChunk(Long jobId, ChunkMetaData metaData) throws IOException {
+
+
+
+    if (overflowFileStreamManager.contains(metaData.getFilePath()) || (new File(metaData.getFilePath()).length() +
             overflowFileStreamManager.getMappedByteBufferUsage().get() < Integer.MAX_VALUE)) {
-      MappedByteBuffer buffer = overflowFileStreamManager.get(scDescriptor.getFilePath());
+      MappedByteBuffer buffer = overflowFileStreamManager.get(metaData.getFilePath());
       return new BufferedSeriesChunk(
-              new SegmentInputStreamWithMMap(buffer, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
-              scDescriptor);
+              new SegmentInputStreamWithMMap(buffer, metaData.getOffsetInFile(), metaData.getLengthOfBytes()),
+              metaData);
     } else {
-      RandomAccessFile randomAccessFile = overflowFileStreamManager.get(jobId, scDescriptor.getFilePath());
+      RandomAccessFile randomAccessFile = overflowFileStreamManager.get(jobId, metaData.getFilePath());
       return new BufferedSeriesChunk(
-              new SegmentInputStream(randomAccessFile, scDescriptor.getOffsetInFile(), scDescriptor.getLengthOfBytes()),
-              scDescriptor);
+              new SegmentInputStream(randomAccessFile, metaData.getOffsetInFile(), metaData.getLengthOfBytes()),
+              metaData);
     }
   }
 }

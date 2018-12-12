@@ -9,7 +9,7 @@
 //import cn.edu.tsinghua.iotdb.query.management.FileReaderMap;
 //import cn.edu.tsinghua.iotdb.query.management.ReaderManager;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence.UnSeqSeriesReader;
 //import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 //import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
@@ -96,7 +96,7 @@
 //
 //        valueReaders = new ArrayList<>();
 //        if (globalSortedSeriesDataSource.getUnsealedTsFile() != null) {
-//            for (TimeSeriesChunkMetaData tscMetaData : globalSortedSeriesDataSource.getUnsealedTsFile().getTimeSeriesChunkMetaDatas()) {
+//            for (TimeSeriesChunkMetaData tscMetaData : globalSortedSeriesDataSource.getUnsealedTsFile().getChunkMetaDataList()) {
 //                if (tscMetaData.getVInTimeSeriesChunkMetaData() != null) {
 //                    TsRandomAccessLocalFileReader fileReader = FileReaderMap.getInstance().get(globalSortedSeriesDataSource.getUnsealedTsFile().getFilePath());
 //

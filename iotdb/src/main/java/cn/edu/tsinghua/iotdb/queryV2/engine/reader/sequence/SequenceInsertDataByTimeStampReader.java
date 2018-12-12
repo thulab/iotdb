@@ -4,11 +4,11 @@
 //import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 //import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReaderByTimestamp;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReaderByTimestamp;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReaderByTimestamp;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReaderByTimestamp;
 //import cn.edu.tsinghua.iotdb.queryV2.engine.reader.SeriesReaderByTimeStamp;
-//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderByTimestamp;
+//import cn.edu.tsinghua.iotdb.queryV2.engine.reader.mem.MemChunkReaderByTimestamp;
 //import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 //import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 //
@@ -43,7 +43,7 @@
 //    }
 //    //data in memTable
 //    if (sortedSeriesDataSource.hasRawSeriesChunk()) {
-//      RawSeriesChunkReaderByTimestamp rawSeriesChunkReaderByTimestamp = new RawSeriesChunkReaderByTimestamp(sortedSeriesDataSource.getRawSeriesChunk());
+//      MemChunkReaderByTimestamp rawSeriesChunkReaderByTimestamp = new MemChunkReaderByTimestamp(sortedSeriesDataSource.getRawSeriesChunk());
 //      priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(rawSeriesChunkReaderByTimestamp, new PrioritySeriesReader.Priority(priority++)));
 //    }
 //

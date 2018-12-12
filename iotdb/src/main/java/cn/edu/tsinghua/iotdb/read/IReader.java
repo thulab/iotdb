@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * @author Jinrui Zhang
  */
-public interface ISeriesReader {
+public interface IReader {
 
     boolean hasNext() throws IOException;
 

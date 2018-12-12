@@ -1,18 +1,18 @@
-package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
+package cn.edu.tsinghua.iotdb.queryV2.engine.reader.mem;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.read.ISeriesReader;
+import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-public class RawSeriesChunkReaderWithoutFilter implements ISeriesReader {
+public class MemChunkReaderWithoutFilter implements IReader {
 
     private Iterator<TimeValuePair> timeValuePairIterator;
 
-    public RawSeriesChunkReaderWithoutFilter(RawSeriesChunk rawSeriesChunk) {
+    public MemChunkReaderWithoutFilter(RawSeriesChunk rawSeriesChunk) {
         timeValuePairIterator = rawSeriesChunk.getIterator();
     }
 

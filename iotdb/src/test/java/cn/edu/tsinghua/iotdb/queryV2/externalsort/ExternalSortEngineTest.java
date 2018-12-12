@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.queryV2.externalsort;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.SimpleExternalSortEngine;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader.Priority;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader.Priority;
 import cn.edu.tsinghua.iotdb.queryV2.reader.SeriesMergeSortReaderTest.FakedSeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;

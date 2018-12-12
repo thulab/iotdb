@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.timegenerator;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.read.ISeriesReader;
+import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
@@ -42,7 +42,7 @@ public class NodeConstructor {
     }
   }
 
-  public ISeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExpression)
+  public IReader generateSeriesReader(SingleSeriesExpression singleSeriesExpression)
           throws IOException, FileNodeManagerException {
     QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(singleSeriesExpression);
     return new EngineSeriesReader(queryDataSource, singleSeriesExpression);

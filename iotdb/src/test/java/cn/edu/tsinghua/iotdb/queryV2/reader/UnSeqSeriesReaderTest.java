@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence.UnSeqSeriesReader;
 import org.junit.Assert;
 import org.junit.Test;
 
