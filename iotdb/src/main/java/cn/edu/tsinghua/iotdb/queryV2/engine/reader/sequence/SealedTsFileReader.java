@@ -96,7 +96,7 @@ public class SealedTsFileReader implements IReader {
 
     @Override
     public TimeValuePair next() throws IOException {
-        TimeValuePair timeValuePair = Utils.getCurrenTimeValuePair(data);
+        TimeValuePair timeValuePair = Utils.getCurrentTimeValuePair(data);
         data.next();
         hasCachedData = false;
         return timeValuePair;

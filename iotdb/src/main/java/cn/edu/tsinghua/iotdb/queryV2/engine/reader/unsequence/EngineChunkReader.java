@@ -31,7 +31,7 @@ public class EngineChunkReader implements IReader {
 
     @Override
     public TimeValuePair next() {
-        TimeValuePair timeValuePair = Utils.getCurrenTimeValuePair(data);
+        TimeValuePair timeValuePair = Utils.getCurrentTimeValuePair(data);
         data.next();
         return timeValuePair;
     }

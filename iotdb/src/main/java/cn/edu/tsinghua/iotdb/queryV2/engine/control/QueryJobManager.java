@@ -36,6 +36,9 @@ public class QueryJobManager {
         return jobIdCurrent;
     }
 
+    /**
+     * Always invoking this method when jdbc connection close.
+     */
     public void closeOneJobForOneQuery(long jobId) throws IOException {
         if (queryJobIds.get() == null && queryJobIds.get().contains(jobId)) {
             overflowFileStreamManager.closeAll(jobId);

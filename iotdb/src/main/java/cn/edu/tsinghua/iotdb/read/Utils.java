@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 public class Utils {
 
-    public static TimeValuePair getCurrenTimeValuePair(BatchData data) {
+    public static TimeValuePair getCurrentTimeValuePair(BatchData data) {
         switch (data.getDataType()) {
             case INT32:
                 return new TimeValuePair(data.currentTime(), new TsPrimitiveType.TsInt(data.getInt()));

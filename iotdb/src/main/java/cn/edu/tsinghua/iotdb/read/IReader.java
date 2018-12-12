@@ -5,9 +5,7 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 
-/**
- * @author Jinrui Zhang
- */
+
 public interface IReader {
 
     boolean hasNext() throws IOException;

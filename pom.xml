@@ -147,19 +147,6 @@
 		<commons.collections4>4.0</commons.collections4>
 	</properties>
 
-	<modules>
-		<module>tsfile</module>
-		<module>iotdb</module>
-		<!--<module>jdbc</module>
-
-		<module>grafana</module>
-		<module>service-rpc</module>
-		<module>iotdb-cli</module> -->
-		<!-- <module>hadoop</module> -->
-		<!-- <module>spark</module> -->
-	</modules>
-
-
 	<build>
 		<pluginManagement>
 			<plugins>

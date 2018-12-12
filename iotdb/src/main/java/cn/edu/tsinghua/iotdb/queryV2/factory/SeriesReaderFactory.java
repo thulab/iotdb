@@ -49,8 +49,8 @@ public class SeriesReaderFactory {
 
     public UnSeqSeriesReader createSeriesReaderForUnSeq(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
             throws IOException {
+
         long jobId = queryJobManager.addJobForOneQuery();
-        List<ChunkMetaData> metaDataList = new ArrayList<>();
 
         PriorityMergeReader priorityMergeReader = new PriorityMergeReader();
 
@@ -68,13 +68,14 @@ public class SeriesReaderFactory {
             }
         }
 
-        //TODO: add SeriesChunkReader in MemTable
+        // TODO: add SeriesChunkReader in MemTable
         if (overflowSeriesDataSource.hasRawSeriesChunk()) {
-            priorityMergeReader.addReaderWithPriority(new MemChunkReaderWithFilter(overflowSeriesDataSource.getRawSeriesChunk(), filter), priorityValue++);
+            priorityMergeReader.addReaderWithPriority(
+                    new MemChunkReaderWithFilter(overflowSeriesDataSource.getRawSeriesChunk(), filter), priorityValue);
         }
 
-        //Add External Sort
-//    timeValuePairReaders = externalSortJobEngine.execute(timeValuePairReaders);
+        // TODO add External Sort
+        // timeValuePairReaders = externalSortJobEngine.execute(timeValuePairReaders);
 
         return new UnSeqSeriesReader(jobId, priorityMergeReader);
     }

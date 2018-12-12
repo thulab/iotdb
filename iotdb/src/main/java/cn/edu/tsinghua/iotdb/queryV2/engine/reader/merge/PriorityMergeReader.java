@@ -6,6 +6,7 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -18,18 +19,9 @@ import java.util.PriorityQueue;
  */
 public class PriorityMergeReader implements IReader {
 
-    protected List<IReader> readerList;
-    private List<Integer> priorityList;
-    protected PriorityQueue<Element> heap = new PriorityQueue<>();
-
-    public PriorityMergeReader(IReader... readers) throws IOException {
-        readerList = new ArrayList<>();
-
-        for (int i = 0; i < readers.length; i++) {
-            readerList.add(readers[i]);
-        }
-        init();
-    }
+    private List<IReader> readerList = new ArrayList<>();
+    private List<Integer> priorityList = new ArrayList<>();
+    private PriorityQueue<Element> heap = new PriorityQueue<>();
 
     public void addReaderWithPriority(IReader reader, int priority) throws IOException {
         if (reader.hasNext()) {
@@ -39,18 +31,8 @@ public class PriorityMergeReader implements IReader {
         priorityList.add(priority);
     }
 
-    private void init() throws IOException {
-        heap = new PriorityQueue<>();
-        for (int i = 0; i < readerList.size(); i++) {
-            if (readerList.get(i).hasNext()) {
-                heap.add(new Element(i, readerList.get(i).next(), priorityList.get(i)));
-            }
-        }
-    }
-
     @Override
-    public boolean hasNext() throws IOException {
-
+    public boolean hasNext() {
         return heap.size() > 0;
     }
 

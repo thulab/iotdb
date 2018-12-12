@@ -51,6 +51,8 @@ public class EngineQueryExecutor {
     } else {
       return execute(queryExpression);
     }
+    
+    return null;
   }
 
   public QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {

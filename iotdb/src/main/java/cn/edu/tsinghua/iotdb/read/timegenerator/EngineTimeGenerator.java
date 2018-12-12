@@ -39,7 +39,7 @@ public class EngineTimeGenerator implements TimeGenerator {
     }
 
     // TODO implement the optimization
-    @Override public Object getValue(Path path, long time) throws IOException {
+    @Override public Object getValue(Path path, long time) {
         return null;
     }
 }
