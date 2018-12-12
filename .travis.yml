@@ -11,7 +11,7 @@ jdk:
 before_install:
 
 script: 
-  - mvn clean test -Dit.test.excludes="**/IoTDB*Test.java"
-  
+  - mvn clean test -pl iotdb -am -Dtsfile.test.skip=true -Djdbc.test.skip=true -Dit.test.includes="**/IoTDB*Test.java"
+
 after_success:
 
