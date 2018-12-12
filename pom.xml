@@ -22,36 +22,6 @@
 		</license>
 	</licenses>
 
-	<developers>
-		<developer>
-			<name>Jianmin Wang</name>
-			<email>jimwang@tsinghua.edu.cn</email>
-			<organization>School of Software, Tsinghua University</organization>
-			<organizationUrl>http://thss.tsinghua.edu.cn/publish/soften/index.html</organizationUrl>
-		</developer>
-		<developer>
-			<name>Xiangdong Huang</name>
-		</developer>
-		<developer>
-			<name>Rong Kang</name>
-		</developer>
-		<developer>
-			<name>Jinrui Zhang</name>
-		</developer>
-		<developer>
-			<name>Jialin Qiao</name>
-		</developer>
-		<developer>
-			<name>Yi Xu</name>
-		</developer>
-		<developer>
-			<name>Gaofei Cao</name>
-		</developer>
-		<developer>
-			<name>Kun Liu</name>
-		</developer>
-	</developers>
-
 	<scm>
 		<connection>scm:git:git://github.com/thulab/iotdb.git</connection>
 		<developerConnection>scm:git:ssh://github.com:thulab/iotdb.git</developerConnection>
