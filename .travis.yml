@@ -16,7 +16,7 @@ install: true
 
 script: 
   - mvn clean package -Dmaven.test.skip=true
-  - mvn clean test -pl iotdb -am -Dtsfile.test.skip=true -Djdbc.test.skip=true -Dit.test.excludes="**/IoTDB*Test.java"
+  - mvn clean test -pl jdbc -am -Dtsfile.test.skip=true
 
 after_success:
 
