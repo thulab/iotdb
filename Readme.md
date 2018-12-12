@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/thulab/iotdb.svg?branch=master)](https://travis-ci.org/thulab/iotdb)
 [![codecov](https://codecov.io/gh/thulab/iotdb/branch/master/graph/badge.svg?token=tBhPhPC9EQ)](https://codecov.io/gh/thulab/iotdb)
 [![GitHub release](https://img.shields.io/github/release/thulab/iotdb.svg)](https://github.com/thulab/iotdbc/releases)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Overview
 
