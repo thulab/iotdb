@@ -10,14 +10,14 @@ public class OverflowInsertFile {
     private String filePath;
 
     // seriesChunkMetadata of selected series
-    private List<ChunkMetaData> timeSeriesChunkMetaDatas;
+    private List<ChunkMetaData> timeSeriesChunkMetaData;
 
     public OverflowInsertFile() {
     }
 
     public OverflowInsertFile(String path, List<ChunkMetaData> timeSeriesChunkMetaData) {
         this.filePath = path;
-        this.timeSeriesChunkMetaDatas = timeSeriesChunkMetaData;
+        this.timeSeriesChunkMetaData = timeSeriesChunkMetaData;
     }
 
     public String getFilePath() {
@@ -25,10 +25,10 @@ public class OverflowInsertFile {
     }
 
     public List<ChunkMetaData> getChunkMetaDataList() {
-        return timeSeriesChunkMetaDatas;
+        return timeSeriesChunkMetaData;
     }
 
-    public void setTimeSeriesChunkMetaDatas(List<ChunkMetaData> timeSeriesChunkMetaData) {
-        this.timeSeriesChunkMetaDatas = timeSeriesChunkMetaData;
+    public void setTimeSeriesChunkMetaData(List<ChunkMetaData> timeSeriesChunkMetaData) {
+        this.timeSeriesChunkMetaData = timeSeriesChunkMetaData;
     }
 }

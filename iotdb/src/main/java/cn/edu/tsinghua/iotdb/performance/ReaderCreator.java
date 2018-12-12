@@ -112,7 +112,7 @@
 //        OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(seriesPath);
 //        OverflowInsertFile overflowInsertFile = new OverflowInsertFile();
 //        overflowInsertFile.setPath(unSeqTsFilePath);
-//        overflowInsertFile.setTimeSeriesChunkMetaDatas(unSeqFileMetaData.get(seriesPath.getDeltaObjectToString()).get(seriesPath.getMeasurementToString()));
+//        overflowInsertFile.setTimeSeriesChunkMetaData(unSeqFileMetaData.get(seriesPath.getDeltaObjectToString()).get(seriesPath.getMeasurementToString()));
 //        List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
 //        overflowInsertFileList.add(overflowInsertFile);
 //        overflowSeriesDataSource.setOverflowInsertFileList(overflowInsertFileList);

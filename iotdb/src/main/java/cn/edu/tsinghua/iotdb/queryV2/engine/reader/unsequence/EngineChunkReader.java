@@ -37,7 +37,7 @@ public class EngineChunkReader implements IReader {
     }
 
     @Override
-    public void skipCurrentTimeValuePair() throws IOException {
+    public void skipCurrentTimeValuePair() {
         next();
     }
 

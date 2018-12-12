@@ -2,9 +2,7 @@ package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.Priority;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.sequence.SequenceDataReader;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence.UnSeqSeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
@@ -51,7 +49,7 @@ public class EngineQueryExecutor {
     } else {
       return execute(queryExpression);
     }
-    
+
     return null;
   }
 
@@ -71,7 +69,7 @@ public class EngineQueryExecutor {
 
       // unseq insert data
       UnSeqSeriesReader unSeqSeriesReader = SeriesReaderFactory.getInstance().
-              createSeriesReaderForUnSeq(queryDataSource.getOverflowSeriesDataSource());
+              createSeriesReaderForUnSeq(queryDataSource.getOverflowSeriesDataSource(), null);
       priorityReader.addReaderWithPriority(unSeqSeriesReader, 2);
 
       readersOfSelectedSeries.add(priorityReader);
