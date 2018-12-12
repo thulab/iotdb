@@ -91,21 +91,6 @@
 					<target>${compile.version}</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
-				<!-- compile java files in src/it/java -->
-				<executions>
-					<execution>
-						<id>compile-integration-test</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<testIncludes>
-								<testInclude>**/*.java</testInclude>
-							</testIncludes>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 
 			<plugin>
