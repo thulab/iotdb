@@ -1,6 +1,7 @@
 # IoTDB
+[![Build Status](https://travis-ci.org/thulab/iotdb.svg?branch=master)](https://travis-ci.org/thulab/iotdb)
 [![codecov](https://codecov.io/gh/thulab/iotdb/branch/master/graph/badge.svg?token=tBhPhPC9EQ)](https://codecov.io/gh/thulab/iotdb)
-
+[![GitHub release](https://img.shields.io/github/release/thulab/iotdb.svg)](https://github.com/thulab/iotdbc/releases)
 
 # Overview
 

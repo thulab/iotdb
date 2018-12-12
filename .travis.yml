@@ -1,0 +1,17 @@
+dist: trusty
+#sudo: required
+
+language: java
+
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+  - openjdk8
+
+before_install:
+
+script: 
+  - mvn clean test
+  
+after_success:
+
