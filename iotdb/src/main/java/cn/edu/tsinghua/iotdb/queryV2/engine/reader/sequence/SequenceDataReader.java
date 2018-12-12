@@ -1,11 +1,12 @@
-package cn.edu.tsinghua.iotdb.read.reader;
+package cn.edu.tsinghua.iotdb.queryV2.engine.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithFilter;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.RawSeriesChunkReaderWithoutFilter;
-import cn.edu.tsinghua.iotdb.read.ISeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.mem.MemChunkReaderWithFilter;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.mem.MemChunkReaderWithoutFilter;
+import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 
 import java.io.IOException;
@@ -16,14 +17,14 @@ import java.util.List;
  * <p> A reader for sequentially inserts data，including a list of sealedTsFile, unSealedTsFile
  * and data in MemTable.
  */
-public abstract class SequenceDataReader implements ISeriesReader {
+public class SequenceDataReader implements IReader {
 
-  protected List<ISeriesReader> seriesReaders;
+  protected List<IReader> seriesReaders;
   protected long jobId;
 
   private boolean hasSeriesReaderInitialized;
   private int nextSeriesReaderIndex;
-  private ISeriesReader currentSeriesReader;
+  private IReader currentSeriesReader;
 
   public SequenceDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, SingleSeriesExpression singleSeriesExpression) throws IOException {
     seriesReaders = new ArrayList<>();
@@ -42,10 +43,10 @@ public abstract class SequenceDataReader implements ISeriesReader {
 
     // add data in memTable
     if (sortedSeriesDataSource.hasRawSeriesChunk() && singleSeriesExpression == null) {
-      seriesReaders.add(new RawSeriesChunkReaderWithoutFilter(sortedSeriesDataSource.getRawSeriesChunk()));
+      seriesReaders.add(new MemChunkReaderWithoutFilter(sortedSeriesDataSource.getRawSeriesChunk()));
     }
     if (sortedSeriesDataSource.hasRawSeriesChunk() && singleSeriesExpression != null) {
-      seriesReaders.add(new RawSeriesChunkReaderWithFilter(sortedSeriesDataSource.getRawSeriesChunk(), singleSeriesExpression));
+      seriesReaders.add(new MemChunkReaderWithFilter(sortedSeriesDataSource.getRawSeriesChunk(), singleSeriesExpression.getFilter()));
     }
   }
 
@@ -83,9 +84,24 @@ public abstract class SequenceDataReader implements ISeriesReader {
 
   @Override
   public void close() throws IOException {
-    for (ISeriesReader seriesReader : seriesReaders) {
+    for (IReader seriesReader : seriesReaders) {
       seriesReader.close();
     }
+  }
+
+  @Override
+  public boolean hasNextBatch() {
+    return false;
+  }
+
+  @Override
+  public BatchData nextBatch() {
+    return null;
+  }
+
+  @Override
+  public BatchData currentBatch() {
+    return null;
   }
 
 }

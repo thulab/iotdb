@@ -75,7 +75,7 @@ public class OverflowOperationReaderTest {
         assertEquals(true, overflowSeriesDataSource.getRawSeriesChunk().isEmpty());
         assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
         assertEquals(0,
-                overflowSeriesDataSource.getOverflowInsertFileList().get(0).getTimeSeriesChunkMetaDatas().size());
+                overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
         assertEquals(1, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());
         assertEquals(0, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
                 .getTimeSeriesChunkMetaDataList().size());
@@ -124,7 +124,7 @@ public class OverflowOperationReaderTest {
                 .getTimeSeriesChunkMetaDataList().size());
         assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
         assertEquals(1,
-                overflowSeriesDataSource.getOverflowInsertFileList().get(0).getTimeSeriesChunkMetaDatas().size());
+                overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
         processor.switchWorkToMerge();
         overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
                 null, OverflowTestUtils.dataType1);

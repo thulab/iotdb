@@ -2,13 +2,15 @@ package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.Priority;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.sequence.SequenceDataReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence.UnSeqSeriesReader;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.read.dataset.DataSetWithoutTimeGenerator;
-import cn.edu.tsinghua.iotdb.read.executor.QueryWithFilterExecutorImpl;
-import cn.edu.tsinghua.iotdb.read.executor.QueryWithGlobalTimeFilterExecutorImpl;
+//import cn.edu.tsinghua.iotdb.read.executor.QueryWithFilterExecutorImpl;
+//import cn.edu.tsinghua.iotdb.read.executor.QueryWithGlobalTimeFilterExecutorImpl;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -38,9 +40,9 @@ public class EngineQueryExecutor {
         queryExpression.setExpression(optimizedExpression);
 
         if (optimizedExpression.getType() == GLOBAL_TIME) {
-          return QueryWithGlobalTimeFilterExecutorImpl.execute(queryExpression);
+//          return QueryWithGlobalTimeFilterExecutorImpl.execute(queryExpression);
         } else {
-          return QueryWithFilterExecutorImpl.execute(queryExpression);
+//          return QueryWithFilterExecutorImpl.execute(queryExpression);
         }
 
       } catch (QueryFilterOptimizationException e) {
@@ -53,25 +55,23 @@ public class EngineQueryExecutor {
 
   public QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
-    List<ISeriesReader> readersOfSelectedSeries = new ArrayList<>();
+    List<IReader> readersOfSelectedSeries = new ArrayList<>();
     List<TSDataType> dataTypes = new ArrayList<>();
 
     for (Path path : queryExpression.getSelectedSeries()) {
+
       QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+      PriorityMergeReader priorityReader = new PriorityMergeReader();
 
       // sequence insert data
-      SeqSeriesReader tsFilesReader = new SeqSeriesReader(queryDataSource.getSeriesDataSource(), null);
-      PrioritySeriesReader tsFilesReaderWithPriority = new PrioritySeriesReader(
-              tsFilesReader, new PrioritySeriesReader.Priority(1));
+      SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeriesDataSource(), null);
+      priorityReader.addReaderWithPriority(tsFilesReader, 1);
 
       // unseq insert data
       UnSeqSeriesReader unSeqSeriesReader = SeriesReaderFactory.getInstance().
               createSeriesReaderForUnSeq(queryDataSource.getOverflowSeriesDataSource());
-      PrioritySeriesReader unSeqReaderWithPriority = new PrioritySeriesReader(
-              unSeqSeriesReader, new PrioritySeriesReader.Priority(2));
+      priorityReader.addReaderWithPriority(unSeqSeriesReader, 2);
 
-
-      PriorityMergeReader priorityReader = new PriorityMergeReader(tsFilesReaderWithPriority, unSeqReaderWithPriority);
       readersOfSelectedSeries.add(priorityReader);
     }
 

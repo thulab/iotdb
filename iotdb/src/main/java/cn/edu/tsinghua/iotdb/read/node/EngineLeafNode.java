@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.read.node;
 
-import cn.edu.tsinghua.iotdb.read.ISeriesReader;
+import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.NodeType;
@@ -9,13 +9,13 @@ import java.io.IOException;
 
 public class EngineLeafNode implements Node {
 
-    private ISeriesReader reader;
+    private IReader reader;
 
     private BatchData data = null;
 
     private boolean gotData = false;
 
-    public EngineLeafNode(ISeriesReader reader) {
+    public EngineLeafNode(IReader reader) {
         this.reader = reader;
     }
 

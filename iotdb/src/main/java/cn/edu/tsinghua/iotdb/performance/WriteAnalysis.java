@@ -19,7 +19,7 @@
 //import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 //import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.FileSeriesReader;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.ISeriesReader;
+//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.IReader;
 //import cn.edu.tsinghua.tsfile.utils.Pair;
 //import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 //import cn.edu.tsinghua.tsfile.write.page.IPageWriter;
@@ -144,13 +144,13 @@
 //
 //                            if (unSeqFileMetaData.get(deltaObjectId).containsKey(measurementId)) {
 //
-//                                ISeriesReader seriesReader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
+//                                IReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
 //                                        new Path(deltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
 //                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 //
-//                                if (!seriesReader.hasNext()) {
+//                                if (!reader.hasNext()) {
 //                                    // LOGGER.debug("The time-series {} has no data");
-//                                    seriesReader.close();
+//                                    reader.close();
 //                                } else {
 //
 //                                    if (!isRowGroupHasData) {
@@ -169,11 +169,11 @@
 //
 //                                    // write the series data
 //                                    recordCount += writeOneSeries(deltaObjectId, measurementId, seriesWriterImpl, dataType,
-//                                            (FileSeriesReader) seriesReader, new HashMap<>(), new HashMap<>());
+//                                            (FileSeriesReader) reader, new HashMap<>(), new HashMap<>());
 //                                    // flush the series data
 //                                    seriesWriterImpl.writeToFileWriter(fileIOWriter);
 //
-//                                    seriesReader.close();
+//                                    reader.close();
 //                                }
 //                            }
 //                        }
@@ -247,7 +247,7 @@
 //                            Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
 //                            Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
 //                            SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-//                            ISeriesReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+//                            IReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 //
 //                            //long tmpRecordCount = 0;
 //                            while (reader.hasNext()) {
@@ -323,7 +323,7 @@
 //                                Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
 //                                Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
 //                                SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-//                                ISeriesReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+//                                IReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 //                                while (tsFileReader.hasNext()) {
 //                                    TimeValuePair tp = tsFileReader.next();
 //                                    count ++;
@@ -331,7 +331,7 @@
 //                                tsFileReader.close();
 //
 //
-//                                ISeriesReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
+//                                IReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
 //                                        new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
 //                                        tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 //                                while (overflowInsertReader.hasNext()) {
@@ -354,12 +354,12 @@
 //    }
 //
 //    private int writeOneSeries(String deltaObjectId, String measurement, SeriesWriterImpl seriesWriterImpl,
-//                               TSDataType dataType, FileSeriesReader seriesReader, Map<String, Long> startTimeMap,
+//                               TSDataType dataType, FileSeriesReader reader, Map<String, Long> startTimeMap,
 //                               Map<String, Long> endTimeMap) throws IOException {
 //        int count = 0;
-//        if (!seriesReader.hasNext())
+//        if (!reader.hasNext())
 //            return 0;
-//        TimeValuePair timeValuePair = seriesReader.next();
+//        TimeValuePair timeValuePair = reader.next();
 //        long startTime = -1;
 //        long endTime = -1;
 //        switch (dataType) {
@@ -373,9 +373,9 @@
 //                if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 //                    endTimeMap.put(deltaObjectId, endTime);
 //                }
-//                while (seriesReader.hasNext()) {
+//                while (reader.hasNext()) {
 //                    count++;
-//                    timeValuePair = seriesReader.next();
+//                    timeValuePair = reader.next();
 //                    endTime = timeValuePair.getTimestamp();
 //                    seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getBoolean());
 //                }
@@ -393,9 +393,9 @@
 //                if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 //                    endTimeMap.put(deltaObjectId, endTime);
 //                }
-//                while (seriesReader.hasNext()) {
+//                while (reader.hasNext()) {
 //                    count++;
-//                    timeValuePair = seriesReader.next();
+//                    timeValuePair = reader.next();
 //                    endTime = timeValuePair.getTimestamp();
 //                    seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getInt());
 //                }
@@ -413,9 +413,9 @@
 //                if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 //                    endTimeMap.put(deltaObjectId, endTime);
 //                }
-//                while (seriesReader.hasNext()) {
+//                while (reader.hasNext()) {
 //                    count++;
-//                    timeValuePair = seriesReader.next();
+//                    timeValuePair = reader.next();
 //                    endTime = timeValuePair.getTimestamp();
 //                    seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getLong());
 //                }
@@ -433,9 +433,9 @@
 //                if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 //                    endTimeMap.put(deltaObjectId, endTime);
 //                }
-//                while (seriesReader.hasNext()) {
+//                while (reader.hasNext()) {
 //                    count++;
-//                    timeValuePair = seriesReader.next();
+//                    timeValuePair = reader.next();
 //                    endTime = timeValuePair.getTimestamp();
 //                    seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getFloat());
 //                }
@@ -453,9 +453,9 @@
 //                if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 //                    endTimeMap.put(deltaObjectId, endTime);
 //                }
-//                while (seriesReader.hasNext()) {
+//                while (reader.hasNext()) {
 //                    count++;
-//                    timeValuePair = seriesReader.next();
+//                    timeValuePair = reader.next();
 //                    endTime = timeValuePair.getTimestamp();
 //                    seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getDouble());
 //                }
@@ -473,9 +473,9 @@
 //                if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
 //                    endTimeMap.put(deltaObjectId, endTime);
 //                }
-//                while (seriesReader.hasNext()) {
+//                while (reader.hasNext()) {
 //                    count++;
-//                    timeValuePair = seriesReader.next();
+//                    timeValuePair = reader.next();
 //                    endTime = timeValuePair.getTimestamp();
 //                    seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getBinary());
 //                }

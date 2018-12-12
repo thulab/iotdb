@@ -1,7 +1,7 @@
-package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
+package cn.edu.tsinghua.iotdb.queryV2.engine.reader.mem;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.read.ISeriesReader;
+import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
@@ -11,16 +11,16 @@ import java.io.IOException;
 import java.util.Iterator;
 
 
-public class RawSeriesChunkReaderWithFilter implements ISeriesReader {
+public class MemChunkReaderWithFilter implements IReader {
 
     private Iterator<TimeValuePair> timeValuePairIterator;
     private Filter filter;
     private boolean hasCachedTimeValuePair;
     private TimeValuePair cachedTimeValuePair;
 
-    public RawSeriesChunkReaderWithFilter(RawSeriesChunk rawSeriesChunk, SingleSeriesExpression singleSeriesExpression) {
+    public MemChunkReaderWithFilter(RawSeriesChunk rawSeriesChunk, Filter filter) {
         timeValuePairIterator = rawSeriesChunk.getIterator();
-        this.filter = singleSeriesExpression.getFilter();
+        this.filter = filter;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PrioritySeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PrioritySeriesReader;
 
 import java.io.File;
 import java.io.IOException;

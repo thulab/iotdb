@@ -1,8 +1,8 @@
-package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
+package cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.read.ISeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.merge.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
@@ -16,7 +16,7 @@ import java.io.IOException;
  * <p/>
  * <p>
  */
-public class UnSeqSeriesReader implements ISeriesReader {
+public class UnSeqSeriesReader implements IReader {
 
   private Long jobId;
   private PriorityMergeReader seriesReader;

@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.queryV2.factory;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.TsFileGenerator;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.UnSeqSeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.engine.reader.unsequence.UnSeqSeriesReader;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;

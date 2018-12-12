@@ -107,7 +107,7 @@ public class FileNodeProcessorTest {
 				assertEquals(dataType, overflowSeriesDataSource.getDataType());
 				assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
 				assertEquals(0, overflowSeriesDataSource.getOverflowInsertFileList().get(0)
-						.getTimeSeriesChunkMetaDatas().size());
+						.getChunkMetaDataList().size());
 				assertEquals(true, overflowSeriesDataSource.getRawSeriesChunk().isEmpty());
 				UpdateDeleteInfoOfOneSeries deleteInfoOfOneSeries = overflowSeriesDataSource
 						.getUpdateDeleteInfoOfOneSeries();
@@ -192,7 +192,7 @@ public class FileNodeProcessorTest {
 						assertEquals(false, rawSeriesChunk.isEmpty());
 						assertEquals(1, dataSource.getOverflowSeriesDataSource().getOverflowInsertFileList().size());
 						assertEquals(1, dataSource.getOverflowSeriesDataSource().getOverflowInsertFileList().get(0)
-								.getTimeSeriesChunkMetaDatas().size());
+								.getChunkMetaDataList().size());
 						// bufferwrite data
 						dataSource = fileNodeProcessor.query(processorName, measurementId, null);
 						rawSeriesChunk = dataSource.getSeriesDataSource().getRawSeriesChunk();
