@@ -1,24 +1,21 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileOutput;
 
 public class BufferIO extends TsFileIOWriter {
 
 	private int lastRowGroupIndex = 0;
 	private List<ChunkGroupMetaData> append;
 
-	public BufferIO(File output, long offset, List<ChunkGroupMetaData> rowGroups)
+	public BufferIO(TsFileOutput tsFileOutput, List<ChunkGroupMetaData> rowGroups)
 			throws IOException {
-
-		super(output, offset, rowGroups);
+		super(tsFileOutput,rowGroups);
 		lastRowGroupIndex = rowGroups.size();
 		append = new ArrayList<>();
 	}

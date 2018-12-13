@@ -15,6 +15,7 @@ import java.util.Map;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.DefaultTsFileOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,12 +62,12 @@ public class BufferWriteRestoreManager {
             long position = restoreInfo.left;
             List<ChunkGroupMetaData> metadatas = restoreInfo.right;
             // cut off tsfile
-            FileChannel fileChannel = new FileOutputStream(insertFile, true).getChannel();
-            fileChannel.truncate(position);
-            fileChannel.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(insertFile, true);
+            fileOutputStream.getChannel().truncate(position);
+            fileOutputStream.getChannel().position();
             // recovery the BufferWriteIO
-            bufferWriteIO = new BufferIO(insertFile, position, metadatas);
-
+            bufferWriteIO = new BufferIO(new DefaultTsFileOutput(fileOutputStream), metadatas);
+            // recovery the metadata
             recoverMetadata(metadatas);
             LOGGER.info(
                     "Recover the bufferwrite processor {}, the tsfile path is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
@@ -75,7 +76,8 @@ public class BufferWriteRestoreManager {
         } else {
             insertFile.delete();
             restoreFile.delete();
-            bufferWriteIO = new BufferIO(insertFile, 0, new ArrayList<>());
+            DefaultTsFileOutput defaultTsFileOutput = new DefaultTsFileOutput(new FileOutputStream(insertFile));
+            bufferWriteIO = new BufferIO(defaultTsFileOutput, new ArrayList<>());
             isNewResource = true;
             writeRestoreInfo();
         }

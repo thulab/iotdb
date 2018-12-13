@@ -2,20 +2,20 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.DefaultTsFileOutput;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,16 +24,14 @@ import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class OverflowIO extends TsFileIOWriter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowIO.class);
 	private OverflowReadWriter overflowReadWriter;
 
-	public OverflowIO(String filePath, long lastUpdatePosition, boolean isInsert) throws IOException {
+	public OverflowIO(DefaultTsFileOutput defaultTsFileOutput, boolean isInsert) throws IOException {
 		super();
-		FileChannel fileChannel = new FileOutputStream(new File(filePath), true).getChannel();
-		fileChannel.truncate(lastUpdatePosition);
-		fileChannel.close();
 		//OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
 		overflowReadWriter = new OverflowReadWriter(filePath);
 		if (isInsert) {
@@ -41,7 +39,7 @@ public class OverflowIO extends TsFileIOWriter {
 		}
 	}
 
-	private TimeSeriesChunkMetaData startTimeSeries(OverflowSeriesImpl index) throws IOException {
+	private ChunkMetaData startTimeSeries(OverflowSeriesImpl index) throws IOException {
 		LOGGER.debug(
 				"Start overflow series chunk meatadata: measurementId: {}, valueCount: {}, compressionName: {}, TSdatatype: {}.",
 				index.getMeasurementId(), index.getValueCount(), CompressionTypeName.UNCOMPRESSED, index.getDataType());
@@ -62,7 +60,6 @@ public class OverflowIO extends TsFileIOWriter {
 	}
 
 	private TimeSeriesChunkMetaData endSeries(long size, TimeSeriesChunkMetaData currentSeries) throws IOException {
-		LOGGER.debug("End overflow series chunk meatadata: {}, size: {}.", currentSeries, size);
 		currentSeries.setTotalByteSize(size);
 		return currentSeries;
 	}
@@ -143,7 +140,7 @@ public class OverflowIO extends TsFileIOWriter {
 	}
 
 	public long getPos() throws IOException {
-		return overflowReadWriter.getPos();
+		return overflowReadWriter.getPosition();
 	}
 
 	public void close() throws IOException {
@@ -163,49 +160,13 @@ public class OverflowIO extends TsFileIOWriter {
 	}
 
 	public static class OverflowReadWriter extends OutputStream
-			implements ITsRandomAccessFileReader, ITsRandomAccessFileWriter {
+			implements  TsFileOutput {
 
 		private RandomAccessFile raf;
 		private static final String RW_MODE = "rw";
 
 		public OverflowReadWriter(String filepath) throws FileNotFoundException {
 			this.raf = new RandomAccessFile(filepath, RW_MODE);
-		}
-
-		@Override
-		public long getPos() throws IOException {
-			return raf.getFilePointer();
-		}
-
-		@Override
-		public OutputStream getOutputStream() {
-			return this;
-		}
-
-		@Override
-		public void seek(long offset) throws IOException {
-			raf.seek(offset);
-		}
-
-		@Override
-		public int read() throws IOException {
-			return raf.read();
-		}
-
-		@Override
-		public int read(byte[] b, int off, int len) throws IOException {
-			raf.readFully(b, off, len);
-			return len;
-		}
-
-		@Override
-		public long length() throws IOException {
-			return raf.length();
-		}
-
-		@Override
-		public int readInt() throws IOException {
-			return raf.readInt();
 		}
 
 		@Override
@@ -219,8 +180,23 @@ public class OverflowIO extends TsFileIOWriter {
 		}
 
 		@Override
-		public void write(byte b[], int off, int len) throws IOException {
-			raf.write(b, off, len);
+		public void write(ByteBuffer b) throws IOException {
+			throw new NotImplementedException();
+		}
+
+		@Override
+		public long getPosition() throws IOException {
+			return raf.getFilePointer();
+		}
+
+		@Override
+		public void close() throws IOException {
+			raf.close();
+		}
+
+		@Override
+		public OutputStream wrapAsStream() throws IOException {
+			return this;
 		}
 
 		public void toTail() throws IOException {
@@ -228,8 +204,34 @@ public class OverflowIO extends TsFileIOWriter {
 			raf.seek(tail);
 		}
 
-		public void close() throws IOException {
-			raf.close();
+		public long getPos() throws IOException {
+			return raf.getFilePointer();
 		}
+
+		public OutputStream getOutputStream() {
+			return this;
+		}
+
+		public void seek(long offset) throws IOException {
+			raf.seek(offset);
+		}
+
+		public int read() throws IOException {
+			return raf.read();
+		}
+
+		public int read(byte[] b, int off, int len) throws IOException {
+			raf.readFully(b, off, len);
+			return len;
+		}
+
+		public long length() throws IOException {
+			return raf.length();
+		}
+
+		public int readInt() throws IOException {
+			return raf.readInt();
+		}
+
 	}
 }

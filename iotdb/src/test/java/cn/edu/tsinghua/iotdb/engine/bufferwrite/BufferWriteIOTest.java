@@ -3,12 +3,14 @@ package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.DefaultTsFileOutput;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +25,8 @@ public class BufferWriteIOTest {
 
 	@Before
 	public void setUp() throws Exception {
-		bufferWriteIO = new BufferIO(new File(filePath), 0, new ArrayList<>());
+		DefaultTsFileOutput defaultTsFileOutput = new DefaultTsFileOutput(new FileOutputStream(new File(filePath)));
+		bufferWriteIO = new BufferIO(defaultTsFileOutput, new ArrayList<>());
 	}
 
 	@After

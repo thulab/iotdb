@@ -12,6 +12,7 @@ import java.util.Map;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.timeseries.write.io.DefaultTsFileOutput;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +27,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.utils.TSFileMetaDataConverter;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class OverflowResource {
@@ -76,8 +72,15 @@ public class OverflowResource {
 		positionFilePath = new File(dataFile, positionFileName).getPath();
 		Pair<Long, Long> position = readPositionInfo();
 		try {
-			updateDeleteIO = new OverflowIO(updateDeleteFilePath, position.right, false);
-			insertIO = new OverflowIO(insertFilePath, position.left, true);
+			// update and delete stream
+			// truncate
+			// reposition
+			updateDeleteIO = new OverflowIO(new DefaultTsFileOutput(udoutputStream), false);
+
+			// insert stream
+			// truncate
+			// reposition
+			insertIO = new OverflowIO(new DefaultTsFileOutput(ioutputStream), true);
 			readMetadata();
 		} catch (IOException e) {
 			LOGGER.error("Failed to construct the OverflowIO.", e);
