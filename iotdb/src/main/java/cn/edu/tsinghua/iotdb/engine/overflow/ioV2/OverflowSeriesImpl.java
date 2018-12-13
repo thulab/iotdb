@@ -5,11 +5,6 @@ import cn.edu.tsinghua.iotdb.engine.overflow.IntervalTreeOperation;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.LongStatistics;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
-<<<<<<< HEAD
-=======
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
->>>>>>> origin/kill_thanos
 
 /**
  * This class is only used to store and query overflow overflowIndex

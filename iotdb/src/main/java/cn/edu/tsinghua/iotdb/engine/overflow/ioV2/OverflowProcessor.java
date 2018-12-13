@@ -16,7 +16,6 @@ import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -34,21 +33,7 @@ import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-<<<<<<< HEAD
-import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
-=======
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
->>>>>>> origin/kill_thanos
 
 public class OverflowProcessor extends Processor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowProcessor.class);

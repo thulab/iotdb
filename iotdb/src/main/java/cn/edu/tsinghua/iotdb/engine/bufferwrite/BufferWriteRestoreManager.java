@@ -20,16 +20,7 @@ import org.slf4j.LoggerFactory;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-<<<<<<< HEAD
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
-=======
-import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
->>>>>>> origin/kill_thanos
 
 public class BufferWriteRestoreManager {
 

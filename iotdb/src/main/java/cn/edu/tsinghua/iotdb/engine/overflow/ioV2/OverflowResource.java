@@ -12,7 +12,6 @@ import java.util.Map;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.DefaultTsFileOutput;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,16 +24,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TSFileMetaDataConverter;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-<<<<<<< HEAD
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
-=======
-import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
->>>>>>> origin/kill_thanos
 
 public class OverflowResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);

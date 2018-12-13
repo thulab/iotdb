@@ -6,15 +6,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,14 +23,7 @@ import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-<<<<<<< HEAD
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
-=======
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
->>>>>>> origin/kill_thanos
 
 public class BufferWriteProcessorTest {
 
