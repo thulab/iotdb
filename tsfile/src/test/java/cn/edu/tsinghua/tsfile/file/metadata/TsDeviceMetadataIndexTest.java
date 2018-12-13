@@ -7,9 +7,7 @@ import org.junit.Test;
 
 import java.io.*;
 
-/**
- * Created by liukun on 18/11/21.
- */
+
 public class TsDeviceMetadataIndexTest {
 
     private TsDeviceMetadataIndex index;

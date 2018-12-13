@@ -16,7 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+<<<<<<< HEAD
 import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+=======
+import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+>>>>>>> origin/kill_thanos
 
 public class BufferWriteIOTest {
 

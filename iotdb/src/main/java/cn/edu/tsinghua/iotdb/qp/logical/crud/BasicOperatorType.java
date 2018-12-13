@@ -2,13 +2,13 @@ package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.timeseries.filter.TimeFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeries;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
 
 /**
  * all basic operator in filter

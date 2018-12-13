@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.footer;
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.file.MetaMarker;
 
 import java.io.IOException;

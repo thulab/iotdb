@@ -7,13 +7,13 @@ import cn.edu.tsinghua.iotdb.query.reader.ReaderType;
 import cn.edu.tsinghua.iotdb.query.reader.RecordReaderFactory;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.io.IOException;
 
-import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
+import static cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory.*;
 
 
 public class LinearFill extends IFill{

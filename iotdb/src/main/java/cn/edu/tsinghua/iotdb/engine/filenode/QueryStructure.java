@@ -3,7 +3,14 @@ package cn.edu.tsinghua.iotdb.engine.filenode;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+<<<<<<< HEAD
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+=======
+import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
+>>>>>>> origin/kill_thanos
 
 /**
  * This is a structure for a query result. The result of query contains four

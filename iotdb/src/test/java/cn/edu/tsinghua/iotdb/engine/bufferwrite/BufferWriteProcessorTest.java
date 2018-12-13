@@ -28,7 +28,12 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+<<<<<<< HEAD
 import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
+=======
+import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
+>>>>>>> origin/kill_thanos
 
 public class BufferWriteProcessorTest {
 

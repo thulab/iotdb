@@ -12,9 +12,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
-/**
- * Created by zhangjinrui on 2018/1/25.
- */
+
 public class PrimitiveMemTableTest {
 
     @Test

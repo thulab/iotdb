@@ -3,9 +3,7 @@ package cn.edu.tsinghua.iotdb.utils;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Created by zhangjinrui on 2018/1/25.
- */
+
 public class PrimitiveArrayListTest {
 
     @Test

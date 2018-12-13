@@ -10,7 +10,15 @@ import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
+<<<<<<< HEAD
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+=======
+import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
+import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
+>>>>>>> origin/kill_thanos
 
 /**
  * This class is used to read metadata(<code>TsFileMetaData</code> and

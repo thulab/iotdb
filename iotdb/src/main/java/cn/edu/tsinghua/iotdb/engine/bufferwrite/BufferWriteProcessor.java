@@ -33,9 +33,9 @@ import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 public class BufferWriteProcessor extends Processor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
@@ -65,6 +65,8 @@ public class BufferWriteProcessor extends Processor {
     private String bufferWriteRelativePath;
 
     private WriteLogNode logNode;
+
+
 
     public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Object> parameters,
                                 FileSchema fileSchema) throws BufferWriteProcessorException {

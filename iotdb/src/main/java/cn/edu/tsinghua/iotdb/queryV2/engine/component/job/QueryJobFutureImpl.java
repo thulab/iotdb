@@ -6,9 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by zhangjinrui on 2018/1/9.
- */
+
 public class QueryJobFutureImpl implements QueryJobFuture {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryJobFutureImpl.class);

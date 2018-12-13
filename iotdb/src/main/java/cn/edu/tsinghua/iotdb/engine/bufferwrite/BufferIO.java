@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileOutput;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileOutput;
+
 
 public class BufferIO extends TsFileIOWriter {
 

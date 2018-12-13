@@ -23,8 +23,15 @@ import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
+<<<<<<< HEAD
 import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+=======
+import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
+import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
+>>>>>>> origin/kill_thanos
 
 public class OverflowIO extends TsFileIOWriter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowIO.class);

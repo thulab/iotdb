@@ -19,9 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/10.
- */
+
 public class QueryEngineTest {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryEngineTest.class);

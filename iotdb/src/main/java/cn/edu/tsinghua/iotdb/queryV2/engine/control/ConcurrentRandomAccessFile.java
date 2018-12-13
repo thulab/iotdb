@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by zhangjinrui on 2018/1/13.
- */
+
 public class ConcurrentRandomAccessFile implements ITsRandomAccessFileReader {
 
     private RandomAccessFile randomAccessFile;

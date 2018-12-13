@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.QueryEngine;
 import cn.edu.tsinghua.iotdb.queryV2.engine.QueryJobDispatcher;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.executor.QueryJobExecutor;
 import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.*;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-/**
- * Created by zhangjinrui on 2018/1/9.
- */
+
 public class QueryEngineImpl implements QueryEngine, Runnable {
     private static final Logger logger = LoggerFactory.getLogger(QueryEngineImpl.class);
     private static final int PENDING_QUEUE_SIZE = 100000;

@@ -6,8 +6,8 @@ import cn.edu.tsinghua.iotdb.query.reader.InsertDynamicData;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.filter.utils.DigestForFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.filter.utils.DigestForFilter;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

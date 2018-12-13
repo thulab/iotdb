@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.externalsort;
 
-/**
- * Created by zhangjinrui on 2018/1/20.
- */
+
 public class ExternalSortJobScheduler {
 
     private long jobId = 0;

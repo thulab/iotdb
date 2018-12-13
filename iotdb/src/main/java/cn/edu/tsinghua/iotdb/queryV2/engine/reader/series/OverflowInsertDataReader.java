@@ -2,8 +2,8 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;
 
@@ -14,7 +14,6 @@ import java.io.IOException;
  * IMPORTANT: Remember invoke {@code close()} to close the file stream(s) opened.
  * <p/>
  * <p>
- * Created by zhangjinrui on 2018/1/18.
  */
 public class OverflowInsertDataReader implements SeriesReader {
 

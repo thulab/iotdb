@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * This class represents an external sort job. Every job will use a separated directory.
- * Created by zhangjinrui on 2018/1/20.
  */
 public class ExternalSortJob {
     private long jobId;

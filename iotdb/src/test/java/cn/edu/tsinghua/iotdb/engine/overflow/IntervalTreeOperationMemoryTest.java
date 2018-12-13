@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
 /**
  * @author CGF.

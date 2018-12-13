@@ -1,13 +1,12 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 import java.io.IOException;
 
 /**
  * Read TimeValuePair for one Series in BufferWrite which concludes all seriesChunks in TsFile and MemTable.
- * Created by zhangjinrui on 2018/1/15.
  */
 public class SequentialSeriesReaderImpl implements SeriesReader {
     @Override

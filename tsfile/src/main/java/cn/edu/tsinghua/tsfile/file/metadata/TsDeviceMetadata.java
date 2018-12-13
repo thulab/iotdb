@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TsDeviceMetadata {
+public class TsDeviceMetadata{
 
     /**
      * size of ChunkGroupMetadataBlock in byte
@@ -173,4 +173,5 @@ public class TsDeviceMetadata {
                 ", chunkGroupMetadataList=" + chunkGroupMetadataList +
                 '}';
     }
+
 }

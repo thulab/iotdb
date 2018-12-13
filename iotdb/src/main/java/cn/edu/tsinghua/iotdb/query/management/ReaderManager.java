@@ -8,10 +8,10 @@ import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.read.RowGroupReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.TsRandomAccessLocalFileReader;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.visitorImpl.IntervalTimeVisitor;
+import cn.edu.tsinghua.tsfile.read.RowGroupReader;
+import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

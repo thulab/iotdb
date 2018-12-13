@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.index.IndexManager;
 import cn.edu.tsinghua.iotdb.index.IoTIndex;
 import cn.edu.tsinghua.iotdb.index.common.IndexManagerException;
 import cn.edu.tsinghua.iotdb.index.kvmatch.KvMatchQueryRequest;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.OnePassQueryDataSet;
+import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
 
 import java.util.ArrayList;
 import java.util.Iterator;

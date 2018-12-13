@@ -2,17 +2,16 @@ package cn.edu.tsinghua.iotdb.queryV2.engine.reader.series;
 
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperation;
 import cn.edu.tsinghua.iotdb.queryV2.engine.overflow.OverflowOperationReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReaderByTimeStamp;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.TimeValuePairReader;
+import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReaderByTimeStamp;
+import cn.edu.tsinghua.tsfile.read.reader.TimeValuePairReader;
 
 import java.io.IOException;
 
 /**
  * This class is used to combine one series with corresponding update operations
- * Created by zhangjinrui on 2018/1/15.
  */
 public class SeriesWithOverflowOpReader implements SeriesReader {
 

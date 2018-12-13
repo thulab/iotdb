@@ -14,9 +14,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class SeriesDescriptorGeneratorTest {
 
     @Test

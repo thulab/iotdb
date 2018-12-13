@@ -16,9 +16,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/20.
- */
+
 public class SimpleTimeValuePairSerializerTest {
 
     private enum Type {

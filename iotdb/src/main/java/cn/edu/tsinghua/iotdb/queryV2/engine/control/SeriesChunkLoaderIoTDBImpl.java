@@ -6,9 +6,7 @@ import cn.edu.tsinghua.tsfile.timeseries.readV2.controller.SeriesChunkLoader;
 
 import java.io.IOException;
 
-/**
- * Created by zhangjinrui on 2018/1/24.
- */
+
 public class SeriesChunkLoaderIoTDBImpl implements SeriesChunkLoader{
 
     @Override

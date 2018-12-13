@@ -9,12 +9,12 @@ import cn.edu.tsinghua.tsfile.encoding.decoder.Decoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.format.PageHeader;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.IntervalTimeVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.filter.visitorImpl.SingleValueVisitor;
-import cn.edu.tsinghua.tsfile.timeseries.read.PageReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.ValueReader;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.visitorImpl.IntervalTimeVisitor;
+import cn.edu.tsinghua.tsfile.read.filter.visitorImpl.SingleValueVisitor;
+import cn.edu.tsinghua.tsfile.read.PageReader;
+import cn.edu.tsinghua.tsfile.read.ValueReader;
+import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

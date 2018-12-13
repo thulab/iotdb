@@ -5,15 +5,15 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
 import cn.edu.tsinghua.iotdb.read.reader.QueryWithOrWithOutFilterReader;
 import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.BinaryQueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.QueryFilterType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.AndNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.LeafNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.Node;
-import cn.edu.tsinghua.tsfile.timeseries.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.timeseries.read.reader.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.filter.expression.BinaryQueryFilter;
+import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
+import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilterType;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.AndNode;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.LeafNode;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
+import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.OrNode;
+import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
 
 
 import java.io.IOException;

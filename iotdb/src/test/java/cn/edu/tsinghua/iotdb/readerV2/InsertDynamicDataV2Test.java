@@ -10,12 +10,12 @@ import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePai
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.series.OverflowInsertDataReader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
+import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeries;
+import cn.edu.tsinghua.tsfile.read.filter.definition.filterseries.FilterSeriesType;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.desc.MeasurementSchema;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory.*;
+import static cn.edu.tsinghua.tsfile.read.filter.definition.FilterFactory.*;
 
 public class InsertDynamicDataV2Test {
 
