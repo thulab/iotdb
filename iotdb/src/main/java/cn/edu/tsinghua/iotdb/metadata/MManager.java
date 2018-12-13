@@ -3,7 +3,6 @@ package cn.edu.tsinghua.iotdb.metadata;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.index.IndexManager.IndexType;
 import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
 import cn.edu.tsinghua.tsfile.exception.cache.CacheException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;

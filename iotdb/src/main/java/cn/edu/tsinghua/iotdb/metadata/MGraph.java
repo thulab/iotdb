@@ -8,9 +8,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 
 /**
  * Metadata Graph consists of one {@code MTree} and several {@code PTree}
- * 
- * @author Jinrui Zhang
- *
  */
 public class MGraph implements Serializable {
 	private static final long serialVersionUID = 8214849219614352834L;

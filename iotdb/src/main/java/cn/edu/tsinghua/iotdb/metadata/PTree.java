@@ -10,9 +10,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 /**
  * "PTree" is the shorthand for "Property Tree". One {@code PTree} consists
  * several {@code PNode}
- * 
- * @author Jinrui Zhang
- *
  */
 public class PTree implements Serializable {
 	private static final long serialVersionUID = 2642766399323283900L;

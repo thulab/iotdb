@@ -1,10 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
-import cn.edu.tsinghua.iotdb.engine.overflow.IIntervalTreeOperator;
-import cn.edu.tsinghua.iotdb.engine.overflow.IntervalTreeOperation;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.LongStatistics;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
+import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 /**
  * This class is only used to store and query overflow overflowIndex
@@ -46,7 +45,7 @@ public class OverflowSeriesImpl {
 		valueCount++;
 	}
 
-	public DynamicOneColumnData query(DynamicOneColumnData data) {
+	public BatchData query(BatchData data) {
 		return overflowIndex.queryMemory(data);
 	}
 

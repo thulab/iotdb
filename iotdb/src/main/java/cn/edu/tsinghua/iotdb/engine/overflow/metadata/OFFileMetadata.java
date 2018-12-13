@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.metadata;
 
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;

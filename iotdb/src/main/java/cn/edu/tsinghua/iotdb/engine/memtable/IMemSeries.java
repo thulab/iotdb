@@ -2,9 +2,7 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.utils.Binary;
 
-/**
- * @author Rong Kang
- */
+
 public interface IMemSeries extends TimeValuePairSorter{
 
     void putLong(long t, long v);

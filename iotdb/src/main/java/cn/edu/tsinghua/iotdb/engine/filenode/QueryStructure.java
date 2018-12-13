@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+
 import java.io.ByteArrayInputStream;
 import java.util.List;
 

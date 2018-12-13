@@ -8,9 +8,6 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 /**
  * This class stores all the metadata info for every deltaObject and every
  * timeseries
- * 
- * @author Jinrui Zhang
- *
  */
 public class Metadata {
 	private Map<String, List<ColumnSchema>> seriesMap;

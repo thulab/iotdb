@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.DefaultTsFileOutput;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileOutput;
+
+import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,15 +24,10 @@ import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
-<<<<<<< HEAD
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-=======
-import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
-import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
->>>>>>> origin/kill_thanos
+
 
 public class OverflowIO extends TsFileIOWriter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowIO.class);
@@ -50,8 +46,8 @@ public class OverflowIO extends TsFileIOWriter {
 		LOGGER.debug(
 				"Start overflow series chunk meatadata: measurementId: {}, valueCount: {}, compressionName: {}, TSdatatype: {}.",
 				index.getMeasurementId(), index.getValueCount(), CompressionTypeName.UNCOMPRESSED, index.getDataType());
-		TimeSeriesChunkMetaData currentSeries;
-		currentSeries = new TimeSeriesChunkMetaData(index.getMeasurementId(), TSChunkType.VALUE, this.getPos(),
+		ChunkMetaData currentSeries;
+		currentSeries = new ChunkMetaData(index.getMeasurementId(), TSChunkType.VALUE, this.getPos(),
 				CompressionTypeName.UNCOMPRESSED);
 		currentSeries.setNumRows(index.getValueCount());
 		byte[] max = index.getStatistics().getMaxBytes();

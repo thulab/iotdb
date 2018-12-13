@@ -5,9 +5,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Rong Kang
- */
+
 public abstract class AbstractMemTable implements IMemTable{
 
     @Override

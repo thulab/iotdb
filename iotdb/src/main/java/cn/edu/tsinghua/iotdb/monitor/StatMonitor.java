@@ -5,26 +5,19 @@ import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.exception.StartupException;
+import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
-import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.read.support.Field;
+import cn.edu.tsinghua.tsfile.read.common.Field;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint.LongDataPoint;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * @author liliang
- */
+
 public class StatMonitor implements IService{
     private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
 
@@ -137,7 +128,7 @@ public class StatMonitor implements IService{
             pairList.add(new Pair<>(path, StatisticConstant.LAST));
         }
         try {
-            OnePassQueryDataSet queryDataSet;
+            QueryDataSet queryDataSet;
             queryDataSet = overflowQueryEngine.aggregate(pairList, null);
             ReadCacheManager.getInstance().unlockForOneRequest();
             OldRowRecord rowRecord = queryDataSet.getNextRecord();

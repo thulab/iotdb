@@ -9,9 +9,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 
 /**
  * The hierarchical struct of the Metadata Tree is implemented in this class.
- * 
- * @author Jinrui Zhang
- *
  */
 public class MTree implements Serializable {
 

@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.control.OverflowFileStreamManager;
 import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
@@ -54,28 +53,20 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
 
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
-import cn.edu.tsinghua.tsfile.read.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
-import cn.edu.tsinghua.tsfile.write.page.IPageWriter;
-import cn.edu.tsinghua.tsfile.write.page.PageWriterImpl;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.write.schema.JsonConverter;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.write.series.SeriesWriterImpl;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;

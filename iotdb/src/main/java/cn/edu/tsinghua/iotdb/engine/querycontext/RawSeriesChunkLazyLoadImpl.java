@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
 
 import java.util.Iterator;
 import java.util.List;

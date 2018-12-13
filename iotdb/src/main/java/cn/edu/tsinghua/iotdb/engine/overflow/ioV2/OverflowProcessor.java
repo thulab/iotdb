@@ -7,6 +7,7 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
@@ -37,6 +38,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -252,14 +254,14 @@ public class OverflowProcessor extends Processor {
 			updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
 			List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
 			// work file
-			Pair<String, List<TimeSeriesChunkMetaData>> updateInDiskWork = queryWorkDataInOverflowUpdate(deltaObjectId,
+			Pair<String, List<ChunkMetaData>> updateInDiskWork = queryWorkDataInOverflowUpdate(deltaObjectId,
 					measurementId, dataType);
 			if (updateInDiskWork.left != null) {
 				overflowUpdateFileList.add(0,
 						new OverflowUpdateDeleteFile(updateInDiskWork.left, updateInDiskWork.right));
 			}
 			// merge file
-			Pair<String, List<TimeSeriesChunkMetaData>> updateInDiskMerge = queryMergeDataInOverflowUpdate(
+			Pair<String, List<ChunkMetaData>> updateInDiskMerge = queryMergeDataInOverflowUpdate(
 					deltaObjectId, measurementId, dataType);
 			if (updateInDiskMerge.left != null) {
 				overflowUpdateFileList.add(0,
@@ -355,9 +357,9 @@ public class OverflowProcessor extends Processor {
 	 * @return MergeSeriesDataSource
 	 */
 	public MergeSeriesDataSource queryMerge(String deltaObjectId, String measurementId, TSDataType dataType) {
-		Pair<String, List<TimeSeriesChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
+		Pair<String, List<ChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
 				measurementId, dataType);
-		Pair<String, List<TimeSeriesChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
+		Pair<String, List<ChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
 				measurementId, dataType);
 		return new MergeSeriesDataSource(new OverflowInsertFile(mergeInsert.left, mergeInsert.right),
 				new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right));
@@ -365,9 +367,9 @@ public class OverflowProcessor extends Processor {
 
 	public OverflowSeriesDataSource queryMerge(String deltaObjectId, String measurementId, TSDataType dataType,
 			boolean isMerge) {
-		Pair<String, List<TimeSeriesChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
+		Pair<String, List<ChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
 				measurementId, dataType);
-		Pair<String, List<TimeSeriesChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
+		Pair<String, List<ChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
 				measurementId, dataType);
 		OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(
 				new Path(deltaObjectId + "." + measurementId));
@@ -392,12 +394,12 @@ public class OverflowProcessor extends Processor {
 	 * @return the seriesPath of overflowFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
-	private Pair<String, List<TimeSeriesChunkMetaData>> queryMergeDataInOverflowUpdate(String deltaObjectId,
+	private Pair<String, List<ChunkMetaData>> queryMergeDataInOverflowUpdate(String deltaObjectId,
 			String measurementId, TSDataType dataType) {
 		if (!isMerge) {
-			return new Pair<String, List<TimeSeriesChunkMetaData>>(null, null);
+			return new Pair<String, List<ChunkMetaData>>(null, null);
 		}
-		Pair<String, List<TimeSeriesChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
+		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<ChunkMetaData>>(
 				mergeResource.getUpdateDeleteFilePath(),
 				mergeResource.getUpdateDeleteMetadatas(deltaObjectId, measurementId, dataType));
 		return pair;
@@ -412,12 +414,12 @@ public class OverflowProcessor extends Processor {
 	 * @return the seriesPath of unseqTsFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
-	private Pair<String, List<TimeSeriesChunkMetaData>> queryMergeDataInOverflowInsert(String deltaObjectId,
+	private Pair<String, List<ChunkMetaData>> queryMergeDataInOverflowInsert(String deltaObjectId,
 			String measurementId, TSDataType dataType) {
 		if (!isMerge) {
-			return new Pair<String, List<TimeSeriesChunkMetaData>>(null, null);
+			return new Pair<String, List<ChunkMetaData>>(null, null);
 		}
-		Pair<String, List<TimeSeriesChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
+		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<ChunkMetaData>>(
 				mergeResource.getInsertFilePath(),
 				mergeResource.getInsertMetadatas(deltaObjectId, measurementId, dataType));
 		return pair;
