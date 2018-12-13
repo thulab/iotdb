@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.read;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.queryV2.executor.EngineExecutorWithTimeGenerator;
 import cn.edu.tsinghua.iotdb.queryV2.executor.EngineExecutorWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
@@ -33,11 +34,15 @@ public class EngineQueryExecutor {
                     return EngineExecutorWithTimeGenerator.execute(queryExpression);
                 }
 
-            } catch (QueryFilterOptimizationException e) {
+            } catch (QueryFilterOptimizationException | PathErrorException e) {
                 throw new IOException(e);
             }
         } else {
-            return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(queryExpression);
+            try {
+                return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(queryExpression);
+            } catch (PathErrorException e) {
+                throw new IOException(e);
+            }
         }
     }
 

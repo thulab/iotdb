@@ -2,6 +2,8 @@ package cn.edu.tsinghua.iotdb.queryV2.executor;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.queryV2.dataset.EngineDataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
@@ -27,7 +29,7 @@ public class EngineExecutorWithoutTimeGenerator {
     /**
      * with global time filter
      */
-    public static QueryDataSet executeWithGlobalTimeFilter(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
+    public static QueryDataSet executeWithGlobalTimeFilter(QueryExpression queryExpression) throws IOException, FileNodeManagerException, PathErrorException {
 
         Filter timeFilter = ((GlobalTimeExpression) queryExpression.getExpression()).getFilter();
 
@@ -37,6 +39,10 @@ public class EngineExecutorWithoutTimeGenerator {
         for (Path path : queryExpression.getSelectedSeries()) {
 
             QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+
+            // add data type
+            dataTypes.add(MManager.getInstance().getSeriesType(path.getFullPath()));
+
             PriorityMergeReader priorityReader = new PriorityMergeReader();
 
             // sequence reader for one sealed tsfile
@@ -58,7 +64,7 @@ public class EngineExecutorWithoutTimeGenerator {
     /**
      * without filter
      */
-    public static QueryDataSet executeWithoutFilter(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
+    public static QueryDataSet executeWithoutFilter(QueryExpression queryExpression) throws IOException, FileNodeManagerException, PathErrorException {
 
         List<IReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
@@ -66,6 +72,10 @@ public class EngineExecutorWithoutTimeGenerator {
         for (Path path : queryExpression.getSelectedSeries()) {
 
             QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+
+            // add data type
+            dataTypes.add(MManager.getInstance().getSeriesType(path.getFullPath()));
+
             PriorityMergeReader priorityReader = new PriorityMergeReader();
 
             // sequence insert data
