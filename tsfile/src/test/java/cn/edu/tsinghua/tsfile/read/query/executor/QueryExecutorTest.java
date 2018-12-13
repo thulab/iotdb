@@ -42,7 +42,7 @@ public class QueryExecutorTest {
     public void before() throws InterruptedException, WriteProcessException, IOException {
         TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder = "TS_2DIFF";
         TsFileGeneratorForTest.generateFile(rowCount, 16 * 1024 * 1024, 10000);
-        fileReader = new TsFileSequenceReader(FILE_PATH);
+        fileReader = new TsFileSequenceReader(FILE_PATH, true);
         metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
         chunkLoader = new ChunkLoaderImpl(fileReader);
         queryExecutorWithQueryFilter = new TsFileExecutor(metadataQuerierByFile, chunkLoader);
@@ -69,7 +69,7 @@ public class QueryExecutorTest {
                 .addSelectedPath(new Path("d1.s2"))
                 .addSelectedPath(new Path("d1.s4"))
                 .addSelectedPath(new Path("d1.s5"))
-                .setIExpression(IExpression);
+                .setExpression(IExpression);
         long startTimestamp = System.currentTimeMillis();
         QueryDataSet queryDataSet = queryExecutorWithQueryFilter.execute(queryExpression);
         long aimedTimestamp = 1480562618000L;
@@ -120,7 +120,7 @@ public class QueryExecutorTest {
                 .addSelectedPath(new Path("d1.s3"))
                 .addSelectedPath(new Path("d1.s4"))
                 .addSelectedPath(new Path("d1.s5"))
-                .setIExpression(IExpression);
+                .setExpression(IExpression);
 
 
         long aimedTimestamp = 1480562618100L;

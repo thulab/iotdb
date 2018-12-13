@@ -6,16 +6,13 @@ import java.util.Objects;
 
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
 import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.lineFeedSignal;
 
-/**
- * @author kangrong
- * @author qiaojialin
- */
+
 public class UpdatePlan extends PhysicalPlan {
 	private List<Pair<Long, Long>> intervals = new ArrayList<>();
     private String value;

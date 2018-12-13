@@ -7,6 +7,8 @@ import cn.edu.tsinghua.iotdb.engine.memtable.IMemSeries;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 
 /**
  * This class is used to store and query all overflow data in memory.<br>

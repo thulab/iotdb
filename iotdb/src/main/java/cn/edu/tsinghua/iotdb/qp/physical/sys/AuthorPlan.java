@@ -12,10 +12,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
-/**
- * @author kangrong
- * @author qiaojialin
- */
+
 public class AuthorPlan extends PhysicalPlan {
 	private final AuthorType authorType;
 	private String userName;

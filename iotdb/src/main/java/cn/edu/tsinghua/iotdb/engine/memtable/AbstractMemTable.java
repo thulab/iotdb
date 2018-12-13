@@ -22,9 +22,9 @@ public abstract class AbstractMemTable implements IMemTable{
     }
 
     /**
-     * check whether the given path is within this memtable.
+     * check whether the given seriesPath is within this memtable.
      *
-     * @return true if path is within this memtable
+     * @return true if seriesPath is within this memtable
      *
      */
     private boolean checkPath(String deltaObject, String measurement) {

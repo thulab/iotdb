@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.performance;
 
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

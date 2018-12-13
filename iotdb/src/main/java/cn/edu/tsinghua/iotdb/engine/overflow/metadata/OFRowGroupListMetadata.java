@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
 
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**

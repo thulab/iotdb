@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.queryV2.control;
 
 import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob;
-import cn.edu.tsinghua.iotdb.queryV2.engine.component.job.QueryJob.*;
-import cn.edu.tsinghua.iotdb.queryV2.engine.control.TsFileStreamManager;
+import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob;
+import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob.*;
+import cn.edu.tsinghua.iotdb.queryV2.control.TsFileStreamManager;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import org.junit.After;
 import org.junit.Assert;

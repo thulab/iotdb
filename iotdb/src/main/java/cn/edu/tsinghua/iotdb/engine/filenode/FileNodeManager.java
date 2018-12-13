@@ -1,54 +1,45 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
-import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.exception.StartupException;
-import cn.edu.tsinghua.iotdb.index.common.DataFileInfo;
+import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
 
 public class FileNodeManager implements IStatistic, IService {
 
@@ -59,7 +50,7 @@ public class FileNodeManager implements IStatistic, IService {
 	private final String baseDir;
 	/**
 	 * This map is used to manage all filenode processor,<br>
-	 * the key is filenode name which is storage group path.
+	 * the key is filenode name which is storage group seriesPath.
 	 */
 	private ConcurrentHashMap<String, FileNodeProcessor> processorMap;
 	/**
@@ -186,7 +177,7 @@ public class FileNodeManager implements IStatistic, IService {
 		try {
 			filenodeName = MManager.getInstance().getFileNameByPath(path);
 		} catch (PathErrorException e) {
-			LOGGER.error("MManager get filenode name error, path is {}", path);
+			LOGGER.error("MManager get filenode name error, seriesPath is {}", path);
 			throw new FileNodeManagerException(e);
 		}
 		FileNodeProcessor processor = null;
@@ -210,7 +201,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 			}
 		}
-		// processorMap.putIfAbsent(path, processor);
+		// processorMap.putIfAbsent(seriesPath, processor);
 		return processor;
 	}
 
@@ -253,7 +244,7 @@ public class FileNodeManager implements IStatistic, IService {
 			LOGGER.error("The insert time lt 0, {}.", tsRecord);
 			throw new FileNodeManagerException("The insert time lt 0, the tsrecord is " + tsRecord);
 		}
-		String deltaObjectId = tsRecord.deltaObjectId;
+		String deltaObjectId = tsRecord.deviceId;
 
 		if (!isMonitor) {
 			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
@@ -288,7 +279,7 @@ public class FileNodeManager implements IStatistic, IService {
 							measurementList.add(dp.getMeasurementId());
 							insertValues.add(dp.getValue().toString());
 						}
-						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+						overflowProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deviceId, tsRecord.time,
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
@@ -355,7 +346,7 @@ public class FileNodeManager implements IStatistic, IService {
 							measurementList.add(dp.getMeasurementId());
 							insertValues.add(dp.getValue().toString());
 						}
-						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deltaObjectId, tsRecord.time,
+						bufferWriteProcessor.getLogNode().write(new InsertPlan(2, tsRecord.deviceId, tsRecord.time,
 								measurementList, insertValues));
 					}
 				} catch (IOException e) {
@@ -524,10 +515,10 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public QueryDataSource query(SeriesFilter<?> seriesFilter)
+	public QueryDataSource query(SingleSeriesExpression seriesExpression)
 			throws FileNodeManagerException {
-		String deltaObjectId = seriesFilter.getSeriesPath().getDeltaObjectToString();
-		String measurementId = seriesFilter.getSeriesPath().getMeasurementToString();
+		String deltaObjectId = seriesExpression.getSeriesPath().getDevice();
+		String measurementId = seriesExpression.getSeriesPath().getMeasurement();
 		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
 		LOGGER.debug("Get the FileNodeProcessor: filenode is {}, query.", fileNodeProcessor.getProcessorName());
 		try {
@@ -543,7 +534,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 			}
 			try {
-				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, seriesFilter.getFilter());
+				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, seriesExpression.getFilter());
 			} catch (FileNodeProcessorException e) {
 				LOGGER.error("Query error: the deltaObjectId {}, the measurementId {}", deltaObjectId, measurementId,
 						e);
@@ -551,26 +542,6 @@ public class FileNodeManager implements IStatistic, IService {
 			}
 			// return query structure
 			return queryDataSource;
-		} finally {
-			fileNodeProcessor.readUnlock();
-		}
-	}
-
-	/**
-	 * @param path
-	 *            : the column path
-	 * @param startTime
-	 *            : the startTime of index
-	 * @param endTime
-	 *            : the endTime of index
-	 * @throws FileNodeManagerException
-	 */
-	public List<DataFileInfo> indexBuildQuery(Path path, long startTime, long endTime) throws FileNodeManagerException {
-		String deltaObjectId = path.getDeltaObjectToString();
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
-		try {
-			LOGGER.debug("Get the FileNodeProcessor: the filenode is {}, query.", fileNodeProcessor.getProcessorName());
-			return fileNodeProcessor.indexQuery(deltaObjectId, startTime, endTime);
 		} finally {
 			fileNodeProcessor.readUnlock();
 		}
@@ -593,7 +564,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * provided for transmission module</b>
 	 * 
 	 * @param fileNodeName
-	 *            the path of storage group
+	 *            the seriesPath of storage group
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @return
@@ -604,7 +575,7 @@ public class FileNodeManager implements IStatistic, IService {
 		FileNodeProcessor fileNodeProcessor = getProcessor(fileNodeName, true);
 		try {
 			// check append file
-			for (Entry<String, Long> entry : appendFile.getStartTimeMap().entrySet()) {
+			for (Map.Entry<String, Long> entry : appendFile.getStartTimeMap().entrySet()) {
 				if (fileNodeProcessor.getLastUpdateTime(entry.getKey()) >= entry.getValue()) {
 					return false;
 				}
@@ -626,7 +597,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * get all overlap tsfiles which are conflict with the appendFile
 	 * 
 	 * @param fileNodeName
-	 *            the path of storage group
+	 *            the seriesPath of storage group
 	 * @param appendFile
 	 *            the appended tsfile information
 	 * @return
@@ -654,7 +625,7 @@ public class FileNodeManager implements IStatistic, IService {
 			try {
 				allFileNodeNames = MManager.getInstance().getAllFileNames();
 			} catch (PathErrorException e) {
-				LOGGER.error("Get all storage group path error,", e);
+				LOGGER.error("Get all storage group seriesPath error,", e);
 				e.printStackTrace();
 				throw new FileNodeManagerException(e);
 			}
@@ -812,7 +783,7 @@ public class FileNodeManager implements IStatistic, IService {
 			throws FileNodeManagerException {
 		FileNodeProcessor fileNodeProcessor = getProcessor(path.getFullPath(), true);
 		try {
-			fileNodeProcessor.addTimeSeries(path.getMeasurementToString(), dataType, encoding, encodingArgs);
+			fileNodeProcessor.addTimeSeries(path.getMeasurement(), dataType, encoding, encodingArgs);
 		} finally {
 			fileNodeProcessor.writeUnlock();
 		}
@@ -884,7 +855,7 @@ public class FileNodeManager implements IStatistic, IService {
 	 * @param processorIterator
 	 * @throws FileNodeManagerException
 	 */
-	private void delete(String processorName, Iterator<Entry<String, FileNodeProcessor>> processorIterator)
+	private void delete(String processorName, Iterator<Map.Entry<String, FileNodeProcessor>> processorIterator)
 			throws FileNodeManagerException {
 		if (processorMap.containsKey(processorName)) {
 			LOGGER.info("Try to delete the filenode processor {}.", processorName);
@@ -953,9 +924,9 @@ public class FileNodeManager implements IStatistic, IService {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
-				Iterator<Entry<String, FileNodeProcessor>> processorIterator = processorMap.entrySet().iterator();
+				Iterator<Map.Entry<String, FileNodeProcessor>> processorIterator = processorMap.entrySet().iterator();
 				while (processorIterator.hasNext()) {
-					Entry<String, FileNodeProcessor> processorEntry = processorIterator.next();
+					Map.Entry<String, FileNodeProcessor> processorEntry = processorIterator.next();
 					try {
 						close(processorEntry.getKey());
 					} catch (FileNodeManagerException e) {

@@ -33,7 +33,7 @@ public class ReadTest {
     @Before
     public void prepare() throws IOException, InterruptedException, WriteProcessException {
         FileGenerator.generateFile();
-        TsFileSequenceReader reader = new TsFileSequenceReader(fileName);
+        TsFileSequenceReader reader = new TsFileSequenceReader(fileName, true);
         roTsFile = new ReadOnlyTsFile(reader);
     }
 

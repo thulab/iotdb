@@ -32,7 +32,7 @@ public class MetadataQuerierByFileImplTest {
 
     @Test
     public void test() throws IOException {
-        fileReader = new TsFileSequenceReader(FILE_PATH);
+        fileReader = new TsFileSequenceReader(FILE_PATH, true);
         MetadataQuerierByFileImpl metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
         List<ChunkMetaData> chunkMetaDataList = metadataQuerierByFile.getChunkMetaDataList(new Path("d2.s1"));
         for(ChunkMetaData chunkMetaData: chunkMetaDataList) {

@@ -35,7 +35,7 @@ public class TimeGeneratorTest {
     public void before() throws InterruptedException, WriteProcessException, IOException {
         TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder = "TS_2DIFF";
         TsFileGeneratorForTest.generateFile(1000, 10 * 1024 * 1024, 10000);
-        fileReader = new TsFileSequenceReader(FILE_PATH);
+        fileReader = new TsFileSequenceReader(FILE_PATH, true);
         metadataQuerierByFile = new MetadataQuerierByFileImpl(fileReader);
         chunkLoader = new ChunkLoaderImpl(fileReader);
     }

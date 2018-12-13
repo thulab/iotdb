@@ -222,7 +222,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                 for (Path path : paths) {
                     String fullPath = path.toString();
                     if (!demoMemDataBase.containsKey(fullPath)) {
-                        // this database has not this path
+                        // this database has not this seriesPath
                         rowRecord.addSensor(fullPath, "null");
 
                     } else {
@@ -265,7 +265,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                                 }
                             }
                         } else {
-                            // this series has not this path
+                            // this series has not this seriesPath
                             rowRecord.addSensor(fullPath, "null");
                             Field f = new Field(TSDataType.INT32, path.getDeltaObjectToString(), path
                                     .getMeasurementToString());
@@ -326,7 +326,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
      * @author kangrong
      */
     private class TestIntegerRowRecord extends OldRowRecord {
-        //pair<path, value>
+        //pair<seriesPath, value>
         public List<Pair<String, String>> measurementData = new ArrayList<>();
 
         public TestIntegerRowRecord(long timestamp) {

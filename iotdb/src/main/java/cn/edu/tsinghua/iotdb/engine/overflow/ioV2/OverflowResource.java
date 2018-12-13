@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,10 +13,13 @@ import java.util.Map;
 
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFFileMetadata;
@@ -25,6 +29,7 @@ import cn.edu.tsinghua.iotdb.engine.overflow.utils.OverflowReadWriteThriftFormat
 import cn.edu.tsinghua.iotdb.engine.overflow.utils.TSFileMetaDataConverter;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+
 
 public class OverflowResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);
@@ -138,7 +143,7 @@ public class OverflowResource {
 				if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
 					updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
 				}
-				for (OFSeriesListMetadata seriesListMetadata : rowGroupListMetadata.getSeriesLists()) {
+				for (OFSeriesListMetadata seriesListMetadata : rowGroupListMetadata.getSeriesList()) {
 					String measurementId = seriesListMetadata.getMeasurementId();
 					if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
 						updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
@@ -216,7 +221,7 @@ public class OverflowResource {
 	}
 
 	public void flush(FileSchema fileSchema, IMemTable memTable,
-			Map<String, Map<String, OverflowSeriesImpl>> overflowTrees, String processorName) throws IOException {
+					  Map<String, Map<String, OverflowSeriesImpl>> overflowTrees, String processorName) throws IOException {
 		// insert data
 		long startPos = insertIO.getPos();
 		long startTime = System.currentTimeMillis();
@@ -281,9 +286,9 @@ public class OverflowResource {
 
 	public void appendMetadatas() {
 		if (!appendInsertMetadatas.isEmpty()) {
-			for (RowGroupMetaData rowGroupMetaData : appendInsertMetadatas) {
-				for (TimeSeriesChunkMetaData seriesChunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
-					addInsertMetadata(rowGroupMetaData.getDeltaObjectID(),
+			for (ChunkGroupMetaData rowGroupMetaData : appendInsertMetadatas) {
+				for (ChunkMetaData seriesChunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
+					addInsertMetadata(rowGroupMetaData.getDeviceID(),
 							seriesChunkMetaData.getProperties().getMeasurementUID(), seriesChunkMetaData);
 				}
 			}
@@ -294,7 +299,7 @@ public class OverflowResource {
 				String deltaObjectId = ofRowGroupListMetadata.getDeltaObjectId();
 				for (OFSeriesListMetadata ofSeriesListMetadata : ofRowGroupListMetadata.getSeriesLists()) {
 					String measurementId = ofSeriesListMetadata.getMeasurementId();
-					for (TimeSeriesChunkMetaData chunkMetaData : ofSeriesListMetadata.getMetaDatas()) {
+					for (ChunkMetaData chunkMetaData : ofSeriesListMetadata.getMetaDatas()) {
 						addUpdateDeletetMetadata(deltaObjectId, measurementId, chunkMetaData);
 					}
 				}
@@ -349,7 +354,7 @@ public class OverflowResource {
 		}
 	}
 
-	private void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
+	private void addInsertMetadata(String deltaObjectId, String measurementId, ChunkMetaData chunkMetaData) {
 		if (!insertMetadatas.containsKey(deltaObjectId)) {
 			insertMetadatas.put(deltaObjectId, new HashMap<>());
 		}
@@ -360,7 +365,7 @@ public class OverflowResource {
 	}
 
 	private void addUpdateDeletetMetadata(String deltaObjectId, String measurementId,
-			TimeSeriesChunkMetaData chunkMetaData) {
+			ChunkMetaData chunkMetaData) {
 		if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
 			updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
 		}

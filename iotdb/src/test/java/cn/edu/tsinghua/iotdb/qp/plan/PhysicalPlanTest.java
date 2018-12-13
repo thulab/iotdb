@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.MetadataPlan;
@@ -65,7 +65,7 @@ public class PhysicalPlanTest {
         String metadata = "create timeseries root.vehicle.d1.s1 with datatype=INT32,encoding=RLE";
         QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
         MetadataPlan plan = (MetadataPlan)processor.parseSQLToPhysicalPlan(metadata);
-        assertEquals("path: root.vehicle.d1.s1\n" +
+        assertEquals("seriesPath: root.vehicle.d1.s1\n" +
                 "dataType: INT32\n" +
                 "encoding: RLE\n" +
                 "namespace type: ADD_PATH\n" +
@@ -191,7 +191,7 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 5000";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getQueryFilter();
+        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
         QueryFilter expect = new GlobalTimeFilter(TimeFilter.gt(5000L));
         assertEquals(expect.toString(), queryFilter.toString());
     }
@@ -201,7 +201,7 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getQueryFilter();
+        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
         QueryFilter expect = new GlobalTimeFilter(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)));
         assertEquals(expect.toString(), queryFilter.toString());
 
@@ -212,7 +212,7 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100 or s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getQueryFilter();
+        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
         QueryFilter expect = new GlobalTimeFilter(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)));
         expect = QueryFilterFactory.or(expect, new SeriesFilter<>(new Path("root.vehicle.d1.s1"), ValueFilter.lt(10)));
         assertEquals(expect.toString(), queryFilter.toString());
@@ -223,7 +223,7 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100 and s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getQueryFilter();
+        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
         QueryFilter expect = new SeriesFilter<>(new Path("root.vehicle.d1.s1"), FilterFactory.and(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)), ValueFilter.lt(10)));
         assertEquals(expect.toString(), queryFilter.toString());
 
@@ -236,7 +236,7 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE s1 > 20 or s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getQueryFilter();
+        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
         QueryFilter expect = new SeriesFilter<>(new Path("root.vehicle.d1.s1"), FilterFactory.or(ValueFilter.gt(20), ValueFilter.lt(10)));
         assertEquals(expect.toString(), queryFilter.toString());
 
@@ -247,7 +247,7 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 20 or time < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getQueryFilter();
+        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
         QueryFilter expect = new GlobalTimeFilter(FilterFactory.or(TimeFilter.gt(20L), TimeFilter.lt(10L)));
         assertEquals(expect.toString(), queryFilter.toString());
 

@@ -7,9 +7,6 @@ import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
 /**
  * this class maintains information in Author statement, including CREATE, DROP, GRANT and REVOKE
- * 
- * @author kangrong
- *
  */
 public class AuthorOperator extends RootOperator {
 

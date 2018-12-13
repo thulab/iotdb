@@ -10,8 +10,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * Manipulate property plan
- * @author kangrong
- * @author qiaojialin
  */
 public class PropertyPlan extends PhysicalPlan {
     private final PropertyType propertyType;

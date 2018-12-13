@@ -7,21 +7,27 @@ import java.util.List;
 
 
 public class OverflowSeriesDataSource {
+
     private Path seriesPath;
     private TSDataType dataType;
+
+    // overflow tsfile
     private List<OverflowInsertFile> overflowInsertFileList;
-    private RawSeriesChunk rawSeriesChunk;
+
+    // unSeq mem-table
+    private RawSeriesChunk rawChunk;
+
     private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
     public OverflowSeriesDataSource(Path seriesPath) {
         this.seriesPath = seriesPath;
     }
 
-    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawSeriesChunk, UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
+    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawChunk, UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
         this.seriesPath = seriesPath;
         this.dataType = dataType;
         this.overflowInsertFileList = overflowInsertFileList;
-        this.rawSeriesChunk = rawSeriesChunk;
+        this.rawChunk = rawChunk;
         this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
     }
 
@@ -41,12 +47,12 @@ public class OverflowSeriesDataSource {
         this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
     }
 
-    public RawSeriesChunk getRawSeriesChunk() {
-        return rawSeriesChunk;
+    public RawSeriesChunk getRawChunk() {
+        return rawChunk;
     }
 
-    public void setRawSeriesChunk(RawSeriesChunk rawSeriesChunk) {
-        this.rawSeriesChunk = rawSeriesChunk;
+    public void setRawChunk(RawSeriesChunk rawChunk) {
+        this.rawChunk = rawChunk;
     }
 
     public Path getSeriesPath() {
@@ -61,7 +67,7 @@ public class OverflowSeriesDataSource {
         return dataType;
     }
 
-    public boolean hasRawSeriesChunk() {
-        return rawSeriesChunk != null && !rawSeriesChunk.isEmpty();
+    public boolean hasRawChunk() {
+        return rawChunk != null && !rawChunk.isEmpty();
     }
 }

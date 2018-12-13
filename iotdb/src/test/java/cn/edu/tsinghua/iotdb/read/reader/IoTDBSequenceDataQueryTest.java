@@ -2,20 +2,20 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.QueryEngine;
+import cn.edu.tsinghua.iotdb.read.EngineQueryExecutor;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class IoTDBSequenceDataQueryTest {
@@ -180,7 +179,7 @@ public class IoTDBSequenceDataQueryTest {
 
     private void TsFilesReaderWithoutFilterTest() throws IOException, FileNodeManagerException {
         String sql = "select * from root";
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
@@ -189,9 +188,9 @@ public class IoTDBSequenceDataQueryTest {
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s4"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
-        queryExpression.setQueryFilter(null);
+        queryExpression.setExpression(null);
 
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){
@@ -205,7 +204,7 @@ public class IoTDBSequenceDataQueryTest {
 
     private void TsFilesReaderWithValueFilterTest() throws IOException, FileNodeManagerException {
         String sql = "select * from root where root.vehicle.d0.s0 >=14";
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
@@ -216,10 +215,10 @@ public class IoTDBSequenceDataQueryTest {
         queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
 
         Path p = new Path("root.vehicle.d0.s0");
-        SeriesFilter seriesFilter = new SeriesFilter(p, ValueFilter.gtEq(14));
-        queryExpression.setQueryFilter(seriesFilter);
+        SingleSeriesExpression seriesFilter = new SingleSeriesExpression(p, ValueFilter.gtEq(14));
+        queryExpression.setExpression(seriesFilter);
 
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){
@@ -231,7 +230,7 @@ public class IoTDBSequenceDataQueryTest {
     }
 
     private void TsFilesReaderWithTimeFilterTest() throws IOException, FileNodeManagerException {
-        QueryEngine queryEngine = new QueryEngine();
+        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
         QueryExpression queryExpression = QueryExpression.create();
         Path d0s0 = new Path("root.vehicle.d0.s0");
         Path d1s0 = new Path("root.vehicle.d1.s0");
@@ -240,14 +239,14 @@ public class IoTDBSequenceDataQueryTest {
         queryExpression.addSelectedPath(d1s0);
         queryExpression.addSelectedPath(d1s1);
 
-        GlobalTimeFilter globalTimeFilter = new GlobalTimeFilter(TimeFilter.gtEq((long) 800));
-        queryExpression.setQueryFilter(globalTimeFilter);
-        QueryDataSet queryDataSet = queryEngine.query(queryExpression);
+        GlobalTimeExpression globalTimeExpression = new GlobalTimeExpression(TimeFilter.gtEq((long) 800));
+        queryExpression.setExpression(globalTimeExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
         int cnt = 0;
         while (queryDataSet.hasNext()){
             RowRecord rowRecord = queryDataSet.next();
-            String strd0s0 = ""+rowRecord.getFields().get(d0s0).getValue();
+            String strd0s0 = ""+rowRecord.getFields().get(0).getStringValue();
             long time = rowRecord.getTimestamp();
             System.out.println(time+"===" + rowRecord.toString());
             assertEquals(""+time % 17,strd0s0);

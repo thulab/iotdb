@@ -29,15 +29,17 @@ public class TsFileSequenceReader {
     private int fileMetadataSize;
     private ByteBuffer markerBuffer = ByteBuffer.allocate(Byte.BYTES);
 
-    public TsFileSequenceReader(String file) throws IOException {
+    public TsFileSequenceReader(String file, boolean loadFileMetaData) throws IOException {
         this.path = Paths.get(file);
-        open();
+
+        if (loadFileMetaData)
+            loadFileMetaData();
     }
 
     /**
-     * After open the file, the reader position is at the end of the  magic string in the header.
+     * After loadFileMetaData the file, the reader position is at the end of the  magic string in the header.
      */
-    private void open() throws IOException {
+    private void loadFileMetaData() throws IOException {
         channel = FileChannel.open(path, StandardOpenOption.READ);
         ByteBuffer metadataSize = ByteBuffer.allocate(Integer.BYTES);
         channel.read(metadataSize, channel.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES);

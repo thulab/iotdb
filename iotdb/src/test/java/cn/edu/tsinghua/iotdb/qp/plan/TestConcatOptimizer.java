@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.qp.plan;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.qp.utils.MemIntQpExecutor;
@@ -95,7 +95,7 @@ public class TestConcatOptimizer {
         String inputSQL = "select s1 from root.laptop.d1 where s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(inputSQL);
         SeriesFilter seriesFilter = new SeriesFilter(new Path("root.laptop.d1.s1"), ValueFilter.lt(10));
-        assertEquals(seriesFilter.toString(), ((QueryPlan)plan).getQueryFilter().toString());
+        assertEquals(seriesFilter.toString(), ((QueryPlan)plan).getExpression().toString());
     }
 
 }

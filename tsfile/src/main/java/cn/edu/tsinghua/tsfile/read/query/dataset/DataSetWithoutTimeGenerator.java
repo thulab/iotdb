@@ -6,7 +6,7 @@ import cn.edu.tsinghua.tsfile.read.common.Field;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
-    private List<SeriesReader> readers;
+    private List<FileSeriesReader> readers;
 
     private List<BatchData> batchDataList;
 
@@ -28,7 +28,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     private Set<Long> timeSet;
 
-    public DataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<SeriesReader> readers) throws IOException {
+    public DataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<FileSeriesReader> readers) throws IOException {
         super(paths, dataTypes);
         this.readers = readers;
         initHeap();
@@ -41,7 +41,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         timeSet = new HashSet<>();
 
         for (int i = 0; i < paths.size(); i++) {
-            SeriesReader reader = readers.get(i);
+            FileSeriesReader reader = readers.get(i);
             if (!reader.hasNextBatch()) {
                 batchDataList.add(new BatchData());
                 hasDataRemaining.add(false);
@@ -86,7 +86,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
                 data.next();
 
                 if (!data.hasNext()) {
-                    SeriesReader reader = readers.get(i);
+                    FileSeriesReader reader = readers.get(i);
                     if (reader.hasNextBatch()) {
                         data = reader.nextBatch();
                         if(data.hasNext()) {

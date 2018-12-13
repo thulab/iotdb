@@ -29,10 +29,10 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * add timeseries, it should check whether path exists.
+	 * add timeseries, it should check whether seriesPath exists.
 	 * 
 	 * @param timeseriesPath
-	 *            - A full path
+	 *            - A full seriesPath
 	 * @param dataType
 	 * @param encoding
 	 * @param args
@@ -92,7 +92,7 @@ public class MTree implements Serializable {
 	/**
 	 * 
 	 * @param path
-	 *            -path not necessarily the whole path (possibly a prefix of a
+	 *            -seriesPath not necessarily the whole seriesPath (possibly a prefix of a
 	 *            sequence)
 	 * @return
 	 */
@@ -150,7 +150,7 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * make sure check path before setting storage group
+	 * make sure check seriesPath before setting storage group
 	 * 
 	 * @param path
 	 * @throws PathErrorException
@@ -168,7 +168,7 @@ public class MTree implements Serializable {
 				// add one child node
 				cur.addChild(nodeNames[i], new MNode(nodeNames[i], cur, false));
 			} else if (temp.isStorageLevel()) {
-				// before set storage group should check the path exist or not
+				// before set storage group should check the seriesPath exist or not
 				// throw exception
 				throw new PathErrorException(String.format("The prefix of %s has been set to the storage group.", path));
 			}
@@ -180,7 +180,7 @@ public class MTree implements Serializable {
 			cur.addChild(nodeNames[i], new MNode(nodeNames[i], cur, false));
 		} else {
 			throw new PathErrorException(
-					String.format("The path of %s already exist, it can't be set to the storage group", path));
+					String.format("The seriesPath of %s already exist, it can't be set to the storage group", path));
 		}
 		cur = cur.getChild(nodeNames[i]);
 		cur.setStorageLevel(true);
@@ -188,7 +188,7 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Check whether set file path for this node or not. If not, throw an
+	 * Check whether set file seriesPath for this node or not. If not, throw an
 	 * exception
 	 * 
 	 * @param node
@@ -217,7 +217,7 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Delete one path from current Metadata Tree
+	 * Delete one seriesPath from current Metadata Tree
 	 * 
 	 * @param path
 	 *            Format: root.node.(node)* Notice: Path must be a complete Path
@@ -258,7 +258,7 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Check whether the path given exists
+	 * Check whether the seriesPath given exists
 	 */
 	public boolean hasPath(String path) {
 		String[] nodes = path.split(separator);
@@ -287,7 +287,7 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Get ColumnSchema for given path. Notice: Path must be a complete Path
+	 * Get ColumnSchema for given seriesPath. Notice: Path must be a complete Path
 	 * from root to leaf node.
 	 */
 	public ColumnSchema getSchemaForOnePath(String path) throws PathErrorException {
@@ -405,13 +405,13 @@ public class MTree implements Serializable {
 			}
 		}
 		if (!fileLevelChecked) {
-			throw new PathErrorException("FileLevel is not set for current path:" + path);
+			throw new PathErrorException("FileLevel is not set for current seriesPath:" + path);
 		}
 		return cur;
 	}
 
 	/**
-	 * Extract the DeltaObjectType from given path
+	 * Extract the DeltaObjectType from given seriesPath
 	 * 
 	 * @return String represents the DeltaObjectId
 	 */
@@ -425,9 +425,9 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Check whether a path is available
+	 * Check whether a seriesPath is available
 	 * @param path
-	 * @return last node in given path if current path is available
+	 * @return last node in given seriesPath if current seriesPath is available
 	 * @throws PathErrorException
 	 */
 	private MNode checkPath(String path) throws PathErrorException {
@@ -461,11 +461,11 @@ public class MTree implements Serializable {
 
 	/**
 	 * <p>
-	 * Get the storage group path from the path
+	 * Get the storage group seriesPath from the seriesPath
 	 * </p>
 	 * 
 	 * @param path
-	 * @return String storage group path
+	 * @return String storage group seriesPath
 	 * @throws PathErrorException
 	 */
 	public String getFileNameByPath(String path) throws PathErrorException {
@@ -475,7 +475,7 @@ public class MTree implements Serializable {
 		for (int i = 1; i < nodes.length; i++) {
 			if (cur == null) {
 				throw new PathErrorException(
-						String.format("The prefix of the path %s is not one storage group path", path));
+						String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 			} else if (cur.isStorageLevel()) {
 				return cur.getDataFileName();
 			} else {
@@ -485,7 +485,7 @@ public class MTree implements Serializable {
 		if(cur.isStorageLevel()){
 			return cur.getDataFileName();
 		}
-		throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+		throw new PathErrorException(String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 	}
 
 	public String getFileNameByPath(MNode node, String path) throws PathErrorException {
@@ -495,7 +495,7 @@ public class MTree implements Serializable {
 		for (int i = 1; i < nodes.length; i++) {
 			if (cur == null) {
 				throw new PathErrorException(
-						String.format("The prefix of the path %s is not one storage group path", path));
+						String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 			} else if (cur.isStorageLevel()) {
 				return cur.getDataFileName();
 			} else {
@@ -505,25 +505,25 @@ public class MTree implements Serializable {
 		if(cur.isStorageLevel()){
 			return cur.getDataFileName();
 		}
-		throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+		throw new PathErrorException(String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 	}
 
 	public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
 
 		String[] nodes = path.split(separator);
-		if(nodes.length < 1 || !node.hasChild(nodes[0]))throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+		if(nodes.length < 1 || !node.hasChild(nodes[0]))throw new PathErrorException(String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 
 		MNode cur = node.getChild(nodes[0]);
 		for (int i = 1; i < nodes.length; i++) {
 			if (cur == null) {
 				throw new PathErrorException(
-						String.format("The prefix of the path %s is not one storage group path", path));
+						String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 			} else if (cur.isStorageLevel()) {
 				return cur.getDataFileName();
 			} else {
 				if(!cur.hasChild(nodes[i])){
 					throw new PathErrorException(
-							String.format("The prefix of the path %s is not one storage group path", path));
+							String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 				}
 				cur = cur.getChild(nodes[i]);
 			}
@@ -531,17 +531,17 @@ public class MTree implements Serializable {
 		if(cur.isStorageLevel()){
 			return cur.getDataFileName();
 		}
-		throw new PathErrorException(String.format("The prefix of the path %s is not one storage group path", path));
+		throw new PathErrorException(String.format("The prefix of the seriesPath %s is not one storage group seriesPath", path));
 	}
 
 	/**
 	 * <p>
-	 * Check the prefix of this path is storage group path
+	 * Check the prefix of this seriesPath is storage group seriesPath
 	 * </p>
 	 * 
 	 * @param path
-	 * @return true the prefix of this path is storage group path false the
-	 *         prefix of this path is not storage group path
+	 * @return true the prefix of this seriesPath is storage group seriesPath false the
+	 *         prefix of this seriesPath is not storage group seriesPath
 	 */
 	public boolean checkFileNameByPath(String path) {
 
@@ -560,8 +560,8 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Get all paths for given path regular expression Regular expression in
-	 * this method is formed by the amalgamation of path and the character '*'
+	 * Get all paths for given seriesPath regular expression Regular expression in
+	 * this method is formed by the amalgamation of seriesPath and the character '*'
 	 * 
 	 * @return A HashMap whose Keys are separated by the storage file name.
 	 */
@@ -588,7 +588,7 @@ public class MTree implements Serializable {
 	/**
 	 *
 	 * @param path
-	 * @return All leaf nodes' path(s) of given path.
+	 * @return All leaf nodes' seriesPath(s) of given seriesPath.
 	 */
 	public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
 		List<String> ret = new ArrayList<>();
@@ -611,7 +611,7 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Calculate the count of storage-level nodes included in given path
+	 * Calculate the count of storage-level nodes included in given seriesPath
 	 * 
 	 * @return The total count of storage-level nodes.
 	 */
@@ -711,7 +711,7 @@ public class MTree implements Serializable {
 	 * Get all ColumnSchemas for given delta object type
 	 * 
 	 * @param path
-	 *            A path represented one Delta object
+	 *            A seriesPath represented one Delta object
 	 * @return a list contains all column schema
 	 * @throws PathErrorException
 	 */
@@ -728,7 +728,7 @@ public class MTree implements Serializable {
 		return res;
 	}
 	/**
-	 * <p>Get all ColumnSchemas for the filenode path</p>
+	 * <p>Get all ColumnSchemas for the filenode seriesPath</p>
 	 * @param path
 	 * @return ArrayList<ColumnSchema> The list of the schema
 	 */
@@ -808,7 +808,7 @@ public class MTree implements Serializable {
 	}
 
 	/*
-		Iterate through MTree to fetch metadata info of all leaf nodes under the given path
+		Iterate through MTree to fetch metadata info of all leaf nodes under the given seriesPath
 	 */
 	private void findPath(MNode node, String[] nodes, int idx, String parent,
 						  List<List<String>> res) {

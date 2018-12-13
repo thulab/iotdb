@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.QueryDataSourceExecutor;
+import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -112,7 +112,7 @@ public class IoTDBQueryByTimestampsReaderTest {
 
     private void skipReadTimestampTest() throws IOException, FileNodeManagerException {
         Path pd0s0 = new Path(d0s0);
-        QueryByTimestampsReader queryByTimestampsReaderd0S0 = new QueryByTimestampsReader(QueryDataSourceExecutor.getQueryDataSource(pd0s0));
+        QueryByTimestampsReader queryByTimestampsReaderd0S0 = new QueryByTimestampsReader(QueryDataSourceManager.getQueryDataSource(pd0s0));
         for(int time = 100; time < 1500; time+=5){
             //System.out.println("TIME = "+time);
             if(time % 2 == 0){
@@ -126,7 +126,7 @@ public class IoTDBQueryByTimestampsReaderTest {
 
     private void readNotExistenceAndExistenceTimestampTest() throws IOException, FileNodeManagerException{
         Path pd0s0 = new Path(d0s0);
-        QueryByTimestampsReader queryByTimestampsReaderd0S0 = new QueryByTimestampsReader(QueryDataSourceExecutor.getQueryDataSource(pd0s0));
+        QueryByTimestampsReader queryByTimestampsReaderd0S0 = new QueryByTimestampsReader(QueryDataSourceManager.getQueryDataSource(pd0s0));
         for(int time = 0; time < 2500; time+=5){
 //            System.out.println("TIME = "+time);
             if(time % 2 == 0 || time < 100 || time > 1499){

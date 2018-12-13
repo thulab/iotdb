@@ -8,10 +8,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * this class maintains information from select clause
- *
- * @author kangrong
- * @author qiaojialin
- *
  */
 public final class SelectOperator extends Operator {
 

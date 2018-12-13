@@ -43,7 +43,7 @@ public class AuthUtils {
 
     public static void validatePath(String path) throws AuthException {
         if(!path.startsWith(ROOT_PREFIX))
-            throw new AuthException(String.format("Illegal path %s, path should start with \"%s\"", path, ROOT_PREFIX));
+            throw new AuthException(String.format("Illegal seriesPath %s, seriesPath should start with \"%s\"", path, ROOT_PREFIX));
     }
 
     public static void validatePrivilegeOnPath(String path, int privilegeId) throws AuthException {
@@ -59,7 +59,7 @@ public class AuthUtils {
                 case UPDATE_TIMESERIES:
                     return;
                 default:
-                    throw new AuthException(String.format("Illegal privilege %s on path %s", type.toString(), path));
+                    throw new AuthException(String.format("Illegal privilege %s on seriesPath %s", type.toString(), path));
             }
         } else {
             switch (type) {
@@ -116,7 +116,7 @@ public class AuthUtils {
 
     /**
      *
-     * @param path The path on which the privileges take effect. If path-free privileges are desired, this should be null.
+     * @param path The seriesPath on which the privileges take effect. If seriesPath-free privileges are desired, this should be null.
      * @return The privileges granted to the role.
      */
     public static Set<Integer> getPrivileges(String path, List<PathPrivilege> privilegeList) {

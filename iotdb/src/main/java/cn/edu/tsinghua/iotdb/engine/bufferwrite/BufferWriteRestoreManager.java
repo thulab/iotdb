@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,6 +15,8 @@ import java.util.Map;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +24,10 @@ import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+
 
 public class BufferWriteRestoreManager {
 
@@ -65,7 +72,7 @@ public class BufferWriteRestoreManager {
             // recovery the metadata
             recoverMetadata(metadatas);
             LOGGER.info(
-                    "Recover the bufferwrite processor {}, the tsfile path is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
+                    "Recover the bufferwrite processor {}, the tsfile seriesPath is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
                     processorName, insertFilePath, position, metadatas.size());
             isNewResource = false;
         } else {

@@ -5,9 +5,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * this class maintains information in Metadata.namespace statement
- * 
- * @author kangrong
- *
  */
 public class PropertyOperator extends RootOperator {
 

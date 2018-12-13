@@ -8,7 +8,7 @@ import java.util.List;
 
 public class QueryExpression {
     private List<Path> selectedSeries;
-    private IExpression IExpression;
+    private IExpression expression;
     private boolean hasQueryFilter;
 
     private QueryExpression() {
@@ -20,11 +20,11 @@ public class QueryExpression {
         return new QueryExpression();
     }
 
-    public static QueryExpression create(List<Path> selectedSeries, IExpression filter) {
+    public static QueryExpression create(List<Path> selectedSeries, IExpression expression) {
         QueryExpression ret = new QueryExpression();
         ret.selectedSeries = selectedSeries;
-        ret.IExpression = filter;
-        ret.hasQueryFilter = filter != null;
+        ret.expression = expression;
+        ret.hasQueryFilter = expression != null;
         return ret;
     }
 
@@ -33,9 +33,9 @@ public class QueryExpression {
         return this;
     }
 
-    public QueryExpression setIExpression(IExpression IExpression) {
-        if (IExpression != null) {
-            this.IExpression = IExpression;
+    public QueryExpression setExpression(IExpression expression) {
+        if (expression != null) {
+            this.expression = expression;
             hasQueryFilter = true;
         }
         return this;
@@ -46,8 +46,8 @@ public class QueryExpression {
         return this;
     }
 
-    public IExpression getIExpression() {
-        return IExpression;
+    public IExpression getExpression() {
+        return expression;
     }
 
     public List<Path> getSelectedSeries() {
@@ -56,7 +56,7 @@ public class QueryExpression {
 
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder("\n\t[Selected Series]:").append(selectedSeries)
-                .append("\n\t[IExpression]:").append(IExpression);
+                .append("\n\t[expression]:").append(expression);
         return stringBuilder.toString();
     }
 

@@ -17,7 +17,7 @@ public class UnsealedTsFile {
         this.filePath = filePath;
     }
 
-    public List<ChunkMetaData> getTimeSeriesChunkMetaDatas() {
+    public List<ChunkMetaData> getChunkMetaDataList() {
         return timeSeriesChunkMetaDatas;
     }
 

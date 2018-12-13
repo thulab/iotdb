@@ -36,7 +36,7 @@ public class SeriesDescriptorGeneratorTest {
         timeSeriesChunkMetaData.setNumRows(numRows);
         timeSeriesChunkMetaDatas.add(timeSeriesChunkMetaData);
 
-        overflowInsertFile.setTimeSeriesChunkMetaDatas(timeSeriesChunkMetaDatas);
+        overflowInsertFile.setTimeSeriesChunkMetaData(timeSeriesChunkMetaDatas);
         overflowInsertFileList.add(overflowInsertFile);
 
         List<EncodedSeriesChunkDescriptor> seriesChunkDescriptors = SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowInsertFileList);

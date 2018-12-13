@@ -22,8 +22,10 @@ public class RowGroupBlockMetaDataCache {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
 	private static final int cacheSize = 100;
+
 	/** key: the file path + DeltaObjectId */
 	private LinkedHashMap<String, TsDeviceMetadata> LRUCache;
+
 	private AtomicLong cacheHintNum = new AtomicLong();
 	private AtomicLong cacheRequestNum = new AtomicLong();
 
@@ -66,8 +68,10 @@ public class RowGroupBlockMetaDataCache {
 		LRUCache = new LRULinkedHashMap(cacheSize, true);
 	}
 
+
 	public TsDeviceMetadata get(String filePath, String deltaObjectId, TsFileMetaData fileMetaData) throws IOException {
 		/** The key(the tsfile path and deltaObjectId) for the LRUCahe */
+
 		String jointPath = filePath + deltaObjectId;
 		jointPath = jointPath.intern();
 		synchronized (LRUCache) {
