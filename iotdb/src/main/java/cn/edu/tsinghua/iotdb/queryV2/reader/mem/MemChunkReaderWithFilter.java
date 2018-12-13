@@ -23,7 +23,7 @@ public class MemChunkReaderWithFilter implements IReader {
     }
 
     @Override
-    public boolean hasNext() throws IOException {
+    public boolean hasNext() {
         if (hasCachedTimeValuePair) {
             return true;
         }
@@ -39,7 +39,7 @@ public class MemChunkReaderWithFilter implements IReader {
     }
 
     @Override
-    public TimeValuePair next() throws IOException {
+    public TimeValuePair next() {
         if(hasCachedTimeValuePair){
             hasCachedTimeValuePair = false;
             return cachedTimeValuePair;
@@ -50,7 +50,7 @@ public class MemChunkReaderWithFilter implements IReader {
     }
 
     @Override
-    public void skipCurrentTimeValuePair() throws IOException {
+    public void skipCurrentTimeValuePair() {
         next();
     }
 

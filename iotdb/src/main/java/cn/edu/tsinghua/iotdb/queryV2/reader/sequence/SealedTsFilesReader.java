@@ -124,7 +124,7 @@ public class SealedTsFilesReader implements IReader {
     }
 
 
-    // TODO replace new FileReader by FileReaderManager
+    // TODO replace new FileReader by FileReaderManager to avoid file stream limit
     private void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException {
         TsFileSequenceReader tsFileReader = new TsFileSequenceReader(fileNode.getFilePath(), true);
         MetadataQuerierByFileImpl metadataQuerier = new MetadataQuerierByFileImpl(tsFileReader);

@@ -33,7 +33,6 @@ public class EngineLeafNode implements Node {
                 return false;
         }
 
-
         return data.hasNext();
     }
 

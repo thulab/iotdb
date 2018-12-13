@@ -8,6 +8,7 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import java.io.IOException;
 import java.util.Iterator;
 
+// TODO merge MemChunkReaderWithoutFilter and MemChunkReaderWithFilter to one class
 public class MemChunkReaderWithoutFilter implements IReader {
 
     private Iterator<TimeValuePair> timeValuePairIterator;
@@ -17,17 +18,17 @@ public class MemChunkReaderWithoutFilter implements IReader {
     }
 
     @Override
-    public boolean hasNext() throws IOException {
+    public boolean hasNext() {
         return timeValuePairIterator.hasNext();
     }
 
     @Override
-    public TimeValuePair next() throws IOException {
+    public TimeValuePair next() {
         return timeValuePairIterator.next();
     }
 
     @Override
-    public void skipCurrentTimeValuePair() throws IOException {
+    public void skipCurrentTimeValuePair() {
         next();
     }
 

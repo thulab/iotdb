@@ -43,8 +43,8 @@ public class EngineExecutorWithTimeGenerator {
             }
 
         }
-        return new EngineDataSetWithTimeGenerator(queryExpression.getSelectedSeries(), dataTypes, timestampGenerator, readersOfSelectedSeries);
-
+        return new EngineDataSetWithTimeGenerator(queryExpression.getSelectedSeries(), dataTypes,
+                timestampGenerator, readersOfSelectedSeries);
     }
 
     private static List<EngineReaderByTimeStamp> getReadersOfSelectedPaths(List<Path> paths)

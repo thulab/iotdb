@@ -19,7 +19,7 @@ public class MemChunkReaderByTimestamp implements EngineReaderByTimeStamp {
     }
 
     @Override
-    public boolean hasNext() throws IOException {
+    public boolean hasNext() {
         if (hasCachedTimeValuePair) {
             return true;
         }
@@ -46,7 +46,7 @@ public class MemChunkReaderByTimestamp implements EngineReaderByTimeStamp {
 
     }
 
-    //TODO 可以考虑将成员变量timeValuePairIterator更改为list形式，然后将顺序查找改为二分查找
+    //TODO maybe an optimization : change timeValuePairIterator to list, using binary search
     @Override
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         while(hasNext()){
