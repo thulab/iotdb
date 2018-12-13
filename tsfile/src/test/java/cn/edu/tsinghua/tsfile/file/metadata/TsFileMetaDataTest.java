@@ -2,7 +2,6 @@ package cn.edu.tsinghua.tsfile.file.metadata;
 
 import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
 import cn.edu.tsinghua.tsfile.file.metadata.utils.Utils;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
