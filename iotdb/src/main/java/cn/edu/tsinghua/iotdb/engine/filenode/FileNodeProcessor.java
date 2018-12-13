@@ -23,6 +23,7 @@ import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
