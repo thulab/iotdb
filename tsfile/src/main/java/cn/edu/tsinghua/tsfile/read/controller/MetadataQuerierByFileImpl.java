@@ -116,13 +116,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
         TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(path.getDevice());
 
         // read TsDeviceMetadata from file
-        FileChannel channel = tsFileReader.getChannel();
-        channel.position(index.getOffset());
-        ByteBuffer buffer = ByteBuffer.allocate(index.getLen());
-        channel.read(buffer);
-        buffer.flip();
-
-        TsDeviceMetadata tsDeviceMetadata = TsDeviceMetadata.deserializeFrom(buffer);
+        TsDeviceMetadata tsDeviceMetadata = tsFileReader.readTsDeviceMetaData(index);
 
         // get all ChunkMetaData of this path included in all ChunkGroups of this device
         List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();

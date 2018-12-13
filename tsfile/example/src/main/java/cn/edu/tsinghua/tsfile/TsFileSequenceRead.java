@@ -20,7 +20,7 @@ public class TsFileSequenceRead {
 
     public static void main(String[] args) throws IOException {
         TsFileSequenceReader reader = new TsFileSequenceReader("test.tsfile");
-        System.out.println("position: " + reader.getChannel().position());
+        System.out.println("position: " + reader.position());
         System.out.println(reader.readHeadMagic());
         System.out.println(reader.readTailMagic());
         TsFileMetaData metaData = reader.readFileMetadata();
@@ -33,17 +33,17 @@ public class TsFileSequenceRead {
             switch (marker) {
                 case MetaMarker.ChunkHeader:
                     ChunkHeader header = reader.readChunkHeader();
-                    System.out.println("position: " + reader.getChannel().position());
+                    System.out.println("position: " + reader.position());
                     System.out.println("chunk: " + header.getMeasurementID());
                     Decoder defaultTimeDecoder = Decoder.getDecoderByType(TSEncoding.valueOf(TSFileDescriptor.getInstance().getConfig().timeSeriesEncoder),
                             TSDataType.INT64);
                     Decoder valueDecoder = Decoder.getDecoderByType(header.getEncodingType(), header.getDataType());
                     for (int j = 0; j < header.getNumOfPages(); j++) {
                         PageHeader pageHeader = reader.readPageHeader(header.getDataType());
-                        System.out.println("position: " + reader.getChannel().position());
+                        System.out.println("position: " + reader.position());
                         System.out.println("points in the page: " + pageHeader.getNumOfValues());
                         ByteBuffer pageData = reader.readPage(pageHeader, header.getCompressionType());
-                        System.out.println("position: " + reader.getChannel().position());
+                        System.out.println("position: " + reader.position());
                         System.out.println("page data size: " + pageHeader.getUncompressedSize() + "," + pageData.remaining());
                         PageReader reader1 = new PageReader(pageData, header.getDataType(), valueDecoder, defaultTimeDecoder);
                         while (reader1.hasNextBatch()) {
@@ -57,7 +57,7 @@ public class TsFileSequenceRead {
                     break;
                 case MetaMarker.ChunkGroupFooter:
                     ChunkGroupFooter chunkGroupFooter = reader.readChunkGroupFooter();
-                    System.out.println("position: " + reader.getChannel().position());
+                    System.out.println("position: " + reader.position());
                     System.out.println("chunk group: " + chunkGroupFooter.getDeviceID());
                     break;
                 default:
