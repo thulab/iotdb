@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
-/**
- * @author liukun
- */
+
 public class QueryDataSource {
 
 	// sequence data source

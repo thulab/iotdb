@@ -5,7 +5,11 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
 import java.io.IOException;
 
-
+/**
+ * <p> Vital read interface.
+ * Batch method is used to increase query speed.
+ * Get a batch data every time will be faster than get one point every time.
+ */
 public interface IReader {
 
     boolean hasNext() throws IOException;

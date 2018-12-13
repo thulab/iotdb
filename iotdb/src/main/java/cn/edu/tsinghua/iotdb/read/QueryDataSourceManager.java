@@ -6,13 +6,13 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 
+/**
+ * <p> This class is used to get query data source of a given path.
+ * See the component of <code>QueryDataSource</code>
+ */
 public class QueryDataSourceManager {
 
     private static FileNodeManager fileNodeManager = FileNodeManager.getInstance();
-
-    public static QueryDataSource getQueryDataSource(SingleSeriesExpression singleSeriesExpression) throws FileNodeManagerException {
-        return fileNodeManager.query(singleSeriesExpression);
-    }
 
     public static QueryDataSource getQueryDataSource(Path selectedPath) throws FileNodeManagerException {
 

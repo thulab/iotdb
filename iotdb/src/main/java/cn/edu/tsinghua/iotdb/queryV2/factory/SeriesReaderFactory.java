@@ -44,6 +44,44 @@ public class SeriesReaderFactory {
 //        queryJobManager = QueryJobManager.getInstance();
     }
 
+//  public PriorityMergeReaderByTimestamp createSeriesReaderForOverflowInsertByTimestamp(OverflowSeriesDataSource overflowSeriesDataSource)
+//          throws IOException {
+//    long jobId = queryJobManager.addJobForOneQuery();
+//    List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList =
+//            SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
+//    int priorityValue = 1;
+//    List<PrioritySeriesReaderByTimestamp> timeValuePairReaders = new ArrayList<>();
+//    for (EncodedSeriesChunkDescriptor seriesChunkDescriptor : seriesChunkDescriptorList) {
+//      SeriesChunk seriesChunk = overflowSeriesChunkLoader.getChunk(jobId, seriesChunkDescriptor);
+//      EngineReaderByTimeStamp seriesChunkReader = new SeriesChunkReaderByTimestampImpl(seriesChunk.getSeriesChunkBodyStream(),
+//              seriesChunkDescriptor.getDataType(), seriesChunkDescriptor.getCompressionTypeName());
+//      PrioritySeriesReaderByTimestamp priorityTimeValuePairReader = new PrioritySeriesReaderByTimestamp(seriesChunkReader,
+//              new PrioritySeriesReader.Priority(priorityValue));
+//      timeValuePairReaders.add(priorityTimeValuePairReader);
+//      priorityValue++;
+//
+//    }
+//    //Add SeriesChunkReader in MemTable
+//    if (overflowSeriesDataSource.hasRawChunk()) {
+//      timeValuePairReaders.add(new PrioritySeriesReaderByTimestamp(new MemChunkReaderByTimestamp(
+//              overflowSeriesDataSource.getRawChunk()), new PrioritySeriesReader.Priority(priorityValue++)));
+//    }
+//
+//    return new PriorityMergeReaderByTimestamp(timeValuePairReaders);
+//  }
+
+    private boolean chunkSatisfied(ChunkMetaData metaData, Filter filter) {
+
+        DigestForFilter digest = new DigestForFilter(
+                metaData.getStartTime(),
+                metaData.getEndTime(),
+                metaData.getDigest().getStatistics().get(StatisticConstant.MIN_VALUE),
+                metaData.getDigest().getStatistics().get(StatisticConstant.MAX_VALUE),
+                metaData.getTsDataType());
+
+        return filter.satisfy(digest);
+    }
+
     public PriorityMergeReader createUnSeqMergeReader(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
             throws IOException {
 
@@ -83,44 +121,6 @@ public class SeriesReaderFactory {
         // timeValuePairReaders = externalSortJobEngine.executeWithGlobalTimeFilter(timeValuePairReaders);
 
         return unSeqMergeReader;
-    }
-
-//  public PriorityMergeReaderByTimestamp createSeriesReaderForOverflowInsertByTimestamp(OverflowSeriesDataSource overflowSeriesDataSource)
-//          throws IOException {
-//    long jobId = queryJobManager.addJobForOneQuery();
-//    List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList =
-//            SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
-//    int priorityValue = 1;
-//    List<PrioritySeriesReaderByTimestamp> timeValuePairReaders = new ArrayList<>();
-//    for (EncodedSeriesChunkDescriptor seriesChunkDescriptor : seriesChunkDescriptorList) {
-//      SeriesChunk seriesChunk = overflowSeriesChunkLoader.getChunk(jobId, seriesChunkDescriptor);
-//      EngineReaderByTimeStamp seriesChunkReader = new SeriesChunkReaderByTimestampImpl(seriesChunk.getSeriesChunkBodyStream(),
-//              seriesChunkDescriptor.getDataType(), seriesChunkDescriptor.getCompressionTypeName());
-//      PrioritySeriesReaderByTimestamp priorityTimeValuePairReader = new PrioritySeriesReaderByTimestamp(seriesChunkReader,
-//              new PrioritySeriesReader.Priority(priorityValue));
-//      timeValuePairReaders.add(priorityTimeValuePairReader);
-//      priorityValue++;
-//
-//    }
-//    //Add SeriesChunkReader in MemTable
-//    if (overflowSeriesDataSource.hasRawChunk()) {
-//      timeValuePairReaders.add(new PrioritySeriesReaderByTimestamp(new MemChunkReaderByTimestamp(
-//              overflowSeriesDataSource.getRawChunk()), new PrioritySeriesReader.Priority(priorityValue++)));
-//    }
-//
-//    return new PriorityMergeReaderByTimestamp(timeValuePairReaders);
-//  }
-
-    private boolean chunkSatisfied(ChunkMetaData metaData, Filter filter) {
-
-        DigestForFilter digest = new DigestForFilter(
-                metaData.getStartTime(),
-                metaData.getEndTime(),
-                metaData.getDigest().getStatistics().get(StatisticConstant.MIN_VALUE),
-                metaData.getDigest().getStatistics().get(StatisticConstant.MAX_VALUE),
-                metaData.getTsDataType());
-
-        return filter.satisfy(digest);
     }
 
     /**

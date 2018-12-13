@@ -5,7 +5,6 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.NodeType;
 
-import java.io.IOException;
 
 public class EngineLeafNode implements Node {
 
@@ -20,7 +19,7 @@ public class EngineLeafNode implements Node {
     }
 
     @Override
-    public boolean hasNext() throws IOException {
+    public boolean hasNext() {
 
         if (gotData) {
             data.next();

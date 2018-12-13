@@ -9,8 +9,8 @@ import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import java.io.IOException;
 
 /**
- * A timestamp generator for query with filter.
- * e.g. For query clause "select s1, s2 form root where s3 < 0 and time > 100"，
+ * <p> A timestamp generator for query with filter.
+ * e.g. For query clause "select s1, s2 form root where s3 < 0 and time > 100",
  * this class can iterate back to every timestamp of the query.
  */
 public class EngineTimeGenerator implements TimeGenerator {
