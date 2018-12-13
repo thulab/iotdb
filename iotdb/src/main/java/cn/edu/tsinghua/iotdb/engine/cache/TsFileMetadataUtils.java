@@ -4,16 +4,21 @@ import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
+<<<<<<< HEAD
+import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
+=======
 import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.converter.TsFileMetaDataConverter;
 import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
+>>>>>>> origin/kill_thanos
 
 /**
  * This class is used to read metadata(<code>TsFileMetaData</code> and
@@ -59,8 +64,8 @@ public class TsFileMetadataUtils {
 		}
 	}
 
-	public static TsRowGroupBlockMetaData getTsRowGroupBlockMetaData(String filePath, String deltaObjectId,
-			TsFileMetaData fileMetaData) throws IOException {
+	public static TsDeviceMetadata getTsRowGroupBlockMetaData(String filePath, String deltaObjectId,
+															  TsFileMetaData fileMetaData) throws IOException {
 		if (!fileMetaData.containsDeltaObject(deltaObjectId)) {
 			return null;
 		} else {

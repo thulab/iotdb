@@ -16,6 +16,7 @@ import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +33,7 @@ import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 public class OverflowProcessor extends Processor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowProcessor.class);
@@ -234,7 +226,7 @@ public class OverflowProcessor extends Processor {
 
 			List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
 			// work file
-			Pair<String, List<TimeSeriesChunkMetaData>> insertInDiskWork = queryWorkDataInOverflowInsert(deltaObjectId,
+			Pair<String, List<ChunkMetaData>> insertInDiskWork = queryWorkDataInOverflowInsert(deltaObjectId,
 					measurementId, dataType);
 			if (insertInDiskWork.left != null) {
 				overflowInsertFileList.add(0, new OverflowInsertFile(insertInDiskWork.left, insertInDiskWork.right));
@@ -338,9 +330,9 @@ public class OverflowProcessor extends Processor {
 	 * @return the path of unseqTsFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
-	private Pair<String, List<TimeSeriesChunkMetaData>> queryWorkDataInOverflowInsert(String deltaObjectId,
+	private Pair<String, List<ChunkMetaData>> queryWorkDataInOverflowInsert(String deltaObjectId,
 			String measurementId, TSDataType dataType) {
-		Pair<String, List<TimeSeriesChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
+		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<ChunkMetaData>>(
 				workResource.getInsertFilePath(),
 				workResource.getInsertMetadatas(deltaObjectId, measurementId, dataType));
 		return pair;

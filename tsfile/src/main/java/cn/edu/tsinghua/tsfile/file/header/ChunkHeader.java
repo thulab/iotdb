@@ -30,7 +30,7 @@ public class ChunkHeader {
      * The time when the ChunkGroup of this chunk is closed. This will not be written out and will only be set when read together
      * with its ChunkGroup during querying.
      */
-    private long writtenTime;
+    private long writtenTime;//not serialized now.
 
     //this field does not need to be serialized.
     private int serializedSize;

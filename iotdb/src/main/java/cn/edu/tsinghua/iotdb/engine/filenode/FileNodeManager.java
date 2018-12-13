@@ -48,12 +48,7 @@ import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 
 public class FileNodeManager implements IStatistic, IService {
 

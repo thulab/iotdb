@@ -7,10 +7,6 @@ import cn.edu.tsinghua.iotdb.engine.memtable.IMemSeries;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 
 /**
  * This class is used to store and query all overflow data in memory.<br>
@@ -39,7 +35,7 @@ public class OverflowSupport {
 
 	public void insert(TSRecord tsRecord) {
 		for (DataPoint dataPoint : tsRecord.dataPointList) {
-			memTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+			memTable.write(tsRecord.deviceId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
 					dataPoint.getValue().toString());
 		}
 	}

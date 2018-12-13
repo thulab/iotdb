@@ -2,14 +2,14 @@ package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,13 +17,6 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableTestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
-import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 public class BufferWriteRestoreManagerTest {
@@ -47,7 +40,7 @@ public class BufferWriteRestoreManagerTest {
 	@Test
 	public void testInitResource() throws IOException {
 		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
-		Pair<Long, List<RowGroupMetaData>> pair = bufferwriteResource.readRestoreInfo();
+		Pair<Long, List<ChunkGroupMetaData>> pair = bufferwriteResource.readRestoreInfo();
 		assertEquals(true, new File(insertRestorePath).exists());
 		assertEquals(0, (long) pair.left);
 		assertEquals(0, pair.right.size());
@@ -69,7 +62,7 @@ public class BufferWriteRestoreManagerTest {
 		assertEquals(true, restoreFile.exists());
 		assertEquals(400, insertFile.length());
 		bufferwriteResource.close(new FileSchema());
-		ITsRandomAccessFileWriter out = new TsRandomAccessFileWriter(new File(insertRestorePath));
+		FileOutputStream out = new FileOutputStream(new File(insertRestorePath));
 		// write tsfile position using byte[8] which is present one long
 		writeRestoreFile(out, 2);
 		writeRestoreFile(out, 3);
@@ -93,7 +86,7 @@ public class BufferWriteRestoreManagerTest {
 		// mkdir
 		fileOutputStream.write(new byte[200]);
 		fileOutputStream.close();
-		ITsRandomAccessFileWriter out = new TsRandomAccessFileWriter(new File(insertRestorePath));
+		FileOutputStream out = new FileOutputStream(new File(insertRestorePath));
 		// write tsfile position using byte[8] which is present one long
 		writeRestoreFile(out, 2);
 		writeRestoreFile(out, 3);
@@ -134,15 +127,15 @@ public class BufferWriteRestoreManagerTest {
 		bufferwriteResource.close(MemTableTestUtils.getFileSchema());
 	}
 
-	private void writeRestoreFile(ITsRandomAccessFileWriter out, int metadataNum) throws IOException {
-		TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
-		List<RowGroupMetaData> appendRowGroupMetaDatas = new ArrayList<>();
+	private void writeRestoreFile(OutputStream out, int metadataNum) throws IOException {
+		TsDeviceMetadata tsDeviceMetadata = new TsDeviceMetadata();
+		List<ChunkGroupMetaData> appendRowGroupMetaDatas = new ArrayList<>();
 		for (int i = 0; i < metadataNum; i++) {
-			appendRowGroupMetaDatas.add(new RowGroupMetaData("d1", 1000, 1000, new ArrayList<>(), "d1t"));
+			appendRowGroupMetaDatas.add(new ChunkGroupMetaData("d1", new ArrayList<>()));
 		}
-		tsRowGroupBlockMetaData.setRowGroups(appendRowGroupMetaDatas);
+		tsDeviceMetadata.setChunkGroupMetadataList(appendRowGroupMetaDatas);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(tsRowGroupBlockMetaData.convertToThrift(), baos);
+		tsDeviceMetadata.serializeTo(baos);
 		// write metadata size using int
 		int metadataSize = baos.size();
 		out.write(BytesUtils.intToBytes(metadataSize));
