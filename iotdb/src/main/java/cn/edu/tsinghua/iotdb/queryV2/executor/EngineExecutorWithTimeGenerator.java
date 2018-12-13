@@ -4,17 +4,13 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.queryV2.dataset.EngineDataSetWithTimeGenerator;
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
-import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineSeriesReaderByTimeStamp;
+import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
-import cn.edu.tsinghua.iotdb.read.reader.QueryByTimestampsReader;
 import cn.edu.tsinghua.iotdb.queryV2.timegenerator.EngineTimeGenerator;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 
@@ -27,23 +23,21 @@ import java.util.List;
  */
 public class EngineExecutorWithTimeGenerator {
 
-    public EngineExecutorWithTimeGenerator() {
-    }
 
     public static QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
         EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(queryExpression.getExpression());
 
-        List<EngineSeriesReaderByTimeStamp> readersOfSelectedSeries = new ArrayList<>();
-        initReadersOfSelectedSeries(readersOfSelectedSeries, queryExpression.getSelectedSeries());
+        List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(queryExpression.getSelectedSeries());
         return new EngineDataSetWithTimeGenerator(timestampGenerator, readersOfSelectedSeries);
     }
 
-    private static void initReadersOfSelectedSeries(List<EngineSeriesReaderByTimeStamp> readersOfSelectedSeries, List<Path> selectedSeries)
+    private static List<EngineReaderByTimeStamp> getReadersOfSelectedPaths(List<Path> paths)
             throws IOException, FileNodeManagerException {
 
+        List<EngineReaderByTimeStamp> readersOfSelectedSeries = new ArrayList<>();
 
-        for (Path path : selectedSeries) {
+        for (Path path : paths) {
 
             QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
             PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
@@ -59,6 +53,8 @@ public class EngineExecutorWithTimeGenerator {
 
             readersOfSelectedSeries.add(mergeReaderByTimestamp);
         }
+
+        return readersOfSelectedSeries;
     }
 
 }

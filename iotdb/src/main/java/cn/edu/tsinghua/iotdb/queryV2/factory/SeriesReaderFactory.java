@@ -6,7 +6,7 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithoutFilter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.queryV2.reader.sequence.SealedTsFileReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.sequence.SealedTsFilesReader;
 import cn.edu.tsinghua.iotdb.queryV2.reader.unsequence.EngineChunkReader;
 import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
@@ -94,7 +94,7 @@ public class SeriesReaderFactory {
 //    List<PrioritySeriesReaderByTimestamp> timeValuePairReaders = new ArrayList<>();
 //    for (EncodedSeriesChunkDescriptor seriesChunkDescriptor : seriesChunkDescriptorList) {
 //      SeriesChunk seriesChunk = overflowSeriesChunkLoader.getChunk(jobId, seriesChunkDescriptor);
-//      EngineSeriesReaderByTimeStamp seriesChunkReader = new SeriesChunkReaderByTimestampImpl(seriesChunk.getSeriesChunkBodyStream(),
+//      EngineReaderByTimeStamp seriesChunkReader = new SeriesChunkReaderByTimestampImpl(seriesChunk.getSeriesChunkBodyStream(),
 //              seriesChunkDescriptor.getDataType(), seriesChunkDescriptor.getCompressionTypeName());
 //      PrioritySeriesReaderByTimestamp priorityTimeValuePairReader = new PrioritySeriesReaderByTimestamp(seriesChunkReader,
 //              new PrioritySeriesReader.Priority(priorityValue));
@@ -156,7 +156,7 @@ public class SeriesReaderFactory {
 
         // TODO is singleSeriesExpression.getFilter() always null?
         FileSeriesReader seriesInTsFileReader = new FileSeriesReaderWithFilter(chunkLoader, metaDataList, singleSeriesExpression.getFilter());
-        return new SealedTsFileReader(seriesInTsFileReader);
+        return new SealedTsFilesReader(seriesInTsFileReader);
     }
 
 

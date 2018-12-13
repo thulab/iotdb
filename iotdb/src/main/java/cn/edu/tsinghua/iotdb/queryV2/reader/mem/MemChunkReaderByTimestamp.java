@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.mem;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineSeriesReaderByTimeStamp;
+import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
@@ -9,7 +9,7 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class MemChunkReaderByTimestamp implements EngineSeriesReaderByTimeStamp {
+public class MemChunkReaderByTimestamp implements EngineReaderByTimeStamp {
     private Iterator<TimeValuePair> timeValuePairIterator;
     private boolean hasCachedTimeValuePair;
     private TimeValuePair cachedTimeValuePair;

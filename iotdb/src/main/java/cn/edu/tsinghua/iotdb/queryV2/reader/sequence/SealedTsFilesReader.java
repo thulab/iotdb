@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
-import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.read.Utils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
@@ -21,7 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SealedTsFileReader implements IReader {
+public class SealedTsFilesReader implements IReader {
 
     private Path seriesPath;
     private List<IntervalFileNode> sealedTsFiles;
@@ -32,21 +31,21 @@ public class SealedTsFileReader implements IReader {
     private boolean hasCachedData;
 
 
-    public SealedTsFileReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, Filter filter) {
-        this(sortedSeriesDataSource);
+    public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles, Filter filter) {
+        this(path, sealedTsFiles);
         this.filter = filter;
     }
 
 
-    public SealedTsFileReader(GlobalSortedSeriesDataSource sortedSeriesDataSource) {
-        this.seriesPath = sortedSeriesDataSource.getSeriesPath();
-        this.sealedTsFiles = sortedSeriesDataSource.getSealedTsFiles();
+    public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles) {
+        this.seriesPath = path;
+        this.sealedTsFiles = sealedTsFiles;
         this.usedIntervalFileIndex = -1;
         this.seriesReader = null;
         this.hasCachedData = false;
     }
 
-    public SealedTsFileReader(FileSeriesReader seriesReader) {
+    public SealedTsFilesReader(FileSeriesReader seriesReader) {
         this.seriesReader = seriesReader;
         sealedTsFiles = new ArrayList<>();
     }

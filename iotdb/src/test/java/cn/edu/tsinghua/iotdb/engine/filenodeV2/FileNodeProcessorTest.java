@@ -121,7 +121,7 @@ public class FileNodeProcessorTest {
 				assertEquals(processorName + "." + measurementId,
 						globalSortedSeriesDataSource.getSeriesPath().toString());
 				assertEquals(0, globalSortedSeriesDataSource.getSealedTsFiles().size());
-				assertEquals(1, globalSortedSeriesDataSource.getUnsealedTsFile().getTimeSeriesChunkMetaDatas().size());
+				assertEquals(1, globalSortedSeriesDataSource.getUnsealedTsFile().getChunkMetaDataList().size());
 				assertEquals(false, globalSortedSeriesDataSource.getRawSeriesChunk().isEmpty());
 				assertEquals(87, globalSortedSeriesDataSource.getRawSeriesChunk().getMaxTimestamp());
 				assertEquals(87, globalSortedSeriesDataSource.getRawSeriesChunk().getMinTimestamp());

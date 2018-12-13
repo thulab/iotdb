@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
 import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.read.Utils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -16,26 +15,23 @@ import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithFilter;
 import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithoutFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 public class UnSealedTsFileReader implements IReader {
 
     protected Path seriesPath;
     private FileSeriesReader tsFileReader;
     private BatchData data;
-    private Filter filter;
 
-    public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile) throws IOException {
+    public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile, Filter filter) throws IOException {
 
         ChunkLoader chunkLoader = new ChunkLoaderImpl(new TsFileSequenceReader(unsealedTsFile.getFilePath(), false));
 
-        initSingleTsFileReader(chunkLoader, unsealedTsFile.getTimeSeriesChunkMetaDatas());
-    }
+        if (filter == null) {
+            tsFileReader = new FileSeriesReaderWithoutFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList());
+        } else {
+            tsFileReader = new FileSeriesReaderWithFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList(), filter);
+        }
 
-    public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile, Filter filter) throws IOException {
-        this(unsealedTsFile);
-
-        this.filter = filter;
     }
 
     @Override
@@ -71,14 +67,6 @@ public class UnSealedTsFileReader implements IReader {
     public void close() throws IOException {
         if (tsFileReader != null) {
             tsFileReader.close();
-        }
-    }
-
-    protected void initSingleTsFileReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaData) {
-        if (filter == null) {
-            tsFileReader = new FileSeriesReaderWithoutFilter(chunkLoader, chunkMetaData);
-        } else {
-            tsFileReader = new FileSeriesReaderWithFilter(chunkLoader, chunkMetaData, filter);
         }
     }
 

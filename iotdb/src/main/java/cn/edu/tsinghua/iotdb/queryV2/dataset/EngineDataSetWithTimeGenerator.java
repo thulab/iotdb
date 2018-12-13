@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.dataset;
 
-import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineSeriesReaderByTimeStamp;
+import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.queryV2.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
@@ -12,9 +12,9 @@ import java.util.List;
 public class EngineDataSetWithTimeGenerator extends QueryDataSet {
 
     private EngineTimeGenerator timeGenerator;
-    private List<EngineSeriesReaderByTimeStamp> readers;
+    private List<EngineReaderByTimeStamp> readers;
 
-    public EngineDataSetWithTimeGenerator(EngineTimeGenerator timeGenerator, List<EngineSeriesReaderByTimeStamp> readers) {
+    public EngineDataSetWithTimeGenerator(EngineTimeGenerator timeGenerator, List<EngineReaderByTimeStamp> readers) {
         super(null, null);
         this.timeGenerator = timeGenerator;
         this.readers = readers;

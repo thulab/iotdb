@@ -5,7 +5,7 @@
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 //import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.EngineSeriesReaderByTimeStamp;
+//import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.EngineReaderByTimeStamp;
 //import org.junit.Assert;
 //import org.junit.Test;
 //
@@ -94,7 +94,7 @@
 //
 //
 //
-//    public static class FakedPrioritySeriesReaderByTimestamp implements EngineSeriesReaderByTimeStamp {
+//    public static class FakedPrioritySeriesReaderByTimestamp implements EngineReaderByTimeStamp {
 //        private Iterator<TimeValuePair> iterator;
 //        private long currentTimeStamp = Long.MIN_VALUE;
 //        private boolean hasCachedTimeValuePair;

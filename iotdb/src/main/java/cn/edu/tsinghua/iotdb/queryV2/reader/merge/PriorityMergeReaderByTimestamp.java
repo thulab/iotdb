@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 
-public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implements EngineSeriesReaderByTimeStamp {
+public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implements EngineReaderByTimeStamp {
 
   private long currentTimestamp;
   private boolean hasCachedTimeValuePair;

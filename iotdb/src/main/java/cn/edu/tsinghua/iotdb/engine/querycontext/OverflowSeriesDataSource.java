@@ -7,10 +7,16 @@ import java.util.List;
 
 
 public class OverflowSeriesDataSource {
+
     private Path seriesPath;
     private TSDataType dataType;
+
+    // overflow tsfile
     private List<OverflowInsertFile> overflowInsertFileList;
+
+    // unSeq mem-table
     private RawSeriesChunk rawChunk;
+
     private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
     public OverflowSeriesDataSource(Path seriesPath) {

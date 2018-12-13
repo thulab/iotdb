@@ -1,13 +1,11 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
-//import cn.edu.tsinghua.iotdb.queryV2.control.QueryJobManager;
 import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithoutFilter;
 import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
-//import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 
 import java.io.IOException;
@@ -20,54 +18,52 @@ import java.util.List;
  */
 public class SequenceDataReader implements IReader {
 
-    protected List<IReader> seriesReaders;
-    protected long jobId;
-
-    private boolean hasSeriesReaderInitialized;
+    private List<IReader> seriesReaders;
+    private boolean curReaderInitialized;
     private int nextSeriesReaderIndex;
     private IReader currentSeriesReader;
 
-    public SequenceDataReader(GlobalSortedSeriesDataSource sortedSeriesDataSource, Filter filter) throws IOException {
+    public SequenceDataReader(GlobalSortedSeriesDataSource sources, Filter filter) throws IOException {
         seriesReaders = new ArrayList<>();
-//    jobId = QueryJobManager.getInstance().addJobForOneQuery();
 
-        hasSeriesReaderInitialized = false;
+        curReaderInitialized = false;
         nextSeriesReaderIndex = 0;
 
-        // add data in sealedTsFiles and unSealedTsFile
-        if (sortedSeriesDataSource.getSealedTsFiles() != null) {
-            seriesReaders.add(new SealedTsFileReader(sortedSeriesDataSource, filter));
+        // add reader for sealed TsFiles
+        if (sources.hasSealedTsFiles()) {
+            seriesReaders.add(new SealedTsFilesReader(sources.getSeriesPath(), sources.getSealedTsFiles(), filter));
         }
-        if (sortedSeriesDataSource.getUnsealedTsFile() != null) {
-            seriesReaders.add(new UnSealedTsFileReader(sortedSeriesDataSource.getUnsealedTsFile(), filter));
+
+        // add reader for unSealed TsFile
+        if (sources.hasUnsealedTsFile()) {
+            seriesReaders.add(new UnSealedTsFileReader(sources.getUnsealedTsFile(), filter));
         }
 
         // add data in memTable
-        if (sortedSeriesDataSource.hasRawSeriesChunk() && filter == null) {
-            seriesReaders.add(new MemChunkReaderWithoutFilter(sortedSeriesDataSource.getRawSeriesChunk()));
+        if (sources.hasRawSeriesChunk()) {
+            if (filter == null)
+                seriesReaders.add(new MemChunkReaderWithoutFilter(sources.getRawSeriesChunk()));
+            else
+                seriesReaders.add(new MemChunkReaderWithFilter(sources.getRawSeriesChunk(), filter));
         }
-        if (sortedSeriesDataSource.hasRawSeriesChunk() && filter != null) {
-            seriesReaders.add(new MemChunkReaderWithFilter(sortedSeriesDataSource.getRawSeriesChunk(), filter));
-        }
+
     }
 
     @Override
     public boolean hasNext() throws IOException {
-        if (hasSeriesReaderInitialized && currentSeriesReader.hasNext()) {
+        if (curReaderInitialized && currentSeriesReader.hasNext()) {
             return true;
         } else {
-            hasSeriesReaderInitialized = false;
+            curReaderInitialized = false;
         }
 
         while (nextSeriesReaderIndex < seriesReaders.size()) {
-            if (!hasSeriesReaderInitialized) {
-                currentSeriesReader = seriesReaders.get(nextSeriesReaderIndex++);
-                hasSeriesReaderInitialized = true;
-            }
+            currentSeriesReader = seriesReaders.get(nextSeriesReaderIndex++);
             if (currentSeriesReader.hasNext()) {
+                curReaderInitialized = true;
                 return true;
             } else {
-                hasSeriesReaderInitialized = false;
+                curReaderInitialized = false;
             }
         }
         return false;

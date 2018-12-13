@@ -7,7 +7,7 @@
 //import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReaderByTimestamp;
 //import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PrioritySeriesReader;
 //import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PrioritySeriesReaderByTimestamp;
-//import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineSeriesReaderByTimeStamp;
+//import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineReaderByTimeStamp;
 //import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderByTimestamp;
 //import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 //import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
@@ -20,7 +20,7 @@
 ///**
 // * A reader for sequence insert data which can get the corresponding value of the specified time point.
 // */
-//public class SequenceInsertDataByTimeStampReader extends SequenceDataReader implements EngineSeriesReaderByTimeStamp {
+//public class SequenceInsertDataByTimeStampReader extends SequenceDataReader implements EngineReaderByTimeStamp {
 //
 //  private long currentTimestamp;
 //  private PriorityMergeReaderByTimestamp priorityMergeSortTimeValuePairReader;
@@ -77,7 +77,7 @@
 //    this.currentTimestamp = currentTimestamp;
 //  }
 //
-//  private class SealedTsFileWithTimeStampReader extends SequenceDataReader.SealedTsFileReader implements EngineSeriesReaderByTimeStamp {
+//  private class SealedTsFileWithTimeStampReader extends SequenceDataReader.SealedTsFilesReader implements EngineReaderByTimeStamp {
 //
 //    private boolean hasCacheLastTimeValuePair;
 //    private TimeValuePair cachedTimeValuePair;
@@ -176,7 +176,7 @@
 //    }
 //  }
 //
-//  protected class UnSealedTsFileWithTimeStampReader extends SequenceDataReader.UnSealedTsFileReader implements EngineSeriesReaderByTimeStamp {
+//  protected class UnSealedTsFileWithTimeStampReader extends SequenceDataReader.UnSealedTsFileReader implements EngineReaderByTimeStamp {
 //
 //    public UnSealedTsFileWithTimeStampReader(UnsealedTsFile unsealedTsFile) throws IOException {
 //      super(unsealedTsFile);
@@ -199,7 +199,7 @@
 //
 //    @Override
 //    public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
-//      return ((EngineSeriesReaderByTimeStamp) tsFileReader).getValueInTimestamp(timestamp);
+//      return ((EngineReaderByTimeStamp) tsFileReader).getValueInTimestamp(timestamp);
 //    }
 //  }
 //

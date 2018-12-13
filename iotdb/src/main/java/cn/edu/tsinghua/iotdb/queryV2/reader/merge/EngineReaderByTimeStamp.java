@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 
-public interface EngineSeriesReaderByTimeStamp extends IReader {
+public interface EngineReaderByTimeStamp extends IReader {
 
   TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException;
 
