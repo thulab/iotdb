@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.tsfile.read;
 
-import cn.edu.tsinghua.tsfile.TsFileSequenceRead;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.read.reader.DefaultTsFileInput;
 import cn.edu.tsinghua.tsfile.read.reader.TsFileInput;
