@@ -1,14 +1,11 @@
 package cn.edu.tsinghua.tsfile.read;
 
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadataIndex;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
-import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * A class for reading unclosed tsfile.
