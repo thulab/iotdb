@@ -6,9 +6,6 @@ import org.junit.Test;
 
 import java.io.*;
 
-import static org.junit.Assert.*;
-
-
 public class OFFileMetadataTest {
 
 
@@ -30,11 +27,11 @@ public class OFFileMetadataTest {
 
     @Test
     public void testOFFileMetadata() throws Exception {
-        OFFileMetadata ofFileMetadata = TestHelper.createOFFileMetadata();
+        OFFileMetadata ofFileMetadata = OverflowTestHelper.createOFFileMetadata();
         serialize(ofFileMetadata);
         OFFileMetadata deOFFileMetadata = deSerialize();
         // assert
-        Utils.isOFFileMetadataEqual(ofFileMetadata,deOFFileMetadata);
+        OverflowUtils.isOFFileMetadataEqual(ofFileMetadata,deOFFileMetadata);
     }
 
     private void serialize(OFFileMetadata ofFileMetadata) throws FileNotFoundException {

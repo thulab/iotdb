@@ -3,12 +3,9 @@ package cn.edu.tsinghua.iotdb.engine.overflow.metadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runners.Parameterized;
 
 import java.io.*;
-import java.util.Collection;
 
-import static org.junit.Assert.*;
 
 
 public class OFSeriesListMetadataTest {
@@ -34,11 +31,11 @@ public class OFSeriesListMetadataTest {
 
     @Test
     public void testOfSeriesListMetadataSerDe() throws Exception {
-        OFSeriesListMetadata ofSeriesListMetadata = TestHelper.createOFSeriesListMetadata();
+        OFSeriesListMetadata ofSeriesListMetadata = OverflowTestHelper.createOFSeriesListMetadata();
         serialized(ofSeriesListMetadata);
         OFSeriesListMetadata deOfSeriesListMetadata = deSerialized();
         // assert
-        Utils.isOFSeriesListMetadataEqual(ofSeriesListMetadata,deOfSeriesListMetadata);
+        OverflowUtils.isOFSeriesListMetadataEqual(ofSeriesListMetadata,deOfSeriesListMetadata);
     }
 
     private void serialized(OFSeriesListMetadata obj) throws FileNotFoundException {

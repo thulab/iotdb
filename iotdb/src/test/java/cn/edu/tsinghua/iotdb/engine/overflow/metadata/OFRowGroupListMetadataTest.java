@@ -27,10 +27,10 @@ public class OFRowGroupListMetadataTest {
 
     @Test
     public void testOFRowGroupListMetadata() throws Exception {
-        OFRowGroupListMetadata ofRowGroupListMetadata = TestHelper.createOFRowGroupListMetadata();
+        OFRowGroupListMetadata ofRowGroupListMetadata = OverflowTestHelper.createOFRowGroupListMetadata();
         serialize(ofRowGroupListMetadata);
         OFRowGroupListMetadata deOfRowGroupListMetadata = deSerialized();
-        Utils.isOFRowGroupListMetadataEqual(ofRowGroupListMetadata,deOfRowGroupListMetadata);
+        OverflowUtils.isOFRowGroupListMetadataEqual(ofRowGroupListMetadata,deOfRowGroupListMetadata);
     }
 
 
