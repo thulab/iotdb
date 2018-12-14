@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.read.reader;
+package cn.edu.tsinghua.iotdb.queryV2.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -28,18 +28,7 @@ import java.sql.Statement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class IoTDBIoTDBSeriesReaderTest {
-
-    private static final String TIMESTAMP_STR = "Time";
-    private final String d0s0 = "root.vehicle.d0.s0";
-    private final String d0s1 = "root.vehicle.d0.s1";
-    private final String d0s2 = "root.vehicle.d0.s2";
-    private final String d0s3 = "root.vehicle.d0.s3";
-    private final String d0s4 = "root.vehicle.d0.s4";
-    private final String d0s5 = "root.vehicle.d0.s5";
-
-    private final String d1s0 = "root.vehicle.d1.s0";
-    private final String d1s1 = "root.vehicle.d1.s1";
+public class IoTDBSeriesReaderTest {
 
     private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
     private static String[] booleanValue = new String[]{"true", "false"};

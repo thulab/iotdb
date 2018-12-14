@@ -1,14 +1,21 @@
-package cn.edu.tsinghua.iotdb.read.reader;
+package cn.edu.tsinghua.iotdb.queryV2.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.queryV2.control.QueryDataSourceManager;
+import cn.edu.tsinghua.iotdb.queryV2.executor.EngineQueryRouter;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +27,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-public class IoTDBQueryByTimestampsReaderTest {
+public class IoTDBSequenceDataQueryTest {
     private static final String TIMESTAMP_STR = "Time";
     private final String d0s0 = "root.vehicle.d0.s0";
     private final String d0s1 = "root.vehicle.d0.s1";
@@ -57,7 +63,7 @@ public class IoTDBQueryByTimestampsReaderTest {
     private int pageSizeInByte;
     private int groupSizeInByte;
 
-    private int countMod5 = 0;
+    private int d0s0gteq14 = 0;
 
     @Before
     public void setUp() throws Exception {
@@ -95,7 +101,6 @@ public class IoTDBQueryByTimestampsReaderTest {
         }
     }
 
-
     @Test
     public void test() throws InterruptedException, SQLException, ClassNotFoundException, IOException, FileNodeManagerException {
         if (testFlag) {
@@ -103,38 +108,12 @@ public class IoTDBQueryByTimestampsReaderTest {
             insertData();
             Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-            skipReadTimestampTest();
-            readNotExistenceAndExistenceTimestampTest();
+            TsFilesReaderWithoutFilterTest();
+            TsFilesReaderWithTimeFilterTest();
+            TsFilesReaderWithValueFilterTest();
+
 
             connection.close();
-        }
-    }
-
-    private void skipReadTimestampTest() throws IOException, FileNodeManagerException {
-        Path pd0s0 = new Path(d0s0);
-        QueryByTimestampsReader queryByTimestampsReaderd0S0 = new QueryByTimestampsReader(QueryDataSourceManager.getQueryDataSource(pd0s0));
-        for(int time = 100; time < 1500; time+=5){
-            //System.out.println("TIME = "+time);
-            if(time % 2 == 0){
-                assertNull(queryByTimestampsReaderd0S0.getValueInTimestamp(time));
-            }
-            else if((time>=300 && time<1000)|| (time>=1200 && time<1500)||(time>=100 && time<200 && time%5==0)){
-                assertEquals(time%17, queryByTimestampsReaderd0S0.getValueInTimestamp(time).getInt());
-            }
-        }
-    }
-
-    private void readNotExistenceAndExistenceTimestampTest() throws IOException, FileNodeManagerException{
-        Path pd0s0 = new Path(d0s0);
-        QueryByTimestampsReader queryByTimestampsReaderd0S0 = new QueryByTimestampsReader(QueryDataSourceManager.getQueryDataSource(pd0s0));
-        for(int time = 0; time < 2500; time+=5){
-//            System.out.println("TIME = "+time);
-            if(time % 2 == 0 || time < 100 || time > 1499){
-                assertNull(queryByTimestampsReaderd0S0.getValueInTimestamp(time));
-            }
-            else if((time>=300 && time<1000)|| (time>=1200 && time<1500)||(time>=100 && time<200 && time%5==0)){
-                assertEquals(time%17, queryByTimestampsReaderd0S0.getValueInTimestamp(time).getInt());
-            }
         }
     }
 
@@ -152,9 +131,6 @@ public class IoTDBQueryByTimestampsReaderTest {
 
             //insert data (time from 300-999)
             for(long time = 300; time < 1000; time++){
-                if(time % 2 == 0){
-                    continue;
-                }
                 String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 17);
                 statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 29);
@@ -163,37 +139,26 @@ public class IoTDBQueryByTimestampsReaderTest {
                 statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[(int)time % 5]);
                 statement.execute(sql);
+
+                if(time % 17 >= 14){
+                    d0s0gteq14++;
+                }
             }
 
             statement.execute("flush");
 
             //insert data (time from 1200-1499)
             for(long time = 1200; time < 1500; time++){
-                if(time % 2 == 0){
-                    continue;
-                }
                 String sql = null;
-                if(time % 5 == 0){
+                if(time % 2 == 0){
                     sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 17);
                     statement.execute(sql);
                     sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 29);
                     statement.execute(sql);
+                    if(time % 17 >= 14){
+                        d0s0gteq14++;
+                    }
                 }
-                sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 31);
-                statement.execute(sql);
-                sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[(int)time % 5]);
-                statement.execute(sql);
-            }
-
-            //insert data (time from 100-199)
-            for(long time = 100; time < 200; time++){
-                if(time % 2 == 0){
-                    continue;
-                }
-                String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 17);
-                statement.execute(sql);
-                sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 29);
-                statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 31);
                 statement.execute(sql);
                 sql = String.format("insert into root.vehicle.d0(timestamp,s3) values(%s,'%s')", time, stringValue[(int)time % 5]);
@@ -210,4 +175,84 @@ public class IoTDBQueryByTimestampsReaderTest {
             }
         }
     }
+
+
+    private void TsFilesReaderWithoutFilterTest() throws IOException, FileNodeManagerException {
+        String sql = "select * from root";
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
+        QueryExpression queryExpression = QueryExpression.create();
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s2"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s3"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s4"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
+        queryExpression.setExpression(null);
+
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
+
+        int cnt = 0;
+        while (queryDataSet.hasNext()){
+            RowRecord rowRecord = queryDataSet.next();
+            System.out.println("===" + rowRecord.toString());
+            cnt++;
+        }
+        assertEquals(1000, cnt);
+
+    }
+
+    private void TsFilesReaderWithValueFilterTest() throws IOException, FileNodeManagerException {
+        String sql = "select * from root where root.vehicle.d0.s0 >=14";
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
+        QueryExpression queryExpression = QueryExpression.create();
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s2"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s3"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d0.s4"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
+        queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
+
+        Path p = new Path("root.vehicle.d0.s0");
+        SingleSeriesExpression seriesFilter = new SingleSeriesExpression(p, ValueFilter.gtEq(14));
+        queryExpression.setExpression(seriesFilter);
+
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
+
+        int cnt = 0;
+        while (queryDataSet.hasNext()){
+            RowRecord rowRecord = queryDataSet.next();
+            System.out.println("TsFilesReaderWithValueFilterTest===" + rowRecord.toString());
+            cnt++;
+        }
+        assertEquals(d0s0gteq14, cnt);
+    }
+
+    private void TsFilesReaderWithTimeFilterTest() throws IOException, FileNodeManagerException {
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
+        QueryExpression queryExpression = QueryExpression.create();
+        Path d0s0 = new Path("root.vehicle.d0.s0");
+        Path d1s0 = new Path("root.vehicle.d1.s0");
+        Path d1s1 = new Path("root.vehicle.d1.s1");
+        queryExpression.addSelectedPath(d0s0);
+        queryExpression.addSelectedPath(d1s0);
+        queryExpression.addSelectedPath(d1s1);
+
+        GlobalTimeExpression globalTimeExpression = new GlobalTimeExpression(TimeFilter.gtEq((long) 800));
+        queryExpression.setExpression(globalTimeExpression);
+        QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
+
+        int cnt = 0;
+        while (queryDataSet.hasNext()){
+            RowRecord rowRecord = queryDataSet.next();
+            String strd0s0 = ""+rowRecord.getFields().get(0).getStringValue();
+            long time = rowRecord.getTimestamp();
+            System.out.println(time+"===" + rowRecord.toString());
+            assertEquals(""+time % 17,strd0s0);
+            cnt++;
+        }
+        assertEquals(350, cnt);
+    }
+
 }
