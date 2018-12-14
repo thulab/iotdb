@@ -16,7 +16,7 @@ public class OverflowSeriesImpl {
 	/**
 	 * The data of update and delete in memory for this time series.
 	 */
-	public IIntervalTreeOperator overflowIndex;
+	//public IIntervalTreeOperator overflowIndex;
 	private String measurementId;
 	private TSDataType dataType;
 	private Statistics<Long> statistics;
@@ -26,7 +26,7 @@ public class OverflowSeriesImpl {
 		this.measurementId = measurementId;
 		this.dataType = dataType;
 		statistics = new LongStatistics();
-		overflowIndex = new IntervalTreeOperation(dataType);
+		//overflowIndex = new IntervalTreeOperation(dataType);
 	}
 
 	public void insert(long time, byte[] value) {
@@ -34,28 +34,30 @@ public class OverflowSeriesImpl {
 	}
 
 	public void update(long startTime, long endTime, byte[] value) {
-		overflowIndex.update(startTime, endTime, value);
+		//overflowIndex.update(startTime, endTime, value);
 		statistics.updateStats(startTime, endTime);
 		valueCount++;
 	}
 
 	public void delete(long timestamp) {
-		overflowIndex.delete(timestamp);
+		//overflowIndex.delete(timestamp);
 		statistics.updateStats(timestamp, timestamp);
 		valueCount++;
 	}
 
 	public BatchData query(BatchData data) {
-		return overflowIndex.queryMemory(data);
+		//return overflowIndex.queryMemory(data);
+		return null;
 	}
 
 	public long getSize() {
-		return overflowIndex.calcMemSize();
+		//return overflowIndex.calcMemSize();
+		return 0;
 	}
 
-	public IIntervalTreeOperator getOverflowIndex() {
-		return overflowIndex;
-	}
+//	public IIntervalTreeOperator getOverflowIndex() {
+//		return overflowIndex;
+//	}
 
 	public String getMeasurementId() {
 		return measurementId;

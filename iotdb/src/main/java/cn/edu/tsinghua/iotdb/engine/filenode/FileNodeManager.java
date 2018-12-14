@@ -219,7 +219,7 @@ public class FileNodeManager implements IStatistic, IService {
 					fileNodeProcessor.writeUnlock();
 				}
 				// add index check sum
-				fileNodeProcessor.rebuildIndex();
+				// fileNodeProcessor.rebuildIndex();
 			}
 		} catch (PathErrorException | FileNodeManagerException | FileNodeProcessorException e) {
 			LOGGER.error("Restore all FileNode failed, the reason is {}", e.getMessage());
@@ -890,9 +890,9 @@ public class FileNodeManager implements IStatistic, IService {
 		if (fileNodeManagerStatus == FileNodeManagerStatus.NONE) {
 			fileNodeManagerStatus = FileNodeManagerStatus.CLOSE;
 			try {
-				Iterator<Entry<String, FileNodeProcessor>> processorIterator = processorMap.entrySet().iterator();
+				Iterator<Map.Entry<String, FileNodeProcessor>> processorIterator = processorMap.entrySet().iterator();
 				while (processorIterator.hasNext()) {
-					Entry<String, FileNodeProcessor> processorEntry = processorIterator.next();
+					Map.Entry<String, FileNodeProcessor> processorEntry = processorIterator.next();
 					try {
 						delete(processorEntry.getKey(), processorIterator);
 					} catch (FileNodeManagerException e) {
@@ -1064,6 +1064,6 @@ public class FileNodeManager implements IStatistic, IService {
                 fileNodeProcessor.getFileNodeProcessorStatus());
         fileNodeProcessor.fileNodeRecovery();
         // add index check sum
-        fileNodeProcessor.rebuildIndex();
+        //fileNodeProcessor.rebuildIndex();
     }
 }
