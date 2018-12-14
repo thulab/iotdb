@@ -1,15 +1,15 @@
 package cn.edu.tsinghua.iotdb.qp.plan;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
 import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.qp.utils.MemIntQpExecutor;
 import cn.edu.tsinghua.iotdb.qp.strategy.optimizer.ConcatPathOptimizer;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Before;
@@ -94,8 +94,8 @@ public class TestConcatOptimizer {
     public void testConcat3() throws QueryProcessorException, RecognitionException, ArgsErrorException, ProcessorException {
         String inputSQL = "select s1 from root.laptop.d1 where s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(inputSQL);
-        SeriesFilter seriesFilter = new SeriesFilter(new Path("root.laptop.d1.s1"), ValueFilter.lt(10));
-        assertEquals(seriesFilter.toString(), ((QueryPlan)plan).getExpression().toString());
+        SingleSeriesExpression seriesExpression = new SingleSeriesExpression(new Path("root.laptop.d1.s1"), ValueFilter.lt(10));
+        assertEquals(seriesExpression.toString(), ((QueryPlan)plan).getExpression().toString());
     }
 
 }

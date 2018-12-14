@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.qp.physical.crud;
 
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-//import cn.edu.tsinghua.iotdb.query.fill.IFill;
+import cn.edu.tsinghua.iotdb.queryV2.fill.IFill;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 public class FillQueryPlan extends QueryPlan{
 
     private long queryTime;
-//    private Map<TSDataType, IFill> fillType;
+    private Map<TSDataType, IFill> fillType;
 
     public FillQueryPlan() {
         super();
@@ -24,11 +24,11 @@ public class FillQueryPlan extends QueryPlan{
         this.queryTime = queryTime;
     }
 
-//    public Map<TSDataType, IFill> getFillType() {
-//        return fillType;
-//    }
+    public Map<TSDataType, IFill> getFillType() {
+        return fillType;
+    }
 
-//    public void setFillType(Map<TSDataType, IFill> fillType) {
-//        this.fillType = fillType;
-//    }
+    public void setFillType(Map<TSDataType, IFill> fillType) {
+        this.fillType = fillType;
+    }
 }

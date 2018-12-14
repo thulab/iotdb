@@ -18,7 +18,7 @@ import cn.edu.tsinghua.iotdb.sql.parse.ASTNode;
 import cn.edu.tsinghua.iotdb.sql.parse.ParseException;
 import cn.edu.tsinghua.iotdb.sql.parse.ParseUtils;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-import cn.edu.tsinghua.tsfile.read.support.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 import org.junit.Assert;
 import org.junit.Before;

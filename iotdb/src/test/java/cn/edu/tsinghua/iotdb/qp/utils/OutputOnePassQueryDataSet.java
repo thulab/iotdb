@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.qp.utils;
 
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
 
 /**
  * This getIndex data set is used for getIndex processing. getIndex processing merges a list of OnePassQueryDataSet

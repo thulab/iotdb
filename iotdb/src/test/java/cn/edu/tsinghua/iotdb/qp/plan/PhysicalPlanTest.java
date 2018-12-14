@@ -4,17 +4,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.AggregationPlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.FillQueryPlan;
+import cn.edu.tsinghua.iotdb.qp.physical.crud.GroupByPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
-import cn.edu.tsinghua.iotdb.query.fill.LinearFill;
-import cn.edu.tsinghua.iotdb.query.fill.PreviousFill;
+import cn.edu.tsinghua.iotdb.queryV2.fill.LinearFill;
+import cn.edu.tsinghua.iotdb.queryV2.fill.PreviousFill;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.read.expression.IExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.BinaryExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeExpression;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
-import cn.edu.tsinghua.tsfile.read.filter.expression.QueryFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.GlobalTimeFilter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.QueryFilterFactory;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +31,6 @@ import cn.edu.tsinghua.iotdb.qp.physical.sys.MetadataPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.PropertyPlan;
 import cn.edu.tsinghua.iotdb.qp.utils.MemIntQpExecutor;
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
@@ -104,7 +106,7 @@ public class PhysicalPlanTest {
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        AggregationPlan mergePlan = (AggregationPlan) plan;
         assertEquals("sum", mergePlan.getAggregations().get(0));
     }
 
@@ -118,7 +120,7 @@ public class PhysicalPlanTest {
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        GroupByPlan mergePlan = (GroupByPlan) plan;
         assertEquals(44, mergePlan.getOrigin());
     }
 
@@ -132,7 +134,7 @@ public class PhysicalPlanTest {
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        GroupByPlan mergePlan = (GroupByPlan) plan;
         assertEquals(111, mergePlan.getUnit());
     }
 
@@ -143,7 +145,7 @@ public class PhysicalPlanTest {
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        FillQueryPlan mergePlan = (FillQueryPlan) plan;
         assertEquals(5000, mergePlan.getQueryTime());
         assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
         assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
@@ -157,7 +159,7 @@ public class PhysicalPlanTest {
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
         if (!plan.isQuery())
             fail();
-        MultiQueryPlan mergePlan = (MultiQueryPlan) plan;
+        FillQueryPlan mergePlan = (FillQueryPlan) plan;
         assertEquals(5000, mergePlan.getQueryTime());
         assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
         assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
@@ -191,8 +193,8 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 5000";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
-        QueryFilter expect = new GlobalTimeFilter(TimeFilter.gt(5000L));
+        IExpression queryFilter = ((QueryPlan) plan).getExpression();
+        IExpression expect = new GlobalTimeExpression(TimeFilter.gt(5000L));
         assertEquals(expect.toString(), queryFilter.toString());
     }
 
@@ -201,8 +203,8 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
-        QueryFilter expect = new GlobalTimeFilter(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)));
+        IExpression queryFilter = ((QueryPlan) plan).getExpression();
+        IExpression expect = new GlobalTimeExpression(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)));
         assertEquals(expect.toString(), queryFilter.toString());
 
     }
@@ -212,9 +214,9 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100 or s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
-        QueryFilter expect = new GlobalTimeFilter(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)));
-        expect = QueryFilterFactory.or(expect, new SeriesFilter<>(new Path("root.vehicle.d1.s1"), ValueFilter.lt(10)));
+        IExpression queryFilter = ((QueryPlan) plan).getExpression();
+        IExpression expect = new GlobalTimeExpression(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)));
+        expect = BinaryExpression.or(expect, new SingleSeriesExpression(new Path("root.vehicle.d1.s1"), ValueFilter.lt(10)));
         assertEquals(expect.toString(), queryFilter.toString());
     }
 
@@ -223,8 +225,8 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100 and s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
-        QueryFilter expect = new SeriesFilter<>(new Path("root.vehicle.d1.s1"), FilterFactory.and(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)), ValueFilter.lt(10)));
+        IExpression queryFilter = ((QueryPlan) plan).getExpression();
+        IExpression expect = new SingleSeriesExpression(new Path("root.vehicle.d1.s1"), FilterFactory.and(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)), ValueFilter.lt(10)));
         assertEquals(expect.toString(), queryFilter.toString());
 
         Path path = new Path("root.vehicle.d1.s1");
@@ -236,8 +238,8 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE s1 > 20 or s1 < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
-        QueryFilter expect = new SeriesFilter<>(new Path("root.vehicle.d1.s1"), FilterFactory.or(ValueFilter.gt(20), ValueFilter.lt(10)));
+        IExpression queryFilter = ((QueryPlan) plan).getExpression();
+        IExpression expect = new SingleSeriesExpression(new Path("root.vehicle.d1.s1"), FilterFactory.or(ValueFilter.gt(20), ValueFilter.lt(10)));
         assertEquals(expect.toString(), queryFilter.toString());
 
     }
@@ -247,8 +249,8 @@ public class PhysicalPlanTest {
         String sqlStr =
                 "SELECT s1 FROM root.vehicle.d1 WHERE time > 20 or time < 10";
         PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-        QueryFilter queryFilter = ((QueryPlan) plan).getExpression();
-        QueryFilter expect = new GlobalTimeFilter(FilterFactory.or(TimeFilter.gt(20L), TimeFilter.lt(10L)));
+        IExpression queryFilter = ((QueryPlan) plan).getExpression();
+        IExpression expect = new GlobalTimeExpression(FilterFactory.or(TimeFilter.gt(20L), TimeFilter.lt(10L)));
         assertEquals(expect.toString(), queryFilter.toString());
 
     }

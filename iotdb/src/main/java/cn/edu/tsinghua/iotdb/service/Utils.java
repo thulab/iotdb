@@ -10,15 +10,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
+import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.service.rpc.thrift.TSColumnSchema;
 import cn.edu.tsinghua.service.rpc.thrift.TSDataValue;
 import cn.edu.tsinghua.service.rpc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.service.rpc.thrift.TSRowRecord;
-import cn.edu.tsinghua.tsfile.common.exception.UnSupportedDataTypeException;
+import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TsPrimitiveType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.query.QueryDataSet;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 
 /**
  * Utils to convert between thrift format and TsFile format
