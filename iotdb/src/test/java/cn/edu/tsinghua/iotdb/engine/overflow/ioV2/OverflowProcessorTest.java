@@ -5,9 +5,11 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -76,7 +78,6 @@ public class OverflowProcessorTest {
 				overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getDataType());
 		DynamicOneColumnData updateMem = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries()
 				.getOverflowUpdateInMem();
-		 time :[2,10] [20,30] value: int [10,10] int[20,20]
 		assertEquals(2, updateMem.getTime(0));
 		assertEquals(10, updateMem.getTime(1));
 		assertEquals(20, updateMem.getTime(2));

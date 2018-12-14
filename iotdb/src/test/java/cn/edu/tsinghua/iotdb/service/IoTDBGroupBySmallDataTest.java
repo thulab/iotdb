@@ -19,16 +19,11 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import java.io.File;
-import java.sql.*;
 
 import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 /**
