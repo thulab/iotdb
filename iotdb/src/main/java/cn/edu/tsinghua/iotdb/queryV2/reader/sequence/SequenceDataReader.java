@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.queryV2.reader.sequence;
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithoutFilter;
-import cn.edu.tsinghua.iotdb.read.IReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;

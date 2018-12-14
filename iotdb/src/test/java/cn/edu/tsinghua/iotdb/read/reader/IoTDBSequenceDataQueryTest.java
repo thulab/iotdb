@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.EngineQueryExecutor;
+import cn.edu.tsinghua.iotdb.queryV2.executor.EngineQueryRouter;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -179,7 +179,7 @@ public class IoTDBSequenceDataQueryTest {
 
     private void TsFilesReaderWithoutFilterTest() throws IOException, FileNodeManagerException {
         String sql = "select * from root";
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
@@ -204,7 +204,7 @@ public class IoTDBSequenceDataQueryTest {
 
     private void TsFilesReaderWithValueFilterTest() throws IOException, FileNodeManagerException {
         String sql = "select * from root where root.vehicle.d0.s0 >=14";
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
@@ -230,7 +230,7 @@ public class IoTDBSequenceDataQueryTest {
     }
 
     private void TsFilesReaderWithTimeFilterTest() throws IOException, FileNodeManagerException {
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         Path d0s0 = new Path("root.vehicle.d0.s0");
         Path d1s0 = new Path("root.vehicle.d1.s0");

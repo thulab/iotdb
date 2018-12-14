@@ -1,9 +1,7 @@
-package cn.edu.tsinghua.iotdb.read;
+package cn.edu.tsinghua.iotdb.queryV2.executor;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
-import cn.edu.tsinghua.iotdb.queryV2.executor.EngineExecutorWithTimeGenerator;
-import cn.edu.tsinghua.iotdb.queryV2.executor.EngineExecutorWithoutTimeGenerator;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
@@ -16,9 +14,9 @@ import java.io.IOException;
 
 import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
 
-public class EngineQueryExecutor {
+public class EngineQueryRouter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);
 
     public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
         if (queryExpression.hasQueryFilter()) {

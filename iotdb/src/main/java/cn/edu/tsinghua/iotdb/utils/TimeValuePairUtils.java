@@ -1,11 +1,9 @@
-package cn.edu.tsinghua.iotdb.read;
+package cn.edu.tsinghua.iotdb.utils;
 
-import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 
-public class Utils {
+public class TimeValuePairUtils {
 
     public static TimeValuePair getCurrentTimeValuePair(BatchData data) {
         switch (data.getDataType()) {

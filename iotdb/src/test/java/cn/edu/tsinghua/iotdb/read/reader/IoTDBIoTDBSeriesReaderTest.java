@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.read.reader;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.read.EngineQueryExecutor;
+import cn.edu.tsinghua.iotdb.queryV2.executor.EngineQueryRouter;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.service.TestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -124,7 +124,7 @@ public class IoTDBIoTDBSeriesReaderTest {
         String selectSql = "select * from root";
         System.out.println("selectAllTest===" + selectSql);
 
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
         queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
@@ -153,7 +153,7 @@ public class IoTDBIoTDBSeriesReaderTest {
         String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
         System.out.println("selectOneSeriesWithValueFilterTest===" + selectSql);
 
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         Path p = new Path("root.vehicle.d0.s0");
         queryExpression.addSelectedPath(p);
@@ -180,7 +180,7 @@ public class IoTDBIoTDBSeriesReaderTest {
 
         // [3000, 13599] , [13700,23999]
 
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         Path p = new Path("root.vehicle.d0.s0");
         queryExpression.addSelectedPath(p);
@@ -202,7 +202,7 @@ public class IoTDBIoTDBSeriesReaderTest {
 
     private void crossSeriesReadUpdateTest() throws IOException, FileNodeManagerException {
         System.out.println("select s1 from root.vehicle.d0 where s0 < 111");
-        EngineQueryExecutor engineExecutor = new EngineQueryExecutor();
+        EngineQueryRouter engineExecutor = new EngineQueryRouter();
         QueryExpression queryExpression = QueryExpression.create();
         Path p0 = new Path("root.vehicle.d0.s0");
         Path p1 = new Path("root.vehicle.d0.s1");

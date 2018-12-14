@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.timegenerator;
 
-import cn.edu.tsinghua.iotdb.read.IReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.NodeType;

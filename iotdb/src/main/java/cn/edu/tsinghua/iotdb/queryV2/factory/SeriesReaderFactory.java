@@ -8,7 +8,7 @@ import cn.edu.tsinghua.iotdb.queryV2.reader.mem.MemChunkReaderWithoutFilter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.reader.sequence.SealedTsFilesReader;
 import cn.edu.tsinghua.iotdb.queryV2.reader.unsequence.EngineChunkReader;
-import cn.edu.tsinghua.iotdb.read.IReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;

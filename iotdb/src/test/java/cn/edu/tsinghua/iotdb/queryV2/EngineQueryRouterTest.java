@@ -6,6 +6,7 @@ import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob.SelectQueryJob;
 import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJobFuture;
 import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJobStatus;
 import cn.edu.tsinghua.iotdb.queryV2.job.QueryEngineImpl;
+import cn.edu.tsinghua.iotdb.queryV2.job.QueryJobDispatcher;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.junit.Assert;
@@ -19,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class EngineQueryExecutorTest {
+public class EngineQueryRouterTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(EngineQueryExecutorTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(EngineQueryRouterTest.class);
 
   private QueryEngineImpl queryEngine;
 

@@ -10,7 +10,7 @@ import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.queryV2.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.read.QueryDataSourceManager;
+import cn.edu.tsinghua.iotdb.queryV2.control.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.queryV2.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;

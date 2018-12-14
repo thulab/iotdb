@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
-import cn.edu.tsinghua.iotdb.read.IReader;
-import cn.edu.tsinghua.iotdb.read.Utils;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
@@ -95,7 +95,7 @@ public class SealedTsFilesReader implements IReader {
 
     @Override
     public TimeValuePair next() throws IOException {
-        TimeValuePair timeValuePair = Utils.getCurrentTimeValuePair(data);
+        TimeValuePair timeValuePair = TimeValuePairUtils.getCurrentTimeValuePair(data);
         data.next();
         hasCachedData = false;
         return timeValuePair;
