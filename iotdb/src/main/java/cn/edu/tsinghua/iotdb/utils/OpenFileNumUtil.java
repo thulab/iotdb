@@ -16,7 +16,7 @@ import java.util.EnumMap;
  * @author liurui
  */
 
-// Notice : methods in this class may not be accurate because of limited user authority.
+// Notice : statistics in this class may not be accurate because of limited user authority.
 public class OpenFileNumUtil {
     private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
     private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
