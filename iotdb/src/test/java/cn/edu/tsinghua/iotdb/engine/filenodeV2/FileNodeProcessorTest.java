@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,13 +23,11 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
 import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 
@@ -109,13 +108,14 @@ public class FileNodeProcessorTest {
 				assertEquals(0, overflowSeriesDataSource.getOverflowInsertFileList().get(0)
 						.getChunkMetaDataList().size());
 				assertEquals(true, overflowSeriesDataSource.getRawChunk().isEmpty());
-				UpdateDeleteInfoOfOneSeries deleteInfoOfOneSeries = overflowSeriesDataSource
+				// deprecate update and delete
+				/*UpdateDeleteInfoOfOneSeries deleteInfoOfOneSeries = overflowSeriesDataSource
 						.getUpdateDeleteInfoOfOneSeries();
 				assertEquals(dataType, deleteInfoOfOneSeries.getDataType());
 				assertEquals(null, deleteInfoOfOneSeries.getOverflowUpdateInMem());
 				assertEquals(1, deleteInfoOfOneSeries.getOverflowUpdateFileList().size());
 				assertEquals(0, deleteInfoOfOneSeries.getOverflowUpdateFileList().get(0)
-						.getTimeSeriesChunkMetaDataList().size());
+						.getTimeSeriesChunkMetaDataList().size());*/
 				// bufferwrite data | sorted tsfile data
 				GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeqDataSource();
 				assertEquals(processorName + "." + measurementId,
