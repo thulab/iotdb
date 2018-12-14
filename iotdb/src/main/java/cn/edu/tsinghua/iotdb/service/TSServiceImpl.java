@@ -127,10 +127,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public TSCloseOperationResp closeOperation(TSCloseOperationReq req) throws TException {
 		LOGGER.info("{}: receive close operation",TsFileDBConstant.GLOBAL_DB_NAME);
 		try {
-			ReadCacheManager.getInstance().unlockForOneRequest();
+			//ReadCacheManager.getInstance().unlockForOneRequest();
 			QueryJobManager.getInstance().closeAllJobForOneQuery();
 			clearAllStatusForCurrentRequest();
-		} catch (ProcessorException | IOException e) {
+		} catch (IOException e) {
 			LOGGER.error("Error in closeOperation : {}", e.getMessage());
 		}
 		return new TSCloseOperationResp(new TS_Status(TS_StatusCode.SUCCESS_STATUS));
