@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.utils;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
+import cn.edu.tsinghua.tsfile.utils.Binary;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.*;
@@ -50,7 +50,7 @@ public class MemUtils {
 	public static long getTsRecordMemBufferwrite(TSRecord record) {
 		long memUsed = 8; // time
 		memUsed += 8; // deltaObjectId reference
-		memUsed += getStringMem(record.deltaObjectId);
+		memUsed += getStringMem(record.deviceId);
 		for (DataPoint dataPoint : record.dataPointList) {
 			memUsed += 8; // dataPoint reference
 			memUsed += getDataPointMem(dataPoint);
@@ -92,8 +92,6 @@ public class MemUtils {
 			memUsed += 8;
 		} else if (dataPoint instanceof LongDataPoint) {
 			memUsed += 8;
-		} else if (dataPoint instanceof EnumDataPoint) {
-			memUsed += 4;
 		} else if (dataPoint instanceof StringDataPoint) {
 			StringDataPoint stringDataPoint = (StringDataPoint) dataPoint;
 			memUsed += 8 + 20; // array reference and array overhead

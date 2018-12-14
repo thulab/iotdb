@@ -12,6 +12,7 @@ import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
@@ -92,7 +93,7 @@ public class SeriesReaderFactory {
         int priorityValue = 1;
 
         for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList()) {
-            TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(overflowInsertFile.getFilePath(), false);
+            TsFileSequenceReader tsFileSequenceReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
             ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
 
             for (ChunkMetaData chunkMetaData : overflowInsertFile.getChunkMetaDataList()) {
@@ -149,7 +150,7 @@ public class SeriesReaderFactory {
     }
 
     private IReader genSealedTsFileSeriesReader(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
-        TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(filePath, true);
+        TsFileSequenceReader tsFileSequenceReader = new UnClosedTsFileReader(filePath);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(singleSeriesExpression.getSeriesPath());

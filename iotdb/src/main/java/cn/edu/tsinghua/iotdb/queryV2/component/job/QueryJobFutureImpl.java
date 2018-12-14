@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.queryV2.component.job;
 
-import cn.edu.tsinghua.iotdb.queryV2.QueryEngine;
-import cn.edu.tsinghua.iotdb.queryV2.job.QueryEngineImpl;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +10,11 @@ public class QueryJobFutureImpl implements QueryJobFuture {
     private static final Logger logger = LoggerFactory.getLogger(QueryJobFutureImpl.class);
     private QueryJob queryJob;
 
-    private QueryEngine queryEngine;
+    //private QueryEngine queryEngine;
 
     public QueryJobFutureImpl(QueryJob queryJob) {
         this.queryJob = queryJob;
-        this.queryEngine = QueryEngineImpl.getInstance();
+        //this.queryEngine = QueryEngineImpl.getInstance();
     }
 
     @Override
@@ -47,7 +45,8 @@ public class QueryJobFutureImpl implements QueryJobFuture {
 
     @Override
     public QueryDataSet retrieveQueryDataSet() {
-        return queryEngine.retrieveQueryDataSet(queryJob);
+        return null;
+        //return queryEngine.retrieveQueryDataSet(queryJob);
     }
 
     private boolean queryJobIsDone(QueryJob queryJob) {

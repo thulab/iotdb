@@ -167,10 +167,6 @@ public class MManager {
             linkMNodeToPTree(args[1], args[2]);
         } else if (args[0].equals(MetadataOperationType.UNLINK_MNODE_FROM_PTREE)) {
             unlinkMNodeFromPTree(args[1], args[2]);
-        } else if (args[0].equals(MetadataOperationType.ADD_INDEX_TO_PATH)) {
-            addIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
-        } else if (args[0].equals(MetadataOperationType.DELETE_INDEX_FROM_PATH)) {
-            deleteIndexForOneTimeseries(args[1], IndexType.valueOf(args[2]));
         }
     }
 
@@ -841,118 +837,6 @@ public class MManager {
             return mGraph.toString();
         } finally {
             lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Get all timeseries seriesPath which have specified index
-     *
-     * @param path
-     * @return
-     * @throws PathErrorException
-     */
-    public List<String> getAllIndexPaths(String path, IndexType indexType) throws PathErrorException {
-        lock.readLock().lock();
-        try {
-            List<String> ret = new ArrayList<>();
-            ArrayList<String> paths = getPaths(path);
-            for (String timesereis : paths) {
-                if (getSchemaForOnePath(timesereis).isHasIndex(indexType)) {
-                    ret.add(timesereis);
-                }
-            }
-            return ret;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Get all timeseries seriesPath which have any no-real-time index
-     *
-     * @param path
-     * @return
-     * @throws PathErrorException
-     */
-    public Map<String, Set<IndexType>> getAllIndexPaths(String path) throws PathErrorException {
-        lock.readLock().lock();
-        try {
-            Map<String, Set<IndexType>> ret = new HashMap<>();
-            ArrayList<String> paths = getPaths(path);
-            for (String timeseries : paths) {
-                Set<IndexType> indexes = getSchemaForOnePath(timeseries).getIndexSet();
-                if (!indexes.isEmpty()) {
-                    ret.put(timeseries, indexes);
-                }
-            }
-            return ret;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * check the timeseries has index or not
-     *
-     * @param path
-     * @param indexType
-     * @return
-     * @throws PathErrorException
-     */
-    public boolean checkPathIndex(String path, IndexType indexType) throws PathErrorException {
-        lock.readLock().lock();
-        try {
-            if (getSchemaForOnePath(path).isHasIndex(indexType)) {
-                return true;
-            } else {
-                return false;
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * add index for one timeseries
-     *
-     * @param path
-     * @throws PathErrorException
-     * @throws IOException
-     */
-    public void addIndexForOneTimeseries(String path, IndexType indexType) throws PathErrorException, IOException {
-        lock.writeLock().lock();
-        try {
-            getSchemaForOnePath(path).setHasIndex(indexType);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.ADD_INDEX_TO_PATH + "," + path + "," + indexType);
-                logWriter.newLine();
-                logWriter.flush();
-            }
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * drop index for one timeseries
-     *
-     * @param path
-     * @throws PathErrorException
-     * @throws IOException
-     */
-    public void deleteIndexForOneTimeseries(String path, IndexType indexType) throws PathErrorException, IOException {
-        lock.writeLock().lock();
-        try {
-            getSchemaForOnePath(path).removeIndex(indexType);
-            if (writeToLog) {
-                initLogStream();
-                logWriter.write(MetadataOperationType.DELETE_INDEX_FROM_PATH + "," + path + "," + indexType);
-                logWriter.newLine();
-                logWriter.flush();
-            }
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 
