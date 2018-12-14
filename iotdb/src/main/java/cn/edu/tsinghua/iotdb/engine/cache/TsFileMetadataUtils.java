@@ -3,8 +3,12 @@ package cn.edu.tsinghua.iotdb.engine.cache;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.read.reader.DefaultTsFileInput;
+import cn.edu.tsinghua.tsfile.read.reader.TsFileInput;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,18 +29,17 @@ public class TsFileMetadataUtils {
 	private static final int MAGIC_LENGTH = TsFileIOWriter.magicStringBytes.length;
 
 	public static TsFileMetaData getTsFileMetaData(String filePath) throws IOException {
-		ITsRandomAccessFileReader randomAccessFileReader = null;
+		TsFileInput tsFileInput = null;
 		try {
-			randomAccessFileReader = new TsRandomAccessLocalFileReader(filePath);
-			long l = randomAccessFileReader.length();
-			randomAccessFileReader.seek(l - MAGIC_LENGTH - FOOTER_LENGTH);
-			int fileMetaDataLength = randomAccessFileReader.readInt();
-			randomAccessFileReader.seek(l - MAGIC_LENGTH - FOOTER_LENGTH - fileMetaDataLength);
+			tsFileInput = new DefaultTsFileInput(Paths.get(filePath));
+			long l = tsFileInput.size();
+			tsFileInput.position(l - MAGIC_LENGTH - FOOTER_LENGTH);
+			int fileMetaDataLength = tsFileInput.readInt();
+			tsFileInput.position(l - MAGIC_LENGTH - FOOTER_LENGTH - fileMetaDataLength);
 			byte[] buf = new byte[fileMetaDataLength];
-			randomAccessFileReader.read(buf, 0, buf.length);
+			tsFileInput.read(buf, 0, buf.length);
 			ByteArrayInputStream bais = new ByteArrayInputStream(buf);
-			TsFileMetaData fileMetaData = new TsFileMetaDataConverter()
-					.toTsFileMetadata(ReadWriteThriftFormatUtils.readFileMetaData(bais));
+			TsFileMetaData fileMetaData = TsFileMetaData.deserializeFrom(bais);
 			return fileMetaData;
 		} catch (FileNotFoundException e) {
 			LOGGER.error("Can't open the tsfile {}, {}", filePath, e.getMessage());
@@ -45,9 +48,9 @@ public class TsFileMetadataUtils {
 			LOGGER.error("Read the tsfile {} error, {}", filePath, e.getMessage());
 			throw e;
 		} finally {
-			if (randomAccessFileReader != null) {
+			if (tsFileInput != null) {
 				try {
-					randomAccessFileReader.close();
+					tsFileInput.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -57,18 +60,20 @@ public class TsFileMetadataUtils {
 
 	public static TsDeviceMetadata getTsRowGroupBlockMetaData(String filePath, String deltaObjectId,
 															  TsFileMetaData fileMetaData) throws IOException {
-		if (!fileMetaData.containsDeltaObject(deltaObjectId)) {
+		if (!fileMetaData.getDeviceMap().containsKey(deltaObjectId)) {
 			return null;
 		} else {
-			ITsRandomAccessFileReader randomAccessFileReader = null;
+			TsFileInput tsFileInput = null;
 			try {
-				randomAccessFileReader = new TsRandomAccessLocalFileReader(filePath);
-				TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-				long offset = fileMetaData.getDeltaObject(deltaObjectId).offset;
-				int size = fileMetaData.getDeltaObject(deltaObjectId).metadataBlockSize;
-				blockMeta.convertToTSF(
-						ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(randomAccessFileReader, offset, size));
-				return blockMeta;
+				tsFileInput = new DefaultTsFileInput(Paths.get(filePath));
+				long offset = fileMetaData.getDeviceMap().get(deltaObjectId).getOffset();
+				tsFileInput.position(offset);
+				int size = fileMetaData.getDeviceMap().get(deltaObjectId).getLen();
+				byte[] buf = new byte[size];
+				tsFileInput.read(buf, 0, buf.length);
+				ByteArrayInputStream bais = new ByteArrayInputStream(buf);
+				TsDeviceMetadata tsDeviceMetadata = TsDeviceMetadata.deserializeFrom(bais);
+				return tsDeviceMetadata;
 			} catch (FileNotFoundException e) {
 				LOGGER.error("Can't open the tsfile {}, {}", filePath, e.getMessage());
 				throw new IOException(e);
@@ -76,9 +81,9 @@ public class TsFileMetadataUtils {
 				LOGGER.error("Read the tsfile {} error, {}", filePath, e.getMessage());
 				throw e;
 			} finally {
-				if (randomAccessFileReader != null) {
+				if (tsFileInput != null) {
 					try {
-						randomAccessFileReader.close();
+						tsFileInput.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
