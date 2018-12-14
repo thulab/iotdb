@@ -21,16 +21,11 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
-import cn.edu.tsinghua.iotdb.engine.querycontext.*;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
@@ -41,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -248,12 +244,13 @@ public class OverflowProcessor extends Processor {
 				overflowInsertFileList.add(0, new OverflowInsertFile(insertInDiskMerge.left, insertInDiskMerge.right));
 			}
 			// query update/delete data in memory and overflowFiles
+			// Deprecated the update and delete
 			UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
 			// memory
 			DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
 			updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
-			List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
 			// work file
+			List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
 			Pair<String, List<ChunkMetaData>> updateInDiskWork = queryWorkDataInOverflowUpdate(deltaObjectId,
 					measurementId, dataType);
 			if (updateInDiskWork.left != null) {
@@ -267,10 +264,11 @@ public class OverflowProcessor extends Processor {
 				overflowUpdateFileList.add(0,
 						new OverflowUpdateDeleteFile(updateInDiskMerge.left, updateInDiskMerge.right));
 			}
+			// Deprecated the update and delete
 			updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(overflowUpdateFileList);
 			updateDeleteInfoOfOneSeries.setDataType(dataType);
 			return new OverflowSeriesDataSource(new Path(deltaObjectId + "." + measurementId), dataType,
-					overflowInsertFileList, insertInMem, updateDeleteInfoOfOneSeries);
+					overflowInsertFileList, insertInMem);
 		} finally {
 			queryFlushLock.unlock();
 		}
@@ -323,9 +321,9 @@ public class OverflowProcessor extends Processor {
 	 * @return the seriesPath of overflowFile, List of TimeSeriesChunkMetaData for the
 	 *         special time-series.
 	 */
-	private Pair<String, List<TimeSeriesChunkMetaData>> queryWorkDataInOverflowUpdate(String deltaObjectId,
+	private Pair<String, List<ChunkMetaData>> queryWorkDataInOverflowUpdate(String deltaObjectId,
 			String measurementId, TSDataType dataType) {
-		Pair<String, List<TimeSeriesChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
+		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
 				workResource.getUpdateDeleteFilePath(),
 				workResource.getUpdateDeleteMetadatas(deltaObjectId, measurementId, dataType));
 		return pair;

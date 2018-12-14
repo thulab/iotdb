@@ -23,6 +23,7 @@ import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.chunk.ChunkWriterImpl;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -1068,7 +1069,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		//
 		// merge index begin
 		//
-		mergeIndex();
+		//mergeIndex();
 		//
 		// merge index end
 		//
@@ -1129,7 +1130,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return result;
 	}
 
-	private List<DataFileInfo> getDataFileInfoForIndex(Path path, List<IntervalFileNode> sourceFileNodes) {
+	/*private List<DataFileInfo> getDataFileInfoForIndex(Path path, List<IntervalFileNode> sourceFileNodes) {
 		String deltaObjectId = path.getDeltaObjectToString();
 		List<DataFileInfo> dataFileInfos = new ArrayList<>();
 		for (IntervalFileNode intervalFileNode : sourceFileNodes) {
@@ -1142,9 +1143,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 		}
 		return dataFileInfos;
-	}
+	}*/
 
-	private void mergeIndex() throws FileNodeProcessorException {
+	/*private void mergeIndex() throws FileNodeProcessorException {
 		try {
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
@@ -1169,9 +1170,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.error("Failed to find all fileList to be merged. Because" + e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
 		}
-	}
+	}*/
 
-	private void switchMergeIndex() throws FileNodeProcessorException {
+	/*private void switchMergeIndex() throws FileNodeProcessorException {
 		try {
 			Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 			if (!allIndexSeries.isEmpty()) {
@@ -1196,7 +1197,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			LOGGER.error("Failed to find all fileList to be mergeSwitch because of" + e.getMessage());
 			throw new FileNodeProcessorException(e.getMessage());
 		}
-	}
+	}*/
 
 	private void switchMergeToWaitingv2(List<IntervalFileNode> backupIntervalFiles, boolean needEmpty)
 			throws FileNodeProcessorException {
@@ -1339,7 +1340,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				}
 
 				// merge switch
-				switchMergeIndex();
+				//switchMergeIndex();
 
 				for (IntervalFileNode fileNode : newFileNodes) {
 					if (fileNode.overflowChangeType != OverflowChangeType.NO_CHANGE) {
@@ -1472,7 +1473,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		return fileName;
 	}
 
-	private int writeOneSeries(String deltaObjectId, String measurement, SeriesWriterImpl seriesWriterImpl,
+	private int writeOneSeries(String deltaObjectId, String measurement, ChunkWriterImpl seriesWriterImpl,
 			TSDataType dataType, SeriesReader seriesReader, Map<String, Long> startTimeMap,
 			Map<String, Long> endTimeMap, TimeValuePair timeValuePair) throws IOException {
 		int count = 0;
@@ -1728,7 +1729,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				/**
 				 * add index for close
 				 */
-				Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
+				// deprecated
+				/*Map<String, Set<IndexType>> allIndexSeries = mManager.getAllIndexPaths(getProcessorName());
 
 				if (!allIndexSeries.isEmpty()) {
 					LOGGER.info(
@@ -1747,8 +1749,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 								IndexManager.getIndexInstance(indexType).build(path, dataFileInfo, null);
 						}
 					}
-				}
-			} catch (BufferWriteProcessorException | PathErrorException | IndexManagerException e) {
+				}*/
+			} catch (BufferWriteProcessorException e) {
 				e.printStackTrace();
 				throw new FileNodeProcessorException(e);
 			}
@@ -1843,10 +1845,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 	}
 
-	public void rebuildIndex() throws FileNodeProcessorException {
+	/*public void rebuildIndex() throws FileNodeProcessorException {
 		mergeIndex();
 		switchMergeIndex();
-	}
+	}*/
 
 	public String getFileNodeRestoreFilePath() {
 		return fileNodeRestoreFilePath;

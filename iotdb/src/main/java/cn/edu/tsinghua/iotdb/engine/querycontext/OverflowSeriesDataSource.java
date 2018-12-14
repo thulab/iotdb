@@ -17,18 +17,18 @@ public class OverflowSeriesDataSource {
     // unSeq mem-table
     private RawSeriesChunk rawChunk;
 
-    private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
+    //private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
     public OverflowSeriesDataSource(Path seriesPath) {
         this.seriesPath = seriesPath;
     }
 
-    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawChunk, UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
+    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawChunk){
         this.seriesPath = seriesPath;
         this.dataType = dataType;
         this.overflowInsertFileList = overflowInsertFileList;
         this.rawChunk = rawChunk;
-        this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
+        //this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
     }
 
     public List<OverflowInsertFile> getOverflowInsertFileList() {
@@ -39,13 +39,13 @@ public class OverflowSeriesDataSource {
         this.overflowInsertFileList = overflowInsertFileList;
     }
 
-    public UpdateDeleteInfoOfOneSeries getUpdateDeleteInfoOfOneSeries() {
-        return updateDeleteInfoOfOneSeries;
-    }
-
-    public void setUpdateDeleteInfoOfOneSeries(UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
-        this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
-    }
+//    public UpdateDeleteInfoOfOneSeries getUpdateDeleteInfoOfOneSeries() {
+//        return updateDeleteInfoOfOneSeries;
+//    }
+//
+//    public void setUpdateDeleteInfoOfOneSeries(UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
+//        this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
+//    }
 
     public RawSeriesChunk getRawChunk() {
         return rawChunk;
