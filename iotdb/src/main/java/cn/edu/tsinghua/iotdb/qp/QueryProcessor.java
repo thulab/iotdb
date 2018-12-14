@@ -32,7 +32,7 @@ import org.joda.time.DateTimeZone;
 public class QueryProcessor {
 
     private QueryProcessExecutor executor;
-    
+
     public QueryProcessor(QueryProcessExecutor executor) {
         this.executor = executor;
     }
@@ -43,12 +43,12 @@ public class QueryProcessor {
 
     public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr)
             throws QueryProcessorException, ArgsErrorException, ProcessorException {
-    		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+        TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
         return parseSQLToPhysicalPlan(sqlStr, config.timeZone);
     }
-    
+
     public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr, DateTimeZone timeZone)
-            throws QueryProcessorException, ArgsErrorException {
+            throws QueryProcessorException, ArgsErrorException, ProcessorException {
         ASTNode astNode = parseSQLToAST(sqlStr);
         Operator operator = parseASTToOperator(astNode, timeZone);
         operator = logicalOptimize(operator, executor);
@@ -63,7 +63,7 @@ public class QueryProcessor {
      * @param astNode - input ast tree
      * @return - RootOperator has four subclass:Query/Insert/Delete/Update/Author
      * @throws QueryProcessorException exception in converting sql to operator
-     * @throws ArgsErrorException 
+     * @throws ArgsErrorException
      */
     private RootOperator parseASTToOperator(ASTNode astNode, DateTimeZone timeZone) throws QueryProcessorException, ArgsErrorException {
         LogicalGenerator generator = new LogicalGenerator(timeZone);
