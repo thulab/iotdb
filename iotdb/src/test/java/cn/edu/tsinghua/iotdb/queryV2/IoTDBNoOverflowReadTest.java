@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query;
+package cn.edu.tsinghua.iotdb.queryV2;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
@@ -14,15 +14,6 @@ import java.sql.*;
 import static org.junit.Assert.fail;
 
 public class IoTDBNoOverflowReadTest {
-    private static final String TIMESTAMP_STR = "Time";
-    private final String d0s0 = "root.vehicle.d0.s0";
-    private final String d0s1 = "root.vehicle.d0.s1";
-    private final String d1s0 = "root.vehicle.d1.s0";
-
-    private final String d0s2 = "root.vehicle.d0.s2";
-    private final String d0s3 = "root.vehicle.d0.s3";
-    private final String d0s4 = "root.vehicle.d0.s4";
-    private final String d1s1 = "root.vehicle.d1.s1";
 
     private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
 
