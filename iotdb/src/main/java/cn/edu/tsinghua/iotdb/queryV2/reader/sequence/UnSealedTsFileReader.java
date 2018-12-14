@@ -1,10 +1,9 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
-import cn.edu.tsinghua.iotdb.read.IReader;
-import cn.edu.tsinghua.iotdb.read.Utils;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -54,7 +53,7 @@ public class UnSealedTsFileReader implements IReader {
 
     @Override
     public TimeValuePair next() {
-        TimeValuePair timeValuePair = Utils.getCurrentTimeValuePair(data);
+        TimeValuePair timeValuePair = TimeValuePairUtils.getCurrentTimeValuePair(data);
         data.next();
         return timeValuePair;
     }

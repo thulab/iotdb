@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.merge;
 
-import cn.edu.tsinghua.iotdb.read.IReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;

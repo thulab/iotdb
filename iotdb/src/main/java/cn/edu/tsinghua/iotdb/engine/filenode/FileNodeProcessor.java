@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import cn.edu.tsinghua.iotdb.read.IReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.utils.Pair;
@@ -70,23 +70,6 @@ import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.write.schema.JsonConverter;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
-import org.joda.time.DateTime;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 

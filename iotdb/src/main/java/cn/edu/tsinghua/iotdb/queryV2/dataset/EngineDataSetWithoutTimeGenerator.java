@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.dataset;
 
-import cn.edu.tsinghua.iotdb.read.IReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;

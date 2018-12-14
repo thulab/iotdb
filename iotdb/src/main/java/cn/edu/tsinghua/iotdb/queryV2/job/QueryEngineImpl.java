@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.job;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
-import cn.edu.tsinghua.iotdb.queryV2.QueryEngine;
-import cn.edu.tsinghua.iotdb.queryV2.QueryJobDispatcher;
 import cn.edu.tsinghua.iotdb.queryV2.component.executor.QueryJobExecutor;
 import cn.edu.tsinghua.iotdb.queryV2.component.job.*;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
@@ -19,7 +17,7 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
     private static final Logger logger = LoggerFactory.getLogger(QueryEngineImpl.class);
     private static final int PENDING_QUEUE_SIZE = 100000;
     private static final int THREAD_POOL_SIZE = 50;
-    private static final String THREAD_POOL_NAME = "EngineQueryExecutor";
+    private static final String THREAD_POOL_NAME = "EngineQueryRouter";
     private BlockingQueue<QueryJob> queryJobPendingQueue;
     private QueryJobDispatcher queryJobDispatcher;
     private ConcurrentHashMap<QueryJob, QueryDataSet> queryJobResultSet;

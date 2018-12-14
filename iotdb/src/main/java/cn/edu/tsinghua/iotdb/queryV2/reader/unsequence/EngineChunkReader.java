@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.unsequence;
 
-import cn.edu.tsinghua.iotdb.read.IReader;
-import cn.edu.tsinghua.iotdb.read.Utils;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.reader.chunk.ChunkReader;
@@ -31,7 +31,7 @@ public class EngineChunkReader implements IReader {
 
     @Override
     public TimeValuePair next() {
-        TimeValuePair timeValuePair = Utils.getCurrentTimeValuePair(data);
+        TimeValuePair timeValuePair = TimeValuePairUtils.getCurrentTimeValuePair(data);
         data.next();
         return timeValuePair;
     }

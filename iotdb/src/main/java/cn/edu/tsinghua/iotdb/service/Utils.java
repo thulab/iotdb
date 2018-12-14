@@ -21,7 +21,7 @@ import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 
 /**
- * Utils to convert between thrift format and TsFile format
+ * TimeValuePairUtils to convert between thrift format and TsFile format
  */
 public class Utils {
 

@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader;
 
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;

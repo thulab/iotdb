@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.read;
+package cn.edu.tsinghua.iotdb.queryV2.reader;
 
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
