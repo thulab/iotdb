@@ -29,6 +29,7 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
