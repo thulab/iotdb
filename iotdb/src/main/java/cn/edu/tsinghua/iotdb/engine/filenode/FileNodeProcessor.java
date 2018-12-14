@@ -23,6 +23,7 @@ import cn.edu.tsinghua.iotdb.read.IReader;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.chunk.ChunkBuffer;
 import cn.edu.tsinghua.tsfile.write.chunk.ChunkWriterImpl;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.joda.time.DateTime;
@@ -1441,11 +1442,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							startPos = fileIOWriter.getPos();
 						}
 						// init the serieswWriteImpl
-						MeasurementSchema desc = fileSchema.getMeasurementSchema(measurementId);
-						IPageWriter pageWriter = new PageWriterImpl(desc);
+						MeasurementSchema measurementSchema = fileSchema.getMeasurementSchema(measurementId);
+						ChunkBuffer pageWriter = new ChunkBuffer(measurementSchema);
 						int pageSizeThreshold = TsFileConf.pageSizeInByte;
-						SeriesWriterImpl seriesWriterImpl = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,
-								pageSizeThreshold);
+						ChunkWriterImpl seriesWriterImpl = new ChunkWriterImpl(measurementSchema, pageWriter, pageSizeThreshold);
 						// write the series data
 						recordCount += writeOneSeries(deltaObjectId, measurementId, seriesWriterImpl, dataType,
 								seriesReader, startTimeMap, endTimeMap, timeValuePair);
@@ -1474,7 +1474,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	}
 
 	private int writeOneSeries(String deltaObjectId, String measurement, ChunkWriterImpl seriesWriterImpl,
-			TSDataType dataType, SeriesReader seriesReader, Map<String, Long> startTimeMap,
+			TSDataType dataType, IReader seriesReader, Map<String, Long> startTimeMap,
 			Map<String, Long> endTimeMap, TimeValuePair timeValuePair) throws IOException {
 		int count = 0;
 		long startTime = -1;
