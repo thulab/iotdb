@@ -8,9 +8,9 @@ import cn.edu.tsinghua.service.rpc.thrift.TSIService;
 import cn.edu.tsinghua.service.rpc.thrift.TSOperationHandle;
 import cn.edu.tsinghua.service.rpc.thrift.TSQueryDataSet;
 import cn.edu.tsinghua.service.rpc.thrift.TS_SessionHandle;
+import cn.edu.tsinghua.tsfile.read.common.Field;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 
 import org.apache.thrift.TException;
 
@@ -1201,14 +1201,10 @@ public class TsfileQueryResultSet implements ResultSet {
 		}
 		int tmp = columnInfoMap.get(columnName);
 		int i = 0;
-		for(Entry<Path, TsPrimitiveType> entry : record.getFields().entrySet()){
+		for(Field field : record.getFields()){
 			i++;
 			if(i == tmp-1){
-				if(entry.getValue() != null){
-					return entry.getValue().getStringValue();
-				} else {
-					return null;
-				}
+				return field.isNull() ? null : field.getStringValue();
 			}
 		}
 		return null;

@@ -18,9 +18,9 @@ import cn.edu.tsinghua.service.rpc.thrift.TSRowRecord;
 import cn.edu.tsinghua.service.rpc.thrift.TS_Status;
 import cn.edu.tsinghua.service.rpc.thrift.TS_StatusCode;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.read.common.Field;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.datatype.RowRecord;
-import cn.edu.tsinghua.tsfile.read.datatype.TsPrimitiveType;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 
 public class UtilsTest {
 
@@ -130,7 +130,6 @@ public class UtilsTest {
 				}
 				values.add(value);
 			}
-			record.setKeys(keys);
 			record.setValues(values);
 			tsQueryDataSet.getRecords().add(record);
 		}
@@ -138,47 +137,44 @@ public class UtilsTest {
 		int index = 0;
 		for (RowRecord r : convertlist) {
 			assertEquals(input[index][0], r.getTimestamp());
-			LinkedHashMap<Path, TsPrimitiveType> fields = r.getFields();
+			List<Field> fields = r.getFields();
 			int j = 0;
-			for (Path p : fields.keySet()) {
-				String pString = p.getFullPath();
-				assertEquals(input[index][3 * j + 1], pString);
-//				System.out.println(String.format("%d--%d", index, j));
+			for(Field f: fields){
 				if (j == 0) {
 					if(input[index][3 * j + 3] == null){
-						assertEquals(input[index][3 * j + 3], fields.get(p));
+						assertTrue(f.isNull());
 					} else {
-						assertEquals(input[index][3 * j + 3], fields.get(p).getBoolean());
+						assertEquals(input[index][3 * j + 3], f.getBoolV());
 					}
 				} else if (j == 1) {
 					if(input[index][3 * j + 3] == null){
-						assertEquals(input[index][3 * j + 3], fields.get(p));
+						assertTrue(f.isNull());
 					} else {
-						assertEquals(input[index][3 * j + 3], fields.get(p).getInt());
+						assertEquals(input[index][3 * j + 3], f.getIntV());
 					}
 				} else if (j == 2) {
 					if(input[index][3 * j + 3] == null){
-						assertEquals(input[index][3 * j + 3], fields.get(p));
+						assertTrue(f.isNull());
 					} else {
-						assertEquals(input[index][3 * j + 3], fields.get(p).getLong());
+						assertEquals(input[index][3 * j + 3], f.getLongV());
 					}
 				} else if (j == 3) {
 					if(input[index][3 * j + 3] == null){
-						assertEquals(input[index][3 * j + 3], fields.get(p));
+						assertTrue(f.isNull());
 					} else {
-						assertEquals(input[index][3 * j + 3], fields.get(p).getFloat());
+						assertEquals(input[index][3 * j + 3], f.getFloatV());
 					}
 				} else if (j == 4) {
 					if(input[index][3 * j + 3] == null){
-						assertEquals(input[index][3 * j + 3], fields.get(p));
+						assertTrue(f.isNull());
 					} else {
-						assertEquals(input[index][3 * j + 3], fields.get(p).getDouble());
+						assertEquals(input[index][3 * j + 3], f.getDoubleV());
 					}
 				} else {
 					if(input[index][3 * j + 3] == null){
-						assertEquals(input[index][3 * j + 3], fields.get(p));
+						assertTrue(f.isNull());
 					} else {
-						assertEquals(input[index][3 * j + 3], fields.get(p).getStringValue());
+						assertEquals(input[index][3 * j + 3], f.getStringValue());
 					}
 				}
 				j++;

@@ -104,6 +104,10 @@ public class Field {
     public void setNull() {
         this.isNull = true;
     }
+
+    public boolean isNull(){
+    	return this.isNull;
+    }
 }
 
 

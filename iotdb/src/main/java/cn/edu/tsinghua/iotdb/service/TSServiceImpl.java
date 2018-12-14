@@ -743,8 +743,8 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		ServerProperties properties = new ServerProperties();
 		properties.setVersion(TsFileDBConstant.VERSION);
 		properties.setSupportedTimeAggregationOperations(new ArrayList<>());
-		properties.getSupportedTimeAggregationOperations().add(AggregationConstant.MAX_TIME);
-		properties.getSupportedTimeAggregationOperations().add(AggregationConstant.MIN_TIME);
+		properties.getSupportedTimeAggregationOperations().add(TsFileDBConstant.MAX_TIME);
+		properties.getSupportedTimeAggregationOperations().add(TsFileDBConstant.MIN_TIME);
 		return properties;
 	}
 }

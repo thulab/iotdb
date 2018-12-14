@@ -275,7 +275,6 @@ public class TsfileQueryResultSetTest {
                 }
                 values.add(value);
             }
-            record.setKeys(keys);
             record.setValues(values);
             tsQueryDataSet.getRecords().add(record);
         }
