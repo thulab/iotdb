@@ -10,34 +10,34 @@ import java.io.IOException;
 
 public abstract class IFill {
 
-    long queryTime;
-    TSDataType dataType;
+  long queryTime;
+  TSDataType dataType;
 
-    public IFill(TSDataType dataType, long queryTime) {
-        this.dataType = dataType;
-        this.queryTime = queryTime;
-    }
+  public IFill(TSDataType dataType, long queryTime) {
+    this.dataType = dataType;
+    this.queryTime = queryTime;
+  }
 
-    public IFill() {
-    }
+  public IFill() {
+  }
 
-    public abstract IFill copy(Path path);
+  public abstract IFill copy(Path path);
 
-    public abstract BatchData getFillResult() throws ProcessorException, IOException, PathErrorException;
+  public abstract BatchData getFillResult() throws ProcessorException, IOException, PathErrorException;
 
-    public void setQueryTime(long queryTime) {
-        this.queryTime = queryTime;
-    }
+  public void setQueryTime(long queryTime) {
+    this.queryTime = queryTime;
+  }
 
-    public void setDataType(TSDataType dataType) {
-        this.dataType = dataType;
-    }
+  public void setDataType(TSDataType dataType) {
+    this.dataType = dataType;
+  }
 
-    public TSDataType getDataType() {
-        return this.dataType;
-    }
+  public TSDataType getDataType() {
+    return this.dataType;
+  }
 
-    public long getQueryTime() {
-        return this.queryTime;
-    }
+  public long getQueryTime() {
+    return this.queryTime;
+  }
 }

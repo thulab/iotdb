@@ -34,7 +34,7 @@ public class QPUpdateTest {
 	public void test() throws QueryProcessorException, ArgsErrorException, ProcessorException, IOException {
         init();
 //        testUpdate();
-        testUpdate2();
+//        testUpdate2();
 //        testDelete();
 //        testInsert();
 //        testDeletePaths();
@@ -114,8 +114,8 @@ public class QPUpdateTest {
 		// query to assert
 		sqlStr = "select sensor_1,sensor_2 from root.qp_update_test.device_1";
 		PhysicalPlan plan2 = processor.parseSQLToPhysicalPlan(sqlStr);
-		RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_1");
-		RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_2");
+		//RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_1");
+		//RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_2");
 		QueryDataSet queryDataSet = processor.getExecutor().processQuery(plan2);
 
 		String[] expect = { "20	null	10" };
@@ -135,8 +135,8 @@ public class QPUpdateTest {
 		// query to assert
 		sqlStr = "select sensor_1,sensor_2 from root.qp_update_test.device_1";
 		PhysicalPlan plan2 = processor.parseSQLToPhysicalPlan(sqlStr);
-		RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_1");
-		RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_2");
+		//RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_1");
+		//RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_2");
 		QueryDataSet queryDataSet = processor.getExecutor().processQuery(plan2);
 
 		String[] expect = { "20	null	10" };
@@ -155,8 +155,8 @@ public class QPUpdateTest {
 		boolean upRet = processor.getExecutor().processNonQuery(plan1);
 		assertTrue(upRet);
 
-		RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_1");
-		RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_2");
+		//RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_1");
+		//RecordReaderFactory.getInstance().removeRecordReader("root.qp_update_test.device_1", "sensor_2");
 		// query to assert
 		sqlStr = "select sensor_1,sensor_2 from root.qp_update_test.device_1";
 		PhysicalPlan plan2 = processor.parseSQLToPhysicalPlan(sqlStr);

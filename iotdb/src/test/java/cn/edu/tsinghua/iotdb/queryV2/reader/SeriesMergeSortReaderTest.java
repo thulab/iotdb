@@ -29,11 +29,11 @@ public class SeriesMergeSortReaderTest {
   }
 
   private void test(long[] retTimestamp, long[] retValue, long[]... sources) throws IOException {
-    List<PrioritySeriesReader> prioritySeriesReaders = new ArrayList<>();
+    PriorityMergeReader seriesMergeSortReader = new PriorityMergeReader();
     for (int i = 0; i < sources.length; i++) {
-      prioritySeriesReaders.add(new PrioritySeriesReader(new FakedSeriesReader(sources[i], i + 1), new Priority(i + 1)));
+      seriesMergeSortReader.addReaderWithPriority(new FakedSeriesReader(sources[i], i + 1), i + 1);
     }
-    PriorityMergeReader seriesMergeSortReader = new PriorityMergeReader(prioritySeriesReaders);
+
     int i = 0;
     while (seriesMergeSortReader.hasNext()) {
       TimeValuePair timeValuePair = seriesMergeSortReader.next();

@@ -12,40 +12,40 @@ import java.io.IOException;
 
 public class PreviousFill extends IFill {
 
-    private long beforeRange;
+  private long beforeRange;
 
-    private Path path;
+  private Path path;
 
-    private BatchData result;
+  private BatchData result;
 
-    public PreviousFill(Path path, TSDataType dataType, long queryTime, long beforeRange) {
-        super(dataType, queryTime);
-        this.path = path;
-        this.beforeRange = beforeRange;
-        result = new BatchData(dataType, true, true);
+  public PreviousFill(Path path, TSDataType dataType, long queryTime, long beforeRange) {
+    super(dataType, queryTime);
+    this.path = path;
+    this.beforeRange = beforeRange;
+    result = new BatchData(dataType, true, true);
+  }
+
+  public PreviousFill(long beforeRange) {
+    this.beforeRange = beforeRange;
+  }
+
+  @Override
+  public IFill copy(Path path) {
+    return new PreviousFill(path, dataType, queryTime, beforeRange);
+  }
+
+  public long getBeforeRange() {
+    return beforeRange;
+  }
+
+  @Override
+  public BatchData getFillResult() throws ProcessorException, IOException, PathErrorException {
+    long beforeTime;
+    if (beforeRange == -1) {
+      beforeTime = 0;
+    } else {
+      beforeTime = queryTime - beforeRange;
     }
-
-    public PreviousFill(long beforeRange) {
-        this.beforeRange = beforeRange;
-    }
-
-    @Override
-    public IFill copy(Path path) {
-        return new PreviousFill(path, dataType, queryTime, beforeRange);
-    }
-
-    public long getBeforeRange() {
-        return beforeRange;
-    }
-
-    @Override
-    public BatchData getFillResult() throws ProcessorException, IOException, PathErrorException {
-        long beforeTime;
-        if (beforeRange == -1) {
-            beforeTime = 0;
-        } else {
-            beforeTime = queryTime - beforeRange;
-        }
 
 //        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
 //        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
@@ -60,6 +60,6 @@ public class PreviousFill extends IFill {
 //
 //        recordReader.getPreviousFillResult(result, fillTimeFilter, beforeTime, queryTime);
 
-        return result;
-    }
+    return result;
+  }
 }
