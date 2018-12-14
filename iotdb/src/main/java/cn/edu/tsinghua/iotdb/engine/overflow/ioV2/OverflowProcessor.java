@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
@@ -222,8 +223,8 @@ public class OverflowProcessor extends Processor {
 	 * @return OverflowSeriesDataSource
 	 * @throws IOException
 	 */
-	public <T extends Comparable<T>> OverflowSeriesDataSource query(String deltaObjectId, String measurementId,
-			Filter<T> filter, TSDataType dataType) throws IOException {
+	public OverflowSeriesDataSource query(String deltaObjectId, String measurementId,
+																	Filter filter, TSDataType dataType) throws IOException {
 		queryFlushLock.lock();
 		try {
 			// query insert data in memory and unseqTsFiles
@@ -245,10 +246,10 @@ public class OverflowProcessor extends Processor {
 			}
 			// query update/delete data in memory and overflowFiles
 			// Deprecated the update and delete
-			UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
+			// UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
 			// memory
-			DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
-			updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
+			// DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
+			// updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
 			// work file
 			List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
 			Pair<String, List<ChunkMetaData>> updateInDiskWork = queryWorkDataInOverflowUpdate(deltaObjectId,
@@ -265,8 +266,8 @@ public class OverflowProcessor extends Processor {
 						new OverflowUpdateDeleteFile(updateInDiskMerge.left, updateInDiskMerge.right));
 			}
 			// Deprecated the update and delete
-			updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(overflowUpdateFileList);
-			updateDeleteInfoOfOneSeries.setDataType(dataType);
+			// updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(overflowUpdateFileList);
+			// updateDeleteInfoOfOneSeries.setDataType(dataType);
 			return new OverflowSeriesDataSource(new Path(deltaObjectId + "." + measurementId), dataType,
 					overflowInsertFileList, insertInMem);
 		} finally {
@@ -304,13 +305,13 @@ public class OverflowProcessor extends Processor {
 	 * @param dataType
 	 * @return update/delete result in DynamicOneColumnData
 	 */
-	private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
+	/*private DynamicOneColumnData queryOverflowUpdateInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
 		DynamicOneColumnData columnData = workSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, null);
 		if (flushStatus.isFlushing()) {
 			columnData = flushSupport.queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType, columnData);
 		}
 		return columnData;
-	}
+	}*/
 
 	/**
 	 * Get the update/delete data which is WORK in overflowFile.
@@ -323,7 +324,7 @@ public class OverflowProcessor extends Processor {
 	 */
 	private Pair<String, List<ChunkMetaData>> queryWorkDataInOverflowUpdate(String deltaObjectId,
 			String measurementId, TSDataType dataType) {
-		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<TimeSeriesChunkMetaData>>(
+		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<ChunkMetaData>>(
 				workResource.getUpdateDeleteFilePath(),
 				workResource.getUpdateDeleteMetadatas(deltaObjectId, measurementId, dataType));
 		return pair;
@@ -374,12 +375,12 @@ public class OverflowProcessor extends Processor {
 		overflowSeriesDataSource.setRawChunk(null);
 		overflowSeriesDataSource
 				.setOverflowInsertFileList(Arrays.asList(new OverflowInsertFile(mergeInsert.left, mergeInsert.right)));
-		UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
-		updateDeleteInfoOfOneSeries.setDataType(dataType);
-		updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(null);
-		updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(
-				Arrays.asList(new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right)));
-		overflowSeriesDataSource.setUpdateDeleteInfoOfOneSeries(updateDeleteInfoOfOneSeries);
+		//UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
+		//updateDeleteInfoOfOneSeries.setDataType(dataType);
+		//updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(null);
+		//updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(
+		//		Arrays.asList(new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right)));
+		//overflowSeriesDataSource.setUpdateDeleteInfoOfOneSeries(updateDeleteInfoOfOneSeries);
 		return overflowSeriesDataSource;
 	}
 

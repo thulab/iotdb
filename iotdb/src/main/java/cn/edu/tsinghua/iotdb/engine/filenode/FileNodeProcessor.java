@@ -666,7 +666,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		}
 	}
 
-	public <T extends Comparable<T>> QueryDataSource query(String deltaObjectId, String measurementId, Filter<T> filter)
+	public <T extends Comparable<T>> QueryDataSource query(String deltaObjectId, String measurementId, Filter filter)
 			throws FileNodeProcessorException {
 		// query overflow data
 		TSDataType dataType = null;
