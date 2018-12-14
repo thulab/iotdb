@@ -43,9 +43,7 @@ public class OpenFileNumUtil {
         METADATA_OPEN_FILE_NUM(Collections.singletonList(config.metadataDir)),
         DIGEST_OPEN_FILE_NUM(Collections.singletonList(config.fileNodeDir)),
         SOCKET_OPEN_FILE_NUM(null);
-
         private List<String> path;
-
         OpenFileNumStatistics(List<String> path){
             this.path = path;
         }
