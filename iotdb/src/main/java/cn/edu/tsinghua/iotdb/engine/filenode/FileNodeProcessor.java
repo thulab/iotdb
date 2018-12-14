@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.chunk.ChunkBuffer;
@@ -1378,6 +1379,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			// query one deltaObjectId
 			List<Path> pathList = new ArrayList<>();
 			boolean isRowGroupHasData = false;
+			ChunkGroupFooter footer = null;
+			int numOfChunk = 0;
 			long startPos = -1;
 			int recordCount = 0;
 			try {
@@ -1409,6 +1412,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						LOGGER.debug("The time-series {} has no data with the filter {} in the filenode processor {}",
 								path, seriesFilter, getProcessorName());
 					} else {
+						numOfChunk++;
 						TimeValuePair timeValuePair = seriesReader.next();
 						if (fileIOWriter == null) {
 							baseDir = directories.getNextFolderForTsfile();
@@ -1421,7 +1425,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 						if (!isRowGroupHasData) {
 							// start a new rowGroupMetadata
 							isRowGroupHasData = true;
-							fileIOWriter.startRowGroup(deltaObjectId);
+							// the datasize and numOfChunk is fake
+							// the accurate datasize and numOfChunk will get after write all this deltaObject data.
+							fileIOWriter.startFlushChunkGroup(deltaObjectId,0,numOfChunk);
 							startPos = fileIOWriter.getPos();
 						}
 						// init the serieswWriteImpl
@@ -1441,8 +1447,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 			if (isRowGroupHasData) {
 				// end the new rowGroupMetadata
-				long memSize = fileIOWriter.getPos() - startPos;
-				fileIOWriter.endRowGroup(memSize, recordCount);
+				long size = fileIOWriter.getPos() - startPos;
+				footer = new ChunkGroupFooter(deltaObjectId,size,numOfChunk);
+				fileIOWriter.endChunkGroup(footer);
 			}
 		}
 		if (fileIOWriter != null) {
