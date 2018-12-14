@@ -153,7 +153,7 @@ public class IoTDBAggregationSmallDataTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select last(s0),last(s1) from root.vehicle.d0 where s2 >= 3.33");
-            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
+            //boolean hasResultSet = statement.executeWithGlobalTimeFilter("select count(s3) from root.vehicle.d0 where s1 >= 0");
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
@@ -185,7 +185,7 @@ public class IoTDBAggregationSmallDataTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select first(s0),first(s1) from root.vehicle.d0 where s2 >= 3.33");
-            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
+            //boolean hasResultSet = statement.executeWithGlobalTimeFilter("select count(s3) from root.vehicle.d0 where s1 >= 0");
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
@@ -217,7 +217,7 @@ public class IoTDBAggregationSmallDataTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select sum(s0),sum(s1),sum(s2) from root.vehicle.d0 where s2 >= 3.33");
-            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
+            //boolean hasResultSet = statement.executeWithGlobalTimeFilter("select count(s3) from root.vehicle.d0 where s1 >= 0");
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
@@ -250,7 +250,7 @@ public class IoTDBAggregationSmallDataTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select mean(s0),mean(s1),mean(s2) from root.vehicle.d0 where s2 >= 3.33");
-            //boolean hasResultSet = statement.execute("select count(s3) from root.vehicle.d0 where s1 >= 0");
+            //boolean hasResultSet = statement.executeWithGlobalTimeFilter("select count(s3) from root.vehicle.d0 where s1 >= 0");
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;

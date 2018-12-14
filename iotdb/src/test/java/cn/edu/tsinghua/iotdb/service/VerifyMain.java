@@ -92,8 +92,8 @@ public class VerifyMain {
             cnt ++;
             String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, 6666);
         }
-        // statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
-        // statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
+        // statement.executeWithGlobalTimeFilter("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
+        // statement.executeWithGlobalTimeFilter("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
         System.out.println("====" + cnt);  // 16340
 
@@ -217,7 +217,7 @@ public class VerifyMain {
             sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, -time % 77);
         }
 
-        //statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
+        //statement.executeWithGlobalTimeFilter("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
 
         for (int time = 2000; time < 2500; time++) {
             sum0 += time;
@@ -255,7 +255,7 @@ public class VerifyMain {
             sql = String.format("insert into root.vehicle.d0(timestamp,s5) values(%s, %s)", time, 9999);
         }
 
-        //statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
+        //statement.executeWithGlobalTimeFilter("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
         System.out.println(count0 + " " + sum0 + " " + count1 + " " + sum1);
     }
@@ -320,8 +320,8 @@ public class VerifyMain {
         for (int time = 200900; time < 201000; time++) {
             String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, 6666);
         }
-        // statement.execute("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
-        // statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
+        // statement.executeWithGlobalTimeFilter("DELETE FROM root.vehicle.d0.s1 WHERE time < 3200");
+        // statement.executeWithGlobalTimeFilter("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
         System.out.println("====" + cnt);
 

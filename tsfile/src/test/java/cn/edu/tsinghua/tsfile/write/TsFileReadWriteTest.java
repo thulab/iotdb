@@ -1,31 +1,26 @@
 package cn.edu.tsinghua.tsfile.write;
 
-import static org.junit.Assert.*;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.read.ReadOnlyTsFile;
+import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.RowRecord;
+import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.*;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import cn.edu.tsinghua.tsfile.read.common.RowRecord;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.read.ReadOnlyTsFile;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
-import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DoubleDataPoint;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.FloatDataPoint;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.IntDataPoint;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
+import static org.junit.Assert.assertEquals;
 
 public class TsFileReadWriteTest {
     private String path = "read_write_rle.tsfile";

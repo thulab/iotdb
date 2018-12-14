@@ -48,7 +48,7 @@ public class AuthorityChecker {
                 return true;
             }
         } catch (AuthException e) {
-            logger.error("Error occurs when checking the path {} for user {}", path, username, e);
+            logger.error("Error occurs when checking the seriesPath {} for user {}", path, username, e);
         }
         return false;
     }

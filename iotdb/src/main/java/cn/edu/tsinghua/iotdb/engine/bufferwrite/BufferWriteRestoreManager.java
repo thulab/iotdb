@@ -1,33 +1,33 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.utils.ReadWriteThriftFormatUtils;
-import cn.edu.tsinghua.tsfile.format.RowGroupBlockMetaData;
+
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+
 
 public class BufferWriteRestoreManager {
 
@@ -37,8 +37,8 @@ public class BufferWriteRestoreManager {
 
     private static final String restoreSuffix = ".restore";
     private static final String DEFAULT_MODE = "rw";
-    private Map<String, Map<String, List<TimeSeriesChunkMetaData>>> metadatas;
-    private List<RowGroupMetaData> appendRowGroupMetadatas;
+    private Map<String, Map<String, List<ChunkMetaData>>> metadatas;
+    private List<ChunkGroupMetaData> appendRowGroupMetadatas;
     private BufferIO bufferWriteIO;
     private String insertFilePath;
     private String restoreFilePath;
@@ -60,38 +60,39 @@ public class BufferWriteRestoreManager {
         File restoreFile = new File(restoreFilePath);
         if (insertFile.exists() && restoreFile.exists()) {
             // read restore file
-            Pair<Long, List<RowGroupMetaData>> restoreInfo = readRestoreInfo();
+            Pair<Long, List<ChunkGroupMetaData>> restoreInfo = readRestoreInfo();
             long position = restoreInfo.left;
-            List<RowGroupMetaData> metadatas = restoreInfo.right;
+            List<ChunkGroupMetaData> metadatas = restoreInfo.right;
             // cut off tsfile
-            FileChannel fileChannel = new FileOutputStream(insertFile, true).getChannel();
-            fileChannel.truncate(position);
-            fileChannel.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(insertFile, true);
+            fileOutputStream.getChannel().truncate(position);
+            fileOutputStream.getChannel().position();
             // recovery the BufferWriteIO
-            bufferWriteIO = new BufferIO(new TsRandomAccessFileWriter(insertFile), position, metadatas);
-
+            bufferWriteIO = new BufferIO(new DefaultTsFileOutput(fileOutputStream), metadatas);
+            // recovery the metadata
             recoverMetadata(metadatas);
             LOGGER.info(
-                    "Recover the bufferwrite processor {}, the tsfile path is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
+                    "Recover the bufferwrite processor {}, the tsfile seriesPath is {}, the position of last flush is {}, the size of rowGroupMetadata is {}",
                     processorName, insertFilePath, position, metadatas.size());
             isNewResource = false;
         } else {
             insertFile.delete();
             restoreFile.delete();
-            bufferWriteIO = new BufferIO(new TsRandomAccessFileWriter(insertFile), 0, new ArrayList<>());
+            DefaultTsFileOutput defaultTsFileOutput = new DefaultTsFileOutput(new FileOutputStream(insertFile));
+            bufferWriteIO = new BufferIO(defaultTsFileOutput, new ArrayList<>());
             isNewResource = true;
             writeRestoreInfo();
         }
     }
 
-    private void recoverMetadata(List<RowGroupMetaData> rowGroupMetaDatas) {
-        for (RowGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
-            String deltaObjectId = rowGroupMetaData.getDeltaObjectID();
+    private void recoverMetadata(List<ChunkGroupMetaData> rowGroupMetaDatas) {
+        for (ChunkGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
+            String deltaObjectId = rowGroupMetaData.getDeviceID();
             if (!metadatas.containsKey(deltaObjectId)) {
                 metadatas.put(deltaObjectId, new HashMap<>());
             }
-            for (TimeSeriesChunkMetaData chunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
-                String measurementId = chunkMetaData.getProperties().getMeasurementUID();
+            for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
+                String measurementId = chunkMetaData.getMeasurementUID();
                 if (!metadatas.get(deltaObjectId).containsKey(measurementId)) {
                     metadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
                 }
@@ -104,11 +105,11 @@ public class BufferWriteRestoreManager {
     private void writeRestoreInfo() throws IOException {
         long lastPosition;
         lastPosition = bufferWriteIO.getPos();
-        List<RowGroupMetaData> appendRowGroupMetaDatas = bufferWriteIO.getAppendedRowGroupMetadata();
+        List<ChunkGroupMetaData> appendRowGroupMetaDatas = bufferWriteIO.getAppendedRowGroupMetadata();
 
         //TODO: no need to create a TsRowGroupBlockMetadata, flush RowGroupMetadata one by one is ok
-        TsRowGroupBlockMetaData tsRowGroupBlockMetaData = new TsRowGroupBlockMetaData();
-        tsRowGroupBlockMetaData.setRowGroups(appendRowGroupMetaDatas);
+        TsDeviceMetadata tsDeviceMetadata = new TsDeviceMetadata();
+        tsDeviceMetadata.setChunkGroupMetadataList(appendRowGroupMetaDatas);
         RandomAccessFile out = null;
         out = new RandomAccessFile(restoreFilePath, DEFAULT_MODE);
         try {
@@ -116,7 +117,7 @@ public class BufferWriteRestoreManager {
                 out.seek(out.length() - TS_POSITION_BYTE_SIZE);
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ReadWriteThriftFormatUtils.writeRowGroupBlockMetadata(tsRowGroupBlockMetaData.convertToThrift(), baos);
+            tsDeviceMetadata.serializeTo(baos);
             // write metadata size using int
             int metadataSize = baos.size();
             out.write(BytesUtils.intToBytes(metadataSize));
@@ -130,9 +131,9 @@ public class BufferWriteRestoreManager {
         }
     }
 
-    public Pair<Long, List<RowGroupMetaData>> readRestoreInfo() throws IOException {
+    public Pair<Long, List<ChunkGroupMetaData>> readRestoreInfo() throws IOException {
         byte[] lastPostionBytes = new byte[TS_POSITION_BYTE_SIZE];
-        List<RowGroupMetaData> groupMetaDatas = new ArrayList<>();
+        List<ChunkGroupMetaData> groupMetaDatas = new ArrayList<>();
         RandomAccessFile randomAccessFile = null;
         randomAccessFile = new RandomAccessFile(restoreFilePath, DEFAULT_MODE);
         try {
@@ -146,17 +147,14 @@ public class BufferWriteRestoreManager {
                 byte[] thriftBytes = new byte[metadataSize];
                 randomAccessFile.read(thriftBytes);
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(thriftBytes);
-                RowGroupBlockMetaData rowGroupBlockMetaData = ReadWriteThriftFormatUtils
-                        .readRowGroupBlockMetaData(inputStream);
-                TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-                blockMeta.convertToTSF(rowGroupBlockMetaData);
-                groupMetaDatas.addAll(blockMeta.getRowGroups());
+                TsDeviceMetadata tsDeviceMetadata = TsDeviceMetadata.deserializeFrom(inputStream);
+                groupMetaDatas.addAll(tsDeviceMetadata.getChunkGroups());
                 point = randomAccessFile.getFilePointer();
             }
             // read the tsfile position information using byte[8] which is a long.
             randomAccessFile.read(lastPostionBytes);
             long lastPosition = BytesUtils.bytesToLong(lastPostionBytes);
-            Pair<Long, List<RowGroupMetaData>> result = new Pair<Long, List<RowGroupMetaData>>(lastPosition,
+            Pair<Long, List<ChunkGroupMetaData>> result = new Pair<Long, List<ChunkGroupMetaData>>(lastPosition,
                     groupMetaDatas);
             return result;
         } finally {
@@ -164,14 +162,14 @@ public class BufferWriteRestoreManager {
         }
     }
 
-    public List<TimeSeriesChunkMetaData> getInsertMetadatas(String deltaObjectId, String measurementId,
-                                                            TSDataType dataType) {
-        List<TimeSeriesChunkMetaData> chunkMetaDatas = new ArrayList<>();
+    public List<ChunkMetaData> getInsertMetadatas(String deltaObjectId, String measurementId,
+                                                  TSDataType dataType) {
+        List<ChunkMetaData> chunkMetaDatas = new ArrayList<>();
         if (metadatas.containsKey(deltaObjectId)) {
             if (metadatas.get(deltaObjectId).containsKey(measurementId)) {
-                for (TimeSeriesChunkMetaData chunkMetaData : metadatas.get(deltaObjectId).get(measurementId)) {
+                for (ChunkMetaData chunkMetaData : metadatas.get(deltaObjectId).get(measurementId)) {
                     // filter
-                    if (dataType.equals(chunkMetaData.getVInTimeSeriesChunkMetaData().getDataType())) {
+                    if (dataType.equals(chunkMetaData.getTsDataType())) {
                         chunkMetaDatas.add(chunkMetaData);
                     }
                 }
@@ -217,17 +215,17 @@ public class BufferWriteRestoreManager {
 
     public void appendMetadata() {
         if (!appendRowGroupMetadatas.isEmpty()) {
-            for (RowGroupMetaData rowGroupMetaData : appendRowGroupMetadatas) {
-                for (TimeSeriesChunkMetaData chunkMetaData : rowGroupMetaData.getTimeSeriesChunkMetaDataList()) {
-                    addInsertMetadata(rowGroupMetaData.getDeltaObjectID(),
-                            chunkMetaData.getProperties().getMeasurementUID(), chunkMetaData);
+            for (ChunkGroupMetaData rowGroupMetaData : appendRowGroupMetadatas) {
+                for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
+                    addInsertMetadata(rowGroupMetaData.getDeviceID(),
+                            chunkMetaData.getMeasurementUID(), chunkMetaData);
                 }
             }
             appendRowGroupMetadatas.clear();
         }
     }
 
-    private void addInsertMetadata(String deltaObjectId, String measurementId, TimeSeriesChunkMetaData chunkMetaData) {
+    private void addInsertMetadata(String deltaObjectId, String measurementId, ChunkMetaData chunkMetaData) {
         if (!metadatas.containsKey(deltaObjectId)) {
             metadatas.put(deltaObjectId, new HashMap<>());
         }

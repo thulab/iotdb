@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.queryV2.externalsort;
 
-import cn.edu.tsinghua.iotdb.queryV2.engine.externalsort.SimpleExternalSortEngine;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityMergeSortTimeValuePairReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.PriorityTimeValuePairReader.Priority;
+import cn.edu.tsinghua.iotdb.queryV2.externalsort.SimpleExternalSortEngine;
+import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PrioritySeriesReader;
+import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PrioritySeriesReader.Priority;
 import cn.edu.tsinghua.iotdb.queryV2.reader.SeriesMergeSortReaderTest.FakedSeriesReader;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
 import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
@@ -30,11 +30,11 @@ public class ExternalSortEngineTest {
     @Test
     public void testSimple() throws IOException {
         SimpleExternalSortEngine engine = new SimpleExternalSortEngine(baseDir + "/", 2);
-        List<PriorityTimeValuePairReader> readerList1 = genSimple();
-        List<PriorityTimeValuePairReader> readerList2 = genSimple();
+        List<PrioritySeriesReader> readerList1 = genSimple();
+        List<PrioritySeriesReader> readerList2 = genSimple();
         readerList1 = engine.execute(readerList1);
-        PriorityMergeSortTimeValuePairReader reader1 = new PriorityMergeSortTimeValuePairReader(readerList1);
-        PriorityMergeSortTimeValuePairReader reader2 = new PriorityMergeSortTimeValuePairReader(readerList2);
+        PriorityMergeReader reader1 = new PriorityMergeReader(readerList1);
+        PriorityMergeReader reader2 = new PriorityMergeReader(readerList2);
         check(reader1, reader2);
         reader1.close();
         reader2.close();
@@ -47,11 +47,11 @@ public class ExternalSortEngineTest {
         int valueCount = 10000;
         List<long[]> data = genData(lineCount, valueCount);
 
-        List<PriorityTimeValuePairReader> readerList1 = genReaders(data);
-        List<PriorityTimeValuePairReader> readerList2 = genReaders(data);
+        List<PrioritySeriesReader> readerList1 = genReaders(data);
+        List<PrioritySeriesReader> readerList2 = genReaders(data);
         readerList1 = engine.execute(readerList1);
-        PriorityMergeSortTimeValuePairReader reader1 = new PriorityMergeSortTimeValuePairReader(readerList1);
-        PriorityMergeSortTimeValuePairReader reader2 = new PriorityMergeSortTimeValuePairReader(readerList2);
+        PriorityMergeReader reader1 = new PriorityMergeReader(readerList1);
+        PriorityMergeReader reader2 = new PriorityMergeReader(readerList2);
         check(reader1, reader2);
         reader1.close();
         reader2.close();
@@ -63,18 +63,18 @@ public class ExternalSortEngineTest {
         int valueCount = 100;
         List<long[]> data = genData(lineCount, valueCount);
 
-        List<PriorityTimeValuePairReader> readerList1 = genReaders(data);
+        List<PrioritySeriesReader> readerList1 = genReaders(data);
         long startTimestamp = System.currentTimeMillis();
         readerList1 = engine.execute(readerList1);
-        PriorityMergeSortTimeValuePairReader reader1 = new PriorityMergeSortTimeValuePairReader(readerList1);
+        PriorityMergeReader reader1 = new PriorityMergeReader(readerList1);
         while (reader1.hasNext()) {
             reader1.next();
         }
         System.out.println("Time used WITH external sort:" + (System.currentTimeMillis() - startTimestamp) + "ms");
 
-        List<PriorityTimeValuePairReader> readerList2 = genReaders(data);
+        List<PrioritySeriesReader> readerList2 = genReaders(data);
         startTimestamp = System.currentTimeMillis();
-        PriorityMergeSortTimeValuePairReader reader2 = new PriorityMergeSortTimeValuePairReader(readerList2);
+        PriorityMergeReader reader2 = new PriorityMergeReader(readerList2);
         while (reader2.hasNext()) {
             reader2.next();
         }
@@ -98,10 +98,10 @@ public class ExternalSortEngineTest {
         return data;
     }
 
-    private List<PriorityTimeValuePairReader> genReaders(List<long[]> data) {
-        List<PriorityTimeValuePairReader> readerList = new ArrayList<>();
+    private List<PrioritySeriesReader> genReaders(List<long[]> data) {
+        List<PrioritySeriesReader> readerList = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            readerList.add(new PriorityTimeValuePairReader(new FakedSeriesReader(data.get(i), i), new Priority(i)));
+            readerList.add(new PrioritySeriesReader(new FakedSeriesReader(data.get(i), i), new Priority(i)));
         }
         return readerList;
     }
@@ -116,15 +116,15 @@ public class ExternalSortEngineTest {
         Assert.assertEquals(false, reader2.hasNext());
     }
 
-    private List<PriorityTimeValuePairReader> genSimple() {
-        PriorityTimeValuePairReader reader1 = new PriorityTimeValuePairReader(
+    private List<PrioritySeriesReader> genSimple() {
+        PrioritySeriesReader reader1 = new PrioritySeriesReader(
                 new FakedSeriesReader(new long[]{1, 2, 3, 4, 5}, 1L), new Priority(1));
-        PriorityTimeValuePairReader reader2 = new PriorityTimeValuePairReader(
+        PrioritySeriesReader reader2 = new PrioritySeriesReader(
                 new FakedSeriesReader(new long[]{1, 5, 6, 7, 8}, 2L), new Priority(2));
-        PriorityTimeValuePairReader reader3 = new PriorityTimeValuePairReader(
+        PrioritySeriesReader reader3 = new PrioritySeriesReader(
                 new FakedSeriesReader(new long[]{4, 5, 6, 7, 10}, 3L), new Priority(3));
 
-        List<PriorityTimeValuePairReader> readerList = new ArrayList<>();
+        List<PrioritySeriesReader> readerList = new ArrayList<>();
         readerList.add(reader1);
         readerList.add(reader2);
         readerList.add(reader3);

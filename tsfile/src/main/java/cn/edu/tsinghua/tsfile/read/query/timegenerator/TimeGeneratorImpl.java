@@ -13,8 +13,8 @@ import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.AndNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.OrNode;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReaderWithFilter;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,11 +65,11 @@ public class TimeGeneratorImpl implements TimeGenerator {
     /**
      * construct the tree that generate timestamp
      */
-    private Node construct(IExpression IExpression) throws IOException {
+    private Node construct(IExpression expression) throws IOException {
 
-        if (IExpression.getType() == ExpressionType.SERIES) {
-            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) IExpression;
-            SeriesReader seriesReader = generateSeriesReader(singleSeriesExp);
+        if (expression.getType() == ExpressionType.SERIES) {
+            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) expression;
+            FileSeriesReader seriesReader = generateSeriesReader(singleSeriesExp);
             Path path = singleSeriesExp.getSeriesPath();
 
             if (!leafCache.containsKey(path))
@@ -81,22 +81,22 @@ public class TimeGeneratorImpl implements TimeGenerator {
 
             return leafNode;
 
-        } else if (IExpression.getType() == ExpressionType.OR) {
-            Node leftChild = construct(((IBinaryExpression) IExpression).getLeft());
-            Node rightChild = construct(((IBinaryExpression) IExpression).getRight());
+        } else if (expression.getType() == ExpressionType.OR) {
+            Node leftChild = construct(((IBinaryExpression) expression).getLeft());
+            Node rightChild = construct(((IBinaryExpression) expression).getRight());
             return new OrNode(leftChild, rightChild);
 
-        } else if (IExpression.getType() == ExpressionType.AND) {
-            Node leftChild = construct(((IBinaryExpression) IExpression).getLeft());
-            Node rightChild = construct(((IBinaryExpression) IExpression).getRight());
+        } else if (expression.getType() == ExpressionType.AND) {
+            Node leftChild = construct(((IBinaryExpression) expression).getLeft());
+            Node rightChild = construct(((IBinaryExpression) expression).getRight());
             return new AndNode(leftChild, rightChild);
         }
-        throw new UnSupportedDataTypeException("Unsupported ExpressionType when construct OperatorNode: " + IExpression.getType());
+        throw new UnSupportedDataTypeException("Unsupported ExpressionType when construct OperatorNode: " + expression.getType());
     }
 
-    private SeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExp) throws IOException {
+    private FileSeriesReader generateSeriesReader(SingleSeriesExpression singleSeriesExp) throws IOException {
         List<ChunkMetaData> chunkMetaDataList = metadataQuerier.getChunkMetaDataList(
                 singleSeriesExp.getSeriesPath());
-        return new SeriesReaderWithFilter(chunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
+        return new FileSeriesReaderWithFilter(chunkLoader, chunkMetaDataList, singleSeriesExp.getFilter());
     }
 }

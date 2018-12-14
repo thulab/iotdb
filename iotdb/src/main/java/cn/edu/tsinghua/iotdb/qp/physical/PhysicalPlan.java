@@ -7,9 +7,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * This class is a abstract class for all type of PhysicalPlan.
- * 
- * @author kangrong
- * @author qiaojialin
  */
 public abstract class PhysicalPlan {
     private boolean isQuery;

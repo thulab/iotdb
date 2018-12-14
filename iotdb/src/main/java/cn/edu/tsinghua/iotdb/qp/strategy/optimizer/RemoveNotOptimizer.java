@@ -7,8 +7,8 @@ import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.KW_OR;
 import java.util.List;
 
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
-import cn.edu.tsinghua.iotdb.qp.exception.LogicalOptimizeException;
-import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
+import cn.edu.tsinghua.iotdb.exception.qp.LogicalOptimizeException;
+import cn.edu.tsinghua.iotdb.exception.qp.LogicalOperatorException;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.BasicFunctionOperator;
 import cn.edu.tsinghua.iotdb.qp.logical.crud.FilterOperator;
 

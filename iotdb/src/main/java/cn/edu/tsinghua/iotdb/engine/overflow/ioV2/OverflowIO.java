@@ -2,44 +2,39 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+
+import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
-import cn.edu.tsinghua.tsfile.file.metadata.VInTimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionTypeName;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSChunkType;
-import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
+
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 
 public class OverflowIO extends TsFileIOWriter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowIO.class);
 	private OverflowReadWriter overflowReadWriter;
 
-	public OverflowIO(String filePath, long lastUpdatePosition, boolean isInsert) throws IOException {
+	public OverflowIO(DefaultTsFileOutput defaultTsFileOutput, boolean isInsert) throws IOException {
 		super();
-		FileChannel fileChannel = new FileOutputStream(new File(filePath), true).getChannel();
-		fileChannel.truncate(lastUpdatePosition);
-		fileChannel.close();
 		//OverflowReadWriter.cutOff(filePath, lastUpdatePosition);
 		overflowReadWriter = new OverflowReadWriter(filePath);
 		if (isInsert) {
@@ -47,12 +42,12 @@ public class OverflowIO extends TsFileIOWriter {
 		}
 	}
 
-	private TimeSeriesChunkMetaData startTimeSeries(OverflowSeriesImpl index) throws IOException {
+	private ChunkMetaData startTimeSeries(OverflowSeriesImpl index) throws IOException {
 		LOGGER.debug(
 				"Start overflow series chunk meatadata: measurementId: {}, valueCount: {}, compressionName: {}, TSdatatype: {}.",
 				index.getMeasurementId(), index.getValueCount(), CompressionTypeName.UNCOMPRESSED, index.getDataType());
-		TimeSeriesChunkMetaData currentSeries;
-		currentSeries = new TimeSeriesChunkMetaData(index.getMeasurementId(), TSChunkType.VALUE, this.getPos(),
+		ChunkMetaData currentSeries;
+		currentSeries = new ChunkMetaData(index.getMeasurementId(), TSChunkType.VALUE, this.getPos(),
 				CompressionTypeName.UNCOMPRESSED);
 		currentSeries.setNumRows(index.getValueCount());
 		byte[] max = index.getStatistics().getMaxBytes();
@@ -68,7 +63,6 @@ public class OverflowIO extends TsFileIOWriter {
 	}
 
 	private TimeSeriesChunkMetaData endSeries(long size, TimeSeriesChunkMetaData currentSeries) throws IOException {
-		LOGGER.debug("End overflow series chunk meatadata: {}, size: {}.", currentSeries, size);
 		currentSeries.setTotalByteSize(size);
 		return currentSeries;
 	}
@@ -149,7 +143,7 @@ public class OverflowIO extends TsFileIOWriter {
 	}
 
 	public long getPos() throws IOException {
-		return overflowReadWriter.getPos();
+		return overflowReadWriter.getPosition();
 	}
 
 	public void close() throws IOException {
@@ -169,51 +163,13 @@ public class OverflowIO extends TsFileIOWriter {
 	}
 
 	public static class OverflowReadWriter extends OutputStream
-			implements ITsRandomAccessFileReader, ITsRandomAccessFileWriter {
+			implements  TsFileOutput {
 
 		private RandomAccessFile raf;
-		private static final int onePassCopySize = 4 * 1024 * 1024;
 		private static final String RW_MODE = "rw";
-		private static final String R_MODE = "r";
 
 		public OverflowReadWriter(String filepath) throws FileNotFoundException {
 			this.raf = new RandomAccessFile(filepath, RW_MODE);
-		}
-
-		@Override
-		public long getPos() throws IOException {
-			return raf.getFilePointer();
-		}
-
-		@Override
-		public OutputStream getOutputStream() {
-			return this;
-		}
-
-		@Override
-		public void seek(long offset) throws IOException {
-			raf.seek(offset);
-		}
-
-		@Override
-		public int read() throws IOException {
-			return raf.read();
-		}
-
-		@Override
-		public int read(byte[] b, int off, int len) throws IOException {
-			raf.readFully(b, off, len);
-			return len;
-		}
-
-		@Override
-		public long length() throws IOException {
-			return raf.length();
-		}
-
-		@Override
-		public int readInt() throws IOException {
-			return raf.readInt();
 		}
 
 		@Override
@@ -227,8 +183,23 @@ public class OverflowIO extends TsFileIOWriter {
 		}
 
 		@Override
-		public void write(byte b[], int off, int len) throws IOException {
-			raf.write(b, off, len);
+		public void write(ByteBuffer b) throws IOException {
+			throw new NotImplementedException();
+		}
+
+		@Override
+		public long getPosition() throws IOException {
+			return raf.getFilePointer();
+		}
+
+		@Override
+		public void close() throws IOException {
+			raf.close();
+		}
+
+		@Override
+		public OutputStream wrapAsStream() throws IOException {
+			return this;
 		}
 
 		public void toTail() throws IOException {
@@ -236,48 +207,34 @@ public class OverflowIO extends TsFileIOWriter {
 			raf.seek(tail);
 		}
 
-		public void close() throws IOException {
-			raf.close();
+		public long getPos() throws IOException {
+			return raf.getFilePointer();
 		}
 
-		/**
-		 * Delete the bytes from the position of lastUpdateOffset to the end of
-		 * the file
-		 * 
-		 * @param filePath
-		 * @param lastUpdatePosition
-		 * @throws IOException
-		 */
-		public static void cutOff(String filePath, long lastUpdatePosition) throws IOException {
-			RandomAccessFile raf;
-			String tempFilePath = filePath + ".backup";
-			File tempFile = new File(tempFilePath);
-			File normalFile = new File(filePath);
-			if (normalFile.exists() && normalFile.length() > 0) {
-				if (normalFile.length() == lastUpdatePosition) {
-					return;
-				}
-				raf = new RandomAccessFile(normalFile, R_MODE);
-				if (tempFile.exists()) {
-					tempFile.delete();
-				}
-				RandomAccessFile tempraf = new RandomAccessFile(tempFile, RW_MODE);
-				long offset = 0;
-				byte[] tempBytes = new byte[onePassCopySize];
-
-				while (lastUpdatePosition - offset >= onePassCopySize) {
-					raf.read(tempBytes);
-					tempraf.write(tempBytes);
-					offset += onePassCopySize;
-				}
-				raf.read(tempBytes, 0, (int) (lastUpdatePosition - offset));
-				tempraf.write(tempBytes, 0, (int) (lastUpdatePosition - offset));
-
-				tempraf.close();
-				raf.close();
-			}
-			normalFile.delete();
-			tempFile.renameTo(normalFile);
+		public OutputStream getOutputStream() {
+			return this;
 		}
+
+		public void seek(long offset) throws IOException {
+			raf.seek(offset);
+		}
+
+		public int read() throws IOException {
+			return raf.read();
+		}
+
+		public int read(byte[] b, int off, int len) throws IOException {
+			raf.readFully(b, off, len);
+			return len;
+		}
+
+		public long length() throws IOException {
+			return raf.length();
+		}
+
+		public int readInt() throws IOException {
+			return raf.readInt();
+		}
+
 	}
 }

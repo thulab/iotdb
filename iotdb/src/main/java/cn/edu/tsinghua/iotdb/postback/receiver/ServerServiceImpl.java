@@ -69,7 +69,7 @@ public class ServerServiceImpl implements ServerService.Iface {
     private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
     private TsfileDBConfig tsfileDBconfig = TsfileDBDescriptor.getInstance().getConfig();
     private String postbackPath;
-    private String dataPath = new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator; // Absolute path of IoTDB data directory
+    private String dataPath = new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator; // Absolute seriesPath of IoTDB data directory
     private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs(); // Absolute paths of IoTDB bufferWrite directory
     private TsfileDBConfig tsfileDBConfig = TsfileDBDescriptor.getInstance().getConfig();
 

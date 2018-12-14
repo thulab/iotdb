@@ -1,11 +1,27 @@
 package cn.edu.tsinghua.tsfile.write.writer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.file.MetaMarker;
 import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.header.ChunkHeader;
-import cn.edu.tsinghua.tsfile.file.metadata.*;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadataIndex;
+import cn.edu.tsinghua.tsfile.file.metadata.TsDigest;
+import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
@@ -15,12 +31,6 @@ import cn.edu.tsinghua.tsfile.utils.PublicBAOS;
 import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -257,6 +267,15 @@ public class TsFileIOWriter {
      */
     public long getPos() throws IOException {
         return out.getPosition();
+    }
+    
+    /**
+     * get chunkGroupMetaDataList
+     * 
+     * @return - List of chunkGroupMetaData
+     */
+    public List<ChunkGroupMetaData> getChunkGroupMetaDatas(){
+    	return chunkGroupMetaDataList;
     }
 
 }

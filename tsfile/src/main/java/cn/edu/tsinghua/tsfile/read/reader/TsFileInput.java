@@ -127,4 +127,28 @@ public interface TsFileInput {
      *          If an I/O error occurs
      */
     public void close() throws IOException;
+
+    /**
+     * read a byte from the Input
+     * @return
+     * @throws IOException
+     */
+    public int read() throws IOException;
+
+    /**
+     *
+     * @param b
+     * @param off
+     * @param len
+     * @return
+     * @throws IOException
+     */
+    public int read(byte[] b, int off, int len) throws IOException;
+
+    /**
+     * read 4 bytes from the Input and convert it to a integer
+     * @return
+     * @throws IOException
+     */
+    public int readInt() throws IOException;
 }

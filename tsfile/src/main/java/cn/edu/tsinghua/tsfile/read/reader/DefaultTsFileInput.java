@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.tsfile.read.reader;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -54,5 +56,22 @@ public class DefaultTsFileInput implements TsFileInput {
     @Override
     public void close() throws IOException {
         channel.close();
+    }
+
+
+
+    @Override
+    public int read() throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public int readInt() throws IOException {
+        throw new NotImplementedException();
     }
 }

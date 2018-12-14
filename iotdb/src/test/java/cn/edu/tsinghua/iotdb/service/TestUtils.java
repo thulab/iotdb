@@ -54,6 +54,6 @@ public class TestUtils {
             measurements.append(",").append(dataPoint.getMeasurementId());
             values.append(",").append(dataPoint.getValue());
         }
-        return String.format(insertTemplate, record.deltaObjectId, measurements.toString(),record.time, values);
+        return String.format(insertTemplate, record.deviceId, measurements.toString(),record.time, values);
     }
 }

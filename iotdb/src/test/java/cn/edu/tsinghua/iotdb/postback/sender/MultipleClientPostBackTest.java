@@ -93,8 +93,8 @@ public class MultipleClientPostBackTest {
 //						Statement statement1 = connection1.createStatement();
 //						String SQL = String.format(sqlFormat, timesery, storageGroup);
 //						System.out.println(SQL);
-//						boolean hasResultSet = statement.execute(SQL);
-//						boolean hasResultSet1 = statement1.execute(SQL);
+//						boolean hasResultSet = statement.executeWithGlobalTimeFilter(SQL);
+//						boolean hasResultSet1 = statement1.executeWithGlobalTimeFilter(SQL);
 //						if (hasResultSet) {
 //							ResultSet res = statement.getResultSet();
 //							while (res.next()) {

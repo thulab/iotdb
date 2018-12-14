@@ -40,7 +40,7 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
      */
     public DataSetWithTimeGenerator execute(QueryExpression queryExpression) throws IOException {
 
-        IExpression IExpression = queryExpression.getIExpression();
+        IExpression IExpression = queryExpression.getExpression();
         List<Path> selectedPathList = queryExpression.getSelectedSeries();
 
         // get TimeGenerator by IExpression

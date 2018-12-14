@@ -14,8 +14,8 @@ import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.metadata.Metadata;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
-import cn.edu.tsinghua.iotdb.qp.exception.IllegalASTFormatException;
-import cn.edu.tsinghua.iotdb.qp.exception.QueryProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.IllegalASTFormatException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.OverflowQPExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
@@ -24,7 +24,7 @@ import cn.edu.tsinghua.iotdb.qp.physical.crud.MultiQueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
 import cn.edu.tsinghua.iotdb.query.aggregation.AggregationConstant;
 import cn.edu.tsinghua.iotdb.query.management.ReadCacheManager;
-import cn.edu.tsinghua.iotdb.queryV2.engine.control.QueryJobManager;
+import cn.edu.tsinghua.iotdb.queryV2.control.QueryJobManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -240,7 +240,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			case "COLUMN":
 				try {
                     			resp.setDataType(MManager.getInstance().getSeriesType(req.getColumnPath()).toString());
-                		} catch (PathErrorException e) { //TODO aggregate path e.g. last(root.ln.wf01.wt01.status)
+                		} catch (PathErrorException e) { //TODO aggregate seriesPath e.g. last(root.ln.wf01.wt01.status)
 			//                    status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			//                    status.setErrorMessage(String.format("Failed to fetch %s's data type because: %s", req.getColumnPath(), e));
 			//                    resp.setStatus(status);
@@ -257,7 +257,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
                     			resp.setStatus(status);
                     			return resp;
                 		} catch (OutOfMemoryError outOfMemoryError) { // TODO OOME
-                    			LOGGER.error("Failed to fetch path {}'s all columns", req.getColumnPath(), outOfMemoryError);
+                    			LOGGER.error("Failed to fetch seriesPath {}'s all columns", req.getColumnPath(), outOfMemoryError);
                     			status = new TS_Status(TS_StatusCode.ERROR_STATUS);
                     			status.setErrorMessage(String.format("Failed to fetch %s's all columns because: %s", req.getColumnPath(), outOfMemoryError));
                     			break;
@@ -274,7 +274,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	}
 
 	/**
-	 * Judge whether the statement is ADMIN COMMAND and if true, execute it.
+	 * Judge whether the statement is ADMIN COMMAND and if true, executeWithGlobalTimeFilter it.
 	 *
 	 * @param statement
 	 *            command
@@ -344,7 +344,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 						batchErrorMessage = resp.getStatus().getErrorMessage();
 					}
 				} catch (Exception e) {
-					String errMessage = String.format("Fail to generate physcial plan and execute for statement %s beacuse %s", statement, e.getMessage());
+					String errMessage = String.format("Fail to generate physcial plan and executeWithGlobalTimeFilter for statement %s beacuse %s", statement, e.getMessage());
 					//LOGGER.error(errMessage);
 					result.add(Statement.EXECUTE_FAILED);
 					isAllSuccessful = false;
@@ -419,7 +419,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			List<Path> paths;
 			paths = plan.getPaths();
 
-			// check path exists
+			// check seriesPath exists
 			if (paths.size() == 0) {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "Timeseries does not exist.");
 			}

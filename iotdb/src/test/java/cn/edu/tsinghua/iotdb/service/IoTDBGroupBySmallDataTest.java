@@ -477,7 +477,7 @@ public class IoTDBGroupBySmallDataTest {
 		try {
 			connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 			Statement statement = connection.createStatement();
-			// boolean hasResultSet = statement.execute("select
+			// boolean hasResultSet = statement.executeWithGlobalTimeFilter("select
 			// count(s0),min_value(s1),max_value(s2),min_time(s3) " +
 			// "from root.vehicle.d0 group by(1ms, 0, [0,10000000])");
 

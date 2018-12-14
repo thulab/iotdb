@@ -5,8 +5,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 /**
  * TimePair represents an overflow operation.
- *
- * @author CGF
  */
 
 public class TimePair {

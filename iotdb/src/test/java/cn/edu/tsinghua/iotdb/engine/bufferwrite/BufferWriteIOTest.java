@@ -3,17 +3,18 @@ package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.utils.TsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 public class BufferWriteIOTest {
@@ -23,7 +24,8 @@ public class BufferWriteIOTest {
 
 	@Before
 	public void setUp() throws Exception {
-		bufferWriteIO = new BufferIO(new TsRandomAccessFileWriter(new File(filePath)), 0, new ArrayList<>());
+		DefaultTsFileOutput defaultTsFileOutput = new DefaultTsFileOutput(new FileOutputStream(new File(filePath)));
+		bufferWriteIO = new BufferIO(defaultTsFileOutput, new ArrayList<>());
 	}
 
 	@After
@@ -37,24 +39,23 @@ public class BufferWriteIOTest {
 		assertEquals(0, bufferWriteIO.getAppendedRowGroupMetadata().size());
 
 		// construct one rowgroup
-		bufferWriteIO.startRowGroup("d1");
-		bufferWriteIO.endRowGroup(1000, 1000);
-		assertEquals(1, bufferWriteIO.getRowGroups().size());
+		ChunkGroupFooter chunkGroupFooter =  bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.endChunkGroup(chunkGroupFooter);
+		assertEquals(1, bufferWriteIO.getChunkGroupMetaDatas().size());
 		assertEquals(1, bufferWriteIO.getAppendedRowGroupMetadata().size());
-		List<RowGroupMetaData> metadatas = bufferWriteIO.getAppendedRowGroupMetadata();
-		RowGroupMetaData rowgroup = metadatas.get(0);
-		assertEquals("d1", rowgroup.getDeltaObjectID());
-		assertEquals(1000, rowgroup.getTotalByteSize());
-		assertEquals(1000, rowgroup.getNumOfRows());
+		List<ChunkGroupMetaData> metadatas = bufferWriteIO.getAppendedRowGroupMetadata();
+		ChunkGroupMetaData rowgroup = metadatas.get(0);
+		assertEquals("d1", rowgroup.getDeviceID());
 		// construct another two rowgroup
-		bufferWriteIO.startRowGroup("d1");
-		bufferWriteIO.endRowGroup(1000, 1000);
+		chunkGroupFooter = bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.endChunkGroup(chunkGroupFooter);
 
-		bufferWriteIO.startRowGroup("d1");
-		bufferWriteIO.endRowGroup(1000, 1000);
+		chunkGroupFooter = bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.endChunkGroup(chunkGroupFooter);
 
-		bufferWriteIO.startRowGroup("d1");
-		bufferWriteIO.endRowGroup(1000, 1000);
+		chunkGroupFooter = bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.endChunkGroup(chunkGroupFooter);
+
 		metadatas = bufferWriteIO.getAppendedRowGroupMetadata();
 		assertEquals(3, metadatas.size());
 		FileSchema fileSchema = new FileSchema();

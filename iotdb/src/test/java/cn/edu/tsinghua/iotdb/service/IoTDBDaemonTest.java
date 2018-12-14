@@ -743,8 +743,8 @@ public class IoTDBDaemonTest {
 
             statement = connection.createStatement();
             boolean hasResultSet = statement.execute("select s0,s1,s2,s3 from root.vehicle.d0 where (time < 104 and s0 < 99) or (s2 < 16.0) or (s0 = 300)");
-            // boolean hasResultSet = statement.execute("select s1 from root.vehicle.d0 where time < 104 and (s0 < 99 or s2 < 16.0)");
-            // boolean hasResultSet = statement.execute("select s1 from root.vehicle.d0 where time < 104 and s0 < 99 and s2 < 16.0");
+            // boolean hasResultSet = statement.executeWithGlobalTimeFilter("select s1 from root.vehicle.d0 where time < 104 and (s0 < 99 or s2 < 16.0)");
+            // boolean hasResultSet = statement.executeWithGlobalTimeFilter("select s1 from root.vehicle.d0 where time < 104 and s0 < 99 and s2 < 16.0");
             Assert.assertTrue(hasResultSet);
 
             ResultSet resultSet = statement.getResultSet();

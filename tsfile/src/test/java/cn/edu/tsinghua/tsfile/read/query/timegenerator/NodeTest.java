@@ -7,7 +7,7 @@ import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.LeafNode;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.OrNode;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
-import cn.edu.tsinghua.tsfile.read.reader.series.SeriesReader;
+import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ public class NodeTest {
     public void testLeafNode() throws IOException {
         int index = 0;
         long[] timestamps = new long[]{1, 2, 3, 4, 5, 6, 7};
-        SeriesReader seriesReader = new FakedSeriesReader(timestamps);
+        FileSeriesReader seriesReader = new FakedFileSeriesReader(timestamps);
         Node leafNode = new LeafNode(seriesReader);
         while (leafNode.hasNext()) {
             Assert.assertEquals(timestamps[index++], leafNode.next());
@@ -43,8 +43,8 @@ public class NodeTest {
 
     private void testOr(long[] ret, long[] left, long[] right) throws IOException {
         int index = 0;
-        Node orNode = new OrNode(new LeafNode(new FakedSeriesReader(left)),
-                new LeafNode(new FakedSeriesReader(right)));
+        Node orNode = new OrNode(new LeafNode(new FakedFileSeriesReader(left)),
+                new LeafNode(new FakedFileSeriesReader(right)));
         while (orNode.hasNext()) {
             long value = orNode.next();
             Assert.assertEquals(ret[index++], value);
@@ -63,8 +63,8 @@ public class NodeTest {
 
     private void testAnd(long[] ret, long[] left, long[] right) throws IOException {
         int index = 0;
-        Node andNode = new AndNode(new LeafNode(new FakedSeriesReader(left)),
-                new LeafNode(new FakedSeriesReader(right)));
+        Node andNode = new AndNode(new LeafNode(new FakedFileSeriesReader(left)),
+                new LeafNode(new FakedFileSeriesReader(right)));
         while (andNode.hasNext()) {
             long value = andNode.next();
             Assert.assertEquals(ret[index++], value);
@@ -73,12 +73,12 @@ public class NodeTest {
     }
 
 
-    private static class FakedSeriesReader extends SeriesReader {
+    private static class FakedFileSeriesReader extends FileSeriesReader {
 
         BatchData data;
         boolean hasCachedData;
 
-        public FakedSeriesReader(long[] timestamps) {
+        public FakedFileSeriesReader(long[] timestamps) {
             super(null, null);
             data = new BatchData(TSDataType.INT32, true);
             for (long time : timestamps) {

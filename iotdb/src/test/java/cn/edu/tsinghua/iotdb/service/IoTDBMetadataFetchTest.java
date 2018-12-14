@@ -75,12 +75,12 @@ public class IoTDBMetadataFetchTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String[] sqls = new String[]{
-                    "show timeseries root.ln.wf01.wt01.status", // full path
-                    "show timeseries root.ln", // prefix path
-                    "show timeseries root.ln.*.wt01", // path with stars
+                    "show timeseries root.ln.wf01.wt01.status", // full seriesPath
+                    "show timeseries root.ln", // prefix seriesPath
+                    "show timeseries root.ln.*.wt01", // seriesPath with stars
 
                     "show timeseries root.a.b", // nonexistent timeseries, thus returning ""
-                    "show timeseries root.ln,root.ln", // SHOW TIMESERIES <PATH> only accept single path, thus returning ""
+                    "show timeseries root.ln,root.ln", // SHOW TIMESERIES <PATH> only accept single seriesPath, thus returning ""
             };
             String[] standards = new String[]{"root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n",
 
@@ -201,7 +201,7 @@ public class IoTDBMetadataFetchTest {
     }
 
     /**
-     * get all columns' name under a given path
+     * get all columns' name under a given seriesPath
      */
     public void AllColumns() throws SQLException {
         String standard = "Column,\n" +
@@ -250,7 +250,7 @@ public class IoTDBMetadataFetchTest {
     }
 
     /**
-     * show timeseries <path>
+     * show timeseries <seriesPath>
      * usage 1
      */
     public void ShowTimeseriesPath1() throws SQLException {
@@ -276,7 +276,7 @@ public class IoTDBMetadataFetchTest {
     }
 
     /**
-     * show timeseries <path>
+     * show timeseries <seriesPath>
      * usage 2
      */
     public void ShowTimeseriesPath2() throws SQLException {

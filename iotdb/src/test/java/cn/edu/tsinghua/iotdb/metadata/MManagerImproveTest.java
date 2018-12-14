@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
@@ -103,7 +103,7 @@ public class MManagerImproveTest {
         get_seriestype += endTime - startTime;
 
         System.out.println("string combine:\t" + string_combine);
-        System.out.println("path exist:\t" + path_exist);
+        System.out.println("seriesPath exist:\t" + path_exist);
         System.out.println("list init:\t" + list_init);
         System.out.println("check file level:\t" + check_filelevel);
         System.out.println("get series type:\t" + get_seriestype);
@@ -224,7 +224,7 @@ public class MManagerImproveTest {
             doPathLoopOnceTest(deltaObject, measurementList);
         }
         endTime = System.currentTimeMillis();
-        System.out.println("path loop once:\t" + (endTime - startTime));
+        System.out.println("seriesPath loop once:\t" + (endTime - startTime));
 
         startTime = System.currentTimeMillis();
         for(String deltaObject : deltaObjectList) {

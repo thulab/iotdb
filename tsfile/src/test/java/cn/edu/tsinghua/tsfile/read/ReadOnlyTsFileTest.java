@@ -60,7 +60,7 @@ public class ReadOnlyTsFileTest {
         QueryExpression queryExpression = QueryExpression.create()
                 .addSelectedPath(new Path("d1.s1"))
                 .addSelectedPath(new Path("d1.s4"))
-                .setIExpression(IExpression);
+                .setExpression(IExpression);
         QueryDataSet queryDataSet = tsFile.query(queryExpression);
         long aimedTimestamp = 1480562618000L;
         while (queryDataSet.hasNext()) {
@@ -88,7 +88,7 @@ public class ReadOnlyTsFileTest {
         queryExpression = QueryExpression.create()
                 .addSelectedPath(new Path("d1.s1"))
                 .addSelectedPath(new Path("d1.s4"))
-                .setIExpression(new GlobalTimeExpression(filter3));
+                .setExpression(new GlobalTimeExpression(filter3));
         queryDataSet = tsFile.query(queryExpression);
         aimedTimestamp = 1480562618000L;
         count = 0;

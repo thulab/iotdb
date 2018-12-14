@@ -1,34 +1,32 @@
 package cn.edu.tsinghua.iotdb.performance;
 
 import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeltaObject;
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
-import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
-import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
 import cn.edu.tsinghua.tsfile.read.TsRandomAccessLocalFileReader;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.SeriesReader;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.TimeValuePairReader;
-import cn.edu.tsinghua.tsfile.write.TsFileWriter;
-import cn.edu.tsinghua.tsfile.write.desc.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SeriesFilter;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.FileSeriesReader;
+import cn.edu.tsinghua.tsfile.timeseries.readV2.reader.IReader;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.write.page.IPageWriter;
 import cn.edu.tsinghua.tsfile.write.page.PageWriterImpl;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.write.series.SeriesWriterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +41,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static cn.edu.tsinghua.iotdb.performance.CreatorUtils.*;
-import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getTsFileMetadata;
-import static cn.edu.tsinghua.iotdb.performance.ReaderCreator.getUnSeqFileMetaData;
 
 public class WriteAnalysis {
 
@@ -55,7 +51,7 @@ public class WriteAnalysis {
     private static String fileFolderName;
     private static String unSeqFilePath;
 
-    private static Map<String, Map<String, List<TimeSeriesChunkMetaData>>> unSeqFileMetaData;
+    private static Map<String, Map<String, List<ChunkMetaData>>> unSeqFileMetaData;
     private static Map<String, Pair<Long, Long>> unSeqFileDeltaObjectTimeRangeMap;
 
     private static long max = -1;
@@ -83,13 +79,13 @@ public class WriteAnalysis {
 
     private void initUnSeqFileStatistics() {
         unSeqFileDeltaObjectTimeRangeMap = new HashMap<>();
-        for (Map.Entry<String, Map<String, List<TimeSeriesChunkMetaData>>> entry : unSeqFileMetaData.entrySet()) {
+        for (Map.Entry<String, Map<String, List<ChunkMetaData>>> entry : unSeqFileMetaData.entrySet()) {
             String unSeqDeltaObjectId = entry.getKey();
             long maxTime = Long.MIN_VALUE, minTime = Long.MAX_VALUE;
-            for (List<TimeSeriesChunkMetaData> timeSeriesChunkMetaDataList : entry.getValue().values()) {
-                for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
-                    minTime = Math.min(minTime, timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getStartTime());
-                    maxTime = Math.max(maxTime, timeSeriesChunkMetaData.getTInTimeSeriesChunkMetaData().getEndTime());
+            for (List<ChunkMetaData> timeSeriesChunkMetaDataList : entry.getValue().values()) {
+                for (ChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
+                    minTime = Math.min(minTime, timeSeriesChunkMetaData.getStartTime());
+                    maxTime = Math.max(maxTime, timeSeriesChunkMetaData.getEndTime());
                 }
             }
             unSeqFileDeltaObjectTimeRangeMap.put(unSeqDeltaObjectId, new Pair<>(minTime, maxTime));
@@ -148,13 +144,13 @@ public class WriteAnalysis {
 
                             if (unSeqFileMetaData.get(deltaObjectId).containsKey(measurementId)) {
 
-                                TimeValuePairReader seriesReader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
+                                IReader reader = ReaderCreator.createReaderForMerge(file.getPath(), unSeqFilePath,
                                         new Path(deltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
                                         tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
 
-                                if (!seriesReader.hasNext()) {
+                                if (!reader.hasNext()) {
                                     // LOGGER.debug("The time-series {} has no data");
-                                    seriesReader.close();
+                                    reader.close();
                                 } else {
 
                                     if (!isRowGroupHasData) {
@@ -173,11 +169,11 @@ public class WriteAnalysis {
 
                                     // write the series data
                                     recordCount += writeOneSeries(deltaObjectId, measurementId, seriesWriterImpl, dataType,
-                                            (SeriesReader) seriesReader, new HashMap<>(), new HashMap<>());
+                                            (FileSeriesReader) reader, new HashMap<>(), new HashMap<>());
                                     // flush the series data
                                     seriesWriterImpl.writeToFileWriter(fileIOWriter);
 
-                                    seriesReader.close();
+                                    reader.close();
                                 }
                             }
                         }
@@ -189,7 +185,7 @@ public class WriteAnalysis {
                         }
                     }
                 }
-                
+
                 fileIOWriter.endFile(fileSchema);
                 randomAccessFileReader.close();
                 long oneFileMergeEndTime = System.currentTimeMillis();
@@ -251,7 +247,7 @@ public class WriteAnalysis {
                             Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
                             Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
                             SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-                            TimeValuePairReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+                            IReader reader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
 
                             //long tmpRecordCount = 0;
                             while (reader.hasNext()) {
@@ -327,7 +323,7 @@ public class WriteAnalysis {
                                 Filter<?> filter = FilterFactory.and(TimeFilter.gtEq(tsFileDeltaObjectStartTime), TimeFilter.ltEq(tsFileDeltaObjectEndTime));
                                 Path seriesPath = new Path(tsFileDeltaObjectId + "." + measurementId);
                                 SeriesFilter<?> seriesFilter = new SeriesFilter<>(seriesPath, filter);
-                                TimeValuePairReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
+                                IReader tsFileReader = SeriesReaderFactory.getInstance().genTsFileSeriesReader(file.getPath(), seriesFilter);
                                 while (tsFileReader.hasNext()) {
                                     TimeValuePair tp = tsFileReader.next();
                                     count ++;
@@ -335,7 +331,7 @@ public class WriteAnalysis {
                                 tsFileReader.close();
 
 
-                                TimeValuePairReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
+                                IReader overflowInsertReader = ReaderCreator.createReaderOnlyForOverflowInsert(unSeqFilePath,
                                         new Path(tsFileDeltaObjectId + "." + timeSeriesMetadata.getMeasurementUID()),
                                         tsFileDeltaObjectStartTime, tsFileDeltaObjectEndTime);
                                 while (overflowInsertReader.hasNext()) {
@@ -358,12 +354,12 @@ public class WriteAnalysis {
     }
 
     private int writeOneSeries(String deltaObjectId, String measurement, SeriesWriterImpl seriesWriterImpl,
-                               TSDataType dataType, SeriesReader seriesReader, Map<String, Long> startTimeMap,
+                               TSDataType dataType, FileSeriesReader reader, Map<String, Long> startTimeMap,
                                Map<String, Long> endTimeMap) throws IOException {
         int count = 0;
-        if (!seriesReader.hasNext())
+        if (!reader.hasNext())
             return 0;
-        TimeValuePair timeValuePair = seriesReader.next();
+        TimeValuePair timeValuePair = reader.next();
         long startTime = -1;
         long endTime = -1;
         switch (dataType) {
@@ -377,9 +373,9 @@ public class WriteAnalysis {
                 if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                     endTimeMap.put(deltaObjectId, endTime);
                 }
-                while (seriesReader.hasNext()) {
+                while (reader.hasNext()) {
                     count++;
-                    timeValuePair = seriesReader.next();
+                    timeValuePair = reader.next();
                     endTime = timeValuePair.getTimestamp();
                     seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getBoolean());
                 }
@@ -397,9 +393,9 @@ public class WriteAnalysis {
                 if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                     endTimeMap.put(deltaObjectId, endTime);
                 }
-                while (seriesReader.hasNext()) {
+                while (reader.hasNext()) {
                     count++;
-                    timeValuePair = seriesReader.next();
+                    timeValuePair = reader.next();
                     endTime = timeValuePair.getTimestamp();
                     seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getInt());
                 }
@@ -417,9 +413,9 @@ public class WriteAnalysis {
                 if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                     endTimeMap.put(deltaObjectId, endTime);
                 }
-                while (seriesReader.hasNext()) {
+                while (reader.hasNext()) {
                     count++;
-                    timeValuePair = seriesReader.next();
+                    timeValuePair = reader.next();
                     endTime = timeValuePair.getTimestamp();
                     seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getLong());
                 }
@@ -437,9 +433,9 @@ public class WriteAnalysis {
                 if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                     endTimeMap.put(deltaObjectId, endTime);
                 }
-                while (seriesReader.hasNext()) {
+                while (reader.hasNext()) {
                     count++;
-                    timeValuePair = seriesReader.next();
+                    timeValuePair = reader.next();
                     endTime = timeValuePair.getTimestamp();
                     seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getFloat());
                 }
@@ -457,9 +453,9 @@ public class WriteAnalysis {
                 if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                     endTimeMap.put(deltaObjectId, endTime);
                 }
-                while (seriesReader.hasNext()) {
+                while (reader.hasNext()) {
                     count++;
-                    timeValuePair = seriesReader.next();
+                    timeValuePair = reader.next();
                     endTime = timeValuePair.getTimestamp();
                     seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getDouble());
                 }
@@ -477,9 +473,9 @@ public class WriteAnalysis {
                 if (!endTimeMap.containsKey(deltaObjectId) || endTimeMap.get(deltaObjectId) < endTime) {
                     endTimeMap.put(deltaObjectId, endTime);
                 }
-                while (seriesReader.hasNext()) {
+                while (reader.hasNext()) {
                     count++;
-                    timeValuePair = seriesReader.next();
+                    timeValuePair = reader.next();
                     endTime = timeValuePair.getTimestamp();
                     seriesWriterImpl.write(timeValuePair.getTimestamp(), timeValuePair.getValue().getBinary());
                 }

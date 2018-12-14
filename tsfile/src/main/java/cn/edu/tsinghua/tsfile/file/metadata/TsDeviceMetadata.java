@@ -50,6 +50,15 @@ public class TsDeviceMetadata{
     }
 
     /**
+     * set the ChunkGroupMetadataList and recalculate serialized size.
+     * @param chunkGroupMetadataList
+     */
+    public void setChunkGroupMetadataList(List<ChunkGroupMetaData> chunkGroupMetadataList){
+        this.chunkGroupMetadataList = chunkGroupMetadataList;
+        reCalculateSerializedSize();
+    }
+
+    /**
      * add chunk group metadata to chunkGroups. THREAD NOT SAFE
      *
      * @param chunkGroup - chunk group metadata to add
@@ -96,7 +105,6 @@ public class TsDeviceMetadata{
             for (ChunkGroupMetaData chunkGroupMetaData : chunkGroupMetadataList)
                 byteLen += chunkGroupMetaData.serializeTo(outputStream);
         }
-
         assert getSerializedSize() == byteLen;
         return byteLen;
     }

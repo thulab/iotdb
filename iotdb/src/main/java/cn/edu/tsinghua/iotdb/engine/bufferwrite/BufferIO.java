@@ -4,26 +4,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileWriter;
-import cn.edu.tsinghua.tsfile.file.metadata.RowGroupMetaData;
-import cn.edu.tsinghua.tsfile.write.io.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileOutput;
+
 
 public class BufferIO extends TsFileIOWriter {
 
 	private int lastRowGroupIndex = 0;
-	private List<RowGroupMetaData> append;
+	private List<ChunkGroupMetaData> append;
 
-	public BufferIO(ITsRandomAccessFileWriter output, long offset, List<RowGroupMetaData> rowGroups)
+	public BufferIO(TsFileOutput tsFileOutput, List<ChunkGroupMetaData> rowGroups)
 			throws IOException {
-		super(output, offset, rowGroups);
+		super(tsFileOutput,rowGroups);
 		lastRowGroupIndex = rowGroups.size();
 		append = new ArrayList<>();
 	}
 
-	public List<RowGroupMetaData> getAppendedRowGroupMetadata() {
-		if (lastRowGroupIndex < getRowGroups().size()) {
+	public List<ChunkGroupMetaData> getAppendedRowGroupMetadata() {
+		if (lastRowGroupIndex < getChunkGroupMetaDatas().size()) {
 			append.clear();
-			List<RowGroupMetaData> all = getRowGroups();
+			List<ChunkGroupMetaData> all = getChunkGroupMetaDatas();
 			for (int i = lastRowGroupIndex; i < all.size(); i++) {
 				append.add(all.get(i));
 			}

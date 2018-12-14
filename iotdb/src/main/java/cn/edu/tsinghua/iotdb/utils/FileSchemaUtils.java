@@ -3,13 +3,13 @@ package cn.edu.tsinghua.iotdb.utils;
 import java.util.List;
 import java.util.Map.Entry;
 
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
-import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 public class FileSchemaUtils {

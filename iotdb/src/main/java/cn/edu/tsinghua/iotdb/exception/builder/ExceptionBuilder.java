@@ -41,7 +41,7 @@ public class ExceptionBuilder {
             properties.load(new InputStreamReader(in,"utf-8"));
             in.close();
         } catch (IOException e) {
-            LOGGER.error("Read file error. File does not exist or file is broken. File path: {}.Because: {}.",filePath,e.getMessage());
+            LOGGER.error("Read file error. File does not exist or file is broken. File seriesPath: {}.Because: {}.",filePath,e.getMessage());
         } finally {
             if (in != null) {
                 try {
