@@ -5,17 +5,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
+import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.tsfile.common.constant.SystemConstant;
-import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
-import cn.edu.tsinghua.tsfile.read.filter.definition.SingleSeriesFilterExpression;
-import cn.edu.tsinghua.tsfile.read.filter.utils.FilterUtils;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
-import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 
 /**
@@ -48,7 +45,7 @@ public class MemIntQpExecutorTest {
         List<Path> pathList = new ArrayList<Path>();
         pathList.add(path1);
         pathList.add(path2);
-        OnePassQueryDataSet ret = null;
+        QueryDataSet ret = null;
 
         while (true) {
             ret = processor.getExecutor().query(0, pathList, null, null, null, 1, ret);

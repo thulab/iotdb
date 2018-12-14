@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.qp.utils;
 
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
@@ -21,6 +22,7 @@ import cn.edu.tsinghua.tsfile.read.query.OnePassQueryDataSet;
 import cn.edu.tsinghua.tsfile.read.support.Field;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.support.OldRowRecord;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +43,6 @@ import java.util.TreeSet;
  */
 public class MemIntQpExecutor extends QueryProcessExecutor {
     private static Logger LOG = LoggerFactory.getLogger(MemIntQpExecutor.class);
-
-    private SingleValueVisitor<Long> timeVisitor = new SingleValueVisitor<>();
-    private SingleValueVisitor<Integer> valueVisitor = new SingleValueVisitor<>();
 
     //pathStr, TreeMap<time, value>
     private Map<String, TestSeries> demoMemDataBase = new HashMap<>();
