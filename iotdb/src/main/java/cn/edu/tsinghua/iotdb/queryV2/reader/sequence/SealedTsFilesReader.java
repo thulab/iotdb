@@ -30,12 +30,10 @@ public class SealedTsFilesReader implements IReader {
     private BatchData data;
     private boolean hasCachedData;
 
-
     public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles, Filter filter) {
         this(path, sealedTsFiles);
         this.filter = filter;
     }
-
 
     public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles) {
         this.seriesPath = path;
@@ -49,7 +47,6 @@ public class SealedTsFilesReader implements IReader {
         this.seriesReader = seriesReader;
         sealedTsFiles = new ArrayList<>();
     }
-
 
     @Override
     public boolean hasNext() throws IOException {

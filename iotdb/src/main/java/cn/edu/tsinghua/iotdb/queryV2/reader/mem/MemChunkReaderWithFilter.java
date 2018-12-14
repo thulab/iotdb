@@ -12,65 +12,63 @@ import java.util.Iterator;
 
 public class MemChunkReaderWithFilter implements IReader {
 
-    private Iterator<TimeValuePair> timeValuePairIterator;
-    private Filter filter;
-    private boolean hasCachedTimeValuePair;
-    private TimeValuePair cachedTimeValuePair;
+  private Iterator<TimeValuePair> timeValuePairIterator;
+  private Filter filter;
+  private boolean hasCachedTimeValuePair;
+  private TimeValuePair cachedTimeValuePair;
 
-    public MemChunkReaderWithFilter(RawSeriesChunk rawSeriesChunk, Filter filter) {
-        timeValuePairIterator = rawSeriesChunk.getIterator();
-        this.filter = filter;
+  public MemChunkReaderWithFilter(RawSeriesChunk rawSeriesChunk, Filter filter) {
+    timeValuePairIterator = rawSeriesChunk.getIterator();
+    this.filter = filter;
+  }
+
+  @Override
+  public boolean hasNext() {
+    if (hasCachedTimeValuePair) {
+      return true;
     }
-
-    @Override
-    public boolean hasNext() {
-        if (hasCachedTimeValuePair) {
-            return true;
-        }
-        while (timeValuePairIterator.hasNext()) {
-            TimeValuePair timeValuePair = timeValuePairIterator.next();
-            if (filter.satisfy(timeValuePair.getTimestamp(), timeValuePair.getValue().getValue())) {
-                hasCachedTimeValuePair = true;
-                cachedTimeValuePair = timeValuePair;
-                break;
-            }
-        }
-        return hasCachedTimeValuePair;
+    while (timeValuePairIterator.hasNext()) {
+      TimeValuePair timeValuePair = timeValuePairIterator.next();
+      if (filter.satisfy(timeValuePair.getTimestamp(), timeValuePair.getValue().getValue())) {
+        hasCachedTimeValuePair = true;
+        cachedTimeValuePair = timeValuePair;
+        break;
+      }
     }
+    return hasCachedTimeValuePair;
+  }
 
-    @Override
-    public TimeValuePair next() {
-        if(hasCachedTimeValuePair){
-            hasCachedTimeValuePair = false;
-            return cachedTimeValuePair;
-        }
-        else {
-            return timeValuePairIterator.next();
-        }
+  @Override
+  public TimeValuePair next() {
+    if (hasCachedTimeValuePair) {
+      hasCachedTimeValuePair = false;
+      return cachedTimeValuePair;
+    } else {
+      return timeValuePairIterator.next();
     }
+  }
 
-    @Override
-    public void skipCurrentTimeValuePair() {
-        next();
-    }
+  @Override
+  public void skipCurrentTimeValuePair() {
+    next();
+  }
 
-    @Override
-    public void close() throws IOException {
+  @Override
+  public void close() throws IOException {
+  }
 
-    }
+  @Override
+  public boolean hasNextBatch() {
+    return false;
+  }
 
-    @Override
-    public boolean hasNextBatch() {
-        return false;
-    }
+  @Override
+  public BatchData nextBatch() {
+    return null;
+  }
 
-    @Override
-    public BatchData nextBatch() {
-        return null;
-    }
-
-    @Override
-    public BatchData currentBatch() {
-        return null;
-    }
+  @Override
+  public BatchData currentBatch() {
+    return null;
+  }
 }
