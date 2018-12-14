@@ -67,7 +67,7 @@ public class TSPlanContextPropertyTest {
     }
 
     @Test
-    public void testanalyzeMetadata() throws QueryProcessorException, ArgsErrorException, ProcessorException {
+    public void testAnalyzeMetadata() throws QueryProcessorException, ArgsErrorException, ProcessorException {
         QueryProcessor processor = new QueryProcessor(new MemIntQpExecutor());
         PropertyPlan plan = (PropertyPlan) processor.parseSQLToPhysicalPlan(inputSQL);
         assertEquals(propertyType, plan.getPropertyType());

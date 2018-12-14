@@ -21,9 +21,6 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * test ast node parsing on authorization
- * 
- * @author kangrong
- *
  */
 @RunWith(Parameterized.class)
 public class TSPlanContextAuthorTest {
