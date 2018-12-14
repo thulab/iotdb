@@ -2,13 +2,12 @@ package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
 import static org.junit.Assert.*;
 
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
 
 public class OverflowSeriesImplTest {
 

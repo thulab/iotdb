@@ -12,8 +12,8 @@ import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.write.exception.WriteProcessException;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 

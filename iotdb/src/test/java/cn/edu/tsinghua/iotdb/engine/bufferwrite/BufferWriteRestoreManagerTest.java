@@ -9,6 +9,7 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.junit.After;
 import org.junit.Before;

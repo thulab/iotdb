@@ -4,7 +4,6 @@ import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFRowGroupListMetadata;
 import cn.edu.tsinghua.iotdb.engine.overflow.metadata.OFSeriesListMetadata;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.reader.TsFileInput;
-import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileOutput;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -21,9 +20,10 @@ import java.util.Map;
 public class OverflowIO extends TsFileIOWriter {
 	private OverflowReadWriter overflowReadWriter;
 
-	public OverflowIO(OverflowReadWriter overflowReadWriter, boolean isInsert) throws IOException {
+	public OverflowIO(OverflowReadWriter overflowReadWriter) throws IOException {
 		super(overflowReadWriter,new ArrayList<>());
 		this.overflowReadWriter = overflowReadWriter;
+		toTail();
 	}
 
 	@Deprecated

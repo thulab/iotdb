@@ -71,12 +71,13 @@ public class OverflowProcessorTest {
 		assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
 		assertEquals(0,
 				overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
-		assertEquals(1, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());
-		assertEquals(0, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
-				.getTimeSeriesChunkMetaDataList().size());
-		assertEquals(OverflowTestUtils.dataType1,
-				overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getDataType());
-		DynamicOneColumnData updateMem = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries()
+		// deprecated the update and delete
+		//assertEquals(1, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());
+		//assertEquals(0, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
+		//		.getTimeSeriesChunkMetaDataList().size());
+		//assertEquals(OverflowTestUtils.dataType1,
+		//		overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getDataType());
+		/*DynamicOneColumnData updateMem = overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries()
 				.getOverflowUpdateInMem();
 		assertEquals(2, updateMem.getTime(0));
 		assertEquals(10, updateMem.getTime(1));
@@ -84,7 +85,7 @@ public class OverflowProcessorTest {
 		assertEquals(30, updateMem.getTime(3));
 
 		assertEquals(10, updateMem.getInt(0));
-		assertEquals(20, updateMem.getInt(1));
+		assertEquals(20, updateMem.getInt(1));*/
 		// flush asynchronously
 		processor.flush();
 		assertEquals(true, processor.isFlush());
@@ -98,9 +99,10 @@ public class OverflowProcessorTest {
 		assertEquals(OverflowTestUtils.dataType1, overflowSeriesDataSource.getDataType());
 		assertEquals(false, overflowSeriesDataSource.getRawChunk().isEmpty());
 		assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
-		assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
+		// deprecate the update and delete
+		/*assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
 		assertEquals(1, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
-				.getTimeSeriesChunkMetaDataList().size());
+				.getTimeSeriesChunkMetaDataList().size());*/
 		Iterator<TimeValuePair> iterator = overflowSeriesDataSource.getRawChunk().getIterator();
 		for (int i = 1; i <= 3; i++) {
 			iterator.hasNext();
@@ -113,9 +115,10 @@ public class OverflowProcessorTest {
 		overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
 				null, OverflowTestUtils.dataType1);
 		assertEquals(true, overflowSeriesDataSource.getRawChunk().isEmpty());
-		assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
+		// deprecate the update and delete
+		/*assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
 		assertEquals(1, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
-				.getTimeSeriesChunkMetaDataList().size());
+				.getTimeSeriesChunkMetaDataList().size());*/
 		assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
 		assertEquals(1,
 				overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
@@ -127,11 +130,11 @@ public class OverflowProcessorTest {
 				overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
 		assertEquals(0,
 				overflowSeriesDataSource.getOverflowInsertFileList().get(1).getChunkMetaDataList().size());
-		assertEquals(2, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());
+		/*assertEquals(2, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());
 		assertEquals(1, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
 				.getTimeSeriesChunkMetaDataList().size());
 		assertEquals(0, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(1)
-				.getTimeSeriesChunkMetaDataList().size());
+				.getTimeSeriesChunkMetaDataList().size());*/
 		assertEquals(true, processor.isMerge());
 		assertEquals(false, processor.canBeClosed());
 		MergeSeriesDataSource mergeSeriesDataSource = processor.queryMerge(OverflowTestUtils.deltaObjectId1,
@@ -157,9 +160,10 @@ public class OverflowProcessorTest {
 		assertEquals(true, overflowSeriesDataSource.getRawChunk().isEmpty());
 		assertEquals(0,
 				overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
-		assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
+		// deprecate update and delete
+		/*assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
 		assertEquals(0, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().get(0)
-				.getTimeSeriesChunkMetaDataList().size());
+				.getTimeSeriesChunkMetaDataList().size());*/
 		processor.clear();
 	}
 
@@ -199,8 +203,9 @@ public class OverflowProcessorTest {
 				OverflowTestUtils.measurementId1, null, OverflowTestUtils.dataType1);
 		assertEquals(true, overflowSeriesDataSource.getRawChunk().isEmpty());
 		assertEquals(2, overflowSeriesDataSource.getOverflowInsertFileList().size());
-		assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
-		assertEquals(2, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());
+		// deprecate update and delete
+		/*assertEquals(null, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateInMem());
+		assertEquals(2, overflowSeriesDataSource.getUpdateDeleteInfoOfOneSeries().getOverflowUpdateFileList().size());*/
 		overflowProcessor.switchMergeToWork();
 		overflowProcessor.close();
 		overflowProcessor.clear();

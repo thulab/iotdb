@@ -10,6 +10,7 @@ import java.util.List;
 
 import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
+import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
