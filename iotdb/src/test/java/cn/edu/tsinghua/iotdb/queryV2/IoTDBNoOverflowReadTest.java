@@ -50,7 +50,6 @@ public class IoTDBNoOverflowReadTest {
   @Test
   public void test() throws ClassNotFoundException, SQLException, InterruptedException, FileNotFoundException {
 
-
     Thread.sleep(5000);
     insertSQL();
 

@@ -100,95 +100,95 @@ public class PhysicalPlanTest {
 
 // TODO uncomment these code when implement aggregation and fill function
 
-//    @Test
-//    public void testAggregation() throws QueryProcessorException, ArgsErrorException, ProcessorException {
-//        String sqlStr =
-//                "select sum(d1.s1) " + "from root.vehicle "
-//                        + "where time <= 51 or !(time != 100 and time < 460)";
-//        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        if (!plan.isQuery())
-//            fail();
-//        AggregationPlan mergePlan = (AggregationPlan) plan;
-//        assertEquals("sum", mergePlan.getAggregations().get(0));
-//    }
-//
-//    @Test
-//    public void testGroupBy1() throws QueryProcessorException, ArgsErrorException, ProcessorException {
-//        String sqlStr =
-//                "select count(s1) "
-//                        + "from root.vehicle.d1 "
-//                        + "where s1 < 20 and time <= now() "
-//                        + "group by(10m, 44, [1,3], [4,5])";
-//        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        if (!plan.isQuery())
-//            fail();
-//        GroupByPlan mergePlan = (GroupByPlan) plan;
-//        assertEquals(44, mergePlan.getOrigin());
-//    }
-//
-//    @Test
-//    public void testGroupBy2() throws QueryProcessorException, ArgsErrorException, ProcessorException {
-//        String sqlStr =
-//                "select count(s1) "
-//                        + "from root.vehicle.d1 "
-//                        + "where s1 < 20 and time <= now() "
-//                        + "group by(111ms, [123,2017-6-2T12:00:12+07:00], [55555, now()])";
-//        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        if (!plan.isQuery())
-//            fail();
-//        GroupByPlan mergePlan = (GroupByPlan) plan;
-//        assertEquals(111, mergePlan.getUnit());
-//    }
+    @Test
+    public void testAggregation() throws QueryProcessorException, ArgsErrorException, ProcessorException {
+        String sqlStr =
+                "select sum(d1.s1) " + "from root.vehicle "
+                        + "where time <= 51 or !(time != 100 and time < 460)";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        AggregationPlan mergePlan = (AggregationPlan) plan;
+        assertEquals("sum", mergePlan.getAggregations().get(0));
+    }
 
-//    @Test
-//    public void testFill1() throws QueryProcessorException, ArgsErrorException, ProcessorException {
-//        String sqlStr =
-//                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear, 5m, 5m], boolean[previous, 5m])";
-//        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        if (!plan.isQuery())
-//            fail();
-//        FillQueryPlan mergePlan = (FillQueryPlan) plan;
-//        assertEquals(5000, mergePlan.getQueryTime());
-//        assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
-//        assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
-//        assertEquals(300000, ((PreviousFill)mergePlan.getFillType().get(TSDataType.BOOLEAN)).getBeforeRange());
-//    }
-//
-//    @Test
-//    public void testFill2() throws QueryProcessorException, ArgsErrorException, ProcessorException {
-//        String sqlStr =
-//                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear], boolean[previous])";
-//        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        if (!plan.isQuery())
-//            fail();
-//        FillQueryPlan mergePlan = (FillQueryPlan) plan;
-//        assertEquals(5000, mergePlan.getQueryTime());
-//        assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
-//        assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
-//        assertEquals(-1, ((PreviousFill)mergePlan.getFillType().get(TSDataType.BOOLEAN)).getBeforeRange());
-//    }
-//
-//    @Test
-//    public void testFill3() throws QueryProcessorException, ArgsErrorException {
-//        String sqlStr =
-//                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear, 5m], boolean[previous])";
-//        try {
-//            PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        } catch (Exception e) {
-//            assertTrue(true);
-//        }
-//    }
-//
-//    @Test
-//    public void testFill4() throws QueryProcessorException, ArgsErrorException {
-//        String sqlStr =
-//                "SELECT s1 FROM root.vehicle.d1 WHERE time > 5000 Fill(int32[linear], boolean[previous])";
-//        try {
-//            PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
-//        } catch (Exception e) {
-//            assertEquals("Only \"=\" can be used in fill function", e.getMessage().toString());
-//        }
-//    }
+    @Test
+    public void testGroupBy1() throws QueryProcessorException, ArgsErrorException, ProcessorException {
+        String sqlStr =
+                "select count(s1) "
+                        + "from root.vehicle.d1 "
+                        + "where s1 < 20 and time <= now() "
+                        + "group by(10m, 44, [1,3], [4,5])";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        GroupByPlan mergePlan = (GroupByPlan) plan;
+        assertEquals(44, mergePlan.getOrigin());
+    }
+
+    @Test
+    public void testGroupBy2() throws QueryProcessorException, ArgsErrorException, ProcessorException {
+        String sqlStr =
+                "select count(s1) "
+                        + "from root.vehicle.d1 "
+                        + "where s1 < 20 and time <= now() "
+                        + "group by(111ms, [123,2017-6-2T12:00:12+07:00], [55555, now()])";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        GroupByPlan mergePlan = (GroupByPlan) plan;
+        assertEquals(111, mergePlan.getUnit());
+    }
+
+    @Test
+    public void testFill1() throws QueryProcessorException, ArgsErrorException, ProcessorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear, 5m, 5m], boolean[previous, 5m])";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        FillQueryPlan mergePlan = (FillQueryPlan) plan;
+        assertEquals(5000, mergePlan.getQueryTime());
+        assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
+        assertEquals(300000, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
+        assertEquals(300000, ((PreviousFill)mergePlan.getFillType().get(TSDataType.BOOLEAN)).getBeforeRange());
+    }
+
+    @Test
+    public void testFill2() throws QueryProcessorException, ArgsErrorException, ProcessorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear], boolean[previous])";
+        PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        if (!plan.isQuery())
+            fail();
+        FillQueryPlan mergePlan = (FillQueryPlan) plan;
+        assertEquals(5000, mergePlan.getQueryTime());
+        assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getBeforeRange());
+        assertEquals(-1, ((LinearFill)mergePlan.getFillType().get(TSDataType.INT32)).getAfterRange());
+        assertEquals(-1, ((PreviousFill)mergePlan.getFillType().get(TSDataType.BOOLEAN)).getBeforeRange());
+    }
+
+    @Test
+    public void testFill3() throws QueryProcessorException, ArgsErrorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time = 5000 Fill(int32[linear, 5m], boolean[previous])";
+        try {
+            PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        } catch (Exception e) {
+            assertTrue(true);
+        }
+    }
+
+    @Test
+    public void testFill4() throws QueryProcessorException, ArgsErrorException {
+        String sqlStr =
+                "SELECT s1 FROM root.vehicle.d1 WHERE time > 5000 Fill(int32[linear], boolean[previous])";
+        try {
+            PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
+        } catch (Exception e) {
+            assertEquals("Only \"=\" can be used in fill function", e.getMessage().toString());
+        }
+    }
 
   @Test
   public void testQuery1() throws QueryProcessorException, ArgsErrorException, ProcessorException {
@@ -228,7 +228,10 @@ public class PhysicalPlanTest {
             "SELECT s1 FROM root.vehicle.d1 WHERE time > 50 and time <= 100 and s1 < 10";
     PhysicalPlan plan = processor.parseSQLToPhysicalPlan(sqlStr);
     IExpression queryFilter = ((QueryPlan) plan).getExpression();
-    IExpression expect = new SingleSeriesExpression(new Path("root.vehicle.d1.s1"), FilterFactory.and(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L)), ValueFilter.lt(10)));
+
+    IExpression expect = BinaryExpression.and(new SingleSeriesExpression(new Path("root.vehicle.d1.s1"), ValueFilter.lt(10)),
+            new GlobalTimeExpression(FilterFactory.and(TimeFilter.gt(50L), TimeFilter.ltEq(100L))));
+
     assertEquals(expect.toString(), queryFilter.toString());
 
     Path path = new Path("root.vehicle.d1.s1");

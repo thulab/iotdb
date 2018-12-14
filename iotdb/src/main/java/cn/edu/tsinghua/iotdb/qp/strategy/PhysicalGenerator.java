@@ -206,14 +206,14 @@ public class PhysicalGenerator {
             ((GroupByPlan) queryPlan).setUnit(queryOperator.getUnit());
             ((GroupByPlan) queryPlan).setOrigin(queryOperator.getOrigin());
             ((GroupByPlan) queryPlan).setIntervals(queryOperator.getIntervals());
-//        } else if (queryOperator.isFill()) {
-//            queryPlan = new FillQueryPlan();
-//            FilterOperator timeFilter = queryOperator.getFilterOperator();
-//            if (!timeFilter.isSingle())
-//                throw new QueryProcessorException("Slice query must select a single time point");
-//            long time = Long.parseLong(((BasicFunctionOperator) timeFilter).getValue());
-//            ((FillQueryPlan) queryPlan).setQueryTime(time);
-//            ((FillQueryPlan) queryPlan).setFillType(queryOperator.getFillTypes());
+        } else if (queryOperator.isFill()) {
+            queryPlan = new FillQueryPlan();
+            FilterOperator timeFilter = queryOperator.getFilterOperator();
+            if (!timeFilter.isSingle())
+                throw new QueryProcessorException("Slice query must select a single time point");
+            long time = Long.parseLong(((BasicFunctionOperator) timeFilter).getValue());
+            ((FillQueryPlan) queryPlan).setQueryTime(time);
+            ((FillQueryPlan) queryPlan).setFillType(queryOperator.getFillTypes());
         } else if (queryOperator.hasAggregation()) { // ordinary query
             queryPlan = new AggregationPlan();
             ((AggregationPlan) queryPlan).setAggregations(queryOperator.getSelectOperator().getAggregations());

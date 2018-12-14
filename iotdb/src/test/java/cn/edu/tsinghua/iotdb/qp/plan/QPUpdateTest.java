@@ -34,7 +34,7 @@ public class QPUpdateTest {
 	public void test() throws QueryProcessorException, ArgsErrorException, ProcessorException, IOException {
         init();
 //        testUpdate();
-        testUpdate2();
+//        testUpdate2();
 //        testDelete();
 //        testInsert();
 //        testDeletePaths();
