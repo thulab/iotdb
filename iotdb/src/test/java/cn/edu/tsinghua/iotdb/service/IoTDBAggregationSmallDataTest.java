@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.engine.AggregateEngine;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 /**
