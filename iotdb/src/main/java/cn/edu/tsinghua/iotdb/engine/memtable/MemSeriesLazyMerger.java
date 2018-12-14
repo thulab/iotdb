@@ -15,6 +15,9 @@ public class MemSeriesLazyMerger implements TimeValuePairSorter{
         memSeriesList = new ArrayList<>();
     }
 
+    /**
+     * @param memSerieses Please ensure that the  memSerieses are in ascending order by timestamp.
+     */
     public MemSeriesLazyMerger(IMemSeries... memSerieses) {
         this();
         Collections.addAll(memSeriesList, memSerieses);
@@ -29,6 +32,7 @@ public class MemSeriesLazyMerger implements TimeValuePairSorter{
         memSeriesList.add(series);
     }
 
+    @Override
     public List<TimeValuePair> getSortedTimeValuePairList() {
         if (memSeriesList.size() == 0) {
             return new ArrayList<>();

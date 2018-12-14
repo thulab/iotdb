@@ -140,7 +140,7 @@ public class TsFileWriter {
      *                    }
      * @throws WriteProcessException if the json is illegal or the measurement exists
      */
-    public void addMeasurementByJson(JSONObject measurement) throws WriteProcessException {
+    void addMeasurementByJson(JSONObject measurement) throws WriteProcessException {
         addMeasurement(JsonConverter.convertJsonToMeasurementSchema(measurement));
     }
 
@@ -152,7 +152,7 @@ public class TsFileWriter {
      * @return - whether the record has been added into RecordWriter legally
      * @throws WriteProcessException exception
      */
-    protected boolean checkIsTimeSeriesExist(TSRecord record) throws WriteProcessException {
+    private boolean checkIsTimeSeriesExist(TSRecord record) throws WriteProcessException {
         IChunkGroupWriter groupWriter;
         if (!groupWriters.containsKey(record.deviceId)) {
             groupWriter = new ChunkGroupWriterImpl(record.deviceId);
@@ -200,7 +200,7 @@ public class TsFileWriter {
      *
      * @return total memory size used
      */
-    public long calculateMemSizeForAllGroup() {
+    private long calculateMemSizeForAllGroup() {
         int memTotalSize = 0;
         for (IChunkGroupWriter group : groupWriters.values()) {
             memTotalSize += group.updateMaxGroupMemSize();
@@ -243,7 +243,7 @@ public class TsFileWriter {
      * false - otherwise. But this function just return false, the Override of IoTDB may return true.
      * @throws IOException exception in IO
      */
-    protected boolean flushAllChunkGroups() throws IOException {
+    private boolean flushAllChunkGroups() throws IOException {
         if (recordCount > 0) {
             long totalMemStart = fileWriter.getPos();
             //make sure all the pages have been compressed into buffers, so that we can get correct groupWriter.getCurrentChunkGroupSize().
