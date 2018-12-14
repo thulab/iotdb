@@ -39,7 +39,17 @@ public class TsFileSequenceReader {
      * @throws IOException If some I/O error occurs
      */
     public TsFileSequenceReader(String file) throws IOException {
+        this(file, true);
+    }
+
+
+    TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException{
         tsFileInput = new DefaultTsFileInput(Paths.get(file));
+        if(loadMetadataSize)
+            loadMetadataSize();
+    }
+
+    private void loadMetadataSize() throws IOException{
         ByteBuffer metadataSize = ByteBuffer.allocate(Integer.BYTES);
         tsFileInput.read(metadataSize, tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES);
         metadataSize.flip();
@@ -47,6 +57,7 @@ public class TsFileSequenceReader {
         fileMetadataPos = tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES - fileMetadataSize;
         tsFileInput.position(TSFileConfig.MAGIC_STRING.length());//skip the magic header
     }
+
 
     /**
      *
