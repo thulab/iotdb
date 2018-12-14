@@ -170,15 +170,15 @@ public class LogicalGenerator {
             case TSParser.TOK_LIST:
                 analyzeList(astNode);
                 return;
-//            case TSParser.TOK_LIMIT:
-//                analyzeLimit(astNode);
-//                return;
+            case TSParser.TOK_LIMIT:
+                analyzeLimit(astNode);
+                return;
             case TSParser.TOK_SLIMIT:
                 analyzeSlimit(astNode);
                 return;
-//            case TSParser.TOK_SOFFSET:
-//                analyzeSoffset(astNode);
-//                return;
+            case TSParser.TOK_SOFFSET:
+                analyzeSoffset(astNode);
+                return;
             default:
                 throw new QueryProcessorException("Not supported TSParser type" + tokenIntType);
         }
