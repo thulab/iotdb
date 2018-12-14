@@ -79,7 +79,7 @@ public class OverflowResource {
 			readWriter.wrapAsFileChannel().truncate(position.left);
 			// seek to zero
 			readWriter.wrapAsFileChannel().position(0);
-			insertIO = new OverflowIO(readWriter,true);
+			insertIO = new OverflowIO(readWriter);
 			readMetadata();
 		} catch (IOException e) {
 			LOGGER.error("Failed to construct the OverflowIO.", e);

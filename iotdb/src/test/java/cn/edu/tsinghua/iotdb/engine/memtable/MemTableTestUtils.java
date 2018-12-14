@@ -2,8 +2,8 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.write.desc.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 
 public class MemTableTestUtils {
 

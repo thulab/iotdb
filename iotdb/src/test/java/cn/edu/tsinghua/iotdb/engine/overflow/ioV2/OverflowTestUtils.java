@@ -4,13 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.write.desc.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 
 public class OverflowTestUtils {
 	public static String deltaObjectId1 = "d1";
