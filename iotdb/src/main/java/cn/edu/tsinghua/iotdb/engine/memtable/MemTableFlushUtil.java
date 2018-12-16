@@ -78,7 +78,7 @@ public class MemTableFlushUtil {
 			ChunkGroupFooter chunkGroupFooter = tsFileIOWriter.startFlushChunkGroup(deltaObjectId,0,
 					iMemTable.getMemTableMap().get(deltaObjectId).size());
 			for (String measurementId : iMemTable.getMemTableMap().get(deltaObjectId).keySet()) {
-				IMemSeries series = iMemTable.getMemTableMap().get(deltaObjectId).get(measurementId);
+				IWritableMemChunk series = iMemTable.getMemTableMap().get(deltaObjectId).get(measurementId);
 				MeasurementSchema desc = fileSchema.getMeasurementSchema(measurementId);
 				PageWriter pageWriter = new PageWriter(desc);
 				ChunkBuffer chunkBuffer = new ChunkBuffer(desc);

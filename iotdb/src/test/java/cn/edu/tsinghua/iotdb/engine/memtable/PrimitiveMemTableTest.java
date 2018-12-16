@@ -18,7 +18,7 @@ public class PrimitiveMemTableTest {
     @Test
     public void memSeriesCloneTest() {
         TSDataType dataType = TSDataType.INT32;
-        PrimitiveMemSeries series = new PrimitiveMemSeries(dataType);
+        WritableMemChunk series = new WritableMemChunk(dataType);
         int count = 1000;
         for (int i = 0; i < count; i++) {
             series.write(i, String.valueOf(i));

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-//TODO: merge ReadOnlyMemChunk and PrimitiveMemSeries and IMemSeries
+//TODO: merge ReadOnlyMemChunk and WritableMemChunk and IWritableMemChunk
 public class ReadOnlyMemChunk implements TimeValuePairSorter{
 
     private boolean initialized;
