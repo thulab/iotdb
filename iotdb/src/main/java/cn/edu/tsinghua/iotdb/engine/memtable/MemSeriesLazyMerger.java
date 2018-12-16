@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MemSeriesLazyMerger implements TimeValuePairSorter{
 
-    private List<IMemSeries> memSeriesList;
+    private List<TimeValuePairSorter> memSeriesList;
 
     public MemSeriesLazyMerger() {
         memSeriesList = new ArrayList<>();
@@ -18,7 +18,7 @@ public class MemSeriesLazyMerger implements TimeValuePairSorter{
     /**
      * @param memSerieses Please ensure that the  memSerieses are in ascending order by timestamp.
      */
-    public MemSeriesLazyMerger(IMemSeries... memSerieses) {
+    public MemSeriesLazyMerger(TimeValuePairSorter... memSerieses) {
         this();
         Collections.addAll(memSeriesList, memSerieses);
     }
@@ -28,7 +28,7 @@ public class MemSeriesLazyMerger implements TimeValuePairSorter{
      * any timestamps of the IMemSeries already added in.
      * @param series
      */
-    public void addMemSeries(IMemSeries series) {
+    public void addMemSeries(TimeValuePairSorter series) {
         memSeriesList.add(series);
     }
 
