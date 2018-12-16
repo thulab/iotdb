@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.mem;
 
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
@@ -14,8 +14,8 @@ public class MemChunkReaderByTimestamp implements EngineReaderByTimeStamp {
   private boolean hasCachedTimeValuePair;
   private TimeValuePair cachedTimeValuePair;
 
-  public MemChunkReaderByTimestamp(RawSeriesChunk rawSeriesChunk) {
-    timeValuePairIterator = rawSeriesChunk.getIterator();
+  public MemChunkReaderByTimestamp(TimeValuePairSorter readableChunk) {
+    timeValuePairIterator = readableChunk.getIterator();
   }
 
   @Override

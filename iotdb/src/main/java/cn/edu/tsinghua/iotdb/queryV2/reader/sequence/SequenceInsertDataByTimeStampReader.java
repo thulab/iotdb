@@ -43,7 +43,7 @@
 //    }
 //    //data in memTable
 //    if (sortedSeriesDataSource.hasRawChunk()) {
-//      MemChunkReaderByTimestamp rawSeriesChunkReaderByTimestamp = new MemChunkReaderByTimestamp(sortedSeriesDataSource.getRawChunk());
+//      MemChunkReaderByTimestamp rawSeriesChunkReaderByTimestamp = new MemChunkReaderByTimestamp(sortedSeriesDataSource.getReadableMemChunk());
 //      priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(rawSeriesChunkReaderByTimestamp, new PrioritySeriesReader.Priority(priority++)));
 //    }
 //

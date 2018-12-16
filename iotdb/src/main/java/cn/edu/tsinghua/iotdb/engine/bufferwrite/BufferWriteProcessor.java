@@ -1,15 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
-import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
@@ -18,21 +9,24 @@ import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
-
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -184,8 +178,8 @@ public class BufferWriteProcessor extends Processor {
         }
     }
 
-    public Pair<RawSeriesChunk, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
-                                                                          String measurementId, TSDataType dataType) {
+    public Pair<TimeValuePairSorter, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
+                                                                               String measurementId, TSDataType dataType) {
         flushQueryLock.lock();
         try {
             MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
@@ -193,8 +187,8 @@ public class BufferWriteProcessor extends Processor {
                 memSeriesLazyMerger.addMemSeries(flushMemTable.query(deltaObjectId, measurementId, dataType));
             }
             memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
-            RawSeriesChunk rawSeriesChunk = new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
-            return new Pair<RawSeriesChunk,List<ChunkMetaData>>(rawSeriesChunk,
+            TimeValuePairSorter timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
+            return new Pair<TimeValuePairSorter,List<ChunkMetaData>>(timeValuePairSorter,
                     bufferWriteRestoreManager.getInsertMetadatas(deltaObjectId, measurementId, dataType));
         } finally {
             flushQueryLock.unlock();
