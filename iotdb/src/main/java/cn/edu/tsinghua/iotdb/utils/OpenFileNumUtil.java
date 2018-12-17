@@ -154,7 +154,6 @@ public class OpenFileNumUtil {
         for (OpenFileNumStatistics openFileNumStatistics : OpenFileNumStatistics.values()) {
             resultMap.put(openFileNumStatistics, 0);
         }
-
         Process pro;
         Runtime r = Runtime.getRuntime();
         try {
