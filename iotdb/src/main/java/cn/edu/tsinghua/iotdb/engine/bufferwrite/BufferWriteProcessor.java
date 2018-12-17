@@ -129,6 +129,12 @@ public class BufferWriteProcessor extends Processor {
         return write(record);
     }
 
+    /**
+     * wrete a ts record into the memtable. If the memory usage is beyond the memThreshold, an async flushing operation will be called.
+     * @param tsRecord data to be written
+     * @return FIXME what is the mean about the return value??
+     * @throws BufferWriteProcessorException if a flushing operation occurs and failed.
+     */
     public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
         long memUsage = MemUtils.getRecordSize(tsRecord);
         BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, memUsage);
@@ -139,45 +145,45 @@ public class BufferWriteProcessor extends Processor {
         valueCount++;
         switch (level) {
             case SAFE:
-                // memUsed += newMemUsage;
-                // memtable
-                memUsage = memSize.addAndGet(memUsage);
-                if (memUsage > memThreshold) {
-                    LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
-                            MemUtils.bytesCntToStr(memUsage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
-                    try {
-                        flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new BufferWriteProcessorException(e);
-                    }
-                }
+                checkMemThreshold4Flush(memUsage);
                 return true;
             case WARNING:
                 LOGGER.warn("Memory usage will exceed warning threshold, current : {}.",
                         MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-                // memUsed += newMemUsage;
-                // memtable
-                memUsage = memSize.addAndGet(memUsage);
-                if (memUsage > memThreshold) {
-                    LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
-                            MemUtils.bytesCntToStr(memUsage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
-                    try {
-                        flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new BufferWriteProcessorException(e);
-                    }
-                }
+                checkMemThreshold4Flush(memUsage);
                 return true;
             case DANGEROUS:
             default:
                 LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
                         MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
+                //FIXME if it is dangerous, I think we need to reject comming insertions until the memory is safe.
                 return false;
         }
     }
 
+    private void checkMemThreshold4Flush(long addedMemory) throws BufferWriteProcessorException{
+        // memUsed += newMemUsage;
+        addedMemory = memSize.addAndGet(addedMemory);
+        if (addedMemory > memThreshold) {
+            LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+                    MemUtils.bytesCntToStr(addedMemory), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
+            try {
+                flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new BufferWriteProcessorException(e);
+            }
+        }
+    }
+
+    /**
+     * get the one (or two) chunk(s) in the memtable ( and the other one in flushing status and then compact them into one TimeValuePairSorter).
+     * Then get its (or their) ChunkMetadata(s).
+     * @param deltaObjectId device id
+     * @param measurementId sensor id
+     * @param dataType data type
+     * @return corresponding chunk data and chunk metadata in memory
+     */
     public Pair<TimeValuePairSorter, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
                                                                                String measurementId, TSDataType dataType) {
         flushQueryLock.lock();

@@ -20,6 +20,9 @@ public interface IMemTable {
 
     TimeValuePairSorter query(String deltaObject, String measurement,TSDataType dataType);
 
+    /**
+     * release all the memory resources
+     */
     void clear();
 
     boolean isEmpty();
