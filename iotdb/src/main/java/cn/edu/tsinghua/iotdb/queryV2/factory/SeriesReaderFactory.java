@@ -65,7 +65,7 @@ public class SeriesReaderFactory {
 //    //Add SeriesChunkReader in MemTable
 //    if (overflowSeriesDataSource.hasRawChunk()) {
 //      timeValuePairReaders.add(new PrioritySeriesReaderByTimestamp(new MemChunkReaderByTimestamp(
-//              overflowSeriesDataSource.getRawChunk()), new PrioritySeriesReader.Priority(priorityValue++)));
+//              overflowSeriesDataSource.getReadableMemChunk()), new PrioritySeriesReader.Priority(priorityValue++)));
 //    }
 //
 //    return new PriorityMergeReaderByTimestamp(timeValuePairReaders);
@@ -113,9 +113,9 @@ public class SeriesReaderFactory {
         // add reader for MemTable
         if (overflowSeriesDataSource.hasRawChunk()) {
             if (filter != null)
-                unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithFilter(overflowSeriesDataSource.getRawChunk(), filter), priorityValue);
+                unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithFilter(overflowSeriesDataSource.getReadableMemChunk(), filter), priorityValue);
             else
-                unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithoutFilter(overflowSeriesDataSource.getRawChunk()), priorityValue);
+                unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithoutFilter(overflowSeriesDataSource.getReadableMemChunk()), priorityValue);
         }
 
         // TODO add External Sort

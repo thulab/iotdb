@@ -1,12 +1,26 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.Processor;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.*;
+import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
+import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
@@ -16,20 +30,6 @@ import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.Processor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
-import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
-import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
-import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 import java.io.File;
 import java.io.IOException;
@@ -231,7 +231,7 @@ public class OverflowProcessor extends Processor {
 		try {
 			// query insert data in memory and unseqTsFiles
 			// memory
-			RawSeriesChunk insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType);
+			TimeValuePairSorter insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType);
 
 			List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
 			// work file
@@ -286,7 +286,7 @@ public class OverflowProcessor extends Processor {
 	 * @param dataType
 	 * @return insert data in SeriesChunkInMemTable
 	 */
-	private RawSeriesChunk queryOverflowInsertInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
+	private TimeValuePairSorter queryOverflowInsertInMemory(String deltaObjectId, String measurementId, TSDataType dataType) {
 
 		MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
 		if (flushStatus.isFlushing()) {
@@ -295,7 +295,7 @@ public class OverflowProcessor extends Processor {
 		}
 		memSeriesLazyMerger
 				.addMemSeries(workSupport.queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType));
-		return new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
+		return new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
 	}
 
 	/**
@@ -374,7 +374,7 @@ public class OverflowProcessor extends Processor {
 				measurementId, dataType);
 		OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(
 				new Path(deltaObjectId + "." + measurementId));
-		overflowSeriesDataSource.setRawChunk(null);
+		overflowSeriesDataSource.setReadableMemChunk(null);
 		overflowSeriesDataSource
 				.setOverflowInsertFileList(Arrays.asList(new OverflowInsertFile(mergeInsert.left, mergeInsert.right)));
 		//UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();

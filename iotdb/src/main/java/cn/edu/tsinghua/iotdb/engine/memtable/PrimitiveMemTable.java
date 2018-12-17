@@ -5,7 +5,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 public class PrimitiveMemTable extends AbstractMemTable {
     @Override
-    protected IMemSeries genMemSeries(TSDataType dataType) {
-        return new PrimitiveMemSeries(dataType);
+    protected IWritableMemChunk genMemSeries(TSDataType dataType) {
+        return new WritableMemChunk(dataType);
     }
 }

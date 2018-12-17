@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
@@ -15,7 +16,7 @@ public class OverflowSeriesDataSource {
     private List<OverflowInsertFile> overflowInsertFileList;
 
     // unSeq mem-table
-    private RawSeriesChunk rawChunk;
+    private TimeValuePairSorter readableMemChunk;
 
     //private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
@@ -23,11 +24,11 @@ public class OverflowSeriesDataSource {
         this.seriesPath = seriesPath;
     }
 
-    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, RawSeriesChunk rawChunk){
+    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, TimeValuePairSorter readableMemChunk){
         this.seriesPath = seriesPath;
         this.dataType = dataType;
         this.overflowInsertFileList = overflowInsertFileList;
-        this.rawChunk = rawChunk;
+        this.readableMemChunk = readableMemChunk;
         //this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
     }
 
@@ -47,12 +48,12 @@ public class OverflowSeriesDataSource {
 //        this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
 //    }
 
-    public RawSeriesChunk getRawChunk() {
-        return rawChunk;
+    public TimeValuePairSorter getReadableMemChunk() {
+        return readableMemChunk;
     }
 
-    public void setRawChunk(RawSeriesChunk rawChunk) {
-        this.rawChunk = rawChunk;
+    public void setReadableMemChunk(TimeValuePairSorter rawChunk) {
+        this.readableMemChunk = rawChunk;
     }
 
     public Path getSeriesPath() {
@@ -68,6 +69,6 @@ public class OverflowSeriesDataSource {
     }
 
     public boolean hasRawChunk() {
-        return rawChunk != null && !rawChunk.isEmpty();
+        return readableMemChunk != null && !readableMemChunk.isEmpty();
     }
 }

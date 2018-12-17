@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.reader.mem;
 
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
@@ -13,8 +13,8 @@ public class MemChunkReaderWithoutFilter implements IReader {
 
   private Iterator<TimeValuePair> timeValuePairIterator;
 
-  public MemChunkReaderWithoutFilter(RawSeriesChunk rawSeriesChunk) {
-    timeValuePairIterator = rawSeriesChunk.getIterator();
+  public MemChunkReaderWithoutFilter(TimeValuePairSorter readableChunk) {
+    timeValuePairIterator = readableChunk.getIterator();
   }
 
   @Override

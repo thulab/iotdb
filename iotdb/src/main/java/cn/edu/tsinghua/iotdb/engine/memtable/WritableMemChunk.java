@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.TreeMap;
 
 
-public class PrimitiveMemSeries implements IMemSeries {
+public class WritableMemChunk implements IWritableMemChunk {
     private TSDataType dataType;
     private PrimitiveArrayList list;
 
-    public PrimitiveMemSeries(TSDataType dataType) {
+    public WritableMemChunk(TSDataType dataType) {
         this.dataType = dataType;
         this.list = PrimitiveArrayListFactory.getByDataType(dataType);
     }

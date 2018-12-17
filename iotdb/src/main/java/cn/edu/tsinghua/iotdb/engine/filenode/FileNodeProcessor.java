@@ -1,10 +1,65 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.Processor;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
+import cn.edu.tsinghua.iotdb.engine.pool.MergeManager;
+import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
+import cn.edu.tsinghua.iotdb.exception.*;
+import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.monitor.IStatistic;
+import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
+import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
+import cn.edu.tsinghua.iotdb.queryV2.control.OverflowFileStreamManager;
+import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
+import cn.edu.tsinghua.tsfile.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
+import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.chunk.ChunkBuffer;
+import cn.edu.tsinghua.tsfile.write.chunk.ChunkWriterImpl;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.schema.JsonConverter;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
+import org.joda.time.DateTime;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,59 +73,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
-import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
-import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
-import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.utils.Pair;
-import cn.edu.tsinghua.tsfile.write.chunk.ChunkBuffer;
-import cn.edu.tsinghua.tsfile.write.chunk.ChunkWriterImpl;
-import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
-import org.joda.time.DateTime;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.iotdb.engine.Processor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
-import cn.edu.tsinghua.iotdb.engine.pool.MergeManager;
-import cn.edu.tsinghua.iotdb.engine.querycontext.*;
-import cn.edu.tsinghua.iotdb.exception.*;
-import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
-import cn.edu.tsinghua.iotdb.monitor.IStatistic;
-import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
-import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.queryV2.control.OverflowFileStreamManager;
-import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
-import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
-
-
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
-import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
-import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
-import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
-import cn.edu.tsinghua.tsfile.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
-import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-import cn.edu.tsinghua.tsfile.write.schema.JsonConverter;
-import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 
@@ -675,7 +677,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				bufferwriteDataInFiles.add(intervalFileNode.backUp());
 			}
 		}
-		Pair<RawSeriesChunk, List<ChunkMetaData>> bufferwritedata = new Pair<RawSeriesChunk, List<ChunkMetaData>>(
+		Pair<TimeValuePairSorter, List<ChunkMetaData>> bufferwritedata = new Pair<TimeValuePairSorter, List<ChunkMetaData>>(
 				null, null);
 		// bufferwrite data
 		UnsealedTsFile unsealedTsFile = null;

@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.querycontext;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 
 import java.util.List;
@@ -16,15 +17,15 @@ public class GlobalSortedSeriesDataSource {
     private UnsealedTsFile unsealedTsFile;
 
     // seq mem-table
-    private RawSeriesChunk rawSeriesChunk;
+    private TimeValuePairSorter readableChunk;
 
     public GlobalSortedSeriesDataSource(Path seriesPath, List<IntervalFileNode> sealedTsFiles,
-                                        UnsealedTsFile unsealedTsFile, RawSeriesChunk rawSeriesChunk) {
+                                        UnsealedTsFile unsealedTsFile, TimeValuePairSorter readableChunk) {
         this.seriesPath = seriesPath;
         this.sealedTsFiles = sealedTsFiles;
         this.unsealedTsFile = unsealedTsFile;
 
-        this.rawSeriesChunk = rawSeriesChunk;
+        this.readableChunk = readableChunk;
     }
 
     public boolean hasSealedTsFiles() {
@@ -44,11 +45,11 @@ public class GlobalSortedSeriesDataSource {
     }
 
     public boolean hasRawSeriesChunk() {
-        return rawSeriesChunk != null;
+        return readableChunk != null;
     }
 
-    public RawSeriesChunk getRawSeriesChunk() {
-        return rawSeriesChunk;
+    public TimeValuePairSorter getReadableChunk() {
+        return readableChunk;
     }
 
 
@@ -60,8 +61,8 @@ public class GlobalSortedSeriesDataSource {
         this.unsealedTsFile = unsealedTsFile;
     }
 
-    public void setRawSeriesChunk(RawSeriesChunk rawSeriesChunk) {
-        this.rawSeriesChunk = rawSeriesChunk;
+    public void setReadableChunk(TimeValuePairSorter readableChunk) {
+        this.readableChunk = readableChunk;
     }
 
     public void setSeriesPath(Path seriesPath) {

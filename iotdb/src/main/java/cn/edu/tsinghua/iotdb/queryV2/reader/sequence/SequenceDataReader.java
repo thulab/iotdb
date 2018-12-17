@@ -42,9 +42,9 @@ public class SequenceDataReader implements IReader {
         // add data in memTable
         if (sources.hasRawSeriesChunk()) {
             if (filter == null)
-                seriesReaders.add(new MemChunkReaderWithoutFilter(sources.getRawSeriesChunk()));
+                seriesReaders.add(new MemChunkReaderWithoutFilter(sources.getReadableChunk()));
             else
-                seriesReaders.add(new MemChunkReaderWithFilter(sources.getRawSeriesChunk(), filter));
+                seriesReaders.add(new MemChunkReaderWithFilter(sources.getReadableChunk(), filter));
         }
 
     }

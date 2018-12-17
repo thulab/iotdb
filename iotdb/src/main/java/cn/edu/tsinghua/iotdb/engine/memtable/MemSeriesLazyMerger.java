@@ -24,8 +24,8 @@ public class MemSeriesLazyMerger implements TimeValuePairSorter{
     }
 
     /**
-     * IMPORTANT: Please ensure that the minimum timestamp of added {@link IMemSeries} is larger than
-     * any timestamps of the IMemSeries already added in.
+     * IMPORTANT: Please ensure that the minimum timestamp of added {@link IWritableMemChunk} is larger than
+     * any timestamps of the IWritableMemChunk already added in.
      * @param series
      */
     public void addMemSeries(TimeValuePairSorter series) {

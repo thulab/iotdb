@@ -5,11 +5,12 @@ import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-//TODO: merge RawSeriesChunkLazyLoadImpl and PrimitiveMemSeries, RawSeriesChunk and IMemSeries
-public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
+//TODO: merge ReadOnlyMemChunk and WritableMemChunk and IWritableMemChunk
+public class ReadOnlyMemChunk implements TimeValuePairSorter{
 
     private boolean initialized;
 
@@ -17,7 +18,7 @@ public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
     private TimeValuePairSorter memSeries;
     private List<TimeValuePair> sortedTimeValuePairList;
 
-    public RawSeriesChunkLazyLoadImpl(TSDataType dataType, TimeValuePairSorter memSeries) {
+    public ReadOnlyMemChunk(TSDataType dataType, TimeValuePairSorter memSeries) {
         this.dataType = dataType;
         this.memSeries = memSeries;
         this.initialized = false;
@@ -34,12 +35,18 @@ public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
         initialized = true;
     }
 
-    @Override
+    /**
+     * only for test now.
+     * @return
+     */
     public TSDataType getDataType() {
         return dataType;
     }
 
-    @Override
+    /**
+     * only for test now.
+     * @return
+     */
     public long getMaxTimestamp() {
         checkInitialized();
         if (!isEmpty()) {
@@ -49,7 +56,10 @@ public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
         }
     }
 
-    @Override
+    /**
+     * only for test now.
+     * @return
+     */
     public long getMinTimestamp() {
         checkInitialized();
         if (!isEmpty()) {
@@ -59,7 +69,10 @@ public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
         }
     }
 
-    @Override
+    /**
+     * only for test now.
+     * @return
+     */
     public TsPrimitiveType getValueAtMaxTime() {
         checkInitialized();
         if (!isEmpty()) {
@@ -69,7 +82,10 @@ public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
         }
     }
 
-    @Override
+    /**
+     * only for test now.
+     * @return
+     */
     public TsPrimitiveType getValueAtMinTime() {
         checkInitialized();
         if (!isEmpty()) {
@@ -80,7 +96,13 @@ public class RawSeriesChunkLazyLoadImpl implements RawSeriesChunk {
     }
 
     @Override
-    public Iterator<TimeValuePair> getIterator() {
+    public List<TimeValuePair> getSortedTimeValuePairList() {
+        checkInitialized();
+        return Collections.unmodifiableList(sortedTimeValuePairList);
+    }
+
+    @Override
+    public Iterator<TimeValuePair> getIterator(){
         checkInitialized();
         return sortedTimeValuePairList.iterator();
     }
