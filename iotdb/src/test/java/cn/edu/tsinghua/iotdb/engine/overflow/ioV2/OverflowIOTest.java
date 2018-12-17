@@ -50,7 +50,7 @@ public class OverflowIOTest {
 		fileOutputStream.close();
 		assertEquals(20, file.length());
 		OverflowIO overflowIO = new OverflowIO(new OverflowIO.OverflowReadWriter(file.getPath()));
-		assertEquals(0, file.length());
+		assertEquals(20, file.length());
 		overflowIO.close();
 		file.delete();
 	}

@@ -72,14 +72,13 @@ public class OFFileMetadata {
 	}
 
 	public static OFFileMetadata deserializeFrom(InputStream inputStream) throws IOException {
-		OFFileMetadata ofFileMetadata = new OFFileMetadata();
-		ofFileMetadata.lastFooterOffset = ReadWriteIOUtils.readLong(inputStream);
+		long lastFooterOffset = ReadWriteIOUtils.readLong(inputStream);
 		int size = ReadWriteIOUtils.readInt(inputStream);
 		List<OFRowGroupListMetadata> list = new ArrayList<>();
 		for(int i = 0;i<size;i++){
 			list.add(OFRowGroupListMetadata.deserializeFrom(inputStream));
 		}
-		return ofFileMetadata;
+		return new OFFileMetadata(lastFooterOffset,list);
 	}
 
 	public static OFFileMetadata deserializeFrom(ByteBuffer buffer) throws IOException {

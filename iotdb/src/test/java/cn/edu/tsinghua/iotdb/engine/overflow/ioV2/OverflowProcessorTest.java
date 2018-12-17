@@ -56,14 +56,14 @@ public class OverflowProcessorTest {
 		EnvironmentUtils.cleanEnv();
 	}
 
-	@Ignore
+	@Test
 	public void testInsertUpdate() throws IOException, OverflowProcessorException, InterruptedException {
 		processor = new OverflowProcessor(processorName, parameters, OverflowTestUtils.getFileSchema());
 		assertEquals(true, new File(PathUtils.getOverflowWriteDir(processorName), "0").exists());
 		assertEquals(false, processor.isFlush());
 		assertEquals(false, processor.isMerge());
 		// write update data
-		OverflowTestUtils.produceUpdateData(processor);
+		//OverflowTestUtils.produceUpdateData(processor);
 		OverflowSeriesDataSource overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1,
 				OverflowTestUtils.measurementId1, null, OverflowTestUtils.dataType1);
 		assertEquals(OverflowTestUtils.dataType1, overflowSeriesDataSource.getDataType());
@@ -148,7 +148,7 @@ public class OverflowProcessorTest {
 		processor.clear();
 	}
 
-	@Ignore
+	@Test
 	public void testWriteMemoryAndQuery() throws IOException, OverflowProcessorException {
 		processor = new OverflowProcessor(processorName, parameters, OverflowTestUtils.getFileSchema());
 		OverflowTestUtils.produceUpdateData(processor);

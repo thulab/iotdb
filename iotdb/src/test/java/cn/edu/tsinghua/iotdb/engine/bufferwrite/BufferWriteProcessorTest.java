@@ -17,6 +17,7 @@ import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -165,7 +166,7 @@ public class BufferWriteProcessorTest {
 		assertEquals(false, bufferwrite.isFlush());
 		assertEquals(true, bufferwrite.canBeClosed());
 		assertEquals(0, bufferwrite.memoryUsage());
-		assertEquals(0, bufferwrite.getFileSize());
+		assertEquals(TsFileIOWriter.magicStringBytes.length, bufferwrite.getFileSize());
 		assertEquals(0, bufferwrite.getMetaSize());
 		for (int i = 1; i <= 85; i++) {
 			bufferwrite.write(deltaObjectId, measurementId, i, dataType, String.valueOf(i));

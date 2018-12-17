@@ -11,6 +11,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public class BufferWriteRestoreManagerTest {
 		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
 		Pair<Long, List<ChunkGroupMetaData>> pair = bufferwriteResource.readRestoreInfo();
 		assertEquals(true, new File(insertRestorePath).exists());
-		assertEquals(0, (long) pair.left);
+		assertEquals(TsFileIOWriter.magicStringBytes.length, (long) pair.left);
 		assertEquals(0, pair.right.size());
 		FileSchema fileSchema = new FileSchema();
 		bufferwriteResource.close(fileSchema);

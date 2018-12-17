@@ -97,6 +97,8 @@ public class OverflowUtils {
 			assertEquals(ofFileMetadata1.getLastFooterOffset(),ofFileMetadata2.getLastFooterOffset());
 			List<OFRowGroupListMetadata> list1 = ofFileMetadata1.getRowGroupLists();
 			List<OFRowGroupListMetadata> list2 = ofFileMetadata2.getRowGroupLists();
+			assertNotNull(list1);
+			assertNotNull(list2);
 			assertEquals(list1.size(),list2.size());
 			for(int i = 0;i<list1.size();i++){
 				isOFRowGroupListMetadataEqual(list1.get(i),list2.get(i));

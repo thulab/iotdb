@@ -65,6 +65,7 @@ public class OverflowTestUtils {
 		return record;
 	}
 
+	@Deprecated
 	public static void produceUpdateData(OverflowProcessor processor) {
 		// d1 s1
 		processor.update(deltaObjectId1, measurementId1, 2, 10, dataType1, BytesUtils.intToBytes(10));

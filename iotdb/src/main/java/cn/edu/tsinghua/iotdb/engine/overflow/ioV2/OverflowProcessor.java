@@ -167,12 +167,13 @@ public class OverflowProcessor extends Processor {
 	 * @param type
 	 * @param value
 	 */
+	@Deprecated
 	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
 			byte[] value) {
 		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, value);
 		valueCount++;
 	}
-
+	@Deprecated
 	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
 			String value) {
 		workSupport.update(deltaObjectId, measurementId, startTime, endTime, type, convertStringToBytes(type, value));
@@ -207,6 +208,7 @@ public class OverflowProcessor extends Processor {
 	 * @param timestamp
 	 * @param type
 	 */
+	@Deprecated
 	public void delete(String deltaObjectId, String measurementId, long timestamp, TSDataType type) {
 		workSupport.delete(deltaObjectId, measurementId, timestamp, type);
 		valueCount++;

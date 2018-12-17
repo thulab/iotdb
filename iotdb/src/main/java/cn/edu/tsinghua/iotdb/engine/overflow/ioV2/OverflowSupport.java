@@ -42,7 +42,7 @@ public class OverflowSupport {
 					dataPoint.getValue().toString());
 		}
 	}
-
+	@Deprecated
 	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType dataType,
 			byte[] value) {
 		if (!indexTrees.containsKey(deltaObjectId)) {
@@ -53,7 +53,7 @@ public class OverflowSupport {
 		}
 		indexTrees.get(deltaObjectId).get(measurementId).update(startTime, endTime, value);
 	}
-
+	@Deprecated
 	public void delete(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType) {
 		if (!indexTrees.containsKey(deltaObjectId)) {
 			indexTrees.put(deltaObjectId, new HashMap<>());

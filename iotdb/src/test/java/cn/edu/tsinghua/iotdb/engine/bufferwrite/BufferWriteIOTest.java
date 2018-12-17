@@ -11,6 +11,7 @@ import java.util.List;
 import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.write.writer.DefaultTsFileOutput;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +33,13 @@ public class BufferWriteIOTest {
 	@After
 	public void tearDown() throws Exception {
 		EnvironmentUtils.cleanDir(filePath);
+		EnvironmentUtils.cleanEnv();
 	}
 
 	@Test
 	public void test() throws IOException {
-		assertEquals(0, bufferWriteIO.getPos());
+		assertEquals(TsFileIOWriter.magicStringBytes.length, bufferWriteIO.getPos());
 		assertEquals(0, bufferWriteIO.getAppendedRowGroupMetadata().size());
-
 		// construct one rowgroup
 		ChunkGroupFooter chunkGroupFooter =  bufferWriteIO.startFlushChunkGroup("d1",1000,10);
 		bufferWriteIO.endChunkGroup(chunkGroupFooter);
