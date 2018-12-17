@@ -225,7 +225,6 @@ public class OpenFileNumUtil {
 
     /**
      * get statistics
-     *
      * @param statistics get what statistics of open file number
      * @return open file number
      */
