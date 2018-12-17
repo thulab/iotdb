@@ -197,7 +197,6 @@ public class OpenFileNumUtil {
     /**
      * Check if runtime OS is supported then return the result list.
      * If pid is abnormal then all statistics returns -1, if OS is not supported then all statistics returns -2
-     *
      * @return map
      */
     private EnumMap<OpenFileNumStatistics, Integer> getStatisticMap() {
