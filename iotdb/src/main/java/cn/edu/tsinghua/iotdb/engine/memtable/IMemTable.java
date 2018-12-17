@@ -11,6 +11,7 @@ import java.util.Map;
  * i.e., Writing and querying operations have gotten writeLock and readLock respectively.<br>
  */
 public interface IMemTable {
+
     Map<String, Map<String, IWritableMemChunk>> getMemTableMap();
 
     void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue);

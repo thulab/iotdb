@@ -232,7 +232,6 @@ public class OverflowProcessor extends Processor {
 			// query insert data in memory and unseqTsFiles
 			// memory
 			TimeValuePairSorter insertInMem = queryOverflowInsertInMemory(deltaObjectId, measurementId, dataType);
-
 			List<OverflowInsertFile> overflowInsertFileList = new ArrayList<>();
 			// work file
 			Pair<String, List<ChunkMetaData>> insertInDiskWork = queryWorkDataInOverflowInsert(deltaObjectId,
@@ -246,30 +245,7 @@ public class OverflowProcessor extends Processor {
 			if (insertInDiskMerge.left != null) {
 				overflowInsertFileList.add(0, new OverflowInsertFile(insertInDiskMerge.left, insertInDiskMerge.right));
 			}
-			// query update/delete data in memory and overflowFiles
-			// Deprecated the update and delete
-			// UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
-			// memory
-			// DynamicOneColumnData updateDataInMem = queryOverflowUpdateInMemory(deltaObjectId, measurementId, dataType);
-			// updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(updateDataInMem);
 			// work file
-			List<OverflowUpdateDeleteFile> overflowUpdateFileList = new ArrayList<>();
-			Pair<String, List<ChunkMetaData>> updateInDiskWork = queryWorkDataInOverflowUpdate(deltaObjectId,
-					measurementId, dataType);
-			if (updateInDiskWork.left != null) {
-				overflowUpdateFileList.add(0,
-						new OverflowUpdateDeleteFile(updateInDiskWork.left, updateInDiskWork.right));
-			}
-			// merge file
-			Pair<String, List<ChunkMetaData>> updateInDiskMerge = queryMergeDataInOverflowUpdate(
-					deltaObjectId, measurementId, dataType);
-			if (updateInDiskMerge.left != null) {
-				overflowUpdateFileList.add(0,
-						new OverflowUpdateDeleteFile(updateInDiskMerge.left, updateInDiskMerge.right));
-			}
-			// Deprecated the update and delete
-			// updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(overflowUpdateFileList);
-			// updateDeleteInfoOfOneSeries.setDataType(dataType);
 			return new OverflowSeriesDataSource(new Path(deltaObjectId + "." + measurementId), dataType,
 					overflowInsertFileList, insertInMem);
 		} finally {
@@ -316,23 +292,6 @@ public class OverflowProcessor extends Processor {
 	}*/
 
 	/**
-	 * Get the update/delete data which is WORK in overflowFile.
-	 *
-	 * @param deltaObjectId
-	 * @param measurementId
-	 * @param dataType
-	 * @return the seriesPath of overflowFile, List of TimeSeriesChunkMetaData for the
-	 *         special time-series.
-	 */
-	private Pair<String, List<ChunkMetaData>> queryWorkDataInOverflowUpdate(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
-		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<ChunkMetaData>>(
-				workResource.getUpdateDeleteFilePath(),
-				workResource.getUpdateDeleteMetadatas(deltaObjectId, measurementId, dataType));
-		return pair;
-	}
-
-	/**
 	 * Get the insert data which is WORK in unseqTsFile.
 	 *
 	 * @param deltaObjectId
@@ -360,50 +319,19 @@ public class OverflowProcessor extends Processor {
 	public MergeSeriesDataSource queryMerge(String deltaObjectId, String measurementId, TSDataType dataType) {
 		Pair<String, List<ChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
 				measurementId, dataType);
-		Pair<String, List<ChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
-				measurementId, dataType);
-		return new MergeSeriesDataSource(new OverflowInsertFile(mergeInsert.left, mergeInsert.right),
-				new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right));
+		return new MergeSeriesDataSource(new OverflowInsertFile(mergeInsert.left, mergeInsert.right));
 	}
 
 	public OverflowSeriesDataSource queryMerge(String deltaObjectId, String measurementId, TSDataType dataType,
 			boolean isMerge) {
 		Pair<String, List<ChunkMetaData>> mergeInsert = queryMergeDataInOverflowInsert(deltaObjectId,
 				measurementId, dataType);
-		Pair<String, List<ChunkMetaData>> mergeUpdate = queryMergeDataInOverflowUpdate(deltaObjectId,
-				measurementId, dataType);
 		OverflowSeriesDataSource overflowSeriesDataSource = new OverflowSeriesDataSource(
 				new Path(deltaObjectId + "." + measurementId));
 		overflowSeriesDataSource.setReadableMemChunk(null);
 		overflowSeriesDataSource
 				.setOverflowInsertFileList(Arrays.asList(new OverflowInsertFile(mergeInsert.left, mergeInsert.right)));
-		//UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries = new UpdateDeleteInfoOfOneSeries();
-		//updateDeleteInfoOfOneSeries.setDataType(dataType);
-		//updateDeleteInfoOfOneSeries.setOverflowUpdateInMem(null);
-		//updateDeleteInfoOfOneSeries.setOverflowUpdateFileList(
-		//		Arrays.asList(new OverflowUpdateDeleteFile(mergeUpdate.left, mergeUpdate.right)));
-		//overflowSeriesDataSource.setUpdateDeleteInfoOfOneSeries(updateDeleteInfoOfOneSeries);
 		return overflowSeriesDataSource;
-	}
-
-	/**
-	 * Get the update/delete data which is MERGE in overflowFile.
-	 *
-	 * @param deltaObjectId
-	 * @param measurementId
-	 * @param dataType
-	 * @return the seriesPath of overflowFile, List of TimeSeriesChunkMetaData for the
-	 *         special time-series.
-	 */
-	private Pair<String, List<ChunkMetaData>> queryMergeDataInOverflowUpdate(String deltaObjectId,
-			String measurementId, TSDataType dataType) {
-		if (!isMerge) {
-			return new Pair<String, List<ChunkMetaData>>(null, null);
-		}
-		Pair<String, List<ChunkMetaData>> pair = new Pair<String, List<ChunkMetaData>>(
-				mergeResource.getUpdateDeleteFilePath(),
-				mergeResource.getUpdateDeleteMetadatas(deltaObjectId, measurementId, dataType));
-		return pair;
 	}
 
 	/**

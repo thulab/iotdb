@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
@@ -24,7 +26,6 @@ import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.engine.PathUtils;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -120,7 +121,7 @@ public class BufferWriteProcessorTest {
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
 		assertEquals(true, insertFile.exists());
 		assertEquals(insertFileLength, insertFile.length());
-		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
+		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferWriteProcessor
 				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
@@ -147,7 +148,7 @@ public class BufferWriteProcessorTest {
 		assertEquals(true, restoreFile.exists());
 		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
-		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
+		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferWriteProcessor
 				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
@@ -179,7 +180,7 @@ public class BufferWriteProcessorTest {
 		assertEquals(false, bufferwrite.isFlush());
 		assertEquals(0, bufferwrite.memoryUsage());
 		// query result
-		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
+		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
 				measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
@@ -191,7 +192,7 @@ public class BufferWriteProcessorTest {
 			assertEquals((i - 86) * 12, bufferwrite.memoryUsage());
 		}
 		pair = bufferwrite.queryBufferWriteData(deltaObjectId, measurementId, dataType);
-		RawSeriesChunk rawSeriesChunk = pair.left;
+		ReadOnlyMemChunk rawSeriesChunk = (ReadOnlyMemChunk) pair.left;
 		assertEquals(false, rawSeriesChunk.isEmpty());
 		assertEquals(87, rawSeriesChunk.getMinTimestamp());
 		assertEquals(87, rawSeriesChunk.getValueAtMinTime().getInt());

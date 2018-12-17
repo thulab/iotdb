@@ -11,14 +11,10 @@ public class OverflowSeriesDataSource {
 
     private Path seriesPath;
     private TSDataType dataType;
-
     // overflow tsfile
     private List<OverflowInsertFile> overflowInsertFileList;
-
     // unSeq mem-table
     private TimeValuePairSorter readableMemChunk;
-
-    //private UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries;
 
     public OverflowSeriesDataSource(Path seriesPath) {
         this.seriesPath = seriesPath;
@@ -29,7 +25,6 @@ public class OverflowSeriesDataSource {
         this.dataType = dataType;
         this.overflowInsertFileList = overflowInsertFileList;
         this.readableMemChunk = readableMemChunk;
-        //this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
     }
 
     public List<OverflowInsertFile> getOverflowInsertFileList() {
@@ -39,14 +34,6 @@ public class OverflowSeriesDataSource {
     public void setOverflowInsertFileList(List<OverflowInsertFile> overflowInsertFileList) {
         this.overflowInsertFileList = overflowInsertFileList;
     }
-
-//    public UpdateDeleteInfoOfOneSeries getUpdateDeleteInfoOfOneSeries() {
-//        return updateDeleteInfoOfOneSeries;
-//    }
-//
-//    public void setUpdateDeleteInfoOfOneSeries(UpdateDeleteInfoOfOneSeries updateDeleteInfoOfOneSeries) {
-//        this.updateDeleteInfoOfOneSeries = updateDeleteInfoOfOneSeries;
-//    }
 
     public TimeValuePairSorter getReadableMemChunk() {
         return readableMemChunk;

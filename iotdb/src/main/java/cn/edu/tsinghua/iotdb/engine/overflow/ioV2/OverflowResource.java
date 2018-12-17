@@ -31,7 +31,6 @@ public class OverflowResource {
 	private String parentPath;
 	private String dataPath;
 	private String insertFilePath;
-	private String updateDeleteFilePath;
 	private String positionFilePath;
 	private File insertFile;
 	private File updateFile;
@@ -40,15 +39,12 @@ public class OverflowResource {
 	private static final String updateDeleteFileName = "overflowFile";
 	private static final String positionFileName = "positionFile";
 	private OverflowIO insertIO;
-	// private OverflowIO updateDeleteIO;
+
 	private static final int FOOTER_LENGTH = 4;
 	private static final int POS_LENGTH = 8;
 
 	private Map<String, Map<String, List<ChunkMetaData>>> insertMetadatas;
-	//private Map<String, Map<String, List<ChunkMetaData>>> updateDeleteMetadatas;
-
 	private List<ChunkGroupMetaData> appendInsertMetadatas;
-	//private List<OFRowGroupListMetadata> appendUpdateDeleteMetadats;
 
 	public OverflowResource(String parentPath, String dataPath) throws IOException {
 		this.insertMetadatas = new HashMap<>();
@@ -62,23 +58,18 @@ public class OverflowResource {
 		insertFile = new File(dataFile, insertFileName);
 		insertFilePath = insertFile.getPath();
 		updateFile = new File(dataFile, updateDeleteFileName);
-		updateDeleteFilePath = updateFile.getPath();
 		positionFilePath = new File(dataFile, positionFileName).getPath();
 		Pair<Long, Long> position = readPositionInfo();
 		try {
-			// deprecated the update and delete function
-			// update and delete stream
-			// truncate
-			// reposition
-			// updateDeleteIO = new OverflowIO(new DefaultTsFileOutput(udoutputStream), false);
-
 			// insert stream
-			// truncate
-			// reposition
 			OverflowIO.OverflowReadWriter readWriter = new OverflowIO.OverflowReadWriter(insertFilePath);
+			// truncate
 			readWriter.wrapAsFileChannel().truncate(position.left);
+			// reposition
 			// seek to zero
 			readWriter.wrapAsFileChannel().position(0);
+			// seek to tail
+			// the tail is at least the len of magic string
 			insertIO = new OverflowIO(readWriter);
 			readMetadata();
 		} catch (IOException e) {
@@ -102,7 +93,6 @@ public class OverflowResource {
 			long left = 0;
 			long right = 0;
 			File insertFile = new File(insertFilePath);
-			File updateFile = new File(updateDeleteFilePath);
 			if (insertFile.exists()) {
 				left = insertFile.length();
 			}
@@ -123,38 +113,10 @@ public class OverflowResource {
 	}
 
 	private void readMetadata() throws IOException {
-		// read update/delete meta-data
-		/*updateDeleteIO.toTail();
-		long position = updateDeleteIO.getPos();
-		while (position != 0) {
-			updateDeleteIO.getReader().seek(position - FOOTER_LENGTH);
-			int metadataLength = updateDeleteIO.getReader().readInt();
-			byte[] buf = new byte[metadataLength];
-			updateDeleteIO.getReader().seek(position - FOOTER_LENGTH - metadataLength);
-			updateDeleteIO.getReader().read(buf, 0, buf.length);
-			ByteArrayInputStream bais = new ByteArrayInputStream(buf);
-			OFFileMetadata ofFileMetadata = new TSFileMetaDataConverter()
-					.toOFFileMetadata(OverflowReadWriteThriftFormatUtils.readOFFileMetaData(bais));
-			position = ofFileMetadata.getLastFooterOffset();
-			for (OFRowGroupListMetadata rowGroupListMetadata : ofFileMetadata.getRowGroupLists()) {
-				String deltaObjectId = rowGroupListMetadata.getDeltaObjectId();
-				if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
-					updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
-				}
-				for (OFSeriesListMetadata seriesListMetadata : rowGroupListMetadata.getSeriesList()) {
-					String measurementId = seriesListMetadata.getMeasurementId();
-					if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-						updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
-					}
-					updateDeleteMetadatas.get(deltaObjectId).get(measurementId).addAll(0,
-							seriesListMetadata.getMetaDatas());
-				}
-			}
-		}*/
 		// read insert meta-data
 		insertIO.toTail();
 		long position = insertIO.getPos();
-		while (position != 0) {
+		while (position != insertIO.magicStringBytes.length) {
 			insertIO.getReader().position(position - FOOTER_LENGTH);
 			int metadataLength = insertIO.getReader().readInt();
 			byte[] buf = new byte[metadataLength];
@@ -198,24 +160,6 @@ public class OverflowResource {
 		return chunkMetaDatas;
 	}
 
-	@Deprecated
-	public List<ChunkMetaData> getUpdateDeleteMetadatas(String deltaObjectId, String measurementId,
-			TSDataType dataType) {
-		/*List<ChunkMetaData> chunkMetaDatas = new ArrayList<>();
-		if (updateDeleteMetadatas.containsKey(deltaObjectId)) {
-			if (updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-				for (ChunkMetaData chunkMetaData : updateDeleteMetadatas.get(deltaObjectId)
-						.get(measurementId)) {
-					// filter
-					if (chunkMetaData.getTsDataType().equals(dataType)) {
-						chunkMetaDatas.add(chunkMetaData);
-					}
-				}
-			}
-		}*/
-		return null;
-	}
-
 	public void flush(FileSchema fileSchema, IMemTable memTable,
 					  Map<String, Map<String, OverflowSeriesImpl>> overflowTrees, String processorName) throws IOException {
 		// insert data
@@ -253,23 +197,6 @@ public class OverflowResource {
 		}
 	}
 
-	@Deprecated
-	public void flush(Map<String, Map<String, OverflowSeriesImpl>> overflowTrees) throws IOException {
-		/*if (overflowTrees != null && !overflowTrees.isEmpty()) {
-			updateDeleteIO.toTail();
-			long lastPosition = updateDeleteIO.getPos();
-			List<OFRowGroupListMetadata> ofRowGroupListMetadatas = updateDeleteIO.flush(overflowTrees);
-			appendUpdateDeleteMetadats.addAll(ofRowGroupListMetadatas);
-			OFFileMetadata ofFileMetadata = new OFFileMetadata(lastPosition, ofRowGroupListMetadatas);
-			TSFileMetaDataConverter metadataConverter = new TSFileMetaDataConverter();
-			long start = updateDeleteIO.getPos();
-			OverflowReadWriteThriftFormatUtils.writeOFFileMetaData(
-					metadataConverter.toThriftOFFileMetadata(0, ofFileMetadata), updateDeleteIO.getWriter());
-			long end = updateDeleteIO.getPos();
-			updateDeleteIO.getWriter().write(BytesUtils.intToBytes((int) (end - start)));
-		}*/
-	}
-
 	public void appendMetadatas() {
 		if (!appendInsertMetadatas.isEmpty()) {
 			for (ChunkGroupMetaData rowGroupMetaData : appendInsertMetadatas) {
@@ -280,18 +207,6 @@ public class OverflowResource {
 			}
 			appendInsertMetadatas.clear();
 		}
-		/*if (!appendUpdateDeleteMetadats.isEmpty()) {
-			for (OFRowGroupListMetadata ofRowGroupListMetadata : appendUpdateDeleteMetadats) {
-				String deltaObjectId = ofRowGroupListMetadata.getDeltaObjectId();
-				for (OFSeriesListMetadata ofSeriesListMetadata : ofRowGroupListMetadata.getSeriesLists()) {
-					String measurementId = ofSeriesListMetadata.getMeasurementId();
-					for (ChunkMetaData chunkMetaData : ofSeriesListMetadata.getMetaDatas()) {
-						addUpdateDeletetMetadata(deltaObjectId, measurementId, chunkMetaData);
-					}
-				}
-			}
-			appendUpdateDeleteMetadats.clear();
-		}*/
 	}
 
 	public String getInsertFilePath() {
@@ -304,10 +219,6 @@ public class OverflowResource {
 
 	public String getPositionFilePath() {
 		return positionFilePath;
-	}
-
-	public String getUpdateDeleteFilePath() {
-		return updateDeleteFilePath;
 	}
 
 	public File getUpdateDeleteFile() {
@@ -348,17 +259,5 @@ public class OverflowResource {
 			insertMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
 		}
 		insertMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
-	}
-
-	@Deprecated
-	private void addUpdateDeletetMetadata(String deltaObjectId, String measurementId){
-		/*	ChunkMetaData chunkMetaData) {
-		if (!updateDeleteMetadatas.containsKey(deltaObjectId)) {
-			updateDeleteMetadatas.put(deltaObjectId, new HashMap<>());
-		}
-		if (!updateDeleteMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-			updateDeleteMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
-		}
-		updateDeleteMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);*/
 	}
 }
