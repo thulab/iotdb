@@ -22,8 +22,6 @@ import java.util.Map.Entry;
 
 /**
  * Implement a simple executor with a memory demo reading processor for test.
- *
- * @author kangrong
  */
 public class MemIntQpExecutor extends QueryProcessExecutor {
     private static Logger LOG = LoggerFactory.getLogger(MemIntQpExecutor.class);
@@ -41,7 +39,6 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
 
     public MemIntQpExecutor() {
         this.fetchSize.set(5);
-        // super.fetchSize = 5;
     }
 
     @Override
@@ -81,12 +78,13 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
     }
 
     @Override
-    public QueryDataSet aggregate(List<Pair<Path, String>> aggres, IExpression expression) throws ProcessorException, IOException, PathErrorException {
+    public QueryDataSet aggregate(List<Pair<Path, String>> aggres, IExpression expression) {
         return null;
     }
 
     @Override
-    public QueryDataSet groupBy(List<Pair<Path, String>> aggres, IExpression expression, long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize) throws ProcessorException, IOException, PathErrorException {
+    public QueryDataSet groupBy(List<Pair<Path, String>> aggres, IExpression expression, long unit, long origin,
+                                List<Pair<Long, Long>> intervals, int fetchSize) {
         return null;
     }
 

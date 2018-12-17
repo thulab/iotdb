@@ -328,7 +328,8 @@ public class ReadWriteIOUtils {
     public static int readAsPossible(FileChannel channel, ByteBuffer buffer, int len) throws IOException{
         int length=0;
         int limit=buffer.limit();
-        buffer.limit(buffer.position()+len);
+        if(buffer.remaining()>len)
+            buffer.limit(buffer.position()+len);
         int read;
         while(length<len && buffer.hasRemaining()&& (read=channel.read(buffer))!=-1){
             length+=read;

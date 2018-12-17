@@ -158,7 +158,7 @@ public class BufferWriteProcessor extends Processor {
                         throw new BufferWriteProcessorException(e);
                     }
                 }
-                return false;
+                return true;
             case WARNING:
                 LOGGER.warn("Memory usage will exceed warning threshold, current : {}.",
                         MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
@@ -175,7 +175,7 @@ public class BufferWriteProcessor extends Processor {
                         throw new BufferWriteProcessorException(e);
                     }
                 }
-                return false;
+                return true;
             case DANGEROUS:
             default:
                 LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",

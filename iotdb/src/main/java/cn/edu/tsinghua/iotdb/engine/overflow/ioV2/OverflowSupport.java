@@ -1,15 +1,15 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import cn.edu.tsinghua.iotdb.engine.memtable.IMemSeries;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is used to store and query all overflow data in memory.<br>
@@ -64,8 +64,8 @@ public class OverflowSupport {
 		indexTrees.get(deltaObjectId).get(measurementId).delete(timestamp);
 	}
 
-	public IMemSeries queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
-												  TSDataType dataType) {
+	public TimeValuePairSorter queryOverflowInsertInMemory(String deltaObjectId, String measurementId,
+														   TSDataType dataType) {
 		return memTable.query(deltaObjectId, measurementId, dataType);
 	}
 

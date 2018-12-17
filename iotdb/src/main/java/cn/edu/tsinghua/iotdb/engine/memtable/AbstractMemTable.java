@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 import java.util.HashMap;
@@ -72,7 +73,7 @@ public abstract class AbstractMemTable implements IMemTable{
 
 
     @Override
-    public IMemSeries query(String deltaObject, String measurement, TSDataType dataType) {
+    public TimeValuePairSorter query(String deltaObject, String measurement, TSDataType dataType) {
         if(!checkPath(deltaObject,measurement))
             return new PrimitiveMemSeries(dataType);
         return memTableMap.get(deltaObject).get(measurement);

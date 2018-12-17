@@ -105,11 +105,12 @@ public class TsFileSequenceReader {
         return TsFileMetaData.deserializeFrom(buffer);
     }
 
-
+    /**
+     * this function does not modify the position of the file reader.
+     */
     public TsDeviceMetadata readTsDeviceMetaData(TsDeviceMetadataIndex index) throws IOException {
-        tsFileInput.position(index.getOffset());
         ByteBuffer buffer = ByteBuffer.allocate(index.getLen());
-        tsFileInput.read(buffer);
+        tsFileInput.read(buffer, index.getOffset());
         buffer.flip();
         return TsDeviceMetadata.deserializeFrom(buffer);
     }
@@ -164,11 +165,12 @@ public class TsFileSequenceReader {
     }
 
     /**
-     * notice, the function will midify channel's position.
+     * notice, the function will midify channel's position.<br>
+     * notice, the target bytebuffer are not flipped.
      */
-    public int readRaw(long position, int length, ByteBuffer output) throws IOException {
+    public int readRaw(long position, int length, ByteBuffer target) throws IOException {
         tsFileInput.position(position);
-        return ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), output, length);
+        return ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), target, length);
     }
 
     /**

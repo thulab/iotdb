@@ -21,6 +21,11 @@ public class BufferIO extends TsFileIOWriter {
 		append = new ArrayList<>();
 	}
 
+	/**
+	 * get all the chunkGroups' metadata which are appended after the last calling of this method,
+	 * or after the class instance is initialized if this is the first time to call the method.
+	 * @return a list of chunkgroup metadata
+	 */
 	public List<ChunkGroupMetaData> getAppendedRowGroupMetadata() {
 		if (lastRowGroupIndex < getChunkGroupMetaDatas().size()) {
 			append.clear();
@@ -33,7 +38,5 @@ public class BufferIO extends TsFileIOWriter {
 		return append;
 	}
 
-	public long getPos() throws IOException {
-		return super.getPos();
-	}
+
 }
