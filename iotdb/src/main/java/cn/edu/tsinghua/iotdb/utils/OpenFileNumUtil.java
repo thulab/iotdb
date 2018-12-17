@@ -80,7 +80,6 @@ public class OpenFileNumUtil {
         Process pro1;
         Runtime r = Runtime.getRuntime();
         String os = System.getProperty("os.name").toLowerCase();
-
         try {
             String command;
             if (os.startsWith(LINUX_OS_NAME)) {
