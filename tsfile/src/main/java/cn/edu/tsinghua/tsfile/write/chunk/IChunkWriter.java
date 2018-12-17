@@ -59,15 +59,16 @@ public interface IChunkWriter {
     long estimateMaxSeriesMemSize();
 
     /**
-     * return the serialized size of the chunk header + all pages
+     * return the serialized size of the chunk header + all pages (not include the un-sealed page).
+     * Notice, call this method before calling writeToFileWriter(), otherwise the page buffer in memory will be cleared.
      */
     long getCurrentChunkSize();
 
     /**
-     * prepare to flush data into file.
+     * seal the current page which may has not enough data points in force.
      *
      */
-    void preFlush();
+    void sealCurrentPage();
 
     int getNumOfPages();
 }

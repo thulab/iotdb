@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,11 +54,15 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
     }
 
     @Override
-    public void flushToFileWriter(TsFileIOWriter fileWriter) throws IOException {
+    public ChunkGroupFooter flushToFileWriter(TsFileIOWriter fileWriter) throws IOException {
         LOG.debug("start flush device id:{}", deviceId);
+        //make sure all the pages have been compressed into buffers, so that we can get correct groupWriter.getCurrentChunkGroupSize().
+        sealAllChunks();
+        ChunkGroupFooter footer = new ChunkGroupFooter(deviceId, getCurrentChunkGroupSize(), getSeriesNumber());
         for (IChunkWriter seriesWriter : chunkWriters.values()) {
             seriesWriter.writeToFileWriter(fileWriter);
         }
+        return footer;
     }
 
     @Override
@@ -78,10 +83,13 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
         return size;
     }
 
+    /**
+     * seal all the chunks which may has un-sealed pages in force.
+     */
     @Override
-    public void preFlush() {
+    public void sealAllChunks() {
         for (IChunkWriter writer : chunkWriters.values()) {
-            writer.preFlush();
+            writer.sealCurrentPage();
         }
     }
 

@@ -75,20 +75,21 @@ public class MemTableFlushUtil {
 		for (String deltaObjectId : iMemTable.getMemTableMap().keySet()) {
 			long startPos = tsFileIOWriter.getPos();
 			long recordCount = 0;
-			ChunkGroupFooter chunkGroupFooter = tsFileIOWriter.startFlushChunkGroup(deltaObjectId,0,
-					iMemTable.getMemTableMap().get(deltaObjectId).size());
+			tsFileIOWriter.startFlushChunkGroup(deltaObjectId);
+			int seriesNumber = iMemTable.getMemTableMap().get(deltaObjectId).size();
 			for (String measurementId : iMemTable.getMemTableMap().get(deltaObjectId).keySet()) {
+				//TODO if we can not use TSFileIO writer, then we have to redesign the class of TSFileIO.
 				IWritableMemChunk series = iMemTable.getMemTableMap().get(deltaObjectId).get(measurementId);
 				MeasurementSchema desc = fileSchema.getMeasurementSchema(measurementId);
 				PageWriter pageWriter = new PageWriter(desc);
 				ChunkBuffer chunkBuffer = new ChunkBuffer(desc);
-				IChunkWriter seriesWriter = new ChunkWriterImpl(desc,chunkBuffer, pageSizeThreshold);
+				IChunkWriter seriesWriter = new ChunkWriterImpl(desc, chunkBuffer, pageSizeThreshold);
 				recordCount += writeOneSeries(series.getSortedTimeValuePairList(), seriesWriter, desc.getType());
 				seriesWriter.writeToFileWriter(tsFileIOWriter);
 			}
 			long memSize = tsFileIOWriter.getPos() - startPos;
-			chunkGroupFooter.setDataSize(memSize);
-			tsFileIOWriter.endChunkGroup(chunkGroupFooter);
+			ChunkGroupFooter footer = new ChunkGroupFooter(deltaObjectId, memSize, seriesNumber);
+			tsFileIOWriter.endChunkGroup(footer);
 		}
 	}
 }
