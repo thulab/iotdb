@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
@@ -20,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
@@ -82,9 +82,9 @@ public class BufferWriteProcessorNewTest {
 		assertEquals(true, bufferwrite.isNewProcessor());
 		bufferwrite.setNewProcessor(false);
 		assertEquals(false, bufferwrite.isNewProcessor());
-		Pair<RawSeriesChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
+		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
 				measurementId, dataType);
-		RawSeriesChunk left = pair.left;
+		TimeValuePairSorter left = pair.left;
 		List<ChunkMetaData> right = pair.right;
 		assertEquals(true, left.isEmpty());
 		assertEquals(0, right.size());

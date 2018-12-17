@@ -19,7 +19,7 @@ public interface TimeValuePairSorter {
      */
     default Iterator<TimeValuePair> getIterator(){
         return getSortedTimeValuePairList().iterator();
-    };
+    }
 
 
     /**
@@ -28,5 +28,5 @@ public interface TimeValuePairSorter {
      */
     default boolean isEmpty(){
         return getSortedTimeValuePairList().isEmpty();
-    };
+    }
 }

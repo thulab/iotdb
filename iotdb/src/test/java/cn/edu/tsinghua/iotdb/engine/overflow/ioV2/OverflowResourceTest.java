@@ -43,41 +43,6 @@ public class OverflowResourceTest {
 	}
 
 	@Test
-	public void testOverflowUpdate() throws IOException {
-		OverflowTestUtils.produceUpdateData(support);
-		work.flush(null, null, support.getOverflowSeriesMap(), "processorName");
-		work.appendMetadatas();
-		List<ChunkMetaData> chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
-		assertEquals(true, chunkMetaDatas.isEmpty());
-		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
-		assertEquals(1, chunkMetaDatas.size());
-		ChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
-		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getTsDataType());
-		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getMeasurementUID());
-		// close
-		work.close();
-		// append file
-		long originlength = updateFile.length();
-		FileOutputStream fileOutputStream = new FileOutputStream(updateFile, true);
-		fileOutputStream.write(new byte[20]);
-		fileOutputStream.close();
-		assertEquals(originlength + 20, updateFile.length());
-		work = new OverflowResource(filePath, dataPath);
-		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
-		assertEquals(true, chunkMetaDatas.isEmpty());
-		chunkMetaDatas = work.getUpdateDeleteMetadatas(OverflowTestUtils.deltaObjectId1,
-				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
-		assertEquals(1, chunkMetaDatas.size());
-		chunkMetaData = chunkMetaDatas.get(0);
-		assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getTsDataType());
-		assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getMeasurementUID());
-		assertEquals(originlength, updateFile.length());
-	}
-
-	@Test
 	public void testOverflowInsert() throws IOException {
 		OverflowTestUtils.produceInsertData(support);
 		work.flush(OverflowTestUtils.getFileSchema(), support.getMemTabale(), null, "processorName");
