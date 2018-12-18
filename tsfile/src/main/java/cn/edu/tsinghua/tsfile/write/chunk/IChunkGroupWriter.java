@@ -62,10 +62,5 @@ public interface IChunkGroupWriter {
      */
     long getCurrentChunkGroupSize();
 
-    /**
-     * seal all the chunks which may has un-sealed pages in force.
-     */
-    void sealAllChunks();
-
     int getSeriesNumber();
 }

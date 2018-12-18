@@ -86,8 +86,7 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
     /**
      * seal all the chunks which may has un-sealed pages in force.
      */
-    @Override
-    public void sealAllChunks() {
+    private void sealAllChunks() {
         for (IChunkWriter writer : chunkWriters.values()) {
             writer.sealCurrentPage();
         }
