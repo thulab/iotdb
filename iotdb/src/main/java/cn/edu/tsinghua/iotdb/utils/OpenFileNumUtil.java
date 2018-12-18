@@ -54,7 +54,7 @@ public class OpenFileNumUtil {
     }
 
     /**
-     * constructor, default process key word is "IOTDB_HOME"
+     * constructor, process key word is defined by IOTDB_PROCESS_KEY_WORD
      */
     private OpenFileNumUtil() {
         processName = IOTDB_PROCESS_KEY_WORD;
@@ -76,7 +76,7 @@ public class OpenFileNumUtil {
      * @return pid
      */
     private int getPID() {
-        int processPid = -1;
+        int iotdbPid = -1;
         Process pro1;
         Runtime r = Runtime.getRuntime();
         String os = System.getProperty("os.name").toLowerCase();
@@ -95,7 +95,7 @@ public class OpenFileNumUtil {
                 line = line.trim();
                 String[] temp = line.split("\\s+");
                 if (temp.length > 1 && isNumeric(temp[1])) {
-                    processPid = Integer.parseInt(temp[1]);
+                    iotdbPid = Integer.parseInt(temp[1]);
                     break;
                 }
             }
@@ -104,7 +104,7 @@ public class OpenFileNumUtil {
         } catch (IOException e) {
             log.error("Cannot get pid of IoTDB process because of {}", e.getMessage());
         }
-        return processPid;
+        return iotdbPid;
     }
 
     /**
