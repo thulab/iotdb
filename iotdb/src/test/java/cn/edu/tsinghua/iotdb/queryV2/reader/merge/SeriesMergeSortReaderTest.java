@@ -1,5 +1,6 @@
-package cn.edu.tsinghua.iotdb.queryV2.reader;
+package cn.edu.tsinghua.iotdb.queryV2.reader.merge;
 
+import cn.edu.tsinghua.iotdb.queryV2.reader.IReader;
 import cn.edu.tsinghua.iotdb.queryV2.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
@@ -16,6 +17,7 @@ public class SeriesMergeSortReaderTest {
 
   @Test
   public void test2S() throws IOException {
+
     //2 series
     test(new long[]{1, 2, 3, 4, 5, 6}, new long[]{2, 2, 2, 1, 2, 2}, new long[]{1, 2, 3, 4, 5}, new long[]{1, 2, 3, 5, 6});
     test(new long[]{1, 2, 3, 4, 5}, new long[]{1, 1, 1, 1, 1}, new long[]{1, 2, 3, 4, 5}, new long[]{});
@@ -49,36 +51,29 @@ public class SeriesMergeSortReaderTest {
     private int index;
     private long value;
 
-    public FakedSeriesReader(long[] timestamps) {
-      this.timestamps = timestamps;
-      index = 0;
-      value = 1L;
-    }
-
-    public FakedSeriesReader(long[] timestamps, long value) {
+    FakedSeriesReader(long[] timestamps, long value) {
       this.timestamps = timestamps;
       index = 0;
       this.value = value;
     }
 
     @Override
-    public boolean hasNext() throws IOException {
+    public boolean hasNext() {
       return index < timestamps.length;
     }
 
     @Override
-    public TimeValuePair next() throws IOException {
+    public TimeValuePair next() {
       return new TimeValuePair(timestamps[index++], new TsPrimitiveType.TsLong(value));
     }
 
     @Override
-    public void skipCurrentTimeValuePair() throws IOException {
+    public void skipCurrentTimeValuePair() {
       next();
     }
 
     @Override
-    public void close() throws IOException {
-
+    public void close() {
     }
 
     @Override

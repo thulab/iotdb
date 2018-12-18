@@ -26,30 +26,16 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static cn.edu.tsinghua.iotdb.service.TestUtils.create_sql;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.stringValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class IoTDBSequenceDataQueryTest {
 
-  private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
-
-
-  private static String[] create_sql = new String[]{
-          "SET STORAGE GROUP TO root.vehicle",
-
-          "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
-          "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
-
-          "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-  };
-
   private IoTDB daemon;
   private boolean testFlag = TestUtils.testFlag;
-  TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+  private TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
   private int maxNumberOfPointsInPage;
   private int pageSizeInByte;
   private int groupSizeInByte;
@@ -108,7 +94,7 @@ public class IoTDBSequenceDataQueryTest {
     }
   }
 
-  public void insertData() throws ClassNotFoundException, SQLException {
+  private void insertData() throws ClassNotFoundException, SQLException {
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = null;
     try {

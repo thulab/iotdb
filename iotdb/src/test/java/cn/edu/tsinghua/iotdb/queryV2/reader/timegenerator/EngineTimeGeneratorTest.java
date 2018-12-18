@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2.reader;
+package cn.edu.tsinghua.iotdb.queryV2.reader.timegenerator;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -25,28 +25,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.*;
 
 public class EngineTimeGeneratorTest {
 
-  private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
-
-  private static String[] create_sql = new String[]{
-          "SET STORAGE GROUP TO root.vehicle",
-
-          "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
-          "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
-
-          "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-  };
-
   private IoTDB daemon;
   private boolean testFlag = TestUtils.testFlag;
-  TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+  private TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
   private int maxNumberOfPointsInPage;
   private int pageSizeInByte;
   private int groupSizeInByte;
@@ -59,6 +45,7 @@ public class EngineTimeGeneratorTest {
     if (testFlag) {
       EnvironmentUtils.closeStatMonitor();
       EnvironmentUtils.closeMemControl();
+
       // use small page setting
       // origin value
       maxNumberOfPointsInPage = tsFileConfig.maxNumberOfPointsInPage;
@@ -97,9 +84,9 @@ public class EngineTimeGeneratorTest {
       insertData();
       Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
 
-      testOneSeriesWithValueAndTimeFilter();
+      //testOneSeriesWithValueAndTimeFilter();
       testEmptySeriesWithValueFilter();
-      testMultiSeriesesWithValueFilterAndTimeFilter();
+      testMultiSeriesWithValueFilterAndTimeFilter();
 
       connection.close();
     }
@@ -110,39 +97,40 @@ public class EngineTimeGeneratorTest {
    * value >= 14 && time > 500
    */
   private void testOneSeriesWithValueAndTimeFilter() throws IOException, FileNodeManagerException {
-    Path pd0s0 = new Path("root.vehicle.d0.s0");
-    ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(14);
-    TimeFilter.TimeGt timeGt = TimeFilter.gt((long) 500);
+    System.out.println("Test >>>>> root.vehicle.d0.s0 >= 14 && time > 500");
 
-    SingleSeriesExpression queryFilter = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
-    EngineTimeGenerator timeGenerator = new EngineTimeGenerator(queryFilter);
-    System.out.println("root.vehicle.d0.s0 >= 14 && time > 500 ");
+    Path pd0s0 = new Path(d0s0);
+    ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(14);
+    TimeFilter.TimeGt timeGt = TimeFilter.gt(500);
+
+    SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
+    EngineTimeGenerator timeGenerator = new EngineTimeGenerator(singleSeriesExpression);
+
     int cnt = 0;
     while (timeGenerator.hasNext()) {
       long time = timeGenerator.next();
       assertTrue(satisfyTimeFilter1(time));
       cnt++;
-      System.out.println("cnt =" + cnt + "; time = " + time);
+      // System.out.println("cnt =" + cnt + "; time = " + time);
     }
     assertEquals(count, cnt);
   }
 
   /**
-   * root.vehicle.d1.s0 >= 5
+   * root.vehicle.d1.s0 >= 5, and d1.s0 has no data
    */
-  public void testEmptySeriesWithValueFilter() throws IOException, FileNodeManagerException {
-    Path pd1s0 = new Path("root.vehicle.d1.s0");
+  private void testEmptySeriesWithValueFilter() throws IOException, FileNodeManagerException {
+    System.out.println(" Test >>>>> root.vehicle.d1.s0 >= 5");
+
+    Path pd1s0 = new Path(d1s0);
     ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(5);
 
     IExpression singleSeriesExpression = new SingleSeriesExpression(pd1s0, valueGtEq);
     EngineTimeGenerator timeGenerator = new EngineTimeGenerator(singleSeriesExpression);
-    System.out.println("root.vehicle.d1.s0 >= 5");
+
     int cnt = 0;
     while (timeGenerator.hasNext()) {
-      long time = timeGenerator.next();
-      assertTrue(satisfyTimeFilter1(time));
       cnt++;
-      System.out.println("cnt =" + cnt + "; time = " + time);
     }
     assertEquals(0, cnt);
   }
@@ -150,31 +138,32 @@ public class EngineTimeGeneratorTest {
   /**
    * root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900
    */
-  public void testMultiSeriesesWithValueFilterAndTimeFilter() throws IOException, FileNodeManagerException {
-    Path pd0s0 = new Path("root.vehicle.d0.s0");
-    Path pd0s2 = new Path("root.vehicle.d0.s2");
+  private void testMultiSeriesWithValueFilterAndTimeFilter() throws IOException, FileNodeManagerException {
+    System.out.println("Test >>>>> root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
+
+    Path pd0s0 = new Path(d0s0);
+    Path pd0s2 = new Path(d0s2);
 
     ValueFilter.ValueGtEq valueGtEq5 = ValueFilter.gtEq(5);
-    ValueFilter.ValueGtEq valueGtEq11 = ValueFilter.gtEq((float) 11.5);
-    TimeFilter.TimeGt timeGt = TimeFilter.gt((long) 900);
+    ValueFilter.ValueGtEq valueGtEq11 = ValueFilter.gtEq(11.5f);
+    TimeFilter.TimeGt timeGt = TimeFilter.gt(900L);
 
-    IExpression seriesFilterd0s0 = new SingleSeriesExpression(pd0s0, FilterFactory.or(valueGtEq5, timeGt));
-    IExpression seriesFilterd0s2 = new SingleSeriesExpression(pd0s2, FilterFactory.or(valueGtEq11, timeGt));
+    IExpression singleSeriesExpression1 = new SingleSeriesExpression(pd0s0, FilterFactory.or(valueGtEq5, timeGt));
+    IExpression singleSeriesExpression2 = new SingleSeriesExpression(pd0s2, FilterFactory.or(valueGtEq11, timeGt));
+    IExpression andExpression = BinaryExpression.and(singleSeriesExpression1, singleSeriesExpression2);
 
-    IExpression queryFilter = BinaryExpression.and(seriesFilterd0s0, seriesFilterd0s2);
-    EngineTimeGenerator timeGenerator = new EngineTimeGenerator(queryFilter);
-    System.out.println("root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
+    EngineTimeGenerator timeGenerator = new EngineTimeGenerator(andExpression);
     int cnt = 0;
     while (timeGenerator.hasNext()) {
       long time = timeGenerator.next();
       assertTrue(satisfyTimeFilter2(time));
       cnt++;
-      System.out.println("cnt =" + cnt + "; time = " + time);
+      //System.out.println("cnt =" + cnt + "; time = " + time);
     }
     assertEquals(count2, cnt);
   }
 
-  public void insertData() throws ClassNotFoundException, SQLException {
+  private void insertData() throws ClassNotFoundException, SQLException {
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = null;
     try {

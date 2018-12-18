@@ -50,7 +50,7 @@ public class IoTDBSeriesReaderTest {
   private IoTDB deamon;
 
   private boolean testFlag = TestUtils.testFlag;
-  TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+  private TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
   private int maxNumberOfPointsInPage;
   private int pageSizeInByte;
   private int groupSizeInByte;

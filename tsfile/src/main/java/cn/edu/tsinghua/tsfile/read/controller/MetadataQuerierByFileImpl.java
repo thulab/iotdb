@@ -112,6 +112,9 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
     private List<ChunkMetaData> loadChunkMetadata(Path path) throws IOException {
 
+        if (!fileMetaData.containsDevice(path.getDevice()))
+            return new ArrayList<>();
+
         // get the index information of TsDeviceMetadata
         TsDeviceMetadataIndex index = fileMetaData.getDeviceMetadataIndex(path.getDevice());
 

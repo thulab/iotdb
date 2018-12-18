@@ -5,6 +5,8 @@ import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.Node;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.node.NodeType;
 
+import java.io.IOException;
+
 
 public class EngineLeafNode implements Node {
 
@@ -19,28 +21,32 @@ public class EngineLeafNode implements Node {
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNext() throws IOException {
 
-        if (gotData) {
-            data.next();
-            gotData = false;
-        }
+        return reader.hasNext();
 
-        if (data == null || !data.hasNext()) {
-            if (reader.hasNextBatch())
-                data = reader.nextBatch();
-            else
-                return false;
-        }
-
-        return data.hasNext();
+//        if (gotData) {
+//            data.next();
+//            gotData = false;
+//        }
+//
+//        if (data == null || !data.hasNext()) {
+//            if (reader.hasNextBatch())
+//                data = reader.nextBatch();
+//            else
+//                return false;
+//        }
+//
+//        return data.hasNext();
     }
 
     @Override
-    public long next() {
-        long time = data.currentTime();
-        gotData = true;
-        return time;
+    public long next() throws IOException {
+        return reader.next().getTimestamp();
+
+//        long time = data.currentTime();
+//        gotData = true;
+//        return time;
     }
 
     public boolean currentTimeIs(long time) {
