@@ -17,6 +17,8 @@ public class TimeValuePairUtils {
                 return new TimeValuePair(data.currentTime(), new TsPrimitiveType.TsDouble(data.getDouble()));
             case TEXT:
                 return new TimeValuePair(data.currentTime(), new TsPrimitiveType.TsBinary(data.getBinary()));
+            case BOOLEAN:
+                return new TimeValuePair(data.currentTime(), new TsPrimitiveType.TsBoolean(data.getBoolean()));
             default:
                 throw new UnSupportedDataTypeException(String.valueOf(data.getDataType()));
         }

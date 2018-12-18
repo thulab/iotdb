@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.queryV2;
+package cn.edu.tsinghua.iotdb.queryV2.component;
 
 import org.junit.Ignore;
 

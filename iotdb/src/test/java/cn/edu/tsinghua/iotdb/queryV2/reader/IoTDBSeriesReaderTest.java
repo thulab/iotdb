@@ -15,9 +15,7 @@ import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -25,38 +23,24 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class IoTDBSeriesReaderTest {
 
-  private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
-  private static String[] booleanValue = new String[]{"true", "false"};
+  private static IoTDB deamon;
 
-  private static String[] create_sql = new String[]{
-          "SET STORAGE GROUP TO root.vehicle",
+  private static boolean testFlag = TestUtils.testFlag;
+  private static TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+  private static int maxNumberOfPointsInPage;
+  private static int pageSizeInByte;
+  private static int groupSizeInByte;
 
-          "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
-          "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
-          "CREATE TIMESERIES root.vehicle.d0.s5 WITH DATATYPE=DOUBLE, ENCODING=RLE",
+  private static Connection connection;
 
-          "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-  };
-
-  private IoTDB deamon;
-
-  private boolean testFlag = TestUtils.testFlag;
-  private TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-  private int maxNumberOfPointsInPage;
-  private int pageSizeInByte;
-  private int groupSizeInByte;
-
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     if (testFlag) {
       EnvironmentUtils.closeStatMonitor();
       EnvironmentUtils.closeMemControl();
@@ -74,14 +58,22 @@ public class IoTDBSeriesReaderTest {
       deamon = IoTDB.getInstance();
       deamon.active();
       EnvironmentUtils.envSetUp();
+
+      if (testFlag) {
+        Thread.sleep(1000);
+        insertData();
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+      }
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     if (testFlag) {
+      connection.close();
       deamon.stop();
       Thread.sleep(1000);
+
       //recovery value
       tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
       tsFileConfig.pageSizeInByte = pageSizeInByte;
@@ -91,38 +83,20 @@ public class IoTDBSeriesReaderTest {
   }
 
   @Test
-  public void test() throws ClassNotFoundException, SQLException, InterruptedException, IOException, FileNodeManagerException {
-
-    if (testFlag) {
-      Thread.sleep(1000);
-      insertSQL();
-
-      Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-
-      // select test
-      selectAllTest();
-      selectOneSeriesWithValueFilterTest();
-      seriesTimeDigestReadTest();
-      crossSeriesReadUpdateTest();
-
-      connection.close();
-    }
-  }
-
-  private void selectAllTest() throws IOException, FileNodeManagerException {
+  public void selectAllTest() throws IOException, FileNodeManagerException {
     String selectSql = "select * from root";
-    System.out.println("selectAllTest===" + selectSql);
+    System.out.println("Test >>> " + selectSql);
 
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s2"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s3"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s4"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s5"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
+    queryExpression.addSelectedPath(new Path(d0s0));
+    queryExpression.addSelectedPath(new Path(d0s1));
+    queryExpression.addSelectedPath(new Path(d0s2));
+    queryExpression.addSelectedPath(new Path(d0s3));
+    queryExpression.addSelectedPath(new Path(d0s4));
+    queryExpression.addSelectedPath(new Path(d0s5));
+    queryExpression.addSelectedPath(new Path(d1s0));
+    queryExpression.addSelectedPath(new Path(d1s1));
     queryExpression.setExpression(null);
 
     QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
@@ -130,21 +104,20 @@ public class IoTDBSeriesReaderTest {
     int cnt = 0;
     while (queryDataSet.hasNext()) {
       RowRecord rowRecord = queryDataSet.next();
-      String result = rowRecord.toString();
-//            System.out.println("===" + result);
       cnt++;
     }
     assertEquals(23400, cnt);
   }
 
-  private void selectOneSeriesWithValueFilterTest() throws ClassNotFoundException, SQLException, IOException, FileNodeManagerException {
+  @Test
+  public void selectOneSeriesWithValueFilterTest() throws IOException, FileNodeManagerException {
 
     String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
-    System.out.println("selectOneSeriesWithValueFilterTest===" + selectSql);
+    System.out.println("Test >>> " + selectSql);
 
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
-    Path p = new Path("root.vehicle.d0.s0");
+    Path p = new Path(d0s0);
     queryExpression.addSelectedPath(p);
     SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(p, ValueFilter.gtEq(20));
     queryExpression.setExpression(singleSeriesExpression);
@@ -155,25 +128,23 @@ public class IoTDBSeriesReaderTest {
     while (queryDataSet.hasNext()) {
       RowRecord rowRecord = queryDataSet.next();
       String result = rowRecord.toString();
-      System.out.println("selectOneSeriesWithValueFilterTest===" + cnt + result);
+      //System.out.println(result);
       cnt++;
     }
     assertEquals(16440, cnt);
 
   }
 
-  // https://github.com/thulab/iotdb/issues/192
-  private void seriesTimeDigestReadTest() throws IOException, FileNodeManagerException {
+  @Test
+  public void seriesTimeDigestReadTest() throws IOException, FileNodeManagerException {
     String selectSql = "select s0 from root.vehicle.d0 where time >= 22987";
-    System.out.println("seriesTimeDigestReadTest===" + selectSql);
-
-    // [3000, 13599] , [13700,23999]
+    System.out.println("Test >>> " + selectSql);
 
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
-    Path p = new Path("root.vehicle.d0.s0");
-    queryExpression.addSelectedPath(p);
-    SingleSeriesExpression expression = new SingleSeriesExpression(p, TimeFilter.gt((long) 22987));
+    Path path = new Path(d0s0);
+    queryExpression.addSelectedPath(path);
+    SingleSeriesExpression expression = new SingleSeriesExpression(path, TimeFilter.gt(22987L));
     queryExpression.setExpression(expression);
 
     QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
@@ -182,21 +153,23 @@ public class IoTDBSeriesReaderTest {
     while (queryDataSet.hasNext()) {
       RowRecord rowRecord = queryDataSet.next();
       String result = rowRecord.toString();
-      System.out.println("===" + result);
+      //System.out.println(result);
       cnt++;
     }
     assertEquals(3012, cnt);
 
   }
 
-  private void crossSeriesReadUpdateTest() throws IOException, FileNodeManagerException {
-    System.out.println("select s1 from root.vehicle.d0 where s0 < 111");
+  @Test
+  public void crossSeriesReadUpdateTest() throws IOException, FileNodeManagerException {
+    System.out.println("Test >>> select s1 from root.vehicle.d0 where s0 < 111");
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
-    Path p0 = new Path("root.vehicle.d0.s0");
-    Path p1 = new Path("root.vehicle.d0.s1");
-    queryExpression.addSelectedPath(p1);
-    SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(p0, ValueFilter.lt(111));
+    Path path1 = new Path(d0s0);
+    Path path2 = new Path(d0s1);
+    queryExpression.addSelectedPath(path1);
+    queryExpression.addSelectedPath(path2);
+    SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(path1, ValueFilter.lt(111));
     queryExpression.setExpression(singleSeriesExpression);
 
     QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
@@ -204,20 +177,16 @@ public class IoTDBSeriesReaderTest {
     int cnt = 0;
     while (queryDataSet.hasNext()) {
       RowRecord rowRecord = queryDataSet.next();
-      System.out.println("~~~~" + rowRecord);
-      long time = rowRecord.getTimestamp();
-      String value = rowRecord.getFields().get(1).getStringValue();
-      if (time > 23000 && time < 100100) {
-        System.out.println("~~~~" + time + "," + value);
-        assertEquals("11111111", value);
-      }
+      //System.out.println("~~~~" + rowRecord);
+      //long time = rowRecord.getTimestamp();
+      //String value = rowRecord.getFields().get(1).getStringValue();
       //System.out.println("===" + rowRecord.toString());
       cnt++;
     }
     assertEquals(22800, cnt);
   }
 
-  private void insertSQL() throws ClassNotFoundException, SQLException {
+  private static void insertData() throws ClassNotFoundException, SQLException {
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = null;
     try {
@@ -317,7 +286,7 @@ public class IoTDBSeriesReaderTest {
       }
 
       // overflow update
-      statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
+      //statement.execute("UPDATE root.vehicle SET d0.s1 = 11111111 WHERE time > 23000 and time < 100100");
 
       statement.close();
     } catch (Exception e) {

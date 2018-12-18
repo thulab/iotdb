@@ -41,7 +41,11 @@ public class EngineDataSetWithTimeGenerator extends QueryDataSet {
     for (int i = 0; i < readers.size(); i++) {
       EngineReaderByTimeStamp reader = readers.get(i);
       TsPrimitiveType tsPrimitiveType = reader.getValueInTimestamp(timestamp);
-      rowRecord.addField(getField(tsPrimitiveType.getValue(), dataTypes.get(i)));
+      if (tsPrimitiveType == null) {
+        rowRecord.addField(new Field(null));
+      } else {
+        rowRecord.addField(getField(tsPrimitiveType.getValue(), dataTypes.get(i)));
+      }
     }
 
     return rowRecord;

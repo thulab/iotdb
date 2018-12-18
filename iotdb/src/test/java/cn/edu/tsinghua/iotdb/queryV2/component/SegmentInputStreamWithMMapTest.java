@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.queryV2.component;
 
-import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
 import cn.edu.tsinghua.iotdb.queryV2.reader.component.SegmentInputStreamWithMMap;
 import sun.nio.ch.DirectBuffer;
 

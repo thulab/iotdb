@@ -15,7 +15,7 @@ import static cn.edu.tsinghua.iotdb.service.TestUtils.create_sql;
 import static cn.edu.tsinghua.iotdb.service.TestUtils.stringValue;
 import static org.junit.Assert.fail;
 
-public class IoTDBNoOverflowReadTest {
+public class IoTDBNoUnSeqInsertReadTest {
 
   private IoTDB daemon;
 

@@ -31,6 +31,7 @@ public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implemen
         return null;
       }
     }
+
     return null;
   }
 

@@ -89,7 +89,7 @@ public class EngineTimeGeneratorTest {
    * value >= 14 && time > 500
    */
   @Test public void testOneSeriesWithValueAndTimeFilter() throws IOException, FileNodeManagerException {
-    System.out.println("Test >>>>> root.vehicle.d0.s0 >= 14 && time > 500");
+    System.out.println("Test >>> root.vehicle.d0.s0 >= 14 && time > 500");
 
     Path pd0s0 = new Path(d0s0);
     ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(14);
@@ -112,7 +112,7 @@ public class EngineTimeGeneratorTest {
    * root.vehicle.d1.s0 >= 5, and d1.s0 has no data
    */
   @Test public void testEmptySeriesWithValueFilter() throws IOException, FileNodeManagerException {
-    System.out.println("Test >>>>> root.vehicle.d1.s0 >= 5");
+    System.out.println("Test >>> root.vehicle.d1.s0 >= 5");
 
     Path pd1s0 = new Path(d1s0);
     ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(5);
@@ -131,7 +131,7 @@ public class EngineTimeGeneratorTest {
    * root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900
    */
   @Test public void testMultiSeriesWithValueFilterAndTimeFilter() throws IOException, FileNodeManagerException {
-    System.out.println("Test >>>>> root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
+    System.out.println("Test >>> root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
 
     Path pd0s0 = new Path(d0s0);
     Path pd0s2 = new Path(d0s2);

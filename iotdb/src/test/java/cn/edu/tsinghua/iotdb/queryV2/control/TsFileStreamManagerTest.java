@@ -1,6 +1,6 @@
 //package cn.edu.tsinghua.iotdb.queryV2.control;
 //
-//import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
+//import cn.edu.tsinghua.iotdb.queryV2.component.SimpleFileWriter;
 //import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob;
 //import cn.edu.tsinghua.iotdb.queryV2.component.job.QueryJob.*;
 //import cn.edu.tsinghua.iotdb.queryV2.control.TsFileStreamManager;

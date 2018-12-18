@@ -13,6 +13,7 @@ public class TestUtils {
   public static final String d0s2 = "root.vehicle.d0.s2";
   public static final String d0s3 = "root.vehicle.d0.s3";
   public static final String d0s4 = "root.vehicle.d0.s4";
+  public static final String d0s5 = "root.vehicle.d0.s5";
 
   public static final String d1s0 = "root.vehicle.d1.s0";
   public static final String d1s1 = "root.vehicle.d1.s1";
@@ -31,8 +32,10 @@ public class TestUtils {
           "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
           "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
           "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
+          "CREATE TIMESERIES root.vehicle.d0.s5 WITH DATATYPE=DOUBLE, ENCODING=RLE",
           "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
           "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
+
   };
 
   public static String insertTemplate = "insert into %s(timestamp%s) values(%d%s)";

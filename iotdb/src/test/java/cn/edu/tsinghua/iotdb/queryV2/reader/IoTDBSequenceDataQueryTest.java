@@ -28,6 +28,9 @@ import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+/**
+ * In this test case, no unseq insert data.
+ */
 public class IoTDBSequenceDataQueryTest {
 
   private static IoTDB daemon;
@@ -145,7 +148,7 @@ public class IoTDBSequenceDataQueryTest {
   }
 
   @Test
-  public void TsFilesReaderWithoutFilterTest() throws IOException, FileNodeManagerException {
+  public void readWithoutFilterTest() throws IOException, FileNodeManagerException {
 
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
@@ -170,7 +173,7 @@ public class IoTDBSequenceDataQueryTest {
   }
 
   @Test
-  public void TsFilesReaderWithTimeFilterTest() throws IOException, FileNodeManagerException {
+  public void readWithTimeFilterTest() throws IOException, FileNodeManagerException {
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
     queryExpression.addSelectedPath(new Path(d0s0));
@@ -194,28 +197,28 @@ public class IoTDBSequenceDataQueryTest {
   }
 
   @Test
-  public void TsFilesReaderWithValueFilterTest() throws IOException, FileNodeManagerException {
-    String sql = "select * from root where root.vehicle.d0.s0 >=14";
+  public void readWithValueFilterTest() throws IOException, FileNodeManagerException {
+    // select * from root where root.vehicle.d0.s0 >=14
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s2"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s3"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s4"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
+    queryExpression.addSelectedPath(new Path(d0s0));
+    queryExpression.addSelectedPath(new Path(d0s1));
+    queryExpression.addSelectedPath(new Path(d0s2));
+    queryExpression.addSelectedPath(new Path(d0s3));
+    queryExpression.addSelectedPath(new Path(d0s4));
+    queryExpression.addSelectedPath(new Path(d1s0));
+    queryExpression.addSelectedPath(new Path(d1s1));
 
-    Path p = new Path("root.vehicle.d0.s0");
-    SingleSeriesExpression seriesFilter = new SingleSeriesExpression(p, ValueFilter.gtEq(14));
-    queryExpression.setExpression(seriesFilter);
+    Path queryPath = new Path(d0s0);
+    SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(queryPath, ValueFilter.gtEq(14));
+    queryExpression.setExpression(singleSeriesExpression);
 
     QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
 
     int cnt = 0;
     while (queryDataSet.hasNext()) {
       RowRecord rowRecord = queryDataSet.next();
-      System.out.println("TsFilesReaderWithValueFilterTest===" + rowRecord.toString());
+      //System.out.println("readWithValueFilterTest===" + rowRecord.toString());
       cnt++;
     }
     assertEquals(count, cnt);
