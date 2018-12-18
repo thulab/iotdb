@@ -16,9 +16,7 @@ import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -26,24 +24,25 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static cn.edu.tsinghua.iotdb.service.TestUtils.create_sql;
-import static cn.edu.tsinghua.iotdb.service.TestUtils.stringValue;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class IoTDBSequenceDataQueryTest {
 
-  private IoTDB daemon;
-  private boolean testFlag = TestUtils.testFlag;
-  private TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-  private int maxNumberOfPointsInPage;
-  private int pageSizeInByte;
-  private int groupSizeInByte;
+  private static IoTDB daemon;
+  private static boolean testFlag = TestUtils.testFlag;
+  private static TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+  private static int maxNumberOfPointsInPage;
+  private static int pageSizeInByte;
+  private static int groupSizeInByte;
+  private static Connection connection;
 
-  private int d0s0gteq14 = 0;
+  // count : d0s0 >= 14
+  private static int count = 0;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     if (testFlag) {
       EnvironmentUtils.closeStatMonitor();
       EnvironmentUtils.closeMemControl();
@@ -60,12 +59,20 @@ public class IoTDBSequenceDataQueryTest {
       daemon = IoTDB.getInstance();
       daemon.active();
       EnvironmentUtils.envSetUp();
+
+      if (testFlag) {
+        Thread.sleep(5000);
+        insertData();
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+      }
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     if (testFlag) {
+      connection.close();
+
       daemon.stop();
       Thread.sleep(1000);
 
@@ -78,23 +85,7 @@ public class IoTDBSequenceDataQueryTest {
     }
   }
 
-  @Test
-  public void test() throws InterruptedException, SQLException, ClassNotFoundException, IOException, FileNodeManagerException {
-    if (testFlag) {
-      Thread.sleep(5000);
-      insertData();
-      Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-
-      TsFilesReaderWithoutFilterTest();
-      TsFilesReaderWithTimeFilterTest();
-      TsFilesReaderWithValueFilterTest();
-
-
-      connection.close();
-    }
-  }
-
-  private void insertData() throws ClassNotFoundException, SQLException {
+  private static void insertData() throws ClassNotFoundException, SQLException {
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = null;
     try {
@@ -118,7 +109,7 @@ public class IoTDBSequenceDataQueryTest {
         statement.execute(sql);
 
         if (time % 17 >= 14) {
-          d0s0gteq14++;
+          count++;
         }
       }
 
@@ -133,7 +124,7 @@ public class IoTDBSequenceDataQueryTest {
           sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 29);
           statement.execute(sql);
           if (time % 17 >= 14) {
-            d0s0gteq14++;
+            count++;
           }
         }
         sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 31);
@@ -153,18 +144,18 @@ public class IoTDBSequenceDataQueryTest {
     }
   }
 
+  @Test
+  public void TsFilesReaderWithoutFilterTest() throws IOException, FileNodeManagerException {
 
-  private void TsFilesReaderWithoutFilterTest() throws IOException, FileNodeManagerException {
-    String sql = "select * from root";
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s0"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s1"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s2"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s3"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d0.s4"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d1.s0"));
-    queryExpression.addSelectedPath(new Path("root.vehicle.d1.s1"));
+    queryExpression.addSelectedPath(new Path(d0s0));
+    queryExpression.addSelectedPath(new Path(d0s1));
+    queryExpression.addSelectedPath(new Path(d0s2));
+    queryExpression.addSelectedPath(new Path(d0s3));
+    queryExpression.addSelectedPath(new Path(d0s4));
+    queryExpression.addSelectedPath(new Path(d1s0));
+    queryExpression.addSelectedPath(new Path(d1s1));
     queryExpression.setExpression(null);
 
     QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
@@ -172,14 +163,38 @@ public class IoTDBSequenceDataQueryTest {
     int cnt = 0;
     while (queryDataSet.hasNext()) {
       RowRecord rowRecord = queryDataSet.next();
-      System.out.println("===" + rowRecord.toString());
+      //System.out.println("===" + rowRecord.toString());
       cnt++;
     }
     assertEquals(1000, cnt);
-
   }
 
-  private void TsFilesReaderWithValueFilterTest() throws IOException, FileNodeManagerException {
+  @Test
+  public void TsFilesReaderWithTimeFilterTest() throws IOException, FileNodeManagerException {
+    EngineQueryRouter engineExecutor = new EngineQueryRouter();
+    QueryExpression queryExpression = QueryExpression.create();
+    queryExpression.addSelectedPath(new Path(d0s0));
+    queryExpression.addSelectedPath(new Path(d1s0));
+    queryExpression.addSelectedPath(new Path(d1s1));
+
+    GlobalTimeExpression globalTimeExpression = new GlobalTimeExpression(TimeFilter.gtEq(800L));
+    queryExpression.setExpression(globalTimeExpression);
+    QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
+
+    int cnt = 0;
+    while (queryDataSet.hasNext()) {
+      RowRecord rowRecord = queryDataSet.next();
+      String value = rowRecord.getFields().get(0).getStringValue();
+      long time = rowRecord.getTimestamp();
+      //System.out.println(time + "===" + rowRecord.toString());
+      assertEquals("" + time % 17, value);
+      cnt++;
+    }
+    assertEquals(350, cnt);
+  }
+
+  @Test
+  public void TsFilesReaderWithValueFilterTest() throws IOException, FileNodeManagerException {
     String sql = "select * from root where root.vehicle.d0.s0 >=14";
     EngineQueryRouter engineExecutor = new EngineQueryRouter();
     QueryExpression queryExpression = QueryExpression.create();
@@ -203,33 +218,7 @@ public class IoTDBSequenceDataQueryTest {
       System.out.println("TsFilesReaderWithValueFilterTest===" + rowRecord.toString());
       cnt++;
     }
-    assertEquals(d0s0gteq14, cnt);
-  }
-
-  private void TsFilesReaderWithTimeFilterTest() throws IOException, FileNodeManagerException {
-    EngineQueryRouter engineExecutor = new EngineQueryRouter();
-    QueryExpression queryExpression = QueryExpression.create();
-    Path d0s0 = new Path("root.vehicle.d0.s0");
-    Path d1s0 = new Path("root.vehicle.d1.s0");
-    Path d1s1 = new Path("root.vehicle.d1.s1");
-    queryExpression.addSelectedPath(d0s0);
-    queryExpression.addSelectedPath(d1s0);
-    queryExpression.addSelectedPath(d1s1);
-
-    GlobalTimeExpression globalTimeExpression = new GlobalTimeExpression(TimeFilter.gtEq((long) 800));
-    queryExpression.setExpression(globalTimeExpression);
-    QueryDataSet queryDataSet = engineExecutor.query(queryExpression);
-
-    int cnt = 0;
-    while (queryDataSet.hasNext()) {
-      RowRecord rowRecord = queryDataSet.next();
-      String strd0s0 = "" + rowRecord.getFields().get(0).getStringValue();
-      long time = rowRecord.getTimestamp();
-      System.out.println(time + "===" + rowRecord.toString());
-      assertEquals("" + time % 17, strd0s0);
-      cnt++;
-    }
-    assertEquals(350, cnt);
+    assertEquals(count, cnt);
   }
 
 }

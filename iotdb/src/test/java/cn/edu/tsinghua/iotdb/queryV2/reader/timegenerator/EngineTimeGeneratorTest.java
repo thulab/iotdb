@@ -15,9 +15,7 @@ import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.ValueFilter;
 import cn.edu.tsinghua.tsfile.read.filter.factory.FilterFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -30,18 +28,19 @@ import static org.junit.Assert.*;
 
 public class EngineTimeGeneratorTest {
 
-  private IoTDB daemon;
-  private boolean testFlag = TestUtils.testFlag;
-  private TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
-  private int maxNumberOfPointsInPage;
-  private int pageSizeInByte;
-  private int groupSizeInByte;
+  private static IoTDB daemon;
+  private static boolean testFlag = TestUtils.testFlag;
+  private static TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
+  private static int maxNumberOfPointsInPage;
+  private static int pageSizeInByte;
+  private static int groupSizeInByte;
+  private static Connection connection;
 
-  private int count = 0;
-  private int count2 = 150;
+  private static int count = 0;
+  private static int count2 = 150;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     if (testFlag) {
       EnvironmentUtils.closeStatMonitor();
       EnvironmentUtils.closeMemControl();
@@ -59,12 +58,20 @@ public class EngineTimeGeneratorTest {
       daemon = IoTDB.getInstance();
       daemon.active();
       EnvironmentUtils.envSetUp();
+
+      if (testFlag) {
+        Thread.sleep(5000);
+        insertData();
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+      }
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     if (testFlag) {
+      connection.close();
+
       daemon.stop();
       Thread.sleep(1000);
 
@@ -77,26 +84,11 @@ public class EngineTimeGeneratorTest {
     }
   }
 
-  @Test
-  public void test() throws InterruptedException, SQLException, ClassNotFoundException, IOException, FileNodeManagerException {
-    if (testFlag) {
-      Thread.sleep(5000);
-      insertData();
-      Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-
-      //testOneSeriesWithValueAndTimeFilter();
-      testEmptySeriesWithValueFilter();
-      testMultiSeriesWithValueFilterAndTimeFilter();
-
-      connection.close();
-    }
-  }
-
 
   /**
    * value >= 14 && time > 500
    */
-  private void testOneSeriesWithValueAndTimeFilter() throws IOException, FileNodeManagerException {
+  @Test public void testOneSeriesWithValueAndTimeFilter() throws IOException, FileNodeManagerException {
     System.out.println("Test >>>>> root.vehicle.d0.s0 >= 14 && time > 500");
 
     Path pd0s0 = new Path(d0s0);
@@ -119,8 +111,8 @@ public class EngineTimeGeneratorTest {
   /**
    * root.vehicle.d1.s0 >= 5, and d1.s0 has no data
    */
-  private void testEmptySeriesWithValueFilter() throws IOException, FileNodeManagerException {
-    System.out.println(" Test >>>>> root.vehicle.d1.s0 >= 5");
+  @Test public void testEmptySeriesWithValueFilter() throws IOException, FileNodeManagerException {
+    System.out.println("Test >>>>> root.vehicle.d1.s0 >= 5");
 
     Path pd1s0 = new Path(d1s0);
     ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(5);
@@ -138,7 +130,7 @@ public class EngineTimeGeneratorTest {
   /**
    * root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900
    */
-  private void testMultiSeriesWithValueFilterAndTimeFilter() throws IOException, FileNodeManagerException {
+  @Test public void testMultiSeriesWithValueFilterAndTimeFilter() throws IOException, FileNodeManagerException {
     System.out.println("Test >>>>> root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
 
     Path pd0s0 = new Path(d0s0);
@@ -163,7 +155,7 @@ public class EngineTimeGeneratorTest {
     assertEquals(count2, cnt);
   }
 
-  private void insertData() throws ClassNotFoundException, SQLException {
+  private static void insertData() throws ClassNotFoundException, SQLException {
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = null;
     try {
@@ -230,14 +222,14 @@ public class EngineTimeGeneratorTest {
   /**
    * value >= 14 && time > 500
    */
-  private boolean satisfyTimeFilter1(long time) {
+  private static boolean satisfyTimeFilter1(long time) {
     return time % 17 >= 14 && time > 500;
   }
 
   /**
    * root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11 || time > 900
    */
-  private boolean satisfyTimeFilter2(long time) {
+  private static boolean satisfyTimeFilter2(long time) {
     return (time % 17 >= 5 || time > 900) && (time % 31 >= 11.5 || time > 900);
   }
 }
