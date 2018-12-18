@@ -62,7 +62,7 @@ public class OpenFileNumUtil {
     }
 
     /**
-     * one instance
+     * singleton instance
      *
      * @return instance
      */
