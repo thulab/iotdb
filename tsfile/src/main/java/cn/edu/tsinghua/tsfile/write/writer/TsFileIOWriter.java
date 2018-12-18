@@ -103,12 +103,9 @@ public class TsFileIOWriter {
      * @param dataSize the serialized size of all chunks
      * @return the serialized size of ChunkGroupFooter
      */
-    public ChunkGroupFooter startFlushChunkGroup(String deviceId, long dataSize, int numberOfChunks) throws IOException {
+    public void startFlushChunkGroup(String deviceId) throws IOException {
         LOG.debug("start chunk group:{}, file position {}", deviceId, out.getPosition());
         currentChunkGroupMetaData = new ChunkGroupMetaData(deviceId, new ArrayList<>());
-        ChunkGroupFooter footer = new ChunkGroupFooter(deviceId, dataSize, numberOfChunks);
-        LOG.debug("finishing writing chunk group header {}, file position {}", footer, out.getPosition());
-        return footer;
     }
 
     /**

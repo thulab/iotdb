@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.tsfile.write.chunk;
 
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
@@ -35,7 +36,7 @@ public interface IChunkGroupWriter {
      * @param tsfileWriter - TSFileIOWriter
      * @throws IOException exception in IO
      */
-    void flushToFileWriter(TsFileIOWriter tsfileWriter) throws IOException;
+    ChunkGroupFooter flushToFileWriter(TsFileIOWriter tsfileWriter) throws IOException;
 
     /**
      * get the max memory occupied at this time.
@@ -56,14 +57,10 @@ public interface IChunkGroupWriter {
     void addSeriesWriter(MeasurementSchema measurementSchema, int pageSize);
 
     /**
-     * @return get the serialized size of current chunkGroup header + all chunks
+     * @return get the serialized size of current chunkGroup header + all chunks.
+     * Notice, the value does not include any un-sealed page in the chunks.
      */
     long getCurrentChunkGroupSize();
-
-    /**
-     * call all the series to prepare to flush data.
-     */
-    void preFlush();
 
     int getSeriesNumber();
 }

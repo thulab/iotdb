@@ -36,9 +36,10 @@ public class TsFileIOWriterTest {
         statistics.updateStats(0L);
 
         // chunk group 1
-        ChunkGroupFooter footer = writer.startFlushChunkGroup(deviceId, 0, 0);
+        writer.startFlushChunkGroup(deviceId);
         writer.startFlushChunk(measurementSchema, measurementSchema.getCompressor().getType(), measurementSchema.getType(), measurementSchema.getEncodingType(), statistics, 0, 0, 0, 0);
         writer.endChunk(0);
+        ChunkGroupFooter footer = new ChunkGroupFooter(deviceId, 0, 1);
         writer.endChunkGroup(footer);
 
         // end file

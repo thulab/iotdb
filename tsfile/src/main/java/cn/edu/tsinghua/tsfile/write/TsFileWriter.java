@@ -246,20 +246,15 @@ public class TsFileWriter {
     private boolean flushAllChunkGroups() throws IOException {
         if (recordCount > 0) {
             long totalMemStart = fileWriter.getPos();
-            //make sure all the pages have been compressed into buffers, so that we can get correct groupWriter.getCurrentChunkGroupSize().
-            for (IChunkGroupWriter writer : groupWriters.values()) {
-                writer.preFlush();
-            }
+
             for (String deviceId : groupWriters.keySet()) {
                 long pos = fileWriter.getPos();
                 IChunkGroupWriter groupWriter = groupWriters.get(deviceId);
-                long ChunkGroupSize = groupWriter.getCurrentChunkGroupSize();
-                ChunkGroupFooter chunkGroupFooter = fileWriter.startFlushChunkGroup(deviceId, ChunkGroupSize, groupWriter.getSeriesNumber());
-                groupWriter.flushToFileWriter(fileWriter);
-
-                if (fileWriter.getPos() - pos != ChunkGroupSize)
+                fileWriter.startFlushChunkGroup(deviceId);
+                ChunkGroupFooter chunkGroupFooter = groupWriter.flushToFileWriter(fileWriter);
+                if (fileWriter.getPos() - pos != chunkGroupFooter.getDataSize())
                     throw new IOException(String.format("Flushed data size is inconsistent with computation! Estimated: %d, Actuall: %d",
-                            ChunkGroupSize, fileWriter.getPos() - pos));
+                            chunkGroupFooter.getDataSize(), fileWriter.getPos() - pos));
 
                 fileWriter.endChunkGroup(chunkGroupFooter);
             }
