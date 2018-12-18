@@ -38,7 +38,7 @@ public class SealedTsFilesReader implements IReader {
     public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles) {
         this.seriesPath = path;
         this.sealedTsFiles = sealedTsFiles;
-        this.usedIntervalFileIndex = -1;
+        this.usedIntervalFileIndex = 0;
         this.seriesReader = null;
         this.hasCachedData = false;
     }
@@ -71,10 +71,10 @@ public class SealedTsFilesReader implements IReader {
             }
 
             // try to get next batch data from next reader
-            while ((usedIntervalFileIndex + 1) < sealedTsFiles.size()) {
+            while (usedIntervalFileIndex < sealedTsFiles.size()) {
                 // init until reach a satisfied reader
                 if (seriesReader == null || !seriesReader.hasNextBatch()) {
-                    IntervalFileNode fileNode = sealedTsFiles.get(++usedIntervalFileIndex);
+                    IntervalFileNode fileNode = sealedTsFiles.get(usedIntervalFileIndex++);
                     if (singleTsFileSatisfied(fileNode)) {
                         initSingleTsFileReader(fileNode);
                     } else {
@@ -85,13 +85,16 @@ public class SealedTsFilesReader implements IReader {
                     data = seriesReader.nextBatch();
                 }
             }
+
+            if (data == null || !data.hasNext())
+                break;
         }
 
         return false;
     }
 
     @Override
-    public TimeValuePair next() throws IOException {
+    public TimeValuePair next() {
         TimeValuePair timeValuePair = TimeValuePairUtils.getCurrentTimeValuePair(data);
         data.next();
         hasCachedData = false;
@@ -99,7 +102,7 @@ public class SealedTsFilesReader implements IReader {
     }
 
     @Override
-    public void skipCurrentTimeValuePair() throws IOException {
+    public void skipCurrentTimeValuePair() {
         next();
     }
 

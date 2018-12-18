@@ -16,32 +16,32 @@ import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
 
 public class EngineQueryRouter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);
 
-    public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
-        if (queryExpression.hasQueryFilter()) {
-            try {
+  public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
+    if (queryExpression.hasQueryFilter()) {
+      try {
 
-                IExpression optimizedExpression = ExpressionOptimizer.getInstance().
-                        optimize(queryExpression.getExpression(), queryExpression.getSelectedSeries());
-                queryExpression.setExpression(optimizedExpression);
+        IExpression optimizedExpression = ExpressionOptimizer.getInstance().
+                optimize(queryExpression.getExpression(), queryExpression.getSelectedSeries());
+        queryExpression.setExpression(optimizedExpression);
 
-                if (optimizedExpression.getType() == GLOBAL_TIME) {
-                    return EngineExecutorWithoutTimeGenerator.executeWithGlobalTimeFilter(queryExpression);
-                } else {
-                    return EngineExecutorWithTimeGenerator.execute(queryExpression);
-                }
-
-            } catch (QueryFilterOptimizationException | PathErrorException e) {
-                throw new IOException(e);
-            }
+        if (optimizedExpression.getType() == GLOBAL_TIME) {
+          return EngineExecutorWithoutTimeGenerator.executeWithGlobalTimeFilter(queryExpression);
         } else {
-            try {
-                return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(queryExpression);
-            } catch (PathErrorException e) {
-                throw new IOException(e);
-            }
+          return EngineExecutorWithTimeGenerator.execute(queryExpression);
         }
+
+      } catch (QueryFilterOptimizationException | PathErrorException e) {
+        throw new IOException(e);
+      }
+    } else {
+      try {
+        return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(queryExpression);
+      } catch (PathErrorException e) {
+        throw new IOException(e);
+      }
     }
+  }
 
 }

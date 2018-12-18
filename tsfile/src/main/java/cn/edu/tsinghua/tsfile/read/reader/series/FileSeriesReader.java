@@ -62,6 +62,8 @@ public abstract class FileSeriesReader {
             }
         }
 
+        if (data == null)
+            return new BatchData();
         return data;
     }
 

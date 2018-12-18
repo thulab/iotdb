@@ -16,103 +16,104 @@ import java.util.*;
 
 public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
-    private List<IReader> readers;
+  private List<IReader> readers;
 
-    private List<BatchData> batchDataList;
+  private List<BatchData> batchDataList;
 
-    private List<Boolean> hasDataRemaining;
+  private List<Boolean> hasDataRemaining;
 
-    // TODO heap only need to store time
-    private PriorityQueue<Long> timeHeap;
+  // TODO heap only need to store time
+  private PriorityQueue<Long> timeHeap;
 
-    private PriorityQueue<Point> heap;
+  private PriorityQueue<Point> heap;
 
-    private Set<Long> timeSet;
+  private Set<Long> timeSet;
 
-    public EngineDataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<IReader> readers) throws IOException {
-        super(paths, dataTypes);
-        this.readers = readers;
-        initHeap();
+  public EngineDataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<IReader> readers) throws IOException {
+    super(paths, dataTypes);
+    this.readers = readers;
+    initHeap();
+  }
+
+  private void initHeap() throws IOException {
+    heap = new PriorityQueue<>();
+    timeHeap = new PriorityQueue<>();
+    for (int i = 0; i < readers.size(); i++) {
+      IReader reader = readers.get(i);
+      if (reader.hasNext()) {
+        TimeValuePair timeValuePair = reader.next();
+        heap.add(new Point(i, dataTypes.get(i), timeValuePair.getTimestamp(), timeValuePair.getValue()));
+      }
     }
+  }
 
-    private void initHeap() throws IOException {
-        heap = new PriorityQueue<>();
-        for(int i = 0; i < readers.size(); i++) {
-            IReader reader = readers.get(i);
-            if (reader.hasNext()) {
-                TimeValuePair timeValuePair = reader.next();
-                heap.add(new Point(i, dataTypes.get(i), timeValuePair.getTimestamp(), timeValuePair.getValue()));
-            }
-        }
+
+  @Override
+  public boolean hasNext() {
+    return heap.size() > 0;
+  }
+
+  @Override
+  public RowRecord next() throws IOException {
+    Point aimPoint = heap.peek();
+    RowRecord record = new RowRecord(aimPoint.timestamp);
+
+    while (heap.size() > 0 && heap.peek().timestamp == aimPoint.timestamp) {
+      Point point = heap.poll();
+      record.addField(point.getField());
+      int index = point.readerIndex;
+      if (readers.get(index).hasNext()) {
+        TimeValuePair next = readers.get(index).next();
+        heap.add(new Point(index, dataTypes.get(index), next.getTimestamp(), next.getValue()));
+      }
     }
+    return record;
+  }
 
+
+  private static class Point implements Comparable<Point> {
+    private int readerIndex;
+    private TSDataType dataType;
+    private long timestamp;
+    private TsPrimitiveType tsPrimitiveType;
+
+    private Point(int readerIndex, TSDataType dataType, long timestamp, TsPrimitiveType tsPrimitiveType) {
+      this.readerIndex = readerIndex;
+      this.dataType = dataType;
+      this.timestamp = timestamp;
+      this.tsPrimitiveType = tsPrimitiveType;
+    }
 
     @Override
-    public boolean hasNext() {
-        return timeHeap.size() > 0;
+    public int compareTo(Point o) {
+      return Long.compare(timestamp, o.timestamp);
     }
 
-    @Override
-    public RowRecord next() throws IOException {
-        Point aimPoint = heap.peek();
-        RowRecord record = new RowRecord(aimPoint.timestamp);
-
-        while(heap.size() > 0 && heap.peek().timestamp == aimPoint.timestamp) {
-            Point point = heap.poll();
-            record.addField(point.getField());
-            int index = point.readerIndex;
-            if(readers.get(index).hasNext()) {
-                TimeValuePair next = readers.get(index).next();
-                heap.add(new Point(index, dataTypes.get(index), next.getTimestamp(), next.getValue()));
-            }
-        }
-        return record;
+    public Field getField() {
+      Field field = new Field(dataType);
+      switch (dataType) {
+        case INT32:
+          field.setIntV(tsPrimitiveType.getInt());
+          break;
+        case INT64:
+          field.setLongV(tsPrimitiveType.getLong());
+          break;
+        case FLOAT:
+          field.setFloatV(tsPrimitiveType.getFloat());
+          break;
+        case DOUBLE:
+          field.setDoubleV(tsPrimitiveType.getDouble());
+          break;
+        case BOOLEAN:
+          field.setBoolV(tsPrimitiveType.getBoolean());
+          break;
+        case TEXT:
+          field.setBinaryV(tsPrimitiveType.getBinary());
+          break;
+        default:
+          throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
+      }
+      return field;
     }
-
-
-    private static class Point implements Comparable<Point> {
-        private int readerIndex;
-        private TSDataType dataType;
-        private long timestamp;
-        private TsPrimitiveType tsPrimitiveType;
-
-        private Point(int readerIndex, TSDataType dataType, long timestamp, TsPrimitiveType tsPrimitiveType) {
-            this.readerIndex = readerIndex;
-            this.dataType = dataType;
-            this.timestamp = timestamp;
-            this.tsPrimitiveType = tsPrimitiveType;
-        }
-
-        @Override
-        public int compareTo(Point o) {
-            return Long.compare(timestamp, o.timestamp);
-        }
-
-        public Field getField() {
-            Field field = new Field(dataType);
-            switch (dataType) {
-                case INT32:
-                    field.setIntV(tsPrimitiveType.getInt());
-                    break;
-                case INT64:
-                    field.setLongV(tsPrimitiveType.getLong());
-                    break;
-                case FLOAT:
-                    field.setFloatV(tsPrimitiveType.getFloat());
-                    break;
-                case DOUBLE:
-                    field.setDoubleV(tsPrimitiveType.getDouble());
-                    break;
-                case BOOLEAN:
-                    field.setBoolV(tsPrimitiveType.getBoolean());
-                    break;
-                case TEXT:
-                    field.setBinaryV(tsPrimitiveType.getBinary());
-                    break;
-                default:
-                        throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
-            }
-            return field;
-        }
-    }
+  }
 }

@@ -437,13 +437,14 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			// support single aggregate function for now
 			if(plan instanceof QueryPlan) {
 				switch (plan.getOperatorType()) {
+					case QUERY:
 					case FILL:
 						for (Path p : paths) {
 							columns.add(p.getFullPath());
 						}
 						break;
-					case GROUPBY:
 					case AGGREGATION:
+					case GROUPBY:
 						List<String> aggregations = plan.getAggregations();
 						if (aggregations.size() != paths.size()) {
 							for (int i = 1; i < paths.size(); i++) {

@@ -11,23 +11,11 @@ import org.junit.Test;
 import java.io.FileNotFoundException;
 import java.sql.*;
 
+import static cn.edu.tsinghua.iotdb.service.TestUtils.create_sql;
+import static cn.edu.tsinghua.iotdb.service.TestUtils.stringValue;
 import static org.junit.Assert.fail;
 
 public class IoTDBNoOverflowReadTest {
-
-  private static String[] stringValue = new String[]{"A", "B", "C", "D", "E"};
-
-  private static String[] create_sql = new String[]{
-          "SET STORAGE GROUP TO root.vehicle",
-
-          "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
-          "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
-          "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-          "CREATE TIMESERIES root.vehicle.d1.s1 WITH DATATYPE=INT64, ENCODING=RLE",
-  };
 
   private IoTDB daemon;
 
@@ -76,8 +64,6 @@ public class IoTDBNoOverflowReadTest {
       ResultSet resultSet = statement.getResultSet();
       int cnt = 0;
       while (resultSet.next()) {
-        //String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0);
-        //System.out.println("===" + ans);
         cnt++;
       }
       Assert.assertEquals(20900, cnt);

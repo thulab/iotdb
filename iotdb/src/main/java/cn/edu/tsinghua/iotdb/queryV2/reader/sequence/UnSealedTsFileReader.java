@@ -19,7 +19,7 @@ import java.io.IOException;
 public class UnSealedTsFileReader implements IReader {
 
     protected Path seriesPath;
-    private FileSeriesReader tsFileReader;
+    private FileSeriesReader unSealedTsFileReader;
     private BatchData data;
 
     public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile, Filter filter) throws IOException {
@@ -27,23 +27,24 @@ public class UnSealedTsFileReader implements IReader {
         ChunkLoader chunkLoader = new ChunkLoaderImpl(new UnClosedTsFileReader(unsealedTsFile.getFilePath()));
 
         if (filter == null) {
-            tsFileReader = new FileSeriesReaderWithoutFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList());
+            unSealedTsFileReader = new FileSeriesReaderWithoutFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList());
         } else {
-            tsFileReader = new FileSeriesReaderWithFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList(), filter);
+            unSealedTsFileReader = new FileSeriesReaderWithFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList(), filter);
         }
 
     }
 
     @Override
     public boolean hasNext() throws IOException {
-        if (data == null)
-            data = tsFileReader.nextBatch();
+        if (data == null) {
+            data = unSealedTsFileReader.nextBatch();
+        }
 
-        if (!data.hasNext() && !tsFileReader.hasNextBatch())
+        if (!data.hasNext() && !unSealedTsFileReader.hasNextBatch())
             return false;
 
         while (!data.hasNext()) {
-            data = tsFileReader.nextBatch();
+            data = unSealedTsFileReader.nextBatch();
             if (data.hasNext())
                 return true;
         }
@@ -65,8 +66,8 @@ public class UnSealedTsFileReader implements IReader {
 
     @Override
     public void close() throws IOException {
-        if (tsFileReader != null) {
-            tsFileReader.close();
+        if (unSealedTsFileReader != null) {
+            unSealedTsFileReader.close();
         }
     }
 
