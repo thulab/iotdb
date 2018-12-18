@@ -11,10 +11,13 @@ import java.util.PriorityQueue;
 
 
 /**
- * usage:
+ * Usage:
  *
  * (1) merge multiple chunk group readers in the unsequence file
  * (2）merge sequence reader , unsequence reader and mem reader
+ *
+ * Notice that:
+ *  the bigger the priority value is, the higher the priority of this reader is
  */
 public class PriorityMergeReader implements IReader {
 
