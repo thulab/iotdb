@@ -63,8 +63,8 @@ public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
       record.addField(point.getField());
       int index = point.readerIndex;
       if (readers.get(index).hasNext()) {
-        TimeValuePair next = readers.get(index).next();
-        heap.add(new Point(index, dataTypes.get(index), next.getTimestamp(), next.getValue()));
+        TimeValuePair timeValue = readers.get(index).next();
+        heap.add(new Point(index, dataTypes.get(index), timeValue.getTimestamp(), timeValue.getValue()));
       }
     }
     return record;

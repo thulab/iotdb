@@ -50,10 +50,12 @@ public class SealedTsFilesReader implements IReader {
 
     @Override
     public boolean hasNext() throws IOException {
+        if (hasCachedData)
+            return true;
 
         while (!hasCachedData) {
 
-            // try to get next time value pair from current data
+            // try to get next time value pair from current batch data
             if (data != null && data.hasNext()) {
                 hasCachedData = true;
                 return true;
@@ -83,6 +85,7 @@ public class SealedTsFilesReader implements IReader {
                 }
                 if (seriesReader.hasNextBatch()) {
                     data = seriesReader.nextBatch();
+                    break;
                 }
             }
 

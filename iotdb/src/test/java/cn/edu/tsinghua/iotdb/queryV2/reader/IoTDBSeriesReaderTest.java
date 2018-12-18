@@ -27,6 +27,9 @@ import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+/**
+ * Real data insert and query test.
+ */
 public class IoTDBSeriesReaderTest {
 
   private static IoTDB deamon;

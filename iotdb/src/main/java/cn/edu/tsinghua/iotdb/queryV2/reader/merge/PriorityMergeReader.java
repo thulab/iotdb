@@ -48,9 +48,9 @@ public class PriorityMergeReader implements IReader {
     private void updateHeap(Element top) throws IOException {
         while (heap.size() > 0 && heap.peek().timeValuePair.getTimestamp() == top.timeValuePair.getTimestamp()) {
             Element e = heap.poll();
-            IReader prioritySeriesReader = readerList.get(e.index);
-            if (prioritySeriesReader.hasNext()) {
-                heap.add(new Element(e.index, prioritySeriesReader.next(), priorityList.get(e.index)));
+            IReader reader = readerList.get(e.index);
+            if (reader.hasNext()) {
+                heap.add(new Element(e.index, reader.next(), priorityList.get(e.index)));
             }
         }
     }
