@@ -11,7 +11,7 @@
 
 	<groupId>cn.edu.tsinghua</groupId>
 	<artifactId>root</artifactId>
-	<version>0.8.0-SNAPSHOT</version>
+	<version>0.7.1</version>
 	<packaging>pom</packaging>
 
 	<name>IoTDB Root</name>
@@ -30,7 +30,7 @@
 		<connection>scm:git:git://github.com/thulab/iotdb.git</connection>
 		<developerConnection>scm:git:ssh://github.com:thulab/iotdb.git</developerConnection>
 		<url>http://github.com/thulab/iotdb/</url>
-		<tag>v0.8.0</tag>
+		<tag>v0.7.1</tag>
 	</scm>
 
 	<!-- Properties Management -->
