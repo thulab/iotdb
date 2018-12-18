@@ -134,9 +134,9 @@ public class IoTDBLargeDataTest {
     }
   }
 
-  // "select s0 from root.vehicle.d0 where time > 22987 " : test select clause with only time filter
-  @Test public void seriesTimeDigestReadTest() throws ClassNotFoundException, SQLException {
-    
+  // "select s0 from root.vehicle.d0 where time > 22987 " : test select clause with only global time filter
+  @Test public void seriesGlobalTimeFilterTest() throws ClassNotFoundException, SQLException {
+
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
     boolean hasResultSet;
@@ -168,8 +168,8 @@ public class IoTDBLargeDataTest {
     }
   }
 
-  @Test
-  public void crossSeriesReadUpdateTest() throws ClassNotFoundException, SQLException {
+  // "select s1 from root.vehicle.d0 where s0 < 111" : test select clause with different series filter
+  @Test public void crossSeriesReadUpdateTest() throws ClassNotFoundException, SQLException {
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
     boolean hasResultSet;
@@ -185,11 +185,10 @@ public class IoTDBLargeDataTest {
       while (resultSet.next()) {
         long time = Long.valueOf(resultSet.getString(TIMESTAMP_STR));
         String value = resultSet.getString(d0s1);
-        if (time > 23000 && time < 100100) {
+        if (time > 200900) {
           assertEquals("7777", value);
         }
         //String ans = resultSet.getString(d0s1);
-        //System.out.println(ans);
         cnt++;
       }
       assertEquals(22800, cnt);

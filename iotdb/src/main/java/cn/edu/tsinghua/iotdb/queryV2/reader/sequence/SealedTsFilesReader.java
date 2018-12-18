@@ -85,7 +85,12 @@ public class SealedTsFilesReader implements IReader {
                 }
                 if (seriesReader.hasNextBatch()) {
                     data = seriesReader.nextBatch();
-                    break;
+
+                    // notice that, data maybe an empty batch data, so an examination must exist
+                    if (data.hasNext()) {
+                        hasCachedData = true;
+                        return true;
+                    }
                 }
             }
 
