@@ -117,7 +117,7 @@ public class OpenFileNumUtil {
     }
 
     /**
-     * check if a string is numeric
+     * check if the string is numeric
      *
      * @param str string need to be checked
      * @return whether the string is a number
