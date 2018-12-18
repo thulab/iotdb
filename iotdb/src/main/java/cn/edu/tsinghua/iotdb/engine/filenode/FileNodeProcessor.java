@@ -1429,7 +1429,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 							isRowGroupHasData = true;
 							// the datasize and numOfChunk is fake
 							// the accurate datasize and numOfChunk will get after write all this deltaObject data.
-							fileIOWriter.startFlushChunkGroup(deltaObjectId,0,numOfChunk);
+							fileIOWriter.startFlushChunkGroup(deltaObjectId);//TODO please check me.
 							startPos = fileIOWriter.getPos();
 						}
 						// init the serieswWriteImpl

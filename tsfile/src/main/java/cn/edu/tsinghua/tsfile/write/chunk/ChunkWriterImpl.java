@@ -223,7 +223,7 @@ public class ChunkWriterImpl implements IChunkWriter {
 
     @Override
     public void writeToFileWriter(TsFileIOWriter tsfileWriter) throws IOException {
-        preFlush();
+        sealCurrentPage();
         chunkBuffer.writeAllPagesOfSeriesToTsFile(tsfileWriter, chunkStatistics);
         chunkBuffer.reset();
         // reset series_statistics
@@ -243,7 +243,7 @@ public class ChunkWriterImpl implements IChunkWriter {
     }
 
     @Override
-    public void preFlush() {
+    public void sealCurrentPage() {
         if (valueCountInOnePage > 0) {
             writePage();
         }
