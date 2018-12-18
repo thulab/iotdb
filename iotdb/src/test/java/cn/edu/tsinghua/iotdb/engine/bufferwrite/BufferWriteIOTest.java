@@ -41,7 +41,8 @@ public class BufferWriteIOTest {
 		assertEquals(TsFileIOWriter.magicStringBytes.length, bufferWriteIO.getPos());
 		assertEquals(0, bufferWriteIO.getAppendedRowGroupMetadata().size());
 		// construct one rowgroup
-		ChunkGroupFooter chunkGroupFooter =  bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.startFlushChunkGroup("d1");
+		ChunkGroupFooter chunkGroupFooter = new ChunkGroupFooter("d1", 1000, 10);
 		bufferWriteIO.endChunkGroup(chunkGroupFooter);
 		assertEquals(1, bufferWriteIO.getChunkGroupMetaDatas().size());
 		assertEquals(1, bufferWriteIO.getAppendedRowGroupMetadata().size());
@@ -49,13 +50,16 @@ public class BufferWriteIOTest {
 		ChunkGroupMetaData rowgroup = metadatas.get(0);
 		assertEquals("d1", rowgroup.getDeviceID());
 		// construct another two rowgroup
-		chunkGroupFooter = bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.startFlushChunkGroup("d1");
+		chunkGroupFooter = new ChunkGroupFooter("d1", 1000, 10);
 		bufferWriteIO.endChunkGroup(chunkGroupFooter);
 
-		chunkGroupFooter = bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.startFlushChunkGroup("d1");
+		chunkGroupFooter = new ChunkGroupFooter("d1", 1000, 10);
 		bufferWriteIO.endChunkGroup(chunkGroupFooter);
 
-		chunkGroupFooter = bufferWriteIO.startFlushChunkGroup("d1",1000,10);
+		bufferWriteIO.startFlushChunkGroup("d1");
+		chunkGroupFooter = new ChunkGroupFooter("d1", 1000, 10);
 		bufferWriteIO.endChunkGroup(chunkGroupFooter);
 
 		metadatas = bufferWriteIO.getAppendedRowGroupMetadata();
