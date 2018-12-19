@@ -12,10 +12,12 @@ public class GlobalTimeExpression implements IUnaryExpression {
         this.filter = filter;
     }
 
+    @Override
     public Filter getFilter() {
         return filter;
     }
 
+    @Override
     public void setFilter(Filter filter) {
         this.filter = filter;
     }
@@ -25,6 +27,7 @@ public class GlobalTimeExpression implements IUnaryExpression {
         return ExpressionType.GLOBAL_TIME;
     }
 
+    @Override
     public String toString() {
         return "[" + this.filter.toString() + "]";
     }

@@ -54,6 +54,7 @@ public class QueryExpression {
         return selectedSeries;
     }
 
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder("\n\t[Selected Series]:").append(selectedSeries)
                 .append("\n\t[expression]:").append(expression);

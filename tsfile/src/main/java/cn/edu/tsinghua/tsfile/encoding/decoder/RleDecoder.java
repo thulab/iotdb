@@ -61,6 +61,7 @@ public abstract class RleDecoder extends Decoder {
         reset();
     }
 
+    @Override
     public void reset() {
         currentCount = 0;
         isLengthAndBitWidthReaded = false;

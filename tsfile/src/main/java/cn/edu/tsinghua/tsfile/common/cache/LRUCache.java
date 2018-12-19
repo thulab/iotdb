@@ -27,6 +27,7 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
         return cache.get(key);
     }
 
+    @Override
     public void clear() {
         this.cache.clear();
     }

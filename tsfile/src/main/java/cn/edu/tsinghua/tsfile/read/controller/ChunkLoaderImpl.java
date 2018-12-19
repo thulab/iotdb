@@ -32,11 +32,13 @@ public class ChunkLoaderImpl implements ChunkLoader {
         };
     }
 
+    @Override
     public Chunk getChunk(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkCache.get(chunkMetaData);
         return new Chunk(chunk.getHeader(), chunk.getData().duplicate());
     }
 
+    @Override
     public void close() throws IOException {
         reader.close();
     }

@@ -18,6 +18,7 @@ public class FileSeriesReaderWithoutFilter extends FileSeriesReader {
         super(chunkLoader, chunkMetaDataList);
     }
 
+    @Override
     protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
         Chunk chunk = chunkLoader.getChunk(chunkMetaData);
         this.chunkReader = new ChunkReaderWithoutFilter(chunk);

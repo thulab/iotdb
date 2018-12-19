@@ -31,6 +31,7 @@ public abstract class GorillaDecoder extends Decoder {
         reset();
     }
 
+    @Override
     public void reset() {
         this.flag = false;
         this.isEnd = false;

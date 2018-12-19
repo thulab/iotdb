@@ -93,6 +93,7 @@ public class Binary implements Comparable<Binary>, Serializable {
         this.textEncodingType = textEncodingType;
     }
 
+    @Override
     public String toString() {
         return getStringValue();
     }

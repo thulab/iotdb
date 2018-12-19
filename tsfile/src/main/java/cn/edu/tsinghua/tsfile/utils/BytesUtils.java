@@ -592,7 +592,7 @@ public class BytesUtils {
      */
     public static int getLongN(long data, int offset) {
         offset %= 64;
-        if ((data & (1l << (offset))) != 0)
+        if ((data & (1L << (offset))) != 0)
             return 1;
         else
             return 0;
@@ -610,9 +610,9 @@ public class BytesUtils {
     public static long setLongN(long data, int offset, int value) {
         offset %= 64;
         if (value == 1)
-            return (data | (1l << (offset)));
+            return (data | (1L << (offset)));
         else
-            return (data & ~(1l << (offset)));
+            return (data & ~(1L << (offset)));
     }
 
     /**

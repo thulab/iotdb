@@ -31,6 +31,7 @@ public abstract class BinaryExpression implements IBinaryExpression {
             return ExpressionType.AND;
         }
 
+        @Override
         public String toString() {
             return "[" + left + " && " + right + "]";
         }
@@ -53,10 +54,12 @@ public abstract class BinaryExpression implements IBinaryExpression {
             return right;
         }
 
+        @Override
         public ExpressionType getType() {
             return ExpressionType.OR;
         }
 
+        @Override
         public String toString() {
             return "[" + left + " || " + right + "]";
         }

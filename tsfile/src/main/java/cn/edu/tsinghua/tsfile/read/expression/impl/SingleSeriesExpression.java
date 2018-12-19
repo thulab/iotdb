@@ -20,14 +20,17 @@ public class SingleSeriesExpression implements IUnaryExpression {
         return ExpressionType.SERIES;
     }
 
+    @Override
     public Filter getFilter() {
         return filter;
     }
 
+    @Override
     public void setFilter(Filter filter) {
         this.filter = filter;
     }
 
+    @Override
     public String toString() {
         return "[" + seriesPath + ":" + filter + "]";
     }

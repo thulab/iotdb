@@ -51,6 +51,7 @@ public class TSRecord {
      * ]}
      * @return the String format of this TSRecord
      */
+    @Override
     public String toString() {
         StringContainer sc = new StringContainer(" ");
         sc.addTail("{device id:", deviceId, "time:", time, ",data:[");

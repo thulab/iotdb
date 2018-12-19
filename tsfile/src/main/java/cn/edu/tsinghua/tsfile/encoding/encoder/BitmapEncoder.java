@@ -104,10 +104,12 @@ public class BitmapEncoder extends Encoder {
         values.clear();
     }
 
+    @Override
     public int getOneItemMaxSize() {
         return 1;
     }
 
+    @Override
     public long getMaxByteSize() {
         //byteCacheSize + byteDictSize + (byte array + array length) * byteDictSize
         return 4 + 4 + ((values.size() + 7) / 8 + 4) * values.size();
