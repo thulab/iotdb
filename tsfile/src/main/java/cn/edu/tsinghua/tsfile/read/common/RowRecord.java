@@ -24,6 +24,7 @@ public class RowRecord {
         this.fields.add(f);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(timestamp);

@@ -23,7 +23,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     private List<Boolean> hasDataRemaining;
 
-    // heap only need to store time
+    /** heap only need to store time **/
     private PriorityQueue<Long> timeHeap;
 
     private Set<Long> timeSet;
@@ -53,7 +53,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
         for (BatchData data : batchDataList) {
             if (data.hasNext()) {
-                heapPut(data.currentTime());
+                timeHeapPut(data.currentTime());
             }
         }
     }
@@ -65,7 +65,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     @Override
     public RowRecord next() throws IOException {
-        long minTime = heapGet();
+        long minTime = timeHeapGet();
 
         RowRecord record = new RowRecord(minTime);
 
@@ -89,9 +89,9 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
                     FileSeriesReader reader = readers.get(i);
                     if (reader.hasNextBatch()) {
                         data = reader.nextBatch();
-                        if(data.hasNext()) {
+                        if (data.hasNext()) {
                             batchDataList.set(i, data);
-                            heapPut(data.currentTime());
+                            timeHeapPut(data.currentTime());
                         } else {
                             hasDataRemaining.set(i, false);
                         }
@@ -99,7 +99,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
                         hasDataRemaining.set(i, false);
                     }
                 } else {
-                    heapPut(data.currentTime());
+                    timeHeapPut(data.currentTime());
                 }
 
             } else {
@@ -112,15 +112,17 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         return record;
     }
 
-    // keep heap from storing duplicate time
-    private void heapPut(long time) {
+    /**
+     * keep heap from storing duplicate time
+     */
+    private void timeHeapPut(long time) {
         if (!timeSet.contains(time)) {
             timeSet.add(time);
             timeHeap.add(time);
         }
     }
 
-    private Long heapGet() {
+    private Long timeHeapGet() {
         Long t = timeHeap.poll();
         timeSet.remove(t);
         return t;

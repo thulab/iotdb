@@ -50,12 +50,12 @@ public class IoTDBCompleteTest {
         executeSQL(sqls);
         SimpleTest();
         InsertTest();
-        UpdateTest();
+        //UpdateTest();
         //TODO modify in later version
         //DeleteTest();
         SelectTest();
-        FuncTest();
-        GroupByTest();
+        //FuncTest();
+        //GroupByTest();
     }
 
     public void SimpleTest() throws ClassNotFoundException, SQLException {

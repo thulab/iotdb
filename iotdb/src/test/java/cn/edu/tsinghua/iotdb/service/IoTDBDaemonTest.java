@@ -27,6 +27,7 @@ public class IoTDBDaemonTest {
     private static Connection connection;
 
     private static String[] sqls = new String[]{
+
             "SET STORAGE GROUP TO root.vehicle.d0",
             "SET STORAGE GROUP TO root.vehicle.d1",
 
@@ -50,8 +51,6 @@ public class IoTDBDaemonTest {
             "insert into root.vehicle.d0(timestamp,s0) values(2,10000)",
             "insert into root.vehicle.d0(timestamp,s0) values(50,10000)",
             "insert into root.vehicle.d0(timestamp,s0) values(1000,22222)",
-            //"DELETE FROM root.vehicle.d0.s0 WHERE time < 104",
-            //"UPDATE root.vehicle SET d0.s0 = 33333 WHERE time < 106 and time > 103",
 
             "insert into root.vehicle.d0(timestamp,s1) values(1,1101)",
             "insert into root.vehicle.d0(timestamp,s1) values(2,198)",
@@ -78,7 +77,6 @@ public class IoTDBDaemonTest {
             "insert into root.vehicle.d0(timestamp,s3) values(80,'ccccc')",
             "insert into root.vehicle.d0(timestamp,s3) values(101,'ddddd')",
             "insert into root.vehicle.d0(timestamp,s3) values(102,'fffff')",
-            //"UPDATE root.vehicle SET d0.s3 = 'tomorrow is another day' WHERE time >100 and time < 103",
 
             "insert into root.vehicle.d1(timestamp,s0) values(1,999)",
             "insert into root.vehicle.d1(timestamp,s0) values(1000,888)",
@@ -181,7 +179,8 @@ public class IoTDBDaemonTest {
         }
     }
 
-    private void selectWildCardSQLTest() throws ClassNotFoundException, SQLException {
+    @Test
+    public void selectWildCardSQLTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
                 "2,2.22",
                 "3,3.33",
@@ -218,14 +217,19 @@ public class IoTDBDaemonTest {
         }
     }
 
-    private void dnfErrorSQLTest() throws ClassNotFoundException, SQLException {
+    @Test
+    public void dnfErrorSQLTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
-                "100,null,199",
-                "101,null,199",
-                "102,null,180",
-                "103,null,199",
-                "104,33333,190",
-                "105,33333,199"};
+                "1,101,1101",
+                "2,10000,40000",
+                "50,10000,50000",
+                "100,99,199",
+                "101,99,199",
+                "102,80,180",
+                "103,99,199",
+                "104,90,190",
+                "105,99,199"
+        };
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
@@ -239,10 +243,10 @@ public class IoTDBDaemonTest {
             int cnt = 0;
             while (resultSet.next()) {
                 String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1);
-                Assert.assertEquals(retArray[cnt], ans);
+                assertEquals(retArray[cnt], ans);
                 cnt++;
             }
-            Assert.assertEquals(6, cnt);
+            Assert.assertEquals(9, cnt);
 
             statement.close();
         } catch (Exception e) {
@@ -255,9 +259,11 @@ public class IoTDBDaemonTest {
         }
     }
 
-    private void selectAndOperatorTest() throws ClassNotFoundException, SQLException {
+    @Test
+    public void selectAndOperatorTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
-                "1000,22222,55555,888"};
+                "1000,22222,55555,888"
+        };
 
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
@@ -265,7 +271,8 @@ public class IoTDBDaemonTest {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             //TODO  select s0,s1 from root.vehicle.d0 where time > 106 and root.vehicle.d1.s0 > 100;
-            boolean hasResultSet = statement.execute("select s0,s1 from root.vehicle.d0,root.vehicle.d1 where time > 106 and root.vehicle.d0.s0 > 100");
+            boolean hasResultSet = statement.execute(
+                    "select s0,s1 from root.vehicle.d0,root.vehicle.d1 where time > 106 and root.vehicle.d0.s0 > 100");
             Assert.assertTrue(hasResultSet);
             ResultSet resultSet = statement.getResultSet();
             int cnt = 0;
@@ -287,7 +294,8 @@ public class IoTDBDaemonTest {
         }
     }
 
-    private void selectAndOpeCrossTest() throws ClassNotFoundException, SQLException {
+    @Test
+    public void selectAndOpeCrossTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
                 "1000,22222,55555"};
 
@@ -317,7 +325,8 @@ public class IoTDBDaemonTest {
         }
     }
 
-    private void selectOneColumnWithFilterTest() throws ClassNotFoundException, SQLException {
+    @Test
+    public void selectOneColumnWithFilterTest() throws ClassNotFoundException, SQLException {
         String[] retArray = new String[]{
                 "102,180",
                 "104,190",
@@ -340,209 +349,6 @@ public class IoTDBDaemonTest {
             }
             Assert.assertEquals(3, cnt);
 
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    private void textDataTypeTest() throws ClassNotFoundException, SQLException {
-        String[] retArray = new String[]{
-                "101,199,null,tomorrow is another day",
-                "102,180,10.0,tomorrow is another day",
-                "946684800000,100,null,good"
-        };
-
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-
-            boolean hasTextMaxResultSet = statement.execute("select s1,s2,s3 from root.vehicle.d0 where s3 = 'tomorrow is another day' or s3 = 'good'");
-            Assert.assertTrue(hasTextMaxResultSet);
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s1) + "," +
-                        resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
-                Assert.assertEquals(retArray[cnt++], ans);
-            }
-            Assert.assertEquals(3, cnt);
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    // notice the insert data in crossReadTest
-    private void multiAggregationTest() throws ClassNotFoundException, SQLException {
-
-        String[] retArray = new String[]{
-                "11,6,6"
-        };
-
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select count(s1),count(s2),count(s3) from root.vehicle.d0");
-            Assert.assertTrue(hasResultSet);
-
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(count(d0s1)) + ","
-                        + resultSet.getString(count(d0s2)) + ","
-                        + resultSet.getString(count(d0s3));
-                Assert.assertEquals(ans, retArray[cnt]);
-                cnt++;
-            }
-            Assert.assertEquals(1, cnt);
-            statement.close();
-
-            // the statement has same columns and same aggregation
-            retArray = new String[]{
-                    "11,11,6,1000.11"
-            };
-            statement = connection.createStatement();
-            hasResultSet = statement.execute("select count(s1),count(s1),count(s3),max_value(s2) from root.vehicle.d0");
-            Assert.assertTrue(hasResultSet);
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(count(d0s1)) + ","
-                        + resultSet.getString("count(" + d0s1 + ")") + ","
-                        + resultSet.getString("count(" + d0s3 + ")") + ","
-                        + resultSet.getString("max_value(" + d0s2 + ")");
-                //System.out.println("!!" + ans);
-                Assert.assertEquals(retArray[cnt], ans);
-                cnt++;
-            }
-            Assert.assertEquals(1, cnt);
-            statement.close();
-
-            // the statement has same columns and different aggregation
-            retArray = new String[]{
-                    "11,55555,946684800000,6"
-            };
-            statement = connection.createStatement();
-            hasResultSet = statement.execute("select count(s1),max_value(s1),max_time(s1),count(s3) from root.vehicle.d0");
-            Assert.assertTrue(hasResultSet);
-
-            resultSet = statement.getResultSet();
-            cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(count(d0s1)) + ","
-                        + resultSet.getString("max_value(" + d0s1 + ")") + ","
-                        + resultSet.getString("max_time(" + d0s1 + ")") + ","
-                        + resultSet.getString("count(" + d0s3 + ")");
-                //System.out.println("==" + ans);
-                Assert.assertEquals(ans, retArray[cnt]);
-                cnt++;
-            }
-            Assert.assertEquals(1, cnt);
-            statement.close();
-        } catch (Exception e) {
-            fail(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    // this test modify the data, should be located lastly
-    private void crossReadTest() throws ClassNotFoundException, SQLException {
-        String[] retArray = new String[]{
-                "1,101,1101,7.0",
-                "2,198,198,8.0",
-                "3,null,null,3.33",
-                "4,null,null,4.44",
-                "100,300,199,19.0",
-                "101,99,199,10.0",
-                "102,80,180,18.0",
-                "103,99,199,12.0",
-                "104,90,190,13.0",
-                "105,99,199,14.0"
-        };
-
-        String[] sqls = new String[]{
-                "insert into root.vehicle.d0(timestamp,s0) values(1,101)",
-                "insert into root.vehicle.d0(timestamp,s0) values(2,198)",
-                "insert into root.vehicle.d0(timestamp,s0) values(100,300)",
-                "insert into root.vehicle.d0(timestamp,s0) values(101,99)",
-                "insert into root.vehicle.d0(timestamp,s0) values(102,80)",
-                "insert into root.vehicle.d0(timestamp,s0) values(103,99)",
-                "insert into root.vehicle.d0(timestamp,s0) values(104,90)",
-                "insert into root.vehicle.d0(timestamp,s0) values(105,99)",
-                "insert into root.vehicle.d0(timestamp,s0) values(106,99)",
-
-                "insert into root.vehicle.d0(timestamp,s1) values(1,1101)",
-                "insert into root.vehicle.d0(timestamp,s1) values(2,198)",
-                "insert into root.vehicle.d0(timestamp,s1) values(100,199)",
-                "insert into root.vehicle.d0(timestamp,s1) values(101,199)",
-                "insert into root.vehicle.d0(timestamp,s1) values(102,180)",
-                "insert into root.vehicle.d0(timestamp,s1) values(103,199)",
-                "insert into root.vehicle.d0(timestamp,s1) values(104,190)",
-                "insert into root.vehicle.d0(timestamp,s1) values(105,199)",
-
-                "insert into root.vehicle.d0(timestamp,s1) values(51,51)",
-                "insert into root.vehicle.d0(timestamp,s1) values(52,52)",
-                "insert into root.vehicle.d0(timestamp,s1) values(53,53)",
-                "insert into root.vehicle.d0(timestamp,s1) values(54,54)",
-                "insert into root.vehicle.d0(timestamp,s1) values(55,55)",
-                "insert into root.vehicle.d0(timestamp,s1) values(56,56)",
-                "insert into root.vehicle.d0(timestamp,s1) values(57,57)",
-                "insert into root.vehicle.d0(timestamp,s1) values(58,58)",
-
-                "insert into root.vehicle.d0(timestamp,s2) values(1,7.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(2,8.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(100,19.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(101,10.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(102,18.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(103,12.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(104,13.0)",
-                "insert into root.vehicle.d0(timestamp,s2) values(105,14.0)",
-        };
-
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            for (String sql : sqls) {
-                statement.execute(sql);
-            }
-            statement.close();
-
-            statement = connection.createStatement();
-            boolean hasResultSet = statement.execute("select s0,s1,s2,s3 from root.vehicle.d0 where (time < 104 and s0 < 99) or (s2 < 16.0) or (s0 = 300)");
-            // boolean hasResultSet = statement.executeWithGlobalTimeFilter("select s1 from root.vehicle.d0 where time < 104 and (s0 < 99 or s2 < 16.0)");
-            // boolean hasResultSet = statement.executeWithGlobalTimeFilter("select s1 from root.vehicle.d0 where time < 104 and s0 < 99 and s2 < 16.0");
-            Assert.assertTrue(hasResultSet);
-
-            ResultSet resultSet = statement.getResultSet();
-            int cnt = 0;
-            while (resultSet.next()) {
-                String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0) + "," + resultSet.getString(d0s1) + ","
-                        + resultSet.getString(d0s2);
-                //System.out.println("====" + ans);
-                Assert.assertEquals(retArray[cnt++], ans);
-            }
-            //Assert.assertEquals(cnt, 8);
             statement.close();
         } catch (Exception e) {
             e.printStackTrace();

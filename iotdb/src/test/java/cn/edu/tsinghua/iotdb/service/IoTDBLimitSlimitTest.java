@@ -3,17 +3,18 @@ package cn.edu.tsinghua.iotdb.service;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.sql.*;
 
+import static cn.edu.tsinghua.iotdb.service.Constant.TIMESTAMP_STR;
 import static org.junit.Assert.fail;
 
 public class IoTDBLimitSlimitTest {
-    private static final String TIMESTAMP_STR = "Time";
+
+    private static IoTDB deamon;
+
+    private static boolean testFlag = Constant.testFlag;
 
     private static String[] insertSqls = new String[]{
             "SET STORAGE GROUP TO root.vehicle",
@@ -34,8 +35,6 @@ public class IoTDBLimitSlimitTest {
             "insert into root.vehicle.d0(timestamp,s0) values(2,10000)",
             "insert into root.vehicle.d0(timestamp,s0) values(50,10000)",
             "insert into root.vehicle.d0(timestamp,s0) values(1000,22222)",
-            "DELETE FROM root.vehicle.d0.s0 WHERE time < 104",
-            "UPDATE root.vehicle.d0 SET s0 = 33333 WHERE time < 106 and time > 103",
 
             "insert into root.vehicle.d0(timestamp,s1) values(1,1101)",
             "insert into root.vehicle.d0(timestamp,s1) values(2,198)",
@@ -60,32 +59,8 @@ public class IoTDBLimitSlimitTest {
             "insert into root.vehicle.d0(timestamp,s1) values(2000-01-01T08:00:00+08:00, 100)",
     };
 
-    public static void insertSQL() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-            Statement statement = connection.createStatement();
-            for (String sql : insertSqls) {
-                statement.execute(sql);
-            }
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    private IoTDB deamon;
-
-    private boolean testFlag = Constant.testFlag;
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         if (testFlag) {
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
@@ -95,8 +70,8 @@ public class IoTDBLimitSlimitTest {
         }
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         if (testFlag) {
             deamon.stop();
             Thread.sleep(5000);
@@ -106,13 +81,8 @@ public class IoTDBLimitSlimitTest {
 
     @Test
     public void Test() throws ClassNotFoundException, SQLException {
-        insertSQL();
-
+        insertData();
         SelectTest();
-        GroupByTest();
-        FuncTest();
-        FillTest();
-
     }
 
     public void SelectTest() throws ClassNotFoundException, SQLException {
@@ -123,9 +93,9 @@ public class IoTDBLimitSlimitTest {
                         "50,50000,\n",
 
                 "SELECT s0 FROM root.vehicle.d0 WHERE s1 > 190 limit 3",
-                "1,null,\n" +
-                        "2,null,\n" +
-                        "50,null,\n",
+                "1,101,\n" +
+                        "2,10000,\n" +
+                        "50,10000,\n",
 
                 "SELECT s1,s2 FROM root.vehicle.d0 where s1>190 or s2<10.0 limit 3 offset 2",
                 "3,null,3.33,\n" +
@@ -133,10 +103,18 @@ public class IoTDBLimitSlimitTest {
                         "50,50000,null,\n",
 
                 "select * from root.vehicle.d0 slimit 1",
-                "104,33333,\n" +
-                        "105,33333,\n" +
-                        "106,99,\n" +
-                        "1000,22222,\n",
+                "1,101,\n" +
+                "2,10000,\n" +
+                "50,10000,\n" +
+                "100,99,\n" +
+                "101,99,\n" +
+                "102,80,\n" +
+                "103,99,\n" +
+                "104,90,\n" +
+                "105,99,\n" +
+                "106,99,\n" +
+                "1000,22222,\n",
+
 
                 "select * from root.vehicle.d0 slimit 1 soffset 2",
                 "2,2.22,\n" +
@@ -163,54 +141,6 @@ public class IoTDBLimitSlimitTest {
         executeSQL(sqlS);
     }
 
-    // according to the current groupBy
-    public void GroupByTest() throws ClassNotFoundException, SQLException {
-        String[] sqlS = {
-                "select count(s1), count(s2) from root.vehicle.d0 where s1>190 or s2< 10.0 group by(10ms, 0, [3,10000]) limit 6",
-                "3,null,2,\n" +
-                        "10,null,null,\n" +
-                        "20,null,null,\n" +
-                        "30,null,null,\n" +
-                        "40,null,null,\n" +
-                        "50,1,null,\n",
-                "select count(*) from root.vehicle.d0 where s1>190 or s2< 10.0 group by(10ms, 0, [3,10000]) slimit 1 soffset 1 limit 6",
-                "3,null,\n" +
-                        "10,null,\n" +
-                        "20,null,\n" +
-                        "30,null,\n" +
-                        "40,null,\n" +
-                        "50,1,\n",
-                "select count(d0) from root.vehicle where root.vehicle.d0.s1>190 or root.vehicle.d0.s2< 10.0 group by(10ms, 0, [3,10000]) slimit 1 soffset 1 limit 6",
-                "3,null,\n" +
-                        "10,null,\n" +
-                        "20,null,\n" +
-                        "30,null,\n" +
-                        "40,null,\n" +
-                        "50,1,\n"
-        };
-        executeSQL(sqlS);
-    }
-
-    public void FuncTest() throws ClassNotFoundException, SQLException {
-        String[] sqlS = {
-                "SELECT COUNT(s1) FROM root.vehicle.d0 WHERE time<200 limit 3",
-                "0,9,\n",
-                "SELECT max_time(s0) FROM root.vehicle.d0 WHERE s1 > 190 limit 3",
-                "0,1000,\n",
-                "SELECT max_value(s1),min_value(s2) FROM root.vehicle.d0 where s1>190 or s2<10.0 limit 3",
-                "0,55555,2.22,\n"
-        };
-        executeSQL(sqlS);
-    }
-
-    public void FillTest() throws ClassNotFoundException, SQLException {
-        String[] sqlS = {
-                "select * from root.vehicle.d0 where time=106 fill(float[previous,10m],int64[previous,10m],int32[previous,10m]) slimit 2 soffset 1",
-                "106,199,11.11,\n"
-        };
-        executeSQL(sqlS);
-    }
-
     private void executeSQL(String[] sqls) throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
@@ -220,12 +150,13 @@ public class IoTDBLimitSlimitTest {
             boolean cmp = false;
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             for (String sql : sqls) {
+                //System.out.println("----" + sql);
                 if (cmp) {
-                    Assert.assertEquals(result, sql);
+                    Assert.assertEquals(sql, result);
                     cmp = false;
                 } else if (sql.equals("SHOW TIMESERIES")) {
                     DatabaseMetaData data = connection.getMetaData();
-                    result = ((TsfileDatabaseMetadata)data).getMetadataInJson();
+                    result = ((TsfileDatabaseMetadata) data).getMetadataInJson();
                     cmp = true;
                 } else {
                     if (sql.contains("NOW()") && now_start == 0L) {
@@ -265,6 +196,26 @@ public class IoTDBLimitSlimitTest {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private static void insertData() throws ClassNotFoundException, SQLException {
+        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            Statement statement = connection.createStatement();
+            for (String sql : insertSqls) {
+                statement.execute(sql);
+            }
+            statement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.close();

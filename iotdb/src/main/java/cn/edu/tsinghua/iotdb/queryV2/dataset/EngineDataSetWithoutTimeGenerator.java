@@ -16,104 +16,113 @@ import java.util.*;
 
 public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
-  private List<IReader> readers;
+    private List<IReader> readers;
 
-  private List<BatchData> batchDataList;
+    private TimeValuePair[] cacheTimeValueList;
 
-  private List<Boolean> hasDataRemaining;
+    private List<BatchData> batchDataList;
 
-  // TODO heap only need to store time
-  private PriorityQueue<Long> timeHeap;
+    private List<Boolean> hasDataRemaining;
 
-  private PriorityQueue<Point> heap;
+    private PriorityQueue<Long> timeHeap;
 
-  private Set<Long> timeSet;
+    private Set<Long> timeSet;
 
-  public EngineDataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<IReader> readers) throws IOException {
-    super(paths, dataTypes);
-    this.readers = readers;
-    initHeap();
-  }
-
-  private void initHeap() throws IOException {
-    heap = new PriorityQueue<>();
-    timeHeap = new PriorityQueue<>();
-    for (int i = 0; i < readers.size(); i++) {
-      IReader reader = readers.get(i);
-      if (reader.hasNext()) {
-        TimeValuePair timeValuePair = reader.next();
-        heap.add(new Point(i, dataTypes.get(i), timeValuePair.getTimestamp(), timeValuePair.getValue()));
-      }
+    public EngineDataSetWithoutTimeGenerator(List<Path> paths, List<TSDataType> dataTypes, List<IReader> readers) throws IOException {
+        super(paths, dataTypes);
+        this.readers = readers;
+        initHeap();
     }
-  }
 
+    private void initHeap() throws IOException {
+        timeSet = new HashSet<>();
+        timeHeap = new PriorityQueue<>();
+        cacheTimeValueList = new TimeValuePair[readers.size()];
 
-  @Override
-  public boolean hasNext() {
-    return heap.size() > 0;
-  }
-
-  @Override
-  public RowRecord next() throws IOException {
-    Point aimPoint = heap.peek();
-    RowRecord record = new RowRecord(aimPoint.timestamp);
-
-    while (heap.size() > 0 && heap.peek().timestamp == aimPoint.timestamp) {
-      Point point = heap.poll();
-      record.addField(point.getField());
-      int index = point.readerIndex;
-      if (readers.get(index).hasNext()) {
-        TimeValuePair timeValue = readers.get(index).next();
-        heap.add(new Point(index, dataTypes.get(index), timeValue.getTimestamp(), timeValue.getValue()));
-      }
+        for (int i = 0; i < readers.size(); i++) {
+            IReader reader = readers.get(i);
+            if (reader.hasNext()) {
+                TimeValuePair timeValuePair = reader.next();
+                cacheTimeValueList[i] = timeValuePair;
+                timeHeapPut(timeValuePair.getTimestamp());
+            }
+        }
     }
-    return record;
-  }
 
 
-  private static class Point implements Comparable<Point> {
-    private int readerIndex;
-    private TSDataType dataType;
-    private long timestamp;
-    private TsPrimitiveType tsPrimitiveType;
-
-    private Point(int readerIndex, TSDataType dataType, long timestamp, TsPrimitiveType tsPrimitiveType) {
-      this.readerIndex = readerIndex;
-      this.dataType = dataType;
-      this.timestamp = timestamp;
-      this.tsPrimitiveType = tsPrimitiveType;
+    @Override
+    public boolean hasNext() {
+        return timeHeap.size() > 0;
     }
 
     @Override
-    public int compareTo(Point o) {
-      return Long.compare(timestamp, o.timestamp);
+    public RowRecord next() throws IOException {
+        long minTime = timeHeapGet();
+
+        RowRecord record = new RowRecord(minTime);
+
+        for (int i = 0; i < readers.size(); i++) {
+            IReader reader = readers.get(i);
+            if (cacheTimeValueList[i] == null) {
+                record.addField(new Field(null));
+            } else {
+                if (cacheTimeValueList[i].getTimestamp() == minTime) {
+                    record.addField(getField(cacheTimeValueList[i].getValue(), dataTypes.get(i)));
+                    if (readers.get(i).hasNext()) {
+                        cacheTimeValueList[i] = reader.next();
+                        timeHeapPut(cacheTimeValueList[i].getTimestamp());
+                    }
+                } else {
+                    record.addField(new Field(null));
+                }
+            }
+        }
+
+        return record;
     }
 
-    public Field getField() {
-      Field field = new Field(dataType);
-      switch (dataType) {
-        case INT32:
-          field.setIntV(tsPrimitiveType.getInt());
-          break;
-        case INT64:
-          field.setLongV(tsPrimitiveType.getLong());
-          break;
-        case FLOAT:
-          field.setFloatV(tsPrimitiveType.getFloat());
-          break;
-        case DOUBLE:
-          field.setDoubleV(tsPrimitiveType.getDouble());
-          break;
-        case BOOLEAN:
-          field.setBoolV(tsPrimitiveType.getBoolean());
-          break;
-        case TEXT:
-          field.setBinaryV(tsPrimitiveType.getBinary());
-          break;
-        default:
-          throw new UnSupportedDataTypeException("UnSupported" + String.valueOf(dataType));
-      }
-      return field;
+
+    private Field getField(TsPrimitiveType tsPrimitiveType, TSDataType dataType) {
+        Field field = new Field(dataType);
+        switch (dataType) {
+            case INT32:
+                field.setIntV(tsPrimitiveType.getInt());
+                break;
+            case INT64:
+                field.setLongV(tsPrimitiveType.getLong());
+                break;
+            case FLOAT:
+                field.setFloatV(tsPrimitiveType.getFloat());
+                break;
+            case DOUBLE:
+                field.setDoubleV(tsPrimitiveType.getDouble());
+                break;
+            case BOOLEAN:
+                field.setBoolV(tsPrimitiveType.getBoolean());
+                break;
+            case TEXT:
+                field.setBinaryV(tsPrimitiveType.getBinary());
+                break;
+            default:
+                throw new UnSupportedDataTypeException("UnSupported: " + dataType);
+        }
+        return field;
     }
-  }
+
+
+    /**
+     * keep heap from storing duplicate time
+     */
+    private void timeHeapPut(long time) {
+        if (!timeSet.contains(time)) {
+            timeSet.add(time);
+            timeHeap.add(time);
+        }
+    }
+
+    private Long timeHeapGet() {
+        Long t = timeHeap.poll();
+        timeSet.remove(t);
+        return t;
+    }
 }
