@@ -6,17 +6,16 @@ import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import org.junit.*;
 
-import java.io.FileNotFoundException;
 import java.sql.*;
 
-import static cn.edu.tsinghua.iotdb.service.TestUtils.*;
+import static cn.edu.tsinghua.iotdb.service.Constant.*;
 import static org.junit.Assert.*;
 
 public class IoTDBLargeDataTest {
 
   private static IoTDB deamon;
 
-  private static boolean testFlag = TestUtils.testFlag;
+  private static boolean testFlag = Constant.testFlag;
   private static TSFileConfig tsFileConfig = TSFileDescriptor.getInstance().getConfig();
   private static int maxNumberOfPointsInPage;
   private static int pageSizeInByte;

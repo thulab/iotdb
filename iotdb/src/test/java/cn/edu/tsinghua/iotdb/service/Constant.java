@@ -4,7 +4,7 @@ package cn.edu.tsinghua.iotdb.service;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 
-public class TestUtils {
+public class Constant {
 
   public static boolean testFlag = true;
 

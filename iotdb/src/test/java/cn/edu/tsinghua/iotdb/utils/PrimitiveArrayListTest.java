@@ -15,18 +15,16 @@ public class PrimitiveArrayListTest {
         for (int i = 0; i < count; i++) {
             primitiveArrayList.putTimestamp(i, i);
         }
-//        System.out.println("Time used: " + (System.currentTimeMillis() - timestamp) + "ms");
 
         for (int i = 0; i < count; i++) {
             int v = (int) primitiveArrayList.getValue(i);
             Assert.assertEquals((long) i, primitiveArrayList.getTimestamp(i));
             Assert.assertEquals(i, v);
         }
-//        System.out.println("Time used: " + (System.currentTimeMillis() - timestamp) + "ms");
-        printMemused();
+        printMemUsed();
     }
 
-    public static void printMemused() {
+    public static void printMemUsed() {
         Runtime.getRuntime().gc();
         long size = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         int gb = (int) (size / 1024 / 1024 / 1024);

@@ -22,7 +22,7 @@ public class IoTDBCompleteTest {
 
     private IoTDB deamon;
 
-    private boolean testFlag = TestUtils.testFlag;
+    private boolean testFlag = Constant.testFlag;
 
     @Before
     public void setUp() throws Exception {

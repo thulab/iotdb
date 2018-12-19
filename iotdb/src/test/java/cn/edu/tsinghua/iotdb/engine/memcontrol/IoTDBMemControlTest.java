@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
-import cn.edu.tsinghua.iotdb.service.TestUtils;
+import cn.edu.tsinghua.iotdb.service.Constant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.utils.Binary;
@@ -131,7 +131,7 @@ public class IoTDBMemControlTest {
             Statement statement = connection.createStatement();
             for (int i = 0; i < insertCnt; i++) {
                 record.time = i + 1;
-                statement.execute(TestUtils.recordToInsert(record));
+                statement.execute(Constant.recordToInsert(record));
                 if(i % 1000 == 0) {
                     System.out.println(Thread.currentThread().getId() + " inserting " + i);
                 }
