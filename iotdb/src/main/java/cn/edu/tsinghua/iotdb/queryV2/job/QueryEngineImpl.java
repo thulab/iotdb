@@ -88,6 +88,7 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
         queryJobExecutorService.submit(queryJobExecutor);
     }
 
+    @Override
     public void finishJob(QueryJob queryJob, QueryDataSet queryDataSet) {
         synchronized (queryJob) {
             try {
@@ -103,6 +104,7 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
         }
     }
 
+    @Override
     public void terminateJob(QueryJob queryJob) {
         synchronized (queryJob) {
             try {

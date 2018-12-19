@@ -18,6 +18,7 @@ public abstract class QueryJobExecutor implements Runnable {
 
     public abstract QueryDataSet execute() throws InterruptedException;
 
+    @Override
     public void run() {
         try {
             QueryDataSet queryDataSet = execute();

@@ -73,6 +73,7 @@ public class SegmentInputStreamWithMMap extends SegmentInputStream {
 //        return total;
     }
 
+    @Override
     public long skip(long n) {
         if (n <= 0) {
             return 0;
@@ -87,18 +88,22 @@ public class SegmentInputStreamWithMMap extends SegmentInputStream {
         }
     }
 
+    @Override
     public boolean markSupported() {
         return true;
     }
 
+    @Override
     public synchronized void mark(int readlimit) {
         mark = readlimit;
     }
 
+    @Override
     public synchronized void reset() {
         position = mark;
     }
 
+    @Override
     public int available() {
         int left = (int) (offset + size - position);
         return left > 0 ? left : 0;

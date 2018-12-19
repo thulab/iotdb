@@ -28,10 +28,12 @@ public abstract class QueryJob {
         this.status = status;
     }
 
+    @Override
     public int hashCode() {
         return Long.hashCode(jobId);
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof QueryJob && ((QueryJob) o).getJobId() == jobId) {
             return true;
@@ -87,6 +89,7 @@ public abstract class QueryJob {
         this.message = message;
     }
 
+    @Override
     public String toString() {
         return String.valueOf(jobId);
     }
