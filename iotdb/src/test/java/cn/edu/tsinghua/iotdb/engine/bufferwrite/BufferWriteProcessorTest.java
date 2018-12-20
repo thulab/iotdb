@@ -59,7 +59,7 @@ public class BufferWriteProcessorTest {
 
 	private int groupSizeInByte;
 	private TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
-	private Map<String, Object> parameters = new HashMap<>();
+	private Map<String, Action> parameters = new HashMap<>();
 	private BufferWriteProcessor bufferwrite;
 	private Directories directories = Directories.getInstance();
 	private String deltaObjectId = "root.vehicle.d0";

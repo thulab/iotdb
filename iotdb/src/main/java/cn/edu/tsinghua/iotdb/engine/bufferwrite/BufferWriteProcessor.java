@@ -67,7 +67,7 @@ public class BufferWriteProcessor extends Processor {
 
 
 
-    public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Object> parameters,
+    public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Action> parameters,
                                 FileSchema fileSchema) throws BufferWriteProcessorException {
         super(processorName);
         this.fileSchema = fileSchema;

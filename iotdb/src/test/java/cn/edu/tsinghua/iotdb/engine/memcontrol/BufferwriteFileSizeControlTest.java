@@ -115,7 +115,7 @@ public class BufferwriteFileSizeControlTest {
         String filename = "bufferwritetest";
         new File(filename).delete();
 
-        Map<String, Object> parameters = new HashMap<>();
+        Map<String, Action> parameters = new HashMap<>();
         parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bfflushaction);
         parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bfcloseaction);
         parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, fnflushaction);

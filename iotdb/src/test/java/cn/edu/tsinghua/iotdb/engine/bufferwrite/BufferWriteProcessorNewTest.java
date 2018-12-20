@@ -50,7 +50,7 @@ public class BufferWriteProcessorNewTest {
 
 		}
 	};
-	Map<String, Object> parameters = new HashMap<>();
+	Map<String, Action> parameters = new HashMap<>();
 	private String processorName = "root.vehicle.d0";
 	private String measurementId = "s0";
 	private TSDataType dataType = TSDataType.INT32;
