@@ -50,12 +50,7 @@ public class IoTDBCompleteTest {
         executeSQL(sqls);
         SimpleTest();
         InsertTest();
-        //UpdateTest();
-        //TODO modify in later version
-        //DeleteTest();
         SelectTest();
-        //FuncTest();
-        //GroupByTest();
     }
 
     public void SimpleTest() throws ClassNotFoundException, SQLException {
@@ -172,37 +167,6 @@ public class IoTDBCompleteTest {
                         "2,102,202,\n" +
                         "946684800000,105,null,\n" +
                         "NOW(),104,null,\n",
-                "DELETE TIMESERIES root.vehicle.*"};
-        executeSQL(sqlS);
-    }
-
-    public void UpdateTest() throws ClassNotFoundException, SQLException {
-        String[] sqlS = {
-                "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32,ENCODING=RLE",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(1,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(2,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(3,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(4,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(5,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(6,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(7,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(8,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(9,1)",
-                "INSERT INTO root.vehicle.d0(timestamp,s0) values(10,1)",
-                "UPDATE root.vehicle.d0 SET s0 = 2 WHERE time <= 2",
-                "UPDATE root.vehicle SET d0.s0 = 3 WHERE time >= 9",
-                "UPDATE root.vehicle.d0 SET s0 = 4 WHERE time <= 7 and time >= 5",
-                "SELECT * FROM root.vehicle.d0",
-                "1,2,\n" +
-                        "2,2,\n" +
-                        "3,1,\n" +
-                        "4,1,\n" +
-                        "5,4,\n" +
-                        "6,4,\n" +
-                        "7,4,\n" +
-                        "8,1,\n" +
-                        "9,3,\n" +
-                        "10,3,\n",
                 "DELETE TIMESERIES root.vehicle.*"};
         executeSQL(sqlS);
     }
@@ -410,7 +374,6 @@ public class IoTDBCompleteTest {
                         now_start = System.currentTimeMillis();
                     }
                     Statement statement = connection.createStatement();
-                    //System.out.println("!!!!" + sql);
                     statement.execute(sql);
                     if (sql.split(" ")[0].equals("SELECT")) {
                         ResultSet resultSet = statement.getResultSet();
@@ -438,7 +401,6 @@ public class IoTDBCompleteTest {
                             result += '\n';
                         }
                         cmp = true;
-//                Assert.assertEquals();
                     }
                     statement.close();
                 }
