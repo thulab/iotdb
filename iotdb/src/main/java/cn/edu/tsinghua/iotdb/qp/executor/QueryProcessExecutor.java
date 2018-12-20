@@ -6,7 +6,7 @@ import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
-import cn.edu.tsinghua.iotdb.queryV2.executor.EngineQueryRouter;
+import cn.edu.tsinghua.iotdb.query.executor.EngineQueryRouter;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;

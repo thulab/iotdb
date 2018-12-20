@@ -34,6 +34,4 @@ public class CreatorUtils {
         return new Pair<>(true, subFiles);
     }
 
-
-
 }
