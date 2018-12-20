@@ -1,6 +1,6 @@
 //package cn.edu.tsinghua.iotdb.performance;
 //
-//import cn.edu.tsinghua.iotdb.queryV2.factory.SeriesReaderFactory;
+//import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
 //import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;

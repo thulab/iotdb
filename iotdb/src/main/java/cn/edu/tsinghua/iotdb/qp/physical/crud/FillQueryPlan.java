@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.qp.physical.crud;
 
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.iotdb.queryV2.fill.IFill;
+import cn.edu.tsinghua.iotdb.query.fill.IFill;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 
 import java.util.Map;

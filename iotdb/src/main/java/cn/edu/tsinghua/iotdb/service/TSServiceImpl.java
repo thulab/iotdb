@@ -22,7 +22,7 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
-import cn.edu.tsinghua.iotdb.queryV2.control.QueryJobManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryJobManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
