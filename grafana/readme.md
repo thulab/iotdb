@@ -1,6 +1,6 @@
 # IoTDB-Grafana
 
-* ![中文](https://github.com/thulab/iotdb/blob/master/grafana/readme_zh.md)
+* [中文](https://github.com/thulab/iotdb/blob/master/grafana/readme_zh.md)
 
 This project provides a connector which reads data from iotdb and sends to grafana(https://grafana.com/). Before you use this tool, make sure grafana and iotdb are correctly installed and started.
 
