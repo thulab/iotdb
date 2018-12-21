@@ -51,9 +51,9 @@ public class BufferWriteProcessor extends Processor {
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
 
-    private Action bufferwriteFlushAction = null;
-    private Action bufferwriteCloseAction = null;
-    private Action filenodeFlushAction = null;
+    private Action bufferwriteFlushAction;
+    private Action bufferwriteCloseAction;
+    private Action filenodeFlushAction;
 
     private long lastFlushTime = -1;
     private long valueCount = 0;
