@@ -1,4 +1,6 @@
-# IotDB-Grafana
+# IoTDB-Grafana
+
+* ![中文](https://github.com/thulab/iotdb/blob/master/grafana/readme_zh.md)
 
 This project provides a connector which reads data from iotdb and sends to grafana(https://grafana.com/). Before you use this tool, make sure grafana and iotdb are correctly installed and started.
 
@@ -26,7 +28,7 @@ Grafana will auto start after installing, or you can run `sudo service grafana-s
 
 See https://github.com/thulab/iotdb
 
-## IotDB-Grafana installation
+## IoTDB-Grafana installation
 
 ```shell
 git clone https://github.com/thulab/iotdb.git
@@ -46,7 +48,7 @@ spring.datasource.driver-class-name=cn.edu.tsinghua.iotdb.jdbc.TsfileDriver
 server.port = 8888
 ```
 
-### Start IotDB-Grafana
+### Start IoTDB-Grafana
 
 ```shell
 cd grafana/target/
@@ -56,7 +58,7 @@ java -jar iotdb-grafana-{version}-SNAPSHOT.war
 If you see the following output, iotdb-grafana connector is successfully activated.
 
 ```shell
-$ java -jar iotdb-grafana-0.8.0-SNAPSHOT.war
+$ java -jar iotdb-grafana-{version}-SNAPSHOT.war
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -76,7 +78,7 @@ Username and password are both "admin".
 
 ### Add data source
 
-Select `Data Sources` and  then`Add data source`, select `SimpleJson` in `Type` and `URL` are  http://localhost:8888
+Select `Data Sources` and  then `Add data source`, select `SimpleJson` in `Type` and `URL` is http://localhost:8888
 ![](./img/add_data_source.png)
 ![](./img/edit_data_source.png)
 
