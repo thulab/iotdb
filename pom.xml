@@ -133,9 +133,7 @@
                           and hopefully let the site generation nod to too big updates every time.
                         -->
 						<notimestamp>true</notimestamp>
-						<!--
-                          Don't fail the build, just because there were issues in the JavaDoc generation.
-                        -->
+						<!--Don't fail the build, just because there were issues in the JavaDoc generation.-->
 						<failOnError>false</failOnError>
 					</configuration>
 				</plugin>
