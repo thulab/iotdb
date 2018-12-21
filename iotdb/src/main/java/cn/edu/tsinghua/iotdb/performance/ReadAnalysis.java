@@ -1,5 +1,6 @@
 //package cn.edu.tsinghua.iotdb.performance;
 //
+//import cn.edu.tsinghua.iotdb.query.reader.IReader;
 //import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 //import cn.edu.tsinghua.tsfile.common.utils.ITsRandomAccessFileReader;
@@ -15,6 +16,7 @@
 //import cn.edu.tsinghua.tsfile.utils.Pair;
 //import cn.edu.tsinghua.tsfile.write.TsFileWriter;
 //import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+//import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //
