@@ -1,6 +1,10 @@
-package cn.edu.tsinghua.iotdb.engine.bufferwrite;
+package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
+import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementDescriptor;
@@ -14,7 +18,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BufferWriteBenchmark {
+public class OverflowProcessorBenchmark {
+    private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.
+            getInstance().getConfig();
     private static int numOfDevice = 100;
     private static String[] deviceIds = new String[numOfDevice];
     static {
@@ -39,26 +45,18 @@ public class BufferWriteBenchmark {
     }
 
     private static void before() throws IOException {
-        FileUtils.deleteDirectory(new File("BufferBenchmark"));
+        FileUtils.deleteDirectory(new File(TsFileDBConf.overflowDataDir));
     }
 
     private static void after() throws IOException {
-        FileUtils.deleteDirectory(new File("BufferBenchmark"));
+        FileUtils.deleteDirectory(new File(TsFileDBConf.overflowDataDir));
     }
-
-    public static void main(String[] args) throws BufferWriteProcessorException, IOException {
-        before();
+    public static void main(String[] args) throws IOException, OverflowProcessorException {
         Map<String,Object> parameters = new HashMap<>();
-        parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, new Action() {
+        parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, new Action() {
             @Override
             public void act() throws Exception {
-                System.out.println(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
-            }
-        });
-        parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, new Action() {
-            @Override
-            public void act() throws Exception {
-                System.out.println(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
+                System.out.println(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
             }
         });
         parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, new Action() {
@@ -67,22 +65,20 @@ public class BufferWriteBenchmark {
                 System.out.println(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
             }
         });
-
-        BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(
-                "BufferBenchmark","bench","benchFile",parameters,fileSchema);
-
+        OverflowProcessor overflowProcessor = new OverflowProcessor(
+                "Overflow_bench",parameters,fileSchema);
         long startTime = System.currentTimeMillis();
         for(int i = 0;i<numOfPoint;i++){
             for(int j = 0;j<numOfDevice;j++){
                 TSRecord tsRecord = getRecord(deviceIds[j]);
-                bufferWriteProcessor.write(tsRecord);
+                overflowProcessor.insert(tsRecord);
             }
         }
         long endTime = System.currentTimeMillis();
-        bufferWriteProcessor.close();
+        overflowProcessor.close();
         System.out.println(String.format("Num of time series: %d, " +
-                "Num of points for each time series: %d, " +
-                "The total time: %d ms. ",numOfMeasurement*numOfDevice,
+                        "Num of points for each time series: %d, " +
+                        "The total time: %d ms. ",numOfMeasurement*numOfDevice,
                 numOfPoint,endTime-startTime));
 
         after();
