@@ -51,9 +51,9 @@ public class BufferWriteProcessor extends Processor {
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
 
-    private Action bufferwriteFlushAction = null;
-    private Action bufferwriteCloseAction = null;
-    private Action filenodeFlushAction = null;
+    private Action bufferwriteFlushAction;
+    private Action bufferwriteCloseAction;
+    private Action filenodeFlushAction;
 
     private long lastFlushTime = -1;
     private long valueCount = 0;
@@ -67,7 +67,7 @@ public class BufferWriteProcessor extends Processor {
 
 
 
-    public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Object> parameters,
+    public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Action> parameters,
                                 FileSchema fileSchema) throws BufferWriteProcessorException {
         super(processorName);
         this.fileSchema = fileSchema;
@@ -93,9 +93,9 @@ public class BufferWriteProcessor extends Processor {
         }
 
 
-        bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
-        bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
-        filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
+        bufferwriteFlushAction = parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
+        bufferwriteCloseAction = parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
+        filenodeFlushAction = parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
         workMemTable = new PrimitiveMemTable();
 
         if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
@@ -112,14 +112,14 @@ public class BufferWriteProcessor extends Processor {
     /**
      * write one data point to the bufferwrite
      *
-     * @param deltaObjectId
-     * @param measurementId
-     * @param timestamp
-     * @param dataType
-     * @param value
+     * @param deltaObjectId device name
+     * @param measurementId sensor name
+     * @param timestamp timestamp of the data point
+     * @param dataType the data type of the value
+     * @param value data point value
      * @return true -the size of tsfile or metadata reaches to the threshold.
      * false -otherwise
-     * @throws BufferWriteProcessorException
+     * @throws BufferWriteProcessorException  if a flushing operation occurs and failed.
      */
     public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
             throws BufferWriteProcessorException {
@@ -194,7 +194,7 @@ public class BufferWriteProcessor extends Processor {
             }
             memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
             TimeValuePairSorter timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
-            return new Pair<TimeValuePairSorter,List<ChunkMetaData>>(timeValuePairSorter,
+            return new Pair<>(timeValuePairSorter,
                     bufferWriteRestoreManager.getInsertMetadatas(deltaObjectId, measurementId, dataType));
         } finally {
             flushQueryLock.unlock();

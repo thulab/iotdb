@@ -69,7 +69,7 @@ public class OverflowProcessor extends Processor {
 
 	private WriteLogNode logNode;
 
-	public OverflowProcessor(String processorName, Map<String, Object> parameters, FileSchema fileSchema)
+	public OverflowProcessor(String processorName, Map<String, Action> parameters, FileSchema fileSchema)
 			throws IOException {
 		super(processorName);
 		this.fileSchema = fileSchema;

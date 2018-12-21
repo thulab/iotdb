@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 
 public class OverflowFileSizeControlTest {
     private String nameSpacePath = "nsp";
-    private Map<String, Object> parameters = null;
+    private Map<String, Action> parameters = null;
     private OverflowProcessor ofprocessor = null;
     private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
     private String deltaObjectId = "root.vehicle.d0";
@@ -74,7 +74,7 @@ public class OverflowFileSizeControlTest {
 
     @Before
     public void setUp() throws Exception {
-        parameters = new HashMap<String, Object>();
+        parameters = new HashMap<>();
         parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowflushaction);
         parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, filenodeflushaction);
 

@@ -27,7 +27,7 @@ public class OverflowProcessorTest {
 
 	private String processorName = "test";
 	private OverflowProcessor processor = null;
-	private Map<String, Object> parameters = null;
+	private Map<String, Action> parameters = null;
 
 	private Action overflowflushaction = new Action() {
 		@Override
@@ -46,7 +46,7 @@ public class OverflowProcessorTest {
 	@Before
 	public void setUp() throws Exception {
 		EnvironmentUtils.envSetUp();
-		parameters = new HashMap<String, Object>();
+		parameters = new HashMap<String, Action>();
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowflushaction);
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, filenodeflushaction);
 	}

@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 
 public class OverflowMetaSizeControlTest {
 	private String nameSpacePath = "nsp";
-	private Map<String, Object> parameters = null;
+	private Map<String, Action> parameters = null;
 	private OverflowProcessor ofprocessor = null;
 	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
 	private String deltaObjectId = "root.vehicle.d0";
@@ -74,7 +74,7 @@ public class OverflowMetaSizeControlTest {
 
 	@Before
 	public void setUp() throws Exception {
-		parameters = new HashMap<String, Object>();
+		parameters = new HashMap<String, Action>();
 		parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowflushaction);
 		parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, filenodeflushaction);
 
@@ -99,8 +99,7 @@ public class OverflowMetaSizeControlTest {
 			return;
 		// insert one point: int
 		try {
-			ofprocessor = new OverflowProcessor(nameSpacePath, parameters,
-					FileSchemaUtils.constructFileSchema(deltaObjectId));
+			ofprocessor = new OverflowProcessor(nameSpacePath, parameters, FileSchemaUtils.constructFileSchema(deltaObjectId));
 			for (int i = 1; i < 1000000; i++) {
 				TSRecord record = new TSRecord(i, deltaObjectId);
 				record.addTuple(DataPoint.getDataPoint(dataTypes[0], measurementIds[0], String.valueOf(i)));

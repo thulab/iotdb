@@ -114,7 +114,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	// system recovery
 	private boolean shouldRecovery = false;
 	// statistic monitor parameters
-	private Map<String, Object> parameters = null;
+	private Map<String, Action> parameters = null;
 	private final String statStorageDeltaName;
 
 	private FileSchema fileSchema;
@@ -438,7 +438,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 	public BufferWriteProcessor getBufferWriteProcessor(String processorName, long insertTime)
 			throws FileNodeProcessorException {
 		if (bufferWriteProcessor == null) {
-			Map<String, Object> parameters = new HashMap<>();
+			Map<String, Action> parameters = new HashMap<>();
 			parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bufferwriteFlushAction);
 			parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bufferwriteCloseAction);
 			parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
@@ -467,7 +467,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	public OverflowProcessor getOverflowProcessor(String processorName) throws IOException {
 		if (overflowProcessor == null) {
-			Map<String, Object> parameters = new HashMap<>();
+			Map<String, Action> parameters = new HashMap<>();
 			// construct processor or restore
 			parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
 			parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);

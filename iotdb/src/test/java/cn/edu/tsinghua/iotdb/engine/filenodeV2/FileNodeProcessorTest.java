@@ -109,15 +109,6 @@ public class FileNodeProcessorTest {
 				assertEquals(0, overflowSeriesDataSource.getOverflowInsertFileList().get(0)
 						.getChunkMetaDataList().size());
 				assertEquals(true, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
-				// deprecate update and delete
-				/*UpdateDeleteInfoOfOneSeries deleteInfoOfOneSeries = overflowSeriesDataSource
-						.getUpdateDeleteInfoOfOneSeries();
-				assertEquals(dataType, deleteInfoOfOneSeries.getDataType());
-				assertEquals(null, deleteInfoOfOneSeries.getOverflowUpdateInMem());
-				assertEquals(1, deleteInfoOfOneSeries.getOverflowUpdateFileList().size());
-				assertEquals(0, deleteInfoOfOneSeries.getOverflowUpdateFileList().get(0)
-						.getTimeSeriesChunkMetaDataList().size());*/
-				// bufferwrite data | sorted tsfile data
 				GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeqDataSource();
 				assertEquals(processorName + "." + measurementId,
 						globalSortedSeriesDataSource.getSeriesPath().toString());
