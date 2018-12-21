@@ -68,6 +68,7 @@ public class OpenFileNumUtilTest {
             totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //create test file shall not affect total open file number statistics
+            System.out.println(String.format("before:%d, After:%s", totalOpenFileNumBefore, totalOpenFileNumAfter));
             assertEquals(0, totalOpenFileNumChange);
         }else {
             assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM));
