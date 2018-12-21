@@ -9,13 +9,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class PerformanceTest {
 
     static int fetchSize = 100000;
     static int deviceStart = 0, deviceEnd = 10;
     static int sensorStart = 0, sensorEnd = 10;
 
-    public static void main(String[] args) throws ClassNotFoundException, PathErrorException, IOException, ProcessorException {
+    public static void main(String[] args) throws PathErrorException, IOException, ProcessorException {
 
         queryWithoutFilterTest();
 
