@@ -11,14 +11,29 @@ import java.util.List;
 
 public class Main {
 
-    static int fetchSize = 10000;
+    static int fetchSize = 100000;
+    static int deviceStart = 0, deviceEnd = 10;
+    static int sensorStart = 0, sensorEnd = 10;
 
     public static void main(String[] args) throws ClassNotFoundException, PathErrorException, IOException, ProcessorException {
 
-        OverflowQueryEngine queryEngine = new OverflowQueryEngine();
+        queryWithoutFilterTest();
+
+    }
+
+    public static void queryWithoutFilterTest() throws PathErrorException, IOException, ProcessorException {
 
         List<Path> pathList = new ArrayList<>();
-        pathList.add(new Path(getPath(0, 0)));
+
+        for (int i = deviceStart; i <= deviceEnd; i++) {
+            for (int j = sensorStart; j <= sensorEnd; j++) {
+                pathList.add(getPath(i, j));
+            }
+        }
+
+        long startTime = System.currentTimeMillis();
+
+        OverflowQueryEngine queryEngine = new OverflowQueryEngine();
 
         QueryDataSet dataSet =
                 queryEngine.query(0, pathList, null, null, null, null, fetchSize, null);
@@ -26,12 +41,17 @@ public class Main {
         int cnt = 0;
         while (dataSet.hasNextRecord()) {
             RowRecord rowRecord = dataSet.getNextRecord();
-            System.out.println(rowRecord);
+            cnt ++;
+            //System.out.println(rowRecord);
         }
 
+        System.out.println(cnt);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Time consume : " + (endTime - startTime));
     }
 
-    public static String getPath(int d, int s) {
-        return String.format("root.performf.group_0.d_%s.s_%s", d, s);
+    public static Path getPath(int d, int s) {
+        return new Path(String.format("root.performf.group_0.d_%s.s_%s", d, s));
     }
 }
