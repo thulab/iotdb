@@ -14,11 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class IoTDBStartServerScriptTest {
-	private final String[] output = {
-			"````````````````````````",
-			"Starting IoTDB",
-			"````````````````````````"
-		};
 	private final String START_IOTDB_STR = "IoTDB has started.";
 
 	@Before
@@ -31,26 +26,52 @@ public class IoTDBStartServerScriptTest {
 
 	@Test
 	public void test() throws IOException, InterruptedException {
-        String os = System.getProperty("os.name").toLowerCase();
-        if(os.startsWith("windows")){
-    		testStartClientOnWindows();
-        } else {
-        	testStartClientOnUnix();
-        }
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.startsWith("windows")) {
+			testStartClientOnWindows(".bat");
+		} else {
+			testStartClientOnUnix(".sh");
+		}
 	}
 	
-	private void testStartClientOnWindows() throws IOException{
-		String dir = getCurrentPathOnWinddows();
-		String startCMD = dir+File.separator+"iotdb"+File.separator+"bin"+File.separator+"start-server.bat";
+	private void testStartClientOnWindows(String suffix) throws IOException{
+		final String[] output = {
+				"````````````````````````",
+				"Starting IoTDB",
+				"````````````````````````"
+			};
+		String dir = getCurrentPath("cmd.exe", "/c", "echo %cd%");
+		String startCMD = dir+File.separator+"iotdb"+File.separator+"bin"+File.separator+"start-server"+suffix;
 		ProcessBuilder startBuilder = new ProcessBuilder("cmd.exe", "/c", startCMD);
+		String stopCMD = dir+File.separator+"iotdb"+File.separator+"bin"+File.separator+"stop-server"+ suffix;
+		ProcessBuilder stopBuilder = new ProcessBuilder("cmd.exe", "/c", stopCMD);
+		testOutput(dir, suffix, startBuilder, stopBuilder, output);
+	}
+	
+	private void testStartClientOnUnix(String suffix) throws IOException{
+		String dir = getCurrentPath("pwd");
+		final String[] output = { 
+			"---------------------",
+			"Starting IoTDB",
+			"---------------------"
+		};
+		String startCMD = dir+File.separator+"iotdb"+File.separator+"bin"+File.separator+"start-server"+suffix;
+		ProcessBuilder startBuilder = new ProcessBuilder("sh", startCMD);
+		String stopCMD = dir+File.separator+"iotdb"+File.separator+"bin"+File.separator+"stop-server"+ suffix;
+		ProcessBuilder stopBuilder = new ProcessBuilder("sh", stopCMD);
+		testOutput(dir, suffix, startBuilder, stopBuilder, output);
+	}
+	
+	private void testOutput(String dir, String suffix, ProcessBuilder startBuilder,  ProcessBuilder stopBuilder, String[] output) throws IOException {
 		startBuilder.redirectErrorStream(true);
-        Process startProess = startBuilder.start();
-        BufferedReader startReader = new BufferedReader(new InputStreamReader(startProess.getInputStream()));
+        Process startProcess = startBuilder.start();
+        BufferedReader startReader = new BufferedReader(new InputStreamReader(startProcess.getInputStream()));
         List<String> runtimeOuput = new ArrayList<>();
         String line;
         try {
             while (true) {
                 line = startReader.readLine();
+                System.out.println(line);
                 if (line == null) { 
                 	break; 
                 }
@@ -64,12 +85,10 @@ public class IoTDBStartServerScriptTest {
             }
 		} finally {
 			startReader.close();
-			startProess.destroy();
-			String stopCMD = dir+File.separator+"iotdb"+File.separator+"bin"+File.separator+"stop-server.bat";
-			ProcessBuilder stopBuilder = new ProcessBuilder("cmd.exe", "/c", stopCMD);
+			startProcess.destroy();
 			stopBuilder.redirectErrorStream(true);
-			Process stopProess = stopBuilder.start();
-			BufferedReader stopReader = new BufferedReader(new InputStreamReader(stopProess.getInputStream()));
+			Process stopProcess = stopBuilder.start();
+			BufferedReader stopReader = new BufferedReader(new InputStreamReader(stopProcess.getInputStream()));
 			while (true) {
                 line = stopReader.readLine();
                 if (line == null) { 
@@ -78,20 +97,16 @@ public class IoTDBStartServerScriptTest {
                 System.out.println(line);
             }
 			stopReader.close();
-			stopProess.destroy();
+//			stopProcess.destroy();
 		}
 	}
 	
-	private void testStartClientOnUnix(){
-		
-	}
-	
-	private String getCurrentPathOnWinddows() throws IOException{
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "echo %cd%");
-	    builder.redirectErrorStream(true);
-	    Process p = builder.start();
-	    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-	    String path = r.readLine();
-	    return path;
+	private String getCurrentPath(String...command) throws IOException {
+		ProcessBuilder builder = new ProcessBuilder(command);
+		builder.redirectErrorStream(true);
+		Process p = builder.start();
+		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String path = r.readLine();
+		return path;
 	}
 }
