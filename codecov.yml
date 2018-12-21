@@ -9,7 +9,8 @@ coverage:
     changes: no
 
 ignore:
-  - "*/interface/thrift/**/*.java"  # ignore thrift-gen folders and all its contents
+#  - "*/interface/thrift/**/*.java"  # ignore thrift-gen folders and all its contents
+  - "**/generated-classes/**/*.java"
   - "grafana/**/*.java"
   - "spark/**/*.java"
   - "hadoop/**/*.java"
