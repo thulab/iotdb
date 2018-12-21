@@ -13,3 +13,4 @@ ignore:
   - "grafana/**/*.java"
   - "spark/**/*.java"
   - "hadoop/**/*.java"
+  - "**/*.md"
