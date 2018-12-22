@@ -137,6 +137,7 @@ public class SealedTsFilesReader implements IReader {
 
     // TODO replace new FileReader by FileReaderManager to avoid file stream limit
     private void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException {
+        System.out.println("!!!!" + fileNode.getFilePath());
         TsFileSequenceReader tsFileReader = new TsFileSequenceReader(fileNode.getFilePath());
         MetadataQuerierByFileImpl metadataQuerier = new MetadataQuerierByFileImpl(tsFileReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(seriesPath);

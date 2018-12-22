@@ -3,6 +3,8 @@ package cn.edu.tsinghua.iotdb.query.reader.unsequence;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
+import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.reader.chunk.ChunkReader;
 
@@ -10,18 +12,25 @@ import java.io.IOException;
 
 public class EngineChunkReader implements IReader {
 
-    protected ChunkReader reader;
+    protected ChunkReader chunkReader;
     private BatchData data;
 
-    public EngineChunkReader(ChunkReader reader) {
-        this.reader = reader;
+    /**
+     * Each EngineChunkReader has a corresponding UnClosedTsFileReader, when EngineChunkReader is closed ,
+     * UnClosedTsFileReader also should be closed in meanwhile.
+     */
+    private UnClosedTsFileReader unClosedTsFileReader;
+
+    public EngineChunkReader(ChunkReader chunkReader, UnClosedTsFileReader unClosedTsFileReader) {
+        this.chunkReader = chunkReader;
+        this.unClosedTsFileReader = unClosedTsFileReader;
     }
 
     @Override
     public boolean hasNext() throws IOException {
         if (data == null || !data.hasNext()) {
-            if (reader.hasNextBatch()) {
-                data = reader.nextBatch();
+            if (chunkReader.hasNextBatch()) {
+                data = chunkReader.nextBatch();
             } else {
                 return false;
             }
@@ -44,7 +53,8 @@ public class EngineChunkReader implements IReader {
 
     @Override
     public void close() throws IOException {
-        reader.close();
+        this.chunkReader.close();
+        this.unClosedTsFileReader.close();
     }
 
     // TODO
