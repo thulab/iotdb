@@ -50,14 +50,16 @@ public class EngineLeafNode implements Node {
     }
 
     public boolean currentTimeIs(long time) {
-        if(!reader.currentBatch().hasNext())
+        if(!reader.currentBatch().hasNext()) {
             return false;
+        }
         return reader.currentBatch().currentTime() == time;
     }
 
     public Object currentValue(long time) {
-        if(data.currentTime() == time)
+        if(data.currentTime() == time) {
             return data.currentValue();
+        }
         return null;
     }
 

@@ -18,8 +18,8 @@ import java.util.List;
  */
 public class PerformanceTest {
 
-    private static int deviceStart = 0, deviceEnd = 10;
-    private static int sensorStart = 0, sensorEnd = 10;
+    private static int deviceStart = 1, deviceEnd = 1;
+    private static int sensorStart = 1, sensorEnd = 1;
 
     public static void main(String[] args) throws IOException, FileNodeManagerException {
         queryWithoutFilterTest();
@@ -50,10 +50,10 @@ public class PerformanceTest {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Time consume : " + (endTime - startTime));
+        System.out.println(String.format("Time consume : %s, count number : %s", endTime - startTime, count));
     }
 
     public static Path getPath(int d, int s) {
-        return new Path(String.format("root.performf.group_0.d_%s.s_%s", d, s));
+        return new Path(String.format("root.perform.group_0.d_%s.s_%s", d, s));
     }
 }

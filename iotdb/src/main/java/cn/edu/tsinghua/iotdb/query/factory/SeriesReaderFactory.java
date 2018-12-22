@@ -93,17 +93,18 @@ public class SeriesReaderFactory {
         int priorityValue = 1;
 
         for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList()) {
-            TsFileSequenceReader tsFileSequenceReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
-            ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
+            TsFileSequenceReader unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
+            ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
             for (ChunkMetaData chunkMetaData : overflowInsertFile.getChunkMetaDataList()) {
                 Chunk chunk = chunkLoader.getChunk(chunkMetaData);
                 ChunkReader chunkReader;
 
-                if (filter != null)
+                if (filter != null) {
                     chunkReader = new ChunkReaderWithFilter(chunk, filter);
-                else
+                } else {
                     chunkReader = new ChunkReaderWithoutFilter(chunk);
+                }
 
                 unSeqMergeReader.addReaderWithPriority(new EngineChunkReader(chunkReader), priorityValue);
                 priorityValue++;
@@ -112,10 +113,11 @@ public class SeriesReaderFactory {
 
         // add reader for MemTable
         if (overflowSeriesDataSource.hasRawChunk()) {
-            if (filter != null)
+            if (filter != null) {
                 unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithFilter(overflowSeriesDataSource.getReadableMemChunk(), filter), priorityValue);
-            else
+            } else {
                 unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithoutFilter(overflowSeriesDataSource.getReadableMemChunk()), priorityValue);
+            }
         }
 
         // TODO add External Sort
@@ -132,7 +134,7 @@ public class SeriesReaderFactory {
             IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SingleSeriesExpression singleSeriesExpression)
             throws IOException {
 
-        logger.debug("create seriesReaders for merge. SeriesFilter = {}. TsFilePath = {}",
+        logger.debug("Create seriesReaders for merge. SeriesFilter = {}. TsFilePath = {}",
                 singleSeriesExpression, intervalFileNode.getFilePath());
 
         PriorityMergeReader priorityMergeReader = new PriorityMergeReader();
@@ -150,7 +152,7 @@ public class SeriesReaderFactory {
     }
 
     private IReader genSealedTsFileSeriesReader(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
-        TsFileSequenceReader tsFileSequenceReader = new UnClosedTsFileReader(filePath);
+        TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(filePath);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(singleSeriesExpression.getSeriesPath());

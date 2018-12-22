@@ -108,8 +108,7 @@ public class MManager {
                     // init the metadata from the operation log
                     mGraph = new MGraph(ROOT_NAME);
                     if (logFile.exists()) {
-                        FileReader fr;
-                        fr = new FileReader(logFile);
+                        FileReader fr = new FileReader(logFile);
                         BufferedReader br = new BufferedReader(fr);
                         String cmd;
                         while ((cmd = br.readLine()) != null) {

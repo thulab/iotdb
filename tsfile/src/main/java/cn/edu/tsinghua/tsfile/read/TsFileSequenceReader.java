@@ -35,6 +35,7 @@ public class TsFileSequenceReader {
      * The reader will read the tail of the file to get the file metadata size.
      * Then the reader will skip the first TSFileConfig.MAGIC_STRING.length() bytes of the file
      * for preparing reading real data.
+     *
      * @param file the data file
      * @throws IOException If some I/O error occurs
      */
@@ -43,13 +44,13 @@ public class TsFileSequenceReader {
     }
 
 
-    TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException{
+    TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException {
         tsFileInput = new DefaultTsFileInput(Paths.get(file));
-        if(loadMetadataSize)
+        if (loadMetadataSize)
             loadMetadataSize();
     }
 
-    private void loadMetadataSize() throws IOException{
+    private void loadMetadataSize() throws IOException {
         ByteBuffer metadataSize = ByteBuffer.allocate(Integer.BYTES);
         tsFileInput.read(metadataSize, tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES);
         metadataSize.flip();
@@ -60,15 +61,14 @@ public class TsFileSequenceReader {
 
 
     /**
-     *
-     * @param input the input of a tsfile. The current position should be a markder and then a chunk Header,
-     *              rather than the magic number
-     * @param fileMetadataPos the position of the file metadata in the TsFileInput
+     * @param input            the input of a tsfile. The current position should be a markder and then a chunk Header,
+     *                         rather than the magic number
+     * @param fileMetadataPos  the position of the file metadata in the TsFileInput
      *                         from the beginning of the input to the current position
      * @param fileMetadataSize the byte size of the file metadata in the input
-     * @throws IOException  If some I/O error occurs
+     * @throws IOException If some I/O error occurs
      */
-    public TsFileSequenceReader(TsFileInput input, long fileMetadataPos, int fileMetadataSize) throws IOException{
+    public TsFileSequenceReader(TsFileInput input, long fileMetadataPos, int fileMetadataSize) throws IOException {
         this.tsFileInput = input;
         this.fileMetadataPos = fileMetadataPos;
         this.fileMetadataSize = fileMetadataSize;
@@ -197,7 +197,7 @@ public class TsFileSequenceReader {
         return PageHeader.deserializeFrom(tsFileInput.wrapAsInputStream(), type);
     }
 
-    public long position() throws  IOException {
+    public long position() throws IOException {
         return tsFileInput.position();
     }
 
