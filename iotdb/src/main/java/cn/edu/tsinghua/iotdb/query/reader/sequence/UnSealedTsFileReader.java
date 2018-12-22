@@ -40,13 +40,15 @@ public class UnSealedTsFileReader implements IReader {
             data = unSealedTsFileReader.nextBatch();
         }
 
-        if (!data.hasNext() && !unSealedTsFileReader.hasNextBatch())
+        if (!data.hasNext() && !unSealedTsFileReader.hasNextBatch()) {
             return false;
+        }
 
         while (!data.hasNext()) {
             data = unSealedTsFileReader.nextBatch();
-            if (data.hasNext())
+            if (data.hasNext()) {
                 return true;
+            }
         }
 
         return false;

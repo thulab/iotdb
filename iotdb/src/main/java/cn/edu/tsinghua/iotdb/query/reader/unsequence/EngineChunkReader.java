@@ -20,10 +20,11 @@ public class EngineChunkReader implements IReader {
     @Override
     public boolean hasNext() throws IOException {
         if (data == null || !data.hasNext()) {
-            if (reader.hasNextBatch())
+            if (reader.hasNextBatch()) {
                 data = reader.nextBatch();
-            else
+            } else {
                 return false;
+            }
         }
 
         return data.hasNext();

@@ -17,8 +17,9 @@ public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implemen
       if (cachedTimeValuePair.getTimestamp() == timestamp) {
         hasCachedTimeValuePair = false;
         return cachedTimeValuePair.getValue();
-      } else if (cachedTimeValuePair.getTimestamp() > timestamp)
-        return null;
+      } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
+          return null;
+      }
     }
 
     while (hasNext()) {

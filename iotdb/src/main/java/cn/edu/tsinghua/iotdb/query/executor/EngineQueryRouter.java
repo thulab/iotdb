@@ -14,6 +14,10 @@ import java.io.IOException;
 
 import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
 
+/**
+ * <p> Query entrance class of IoTDB query process.
+ * All query clause will be transformed to physical plan, physical plan will be executed by EngineQueryRouter.
+ */
 public class EngineQueryRouter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);

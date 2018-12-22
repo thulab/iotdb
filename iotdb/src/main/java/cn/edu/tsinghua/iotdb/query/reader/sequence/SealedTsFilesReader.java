@@ -50,8 +50,9 @@ public class SealedTsFilesReader implements IReader {
 
     @Override
     public boolean hasNext() throws IOException {
-        if (hasCachedData)
+        if (hasCachedData) {
             return true;
+        }
 
         while (!hasCachedData) {
 
@@ -94,8 +95,9 @@ public class SealedTsFilesReader implements IReader {
                 }
             }
 
-            if (data == null || !data.hasNext())
+            if (data == null || !data.hasNext()) {
                 break;
+            }
         }
 
         return false;
@@ -123,8 +125,9 @@ public class SealedTsFilesReader implements IReader {
 
     private boolean singleTsFileSatisfied(IntervalFileNode fileNode) {
 
-        if (filter == null)
+        if (filter == null) {
             return true;
+        }
 
         // TODO
 
