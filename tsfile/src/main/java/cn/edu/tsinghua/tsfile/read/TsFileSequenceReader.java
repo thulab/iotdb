@@ -54,9 +54,11 @@ public class TsFileSequenceReader {
         ByteBuffer metadataSize = ByteBuffer.allocate(Integer.BYTES);
         tsFileInput.read(metadataSize, tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES);
         metadataSize.flip();
-        fileMetadataSize = ReadWriteIOUtils.readInt(metadataSize);//read file metadata size and position
+        //read file metadata size and position
+        fileMetadataSize = ReadWriteIOUtils.readInt(metadataSize);
         fileMetadataPos = tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES - fileMetadataSize;
-        tsFileInput.position(TSFileConfig.MAGIC_STRING.length());//skip the magic header
+        //skip the magic header
+        tsFileInput.position(TSFileConfig.MAGIC_STRING.length());
     }
 
 

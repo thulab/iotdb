@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.executor.EngineQueryRouter;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.common.RowRecord;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
@@ -22,6 +23,7 @@ public class PerformanceTest {
     private static int sensorStart = 1, sensorEnd = 1;
 
     public static void main(String[] args) throws IOException, FileNodeManagerException {
+        //IoTDB.getInstance().active();
         queryWithoutFilterTest();
     }
 
@@ -46,7 +48,9 @@ public class PerformanceTest {
         while (queryDataSet.hasNext()) {
             RowRecord rowRecord = queryDataSet.next();
             count++;
-            System.out.println(rowRecord);
+            if (count % 10000 == 0) {
+                System.out.println("====" + count + "  " + rowRecord);
+            }
         }
 
         long endTime = System.currentTimeMillis();

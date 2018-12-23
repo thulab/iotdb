@@ -28,13 +28,14 @@ public class ReadWriteIOUtils {
 
 
     public static int write(Boolean flag, OutputStream outputStream) throws IOException {
-        if(flag)outputStream.write(1);
+        if (flag) outputStream.write(1);
         else outputStream.write(0);
         return 1;
     }
+
     public static int write(Boolean flag, ByteBuffer buffer) {
         byte a;
-        if(flag)a = 1;
+        if (flag) a = 1;
         else a = 0;
 
         buffer.put(a);
@@ -45,6 +46,7 @@ public class ReadWriteIOUtils {
         int flag = inputStream.read();
         return flag == 1;
     }
+
     public static boolean readBool(ByteBuffer buffer) {
         byte a = buffer.get();
         return a == 1;
@@ -53,6 +55,7 @@ public class ReadWriteIOUtils {
     public static int writeIsNull(Object object, OutputStream outputStream) throws IOException {
         return write(object != null, outputStream);
     }
+
     public static int writeIsNull(Object object, ByteBuffer buffer) {
         return write(object != null, buffer);
     }
@@ -60,6 +63,7 @@ public class ReadWriteIOUtils {
     public static boolean readIsNull(InputStream inputStream) throws IOException {
         return readBool(inputStream);
     }
+
     public static boolean readIsNull(ByteBuffer buffer) {
         return readBool(buffer);
     }
@@ -90,6 +94,7 @@ public class ReadWriteIOUtils {
         inputStream.read(bytes);
         return BytesUtils.bytesToShort(bytes);
     }
+
     public static short readShort(ByteBuffer buffer) {
         short n = buffer.getShort();
         return n;
@@ -100,43 +105,44 @@ public class ReadWriteIOUtils {
         outputStream.write(bytes);
         return bytes.length;
     }
+
     public static int write(int n, ByteBuffer buffer) {
         buffer.putInt(n);
         return INT_LEN;
     }
 
     public static int write(float n, OutputStream outputStream) throws IOException {
-        byte[] bytes= BytesUtils.floatToBytes(n);
+        byte[] bytes = BytesUtils.floatToBytes(n);
         outputStream.write(bytes);
         return FLOAT_LEN;
     }
 
     public static float readFloat(InputStream inputStream) throws IOException {
-        byte[] bytes= new byte[FLOAT_LEN];
+        byte[] bytes = new byte[FLOAT_LEN];
         inputStream.read(bytes);
         return BytesUtils.bytesToFloat(bytes);
     }
 
     public static float readFloat(ByteBuffer byteBuffer) {
-        byte[] bytes= new byte[FLOAT_LEN];
+        byte[] bytes = new byte[FLOAT_LEN];
         byteBuffer.get(bytes);
         return BytesUtils.bytesToFloat(bytes);
     }
 
     public static int write(double n, OutputStream outputStream) throws IOException {
-        byte[] bytes= BytesUtils.doubleToBytes(n);
+        byte[] bytes = BytesUtils.doubleToBytes(n);
         outputStream.write(bytes);
         return DOUBLE_LEN;
     }
 
     public static double readDouble(InputStream inputStream) throws IOException {
-        byte[] bytes= new byte[DOUBLE_LEN];
+        byte[] bytes = new byte[DOUBLE_LEN];
         inputStream.read(bytes);
         return BytesUtils.bytesToDouble(bytes);
     }
 
     public static double readDouble(ByteBuffer byteBuffer) {
-        byte[] bytes= new byte[DOUBLE_LEN];
+        byte[] bytes = new byte[DOUBLE_LEN];
         byteBuffer.get(bytes);
         return BytesUtils.bytesToDouble(bytes);
     }
@@ -146,6 +152,7 @@ public class ReadWriteIOUtils {
         inputStream.read(bytes);
         return BytesUtils.bytesToInt(bytes);
     }
+
     public static int readInt(ByteBuffer buffer) {
         int n = buffer.getInt();
         return n;
@@ -168,6 +175,7 @@ public class ReadWriteIOUtils {
         outputStream.write(bytes);
         return bytes.length;
     }
+
     public static int write(long n, ByteBuffer buffer) {
         buffer.putLong(n);
         return LONG_LEN;
@@ -178,6 +186,7 @@ public class ReadWriteIOUtils {
         inputStream.read(bytes);
         return BytesUtils.bytesToLong(bytes);
     }
+
     public static long readLong(ByteBuffer buffer) {
         long n = buffer.getLong();
         return n;
@@ -191,6 +200,7 @@ public class ReadWriteIOUtils {
         len += bytes.length;
         return len;
     }
+
     public static int write(String s, ByteBuffer buffer) {
         int len = 0;
         len += write(s.length(), buffer);
@@ -206,6 +216,7 @@ public class ReadWriteIOUtils {
         inputStream.read(bytes, 0, sLength);
         return new String(bytes, 0, sLength);
     }
+
     public static String readString(ByteBuffer buffer) {
         int sLength = readInt(buffer);
         byte[] bytes = new byte[sLength];
@@ -221,6 +232,7 @@ public class ReadWriteIOUtils {
         len += bytes.length;
         return len;
     }
+
     public static int write(ByteBuffer byteBuffer, ByteBuffer buffer) {
         int len = 0;
         len += write(byteBuffer.capacity(), buffer);
@@ -234,33 +246,27 @@ public class ReadWriteIOUtils {
         return ByteBuffer.wrap(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
-    public static ByteBuffer getByteBuffer(int i)
-    {
+    public static ByteBuffer getByteBuffer(int i) {
         return ByteBuffer.allocate(4).putInt(0, i);
     }
 
-    public static ByteBuffer getByteBuffer(long n)
-    {
+    public static ByteBuffer getByteBuffer(long n) {
         return ByteBuffer.allocate(8).putLong(0, n);
     }
 
-    public static ByteBuffer getByteBuffer(float f)
-    {
+    public static ByteBuffer getByteBuffer(float f) {
         return ByteBuffer.allocate(4).putFloat(0, f);
     }
 
-    public static ByteBuffer getByteBuffer(double d)
-    {
+    public static ByteBuffer getByteBuffer(double d) {
         return ByteBuffer.allocate(8).putDouble(0, d);
     }
 
-    public static ByteBuffer getByteBuffer(boolean i)
-    {
-        return ByteBuffer.allocate(1).put(i ? (byte)1 : (byte)0);
+    public static ByteBuffer getByteBuffer(boolean i) {
+        return ByteBuffer.allocate(1).put(i ? (byte) 1 : (byte) 0);
     }
 
-    public static String readStringFromDirectByteBuffer(ByteBuffer buffer) throws CharacterCodingException
-    {
+    public static String readStringFromDirectByteBuffer(ByteBuffer buffer) throws CharacterCodingException {
         return java.nio.charset.StandardCharsets.UTF_8.newDecoder().decode(buffer.duplicate()).toString();
     }
 
@@ -268,11 +274,11 @@ public class ReadWriteIOUtils {
      * unlike InputStream.read(bytes), this method makes sure that you can read length bytes or reach to the end of the stream.
      */
     public static byte[] readBytes(InputStream inputStream, int length) throws IOException {
-        byte[] bytes=new byte[length];
-        int offset=0;
-        int len=0;
-        while(bytes.length-offset>0 && (len=inputStream.read(bytes,offset, bytes.length-offset))!=-1){
-            offset+=len;
+        byte[] bytes = new byte[length];
+        int offset = 0;
+        int len = 0;
+        while (bytes.length - offset > 0 && (len = inputStream.read(bytes, offset, bytes.length - offset)) != -1) {
+            offset += len;
         }
         return bytes;
     }
@@ -281,8 +287,8 @@ public class ReadWriteIOUtils {
      * unlike InputStream.read(bytes), this method makes sure that you can read length bytes or reach to the end of the stream.
      */
     public static byte[] readBytesWithSelfDescriptionLength(InputStream inputStream) throws IOException {
-        int length=readInt(inputStream);
-        return readBytes(inputStream,length);
+        int length = readInt(inputStream);
+        return readBytes(inputStream, length);
     }
 
 
@@ -305,39 +311,38 @@ public class ReadWriteIOUtils {
     }
 
 
-    public static int readAsPossible(FileChannel channel, long position, ByteBuffer buffer) throws IOException{
-        int length=0;
+    public static int readAsPossible(FileChannel channel, long position, ByteBuffer buffer) throws IOException {
+        int length = 0;
         int read;
-        while(buffer.hasRemaining()&& (read=channel.read(buffer,position))!=-1){
-            length+=read;
-            position+=read;
-            read=channel.read(buffer,position);
+        while (buffer.hasRemaining() && (read = channel.read(buffer, position)) != -1) {
+            length += read;
+            position += read;
+            read = channel.read(buffer, position);
         }
         return length;
     }
 
-    public static int readAsPossible(FileChannel channel, ByteBuffer buffer) throws IOException{
-        int length=0;
+    public static int readAsPossible(FileChannel channel, ByteBuffer buffer) throws IOException {
+        int length = 0;
         int read;
-        while(buffer.hasRemaining()&& (read=channel.read(buffer))!=-1){
-            length+=read;
+        while (buffer.hasRemaining() && (read = channel.read(buffer)) != -1) {
+            length += read;
         }
         return length;
     }
 
-    public static int readAsPossible(FileChannel channel, ByteBuffer buffer, int len) throws IOException{
-        int length=0;
-        int limit=buffer.limit();
-        if(buffer.remaining()>len)
-            buffer.limit(buffer.position()+len);
+    public static int readAsPossible(FileChannel channel, ByteBuffer buffer, int len) throws IOException {
+        int length = 0;
+        int limit = buffer.limit();
+        if (buffer.remaining() > len)
+            buffer.limit(buffer.position() + len);
         int read;
-        while(length<len && buffer.hasRemaining()&& (read=channel.read(buffer))!=-1){
-            length+=read;
+        while (length < len && buffer.hasRemaining() && (read = channel.read(buffer)) != -1) {
+            length += read;
         }
         buffer.limit(limit);
         return length;
     }
-
 
 
     /**
@@ -345,20 +350,21 @@ public class ReadWriteIOUtils {
      */
     public static List<Integer> readIntegerList(InputStream inputStream) throws IOException {
         int size = readInt(inputStream);
-        if(size <= 0)return null;
+        if (size <= 0) return null;
 
         List<Integer> list = new ArrayList<>();
-        for(int i = 0;i < size;i++)
+        for (int i = 0; i < size; i++)
             list.add(readInt(inputStream));
 
         return list;
     }
+
     public static List<Integer> readIntegerList(ByteBuffer buffer) throws IOException {
         int size = readInt(buffer);
-        if(size <= 0)return null;
+        if (size <= 0) return null;
 
         List<Integer> list = new ArrayList<>();
-        for(int i = 0;i < size;i++)
+        for (int i = 0; i < size; i++)
             list.add(readInt(buffer));
         return list;
     }
@@ -367,17 +373,18 @@ public class ReadWriteIOUtils {
         List<String> list = new ArrayList<>();
         int size = readInt(inputStream);
 
-        for(int i = 0;i < size;i++)
+        for (int i = 0; i < size; i++)
             list.add(readString(inputStream));
 
         return list;
     }
+
     public static List<String> readStringList(ByteBuffer buffer) throws IOException {
         int size = readInt(buffer);
-        if(size <= 0)return null;
+        if (size <= 0) return null;
 
         List<String> list = new ArrayList<>();
-        for(int i = 0;i < size;i++)
+        for (int i = 0; i < size; i++)
             list.add(readString(buffer));
 
         return list;
@@ -391,6 +398,7 @@ public class ReadWriteIOUtils {
         short n = compressionType.serialize();
         return write(n, outputStream);
     }
+
     public static int write(CompressionType compressionType, ByteBuffer buffer) {
         short n = compressionType.serialize();
         return write(n, buffer);
@@ -400,6 +408,7 @@ public class ReadWriteIOUtils {
         short n = readShort(inputStream);
         return CompressionType.deserialize(n);
     }
+
     public static CompressionType readCompressionType(ByteBuffer buffer) {
         short n = readShort(buffer);
         return CompressionType.deserialize(n);
@@ -413,6 +422,7 @@ public class ReadWriteIOUtils {
         short n = dataType.serialize();
         return write(n, outputStream);
     }
+
     public static int write(TSDataType dataType, ByteBuffer buffer) {
         short n = dataType.serialize();
         return write(n, buffer);
@@ -422,6 +432,7 @@ public class ReadWriteIOUtils {
         short n = readShort(inputStream);
         return TSDataType.deserialize(n);
     }
+
     public static TSDataType readDataType(ByteBuffer buffer) {
         short n = readShort(buffer);
         return TSDataType.deserialize(n);
@@ -435,6 +446,7 @@ public class ReadWriteIOUtils {
         short n = encoding.serialize();
         return write(n, outputStream);
     }
+
     public static int write(TSEncoding encoding, ByteBuffer buffer) {
         short n = encoding.serialize();
         return write(n, buffer);
@@ -444,6 +456,7 @@ public class ReadWriteIOUtils {
         short n = readShort(inputStream);
         return TSEncoding.deserialize(n);
     }
+
     public static TSEncoding readEncoding(ByteBuffer buffer) {
         short n = readShort(buffer);
         return TSEncoding.deserialize(n);
@@ -457,6 +470,7 @@ public class ReadWriteIOUtils {
         short n = freqType.serialize();
         return write(n, outputStream);
     }
+
     public static int write(TSFreqType freqType, ByteBuffer buffer) {
         short n = freqType.serialize();
         return write(n, buffer);
@@ -466,6 +480,7 @@ public class ReadWriteIOUtils {
         short n = readShort(inputStream);
         return TSFreqType.deserialize(n);
     }
+
     public static TSFreqType readFreqType(ByteBuffer buffer) {
         short n = readShort(buffer);
         return TSFreqType.deserialize(n);
