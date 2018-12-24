@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.component;
 
 import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStreamWithMMap;
-import sun.nio.ch.DirectBuffer;
+import sun.misc.Cleaner;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -12,7 +12,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
@@ -80,7 +79,7 @@ public class SegmentInputStreamWithMMapTest {
 
     public static void freeDBJDK8or9(ByteBuffer buffer) throws Exception {
         if (buffer instanceof sun.nio.ch.DirectBuffer) {
-            final Object bufferCleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
+            final Cleaner bufferCleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
 
             if (bufferCleaner != null) {
                 cleanMethod.invoke(bufferCleaner);
