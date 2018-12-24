@@ -9,6 +9,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -45,14 +47,18 @@ public class SegmentInputStreamWithMMapTest {
 
     @Test
     public void testWithMMap() throws Exception {
+    	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
+    	int major = Integer.parseInt(javaVersionElements[1]);
+    	if(major < 8) {
+    		fail("JDK requires 1.8 or later.");
+    	}
         RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
         MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
         testOneSegmentWithMMap(buffer1, 0, 1000);
         testOneSegmentWithMMap(buffer1, 20, 1000);
         testOneSegmentWithMMap(buffer1, 30, 1000);
         testOneSegmentWithMMap(buffer1, 1000, 1000);
-    	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
-    	int major = Integer.parseInt(javaVersionElements[1]);
+
     	if (major == 8) {
     		((DirectBuffer) buffer1).cleaner().clean();
     	} else {
