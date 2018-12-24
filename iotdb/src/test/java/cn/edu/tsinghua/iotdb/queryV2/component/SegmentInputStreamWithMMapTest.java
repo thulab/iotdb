@@ -2,7 +2,7 @@ package cn.edu.tsinghua.iotdb.queryV2.component;
 
 import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStreamWithMMap;
-import sun.misc.Cleaner;
+import sun.nio.ch.DirectBuffer;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -12,7 +12,10 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -44,48 +47,34 @@ public class SegmentInputStreamWithMMapTest {
     @Test
     public void testWithMMap() throws Exception {
         RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
-
         MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
         testOneSegmentWithMMap(buffer1, 0, 1000);
         testOneSegmentWithMMap(buffer1, 20, 1000);
         testOneSegmentWithMMap(buffer1, 30, 1000);
         testOneSegmentWithMMap(buffer1, 1000, 1000);
-        freeDBJDK8or9(buffer1);    
-//        ((DirectBuffer) buffer1).cleaner().clean();
-        randomAccessFile.close();
+    	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
+    	int major = Integer.parseInt(javaVersionElements[1]);
+    	if (major == 8) {
+    		((DirectBuffer) buffer1).cleaner().clean();
+    	} else {
+    		destroyBuffer(buffer1);
+    	}
+    	 randomAccessFile.close();
     }
 
-    
-    static final Method cleanMethod;
-    
-    static {
-        try {
-            Class<?> cleanerOrCleanable;
-            try {
-                cleanerOrCleanable = Class.forName("sun.misc.Cleaner");
-            } catch (ClassNotFoundException e1) {
-                try {
-                    cleanerOrCleanable = Class.forName("java.lang.ref.Cleaner$Cleanable");
-                } catch (ClassNotFoundException e2) {
-                    e2.addSuppressed(e1);
-                    throw e2;
-                }
-           }
-            cleanMethod = cleanerOrCleanable.getDeclaredMethod("clean");
-       } catch (Exception e) {
-            throw new Error(e);
-       }
-    }
+    private void destroyBuffer(Buffer byteBuffer) throws Exception {
+    	try {
+        	final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+        	final Field theUnsafeField = unsafeClass.getDeclaredField("theUnsafe");
+        	theUnsafeField.setAccessible(true);
+        	final Object theUnsafe = theUnsafeField.get(null);
+        	final Method invokeCleanerMethod = unsafeClass.getMethod("invokeCleaner", ByteBuffer.class);
+        	invokeCleanerMethod.invoke(theUnsafe, byteBuffer);
+		} catch (Exception e) {
+			throw e;
+		}
 
-    public static void freeDBJDK8or9(ByteBuffer buffer) throws Exception {
-        if (buffer instanceof sun.nio.ch.DirectBuffer) {
-            final Cleaner bufferCleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
-
-            if (bufferCleaner != null) {
-                cleanMethod.invoke(bufferCleaner);
-            }
-        }
-    }
+	}
     
     private void testOneSegmentWithMMap(MappedByteBuffer buffer, int offset, int size) throws IOException {
         SegmentInputStreamWithMMap segmentInputStream = new SegmentInputStreamWithMMap(buffer, offset, size);
