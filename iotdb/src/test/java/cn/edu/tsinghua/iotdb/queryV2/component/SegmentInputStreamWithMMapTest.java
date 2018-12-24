@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.queryV2.component;
 
 import cn.edu.tsinghua.iotdb.queryV2.SimpleFileWriter;
-import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStream;
 import cn.edu.tsinghua.iotdb.queryV2.engine.reader.component.SegmentInputStreamWithMMap;
 import sun.nio.ch.DirectBuffer;
 
@@ -13,6 +12,9 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -41,7 +43,7 @@ public class SegmentInputStreamWithMMapTest {
     }
 
     @Test
-    public void testWithMMap() throws IOException {
+    public void testWithMMap() throws Exception {
         RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
 
         MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
@@ -49,10 +51,43 @@ public class SegmentInputStreamWithMMapTest {
         testOneSegmentWithMMap(buffer1, 20, 1000);
         testOneSegmentWithMMap(buffer1, 30, 1000);
         testOneSegmentWithMMap(buffer1, 1000, 1000);
-        ((DirectBuffer) buffer1).cleaner().clean();
+        freeDBJDK8or9(buffer1);    
+//        ((DirectBuffer) buffer1).cleaner().clean();
         randomAccessFile.close();
     }
 
+    
+    static final Method cleanMethod;
+    
+    static {
+        try {
+            Class<?> cleanerOrCleanable;
+            try {
+                cleanerOrCleanable = Class.forName("sun.misc.Cleaner");
+            } catch (ClassNotFoundException e1) {
+                try {
+                    cleanerOrCleanable = Class.forName("java.lang.ref.Cleaner$Cleanable");
+                } catch (ClassNotFoundException e2) {
+                    e2.addSuppressed(e1);
+                    throw e2;
+                }
+           }
+            cleanMethod = cleanerOrCleanable.getDeclaredMethod("clean");
+       } catch (Exception e) {
+            throw new Error(e);
+       }
+    }
+
+    public static void freeDBJDK8or9(ByteBuffer buffer) throws Exception {
+        if (buffer instanceof sun.nio.ch.DirectBuffer) {
+            final Object bufferCleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
+
+            if (bufferCleaner != null) {
+                cleanMethod.invoke(bufferCleaner);
+            }
+        }
+    }
+    
     private void testOneSegmentWithMMap(MappedByteBuffer buffer, int offset, int size) throws IOException {
         SegmentInputStreamWithMMap segmentInputStream = new SegmentInputStreamWithMMap(buffer, offset, size);
         int b;
