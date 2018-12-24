@@ -47,11 +47,9 @@ public class SegmentInputStreamWithMMapTest {
 
     @Test
     public void testWithMMap() throws Exception {
-    	System.out.println(System.getProperty("java.version"));
-    	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
-    	int major = Integer.parseInt(javaVersionElements[1]);
-    	if(major < 8) {
-    		fail(String.format("Current JDK verions is %s.%s, JDK requires 1.8 or later.", javaVersionElements[0], javaVersionElements[1]));
+    	int javaVersion = getJDKVersion();
+    	if(javaVersion < 8) {
+    		fail(String.format("Current JDK verions is 1.%d, JDK requires 1.8 or later.", javaVersion));
     	}
         RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
         MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
@@ -59,8 +57,7 @@ public class SegmentInputStreamWithMMapTest {
         testOneSegmentWithMMap(buffer1, 20, 1000);
         testOneSegmentWithMMap(buffer1, 30, 1000);
         testOneSegmentWithMMap(buffer1, 1000, 1000);
-
-    	if (major == 8) {
+    	if (javaVersion == 8) {
     		((DirectBuffer) buffer1).cleaner().clean();
     	} else {
     		destroyBuffer(buffer1);
@@ -101,5 +98,15 @@ public class SegmentInputStreamWithMMapTest {
         for (int i = startPos; i < len; i++) {
             Assert.assertEquals(bytes[i + offset], ret[i - startPos]);
         }
+    }
+    
+    private int getJDKVersion() {
+    	System.out.println(System.getProperty("java.version"));
+    	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
+    	if(Integer.parseInt(javaVersionElements[0]) == 1) {
+    		return Integer.parseInt(javaVersionElements[1]);
+    	} else {
+    		return Integer.parseInt(javaVersionElements[0]);
+    	}
     }
 }
