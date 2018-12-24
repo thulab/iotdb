@@ -12,8 +12,8 @@ import java.util.List;
 public class PerformanceTest {
 
     static int fetchSize = 100000;
-    static int deviceStart = 0, deviceEnd = 10;
-    static int sensorStart = 0, sensorEnd = 10;
+    static int deviceStart = 1, deviceEnd = 1;
+    static int sensorStart = 1, sensorEnd = 1;
 
     public static void main(String[] args) throws PathErrorException, IOException, ProcessorException {
 
@@ -52,6 +52,6 @@ public class PerformanceTest {
     }
 
     public static Path getPath(int d, int s) {
-        return new Path(String.format("root.performf.group_0.d_%s.s_%s", d, s));
+        return new Path(String.format("root.perform.group_0.d_%s.s_%s", d, s));
     }
 }
