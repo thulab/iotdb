@@ -47,10 +47,11 @@ public class SegmentInputStreamWithMMapTest {
 
     @Test
     public void testWithMMap() throws Exception {
+    	System.out.println(System.getProperty("java.version"));
     	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
     	int major = Integer.parseInt(javaVersionElements[1]);
     	if(major < 8) {
-    		fail("JDK requires 1.8 or later.");
+    		fail(String.format("Current JDK verions is %s.%s, JDK requires 1.8 or later.", javaVersionElements[0], javaVersionElements[1]));
     	}
         RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
         MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
