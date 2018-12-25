@@ -8,7 +8,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileOutput;
 
-
 public class BufferIO extends TsFileIOWriter {
 
 	private int lastRowGroupIndex = 0;
