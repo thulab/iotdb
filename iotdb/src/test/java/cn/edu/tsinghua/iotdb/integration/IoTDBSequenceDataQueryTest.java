@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.reader;
+package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -77,7 +77,7 @@ public class IoTDBSequenceDataQueryTest {
       connection.close();
 
       daemon.stop();
-      Thread.sleep(1000);
+      Thread.sleep(5000);
 
       //recovery value
       tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;

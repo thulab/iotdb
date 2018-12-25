@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.reader.timegenerator;
+package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -26,7 +26,7 @@ import java.sql.Statement;
 import static cn.edu.tsinghua.iotdb.integration.Constant.*;
 import static org.junit.Assert.*;
 
-public class EngineTimeGeneratorTest {
+public class IoTDBEngineTimeGeneratorTest {
 
   private static IoTDB daemon;
   private static boolean testFlag = Constant.testFlag;
@@ -73,7 +73,7 @@ public class EngineTimeGeneratorTest {
       connection.close();
 
       daemon.stop();
-      Thread.sleep(1000);
+      Thread.sleep(5000);
 
       //recovery value
       tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;

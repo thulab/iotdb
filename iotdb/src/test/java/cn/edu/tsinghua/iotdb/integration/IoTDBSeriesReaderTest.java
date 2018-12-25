@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.reader;
+package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
@@ -63,7 +63,7 @@ public class IoTDBSeriesReaderTest {
       EnvironmentUtils.envSetUp();
 
       if (testFlag) {
-        Thread.sleep(1000);
+        Thread.sleep(5000);
         insertData();
         connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
       }
@@ -75,7 +75,7 @@ public class IoTDBSeriesReaderTest {
     if (testFlag) {
       connection.close();
       deamon.stop();
-      Thread.sleep(1000);
+      Thread.sleep(5000);
 
       //recovery value
       tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
