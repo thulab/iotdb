@@ -39,4 +39,5 @@ public class BufferIO extends TsFileIOWriter {
 		}
 		return append;
 	}
+	
 }
