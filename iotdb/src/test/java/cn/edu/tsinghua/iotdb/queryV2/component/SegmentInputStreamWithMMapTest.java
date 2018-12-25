@@ -18,8 +18,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class SegmentInputStreamWithMMapTest {
-
-
     private static final String PATH = "fileStreamManagerTestFile";
     private static int count = 10000;
     private static byte[] bytes;
