@@ -35,14 +35,8 @@ import java.util.List;
 public class SeriesReaderFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
-//    private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
-    //  private ExternalSortJobEngine externalSortJobEngine;
-//    private QueryJobManager queryJobManager;
 
     private SeriesReaderFactory() {
-//        overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
-//    externalSortJobEngine = SimpleExternalSortEngine.getInstance();
-//        queryJobManager = QueryJobManager.getInstance();
     }
 
 //  public PriorityMergeReaderByTimestamp createSeriesReaderForOverflowInsertByTimestamp(OverflowSeriesDataSource overflowSeriesDataSource)
@@ -85,8 +79,6 @@ public class SeriesReaderFactory {
 
     public PriorityMergeReader createUnSeqMergeReader(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
             throws IOException {
-
-//        long jobId = queryJobManager.addJobForOneQuery();
 
         PriorityMergeReader unSeqMergeReader = new PriorityMergeReader();
 

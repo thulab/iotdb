@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.integration;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

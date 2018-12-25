@@ -12,11 +12,11 @@ import java.io.IOException;
 
 public class EngineChunkReader implements IReader {
 
-    protected ChunkReader chunkReader;
+    private ChunkReader chunkReader;
     private BatchData data;
 
     /**
-     * Each EngineChunkReader has a corresponding UnClosedTsFileReader, when EngineChunkReader is closed ,
+     * Each EngineChunkReader has a corresponding UnClosedTsFileReader, when EngineChunkReader is closed,
      * UnClosedTsFileReader also should be closed in meanwhile.
      */
     private UnClosedTsFileReader unClosedTsFileReader;

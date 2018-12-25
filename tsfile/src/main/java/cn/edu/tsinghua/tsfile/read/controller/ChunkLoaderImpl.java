@@ -11,6 +11,7 @@ import java.io.IOException;
  * Read one Chunk and cache it into a LRUCache
  */
 public class ChunkLoaderImpl implements ChunkLoader {
+
     private static final int DEFAULT_CHUNK_CACHE_SIZE = 100000;
     private TsFileSequenceReader reader;
     private LRUCache<ChunkMetaData, Chunk> chunkCache;

@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.integration;
 
 
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
