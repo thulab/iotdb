@@ -71,7 +71,7 @@ public class IoTDBLargeDataTest {
 
   // "select * from root.vehicle" : test select wild data
   @Test public void selectAllTest() throws ClassNotFoundException, SQLException {
-    String selectSql = "select s0 from root.vehicle.d0";
+    String selectSql = "select * from root.vehicle";
 
     Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
     Connection connection = null;
