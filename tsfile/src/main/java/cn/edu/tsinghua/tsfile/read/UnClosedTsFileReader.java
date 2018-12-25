@@ -11,6 +11,7 @@ import java.io.IOException;
  * A class for reading unclosed tsfile.
  */
 public class UnClosedTsFileReader extends TsFileSequenceReader {
+
     public UnClosedTsFileReader(String file) throws IOException {
         super(file, false);
     }

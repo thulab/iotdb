@@ -1,13 +1,14 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.*;
 
 import java.sql.*;
 
-import static cn.edu.tsinghua.iotdb.service.Constant.TIMESTAMP_STR;
+import static cn.edu.tsinghua.iotdb.integration.Constant.TIMESTAMP_STR;
 import static org.junit.Assert.fail;
 
 public class IoTDBLimitSlimitTest {

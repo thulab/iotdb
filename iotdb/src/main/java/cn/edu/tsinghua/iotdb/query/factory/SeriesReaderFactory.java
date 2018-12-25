@@ -35,14 +35,8 @@ import java.util.List;
 public class SeriesReaderFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
-//    private OverflowSeriesChunkLoader overflowSeriesChunkLoader;
-    //  private ExternalSortJobEngine externalSortJobEngine;
-//    private QueryJobManager queryJobManager;
 
     private SeriesReaderFactory() {
-//        overflowSeriesChunkLoader = new OverflowSeriesChunkLoader();
-//    externalSortJobEngine = SimpleExternalSortEngine.getInstance();
-//        queryJobManager = QueryJobManager.getInstance();
     }
 
 //  public PriorityMergeReaderByTimestamp createSeriesReaderForOverflowInsertByTimestamp(OverflowSeriesDataSource overflowSeriesDataSource)
@@ -86,14 +80,13 @@ public class SeriesReaderFactory {
     public PriorityMergeReader createUnSeqMergeReader(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
             throws IOException {
 
-//        long jobId = queryJobManager.addJobForOneQuery();
-
         PriorityMergeReader unSeqMergeReader = new PriorityMergeReader();
 
         int priorityValue = 1;
 
         for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList()) {
-            TsFileSequenceReader unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
+
+            UnClosedTsFileReader unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
             ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
             for (ChunkMetaData chunkMetaData : overflowInsertFile.getChunkMetaDataList()) {
@@ -106,7 +99,7 @@ public class SeriesReaderFactory {
                     chunkReader = new ChunkReaderWithoutFilter(chunk);
                 }
 
-                unSeqMergeReader.addReaderWithPriority(new EngineChunkReader(chunkReader), priorityValue);
+                unSeqMergeReader.addReaderWithPriority(new EngineChunkReader(chunkReader, unClosedTsFileReader), priorityValue);
                 priorityValue++;
             }
         }
@@ -140,7 +133,7 @@ public class SeriesReaderFactory {
         PriorityMergeReader priorityMergeReader = new PriorityMergeReader();
 
         // Sequence reader
-        IReader seriesInTsFileReader = genSealedTsFileSeriesReader(intervalFileNode.getFilePath(), singleSeriesExpression);
+        IReader seriesInTsFileReader = createSealedTsFileSeriesReader(intervalFileNode.getFilePath(), singleSeriesExpression);
         priorityMergeReader.addReaderWithPriority(seriesInTsFileReader, 1);
 
         // unSequence merge reader
@@ -151,7 +144,7 @@ public class SeriesReaderFactory {
         return priorityMergeReader;
     }
 
-    private IReader genSealedTsFileSeriesReader(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
+    private IReader createSealedTsFileSeriesReader(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
         TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(filePath);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);

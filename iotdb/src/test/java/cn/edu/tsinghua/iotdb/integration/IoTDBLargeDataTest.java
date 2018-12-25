@@ -1,6 +1,7 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -8,7 +9,7 @@ import org.junit.*;
 
 import java.sql.*;
 
-import static cn.edu.tsinghua.iotdb.service.Constant.*;
+import static cn.edu.tsinghua.iotdb.integration.Constant.*;
 import static org.junit.Assert.*;
 
 public class IoTDBLargeDataTest {
@@ -36,8 +37,8 @@ public class IoTDBLargeDataTest {
 
       // new value
       tsFileConfig.maxNumberOfPointsInPage = 1000;
-      tsFileConfig.pageSizeInByte = 1024 * 1024 * 150;
-      tsFileConfig.groupSizeInByte = 1024 * 1024 * 1000;
+      tsFileConfig.pageSizeInByte = 1024 * 150;
+      tsFileConfig.groupSizeInByte = 1024 * 1000;
 
       deamon = IoTDB.getInstance();
       deamon.active();
@@ -83,8 +84,8 @@ public class IoTDBLargeDataTest {
       int cnt = 0;
       while (resultSet.next()) {
         String ans = resultSet.getString(TIMESTAMP_STR) + "," + resultSet.getString(d0s0)
-                + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3);
-        //System.out.println("===" + ans);
+                + "," + resultSet.getString(d0s1) + "," + resultSet.getString(d0s2) + "," + resultSet.getString(d0s3)
+                + "," + resultSet.getString(d0s4) + "," + resultSet.getString(d0s5);
         cnt++;
       }
 
@@ -214,6 +215,17 @@ public class IoTDBLargeDataTest {
         statement.execute(sql);
       }
 
+      // insert large amount of data time range : 13700 ~ 24000
+      for (int time = 13700; time < 24000; time++) {
+
+        String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 70);
+        statement.execute(sql);
+        sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 40);
+        statement.execute(sql);
+        sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 123);
+        statement.execute(sql);
+      }
+
       // insert large amount of data    time range : 3000 ~ 13600
       for (int time = 3000; time < 13600; time++) {
         //System.out.println("===" + time);
@@ -232,19 +244,7 @@ public class IoTDBLargeDataTest {
       }
 
       statement.execute("flush");
-
-      // insert large amount of data time range : 13700 ~ 24000
-      for (int time = 13700; time < 24000; time++) {
-
-        String sql = String.format("insert into root.vehicle.d0(timestamp,s0) values(%s,%s)", time, time % 70);
-        statement.execute(sql);
-        sql = String.format("insert into root.vehicle.d0(timestamp,s1) values(%s,%s)", time, time % 40);
-        statement.execute(sql);
-        sql = String.format("insert into root.vehicle.d0(timestamp,s2) values(%s,%s)", time, time % 123);
-        statement.execute(sql);
-      }
-
-      statement.execute("merge");
+      //statement.execute("merge");
 
       Thread.sleep(5000);
 

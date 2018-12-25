@@ -1,6 +1,6 @@
-package cn.edu.tsinghua.iotdb.service;
+package cn.edu.tsinghua.iotdb.integration;
 
-import static cn.edu.tsinghua.iotdb.service.Constant.*;
+import static cn.edu.tsinghua.iotdb.integration.Constant.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import cn.edu.tsinghua.iotdb.service.IoTDB;
 import org.junit.*;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;

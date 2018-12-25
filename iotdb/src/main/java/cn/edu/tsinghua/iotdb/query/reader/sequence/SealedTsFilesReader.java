@@ -19,6 +19,7 @@ import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithoutFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class SealedTsFilesReader implements IReader {
 

@@ -4,7 +4,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.query.executor.EngineQueryRouter;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
-import cn.edu.tsinghua.iotdb.service.Constant;
+import cn.edu.tsinghua.iotdb.integration.Constant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
@@ -23,7 +23,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static cn.edu.tsinghua.iotdb.service.Constant.*;
+import static cn.edu.tsinghua.iotdb.integration.Constant.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

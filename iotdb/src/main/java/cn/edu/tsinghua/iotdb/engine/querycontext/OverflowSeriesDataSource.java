@@ -20,7 +20,7 @@ public class OverflowSeriesDataSource {
         this.seriesPath = seriesPath;
     }
 
-    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, TimeValuePairSorter readableMemChunk){
+    public OverflowSeriesDataSource(Path seriesPath, TSDataType dataType, List<OverflowInsertFile> overflowInsertFileList, TimeValuePairSorter readableMemChunk) {
         this.seriesPath = seriesPath;
         this.dataType = dataType;
         this.overflowInsertFileList = overflowInsertFileList;

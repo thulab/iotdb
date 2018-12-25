@@ -36,22 +36,14 @@ public class UnSealedTsFileReader implements IReader {
 
     @Override
     public boolean hasNext() throws IOException {
-        if (data == null) {
-            data = unSealedTsFileReader.nextBatch();
-        }
-
-        if (!data.hasNext() && !unSealedTsFileReader.hasNextBatch()) {
-            return false;
-        }
-
-        while (!data.hasNext()) {
-            data = unSealedTsFileReader.nextBatch();
-            if (data.hasNext()) {
-                return true;
+        if (data == null || !data.hasNext()) {
+            if (!unSealedTsFileReader.hasNextBatch()) {
+                return false;
             }
+            data = unSealedTsFileReader.nextBatch();
         }
 
-        return false;
+        return data.hasNext();
     }
 
     @Override
