@@ -1,6 +1,14 @@
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.query.engine.OverflowQueryEngine;
 import cn.edu.tsinghua.tsfile.common.exception.ProcessorException;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterExpression;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.DoubleFilterSeries;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
+import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
+import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
@@ -12,61 +20,52 @@ import java.util.List;
 public class PerformanceTest {
 
     static int fetchSize = 100000;
-    static int deviceStart = 9, deviceEnd = 9;
-    static int sensorStart = 10, sensorEnd = 10;
+    static int deviceStart = 1, deviceEnd = 10;
+    static int sensorStart = 1, sensorEnd = 10;
 
     public static void main(String[] args) throws PathErrorException, IOException, ProcessorException {
 
-        //queryWithoutFilterTest();
+        //singleSeriesQueryWithoutFilterTest();
 
-        singleQueryWithoutFilterTest();
+        //queryMultiSeriesWithoutFilterTest();
+
+        queryMultiSeriesWithFilterTest();
+
     }
 
-    public static void queryWithoutFilterTest() throws PathErrorException, IOException, ProcessorException {
+    private static void singleSeriesQueryWithoutFilterTest() throws PathErrorException, IOException, ProcessorException {
 
-        for (int start1 = 10; start1 >= 0; start1--) {
-            for (int start2 = 10; start2 >= 10; start2--) {
+        List<Path> pathList = new ArrayList<>();
 
-                List<Path> pathList = new ArrayList<>();
+        pathList.add(getPath(1, 1));
 
-                for (int i = start1; i <= deviceEnd; i++) {
-                    for (int j = start2; j <= sensorEnd; j++) {
-                        pathList.add(getPath(i, j));
-                    }
+        OverflowQueryEngine queryEngine = new OverflowQueryEngine();
+
+        long startTime = System.currentTimeMillis();
+
+        QueryDataSet dataSet =
+                queryEngine.query(0, pathList, null, null, null, null, fetchSize, null);
+
+        int cnt = 0;
+        while (true) {
+            if (dataSet.hasNextRecord()) {
+                RowRecord rowRecord = dataSet.getNextRecord();
+                cnt++;
+                //output(cnt, rowRecord, true);
+            } else {
+                dataSet = queryEngine.query(0, pathList, null, null, null, dataSet, fetchSize, null);
+                if (!dataSet.hasNextRecord()) {
+                    break;
                 }
-
-                OverflowQueryEngine queryEngine = new OverflowQueryEngine();
-
-                long startTime = System.currentTimeMillis();
-
-                QueryDataSet dataSet =
-                        queryEngine.query(0, pathList, null, null, null, null, fetchSize, null);
-
-                int cnt = 0;
-                while (true) {
-                    if (dataSet.hasNextRecord()) {
-                        RowRecord rowRecord = dataSet.getNextRecord();
-                        cnt++;
-//                if (cnt % 10000 == 0) {
-//                    System.out.println(rowRecord);
-//                }
-                    } else {
-                        dataSet = queryEngine.query(0, pathList, null, null, null, dataSet, fetchSize, null);
-                        if (!dataSet.hasNextRecord()) {
-                            break;
-                        }
-                    }
-                }
-
-                long endTime = System.currentTimeMillis();
-                System.out.println(String.format("start1:%s, start2:%s. Time consume : %s, count number : %s",
-                        start1, start2, endTime - startTime, cnt));
-
             }
         }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println(String.format("consume time : %s, count number : %s", endTime - startTime, cnt));
+
     }
 
-    public static void singleQueryWithoutFilterTest() throws PathErrorException, IOException, ProcessorException {
+    private static void queryMultiSeriesWithoutFilterTest() throws PathErrorException, IOException, ProcessorException {
 
         List<Path> pathList = new ArrayList<>();
 
@@ -88,7 +87,6 @@ public class PerformanceTest {
             if (dataSet.hasNextRecord()) {
                 RowRecord rowRecord = dataSet.getNextRecord();
                 cnt++;
-                output(cnt, rowRecord, true);
             } else {
                 dataSet = queryEngine.query(0, pathList, null, null, null, dataSet, fetchSize, null);
                 if (!dataSet.hasNextRecord()) {
@@ -98,8 +96,48 @@ public class PerformanceTest {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println(String.format("start1:%s, start2:%s. Time consume : %s, count number : %s",
-                deviceStart, deviceEnd, endTime - startTime, cnt));
+        System.out.println(String.format("Time consume : %s, count number : %s", endTime - startTime, cnt));
+
+    }
+
+    private static void queryMultiSeriesWithFilterTest() throws PathErrorException, IOException, ProcessorException {
+
+
+        List<Path> pathList = new ArrayList<>();
+
+        for (int i = deviceStart; i <= deviceEnd; i++) {
+            for (int j = sensorStart; j <= sensorEnd; j++) {
+                pathList.add(getPath(i, j));
+            }
+        }
+
+        OverflowQueryEngine queryEngine = new OverflowQueryEngine();
+
+        long startTime = System.currentTimeMillis();
+
+        FilterSeries<Double> filterSeries = new DoubleFilterSeries("root.perform.group_0.d_9",
+                "s_10", TSDataType.DOUBLE, FilterSeriesType.VALUE_FILTER);
+        FilterExpression valueExpression = FilterFactory.gtEq(filterSeries, 33919.0, true);
+
+        QueryDataSet dataSet =
+                queryEngine.query(0, pathList, null, null, valueExpression, null, fetchSize, null);
+
+        int cnt = 0;
+        while (true) {
+            if (dataSet.hasNextRecord()) {
+                RowRecord rowRecord = dataSet.getNextRecord();
+                cnt++;
+            } else {
+                dataSet = queryEngine.query(0, pathList, null, null, valueExpression, dataSet, fetchSize, null);
+                if (!dataSet.hasNextRecord()) {
+                    break;
+                }
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println(String.format("Time consume : %s, count number : %s", endTime - startTime, cnt));
+
 
     }
 
