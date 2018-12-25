@@ -30,7 +30,6 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
-
 public class BufferWriteRestoreManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteRestoreManager.class);
