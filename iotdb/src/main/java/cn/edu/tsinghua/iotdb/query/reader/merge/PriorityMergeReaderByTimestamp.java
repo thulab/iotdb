@@ -7,34 +7,34 @@ import java.io.IOException;
 
 public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implements EngineReaderByTimeStamp {
 
-  private boolean hasCachedTimeValuePair;
-  private TimeValuePair cachedTimeValuePair;
+    private boolean hasCachedTimeValuePair;
+    private TimeValuePair cachedTimeValuePair;
 
-  @Override
-  public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
+    @Override
+    public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
 
-    if (hasCachedTimeValuePair) {
-      if (cachedTimeValuePair.getTimestamp() == timestamp) {
-        hasCachedTimeValuePair = false;
-        return cachedTimeValuePair.getValue();
-      } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
-          return null;
-      }
-    }
+        if (hasCachedTimeValuePair) {
+            if (cachedTimeValuePair.getTimestamp() == timestamp) {
+                hasCachedTimeValuePair = false;
+                return cachedTimeValuePair.getValue();
+            } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
+                return null;
+            }
+        }
 
-    while (hasNext()) {
-      cachedTimeValuePair = next();
-      if (cachedTimeValuePair.getTimestamp() == timestamp) {
-        hasCachedTimeValuePair = false;
-        return cachedTimeValuePair.getValue();
-      } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
-        hasCachedTimeValuePair = true;
+        while (hasNext()) {
+            cachedTimeValuePair = next();
+            if (cachedTimeValuePair.getTimestamp() == timestamp) {
+                hasCachedTimeValuePair = false;
+                return cachedTimeValuePair.getValue();
+            } else if (cachedTimeValuePair.getTimestamp() > timestamp) {
+                hasCachedTimeValuePair = true;
+                return null;
+            }
+        }
+
         return null;
-      }
     }
-
-    return null;
-  }
 
 
 }
