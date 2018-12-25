@@ -4,10 +4,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+
 import sun.nio.ch.DirectBuffer;
 
 @SuppressWarnings("restriction")
 public class CommonUtils {
+	public static int javaVersion = CommonUtils.getJDKVersion();
 	public static int getJDKVersion() {
     	String[] javaVersionElements = System.getProperty("java.version").split("\\.");
     	if(Integer.parseInt(javaVersionElements[0]) == 1) {
@@ -18,7 +20,6 @@ public class CommonUtils {
     }
 	
 	public static void destroyBuffer(Buffer byteBuffer) throws Exception {
-		int javaVersion = getJDKVersion();
 		if (javaVersion == 8) {
     		((DirectBuffer) byteBuffer).cleaner().clean();
     	} else {

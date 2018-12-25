@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.queryV2.engine.control;
 
-import sun.nio.ch.DirectBuffer;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
