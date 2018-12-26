@@ -29,7 +29,7 @@ public class OpenFileNumUtilTest {
     private int totalOpenFileNumBefore;
     private int totalOpenFileNumAfter;
     private int totalOpenFileNumChange;
-    private int testFileNum = 6;
+    private int testFileNum = 66;
     private String currDir;
     private String os = System.getProperty("os.name").toLowerCase();
 
