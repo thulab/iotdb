@@ -7,8 +7,6 @@ import cn.edu.tsinghua.tsfile.timeseries.filter.definition.FilterFactory;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.DoubleFilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeries;
 import cn.edu.tsinghua.tsfile.timeseries.filter.definition.filterseries.FilterSeriesType;
-import cn.edu.tsinghua.tsfile.timeseries.filter.definition.operators.GtEq;
-import cn.edu.tsinghua.tsfile.timeseries.filterV2.factory.FilterType;
 import cn.edu.tsinghua.tsfile.timeseries.read.query.QueryDataSet;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.Path;
 import cn.edu.tsinghua.tsfile.timeseries.read.support.RowRecord;
@@ -20,8 +18,8 @@ import java.util.List;
 public class PerformanceTest {
 
     static int fetchSize = 100000;
-    static int deviceStart = 1, deviceEnd = 10;
-    static int sensorStart = 1, sensorEnd = 10;
+    static int deviceStart = 9, deviceEnd = 9;
+    static int sensorStart = 9, sensorEnd = 9;
 
     public static void main(String[] args) throws PathErrorException, IOException, ProcessorException {
 
@@ -116,19 +114,27 @@ public class PerformanceTest {
         long startTime = System.currentTimeMillis();
 
         FilterSeries<Double> filterSeries = new DoubleFilterSeries("root.perform.group_0.d_9",
-                "s_10", TSDataType.DOUBLE, FilterSeriesType.VALUE_FILTER);
-        FilterExpression valueExpression = FilterFactory.gtEq(filterSeries, 33919.0, true);
+                "s_9", TSDataType.DOUBLE, FilterSeriesType.VALUE_FILTER);
+
+        FilterExpression valueExpression = FilterFactory.gtEq(filterSeries, 34300.0, true);
+
+        FilterExpression timeExpression = FilterFactory.and(FilterFactory.gtEq(FilterFactory.timeFilterSeries(), 1536396840000L, true),
+                FilterFactory.ltEq(FilterFactory.timeFilterSeries(), 1537736665000L, true));
+
+        valueExpression = null;
 
         QueryDataSet dataSet =
-                queryEngine.query(0, pathList, null, null, valueExpression, null, fetchSize, null);
+                queryEngine.query(0, pathList, timeExpression, timeExpression, valueExpression, null, fetchSize, null);
 
-        int cnt = 0;
+        int count = 0;
         while (true) {
             if (dataSet.hasNextRecord()) {
                 RowRecord rowRecord = dataSet.getNextRecord();
-                cnt++;
+                count++;
+//                if (count % 10000 == 0)
+//                    System.out.println(rowRecord);
             } else {
-                dataSet = queryEngine.query(0, pathList, null, null, valueExpression, dataSet, fetchSize, null);
+                dataSet = queryEngine.query(0, pathList, timeExpression, null, valueExpression, dataSet, fetchSize, null);
                 if (!dataSet.hasNextRecord()) {
                     break;
                 }
@@ -136,7 +142,7 @@ public class PerformanceTest {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println(String.format("Time consume : %s, count number : %s", endTime - startTime, cnt));
+        System.out.println(String.format("Time consume : %s, count number : %s", endTime - startTime, count));
 
 
     }
