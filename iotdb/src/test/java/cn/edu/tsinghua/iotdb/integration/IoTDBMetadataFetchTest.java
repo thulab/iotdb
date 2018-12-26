@@ -5,34 +5,34 @@ import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.sql.*;
 
 import static org.junit.Assert.fail;
 
 public class IoTDBMetadataFetchTest {
-    private IoTDB deamon;
+
+    private static IoTDB deamon;
 
     private DatabaseMetaData databaseMetaData;
 
-    private boolean testFlag = Constant.testFlag;
+    private static boolean testFlag = Constant.testFlag;
 
-    private static String[] insertSqls = new String[]{
-            "SET STORAGE GROUP TO root.ln.wf01.wt01",
-            "CREATE TIMESERIES root.ln.wf01.wt01.status WITH DATATYPE = BOOLEAN, ENCODING = PLAIN",
-            "CREATE TIMESERIES root.ln.wf01.wt01.temperature WITH DATATYPE = FLOAT, ENCODING = RLE, COMPRESSOR = SNAPPY, MAX_POINT_NUMBER = 3"
-    };
-
-    public void insertSQL() throws ClassNotFoundException, SQLException {
+    private static void insertSQL() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
+
+            String[] insertSqls = new String[]{
+                    "SET STORAGE GROUP TO root.ln.wf01.wt01",
+                    "CREATE TIMESERIES root.ln.wf01.wt01.status WITH DATATYPE = BOOLEAN, ENCODING = PLAIN",
+                    "CREATE TIMESERIES root.ln.wf01.wt01.temperature WITH DATATYPE = FLOAT, ENCODING = RLE, " +
+                            "COMPRESSOR = SNAPPY, MAX_POINT_NUMBER = 3"
+            };
+
             for (String sql : insertSqls) {
                 statement.execute(sql);
             }
@@ -52,9 +52,11 @@ public class IoTDBMetadataFetchTest {
         if (testFlag) {
             EnvironmentUtils.closeStatMonitor();
             EnvironmentUtils.closeMemControl();
+
             deamon = IoTDB.getInstance();
             deamon.active();
             EnvironmentUtils.envSetUp();
+
             insertSQL();
         }
     }
@@ -123,16 +125,23 @@ public class IoTDBMetadataFetchTest {
         }
     }
 
-    @Test(expected = SQLException.class)
+    @Test
     public void ShowTimeseriesTest2() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
         Connection connection = null;
-        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-        Statement statement = connection.createStatement();
-        String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
-        boolean hasResultSet = statement.execute(sql);
-        statement.close();
-        connection.close();
+        Statement statement = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            statement = connection.createStatement();
+            String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
+            statement.execute(sql);
+		} catch (SQLException e) {
+		} catch (Exception e) {
+			fail(e.getMessage());
+		} finally {
+			statement.close();
+	        connection.close();
+		}
     }
 
     @Test
@@ -172,7 +181,9 @@ public class IoTDBMetadataFetchTest {
             }
             statement.close();
         } finally {
-            connection.close();
+            if (connection != null) {
+                connection.close();
+            }
         }
     }
 
@@ -204,7 +215,7 @@ public class IoTDBMetadataFetchTest {
     /**
      * get all columns' name under a given seriesPath
      */
-    public void AllColumns() throws SQLException {
+    private void AllColumns() throws SQLException {
         String standard = "Column,\n" +
                 "root.ln.wf01.wt01.status,\n" +
                 "root.ln.wf01.wt01.temperature,\n";
@@ -229,7 +240,7 @@ public class IoTDBMetadataFetchTest {
     /**
      * get all delta objects under a given column
      */
-    public void DeltaObject() throws SQLException {
+    private void DeltaObject() throws SQLException {
         String standard = "Column,\n" +
                 "root.ln.wf01.wt01,\n";
 
@@ -254,7 +265,7 @@ public class IoTDBMetadataFetchTest {
      * show timeseries <seriesPath>
      * usage 1
      */
-    public void ShowTimeseriesPath1() throws SQLException {
+    private void ShowTimeseriesPath1() throws SQLException {
         String standard = "Timeseries,Storage Group,DataType,Encoding,\n" +
                 "root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n" +
                 "root.ln.wf01.wt01.temperature,root.ln.wf01.wt01,FLOAT,RLE,\n";
@@ -280,7 +291,7 @@ public class IoTDBMetadataFetchTest {
      * show timeseries <seriesPath>
      * usage 2
      */
-    public void ShowTimeseriesPath2() throws SQLException {
+    private void ShowTimeseriesPath2() throws SQLException {
         String standard = "DataType,\n" +
                 "BOOLEAN,\n";
 
@@ -298,7 +309,7 @@ public class IoTDBMetadataFetchTest {
     /**
      * show storage group
      */
-    public void ShowStorageGroup() throws SQLException {
+    private void ShowStorageGroup() throws SQLException {
         String standard = "Storage Group,\n" +
                 "root.ln.wf01.wt01,\n";
 
@@ -322,7 +333,7 @@ public class IoTDBMetadataFetchTest {
     /**
      * show metadata in json
      */
-    public void ShowTimeseriesInJson() {
+    private void ShowTimeseriesInJson() {
         String metadataInJson = databaseMetaData.toString();
         String standard = "===  Timeseries Tree  ===\n" +
                 "\n" +
