@@ -148,10 +148,24 @@
 						<argLine>-Xmx512m</argLine>
 					</configuration>
 				</plugin>
+						<plugin>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-component-metadata</artifactId>
+            <version>1.5.5</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>generate-metadata</goal>
+                        <goal>generate-test-metadata</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
 			</plugins>
 		</pluginManagement>
 
 		<plugins>
+
 			<!--
 				Strange things usually happen if you run with a too low Java version.
 				This plugin not only checks the minimum java version of 1.8, but also
@@ -172,7 +186,8 @@
     <groupId>org.sonatype.ossindex.maven</groupId>
     <artifactId>ossindex-maven-common</artifactId>
     <version>3.0.2</version>
-</dependency>								
+</dependency>	
+							
 				</dependencies>
 				<executions>
 					<!-- Make sure no dependencies are used for which known vulnerabilities exist. -->
