@@ -165,13 +165,13 @@
 					<dependency>
 						<groupId>org.sonatype.ossindex.maven</groupId>
 						<artifactId>ossindex-maven-enforcer-rules</artifactId>
-						<version>1.0.0</version>
+						<version>3.0.2</version>
 					</dependency>
 <!-- https://mvnrepository.com/artifact/org.sonatype.ossindex.maven/ossindex-maven-common -->
 <dependency>
     <groupId>org.sonatype.ossindex.maven</groupId>
     <artifactId>ossindex-maven-common</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.2</version>
 </dependency>								
 				</dependencies>
 				<executions>
