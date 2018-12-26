@@ -69,7 +69,6 @@ public class OpenFileNumUtilTest {
     }
 
     @Test
-    //@Ignore
     public void testTotalOpenFileNumWhenCreateFile() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             //get total open file number statistics of original state
@@ -88,7 +87,6 @@ public class OpenFileNumUtilTest {
     }
 
     @Test
-    //@Ignore
     public void testTotalOpenFileNumWhenCreateFileWriter() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             for (int i = 0; i < testFileNum; i++) {
@@ -128,7 +126,6 @@ public class OpenFileNumUtilTest {
     }
 
     @Test
-    //@Ignore
     public void testTotalOpenFileNumWhenFileWriterWriting() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             for (int i = 0; i < testFileNum; i++) {
@@ -174,7 +171,6 @@ public class OpenFileNumUtilTest {
     }
 
     @Test
-    //@Ignore
     public void testTotalOpenFileNumWhenFileWriterClose() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             for (int i = 0; i < testFileNum; i++) {
