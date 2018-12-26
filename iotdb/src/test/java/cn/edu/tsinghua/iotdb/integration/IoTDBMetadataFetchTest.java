@@ -125,16 +125,23 @@ public class IoTDBMetadataFetchTest {
         }
     }
 
-    @Ignore
-    @Test(expected = SQLException.class)
+    @Test
     public void ShowTimeseriesTest2() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-        Statement statement = connection.createStatement();
-        String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
-        boolean hasResultSet = statement.execute(sql);
-        statement.close();
-        connection.close();
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            statement = connection.createStatement();
+            String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
+            statement.execute(sql);
+		} catch (SQLException e) {
+		} catch (Exception e) {
+			fail(e.getMessage());
+		} finally {
+			statement.close();
+	        connection.close();
+		}
     }
 
     @Test
