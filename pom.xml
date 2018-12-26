@@ -161,6 +161,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<version>3.0.0-M1</version> <!--$NO-MVN-MAN-VER$-->
+				<dependencies>
+					<dependency>
+						<groupId>org.sonatype.ossindex.maven</groupId>
+						<artifactId>ossindex-maven-enforcer-rules</artifactId>
+						<version>1.0.0</version>
+					</dependency>
+				</dependencies>
 				<executions>
 					<!-- Make sure no dependencies are used for which known vulnerabilities exist. -->
 					<execution>
@@ -183,13 +190,7 @@
 						</configuration>
 					</execution>
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>org.sonatype.ossindex.maven</groupId>
-						<artifactId>ossindex-maven-enforcer-rules</artifactId>
-						<version>1.0.0</version>
-					</dependency>
-				</dependencies>
+
 			</plugin>
 
 			<!--
