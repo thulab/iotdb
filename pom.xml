@@ -160,7 +160,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.0.0-M1</version> <!--$NO-MVN-MAN-VER$-->
+				<version>3.0.0-M2</version> <!--$NO-MVN-MAN-VER$-->
 				<dependencies>
 					<dependency>
 						<groupId>org.sonatype.ossindex.maven</groupId>
