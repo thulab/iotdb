@@ -4,13 +4,20 @@ import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.sql.*;
 
 import static cn.edu.tsinghua.iotdb.integration.Constant.TIMESTAMP_STR;
 import static org.junit.Assert.fail;
 
+/**
+ * Notice that, all test begins with "IoTDB" is integration test.
+ * All test which will start the IoTDB server should be defined as integration test.
+ */
 public class IoTDBLimitSlimitTest {
 
     private static IoTDB deamon;
@@ -62,22 +69,18 @@ public class IoTDBLimitSlimitTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        if (testFlag) {
-            EnvironmentUtils.closeStatMonitor();
-            EnvironmentUtils.closeMemControl();
-            deamon = IoTDB.getInstance();
-            deamon.active();
-            EnvironmentUtils.envSetUp();
-        }
+        EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
+        deamon = IoTDB.getInstance();
+        deamon.active();
+        EnvironmentUtils.envSetUp();
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        if (testFlag) {
-            deamon.stop();
-            Thread.sleep(5000);
-            EnvironmentUtils.cleanEnv();
-        }
+        deamon.stop();
+        Thread.sleep(5000);
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
@@ -105,16 +108,16 @@ public class IoTDBLimitSlimitTest {
 
                 "select * from root.vehicle.d0 slimit 1",
                 "1,101,\n" +
-                "2,10000,\n" +
-                "50,10000,\n" +
-                "100,99,\n" +
-                "101,99,\n" +
-                "102,80,\n" +
-                "103,99,\n" +
-                "104,90,\n" +
-                "105,99,\n" +
-                "106,99,\n" +
-                "1000,22222,\n",
+                        "2,10000,\n" +
+                        "50,10000,\n" +
+                        "100,99,\n" +
+                        "101,99,\n" +
+                        "102,80,\n" +
+                        "103,99,\n" +
+                        "104,90,\n" +
+                        "105,99,\n" +
+                        "106,99,\n" +
+                        "1000,22222,\n",
 
 
                 "select * from root.vehicle.d0 slimit 1 soffset 2",

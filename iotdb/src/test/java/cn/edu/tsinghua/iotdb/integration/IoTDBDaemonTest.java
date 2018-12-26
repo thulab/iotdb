@@ -1,29 +1,26 @@
 package cn.edu.tsinghua.iotdb.integration;
 
+import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.sql.*;
+
 import static cn.edu.tsinghua.iotdb.integration.Constant.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import cn.edu.tsinghua.iotdb.service.IoTDB;
-import org.junit.*;
-
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-
 /**
- * Just used for integration test.
+ * Notice that, all test begins with "IoTDB" is integration test.
+ * All test which will start the IoTDB server should be defined as integration test.
  */
 public class IoTDBDaemonTest {
 
     private static IoTDB deamon;
-
-    private static boolean testFlag = Constant.testFlag;
 
     private static Connection connection;
 
@@ -91,26 +88,22 @@ public class IoTDBDaemonTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        if (testFlag) {
-            EnvironmentUtils.closeStatMonitor();
-            EnvironmentUtils.closeMemControl();
-            deamon = IoTDB.getInstance();
-            deamon.active();
-            EnvironmentUtils.envSetUp();
+        EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
+        deamon = IoTDB.getInstance();
+        deamon.active();
+        EnvironmentUtils.envSetUp();
 
-            insertData();
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-        }
+        insertData();
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        if (testFlag) {
-            connection.close();
-            deamon.stop();
-            Thread.sleep(5000);
-            EnvironmentUtils.cleanEnv();
-        }
+        connection.close();
+        deamon.stop();
+        Thread.sleep(5000);
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test

@@ -5,19 +5,24 @@ import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.sql.*;
 
 import static org.junit.Assert.fail;
 
+/**
+ * Notice that, all test begins with "IoTDB" is integration test.
+ * All test which will start the IoTDB server should be defined as integration test.
+ */
 public class IoTDBMetadataFetchTest {
 
     private static IoTDB deamon;
 
     private DatabaseMetaData databaseMetaData;
-
-    private static boolean testFlag = Constant.testFlag;
 
     private static void insertSQL() throws ClassNotFoundException, SQLException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
@@ -49,25 +54,21 @@ public class IoTDBMetadataFetchTest {
 
     @Before
     public void setUp() throws Exception {
-        if (testFlag) {
-            EnvironmentUtils.closeStatMonitor();
-            EnvironmentUtils.closeMemControl();
+        EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
 
-            deamon = IoTDB.getInstance();
-            deamon.active();
-            EnvironmentUtils.envSetUp();
+        deamon = IoTDB.getInstance();
+        deamon.active();
+        EnvironmentUtils.envSetUp();
 
-            insertSQL();
-        }
+        insertSQL();
     }
 
     @After
     public void tearDown() throws Exception {
-        if (testFlag) {
-            deamon.stop();
-            Thread.sleep(5000);
-            EnvironmentUtils.cleanEnv();
-        }
+        deamon.stop();
+        Thread.sleep(5000);
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
@@ -135,13 +136,13 @@ public class IoTDBMetadataFetchTest {
             statement = connection.createStatement();
             String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
             statement.execute(sql);
-		} catch (SQLException e) {
-		} catch (Exception e) {
-			fail(e.getMessage());
-		} finally {
-			statement.close();
-	        connection.close();
-		}
+        } catch (SQLException e) {
+        } catch (Exception e) {
+            fail(e.getMessage());
+        } finally {
+            statement.close();
+            connection.close();
+        }
     }
 
     @Test

@@ -12,6 +12,10 @@ import java.sql.*;
 import static cn.edu.tsinghua.iotdb.integration.Constant.*;
 import static org.junit.Assert.*;
 
+/**
+ * Notice that, all test begins with "IoTDB" is integration test.
+ * All test which will start the IoTDB server should be defined as integration test.
+ */
 public class IoTDBLargeDataTest {
 
     private static IoTDB deamon;
@@ -25,47 +29,46 @@ public class IoTDBLargeDataTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        if (testFlag) {
-            EnvironmentUtils.closeStatMonitor();
-            EnvironmentUtils.closeMemControl();
 
-            // use small page setting
-            // origin value
-            maxNumberOfPointsInPage = tsFileConfig.maxNumberOfPointsInPage;
-            pageSizeInByte = tsFileConfig.pageSizeInByte;
-            groupSizeInByte = tsFileConfig.groupSizeInByte;
+        EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
 
-            // new value
-            tsFileConfig.maxNumberOfPointsInPage = 1000;
-            tsFileConfig.pageSizeInByte = 1024 * 150;
-            tsFileConfig.groupSizeInByte = 1024 * 1000;
+        // use small page setting
+        // origin value
+        maxNumberOfPointsInPage = tsFileConfig.maxNumberOfPointsInPage;
+        pageSizeInByte = tsFileConfig.pageSizeInByte;
+        groupSizeInByte = tsFileConfig.groupSizeInByte;
 
-            deamon = IoTDB.getInstance();
-            deamon.active();
-            EnvironmentUtils.envSetUp();
+        // new value
+        tsFileConfig.maxNumberOfPointsInPage = 1000;
+        tsFileConfig.pageSizeInByte = 1024 * 150;
+        tsFileConfig.groupSizeInByte = 1024 * 1000;
 
-            Thread.sleep(5000);
-            insertData();
+        deamon = IoTDB.getInstance();
+        deamon.active();
+        EnvironmentUtils.envSetUp();
 
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Thread.sleep(5000);
+        insertData();
 
-        }
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        if (testFlag) {
-            connection.close();
 
-            deamon.stop();
-            Thread.sleep(5000);
+        connection.close();
 
-            //recovery value
-            tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
-            tsFileConfig.pageSizeInByte = pageSizeInByte;
-            tsFileConfig.groupSizeInByte = groupSizeInByte;
-            EnvironmentUtils.cleanEnv();
-        }
+        deamon.stop();
+        Thread.sleep(5000);
+
+        //recovery value
+        tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
+        tsFileConfig.pageSizeInByte = pageSizeInByte;
+        tsFileConfig.groupSizeInByte = groupSizeInByte;
+        EnvironmentUtils.cleanEnv();
+
     }
 
     // "select * from root.vehicle" : test select wild data

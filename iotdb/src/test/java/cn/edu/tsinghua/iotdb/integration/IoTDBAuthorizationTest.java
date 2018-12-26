@@ -13,30 +13,28 @@ import java.sql.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Notice that, all test begins with "IoTDB" is integration test.
+ * All test which will start the IoTDB server should be defined as integration test.
+ */
 public class IoTDBAuthorizationTest {
 
     private IoTDB deamon;
 
-    private boolean testFlag = Constant.testFlag;
-
     @Before
     public void setUp() throws Exception {
-        if (testFlag) {
-            EnvironmentUtils.closeStatMonitor();
-            EnvironmentUtils.closeMemControl();
-            deamon = IoTDB.getInstance();
-            deamon.active();
-            EnvironmentUtils.envSetUp();
-        }
+        EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
+        deamon = IoTDB.getInstance();
+        deamon.active();
+        EnvironmentUtils.envSetUp();
     }
 
     @After
     public void tearDown() throws Exception {
-        if (testFlag) {
-            deamon.stop();
-            Thread.sleep(2000);
-            EnvironmentUtils.cleanEnv();
-        }
+        deamon.stop();
+        Thread.sleep(2000);
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
