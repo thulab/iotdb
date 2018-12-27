@@ -108,6 +108,22 @@
 			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
+		
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+</dependency>
+<dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.4.0-b180725.0427</version>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>2.4.0-b180725.0644</version>
+</dependency>
 	</dependencies>
 
 	<modules>
@@ -187,6 +203,9 @@
 								<requireJavaVersion>
 									<version>1.8.0</version>
 								</requireJavaVersion>
+								<requireMavenVersion>
+									<version>3.0</version>
+				                </requireMavenVersion>
 								<!-- Disabled for now as it breaks the ability to build single modules -->
 								<!--reactorModuleConvergence/-->
 								<banVulnerable implementation="org.sonatype.ossindex.maven.enforcer.BanVulnerableDependencies"/>
@@ -343,7 +362,34 @@
 				<version>2.7.5</version> <executions> <execution> <goals> <goal>format</goal> 
 				</goals> <configuration> <encoding>UTF-8</encoding> <configFile>${project.basedir}/checkstyle.xml</configFile> 
 				</configuration> </execution> </executions> </plugin> -->
-
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>versions-maven-plugin</artifactId>
+    <version>2.5</version>
+    <configuration>
+        <generateBackupPoms>false</generateBackupPoms>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>2.22.0</version>
+    <configuration>
+        <argLine>
+            --illegal-access=permit
+        </argLine>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>2.22.0</version>
+    <configuration>
+        <argLine>
+            --illegal-access=permit
+        </argLine>
+    </configuration>
+</plugin>
 		</plugins>
 	</build>
 
