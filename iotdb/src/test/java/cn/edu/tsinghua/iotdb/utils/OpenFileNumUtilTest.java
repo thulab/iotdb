@@ -74,10 +74,8 @@ public class OpenFileNumUtilTest {
                 }
             }
         }
-
         fileWriterList.clear();
         fileList.clear();
-
         try {
             FileUtils.deleteDirectory(testDataDir);
         } catch (IOException e) {
