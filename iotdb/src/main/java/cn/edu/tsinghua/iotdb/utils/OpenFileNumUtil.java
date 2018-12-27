@@ -49,6 +49,7 @@ public class OpenFileNumUtil {
         public List<String> getPath() {
             return path;
         }
+
         OpenFileNumStatistics(List<String> path){
             this.path = path;
         }
