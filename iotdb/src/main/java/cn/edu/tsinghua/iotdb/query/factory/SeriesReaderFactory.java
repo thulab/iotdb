@@ -3,9 +3,12 @@ package cn.edu.tsinghua.iotdb.query.factory;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithoutFilter;
+import cn.edu.tsinghua.iotdb.query.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
+import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SealedTsFilesReader;
 import cn.edu.tsinghua.iotdb.query.reader.unsequence.EngineChunkReader;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
@@ -29,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -37,44 +41,6 @@ public class SeriesReaderFactory {
     private static final Logger logger = LoggerFactory.getLogger(SeriesReaderFactory.class);
 
     private SeriesReaderFactory() {
-    }
-
-//  public PriorityMergeReaderByTimestamp createSeriesReaderForOverflowInsertByTimestamp(OverflowSeriesDataSource overflowSeriesDataSource)
-//          throws IOException {
-//    long jobId = queryJobManager.addJobForOneQuery();
-//    List<EncodedSeriesChunkDescriptor> seriesChunkDescriptorList =
-//            SeriesDescriptorGenerator.genSeriesChunkDescriptorList(overflowSeriesDataSource.getOverflowInsertFileList());
-//    int priorityValue = 1;
-//    List<PrioritySeriesReaderByTimestamp> timeValuePairReaders = new ArrayList<>();
-//    for (EncodedSeriesChunkDescriptor seriesChunkDescriptor : seriesChunkDescriptorList) {
-//      SeriesChunk seriesChunk = overflowSeriesChunkLoader.getChunk(jobId, seriesChunkDescriptor);
-//      EngineReaderByTimeStamp seriesChunkReader = new SeriesChunkReaderByTimestampImpl(seriesChunk.getSeriesChunkBodyStream(),
-//              seriesChunkDescriptor.getDataType(), seriesChunkDescriptor.getCompressionTypeName());
-//      PrioritySeriesReaderByTimestamp priorityTimeValuePairReader = new PrioritySeriesReaderByTimestamp(seriesChunkReader,
-//              new PrioritySeriesReader.Priority(priorityValue));
-//      timeValuePairReaders.add(priorityTimeValuePairReader);
-//      priorityValue++;
-//
-//    }
-//    //Add SeriesChunkReader in MemTable
-//    if (overflowSeriesDataSource.hasRawChunk()) {
-//      timeValuePairReaders.add(new PrioritySeriesReaderByTimestamp(new MemChunkReaderByTimestamp(
-//              overflowSeriesDataSource.getReadableMemChunk()), new PrioritySeriesReader.Priority(priorityValue++)));
-//    }
-//
-//    return new PriorityMergeReaderByTimestamp(timeValuePairReaders);
-//  }
-
-    private boolean chunkSatisfied(ChunkMetaData metaData, Filter filter) {
-
-        DigestForFilter digest = new DigestForFilter(
-                metaData.getStartTime(),
-                metaData.getEndTime(),
-                metaData.getDigest().getStatistics().get(StatisticConstant.MIN_VALUE),
-                metaData.getDigest().getStatistics().get(StatisticConstant.MAX_VALUE),
-                metaData.getTsDataType());
-
-        return filter.satisfy(digest);
     }
 
     public PriorityMergeReader createUnSeqMergeReader(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
@@ -90,6 +56,18 @@ public class SeriesReaderFactory {
             ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
             for (ChunkMetaData chunkMetaData : overflowInsertFile.getChunkMetaDataList()) {
+
+                DigestForFilter digest = new DigestForFilter(
+                        chunkMetaData.getStartTime(),
+                        chunkMetaData.getEndTime(),
+                        chunkMetaData.getDigest().getStatistics().get(StatisticConstant.MIN_VALUE),
+                        chunkMetaData.getDigest().getStatistics().get(StatisticConstant.MAX_VALUE),
+                        chunkMetaData.getTsDataType());
+
+                if (filter != null && !filter.satisfy(digest)) {
+                    continue;
+                }
+
                 Chunk chunk = chunkLoader.getChunk(chunkMetaData);
                 ChunkReader chunkReader;
 
@@ -115,10 +93,14 @@ public class SeriesReaderFactory {
             }
         }
 
-        // TODO add External Sort
+        // TODO add External Sort when needed
         // timeValuePairReaders = externalSortJobEngine.executeWithGlobalTimeFilter(timeValuePairReaders);
 
         return unSeqMergeReader;
+    }
+
+    public PriorityMergeReader createUnSeqMergeReaderByTime(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter) {
+        return null;
     }
 
     /**

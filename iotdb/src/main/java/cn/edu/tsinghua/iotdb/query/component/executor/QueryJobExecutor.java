@@ -2,9 +2,9 @@ package cn.edu.tsinghua.iotdb.query.component.executor;
 
 import cn.edu.tsinghua.iotdb.query.component.job.QueryJob;
 import cn.edu.tsinghua.iotdb.query.component.job.QueryJobExecutionMessage;
-import cn.edu.tsinghua.iotdb.query.job.QueryEngineImpl;
+import cn.edu.tsinghua.iotdb.query.component.job.QueryEngineImpl;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
-import cn.edu.tsinghua.iotdb.query.job.QueryEngine;
+import cn.edu.tsinghua.iotdb.query.component.job.QueryEngine;
 
 public abstract class QueryJobExecutor implements Runnable {
 
