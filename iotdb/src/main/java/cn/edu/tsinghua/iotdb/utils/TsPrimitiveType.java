@@ -42,10 +42,12 @@ public abstract class TsPrimitiveType implements Serializable {
 
     public abstract TSDataType getDataType();
 
+    @Override
     public String toString() {
         return getStringValue();
     }
 
+    @Override
     public boolean equals(Object object) {
         return (object instanceof TsPrimitiveType) && (((TsPrimitiveType) object).getValue().equals(getValue()));
     }
@@ -59,6 +61,7 @@ public abstract class TsPrimitiveType implements Serializable {
             this.value = value;
         }
 
+        @Override
         public boolean getBoolean() {
             return value;
         }
@@ -91,6 +94,7 @@ public abstract class TsPrimitiveType implements Serializable {
             this.value = value;
         }
 
+        @Override
         public int getInt() {
             return value;
         }
@@ -123,6 +127,7 @@ public abstract class TsPrimitiveType implements Serializable {
             this.value = value;
         }
 
+        @Override
         public long getLong() {
             return value;
         }
@@ -155,6 +160,7 @@ public abstract class TsPrimitiveType implements Serializable {
             this.value = value;
         }
 
+        @Override
         public float getFloat() {
             return value;
         }
@@ -187,6 +193,7 @@ public abstract class TsPrimitiveType implements Serializable {
             this.value = value;
         }
 
+        @Override
         public double getDouble() {
             return value;
         }
@@ -219,6 +226,7 @@ public abstract class TsPrimitiveType implements Serializable {
             this.value = value;
         }
 
+        @Override
         public Binary getBinary() {
             return value;
         }

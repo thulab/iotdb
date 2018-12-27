@@ -28,12 +28,14 @@ public class TimeValuePair implements Serializable {
         this.value = value;
     }
 
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(timestamp).append(" : ").append(getValue());
         return stringBuilder.toString();
     }
 
+    @Override
     public boolean equals(Object object) {
         if (object instanceof TimeValuePair) {
             return ((TimeValuePair) object).getTimestamp() == timestamp

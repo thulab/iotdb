@@ -20,7 +20,7 @@ import java.util.*;
 public abstract class QueryProcessExecutor {
 
 	protected ThreadLocal<Integer> fetchSize = new ThreadLocal<>();
-	private EngineQueryRouter engineExecutor = new EngineQueryRouter();
+	private EngineQueryRouter queryRouter = new EngineQueryRouter();
 
 	public QueryProcessExecutor() {
 	}
@@ -32,7 +32,7 @@ public abstract class QueryProcessExecutor {
 				.setSelectSeries(queryPlan.getPaths())
 				.setExpression(queryPlan.getExpression());
 
-		return engineExecutor.query(queryExpression);
+		return queryRouter.query(queryExpression);
 	}
 
 	public abstract TSDataType getSeriesType(Path fullPath) throws PathErrorException;
