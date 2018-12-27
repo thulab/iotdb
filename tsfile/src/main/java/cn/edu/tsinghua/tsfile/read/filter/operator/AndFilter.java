@@ -26,6 +26,11 @@ public class AndFilter extends BinaryFilter {
     }
 
     @Override
+    public boolean satisfyStartEndTime(long startTime, long endTime) {
+        return left.satisfyStartEndTime(startTime, endTime) && right.satisfyStartEndTime(startTime, endTime);
+    }
+
+    @Override
     public String toString() {
         return "(" + left + " && " + right + ")";
     }

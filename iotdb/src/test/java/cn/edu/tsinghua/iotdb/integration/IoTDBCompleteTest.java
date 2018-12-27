@@ -17,36 +17,34 @@ import org.junit.Test;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
-public class IoTDBCompleteTest {
+import static cn.edu.tsinghua.iotdb.integration.Constant.TIMESTAMP_STR;
 
-    private static final String TIMESTAMP_STR = "Time";
+/**
+ * Notice that, all test begins with "IoTDB" is integration test.
+ * All test which will start the IoTDB server should be defined as integration test.
+ */
+public class IoTDBCompleteTest {
 
     private IoTDB deamon;
 
-    private boolean testFlag = Constant.testFlag;
-
     @Before
     public void setUp() throws Exception {
-        if (testFlag) {
-            EnvironmentUtils.closeStatMonitor();
-            EnvironmentUtils.closeMemControl();
-        	deamon = IoTDB.getInstance();
-            deamon.active();
-            EnvironmentUtils.envSetUp();
-        }
+        EnvironmentUtils.closeStatMonitor();
+        EnvironmentUtils.closeMemControl();
+        deamon = IoTDB.getInstance();
+        deamon.active();
+        EnvironmentUtils.envSetUp();
     }
 
     @After
     public void tearDown() throws Exception {
-        if (testFlag) {
-            deamon.stop();
-            Thread.sleep(5000);
-            EnvironmentUtils.cleanEnv();
-        }
+        deamon.stop();
+        Thread.sleep(5000);
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
-    public void Test() throws  ClassNotFoundException, SQLException {
+    public void Test() throws ClassNotFoundException, SQLException {
         String[] sqls = {"SET STORAGE GROUP TO root.vehicle"};
         executeSQL(sqls);
         SimpleTest();
@@ -59,26 +57,26 @@ public class IoTDBCompleteTest {
                 "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32,ENCODING=RLE",
                 "SHOW TIMESERIES",
                 "===  Timeseries Tree  ===\n" +
-                    "\n" +
-                    "root:{\n" +
-                    "    vehicle:{\n" +
-                    "        d0:{\n" +
-                    "            s0:{\n" +
-                    "                 DataType: INT32,\n" +
-                    "                 Encoding: RLE,\n" +
-                    "                 args: {},\n" +
-                    "                 StorageGroup: root.vehicle \n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}",
+                        "\n" +
+                        "root:{\n" +
+                        "    vehicle:{\n" +
+                        "        d0:{\n" +
+                        "            s0:{\n" +
+                        "                 DataType: INT32,\n" +
+                        "                 Encoding: RLE,\n" +
+                        "                 args: {},\n" +
+                        "                 StorageGroup: root.vehicle \n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}",
                 "DELETE TIMESERIES root.vehicle.d0.s0",
                 "SHOW TIMESERIES",
                 "===  Timeseries Tree  ===\n" +
-                    "\n" +
-                    "root:{\n" +
-                    "    vehicle\n" +
-                    "}",
+                        "\n" +
+                        "root:{\n" +
+                        "    vehicle\n" +
+                        "}",
                 "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=BOOLEAN,ENCODING=PLAIN",
                 "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64,ENCODING=TS_2DIFF",
                 "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT,ENCODING=GORILLA",
@@ -381,13 +379,13 @@ public class IoTDBCompleteTest {
                         ResultSetMetaData metaData = resultSet.getMetaData();
                         int count = metaData.getColumnCount();
                         String[] column = new String[count];
-                        for (int i = 0;i < count;i++) {
-                            column[i] = metaData.getColumnName(i+1);
+                        for (int i = 0; i < count; i++) {
+                            column[i] = metaData.getColumnName(i + 1);
                         }
                         result = "";
                         while (resultSet.next()) {
-                            for (int i = 1;i <= count;i++) {
-                                if (now_start > 0L && column[i-1] == TIMESTAMP_STR) {
+                            for (int i = 1; i <= count; i++) {
+                                if (now_start > 0L && column[i - 1] == TIMESTAMP_STR) {
                                     String timestr = resultSet.getString(i);
                                     Long tn = Long.valueOf(timestr);
                                     Long now = System.currentTimeMillis();

@@ -15,9 +15,6 @@ public class QueryDataSourceManager {
     private static FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
     public static QueryDataSource getQueryDataSource(Path selectedPath) throws FileNodeManagerException {
-
-        // TODO use null to replace NoRestriction filter operator
-
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(selectedPath, null);
         return fileNodeManager.query(singleSeriesExpression);
     }

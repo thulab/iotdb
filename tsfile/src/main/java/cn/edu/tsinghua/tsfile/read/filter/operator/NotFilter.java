@@ -1,7 +1,10 @@
 package cn.edu.tsinghua.tsfile.read.filter.operator;
 
 import cn.edu.tsinghua.tsfile.read.filter.DigestForFilter;
+import cn.edu.tsinghua.tsfile.read.filter.TimeFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
+import cn.edu.tsinghua.tsfile.read.filter.basic.UnaryFilter;
+import cn.edu.tsinghua.tsfile.read.filter.factory.FilterType;
 
 import java.io.Serializable;
 
@@ -27,6 +30,14 @@ public class NotFilter implements Filter, Serializable {
         return !that.satisfy(time, value);
     }
 
+    /**
+     * Notice that, if the not filter only contains value filter, this method may return false,
+     * this may cause misunderstanding.
+     */
+    @Override
+    public boolean satisfyStartEndTime(long startTime, long endTime) {
+        return !that.satisfyStartEndTime(startTime, endTime);
+    }
 
     public Filter getFilter() {
         return this.that;

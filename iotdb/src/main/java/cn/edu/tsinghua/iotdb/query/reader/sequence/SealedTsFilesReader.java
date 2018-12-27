@@ -11,6 +11,7 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoader;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerierByFileImpl;
+import cn.edu.tsinghua.tsfile.read.filter.DigestForFilter;
 import cn.edu.tsinghua.tsfile.read.filter.basic.Filter;
 import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReader;
 import cn.edu.tsinghua.tsfile.read.reader.series.FileSeriesReaderWithFilter;
@@ -130,7 +131,11 @@ public class SealedTsFilesReader implements IReader {
             return true;
         }
 
-        // TODO
+        long startTime = fileNode.getStartTime(seriesPath.getDevice());
+        long endTime = fileNode.getEndTime(seriesPath.getDevice());
+        if (!filter.satisfyStartEndTime(startTime, endTime)) {
+            return false;
+        }
 
         return true;
     }

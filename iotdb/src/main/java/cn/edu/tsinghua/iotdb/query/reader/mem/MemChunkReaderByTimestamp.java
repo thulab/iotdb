@@ -10,72 +10,72 @@ import java.io.IOException;
 import java.util.Iterator;
 
 public class MemChunkReaderByTimestamp implements EngineReaderByTimeStamp {
-  private Iterator<TimeValuePair> timeValuePairIterator;
-  private boolean hasCachedTimeValuePair;
-  private TimeValuePair cachedTimeValuePair;
+    private Iterator<TimeValuePair> timeValuePairIterator;
+    private boolean hasCachedTimeValuePair;
+    private TimeValuePair cachedTimeValuePair;
 
-  public MemChunkReaderByTimestamp(TimeValuePairSorter readableChunk) {
-    timeValuePairIterator = readableChunk.getIterator();
-  }
-
-  @Override
-  public boolean hasNext() {
-    if (hasCachedTimeValuePair) {
-      return true;
+    public MemChunkReaderByTimestamp(TimeValuePairSorter readableChunk) {
+        timeValuePairIterator = readableChunk.getIterator();
     }
-    return timeValuePairIterator.hasNext();
-  }
 
-  @Override
-  public TimeValuePair next() throws IOException {
-    if (hasCachedTimeValuePair) {
-      hasCachedTimeValuePair = false;
-      return cachedTimeValuePair;
-    } else {
-      return timeValuePairIterator.next();
+    @Override
+    public boolean hasNext() {
+        if (hasCachedTimeValuePair) {
+            return true;
+        }
+        return timeValuePairIterator.hasNext();
     }
-  }
 
-  @Override
-  public void skipCurrentTimeValuePair() throws IOException {
-    next();
-  }
-
-  @Override
-  public void close() throws IOException {
-
-  }
-
-  //TODO maybe an optimization : change timeValuePairIterator to list, using binary search
-  @Override
-  public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
-    while (hasNext()) {
-      TimeValuePair timeValuePair = next();
-      long time = timeValuePair.getTimestamp();
-      if (time == timestamp) {
-        return timeValuePair.getValue();
-      } else if (time > timestamp) {
-        hasCachedTimeValuePair = true;
-        cachedTimeValuePair = timeValuePair;
-        break;
-      }
+    @Override
+    public TimeValuePair next() throws IOException {
+        if (hasCachedTimeValuePair) {
+            hasCachedTimeValuePair = false;
+            return cachedTimeValuePair;
+        } else {
+            return timeValuePairIterator.next();
+        }
     }
-    return null;
-  }
 
-  @Override
-  public boolean hasNextBatch() {
-    return false;
-  }
+    @Override
+    public void skipCurrentTimeValuePair() throws IOException {
+        next();
+    }
 
-  @Override
-  public BatchData nextBatch() {
-    return null;
-  }
+    @Override
+    public void close() throws IOException {
 
-  @Override
-  public BatchData currentBatch() {
-    return null;
-  }
+    }
+
+    //TODO maybe an optimization : change timeValuePairIterator to list, using binary search
+    @Override
+    public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
+        while (hasNext()) {
+            TimeValuePair timeValuePair = next();
+            long time = timeValuePair.getTimestamp();
+            if (time == timestamp) {
+                return timeValuePair.getValue();
+            } else if (time > timestamp) {
+                hasCachedTimeValuePair = true;
+                cachedTimeValuePair = timeValuePair;
+                break;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean hasNextBatch() {
+        return false;
+    }
+
+    @Override
+    public BatchData nextBatch() {
+        return null;
+    }
+
+    @Override
+    public BatchData currentBatch() {
+        return null;
+    }
 
 }

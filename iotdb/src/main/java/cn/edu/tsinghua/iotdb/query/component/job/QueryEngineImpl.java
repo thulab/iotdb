@@ -1,8 +1,7 @@
-package cn.edu.tsinghua.iotdb.query.job;
+package cn.edu.tsinghua.iotdb.query.component.job;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.query.component.executor.QueryJobExecutor;
-import cn.edu.tsinghua.iotdb.query.component.job.*;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package cn.edu.tsinghua.iotdb.query.job;
+package cn.edu.tsinghua.iotdb.query.component.job;
 
 import cn.edu.tsinghua.iotdb.query.component.job.QueryJob;
 import cn.edu.tsinghua.iotdb.query.component.job.QueryJobFuture;
