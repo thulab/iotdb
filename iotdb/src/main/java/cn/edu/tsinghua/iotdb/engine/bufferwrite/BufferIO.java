@@ -39,4 +39,12 @@ public class BufferIO extends TsFileIOWriter {
 		}
 		return append;
 	}
+	/**
+	 * see {@link java.nio.channels.FileChannel#truncate(long)}
+	 * @param position
+	 * @throws IOException
+	 */
+	public void truncate(long position) throws IOException{
+		out.truncate(position);
+	}
 }

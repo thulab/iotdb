@@ -51,4 +51,9 @@ public class DefaultTsFileOutput implements TsFileOutput{
         this.outputStream.flush();
     }
 
+    @Override
+    public void truncate(long position) throws IOException {
+        outputStream.getChannel().truncate(position);
+    }
+
 }

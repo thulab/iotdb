@@ -48,7 +48,7 @@ public class TsFileIOWriter {
         magicStringBytes = BytesUtils.StringToBytes(TSFileConfig.MAGIC_STRING);
     }
 
-    private TsFileOutput out;
+    protected TsFileOutput out;
     protected List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
     private ChunkGroupMetaData currentChunkGroupMetaData;
     private ChunkMetaData currentChunkMetaData;
@@ -100,8 +100,6 @@ public class TsFileIOWriter {
      * start a {@linkplain ChunkGroupMetaData ChunkGroupMetaData}.
      *
      * @param deviceId device id
-     * @param dataSize the serialized size of all chunks
-     * @return the serialized size of ChunkGroupFooter
      */
     public void startFlushChunkGroup(String deviceId) throws IOException {
         LOG.debug("start chunk group:{}, file position {}", deviceId, out.getPosition());
@@ -255,6 +253,7 @@ public class TsFileIOWriter {
         }
         return tsDeviceMetadataMap;
     }
+
 
     /**
      * get the length of normal OutputStream.

@@ -1,11 +1,15 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkGroupMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
@@ -20,6 +24,7 @@ import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableTestUtils;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import org.junit.internal.runners.statements.Fail;
 
 public class BufferWriteRestoreManagerTest {
 
@@ -42,12 +47,14 @@ public class BufferWriteRestoreManagerTest {
 	@Test
 	public void testInitResource() throws IOException {
 		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
+		BufferIO writer = bufferwriteResource.recover();
 		Pair<Long, List<ChunkGroupMetaData>> pair = bufferwriteResource.readRestoreInfo();
 		assertEquals(true, new File(insertRestorePath).exists());
 		assertEquals(TsFileIOWriter.magicStringBytes.length, (long) pair.left);
 		assertEquals(0, pair.right.size());
-		FileSchema fileSchema = new FileSchema();
-		bufferwriteResource.close(fileSchema);
+		bufferwriteResource.deleteRestoreFile();
+		writer.endFile(new FileSchema());
+		deleteInsertFile();
 		assertEquals(false, new File(insertRestorePath).exists());
 	}
 	
@@ -61,9 +68,10 @@ public class BufferWriteRestoreManagerTest {
 		fileOutputStream.write(new byte[400]);
 		fileOutputStream.close();
 		assertEquals(true, insertFile.exists());
-		assertEquals(true, restoreFile.exists());
+		assertEquals(false, restoreFile.exists());
 		assertEquals(400, insertFile.length());
-		bufferwriteResource.close(new FileSchema());
+		bufferwriteResource.deleteRestoreFile();
+
 		FileOutputStream out = new FileOutputStream(new File(insertRestorePath));
 		// write tsfile position using byte[8] which is present one long
 		writeRestoreFile(out, 2);
@@ -72,22 +80,24 @@ public class BufferWriteRestoreManagerTest {
 		out.write(lastPositionBytes);
 		out.close();
 		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
+		BufferIO writer = bufferwriteResource.recover();
 		assertEquals(true, insertFile.exists());
 		assertEquals(200, insertFile.length());
 		assertEquals(insertPath, bufferwriteResource.getInsertFilePath());
 		assertEquals(insertRestorePath, bufferwriteResource.getRestoreFilePath());
-		bufferwriteResource.close(new FileSchema());
+		bufferwriteResource.deleteRestoreFile();
+		writer.endFile(new FileSchema());
+		deleteInsertFile();
 	}
 
 	@Test
 	public void testRecover() throws IOException {
-		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
 		File insertFile = new File(insertPath);
-		File restoreFile = new File(insertPath+".restore");
 		FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
-		// mkdir
 		fileOutputStream.write(new byte[200]);
 		fileOutputStream.close();
+
+		File restoreFile = new File(insertPath+".restore");
 		FileOutputStream out = new FileOutputStream(new File(insertRestorePath));
 		// write tsfile position using byte[8] which is present one long
 		writeRestoreFile(out, 2);
@@ -95,26 +105,45 @@ public class BufferWriteRestoreManagerTest {
 		byte[] lastPositionBytes = BytesUtils.longToBytes(200);
 		out.write(lastPositionBytes);
 		out.close();
+
+		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
+		BufferIO writer = bufferwriteResource.recover();
+		writer.endFile(new FileSchema());
+
+
 		assertEquals(true, insertFile.exists());
 		assertEquals(true, restoreFile.exists());
+
+
 		BufferWriteRestoreManager tempbufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
+		writer = tempbufferwriteResource.recover();
+
 		assertEquals(true, insertFile.exists());
 		assertEquals(200, insertFile.length());
 		assertEquals(insertPath, tempbufferwriteResource.getInsertFilePath());
 		assertEquals(insertRestorePath, tempbufferwriteResource.getRestoreFilePath());
-		tempbufferwriteResource.close(new FileSchema());
-		bufferwriteResource.close(new FileSchema());
+
+		writer.endFile(new FileSchema());
+		deleteInsertFile();
+		tempbufferwriteResource.deleteRestoreFile();
+		bufferwriteResource.deleteRestoreFile();
 	}
 
 	@Test
 	public void testFlushAndGetMetadata() throws IOException {
 		bufferwriteResource = new BufferWriteRestoreManager(processorName, insertPath);
+		BufferIO writer = bufferwriteResource.recover();
+
 		assertEquals(0, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
+
 		IMemTable memTable = new PrimitiveMemTable();
 		MemTableTestUtils.produceData(memTable, 10, 100, MemTableTestUtils.deltaObjectId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0);
-		bufferwriteResource.flush(MemTableTestUtils.getFileSchema(), memTable);
+
+		MemTableFlushUtil.flushMemTable(MemTableTestUtils.getFileSchema(), writer, memTable);
+		bufferwriteResource.flush(writer.getPos(), writer.getAppendedRowGroupMetadata());
+
 		assertEquals(0, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 		bufferwriteResource.appendMetadata();
@@ -126,7 +155,9 @@ public class BufferWriteRestoreManagerTest {
 		assertEquals(1, bufferwriteResource.getInsertMetadatas(MemTableTestUtils.deltaObjectId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 
-		bufferwriteResource.close(MemTableTestUtils.getFileSchema());
+		writer.endFile(MemTableTestUtils.getFileSchema());
+		deleteInsertFile();
+		bufferwriteResource.deleteRestoreFile();
 	}
 
 	private void writeRestoreFile(OutputStream out, int metadataNum) throws IOException {
@@ -143,5 +174,13 @@ public class BufferWriteRestoreManagerTest {
 		out.write(BytesUtils.intToBytes(metadataSize));
 		// write metadata
 		out.write(baos.toByteArray());
+	}
+
+	private void deleteInsertFile(){
+		try {
+			Files.delete(Paths.get(insertPath));
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
 	}
 }

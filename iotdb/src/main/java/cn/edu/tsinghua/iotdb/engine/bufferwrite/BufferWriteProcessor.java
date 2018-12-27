@@ -8,6 +8,7 @@ import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
@@ -50,6 +51,7 @@ public class BufferWriteProcessor extends Processor {
 
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
+    BufferIO writer;
 
     private Action bufferwriteFlushAction;
     private Action bufferwriteCloseAction;
@@ -88,6 +90,7 @@ public class BufferWriteProcessor extends Processor {
         bufferWriteRelativePath = processorName + File.separatorChar + fileName;
         try {
             bufferWriteRestoreManager = new BufferWriteRestoreManager(processorName, insertFilePath);
+            writer = bufferWriteRestoreManager.recover();
         } catch (IOException e) {
             throw new BufferWriteProcessorException(e);
         }
@@ -230,7 +233,8 @@ public class BufferWriteProcessor extends Processor {
         long flushStartTime = System.currentTimeMillis();
         LOGGER.info("The bufferwrite processor {} starts flushing {}.", getProcessorName(), flushFunction);
         try {
-            bufferWriteRestoreManager.flush(fileSchema, flushMemTable);
+            //bufferWriteRestoreManager.flush(fileSchema, flushMemTable);
+            flush2();
             filenodeFlushAction.act();
             if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
                 logNode.notifyEndFlush(null);
@@ -256,6 +260,19 @@ public class BufferWriteProcessor extends Processor {
                 "The bufferwrite processor {} flush {}, start time is {}, flush end time is {}, flush time consumption is {}ms",
                 getProcessorName(), flushFunction, startDateTime, endDateTime, flushInterval);
     }
+
+
+    public void flush2() throws IOException {
+        if (flushMemTable != null && !flushMemTable.isEmpty()) {
+            long startPos = writer.getPos();
+            long startTime = System.currentTimeMillis();
+            // flush data
+            MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable);
+            // write restore information
+            bufferWriteRestoreManager.flush(writer.getPos(), writer.getAppendedRowGroupMetadata());
+        }
+    }
+
 
     private Future<?> flush(boolean synchronization) throws IOException {
         // statistic information for flush
@@ -302,11 +319,7 @@ public class BufferWriteProcessor extends Processor {
             if (synchronization) {
                 flushOperation("synchronously");
             } else {
-                FlushManager.getInstance().submit(new Runnable() {
-                    public void run() {
-                        flushOperation("asynchronously");
-                    }
-                });
+                FlushManager.getInstance().submit( ()-> flushOperation("asynchronously"));
             }
         }
         return null;
@@ -336,7 +349,9 @@ public class BufferWriteProcessor extends Processor {
             // flush data
             flush(true);
             // end file
-            bufferWriteRestoreManager.close(fileSchema);
+            writer.endFile(fileSchema);
+            bufferWriteRestoreManager.deleteRestoreFile();
+//            bufferWriteRestoreManager.close(fileSchema);
             // update the IntervalFile for interval list
             bufferwriteCloseAction.act();
             // flush the changed information for filenode
