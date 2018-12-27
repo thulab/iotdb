@@ -2,7 +2,6 @@ package cn.edu.tsinghua.iotdb.utils;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,7 @@ public class OpenFileNumUtilTest {
     private int totalOpenFileNumBefore;
     private int totalOpenFileNumAfter;
     private int totalOpenFileNumChange;
-    private int testFileNum = 88;
+    private int testFileNum = 66;
     private String currDir;
     private String os = System.getProperty("os.name").toLowerCase();
 
@@ -38,8 +37,12 @@ public class OpenFileNumUtilTest {
         int testProcessID = getProcessID();
         LOGGER.info("OpenFileNumUtilTest test process ID: {}", testProcessID);
         openFileNumUtil.setPid(testProcessID);
-        currDir = System.getProperty("user.dir");
-        testFileName = File.separator + TEST_FILE_PREFIX + testProcessID;
+        String dataFilePath = OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM.getPath().get(0);
+        String userDir = System.getProperty("user.dir");
+        LOGGER.info("Current user dir: {}", userDir);
+        currDir = userDir + File.separator + dataFilePath;
+        LOGGER.info("Test file dir: {}", currDir);
+        testFileName = TEST_FILE_PREFIX + testProcessID;
     }
 
     @After
@@ -69,30 +72,30 @@ public class OpenFileNumUtilTest {
     }
 
     @Test
-    public void testTotalOpenFileNumWhenCreateFile() {
+    public void testDataOpenFileNumWhenCreateFile() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             //get total open file number statistics of original state
-            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             for (int i = 0; i < testFileNum; i++) {
                 fileList.add(new File(currDir + testFileName + i));
             }
             //create testFileNum File，then get total open file number statistics
-            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //create test file shall not affect total open file number statistics
             assertEquals(0, totalOpenFileNumChange);
         }else {
-            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM));
+            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM));
         }
     }
 
     @Test
-    public void testTotalOpenFileNumWhenCreateFileWriter() {
+    public void testDataOpenFileNumWhenCreateFileWriter() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             for (int i = 0; i < testFileNum; i++) {
                 fileList.add(new File(currDir + testFileName + i));
             }
-            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             for (File file : fileList) {
                 if (file.exists()) {
                     try {
@@ -116,17 +119,17 @@ public class OpenFileNumUtilTest {
                     }
                 }
             }
-            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //create FileWriter shall cause total open file number increase by testFileNum
             assertEquals(testFileNum, totalOpenFileNumChange);
         } else {
-            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM));
+            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM));
         }
     }
 
     @Test
-    public void testTotalOpenFileNumWhenFileWriterWriting() {
+    public void testDataOpenFileNumWhenFileWriterWriting() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             for (int i = 0; i < testFileNum; i++) {
                 fileList.add(new File(currDir + testFileName + i));
@@ -153,7 +156,7 @@ public class OpenFileNumUtilTest {
                     }
                 }
             }
-            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             for (FileWriter fw : fileWriterList) {
                 try {
                     fw.write("this is a test file for open file number counting.");
@@ -161,17 +164,17 @@ public class OpenFileNumUtilTest {
                     LOGGER.error(e.getMessage());
                 }
             }
-            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //writing test file shall not affect total open file number statistics
             assertEquals(0, totalOpenFileNumChange);
         } else {
-            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM));
+            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM));
         }
     }
 
     @Test
-    public void testTotalOpenFileNumWhenFileWriterClose() {
+    public void testDataOpenFileNumWhenFileWriterClose() {
         if(os.startsWith(MAC_OS_NAME) || os.startsWith(LINUX_OS_NAME)) {
             for (int i = 0; i < testFileNum; i++) {
                 fileList.add(new File(currDir + testFileName + i));
@@ -205,7 +208,7 @@ public class OpenFileNumUtilTest {
                     LOGGER.error(e.getMessage());
                 }
             }
-            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumBefore = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             for (FileWriter fw : fileWriterList) {
                 try {
                     fw.close();
@@ -213,12 +216,12 @@ public class OpenFileNumUtilTest {
                     LOGGER.error(e.getMessage());
                 }
             }
-            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM);
+            totalOpenFileNumAfter = openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM);
             totalOpenFileNumChange = totalOpenFileNumAfter - totalOpenFileNumBefore;
             //close FileWriter shall cause total open file number decrease by testFileNum
             assertEquals(-testFileNum, totalOpenFileNumChange);
         } else {
-            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.TOTAL_OPEN_FILE_NUM));
+            assertEquals(-2, openFileNumUtil.get(OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM));
         }
     }
 
