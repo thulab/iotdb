@@ -40,7 +40,7 @@ public class OpenFileNumUtilTest {
         String dataFilePath = OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM.getPath().get(0);
         String userDir = System.getProperty("user.dir");
         LOGGER.info("Current user dir: {}", userDir);
-        currDir = userDir + File.separator + dataFilePath;
+        currDir = dataFilePath;
         LOGGER.info("Test file dir: {}", currDir);
         testFileName = TEST_FILE_PREFIX + testProcessID;
     }
