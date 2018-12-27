@@ -31,7 +31,7 @@ public class OpenFileNumUtilTest {
     private int totalOpenFileNumChange;
     private int testFileNum = 66;
     private String currDir;
-    private File testDataDir;
+    private File testDataDirRoot;
     private String os = System.getProperty("os.name").toLowerCase();
 
     @Before
@@ -42,12 +42,15 @@ public class OpenFileNumUtilTest {
         String dataFilePath = OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM.getPath().get(0);
         String userDir = System.getProperty("user.dir");
         LOGGER.info("Current user dir: {}", userDir);
-        currDir = userDir + File.separator + dataFilePath;
+        currDir = userDir + File.separator + testProcessID + File.separator + dataFilePath;
         LOGGER.info("Test file dir: {}", currDir);
-        testDataDir = new File(currDir);
-        if(!testDataDir.isDirectory()){
-            if(!testDataDir.mkdir()){
-                LOGGER.error("Create test file dir {} failed.", testDataDir.getPath());
+        File testDataDir = new File(currDir);
+        testDataDirRoot = new File(userDir + File.separator + testProcessID);
+        if(!testDataDir.exists()) {
+            if (!testDataDir.isDirectory()) {
+                if (!testDataDir.mkdirs()) {
+                    LOGGER.error("Create test file dir {} failed.", testDataDir.getPath());
+                }
             }
         }
         testFileName = TEST_FILE_PREFIX + testProcessID;
@@ -77,9 +80,9 @@ public class OpenFileNumUtilTest {
         fileWriterList.clear();
         fileList.clear();
         try {
-            FileUtils.deleteDirectory(testDataDir);
+            FileUtils.deleteDirectory(testDataDirRoot);
         } catch (IOException e) {
-            LOGGER.error("Delete test data dir {} failed.", testDataDir);
+            LOGGER.error("Delete test data dir {} failed.", testDataDirRoot);
         }
     }
 
