@@ -34,4 +34,5 @@ public class TsFileDBConstant {
     public static final String BACKUP_SUFFIX = ".backup";
     public static final String MAX_TIME = "max_time";
     public static final String MIN_TIME = "min_time";
+    public static final int minSupportedJDKVerion = 8;
 }
