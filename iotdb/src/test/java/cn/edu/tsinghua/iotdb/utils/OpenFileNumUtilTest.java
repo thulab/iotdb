@@ -13,6 +13,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import org.apache.commons.io.FileUtils;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,6 +31,7 @@ public class OpenFileNumUtilTest {
     private int totalOpenFileNumChange;
     private int testFileNum = 80;
     private String currDir;
+    private File testDataDir;
     private String os = System.getProperty("os.name").toLowerCase();
 
     @Before
@@ -40,8 +42,14 @@ public class OpenFileNumUtilTest {
         String dataFilePath = OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM.getPath().get(0);
         String userDir = System.getProperty("user.dir");
         LOGGER.info("Current user dir: {}", userDir);
-        currDir = dataFilePath;
+        currDir = userDir + File.separator + dataFilePath;
         LOGGER.info("Test file dir: {}", currDir);
+        testDataDir = new File(currDir);
+        if(!testDataDir.isDirectory()){
+            if(!testDataDir.mkdir()){
+                LOGGER.error("Create test file dir {} failed.", testDataDir.getPath());
+            }
+        }
         testFileName = TEST_FILE_PREFIX + testProcessID;
     }
 
@@ -69,6 +77,12 @@ public class OpenFileNumUtilTest {
 
         fileWriterList.clear();
         fileList.clear();
+
+        try {
+            FileUtils.deleteDirectory(testDataDir);
+        } catch (IOException e) {
+            LOGGER.error("Delete test data dir {} failed.", testDataDir);
+        }
     }
 
     @Test
