@@ -44,6 +44,8 @@ public class OpenFileNumUtil {
         DIGEST_OPEN_FILE_NUM(Collections.singletonList(config.fileNodeDir)),
         SOCKET_OPEN_FILE_NUM(null);
 
+        // path is a list of directory corresponding to the OpenFileNumStatistics enum element,
+        // e.g. data/data/ for DATA_OPEN_FILE_NUM
         private List<String> path;
 
         public List<String> getPath() {

@@ -37,13 +37,10 @@ public class OpenFileNumUtilTest {
     @Before
     public void setUp() {
         int testProcessID = getProcessID();
-        LOGGER.info("OpenFileNumUtilTest test process ID: {}", testProcessID);
         openFileNumUtil.setPid(testProcessID);
         String dataFilePath = OpenFileNumUtil.OpenFileNumStatistics.DATA_OPEN_FILE_NUM.getPath().get(0);
         String userDir = System.getProperty("user.dir");
-        LOGGER.info("Current user dir: {}", userDir);
         currDir = userDir + File.separator + testProcessID + File.separator + dataFilePath;
-        LOGGER.info("Test file dir: {}", currDir);
         File testDataDir = new File(currDir);
         testDataDirRoot = new File(userDir + File.separator + testProcessID);
         if(!testDataDir.exists()) {
