@@ -33,4 +33,9 @@ public class OrFilter extends BinaryFilter implements Serializable {
         return left.satisfy(time, value) || right.satisfy(time, value);
     }
 
+    @Override
+    public boolean satisfyStartEndTime(long startTime, long endTime) {
+        return left.satisfyStartEndTime(startTime, endTime) || right.satisfyStartEndTime(startTime, endTime);
+    }
+
 }

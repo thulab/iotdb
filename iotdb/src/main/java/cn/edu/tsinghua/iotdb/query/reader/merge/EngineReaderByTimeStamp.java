@@ -7,6 +7,9 @@ import java.io.IOException;
 
 public interface EngineReaderByTimeStamp extends IReader {
 
-  TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException;
-
+    /**
+     * Given a timestamp, the reader is supposed to return the corresponding value in the
+     * timestamp. If no value in this timestamp, null will be returned.
+     */
+    TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException;
 }

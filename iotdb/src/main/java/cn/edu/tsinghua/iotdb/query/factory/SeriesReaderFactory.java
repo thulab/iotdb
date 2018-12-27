@@ -107,9 +107,11 @@ public class SeriesReaderFactory {
         // add reader for MemTable
         if (overflowSeriesDataSource.hasRawChunk()) {
             if (filter != null) {
-                unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithFilter(overflowSeriesDataSource.getReadableMemChunk(), filter), priorityValue);
+                unSeqMergeReader.addReaderWithPriority(
+                        new MemChunkReaderWithFilter(overflowSeriesDataSource.getReadableMemChunk(), filter), priorityValue);
             } else {
-                unSeqMergeReader.addReaderWithPriority(new MemChunkReaderWithoutFilter(overflowSeriesDataSource.getReadableMemChunk()), priorityValue);
+                unSeqMergeReader.addReaderWithPriority(
+                        new MemChunkReaderWithoutFilter(overflowSeriesDataSource.getReadableMemChunk()), priorityValue);
             }
         }
 
@@ -124,8 +126,8 @@ public class SeriesReaderFactory {
      * To merge only one TsFile data and one UnSeqFile data.
      */
     public IReader createSeriesReaderForMerge(
-            IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource, SingleSeriesExpression singleSeriesExpression)
-            throws IOException {
+            IntervalFileNode intervalFileNode, OverflowSeriesDataSource overflowSeriesDataSource,
+            SingleSeriesExpression singleSeriesExpression) throws IOException {
 
         logger.debug("Create seriesReaders for merge. SeriesFilter = {}. TsFilePath = {}",
                 singleSeriesExpression, intervalFileNode.getFilePath());

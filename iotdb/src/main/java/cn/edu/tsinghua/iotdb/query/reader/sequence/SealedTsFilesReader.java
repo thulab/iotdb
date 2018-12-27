@@ -131,7 +131,11 @@ public class SealedTsFilesReader implements IReader {
             return true;
         }
 
-        // TODO add method to Filter interface
+        long startTime = fileNode.getStartTime(seriesPath.getDevice());
+        long endTime = fileNode.getEndTime(seriesPath.getDevice());
+        if (!filter.satisfyStartEndTime(startTime, endTime)) {
+            return false;
+        }
 
         return true;
     }

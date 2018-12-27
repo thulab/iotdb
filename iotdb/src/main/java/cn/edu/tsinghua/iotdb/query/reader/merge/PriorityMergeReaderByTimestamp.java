@@ -5,6 +5,9 @@ import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
 
 import java.io.IOException;
 
+/**
+ * TODO the process of PriorityMergeReaderByTimestamp can be optimized.
+ */
 public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implements EngineReaderByTimeStamp {
 
     private boolean hasCachedTimeValuePair;
@@ -35,6 +38,4 @@ public class PriorityMergeReaderByTimestamp extends PriorityMergeReader implemen
 
         return null;
     }
-
-
 }

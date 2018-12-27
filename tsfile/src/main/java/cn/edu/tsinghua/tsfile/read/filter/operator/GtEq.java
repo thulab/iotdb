@@ -34,6 +34,19 @@ public class GtEq<T extends Comparable<T>> extends UnaryFilter<T> {
     }
 
     @Override
+    public boolean satisfyStartEndTime(long startTime, long endTime) {
+        if (filterType == FilterType.TIME_FILTER) {
+            long time = (Long) value;
+            if (time > endTime) {
+                return false;
+            }
+            return true;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
     public String toString() {
         return getFilterType() + " >= " + value;
     }
