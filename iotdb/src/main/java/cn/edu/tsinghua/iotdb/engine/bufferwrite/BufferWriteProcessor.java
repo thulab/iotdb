@@ -233,8 +233,15 @@ public class BufferWriteProcessor extends Processor {
         long flushStartTime = System.currentTimeMillis();
         LOGGER.info("The bufferwrite processor {} starts flushing {}.", getProcessorName(), flushFunction);
         try {
-            //bufferWriteRestoreManager.flush(fileSchema, flushMemTable);
-            flush2();
+            if (flushMemTable != null && !flushMemTable.isEmpty()) {
+                long startPos = writer.getPos();
+                long startTime = System.currentTimeMillis();
+                // flush data
+                MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable);
+                // write restore information
+                bufferWriteRestoreManager.flush(writer.getPos(), writer.getAppendedRowGroupMetadata());
+            }
+
             filenodeFlushAction.act();
             if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
                 logNode.notifyEndFlush(null);
@@ -260,20 +267,7 @@ public class BufferWriteProcessor extends Processor {
                 "The bufferwrite processor {} flush {}, start time is {}, flush end time is {}, flush time consumption is {}ms",
                 getProcessorName(), flushFunction, startDateTime, endDateTime, flushInterval);
     }
-
-
-    public void flush2() throws IOException {
-        if (flushMemTable != null && !flushMemTable.isEmpty()) {
-            long startPos = writer.getPos();
-            long startTime = System.currentTimeMillis();
-            // flush data
-            MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable);
-            // write restore information
-            bufferWriteRestoreManager.flush(writer.getPos(), writer.getAppendedRowGroupMetadata());
-        }
-    }
-
-
+    
     private Future<?> flush(boolean synchronization) throws IOException {
         // statistic information for flush
         if (lastFlushTime > 0) {
