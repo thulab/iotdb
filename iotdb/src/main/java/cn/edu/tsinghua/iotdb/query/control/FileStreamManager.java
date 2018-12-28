@@ -59,8 +59,10 @@ public class FileStreamManager {
     }
 
     public synchronized void closeAll(Long jobId) throws IOException {
+        System.out.println("============" + jobId);
         if (fileStreamStore.containsKey(jobId)) {
             for (TsFileSequenceReader reader : fileStreamStore.get(jobId).values()) {
+                System.out.println(reader.getFileName());
                 reader.close();
             }
             fileStreamStore.remove(jobId);

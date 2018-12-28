@@ -17,6 +17,8 @@ import java.util.*;
 
 public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
+    private long jobId;
+
     private List<IReader> readers;
 
     private TimeValuePair[] cacheTimeValueList;
@@ -28,8 +30,6 @@ public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
     private PriorityQueue<Long> timeHeap;
 
     private Set<Long> timeSet;
-
-    private long jobId;
 
     public EngineDataSetWithoutTimeGenerator(long jobId, List<Path> paths,
                                              List<TSDataType> dataTypes, List<IReader> readers) throws IOException {

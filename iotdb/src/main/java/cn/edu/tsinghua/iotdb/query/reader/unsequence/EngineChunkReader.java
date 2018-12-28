@@ -19,9 +19,9 @@ public class EngineChunkReader implements IReader {
      * Each EngineChunkReader has a corresponding UnClosedTsFileReader, when EngineChunkReader is closed,
      * UnClosedTsFileReader also should be closed in meanwhile.
      */
-    private UnClosedTsFileReader unClosedTsFileReader;
+    private TsFileSequenceReader unClosedTsFileReader;
 
-    public EngineChunkReader(ChunkReader chunkReader, UnClosedTsFileReader unClosedTsFileReader) {
+    public EngineChunkReader(ChunkReader chunkReader, TsFileSequenceReader unClosedTsFileReader) {
         this.chunkReader = chunkReader;
         this.unClosedTsFileReader = unClosedTsFileReader;
     }

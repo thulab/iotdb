@@ -96,7 +96,7 @@ public class IoTDBEngineTimeGeneratorTest {
         TimeFilter.TimeGt timeGt = TimeFilter.gt(500);
 
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
-        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(singleSeriesExpression);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(1, singleSeriesExpression);
 
         int cnt = 0;
         while (timeGenerator.hasNext()) {
@@ -119,7 +119,7 @@ public class IoTDBEngineTimeGeneratorTest {
         ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(5);
 
         IExpression singleSeriesExpression = new SingleSeriesExpression(pd1s0, valueGtEq);
-        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(singleSeriesExpression);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(1, singleSeriesExpression);
 
         int cnt = 0;
         while (timeGenerator.hasNext()) {
@@ -146,7 +146,7 @@ public class IoTDBEngineTimeGeneratorTest {
         IExpression singleSeriesExpression2 = new SingleSeriesExpression(pd0s2, FilterFactory.or(valueGtEq11, timeGt));
         IExpression andExpression = BinaryExpression.and(singleSeriesExpression1, singleSeriesExpression2);
 
-        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(andExpression);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(1, andExpression);
         int cnt = 0;
         while (timeGenerator.hasNext()) {
             long time = timeGenerator.next();

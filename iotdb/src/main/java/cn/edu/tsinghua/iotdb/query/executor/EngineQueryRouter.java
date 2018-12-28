@@ -42,9 +42,11 @@ public class EngineQueryRouter {
                 queryExpression.setExpression(optimizedExpression);
 
                 if (optimizedExpression.getType() == GLOBAL_TIME) {
-                    return EngineExecutorWithoutTimeGenerator.executeWithGlobalTimeFilter(currentJobId, queryExpression);
+                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(currentJobId, queryExpression);
+                    return engineExecutor.executeWithGlobalTimeFilter();
                 } else {
-                    return EngineExecutorWithTimeGenerator.execute(currentJobId, queryExpression);
+                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(currentJobId, queryExpression);
+                    return engineExecutor.execute();
                 }
 
             } catch (QueryFilterOptimizationException | PathErrorException e) {
@@ -52,7 +54,8 @@ public class EngineQueryRouter {
             }
         } else {
             try {
-                return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(currentJobId, queryExpression);
+                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(currentJobId, queryExpression);
+                return engineExecutor.executeWithoutFilter();
             } catch (PathErrorException e) {
                 throw new IOException(e);
             }

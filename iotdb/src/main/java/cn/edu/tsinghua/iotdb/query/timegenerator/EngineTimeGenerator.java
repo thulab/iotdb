@@ -14,17 +14,18 @@ import java.io.IOException;
  * this class can iterate back to every timestamp of the query.
  */
 public class EngineTimeGenerator implements TimeGenerator {
-
+    private long jobId;
     private IExpression expression;
     private Node operatorNode;
 
-    public EngineTimeGenerator(IExpression expression) throws IOException, FileNodeManagerException {
+    public EngineTimeGenerator(long jobId, IExpression expression) throws IOException, FileNodeManagerException {
+        this.jobId = jobId;
         this.expression = expression;
         initNode();
     }
 
     private void initNode() throws IOException, FileNodeManagerException {
-        EngineNodeConstructor engineNodeConstructor = new EngineNodeConstructor();
+        EngineNodeConstructor engineNodeConstructor = new EngineNodeConstructor(jobId);
         this.operatorNode = engineNodeConstructor.construct(expression);
     }
 

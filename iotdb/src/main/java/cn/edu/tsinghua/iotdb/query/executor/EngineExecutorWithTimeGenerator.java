@@ -26,50 +26,58 @@ import java.util.List;
  */
 public class EngineExecutorWithTimeGenerator {
 
+    private long jobId;
 
-  public static QueryDataSet execute(long jobId, QueryExpression queryExpression) throws IOException, FileNodeManagerException {
+    private QueryExpression queryExpression;
 
-    EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(queryExpression.getExpression());
-
-    List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(jobId, queryExpression.getSelectedSeries());
-
-    List<TSDataType> dataTypes = new ArrayList<>();
-
-    for (Path path : queryExpression.getSelectedSeries()) {
-      try {
-        dataTypes.add(MManager.getInstance().getSeriesType(path.getFullPath()));
-      } catch (PathErrorException e) {
-        throw new FileNodeManagerException(e);
-      }
-
-    }
-    return new EngineDataSetWithTimeGenerator(queryExpression.getSelectedSeries(), dataTypes,
-            timestampGenerator, readersOfSelectedSeries);
-  }
-
-  private static List<EngineReaderByTimeStamp> getReadersOfSelectedPaths(long jobId, List<Path> paths)
-          throws IOException, FileNodeManagerException {
-
-    List<EngineReaderByTimeStamp> readersOfSelectedSeries = new ArrayList<>();
-
-    for (Path path : paths) {
-
-      QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
-      PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
-
-      // reader for sequence data
-      SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), null);
-      mergeReaderByTimestamp.addReaderWithPriority(tsFilesReader, 1);
-
-      // reader for unSequence data
-      PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-              createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), null);
-      mergeReaderByTimestamp.addReaderWithPriority(unSeqMergeReader, 2);
-
-      readersOfSelectedSeries.add(mergeReaderByTimestamp);
+    EngineExecutorWithTimeGenerator(long jobId, QueryExpression queryExpression) {
+        this.jobId = jobId;
+        this.queryExpression = queryExpression;
     }
 
-    return readersOfSelectedSeries;
-  }
+    public QueryDataSet execute() throws IOException, FileNodeManagerException {
+
+        EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(jobId, queryExpression.getExpression());
+
+        List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(queryExpression.getSelectedSeries());
+
+        List<TSDataType> dataTypes = new ArrayList<>();
+
+        for (Path path : queryExpression.getSelectedSeries()) {
+            try {
+                dataTypes.add(MManager.getInstance().getSeriesType(path.getFullPath()));
+            } catch (PathErrorException e) {
+                throw new FileNodeManagerException(e);
+            }
+
+        }
+        return new EngineDataSetWithTimeGenerator(jobId, queryExpression.getSelectedSeries(), dataTypes,
+                timestampGenerator, readersOfSelectedSeries);
+    }
+
+    private List<EngineReaderByTimeStamp> getReadersOfSelectedPaths(List<Path> paths)
+            throws IOException, FileNodeManagerException {
+
+        List<EngineReaderByTimeStamp> readersOfSelectedSeries = new ArrayList<>();
+
+        for (Path path : paths) {
+
+            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+            PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
+
+            // reader for sequence data
+            SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), null);
+            mergeReaderByTimestamp.addReaderWithPriority(tsFilesReader, 1);
+
+            // reader for unSequence data
+            PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
+                    createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), null);
+            mergeReaderByTimestamp.addReaderWithPriority(unSeqMergeReader, 2);
+
+            readersOfSelectedSeries.add(mergeReaderByTimestamp);
+        }
+
+        return readersOfSelectedSeries;
+    }
 
 }

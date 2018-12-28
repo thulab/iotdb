@@ -29,6 +29,7 @@ public class TsFileSequenceReader {
     private long fileMetadataPos;
     private int fileMetadataSize;
     private ByteBuffer markerBuffer = ByteBuffer.allocate(Byte.BYTES);
+    private String file;
 
     /**
      * create a file reader of the given file.
@@ -45,6 +46,7 @@ public class TsFileSequenceReader {
 
 
     TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException {
+        this.file = file;
         tsFileInput = new DefaultTsFileInput(Paths.get(file));
         if (loadMetadataSize)
             loadMetadataSize();
@@ -231,6 +233,10 @@ public class TsFileSequenceReader {
 
     public void close() throws IOException {
         this.tsFileInput.close();
+    }
+
+    public String getFileName() {
+        return this.file;
     }
 
 }

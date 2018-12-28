@@ -3,12 +3,10 @@ package cn.edu.tsinghua.iotdb.query.factory;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderByTimestamp;
+import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithoutFilter;
-import cn.edu.tsinghua.iotdb.query.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
-import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SealedTsFilesReader;
 import cn.edu.tsinghua.iotdb.query.reader.unsequence.EngineChunkReader;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
@@ -32,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -43,7 +40,12 @@ public class SeriesReaderFactory {
     private SeriesReaderFactory() {
     }
 
-    public PriorityMergeReader createUnSeqMergeReader(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
+    /**
+     * This method is used to create unseq file reader for IoTDB request, such as query, aggregation and groupby request.
+     * Note that, job id equals -1 meant that this method is used for IoTDB merge process, it's no need to maintain the
+     * opened file stream.
+     */
+    public PriorityMergeReader createUnSeqMergeReader(long jobId, OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
             throws IOException {
 
         PriorityMergeReader unSeqMergeReader = new PriorityMergeReader();
@@ -52,14 +54,25 @@ public class SeriesReaderFactory {
 
         for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList()) {
 
-            UnClosedTsFileReader unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
+            // store only one opened file stream into manager, to avoid too many opened files
+            TsFileSequenceReader unClosedTsFileReader;
+            if (jobId == -1) {
+                unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
+            } else {
+                if (!FileStreamManager.getInstance().containsCachedReader(jobId, overflowInsertFile.getFilePath())) {
+                    unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
+                    FileStreamManager.getInstance().put(jobId, overflowInsertFile.getFilePath(), unClosedTsFileReader);
+                } else {
+                    unClosedTsFileReader = FileStreamManager.getInstance().get(jobId, overflowInsertFile.getFilePath());
+                }
+            }
+
             ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
             for (ChunkMetaData chunkMetaData : overflowInsertFile.getChunkMetaDataList()) {
 
                 DigestForFilter digest = new DigestForFilter(
-                        chunkMetaData.getStartTime(),
-                        chunkMetaData.getEndTime(),
+                        chunkMetaData.getStartTime(), chunkMetaData.getEndTime(),
                         chunkMetaData.getDigest().getStatistics().get(StatisticConstant.MIN_VALUE),
                         chunkMetaData.getDigest().getStatistics().get(StatisticConstant.MAX_VALUE),
                         chunkMetaData.getTsDataType());
@@ -69,13 +82,7 @@ public class SeriesReaderFactory {
                 }
 
                 Chunk chunk = chunkLoader.getChunk(chunkMetaData);
-                ChunkReader chunkReader;
-
-                if (filter != null) {
-                    chunkReader = new ChunkReaderWithFilter(chunk, filter);
-                } else {
-                    chunkReader = new ChunkReaderWithoutFilter(chunk);
-                }
+                ChunkReader chunkReader = filter != null ? new ChunkReaderWithFilter(chunk, filter) : new ChunkReaderWithoutFilter(chunk);
 
                 unSeqMergeReader.addReaderWithPriority(new EngineChunkReader(chunkReader, unClosedTsFileReader), priorityValue);
                 priorityValue++;
@@ -117,28 +124,25 @@ public class SeriesReaderFactory {
         PriorityMergeReader priorityMergeReader = new PriorityMergeReader();
 
         // Sequence reader
-        IReader seriesInTsFileReader = createSealedTsFileSeriesReader(intervalFileNode.getFilePath(), singleSeriesExpression);
+        IReader seriesInTsFileReader = createSealedTsFileReaderForMerge(intervalFileNode.getFilePath(), singleSeriesExpression);
         priorityMergeReader.addReaderWithPriority(seriesInTsFileReader, 1);
 
-        // unSequence merge reader
-        IReader unSeqMergeReader = createUnSeqMergeReader(overflowSeriesDataSource, singleSeriesExpression.getFilter());
+        // UnSequence merge reader
+        IReader unSeqMergeReader = createUnSeqMergeReader(-1, overflowSeriesDataSource, singleSeriesExpression.getFilter());
         priorityMergeReader.addReaderWithPriority(unSeqMergeReader, 2);
-
 
         return priorityMergeReader;
     }
 
-    private IReader createSealedTsFileSeriesReader(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
+    private IReader createSealedTsFileReaderForMerge(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
         TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(filePath);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(singleSeriesExpression.getSeriesPath());
 
-        // TODO is singleSeriesExpression.getFilter() always null?
         FileSeriesReader seriesInTsFileReader = new FileSeriesReaderWithFilter(chunkLoader, metaDataList, singleSeriesExpression.getFilter());
         return new SealedTsFilesReader(seriesInTsFileReader);
     }
-
 
     private static class SeriesReaderFactoryHelper {
         private static SeriesReaderFactory INSTANCE = new SeriesReaderFactory();

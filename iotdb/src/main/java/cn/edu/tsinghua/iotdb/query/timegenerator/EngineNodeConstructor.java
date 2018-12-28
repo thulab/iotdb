@@ -22,7 +22,10 @@ import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.*;
 
 public class EngineNodeConstructor {
 
-    public EngineNodeConstructor() {
+    private long jobId;
+
+    public EngineNodeConstructor(long jobId) {
+        this.jobId = jobId;
     }
 
     public Node construct(IExpression expression) throws IOException, FileNodeManagerException {
@@ -55,12 +58,12 @@ public class EngineNodeConstructor {
         PriorityMergeReader priorityReader = new PriorityMergeReader();
 
         // reader for all sequence data
-        SequenceDataReader tsFilesReader = new SequenceDataReader(1, queryDataSource.getSeqDataSource(), filter);
+        SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), filter);
         priorityReader.addReaderWithPriority(tsFilesReader, 1);
 
         // reader for all unSequence data
         PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-                createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), filter);
+                createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), filter);
         priorityReader.addReaderWithPriority(unSeqMergeReader, 2);
 
         return priorityReader;
