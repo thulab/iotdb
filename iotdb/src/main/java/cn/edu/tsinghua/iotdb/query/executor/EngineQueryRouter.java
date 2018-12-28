@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
 
@@ -20,32 +21,45 @@ import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.GLOBAL_TIME;
  */
 public class EngineQueryRouter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);
 
-  public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
-    if (queryExpression.hasQueryFilter()) {
-      try {
+    /**
+     * Each unique jdbc request(query, aggregation or others job) has an unique job id.
+     * This job id will always be maintained until the request is closed.
+     * In each job, the unique file will be only opened once to avoid too many opened files error.
+     */
+    private AtomicLong jobId = new AtomicLong();
 
-        IExpression optimizedExpression = ExpressionOptimizer.getInstance().
-                optimize(queryExpression.getExpression(), queryExpression.getSelectedSeries());
-        queryExpression.setExpression(optimizedExpression);
+    public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
-        if (optimizedExpression.getType() == GLOBAL_TIME) {
-          return EngineExecutorWithoutTimeGenerator.executeWithGlobalTimeFilter(queryExpression);
+        long currentJobId = getNextJobId();
+
+        if (queryExpression.hasQueryFilter()) {
+            try {
+
+                IExpression optimizedExpression = ExpressionOptimizer.getInstance().
+                        optimize(queryExpression.getExpression(), queryExpression.getSelectedSeries());
+                queryExpression.setExpression(optimizedExpression);
+
+                if (optimizedExpression.getType() == GLOBAL_TIME) {
+                    return EngineExecutorWithoutTimeGenerator.executeWithGlobalTimeFilter(currentJobId, queryExpression);
+                } else {
+                    return EngineExecutorWithTimeGenerator.execute(currentJobId, queryExpression);
+                }
+
+            } catch (QueryFilterOptimizationException | PathErrorException e) {
+                throw new IOException(e);
+            }
         } else {
-          return EngineExecutorWithTimeGenerator.execute(queryExpression);
+            try {
+                return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(currentJobId, queryExpression);
+            } catch (PathErrorException e) {
+                throw new IOException(e);
+            }
         }
-
-      } catch (QueryFilterOptimizationException | PathErrorException e) {
-        throw new IOException(e);
-      }
-    } else {
-      try {
-        return EngineExecutorWithoutTimeGenerator.executeWithoutFilter(queryExpression);
-      } catch (PathErrorException e) {
-        throw new IOException(e);
-      }
     }
-  }
 
+    private synchronized long getNextJobId() {
+        return jobId.incrementAndGet();
+    }
 }

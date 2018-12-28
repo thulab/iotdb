@@ -21,7 +21,7 @@ import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
 import cn.edu.tsinghua.iotdb.monitor.MonitorConstants;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.query.control.OverflowFileStreamManager;
+import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -1046,7 +1046,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			}
 		}
 
-		OverflowFileStreamManager.getInstance()
+		FileStreamManager.getInstance()
 				.removeMappedByteBuffer(overflowProcessor.getWorkResource().getInsertFilePath());
 		//
 		// change status from merge to wait

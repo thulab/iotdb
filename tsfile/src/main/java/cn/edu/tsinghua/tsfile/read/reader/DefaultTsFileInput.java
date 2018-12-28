@@ -58,8 +58,6 @@ public class DefaultTsFileInput implements TsFileInput {
         channel.close();
     }
 
-
-
     @Override
     public int read() throws IOException {
         throw new NotImplementedException();

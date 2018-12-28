@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
+import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
@@ -31,14 +32,16 @@ public class SealedTsFilesReader implements IReader {
     private Filter filter;
     private BatchData data;
     private boolean hasCachedData;
+    private long jobId;
 
-    public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles, Filter filter) {
-        this(path, sealedTsFiles);
+    public SealedTsFilesReader(long jobId, Path seriesPath, List<IntervalFileNode> sealedTsFiles, Filter filter) {
+        this(jobId, seriesPath, sealedTsFiles);
         this.filter = filter;
     }
 
-    public SealedTsFilesReader(Path path, List<IntervalFileNode> sealedTsFiles) {
-        this.seriesPath = path;
+    public SealedTsFilesReader(long jobId, Path seriesPath, List<IntervalFileNode> sealedTsFiles) {
+        this.jobId = jobId;
+        this.seriesPath = seriesPath;
         this.sealedTsFiles = sealedTsFiles;
         this.usedIntervalFileIndex = 0;
         this.seriesReader = null;
@@ -140,10 +143,17 @@ public class SealedTsFilesReader implements IReader {
         return true;
     }
 
-
-    // TODO replace new FileReader by FileReaderManager to avoid file stream limit
     private void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException {
-        TsFileSequenceReader tsFileReader = new TsFileSequenceReader(fileNode.getFilePath());
+
+        // to avoid too many opened files
+        TsFileSequenceReader tsFileReader;
+        if (!FileStreamManager.getInstance().containsCachedReader(jobId, fileNode.getFilePath())) {
+            tsFileReader = new TsFileSequenceReader(fileNode.getFilePath());
+            FileStreamManager.getInstance().put(jobId, fileNode.getFilePath(), tsFileReader);
+        } else {
+            tsFileReader = FileStreamManager.getInstance().get(jobId, fileNode.getFilePath());
+        }
+
         MetadataQuerierByFileImpl metadataQuerier = new MetadataQuerierByFileImpl(tsFileReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(seriesPath);
         ChunkLoader chunkLoader = new ChunkLoaderImpl(tsFileReader);

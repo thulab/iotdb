@@ -23,7 +23,7 @@ public class SequenceDataReader implements IReader {
     private int nextSeriesReaderIndex;
     private IReader currentSeriesReader;
 
-    public SequenceDataReader(GlobalSortedSeriesDataSource sources, Filter filter) throws IOException {
+    public SequenceDataReader(long jobId, GlobalSortedSeriesDataSource sources, Filter filter) throws IOException {
         seriesReaders = new ArrayList<>();
 
         curReaderInitialized = false;
@@ -31,7 +31,7 @@ public class SequenceDataReader implements IReader {
 
         // add reader for sealed TsFiles
         if (sources.hasSealedTsFiles()) {
-            seriesReaders.add(new SealedTsFilesReader(sources.getSeriesPath(), sources.getSealedTsFiles(), filter));
+            seriesReaders.add(new SealedTsFilesReader(jobId, sources.getSeriesPath(), sources.getSealedTsFiles(), filter));
         }
 
         // add reader for unSealed TsFile

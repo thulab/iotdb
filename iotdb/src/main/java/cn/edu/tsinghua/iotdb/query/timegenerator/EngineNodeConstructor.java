@@ -55,7 +55,7 @@ public class EngineNodeConstructor {
         PriorityMergeReader priorityReader = new PriorityMergeReader();
 
         // reader for all sequence data
-        SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), filter);
+        SequenceDataReader tsFilesReader = new SequenceDataReader(1, queryDataSource.getSeqDataSource(), filter);
         priorityReader.addReaderWithPriority(tsFilesReader, 1);
 
         // reader for all unSequence data

@@ -138,7 +138,7 @@ public class TsFileSequenceReader {
      *
      * @param offset the file offset of this chunk's header
      */
-    public ChunkHeader readChunkHeader(long offset) throws IOException {
+    private ChunkHeader readChunkHeader(long offset) throws IOException {
         tsFileInput.position(offset);
         return ChunkHeader.deserializeFrom(tsFileInput.wrapAsInputStream(), false);
     }
@@ -148,7 +148,7 @@ public class TsFileSequenceReader {
      *
      * @return the pages of this chunk
      */
-    public ByteBuffer readChunk(ChunkHeader header) throws IOException {
+    private ByteBuffer readChunk(ChunkHeader header) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(header.getDataSize());
         ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
         buffer.flip();

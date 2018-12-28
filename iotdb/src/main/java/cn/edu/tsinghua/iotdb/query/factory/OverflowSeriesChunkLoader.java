@@ -1,6 +1,6 @@
 //package cn.edu.tsinghua.iotdb.query.factory;
 //
-//import cn.edu.tsinghua.iotdb.query.control.OverflowFileStreamManager;
+//import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 //import cn.edu.tsinghua.iotdb.query.reader.component.BufferedSeriesChunk;
 //import cn.edu.tsinghua.iotdb.query.reader.component.SegmentInputStream;
 //import cn.edu.tsinghua.iotdb.query.reader.component.SegmentInputStreamWithMMap;
@@ -19,10 +19,10 @@
 // */
 //public class OverflowSeriesChunkLoader {
 //  private static final Logger logger = LoggerFactory.getLogger(OverflowSeriesChunkLoader.class);
-//  private OverflowFileStreamManager overflowFileStreamManager;
+//  private FileStreamManager overflowFileStreamManager;
 //
 //  public OverflowSeriesChunkLoader() {
-//    overflowFileStreamManager = OverflowFileStreamManager.getInstance();
+//    overflowFileStreamManager = FileStreamManager.getInstance();
 //  }
 //
 //  public Chunk getChunk(Long jobId, ChunkMetaData metaData) throws IOException {

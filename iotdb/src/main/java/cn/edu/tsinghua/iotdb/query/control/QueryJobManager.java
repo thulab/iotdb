@@ -8,13 +8,13 @@ public class QueryJobManager {
 
     /** to store all queryJobs in one query **/
     private static ThreadLocal<Set<Long>> queryJobIds = new ThreadLocal<>();
-    private OverflowFileStreamManager overflowFileStreamManager;
+    private FileStreamManager fileStreamManager;
 
     private AtomicLong jobId;
 
     private QueryJobManager(){
         jobId = new AtomicLong(0L);
-        overflowFileStreamManager = OverflowFileStreamManager.getInstance();
+        fileStreamManager = FileStreamManager.getInstance();
     }
 
     private static class QueryJobManagerHolder {
@@ -41,14 +41,14 @@ public class QueryJobManager {
      */
     public void closeOneJobForOneQuery(long jobId) throws IOException {
         if (queryJobIds.get() == null && queryJobIds.get().contains(jobId)) {
-            overflowFileStreamManager.closeAll(jobId);
+            fileStreamManager.closeAll(jobId);
         }
     }
 
     public void closeAllJobForOneQuery() throws IOException {
         if (queryJobIds.get() != null) {
             for (long jobId : queryJobIds.get()) {
-                overflowFileStreamManager.closeAll(jobId);
+                fileStreamManager.closeAll(jobId);
             }
             queryJobIds.get().clear();
             queryJobIds.remove();

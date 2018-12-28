@@ -27,11 +27,11 @@ import java.util.List;
 public class EngineExecutorWithTimeGenerator {
 
 
-  public static QueryDataSet execute(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
+  public static QueryDataSet execute(long jobId, QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
     EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(queryExpression.getExpression());
 
-    List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(queryExpression.getSelectedSeries());
+    List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(jobId, queryExpression.getSelectedSeries());
 
     List<TSDataType> dataTypes = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public class EngineExecutorWithTimeGenerator {
             timestampGenerator, readersOfSelectedSeries);
   }
 
-  private static List<EngineReaderByTimeStamp> getReadersOfSelectedPaths(List<Path> paths)
+  private static List<EngineReaderByTimeStamp> getReadersOfSelectedPaths(long jobId, List<Path> paths)
           throws IOException, FileNodeManagerException {
 
     List<EngineReaderByTimeStamp> readersOfSelectedSeries = new ArrayList<>();
@@ -58,7 +58,7 @@ public class EngineExecutorWithTimeGenerator {
       PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
 
       // reader for sequence data
-      SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), null);
+      SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), null);
       mergeReaderByTimestamp.addReaderWithPriority(tsFilesReader, 1);
 
       // reader for unSequence data

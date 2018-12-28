@@ -18,7 +18,7 @@ public interface TsFileInput {
      * @throws IOException
      *          If some other I/O error occurs
      */
-    public long size() throws IOException;
+    long size() throws IOException;
 
     /**
      * Returns this input's current position.
@@ -33,7 +33,7 @@ public interface TsFileInput {
      * @throws  IOException
      *          If some other I/O error occurs
      */
-    public long position() throws IOException;
+    long position() throws IOException;
 
     /**
      * Sets this input's position.
@@ -58,7 +58,7 @@ public interface TsFileInput {
      * @throws  IOException
      *          If some other I/O error occurs
      */
-    public TsFileInput position(long newPosition) throws IOException;
+    TsFileInput position(long newPosition) throws IOException;
 
 
     /**
@@ -69,7 +69,7 @@ public interface TsFileInput {
      * read.  Otherwise this method behaves exactly as specified in the {@link
      * ReadableByteChannel} interface. </p>
      */
-    public int read(ByteBuffer dst) throws IOException;
+    int read(ByteBuffer dst) throws IOException;
 
     /**
      * Reads a sequence of bytes from this TsFileInput into the given buffer,
@@ -111,11 +111,11 @@ public interface TsFileInput {
      * @throws  IOException
      *          If some other I/O error occurs
      */
-    public int read(ByteBuffer dst, long position) throws IOException;
+    int read(ByteBuffer dst, long position) throws IOException;
 
-    public FileChannel wrapAsFileChannel() throws IOException;
+    FileChannel wrapAsFileChannel() throws IOException;
 
-    public InputStream wrapAsInputStream() throws IOException;
+    InputStream wrapAsInputStream() throws IOException;
 
     /**
      * Closes this channel.
@@ -126,14 +126,14 @@ public interface TsFileInput {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public void close() throws IOException;
+    void close() throws IOException;
 
     /**
      * read a byte from the Input
      * @return
      * @throws IOException
      */
-    public int read() throws IOException;
+    int read() throws IOException;
 
     /**
      *
@@ -143,12 +143,12 @@ public interface TsFileInput {
      * @return
      * @throws IOException
      */
-    public int read(byte[] b, int off, int len) throws IOException;
+    int read(byte[] b, int off, int len) throws IOException;
 
     /**
      * read 4 bytes from the Input and convert it to a integer
      * @return
      * @throws IOException
      */
-    public int readInt() throws IOException;
+    int readInt() throws IOException;
 }
