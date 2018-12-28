@@ -24,4 +24,3 @@ script:
   - mvn clean test -pl jdbc -am -Dtsfile.test.skip=true
 
 after_success:
-
