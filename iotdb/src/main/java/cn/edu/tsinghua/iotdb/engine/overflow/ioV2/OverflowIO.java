@@ -237,6 +237,11 @@ public class OverflowIO extends TsFileIOWriter {
 		}
 
 		@Override
+		public void truncate(long position) throws IOException {
+			raf.getChannel().truncate(position);
+		}
+
+		@Override
 		public void write(int b) throws IOException {
 			raf.write(b);
 		}
