@@ -53,4 +53,12 @@ public interface TsFileOutput {
      */
     void flush() throws IOException;
 
+    /**
+     * The same with {@link java.nio.channels.FileChannel#truncate(long)}
+     * @param position
+     * @throws IOException
+     */
+    void truncate(long position) throws IOException;
+
+
 }
