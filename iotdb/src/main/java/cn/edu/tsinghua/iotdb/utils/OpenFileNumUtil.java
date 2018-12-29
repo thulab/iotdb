@@ -117,7 +117,6 @@ public class OpenFileNumUtil {
 
     /**
      * set pid
-     *
      * @param pid is the process ID of IoTDB service process
      */
     void setPid(int pid) {
