@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<configuration debug="false">
+	<configuration debug="false" />
 	<property name="LOG_PATH" value="logs" />
 	<appender name="FILEERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>${LOG_PATH}/log_error.log</file>

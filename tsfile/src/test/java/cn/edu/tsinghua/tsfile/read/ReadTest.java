@@ -27,12 +27,12 @@ import static org.junit.Assert.assertEquals;
 
 public class ReadTest {
 
-    private static String fileName = "src/test/resources/perTestOutputData.tsfile";
+    private static String fileName = "target/perTestOutputData.tsfile";
     private static ReadOnlyTsFile roTsFile = null;
 
     @Before
     public void prepare() throws IOException, InterruptedException, WriteProcessException {
-        FileGenerator.generateFile();
+        FileGenerator.generateFile(10000,100);
         TsFileSequenceReader reader = new TsFileSequenceReader(fileName);
         roTsFile = new ReadOnlyTsFile(reader);
     }

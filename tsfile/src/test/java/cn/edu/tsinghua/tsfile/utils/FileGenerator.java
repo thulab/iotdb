@@ -23,26 +23,31 @@ import java.util.Scanner;
 
 public class FileGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(FileGenerator.class);
-    public static final int ROW_COUNT = 1000;
+    public static int ROW_COUNT = 1000;
     public static TsFileWriter innerWriter;
     public static String inputDataFile;
-    public static String outputDataFile = "src/test/resources/perTestOutputData.tsfile";
+    public static String outputDataFile = "target/perTestOutputData.tsfile";
     public static String errorOutputDataFile;
     public static JSONObject jsonSchema;
     public static int oldMaxNumberOfPointsInPage;
 
-	public static void generateFile() throws IOException, InterruptedException, WriteProcessException {
+    public static void generateFile(int rowCount, int maxNumberOfPointsInPage) throws IOException, InterruptedException, WriteProcessException {
         TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
         oldMaxNumberOfPointsInPage = config.maxNumberOfPointsInPage;
-        config.maxNumberOfPointsInPage = 10;
-	    prepare();
-    	write();
+        config.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
+        prepare();
+        write();
         config.maxNumberOfPointsInPage = oldMaxNumberOfPointsInPage;
+        ROW_COUNT = rowCount;
+    }
+
+	public static void generateFile() throws IOException, InterruptedException, WriteProcessException {
+        generateFile(1000, 10);
 	}
 
     public static void prepare() throws IOException {
-        inputDataFile = "src/test/resources/perTestInputData";
-        errorOutputDataFile = "src/test/resources/perTestErrorOutputData.tsfile";
+        inputDataFile = "target/perTestInputData";
+        errorOutputDataFile = "target/perTestErrorOutputData.tsfile";
         jsonSchema = generateTestData();
         generateSampleInputDataFile();
     }
