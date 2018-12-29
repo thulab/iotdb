@@ -3,16 +3,24 @@ dist: trusty
 
 language: java
 
-jdk:
-  - oraclejdk8
-  - oraclejdk9
-  # - openjdk8
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode10.1 # JDK11.0.1+13
+    - os: osx
+      osx_image: xcode9.3  # JDK1.8.0_112-b16
+
+#jdk:
+#  - oraclejdk8
+#  - oraclejdk9
+#  - openjdk8
 
 before_install: true
 
 install: true
 
 script: 
+  - mvn clean package -Dmaven.test.skip=true
   - mvn clean test -pl jdbc -am -Dtsfile.test.skip=true
 
 after_success:
