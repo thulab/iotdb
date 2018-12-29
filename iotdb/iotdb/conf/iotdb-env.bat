@@ -21,6 +21,7 @@ IF ["%IOTDB_HEAP_OPTS%"] EQU [""] (
 			echo Detect 32-bit Java, maximum memory allocation pool = 512MB, initial memory allocation pool = 512MB
 			set IOTDB_HEAP_OPTS=-Xmx512M -Xms512M -Xloggc:"%IOTDB_HOME%\gc.log" -XX:+PrintGCDateStamps -XX:+PrintGCDetails
 		)
+		goto end_config_setting
 	) ELSE (
 		goto detect_jdk11_bit_version
 	)
@@ -43,3 +44,5 @@ IF "%BIT_VERSION%" == "64-Bit" (
 	set IOTDB_HEAP_OPTS=-Xmx512M -Xms512M -Xloggc:"%IOTDB_HOME%\gc.log"
 )
 
+:end_config_setting
+echo If you want to change this configuration, please check conf/iotdb-env.sh(Unix or OS X, if you use Windows, check conf/iotdb-env.bat).
