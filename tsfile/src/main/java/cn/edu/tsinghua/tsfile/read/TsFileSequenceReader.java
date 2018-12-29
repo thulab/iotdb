@@ -119,6 +119,12 @@ public class TsFileSequenceReader {
         return TsDeviceMetadata.deserializeFrom(buffer);
     }
 
+    /**
+     * read data from current position of the input, and deserialize it to a ChunkGroupFooter.
+     * <br>This method is not threadsafe.</>
+     * @return a ChunkGroupFooter
+     * @throws IOException io error
+     */
     public ChunkGroupFooter readChunkGroupFooter() throws IOException {
         return ChunkGroupFooter.deserializeFrom(tsFileInput.wrapAsInputStream(), true);
     }
@@ -126,11 +132,19 @@ public class TsFileSequenceReader {
     /**
      * After reading the footer of a ChunkGroup, call this method to set the file pointer to the start of the data of this
      * ChunkGroup if you want to read its data next.
+     * <br>This method is not threadsafe.</>
+     * @param footer the chunkGroupFooter which you want to read data
      */
     public void prepareReadChunkGroup(ChunkGroupFooter footer) throws IOException {
         tsFileInput.position(tsFileInput.position() - footer.getDataSize() - footer.getSerializedSize());
     }
 
+    /**
+     * read data from current position of the input, and deserialize it to a ChunkHeader.
+     * <br>This method is not threadsafe.</>
+     * @return a ChunkHeader
+     * @throws IOException io error
+     */
     public ChunkHeader readChunkHeader() throws IOException {
         return ChunkHeader.deserializeFrom(tsFileInput.wrapAsInputStream(), true);
     }
@@ -138,16 +152,16 @@ public class TsFileSequenceReader {
     /**
      * notice, this function will modify channel's position.
      *
-     * @param offset the file offset of this chunk's header
+     * @param offset the file offset of this chunk's header (does not include the marker)
      */
-    private ChunkHeader readChunkHeader(long offset) throws IOException {
+    private ChunkHeader readChunkHeader(long offset) throws IOException {//TODO fix me as a threadsafe method.
         tsFileInput.position(offset);
         return ChunkHeader.deserializeFrom(tsFileInput.wrapAsInputStream(), false);
     }
 
     /**
      * notice, the position of the channel MUST be at the end of this header.
-     *
+     * <br>This method is not threadsafe.</>
      * @return the pages of this chunk
      */
     private ByteBuffer readChunk(ChunkHeader header) throws IOException {
@@ -206,8 +220,12 @@ public class TsFileSequenceReader {
     }
 
     public ByteBuffer readPage(PageHeader header, CompressionType type) throws IOException {
+        return readPage(header, type, tsFileInput.position());
+    }
+
+    public ByteBuffer readPage(PageHeader header, CompressionType type, long position) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(header.getCompressedSize());
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
+        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), position, buffer);
         buffer.flip();
         UnCompressor unCompressor = UnCompressor.getUnCompressor(type);
         ByteBuffer uncompressedBuffer = ByteBuffer.allocate(header.getUncompressedSize());
@@ -217,15 +235,24 @@ public class TsFileSequenceReader {
             case UNCOMPRESSED:
                 return buffer;
             default:
-                unCompressor.uncompress(buffer.array(), buffer.position(), buffer.remaining(), uncompressedBuffer.array(), 0);
+                unCompressor.uncompress(buffer.array(), buffer.position(), buffer.remaining(), uncompressedBuffer.array(), 0);//FIXME if the buffer is not array-impelmented.
                 return uncompressedBuffer;
         }
-
     }
 
+
+    /**
+     * read one byte from the input. <br> not thread safe</>
+     * @return
+     * @throws IOException
+     */
     public byte readMarker() throws IOException {
+        return readMarker(tsFileInput.position());
+    }
+
+    public byte readMarker(long position) throws IOException {
         markerBuffer.clear();
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), markerBuffer);
+        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), position, markerBuffer);
         markerBuffer.flip();
         return markerBuffer.get();
     }
