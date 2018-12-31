@@ -224,6 +224,12 @@ public class ReadWriteIOUtils {
         return new String(bytes, 0, sLength);
     }
 
+    public static String readStringWithoutLength(ByteBuffer buffer, int length) {
+        byte[] bytes = new byte[length];
+        buffer.get(bytes, 0, length);
+        return new String(bytes, 0, length);
+    }
+
     public static int write(ByteBuffer byteBuffer, OutputStream outputStream) throws IOException {
         int len = 0;
         len += write(byteBuffer.capacity(), outputStream);
@@ -344,6 +350,19 @@ public class ReadWriteIOUtils {
         return length;
     }
 
+    public static int readAsPossible(FileChannel channel, ByteBuffer target, long offset, int len) throws IOException {
+        int length = 0;
+        int limit = target.limit();
+        if (target.remaining() > len)
+            target.limit(target.position() + len);
+        int read;
+        while (length < len && target.hasRemaining() && (read = channel.read(target, offset)) != -1) {
+            length += read;
+            offset += read;
+        }
+        target.limit(limit);
+        return length;
+    }
 
     /**
      * List<Integer>
