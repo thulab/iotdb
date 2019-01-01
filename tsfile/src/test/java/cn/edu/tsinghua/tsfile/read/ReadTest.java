@@ -83,7 +83,7 @@ public class ReadTest {
             }
             count++;
         }
-        assertEquals(count, 750);
+        assertEquals(750, count);
     }
 
     @Test

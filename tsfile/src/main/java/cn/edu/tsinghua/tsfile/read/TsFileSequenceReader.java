@@ -78,6 +78,14 @@ public class TsFileSequenceReader {
         this.fileMetadataSize = fileMetadataSize;
     }
 
+    public long getFileMetadataPos() {
+        return fileMetadataPos;
+    }
+
+    public int getFileMetadataSize() {
+        return fileMetadataSize;
+    }
+
     /**
      * this function does not modify the position of the file reader.
      */
@@ -103,20 +111,14 @@ public class TsFileSequenceReader {
      * this function does not modify the position of the file reader.
      */
     public TsFileMetaData readFileMetadata() throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(fileMetadataSize);
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), fileMetadataPos, buffer);
-        buffer.flip();
-        return TsFileMetaData.deserializeFrom(buffer);
+        return TsFileMetaData.deserializeFrom(readData(fileMetadataPos, fileMetadataSize));
     }
 
     /**
      * this function does not modify the position of the file reader.
      */
     public TsDeviceMetadata readTsDeviceMetaData(TsDeviceMetadataIndex index) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(index.getLen());
-        tsFileInput.read(buffer, index.getOffset());
-        buffer.flip();
-        return TsDeviceMetadata.deserializeFrom(buffer);
+        return TsDeviceMetadata.deserializeFrom(readData(index.getOffset(), index.getLen()));
     }
 
     /**
@@ -126,7 +128,7 @@ public class TsFileSequenceReader {
      * @throws IOException io error
      */
     public ChunkGroupFooter readChunkGroupFooter() throws IOException {
-        return readChunkGroupFooter(tsFileInput.position(), true);
+        return ChunkGroupFooter.deserializeFrom(tsFileInput.wrapAsInputStream(), true);
     }
     /**
      * read data from current position of the input, and deserialize it to a ChunkGroupFooter.
@@ -145,7 +147,7 @@ public class TsFileSequenceReader {
      * <br>This method is not threadsafe.</>
      * @param footer the chunkGroupFooter which you want to read data
      */
-    public void prepareReadChunkGroup(ChunkGroupFooter footer) throws IOException {
+    public void setPositionToAChunkGroup(ChunkGroupFooter footer) throws IOException {
         tsFileInput.position(tsFileInput.position() - footer.getDataSize() - footer.getSerializedSize());
     }
 
@@ -162,13 +164,11 @@ public class TsFileSequenceReader {
 
 
     /**
-     * notice, this function will modify channel's position.
-     *
-     * @param offset the file offset of this chunk's header
+     * @param position the file offset of this chunk's header
      * @param markerRead true if the offset does not contains the marker , otherwise false
      */
-    private ChunkHeader readChunkHeader(long offset, boolean markerRead) throws IOException {
-        return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), offset, markerRead);
+    public ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
+        return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
     }
 
     /**
@@ -176,8 +176,8 @@ public class TsFileSequenceReader {
      * <br>This method is not threadsafe.</>
      * @return the pages of this chunk
      */
-    private ByteBuffer readChunk(ChunkHeader header) throws IOException {
-        return readChunk(header, tsFileInput.position());
+    public ByteBuffer readChunk(ChunkHeader header) throws IOException {
+        return readData(-1, header.getDataSize());
     }
 
     /**
@@ -186,7 +186,7 @@ public class TsFileSequenceReader {
      * @return the pages of this chunk
      */
     public ByteBuffer readChunk(ChunkHeader header, long position) throws IOException {
-        return readChunk(header.getDataSize(), position);
+        return readData(position, header.getDataSize());
     }
 
     /**
@@ -195,32 +195,15 @@ public class TsFileSequenceReader {
      * @param  position the offset of the chunk data
      * @return the pages of this chunk
      */
-    public ByteBuffer readChunk(int dataSize, long position) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(dataSize);
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), position, buffer);
-        buffer.flip();
-        return buffer;
+    public ByteBuffer readChunk(long position, int dataSize) throws IOException {
+        return readData(position, dataSize);
     }
 
-    /**
-     * notice, this function will modify channel's position.
-     */
     public Chunk readMemChunk(ChunkMetaData metaData) throws IOException {
         ChunkHeader header = readChunkHeader(metaData.getOffsetOfChunkHeader(), false);
-        int headerSize = header.getSerializedSize();
-        ByteBuffer buffer = readChunk(headerSize, metaData.getOffsetOfChunkHeader() + headerSize);
+        ByteBuffer buffer = readChunk(metaData.getOffsetOfChunkHeader() + header.getSerializedSize(), header.getDataSize());
         return new Chunk(header, buffer);
     }
-
-    /**
-     * notice, the function will midify channel's position.<br>
-     * notice, the target bytebuffer are not flipped.
-     */
-    public int readRaw(long position, int length, ByteBuffer target) throws IOException {
-        tsFileInput.position(position);
-        return ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), target, position, length);
-    }
-
 
     /**
      * not thread safe.
@@ -229,18 +212,17 @@ public class TsFileSequenceReader {
      * @throws IOException
      */
     public PageHeader readPageHeader(TSDataType type) throws IOException {
-        return readPageHeader(type, tsFileInput.position());
+        return readPageHeader(type, -1);
     }
 
     /**
      * notice, this function will modify channel's position.
      *
-     * @param offset the file offset of this page header's header
+     * @param position the file offset of this page header's header
      */
-    public PageHeader readPageHeader(TSDataType type, long offset) throws IOException {
+    public PageHeader readPageHeader(TSDataType type, long position) throws IOException {
         int size = PageHeader.calculatePageHeaderSize(type);
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer, offset, size);
+        ByteBuffer buffer = readData(position, size);
         return PageHeader.deserializeFrom(buffer, type);
     }
 
@@ -249,13 +231,11 @@ public class TsFileSequenceReader {
     }
 
     public ByteBuffer readPage(PageHeader header, CompressionType type) throws IOException {
-        return readPage(header, type, tsFileInput.position());
+        return readPage(header, type, -1);
     }
 
     public ByteBuffer readPage(PageHeader header, CompressionType type, long position) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(header.getCompressedSize());
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), position, buffer);
-        buffer.flip();
+        ByteBuffer buffer = readData(position, header.getCompressedSize());
         UnCompressor unCompressor = UnCompressor.getUnCompressor(type);
         ByteBuffer uncompressedBuffer = ByteBuffer.allocate(header.getUncompressedSize());
         //unCompressor.uncompress(buffer, uncompressedBuffer);
@@ -276,14 +256,14 @@ public class TsFileSequenceReader {
      * @throws IOException
      */
     public byte readMarker() throws IOException {
-        return readMarker(tsFileInput.position());
+        markerBuffer.clear();
+        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), markerBuffer);
+        markerBuffer.flip();
+        return markerBuffer.get();
     }
 
     public byte readMarker(long position) throws IOException {
-        markerBuffer.clear();
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), position, markerBuffer);
-        markerBuffer.flip();
-        return markerBuffer.get();
+        return readData(position, Byte.BYTES).get();
     }
 
 
@@ -295,4 +275,28 @@ public class TsFileSequenceReader {
         return this.file;
     }
 
+    /**
+     * read data from tsFileInput, from the current position (if position = -1), or the given position.
+     * <br> if position = -1, the tsFileInput's position will be changed to the current position + real data size that been read.
+     * Other wise, the tsFileInput's position is not changed.
+     * @param position the start position of data in the tsFileInput, or the current position if position = -1
+     * @param size the size of data that want to read
+     * @return data that been read.
+     */
+    private ByteBuffer readData(long position, int size) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        if(position == -1)
+            ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
+        else
+            ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer, position, size);
+        buffer.flip();
+        return buffer;
+    }
+
+    /**
+     * notice, the target bytebuffer are not flipped.
+     */
+    public int readRaw(long position, int length, ByteBuffer target) throws IOException {
+        return ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), target, position, length);
+    }
 }

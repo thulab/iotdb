@@ -132,7 +132,7 @@ public class ChunkHeader {
     }
 
     public static ChunkHeader deserializeFrom(FileChannel channel, long offset, boolean markerRead) throws IOException {
-        if (markerRead) {
+        if (!markerRead) {
             offset++;
         }
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);

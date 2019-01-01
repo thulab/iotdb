@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class TsFileIOWriterTest {
 
-    private static String tsfile = "src/test/resources/tsfileIOWriterTest.tsfile";
+    private static String tsfile = "target/tsfileIOWriterTest.tsfile";
     private static String deviceId = "device1";
 
     @Before
