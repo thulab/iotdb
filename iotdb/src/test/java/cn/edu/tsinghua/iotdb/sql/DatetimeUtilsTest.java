@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.objenesis.strategy.InstantiatorStrategy;
-
 import cn.edu.tsinghua.iotdb.qp.constant.DatetimeUtils;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 
