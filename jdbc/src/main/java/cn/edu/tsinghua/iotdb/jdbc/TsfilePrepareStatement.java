@@ -19,6 +19,10 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -35,8 +39,9 @@ public class TsfilePrepareStatement extends TsfileStatement implements PreparedS
 	 */
 	private final Map<Integer, String> parameters=new HashMap<Integer, String>();
 	
-	public TsfilePrepareStatement(TsfileConnection connection, Iface client, TS_SessionHandle sessionHandle, String sql) {
-		super(connection, client, sessionHandle);
+	public TsfilePrepareStatement(TsfileConnection connection, Iface client, TS_SessionHandle sessionHandle, 
+			String sql, ZoneId zoneId) {
+		super(connection, client, sessionHandle, zoneId);
 		this.sql = sql;
 	}
 
@@ -315,7 +320,8 @@ public class TsfilePrepareStatement extends TsfileStatement implements PreparedS
 
 	@Override
 	public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-		this.parameters.put(parameterIndex, x.getTime()+"");
+		ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(x.getTime()), super.zoneId);
+		this.parameters.put(parameterIndex, zonedDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 	}
 
 	@Override

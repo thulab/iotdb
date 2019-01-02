@@ -9,6 +9,18 @@ import java.time.temporal.ChronoField;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 
 public class DatetimeUtils {
+	
+    public static final DateTimeFormatter ISO_LOCAL_DATE_WIDTH_1_2;
+    static {
+    	ISO_LOCAL_DATE_WIDTH_1_2 = new DateTimeFormatterBuilder()
+                .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+                .appendLiteral('-')
+                .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NEVER)
+                .appendLiteral('-')
+                .appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NEVER)
+                .toFormatter();
+    }
+	
 	/**
 	 * such as '2011/12/03'.
 	 */
@@ -17,9 +29,9 @@ public class DatetimeUtils {
     	ISO_LOCAL_DATE_WITH_SLASH = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
                 .appendLiteral('/')
-                .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+                .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NEVER)
                 .appendLiteral('/')
-                .appendValue(ChronoField.DAY_OF_MONTH, 2)
+                .appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NEVER)
                 .toFormatter();
     }
     
@@ -31,9 +43,9 @@ public class DatetimeUtils {
     	ISO_LOCAL_DATE_WITH_DOT = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
                 .appendLiteral('.')
-                .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+                .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NEVER)
                 .appendLiteral('.')
-                .appendValue(ChronoField.DAY_OF_MONTH, 2)
+                .appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NEVER)
                 .toFormatter();
     }
 
@@ -62,7 +74,7 @@ public class DatetimeUtils {
     static {
     	ISO_OFFSET_DATE_TIME_WITH_MS = new DateTimeFormatterBuilder()
                 .parseCaseInsensitive()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE)
+                .append(ISO_LOCAL_DATE_WIDTH_1_2)
                 .appendLiteral('T')
                 .append(ISO_LOCAL_TIME_WITH_MS)
                 .appendOffsetId()
