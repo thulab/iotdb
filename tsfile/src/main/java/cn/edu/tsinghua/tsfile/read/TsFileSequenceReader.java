@@ -167,7 +167,7 @@ public class TsFileSequenceReader {
      * @param position the file offset of this chunk's header
      * @param markerRead true if the offset does not contains the marker , otherwise false
      */
-    public ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
+    private ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
         return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
     }
 
@@ -195,7 +195,7 @@ public class TsFileSequenceReader {
      * @param  position the offset of the chunk data
      * @return the pages of this chunk
      */
-    public ByteBuffer readChunk(long position, int dataSize) throws IOException {
+    private ByteBuffer readChunk(long position, int dataSize) throws IOException {
         return readData(position, dataSize);
     }
 
@@ -285,7 +285,7 @@ public class TsFileSequenceReader {
      */
     private ByteBuffer readData(long position, int size) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(size);
-        if(position == -1)
+        if (position == -1)
             ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
         else
             ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer, position, size);

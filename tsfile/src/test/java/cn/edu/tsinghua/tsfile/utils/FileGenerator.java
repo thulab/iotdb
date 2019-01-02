@@ -32,13 +32,14 @@ public class FileGenerator {
     public static int oldMaxNumberOfPointsInPage;
 
     public static void generateFile(int rowCount, int maxNumberOfPointsInPage) throws IOException, InterruptedException, WriteProcessException {
+        ROW_COUNT = rowCount;
         TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
         oldMaxNumberOfPointsInPage = config.maxNumberOfPointsInPage;
         config.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
+
         prepare();
         write();
         config.maxNumberOfPointsInPage = oldMaxNumberOfPointsInPage;
-        ROW_COUNT = rowCount;
     }
 
 	public static void generateFile() throws IOException, InterruptedException, WriteProcessException {
