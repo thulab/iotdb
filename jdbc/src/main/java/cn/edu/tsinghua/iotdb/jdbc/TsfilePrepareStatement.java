@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.joda.time.DateTime;
-
 import cn.edu.tsinghua.service.rpc.thrift.TS_SessionHandle;
 import cn.edu.tsinghua.service.rpc.thrift.TSIService.Iface;
 
@@ -317,8 +315,7 @@ public class TsfilePrepareStatement extends TsfileStatement implements PreparedS
 
 	@Override
 	public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-		DateTime dt = new DateTime(x.getTime());
-		this.parameters.put(parameterIndex, dt.toString("yyyy-MM-dd HH:mm:ss.SSS"));
+		this.parameters.put(parameterIndex, x.getTime()+"");
 	}
 
 	@Override

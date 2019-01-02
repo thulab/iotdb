@@ -1,10 +1,10 @@
 package cn.edu.tsinghua.iotdb.conf;
 
 import java.io.File;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.joda.time.DateTimeZone;
 
 public class TsfileDBConfig {
 
@@ -138,7 +138,7 @@ public class TsfileDBConfig {
 	 */
 	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
-	public DateTimeZone timeZone = DateTimeZone.getDefault();
+	public ZoneOffset offset = ZonedDateTime.now().getOffset();
 	
 	/**
 	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.

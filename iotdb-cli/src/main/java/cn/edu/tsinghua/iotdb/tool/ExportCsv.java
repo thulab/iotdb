@@ -11,8 +11,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 
 import jline.console.ConsoleReader;
 
@@ -27,6 +25,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * @author aru cheng
@@ -234,12 +236,12 @@ public class ExportCsv extends AbstractCsvTool{
 				if (rs.getString(1) == null || rs.getString(1).toLowerCase().equals("null")) {
 					writer.write(",");
 				} else {
-					DateTime dateTime;
+					ZonedDateTime dateTime;
 					switch (timeFormat) {
 						case DEFAULT_TIME_FORMAT:
 						case "default":
-							dateTime = new DateTime(rs.getLong(1), timeZone);
-							writer.write(dateTime.toString(ISODateTimeFormat.dateHourMinuteSecondMillis())+",");
+							dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong(1)), ZoneId.of(offset.toString()));
+							writer.write(dateTime.toString()+",");
 							break;
 						case "timestamp":
 						case "long":
@@ -247,8 +249,8 @@ public class ExportCsv extends AbstractCsvTool{
 							writer.write(rs.getLong(1) + ",");
 							break;
 						default:
-							dateTime = new DateTime(rs.getLong(1), timeZone);
-							writer.write(dateTime.toString(timeFormat)+",");
+							dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong(1)), ZoneId.of(offset.toString()));
+							writer.write(dateTime.format(DateTimeFormatter.ofPattern(timeFormat))+",");
 							break;
 					}
 
