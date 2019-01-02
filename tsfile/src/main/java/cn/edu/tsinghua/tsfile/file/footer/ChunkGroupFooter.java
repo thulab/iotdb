@@ -85,33 +85,6 @@ public class ChunkGroupFooter {
         return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
     }
 
-   /* *//**
-     * @param channel
-     * @param markerRead  Whether the marker of the ChunkGroupFooter is read ahead.
-     * @return
-     * @throws IOException
-     *//*
-    public static ChunkGroupFooter deserializeFrom(FileChannel channel, boolean markerRead) throws IOException {
-        if (!markerRead) {
-            ByteBuffer buffer = ByteBuffer.allocate(Byte.BYTES);
-            channel.read(buffer);
-            buffer.flip();
-            byte marker = buffer.get();
-            if (marker != MARKER)
-                MetaMarker.handleUnexpectedMarker(marker);
-        }
-        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-        channel.read(buffer);
-        buffer.flip();
-        int size = buffer.getInt();
-        buffer = ByteBuffer.allocate(getSerializedSize(size));
-        ReadWriteIOUtils.readAsPossible(channel, buffer);
-        buffer.flip();
-        String deviceID = ReadWriteIOUtils.readStringWithoutLength(buffer, size);
-        long dataSize = ReadWriteIOUtils.readLong(buffer);
-        int numOfChunks = ReadWriteIOUtils.readInt(buffer);
-        return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
-    }*/
 
     /**
      * @param channel
