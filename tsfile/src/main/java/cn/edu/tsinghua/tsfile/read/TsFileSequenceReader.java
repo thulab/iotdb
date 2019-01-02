@@ -162,15 +162,6 @@ public class TsFileSequenceReader {
         return ChunkHeader.deserializeFrom(tsFileInput.wrapAsInputStream(), true);
     }
 
-
-    /**
-     * @param position the file offset of this chunk's header
-     * @param markerRead true if the offset does not contains the marker , otherwise false
-     */
-    private ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
-        return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
-    }
-
     /**
      * notice, the position of the channel MUST be at the end of this header.
      * <br>This method is not threadsafe.</>
@@ -189,6 +180,20 @@ public class TsFileSequenceReader {
         return readData(position, header.getDataSize());
     }
 
+    public Chunk readMemChunk(ChunkMetaData metaData) throws IOException {
+        ChunkHeader header = readChunkHeader(metaData.getOffsetOfChunkHeader(), false);
+        ByteBuffer buffer = readChunk(metaData.getOffsetOfChunkHeader() + header.getSerializedSize(), header.getDataSize());
+        return new Chunk(header, buffer);
+    }
+
+    /**
+     * @param position the file offset of this chunk's header
+     * @param markerRead true if the offset does not contains the marker , otherwise false
+     */
+    private ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
+        return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
+    }
+
     /**
      * notice, this function will modify channel's position.
      * @param dataSize the size of chunkdata
@@ -197,12 +202,6 @@ public class TsFileSequenceReader {
      */
     private ByteBuffer readChunk(long position, int dataSize) throws IOException {
         return readData(position, dataSize);
-    }
-
-    public Chunk readMemChunk(ChunkMetaData metaData) throws IOException {
-        ChunkHeader header = readChunkHeader(metaData.getOffsetOfChunkHeader(), false);
-        ByteBuffer buffer = readChunk(metaData.getOffsetOfChunkHeader() + header.getSerializedSize(), header.getDataSize());
-        return new Chunk(header, buffer);
     }
 
     /**

@@ -106,6 +106,8 @@ public class IoTDBEngineTimeGeneratorTest {
             // System.out.println("cnt =" + cnt + "; time = " + time);
         }
         assertEquals(count, cnt);
+
+        timeGenerator.clear();
     }
 
     /**
@@ -126,6 +128,8 @@ public class IoTDBEngineTimeGeneratorTest {
             cnt++;
         }
         assertEquals(0, cnt);
+
+        timeGenerator.clear();
     }
 
     /**
@@ -155,6 +159,8 @@ public class IoTDBEngineTimeGeneratorTest {
             //System.out.println("cnt =" + cnt + "; time = " + time);
         }
         assertEquals(count2, cnt);
+
+        timeGenerator.clear();
     }
 
     private static void insertData() throws ClassNotFoundException, SQLException {
