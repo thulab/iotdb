@@ -73,7 +73,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
             TsDeviceMetadata tsDeviceMetadata = tsFileReader.readTsDeviceMetaData(index);
 
             // d1
-            for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
+            for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {//TODO make this function better
 
                 if (enough) break;
 

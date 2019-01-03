@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.timegenerator;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
@@ -14,6 +15,7 @@ import java.io.IOException;
  * this class can iterate back to every timestamp of the query.
  */
 public class EngineTimeGenerator implements TimeGenerator {
+
     private long jobId;
     private IExpression expression;
     private Node operatorNode;
@@ -42,5 +44,13 @@ public class EngineTimeGenerator implements TimeGenerator {
     // TODO implement the optimization
     @Override public Object getValue(Path path, long time) {
         return null;
+    }
+
+    /**
+     * Close and remove all opened file streams by EngineTimeGenerator.
+     * This method is necessary in unit test which only created EngineTimeGenerator.
+     */
+    public void clear() throws IOException {
+        FileStreamManager.getInstance().closeAll(jobId);
     }
 }

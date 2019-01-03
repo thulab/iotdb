@@ -14,10 +14,7 @@ import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
 import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.utils.FileGenerator;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +29,7 @@ public class ReadTest {
 
     @Before
     public void prepare() throws IOException, InterruptedException, WriteProcessException {
-        FileGenerator.generateFile(10000,100);
+        FileGenerator.generateFile(1000,100);
         TsFileSequenceReader reader = new TsFileSequenceReader(fileName);
         roTsFile = new ReadOnlyTsFile(reader);
     }
@@ -83,7 +80,7 @@ public class ReadTest {
             }
             count++;
         }
-        assertEquals(count, 750);
+        assertEquals(750, count);
     }
 
     @Test
@@ -98,9 +95,12 @@ public class ReadTest {
         QueryExpression queryExpression = QueryExpression.create(pathList, finalFilter);
         QueryDataSet dataSet = roTsFile.query(queryExpression);
 
+        int cnt = 0;
         while (dataSet.hasNext()) {
             dataSet.next();
+            cnt++;
         }
+
     }
 
     @Test

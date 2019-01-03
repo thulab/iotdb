@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.header;
 
+import cn.edu.tsinghua.tsfile.file.metadata.statistics.NoStatistics;
 import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
@@ -26,10 +27,10 @@ public class PageHeader {
     }
 
     public int calculatePageHeaderSize() {
-        if(statistics!=null)
+        //if(statistics!=null)
             return 3 * Integer.BYTES + 2 * Long.BYTES + statistics.getSerializedSize();
-        else
-            return 3 * Integer.BYTES + 2 * Long.BYTES;
+        //else
+        //    return 3 * Integer.BYTES + 2 * Long.BYTES;
     }
 
     public int getSerializedSize() {
@@ -41,6 +42,7 @@ public class PageHeader {
         this.uncompressedSize = uncompressedSize;
         this.compressedSize = compressedSize;
         this.numOfValues = numOfValues;
+        if (statistics == null) statistics = new NoStatistics();
         this.statistics = statistics;
         this.max_timestamp = max_timestamp;
         this.min_timestamp = min_timestamp;
@@ -76,11 +78,11 @@ public class PageHeader {
         return statistics;
     }
 
-    public void setStatistics(Statistics<?> statistics) {
+    /*public void setStatistics(Statistics<?> statistics) {
         this.statistics = statistics;
         if(statistics != null)
             serializedSize = calculatePageHeaderSize();
-    }
+    }*/
 
     public long getMax_timestamp() {
         return max_timestamp;

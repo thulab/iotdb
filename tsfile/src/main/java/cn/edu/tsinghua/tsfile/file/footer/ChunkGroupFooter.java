@@ -6,6 +6,8 @@ import cn.edu.tsinghua.tsfile.file.MetaMarker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 public class ChunkGroupFooter {
 
@@ -21,7 +23,6 @@ public class ChunkGroupFooter {
      * The time when endRowgroup() is called.
      */
     private long writtenTime;
-
 
     //this field does not need to be serialized.
     private int serializedSize;
@@ -60,7 +61,7 @@ public class ChunkGroupFooter {
         return length;
     }
 
-    public void setDataSize(long dataSize){
+    public void setDataSize(long dataSize) {
         this.dataSize = dataSize;
     }
 
@@ -83,8 +84,38 @@ public class ChunkGroupFooter {
         return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
     }
 
+
+    /**
+     * @param channel
+     * @param markerRead Whether the marker of the ChunkGroupFooter is read ahead.
+     * @return
+     * @throws IOException
+     */
+    public static ChunkGroupFooter deserializeFrom(FileChannel channel, long offset, boolean markerRead) throws IOException {
+        if (!markerRead) {
+            offset++;
+        }
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+        channel.read(buffer, offset);
+        buffer.flip();
+        int size = buffer.getInt();
+        offset += Integer.BYTES;
+        buffer = ByteBuffer.allocate(getSerializedSize(size));
+        ReadWriteIOUtils.readAsPossible(channel, offset, buffer);
+        buffer.flip();
+        String deviceID = ReadWriteIOUtils.readStringWithoutLength(buffer, size);
+        long dataSize = ReadWriteIOUtils.readLong(buffer);
+        int numOfChunks = ReadWriteIOUtils.readInt(buffer);
+        return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
+    }
+
+
     public static int getSerializedSize(String deviceID) {
-        return Byte.BYTES + Integer.BYTES + deviceID.length() + Long.BYTES + Integer.BYTES;
+        return Byte.BYTES + Integer.BYTES + getSerializedSize(deviceID.length());
+    }
+
+    private static int getSerializedSize(int deviceIDLength) {
+        return deviceIDLength + Long.BYTES + Integer.BYTES;
     }
 
     @Override

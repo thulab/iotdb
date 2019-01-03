@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 public class TimePlainEncodeReadTest {
 
-	private static String fileName = "src/test/resources/perTestOutputData.tsfile";
+	private static String fileName = "target/perTestOutputData.tsfile";
 	private static ReadOnlyTsFile roTsFile = null;
 
 	@Before
