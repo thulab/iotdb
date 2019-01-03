@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class TsFileSequenceReader {
+
     private TsFileInput tsFileInput;
     private long fileMetadataPos;
     private int fileMetadataSize;
@@ -32,7 +33,7 @@ public class TsFileSequenceReader {
     private String file;
 
     /**
-     * create a file reader of the given file.
+     * Create a file reader of the given file.
      * The reader will read the tail of the file to get the file metadata size.
      * Then the reader will skip the first TSFileConfig.MAGIC_STRING.length() bytes of the file
      * for preparing reading real data.
@@ -48,8 +49,9 @@ public class TsFileSequenceReader {
     TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException {
         this.file = file;
         tsFileInput = new DefaultTsFileInput(Paths.get(file));
-        if (loadMetadataSize)
+        if (loadMetadataSize) {
             loadMetadataSize();
+        }
     }
 
     private void loadMetadataSize() throws IOException {
@@ -70,9 +72,8 @@ public class TsFileSequenceReader {
      * @param fileMetadataPos  the position of the file metadata in the TsFileInput
      *                         from the beginning of the input to the current position
      * @param fileMetadataSize the byte size of the file metadata in the input
-     * @throws IOException If some I/O error occurs
      */
-    public TsFileSequenceReader(TsFileInput input, long fileMetadataPos, int fileMetadataSize) throws IOException {
+    public TsFileSequenceReader(TsFileInput input, long fileMetadataPos, int fileMetadataSize) {
         this.tsFileInput = input;
         this.fileMetadataPos = fileMetadataPos;
         this.fileMetadataSize = fileMetadataSize;
@@ -219,7 +220,7 @@ public class TsFileSequenceReader {
      *
      * @param position the file offset of this page header's header
      */
-    public PageHeader readPageHeader(TSDataType type, long position) throws IOException {
+    private PageHeader readPageHeader(TSDataType type, long position) throws IOException {
         int size = PageHeader.calculatePageHeaderSize(type);
         ByteBuffer buffer = readData(position, size);
         return PageHeader.deserializeFrom(buffer, type);
@@ -233,7 +234,7 @@ public class TsFileSequenceReader {
         return readPage(header, type, -1);
     }
 
-    public ByteBuffer readPage(PageHeader header, CompressionType type, long position) throws IOException {
+    private ByteBuffer readPage(PageHeader header, CompressionType type, long position) throws IOException {
         ByteBuffer buffer = readData(position, header.getCompressedSize());
         UnCompressor unCompressor = UnCompressor.getUnCompressor(type);
         ByteBuffer uncompressedBuffer = ByteBuffer.allocate(header.getUncompressedSize());
@@ -250,9 +251,8 @@ public class TsFileSequenceReader {
 
 
     /**
-     * read one byte from the input. <br> not thread safe</>
-     * @return
-     * @throws IOException
+     * read one byte from the input.
+     * <br> this method is not thread safe</>
      */
     public byte readMarker() throws IOException {
         markerBuffer.clear();
@@ -264,7 +264,6 @@ public class TsFileSequenceReader {
     public byte readMarker(long position) throws IOException {
         return readData(position, Byte.BYTES).get();
     }
-
 
     public void close() throws IOException {
         this.tsFileInput.close();
@@ -284,10 +283,11 @@ public class TsFileSequenceReader {
      */
     private ByteBuffer readData(long position, int size) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(size);
-        if (position == -1)
+        if (position == -1) {
             ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
-        else
+        } else {
             ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer, position, size);
+        }
         buffer.flip();
         return buffer;
     }

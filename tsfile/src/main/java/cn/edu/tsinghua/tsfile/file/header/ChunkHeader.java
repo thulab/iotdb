@@ -139,7 +139,7 @@ public class ChunkHeader {
         channel.read(buffer, offset);
         buffer.flip();
         int size = buffer.getInt();
-        offset+=Integer.BYTES;
+        offset += Integer.BYTES;
         buffer = ByteBuffer.allocate(getSerializedSize(size));
         ReadWriteIOUtils.readAsPossible(channel, offset, buffer);
         buffer.flip();

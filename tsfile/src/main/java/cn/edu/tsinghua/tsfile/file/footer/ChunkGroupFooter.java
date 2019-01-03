@@ -24,7 +24,6 @@ public class ChunkGroupFooter {
      */
     private long writtenTime;
 
-
     //this field does not need to be serialized.
     private int serializedSize;
 
@@ -62,7 +61,7 @@ public class ChunkGroupFooter {
         return length;
     }
 
-    public void setDataSize(long dataSize){
+    public void setDataSize(long dataSize) {
         this.dataSize = dataSize;
     }
 
@@ -88,7 +87,7 @@ public class ChunkGroupFooter {
 
     /**
      * @param channel
-     * @param markerRead  Whether the marker of the ChunkGroupFooter is read ahead.
+     * @param markerRead Whether the marker of the ChunkGroupFooter is read ahead.
      * @return
      * @throws IOException
      */
@@ -100,7 +99,7 @@ public class ChunkGroupFooter {
         channel.read(buffer, offset);
         buffer.flip();
         int size = buffer.getInt();
-        offset+=Integer.BYTES;
+        offset += Integer.BYTES;
         buffer = ByteBuffer.allocate(getSerializedSize(size));
         ReadWriteIOUtils.readAsPossible(channel, offset, buffer);
         buffer.flip();
