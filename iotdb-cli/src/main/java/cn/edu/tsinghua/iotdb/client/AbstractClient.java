@@ -62,6 +62,7 @@ public abstract class AbstractClient {
 	protected static final String SET_FETCH_SIZE = "set fetch_size";
 	protected static final String SHOW_FETCH_SIZE = "show fetch_size";
 	protected static int fetchSize = 10000;
+	protected static final String HELP = "help";
 
 	protected static final String IOTDB_CLI_PREFIX = "IoTDB";
 	protected static final String SCRIPT_HINT = "./start-client.sh(start-client.bat if Windows)";
@@ -71,7 +72,7 @@ public abstract class AbstractClient {
 	protected static final int MAX_HELP_CONSOLE_WIDTH = 88;
 
 	protected static final String TIMESTAMP_STR = "Time";
-	protected static final int ISO_DATETIME_LEN = 23;
+	protected static final int ISO_DATETIME_LEN = 26;
 	protected static int maxTimeLength = ISO_DATETIME_LEN;
 	protected static int maxValueLength = 15;
 	/**
@@ -255,7 +256,7 @@ public abstract class AbstractClient {
 		case "default":
 		case "iso8601":
 			dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
-			return dateTime.toString();
+			return dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 		default:
 			dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
 			return dateTime.format(DateTimeFormatter.ofPattern(timeFormat));
@@ -400,6 +401,18 @@ public abstract class AbstractClient {
 			System.out.println(specialCmd + " normally");
 			return OPERATION_RESULT.RETURN_OPER;
 		}
+		if(specialCmd.equals(HELP)) {
+			System.out.println(String.format("    <your-sql>\t\t\t execute your sql statment"));
+			System.out.println(String.format("    %s\t\t show how many timeseries are in iotdb", SHOW_METADATA_COMMAND));
+			System.out.println(String.format("    %s=xxx\t eg. long, default, ISO8601, yyyy-MM-dd HH:mm:ss.", SET_TIMESTAMP_DISPLAY));
+			System.out.println(String.format("    %s\t show time display type", SHOW_TIMESTAMP_DISPLAY));
+			System.out.println(String.format("    %s=xxx\t\t eg. +08:00, Asia/Shanghai.", SET_TIME_ZONE));
+			System.out.println(String.format("    %s\t\t show cli time zone", SHOW_TIMEZONE));
+			System.out.println(String.format("    %s=xxx\t\t set fetch size when querying data from server.", SET_FETCH_SIZE));
+			System.out.println(String.format("    %s\t\t show fetch size", SHOW_FETCH_SIZE));
+			System.out.println(String.format("    %s=xxx\t eg. set max lines for cli to ouput, -1 equals to unlimited.", SET_MAX_DISPLAY_NUM));
+			return OPERATION_RESULT.CONTINUE_OPER;
+		}
 		if (specialCmd.equals(SHOW_METADATA_COMMAND)) {
 			try {
 				System.out.println(((TsfileDatabaseMetadata)connection.getMetaData()).getMetadataInJson());
@@ -518,7 +531,7 @@ public abstract class AbstractClient {
 				ResultSet resultSet = statement.getResultSet();
 				output(resultSet, printToConsole, cmd.trim(), zoneId);
 			}
-			System.out.println("Execute successfully.");
+			System.out.println("Execute successfully. Type `help` to get more information.");
 		} catch (Exception e) {
 			System.out.println("Msg: " + e.getMessage());
 		} finally {

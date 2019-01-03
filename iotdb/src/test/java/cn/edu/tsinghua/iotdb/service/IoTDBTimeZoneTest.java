@@ -66,7 +66,30 @@ public class IoTDBTimeZoneTest {
             EnvironmentUtils.cleanEnv();
         }
     }
+    /**
+     *  // execute in cli-tool
+	    SET STORAGE GROUP TO root.timezone
+	    CREATE TIMESERIES root.timezone.tz1 WITH DATATYPE = INT32, ENCODING = PLAIN
+	    set time_zone=+08:00
+	    insert into root.timezone(timestamp,tz1) values(1514779200000,1)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:01,2)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:02+08:00,3)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:03+09:00,4)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:04+07:00,5)
 
+	    set time_zone=+09:00
+	    insert into root.timezone(timestamp,tz1) values(1514789200000,6)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T14:00:05,7)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:03+08:00,8)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:04+07:00,9)
+	    set time_zone=Asia/Almaty
+	    insert into root.timezone(timestamp,tz1) values(1514782807000,10)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T11:00:08,11)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T13:00:09+08:00,12)
+	    insert into root.timezone(timestamp,tz1) values(2018-1-1T12:00:10+07:00,13)
+
+	    select * from root
+     */
     @Test
     public void timezoneTest() throws ClassNotFoundException, SQLException, TException {
         Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
