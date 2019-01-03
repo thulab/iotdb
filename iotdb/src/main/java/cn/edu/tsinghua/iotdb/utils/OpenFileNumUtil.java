@@ -41,7 +41,15 @@ public class OpenFileNumUtil {
         METADATA_OPEN_FILE_NUM(Collections.singletonList(config.metadataDir)),
         DIGEST_OPEN_FILE_NUM(Collections.singletonList(config.fileNodeDir)),
         SOCKET_OPEN_FILE_NUM(null);
+
+        // path is a list of directory corresponding to the OpenFileNumStatistics enum element,
+        // e.g. data/data/ for DATA_OPEN_FILE_NUM
         private List<String> path;
+
+        public List<String> getPath() {
+            return path;
+        }
+
         OpenFileNumStatistics(List<String> path){
             this.path = path;
         }
@@ -107,7 +115,6 @@ public class OpenFileNumUtil {
 
     /**
      * set pid
-     *
      * @param pid is the process ID of IoTDB service process
      */
     void setPid(int pid) {
