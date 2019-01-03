@@ -48,7 +48,7 @@ public class EngineTimeGenerator implements TimeGenerator {
 
     /**
      * Close and remove all opened file streams by EngineTimeGenerator.
-     * This method is necessary in unit test which only created EngineTimeGenerator but not
+     * This method is necessary in unit test which only created EngineTimeGenerator.
      */
     public void clear() throws IOException {
         FileStreamManager.getInstance().closeAll(jobId);
