@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Properties;
 
@@ -151,12 +152,12 @@ public class TsfileDBDescriptor {
 
 			conf.languageVersion = properties.getProperty("language_version", conf.languageVersion).trim();
 
-			String tmpTimeZone = properties.getProperty("time_zone", conf.offset.toString());
+			String tmpTimeZone = properties.getProperty("time_zone", conf.zoneID.toString());
 			try {
-				conf.offset = ZoneOffset.of(tmpTimeZone.trim());
-				LOGGER.info("Time zone has been set to {}", conf.offset);
+				conf.zoneID = ZoneId.of(tmpTimeZone.trim());
+				LOGGER.info("Time zone has been set to {}", conf.zoneID);
 			} catch (Exception e) {
-				LOGGER.error("Time zone foramt error {}, use default configuration {}", tmpTimeZone, conf.offset);
+				LOGGER.error("Time zone foramt error {}, use default configuration {}", tmpTimeZone, conf.zoneID);
 			}
 
 		} catch (IOException e) {

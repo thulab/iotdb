@@ -3,6 +3,7 @@ package cn.edu.tsinghua.iotdb.sql;
 import static org.junit.Assert.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -10,21 +11,21 @@ import java.time.ZonedDateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.objenesis.strategy.InstantiatorStrategy;
 import cn.edu.tsinghua.iotdb.qp.constant.DatetimeUtils;
 import cn.edu.tsinghua.iotdb.qp.exception.LogicalOperatorException;
 
 public class DatetimeUtilsTest {
 	private ZoneOffset zoneOffset;
+	private ZoneId zoneId;
 
 	@Before
 	public void setUp() throws Exception {
 		zoneOffset =  ZonedDateTime.now().getOffset();
+		zoneId = ZoneId.systemDefault();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		System.out.println();
 	}
 
 	@Test
@@ -50,6 +51,11 @@ public class DatetimeUtilsTest {
 		for(String str : timeFormatWithoutMs) {
 			assertEquals(res, DatetimeUtils.convertDatetimeStrToLong(str, zoneOffset));
 		}
+		
+		for(String str : timeFormatWithoutMs) {
+			assertEquals(res, DatetimeUtils.convertDatetimeStrToLong(str, zoneId));
+		}
+		
 	}
 	
 	@Test
@@ -75,14 +81,38 @@ public class DatetimeUtilsTest {
 		for(String str : timeFormatWithoutMs) {
 			assertEquals(res, DatetimeUtils.convertDatetimeStrToLong(str, zoneOffset));
 		}
+		
+		for(String str : timeFormatWithoutMs) {
+			assertEquals(res, DatetimeUtils.convertDatetimeStrToLong(str, zoneId));
+		}
 	}
 	
 	
 	public void createTest() {
-		long timestamp = System.currentTimeMillis();
-		System.out.println(timestamp);
-		ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of("+08:00"));
-		System.out.println(zonedDateTime);
+//		long timestamp = System.currentTimeMillis();
+//		System.out.println(timestamp);
+//		ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of("+08:00"));
+//		System.out.println(zonedDateTime);
+	}
+	
+	public static void main(String[] args) throws LogicalOperatorException {
+//		ZoneId id = ZoneId.of("+08:00");
+//		Instant instant = Instant.now(); 
+//		ZoneOffset zoneOffset = id.getRules().getOffset(instant);
+//		System.out.println(currentOffsetForMyZone);
+		
+//		DatetimeUtils.convertDatetimeStrToLong("2019.01.02T15:13:27.689[Asia/Shanghai]", zoneOffset);
+//		for(String string : ZoneId.getAvailableZoneIds()) {
+//			ZoneId id = ZoneId.of(string);
+//			Instant instant = Instant.now(); 
+//			ZoneOffset currentOffsetForMyZone = id.getRules().getOffset(instant);
+//			System.out.println(string+"--"+currentOffsetForMyZone);
+//		}
+//		long timestamp = System.currentTimeMillis();
+//		System.out.println(timestamp);
+//		LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(1546499858912L), ZoneId.systemDefault());
+//		System.out.println(dateTime);
+		System.out.println(DatetimeUtils.convertDatetimeStrToLong("2018-1-1T13:00:07", ZoneId.systemDefault()));
 	}
 }
 

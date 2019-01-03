@@ -21,7 +21,6 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -124,7 +123,7 @@ public abstract class AbstractClient {
 		keywordSet.add("-"+MAX_PRINT_ROW_COUNT_ARGS);
 	}
 
-	public static void output(ResultSet res, boolean printToConsole, String statement, ZoneOffset offset) throws SQLException {
+	public static void output(ResultSet res, boolean printToConsole, String statement, ZoneId zoneId) throws SQLException {
 		int cnt = 0;
 		int displayCnt = 0;
 		boolean printTimestamp = true;
@@ -160,7 +159,7 @@ public abstract class AbstractClient {
 			    		if (displayCnt < maxPrintRowCount) { // NOTE displayCnt only works on queried data results
 						System.out.print("|");
 						if (printTimestamp) {
-				    			System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), offset));
+				    			System.out.printf(formatTime, formatDatetime(res.getLong(TIMESTAMP_STR), zoneId));
 						}
 						for (int i = 2; i <= colCount; i++) {
 				    			boolean flag = false;
@@ -172,7 +171,7 @@ public abstract class AbstractClient {
 				    			}
 				    			if (flag) {
 								try {
-					    				System.out.printf(formatValue, formatDatetime(res.getLong(i), offset));
+					    				System.out.printf(formatValue, formatDatetime(res.getLong(i), zoneId));
 								} catch (Exception e) {
 					    				System.out.printf(formatValue, "null");
 								}
@@ -247,7 +246,7 @@ public abstract class AbstractClient {
 		return options;
 	}
 
-	private static String formatDatetime(long timestamp, ZoneOffset offset) {
+	private static String formatDatetime(long timestamp, ZoneId zoneId) {
 		ZonedDateTime dateTime;
 		switch (timeFormat) {
 		case "long":
@@ -255,10 +254,10 @@ public abstract class AbstractClient {
 			return timestamp+"";
 		case "default":
 		case "iso8601":
-			dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(offset.toString()));
+			dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
 			return dateTime.toString();
 		default:
-			dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(offset.toString()));
+			dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
 			return dateTime.format(DateTimeFormatter.ofPattern(timeFormat));
 		}
 	}
@@ -511,13 +510,13 @@ public abstract class AbstractClient {
 		Statement statement = null;
 		long startTime = System.currentTimeMillis();
 		try {
-			ZoneOffset offset = ZoneOffset.of(connection.getTimeZone());
+			ZoneId zoneId =  ZoneId.of(connection.getTimeZone());
 			statement = connection.createStatement();
 			statement.setFetchSize(fetchSize);
 			boolean hasResultSet = statement.execute(cmd.trim());
 			if (hasResultSet) {
 				ResultSet resultSet = statement.getResultSet();
-				output(resultSet, printToConsole, cmd.trim(), offset);
+				output(resultSet, printToConsole, cmd.trim(), zoneId);
 			}
 			System.out.println("Execute successfully.");
 		} catch (Exception e) {

@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.service;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -117,8 +116,8 @@ public class CloseMergeService implements IService{
 		@Override
 		public void run() {
 			long thisMergeTime = System.currentTimeMillis();
-            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeAllLastTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
-            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
+            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeAllLastTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 			long timeInterval = thisMergeTime - mergeAllLastTime;
 			LOGGER.info("Start the merge action regularly, last time is {}, this time is {}, time interval is {}s.",
 					startDateTime, endDateTime, timeInterval / 1000);
@@ -140,8 +139,8 @@ public class CloseMergeService implements IService{
 		@Override
 		public void run() {
 			long thisCloseTime = System.currentTimeMillis();
-            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeAllLastTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
-            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisCloseTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
+            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeAllLastTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisCloseTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 			long timeInterval = thisCloseTime - closeAllLastTime;
 			LOGGER.info("Start the close action regularly, last time is {}, this time is {}, time interval is {}s.",
 					startDateTime, endDateTime, timeInterval / 1000);

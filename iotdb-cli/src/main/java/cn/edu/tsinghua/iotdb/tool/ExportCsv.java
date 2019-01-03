@@ -26,7 +26,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -240,7 +239,7 @@ public class ExportCsv extends AbstractCsvTool{
 					switch (timeFormat) {
 						case DEFAULT_TIME_FORMAT:
 						case "default":
-							dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong(1)), ZoneId.of(offset.toString()));
+							dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong(1)), zoneId);
 							writer.write(dateTime.toString()+",");
 							break;
 						case "timestamp":
@@ -249,7 +248,7 @@ public class ExportCsv extends AbstractCsvTool{
 							writer.write(rs.getLong(1) + ",");
 							break;
 						default:
-							dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong(1)), ZoneId.of(offset.toString()));
+							dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong(1)), zoneId);
 							writer.write(dateTime.format(DateTimeFormatter.ofPattern(timeFormat))+",");
 							break;
 					}

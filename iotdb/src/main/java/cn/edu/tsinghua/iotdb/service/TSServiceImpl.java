@@ -37,8 +37,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Statement;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.INDEXQUERY;
 import static cn.edu.tsinghua.iotdb.qp.logical.Operator.OperatorType.QUERY;
@@ -55,7 +59,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	private ThreadLocal<String> username = new ThreadLocal<>();
 	private ThreadLocal<HashMap<String, PhysicalPlan>> queryStatus = new ThreadLocal<>();
 	private ThreadLocal<HashMap<String, QueryDataSet>> queryRet = new ThreadLocal<>();
-	private ThreadLocal<ZoneOffset> offset = new ThreadLocal<>();
+	private ThreadLocal<ZoneId> zoneIds = new ThreadLocal<>();
 	private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
@@ -85,7 +89,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 			ts_status.setErrorMessage("login successfully.");
 			username.set(req.getUsername());
-			offset.set(config.offset);
+			zoneIds.set(config.getZoneID());
 			initForOneSession();
 		} else {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
@@ -111,14 +115,14 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		if (username.get() == null) {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			ts_status.setErrorMessage("Has not logged in");
-			if(offset.get() != null){
-				offset.remove();
+			if(zoneIds.get() != null){
+				zoneIds.remove();
 			}
 		} else {
 			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 			username.remove();
-			if(offset.get() != null){
-				offset.remove();
+			if(zoneIds.get() != null){
+				zoneIds.remove();
 			}
 		}
 		return new TSCloseSessionResp(ts_status);
@@ -329,7 +333,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			
 			for (String statement : statements) {
 				try {
-					PhysicalPlan physicalPlan = processor.parseSQLToPhysicalPlan(statement, offset.get());
+					PhysicalPlan physicalPlan = processor.parseSQLToPhysicalPlan(statement, zoneIds.get());
 					physicalPlan.setProposer(username.get());
 					if (physicalPlan.isQuery()) {
 						return getTSBathExecuteStatementResp(TS_StatusCode.ERROR_STATUS, "statement is query :" + statement,
@@ -383,7 +387,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 			PhysicalPlan physicalPlan;
 			try {
-				physicalPlan = processor.parseSQLToPhysicalPlan(statement, offset.get());
+				physicalPlan = processor.parseSQLToPhysicalPlan(statement, zoneIds.get());
 				physicalPlan.setProposer(username.get());
 			} catch (IllegalASTFormatException e) {
 				return getTSExecuteStatementResp(TS_StatusCode.ERROR_STATUS,
@@ -411,7 +415,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 			}
 
 			String statement = req.getStatement();
-			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement, offset.get());
+			PhysicalPlan plan = processor.parseSQLToPhysicalPlan(statement, zoneIds.get());
 			plan.setProposer(username.get());
 			String targetUser = null;
 			if(plan instanceof AuthorPlan)
@@ -604,7 +608,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
 		PhysicalPlan physicalPlan;
 		try {
-			physicalPlan = processor.parseSQLToPhysicalPlan(statement, offset.get());
+			physicalPlan = processor.parseSQLToPhysicalPlan(statement, zoneIds.get());
 			physicalPlan.setProposer(username.get());
 		} catch (QueryProcessorException | ArgsErrorException e) {
 			e.printStackTrace();
@@ -728,7 +732,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		TSGetTimeZoneResp resp = null;
 		try {
 			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
-			resp = new TSGetTimeZoneResp(ts_status, offset.get().toString());
+			resp = new TSGetTimeZoneResp(ts_status, zoneIds.get().toString());
 		} catch (Exception e) {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);
 			ts_status.setErrorMessage(e.getMessage());
@@ -742,7 +746,7 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		TS_Status ts_status = null;
 		try {
 			String timeZoneID = req.getTimeZone();
-			offset.set(ZoneOffset.of(timeZoneID));
+			zoneIds.set(ZoneId.of(timeZoneID));
 			ts_status = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 		} catch (Exception e) {
 			ts_status = new TS_Status(TS_StatusCode.ERROR_STATUS);

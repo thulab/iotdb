@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.tool;
 
 import java.io.IOException;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
@@ -39,7 +39,7 @@ public abstract class AbstractCsvTool {
     
     protected static final int MAX_HELP_CONSOLE_WIDTH = 92;
     
-    protected static ZoneOffset offset;
+    protected static ZoneId zoneId;
     protected static String timeZoneID;
     protected static String timeFormat;
     
@@ -93,7 +93,7 @@ public abstract class AbstractCsvTool {
 		if(timeZoneID != null){
 			connection.setTimeZone(timeZoneID);
 		}
-		offset = ZoneOffset.of(connection.getTimeZone());
+		zoneId = ZoneId.of(connection.getTimeZone());
 	}
 	
 	protected static void parseBasicParams(CommandLine commandLine, ConsoleReader reader) throws ArgsErrorException, IOException {

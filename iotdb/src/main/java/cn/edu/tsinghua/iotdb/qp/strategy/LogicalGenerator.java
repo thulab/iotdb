@@ -43,6 +43,7 @@ import org.antlr.runtime.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
@@ -58,11 +59,10 @@ import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.*;
 public class LogicalGenerator {
     private Logger LOG = LoggerFactory.getLogger(LogicalGenerator.class);
     private RootOperator initializedOperator = null;
-    private ZoneOffset offset;
+    private ZoneId zoneId;
 
-    public LogicalGenerator(ZoneOffset offset) {
-
-        this.offset = offset;
+    public LogicalGenerator(ZoneId zoneId) {
+        this.zoneId = zoneId;
     }
 
     public RootOperator getLogicalPlan(ASTNode astNode) throws QueryProcessorException, ArgsErrorException {
@@ -818,7 +818,7 @@ public class LogicalGenerator {
             return System.currentTimeMillis();
         }
         try {
-        	return DatetimeUtils.convertDatetimeStrToLong(timestampStr, offset);
+        	return DatetimeUtils.convertDatetimeStrToLong(timestampStr, zoneId);
 		} catch (Exception e) {
 			throw new LogicalOperatorException(String.format("Input time format %s error. "
                     + "Input like yyyy-MM-dd HH:mm:ss, yyyy-MM-ddTHH:mm:ss or "

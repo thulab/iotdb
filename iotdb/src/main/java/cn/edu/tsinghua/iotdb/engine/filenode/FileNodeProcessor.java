@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -844,8 +843,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (lastMergeTime > 0) {
 			long thisMergeTime = System.currentTimeMillis();
 			long mergeTimeInterval = thisMergeTime - lastMergeTime;
-            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastMergeTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
-            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
+            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}s",
 					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval / 1000);
 		}
@@ -873,8 +872,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					writeLock();
 					merge();
 					long mergeEndTime = System.currentTimeMillis();
-		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeStartTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
-		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeEndTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
+		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 					long intervalTime = mergeEndTime - mergeStartTime;
 					LOGGER.info(
 							"The filenode processor {} merge start time is {}, merge end time is {}, merge consumes {}ms.",
@@ -1045,8 +1044,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
 					long endTime = System.currentTimeMillis();
 					long timeConsume = endTime - startTime;
-		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
-		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTime), ZoneId.of(TsfileDBDescriptor.getInstance().getConfig().offset.toString()));
+		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 					LOGGER.info(
 							"The fileNode processor {} has merged the {}/{} tsfile[{}->{}] over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
 							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge, newFile,

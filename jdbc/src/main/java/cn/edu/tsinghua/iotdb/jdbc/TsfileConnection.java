@@ -37,7 +37,6 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.sql.Array;
 import java.util.LinkedList;
 import java.util.List;
@@ -407,7 +406,7 @@ public class TsfileConnection implements Connection {
 	    if(zoneId != null){
 	    		setTimeZone(zoneId.toString());
 	    } else {
-	    	zoneId = ZoneOffset.of(getTimeZone());
+	    	zoneId = ZoneId.of(getTimeZone());
 	    }
 	    
 	} catch (TException e) {

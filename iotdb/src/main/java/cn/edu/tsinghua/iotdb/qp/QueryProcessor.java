@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.qp;
 
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
@@ -48,13 +49,13 @@ public class QueryProcessor {
     public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr)
             throws QueryProcessorException, ArgsErrorException, ProcessorException {
     		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        return parseSQLToPhysicalPlan(sqlStr, config.offset);
+        return parseSQLToPhysicalPlan(sqlStr, config.getZoneID());
     }
     
-    public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr, ZoneOffset offset)
+    public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr, ZoneId zoneId)
             throws QueryProcessorException, ArgsErrorException, ProcessorException {
         ASTNode astNode = parseSQLToAST(sqlStr);
-        Operator operator = parseASTToOperator(astNode, offset);
+        Operator operator = parseASTToOperator(astNode, zoneId);
         operator = logicalOptimize(operator, executor);
         PhysicalGenerator physicalGenerator = new PhysicalGenerator(executor);
         return physicalGenerator.transformToPhysicalPlan(operator);
@@ -69,8 +70,8 @@ public class QueryProcessor {
      * @throws QueryProcessorException exception in converting sql to operator
      * @throws ArgsErrorException 
      */
-    private RootOperator parseASTToOperator(ASTNode astNode, ZoneOffset offset) throws QueryProcessorException, ArgsErrorException {
-        LogicalGenerator generator = new LogicalGenerator(offset);
+    private RootOperator parseASTToOperator(ASTNode astNode, ZoneId zoneId) throws QueryProcessorException, ArgsErrorException {
+        LogicalGenerator generator = new LogicalGenerator(zoneId);
         return generator.getLogicalPlan(astNode);
     }
 

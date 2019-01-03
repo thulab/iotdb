@@ -30,7 +30,7 @@ public class LogicalPlanSmallTest {
     @Before
     public void before() {
         TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-        generator = new LogicalGenerator(config.offset);
+        generator = new LogicalGenerator(config.getZoneID());
     }
 
     @Test

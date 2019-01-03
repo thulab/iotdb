@@ -1,5 +1,8 @@
 package cn.edu.tsinghua.iotdb.qp.constant;
 
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -180,12 +183,22 @@ public class DatetimeUtils {
 			.appendOptional(ISO_OFFSET_DATE_TIME_WITH_DOT_WITH_SPACE)
 			.toFormatter();
 	
+	public static long convertDatetimeStrToLong(String str, ZoneId zoneId) throws LogicalOperatorException {
+		return convertDatetimeStrToLong(str, toZoneOffset(zoneId));
+	}
 	
 	public static long convertDatetimeStrToLong(String str, ZoneOffset offset) throws LogicalOperatorException {
 		if(str.length() - str.lastIndexOf('+') != 6 && str.length() - str.lastIndexOf('-') != 6) {
 			return convertDatetimeStrToLong(str+offset, offset);
+		}else if(str.indexOf('[') > 0 || str.indexOf(']') > 0 ) {
+			throw new DateTimeException(String.format("%s with [time-region] at end is not supported now, "
+					+ "please input like 2011-12-03T10:15:30 or 2011-12-03T10:15:30+01:00",str));
 		}
 		ZonedDateTime zonedDateTime = ZonedDateTime.parse(str, formatter);
 		return zonedDateTime.toInstant().toEpochMilli();
+	}
+	
+	public static ZoneOffset toZoneOffset(ZoneId zoneId) {
+		return zoneId.getRules().getOffset(Instant.now());
 	}
 }
