@@ -7,7 +7,7 @@
 ![](https://img.shields.io/github/downloads/thulab/iotdb/total.svg)
 ![](https://img.shields.io/badge/platform-win10%20%7C%20macox%20%7C%20linux-yellow.svg)
 ![](https://img.shields.io/badge/java--language-1.8-blue.svg)
-
+[![IoTDB Website](https://img.shields.io/website-up-down-green-red/https/shields.io.svg?label=iotdb-website)](http://iotdb.apache.org/)
 
 # Overview
 
