@@ -6,12 +6,10 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.PropertyOperator.PropertyType;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
 /**
  * Manipulate property plan
- * @author kangrong
- * @author qiaojialin
  */
 public class PropertyPlan extends PhysicalPlan {
     private final PropertyType propertyType;

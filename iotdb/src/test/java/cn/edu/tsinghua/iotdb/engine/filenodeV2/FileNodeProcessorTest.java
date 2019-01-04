@@ -1,36 +1,36 @@
 package cn.edu.tsinghua.iotdb.engine.filenodeV2;
 
-import static org.junit.Assert.*;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
+import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
+import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
+import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeProcessor;
-import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
-import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.engine.querycontext.UpdateDeleteInfoOfOneSeries;
-import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class FileNodeProcessorTest {
 
@@ -107,25 +107,17 @@ public class FileNodeProcessorTest {
 				assertEquals(dataType, overflowSeriesDataSource.getDataType());
 				assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
 				assertEquals(0, overflowSeriesDataSource.getOverflowInsertFileList().get(0)
-						.getTimeSeriesChunkMetaDatas().size());
-				assertEquals(true, overflowSeriesDataSource.getRawSeriesChunk().isEmpty());
-				UpdateDeleteInfoOfOneSeries deleteInfoOfOneSeries = overflowSeriesDataSource
-						.getUpdateDeleteInfoOfOneSeries();
-				assertEquals(dataType, deleteInfoOfOneSeries.getDataType());
-				assertEquals(null, deleteInfoOfOneSeries.getOverflowUpdateInMem());
-				assertEquals(1, deleteInfoOfOneSeries.getOverflowUpdateFileList().size());
-				assertEquals(0, deleteInfoOfOneSeries.getOverflowUpdateFileList().get(0)
-						.getTimeSeriesChunkMetaDataList().size());
-				// bufferwrite data | sorted tsfile data
-				GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeriesDataSource();
+						.getChunkMetaDataList().size());
+				assertEquals(true, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
+				GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeqDataSource();
 				assertEquals(processorName + "." + measurementId,
 						globalSortedSeriesDataSource.getSeriesPath().toString());
 				assertEquals(0, globalSortedSeriesDataSource.getSealedTsFiles().size());
-				assertEquals(1, globalSortedSeriesDataSource.getUnsealedTsFile().getTimeSeriesChunkMetaDatas().size());
-				assertEquals(false, globalSortedSeriesDataSource.getRawSeriesChunk().isEmpty());
-				assertEquals(87, globalSortedSeriesDataSource.getRawSeriesChunk().getMaxTimestamp());
-				assertEquals(87, globalSortedSeriesDataSource.getRawSeriesChunk().getMinTimestamp());
-				assertEquals(87, globalSortedSeriesDataSource.getRawSeriesChunk().getValueAtMaxTime().getInt());
+				assertEquals(1, globalSortedSeriesDataSource.getUnsealedTsFile().getChunkMetaDataList().size());
+				assertEquals(false, globalSortedSeriesDataSource.getReadableChunk().isEmpty());
+				assertEquals(87, ((ReadOnlyMemChunk)globalSortedSeriesDataSource.getReadableChunk()).getMaxTimestamp());
+				assertEquals(87, ((ReadOnlyMemChunk)globalSortedSeriesDataSource.getReadableChunk()).getMinTimestamp());
+				assertEquals(87, ((ReadOnlyMemChunk)globalSortedSeriesDataSource.getReadableChunk()).getValueAtMaxTime().getInt());
 			}
 		}
 		// the flush last update time is 87
@@ -157,12 +149,12 @@ public class FileNodeProcessorTest {
 						// query and insert time = 86
 						QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null);
 						// insert overflow data
-						RawSeriesChunk rawSeriesChunk = dataSource.getOverflowSeriesDataSource().getRawSeriesChunk();
-						assertEquals(false, rawSeriesChunk.isEmpty());
-						assertEquals(daType1, rawSeriesChunk.getDataType());
-						assertEquals(66, rawSeriesChunk.getMinTimestamp());
-						assertEquals(85, rawSeriesChunk.getMaxTimestamp());
-						Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();
+						TimeValuePairSorter timeValuePairSorter = dataSource.getOverflowSeriesDataSource().getReadableMemChunk();
+						assertEquals(false, timeValuePairSorter.isEmpty());
+						assertEquals(daType1, ((ReadOnlyMemChunk)timeValuePairSorter).getDataType());
+						assertEquals(66, ((ReadOnlyMemChunk)timeValuePairSorter).getMinTimestamp());
+						assertEquals(85, ((ReadOnlyMemChunk)timeValuePairSorter).getMaxTimestamp());
+						Iterator<TimeValuePair> iterator = ((ReadOnlyMemChunk)timeValuePairSorter).getSortedTimeValuePairList().iterator();
 						for (int j = 66; j <= 85; j++) {
 							iterator.hasNext();
 							TimeValuePair pair = iterator.next();
@@ -188,16 +180,16 @@ public class FileNodeProcessorTest {
 						// TimeUnit.SECONDS.sleep(2);
 						// query data
 						QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null);
-						RawSeriesChunk rawSeriesChunk = dataSource.getOverflowSeriesDataSource().getRawSeriesChunk();
-						assertEquals(false, rawSeriesChunk.isEmpty());
+						TimeValuePairSorter timeValuePairSorter = dataSource.getOverflowSeriesDataSource().getReadableMemChunk();
+						assertEquals(false, timeValuePairSorter.isEmpty());
 						assertEquals(1, dataSource.getOverflowSeriesDataSource().getOverflowInsertFileList().size());
 						assertEquals(1, dataSource.getOverflowSeriesDataSource().getOverflowInsertFileList().get(0)
-								.getTimeSeriesChunkMetaDatas().size());
+								.getChunkMetaDataList().size());
 						// bufferwrite data
 						dataSource = fileNodeProcessor.query(processorName, measurementId, null);
-						rawSeriesChunk = dataSource.getSeriesDataSource().getRawSeriesChunk();
-						assertEquals(false, rawSeriesChunk.isEmpty());
-						Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();
+						timeValuePairSorter = dataSource.getSeqDataSource().getReadableChunk();
+						assertEquals(false, timeValuePairSorter.isEmpty());
+						Iterator<TimeValuePair> iterator = ((ReadOnlyMemChunk)timeValuePairSorter).getSortedTimeValuePairList().iterator();
 						for (int j = 87; j <= 100; j++) {
 							iterator.hasNext();
 							TimeValuePair timeValuePair = iterator.next();
@@ -210,9 +202,9 @@ public class FileNodeProcessorTest {
 			}
 		}
 		QueryDataSource dataSource = fileNodeProcessor.query(processorName, measurementId1, null);
-		GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeriesDataSource();
-		RawSeriesChunk rawSeriesChunk = globalSortedSeriesDataSource.getRawSeriesChunk();
-		assertEquals(true, rawSeriesChunk.isEmpty());
+		GlobalSortedSeriesDataSource globalSortedSeriesDataSource = dataSource.getSeqDataSource();
+		TimeValuePairSorter timeValuePairSorter = globalSortedSeriesDataSource.getReadableChunk();
+		assertEquals(true, timeValuePairSorter.isEmpty());
 		// Iterator<TimeValuePair> iterator = rawSeriesChunk.getIterator();
 		// for (int j = 87; j <= 100; j++) {
 		// iterator.hasNext();

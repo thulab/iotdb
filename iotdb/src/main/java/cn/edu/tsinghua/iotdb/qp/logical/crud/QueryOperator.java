@@ -2,15 +2,14 @@ package cn.edu.tsinghua.iotdb.qp.logical.crud;
 
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.query.fill.IFill;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 
 import java.util.List;
 import java.util.Map;
 
 /**
  * this class extends {@code RootOperator} and process getIndex statement
- * 
  */
 public class QueryOperator extends SFWOperator {
 
@@ -26,6 +25,10 @@ public class QueryOperator extends SFWOperator {
 
     private Map<TSDataType, IFill> fillTypes;
     private boolean isFill = false;
+
+    private int seriesLimit;
+    private int seriesOffset;
+    private boolean hasSlimit = false; // false if sql does not contain SLIMIT clause
 
     public boolean isFill() {
         return isFill;
@@ -49,6 +52,31 @@ public class QueryOperator extends SFWOperator {
 
     public boolean isGroupBy() {
         return isGroupBy;
+    }
+
+    public void setSeriesLimit(int seriesLimit) {
+        this.seriesLimit = seriesLimit;
+        this.hasSlimit = true;
+    }
+
+    public void setSeriesOffset(int seriesOffset) {
+        /*
+         Since soffset cannot be set alone without slimit,
+         `hasSlimit` only need to be set true in the `setSeriesLimit` function.
+         */
+        this.seriesOffset = seriesOffset;
+    }
+
+    public int getSeriesLimit() {
+        return seriesLimit;
+    }
+
+    public int getSeriesOffset() {
+        return seriesOffset;
+    }
+
+    public boolean hasSlimit() {
+        return hasSlimit;
     }
 
     public long getUnit() {

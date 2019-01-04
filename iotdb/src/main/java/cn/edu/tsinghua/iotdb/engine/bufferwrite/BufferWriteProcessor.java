@@ -1,5 +1,34 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.engine.Processor;
+import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
+import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
+import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
+import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
+import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
+import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.utils.MemUtils;
+import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
+import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -7,35 +36,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
-import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
-import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.engine.Processor;
-import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
-import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
-import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
-import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunkLazyLoadImpl;
-import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
 
 public class BufferWriteProcessor extends Processor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
@@ -51,10 +51,11 @@ public class BufferWriteProcessor extends Processor {
 
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
+    BufferIO writer;
 
-    private Action bufferwriteFlushAction = null;
-    private Action bufferwriteCloseAction = null;
-    private Action filenodeFlushAction = null;
+    private Action bufferwriteFlushAction;
+    private Action bufferwriteCloseAction;
+    private Action filenodeFlushAction;
 
     private long lastFlushTime = -1;
     private long valueCount = 0;
@@ -66,7 +67,9 @@ public class BufferWriteProcessor extends Processor {
 
     private WriteLogNode logNode;
 
-    public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Object> parameters,
+
+
+    public BufferWriteProcessor(String baseDir, String processorName, String fileName, Map<String, Action> parameters,
                                 FileSchema fileSchema) throws BufferWriteProcessorException {
         super(processorName);
         this.fileSchema = fileSchema;
@@ -87,14 +90,15 @@ public class BufferWriteProcessor extends Processor {
         bufferWriteRelativePath = processorName + File.separatorChar + fileName;
         try {
             bufferWriteRestoreManager = new BufferWriteRestoreManager(processorName, insertFilePath);
+            writer = bufferWriteRestoreManager.recover();
         } catch (IOException e) {
             throw new BufferWriteProcessorException(e);
         }
 
 
-        bufferwriteFlushAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
-        bufferwriteCloseAction = (Action) parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
-        filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
+        bufferwriteFlushAction = parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
+        bufferwriteCloseAction = parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
+        filenodeFlushAction = parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
         workMemTable = new PrimitiveMemTable();
 
         if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
@@ -111,14 +115,14 @@ public class BufferWriteProcessor extends Processor {
     /**
      * write one data point to the bufferwrite
      *
-     * @param deltaObjectId
-     * @param measurementId
-     * @param timestamp
-     * @param dataType
-     * @param value
+     * @param deltaObjectId device name
+     * @param measurementId sensor name
+     * @param timestamp timestamp of the data point
+     * @param dataType the data type of the value
+     * @param value data point value
      * @return true -the size of tsfile or metadata reaches to the threshold.
      * false -otherwise
-     * @throws BufferWriteProcessorException
+     * @throws BufferWriteProcessorException  if a flushing operation occurs and failed.
      */
     public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
             throws BufferWriteProcessorException {
@@ -128,57 +132,63 @@ public class BufferWriteProcessor extends Processor {
         return write(record);
     }
 
+    /**
+     * wrete a ts record into the memtable. If the memory usage is beyond the memThreshold, an async flushing operation will be called.
+     * @param tsRecord data to be written
+     * @return FIXME what is the mean about the return value??
+     * @throws BufferWriteProcessorException if a flushing operation occurs and failed.
+     */
     public boolean write(TSRecord tsRecord) throws BufferWriteProcessorException {
         long memUsage = MemUtils.getRecordSize(tsRecord);
         BasicMemController.UsageLevel level = BasicMemController.getInstance().reportUse(this, memUsage);
         for (DataPoint dataPoint : tsRecord.dataPointList) {
-            workMemTable.write(tsRecord.deltaObjectId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
+            workMemTable.write(tsRecord.deviceId, dataPoint.getMeasurementId(), dataPoint.getType(), tsRecord.time,
                     dataPoint.getValue().toString());
         }
         valueCount++;
         switch (level) {
             case SAFE:
-                // memUsed += newMemUsage;
-                // memtable
-                memUsage = memSize.addAndGet(memUsage);
-                if (memUsage > memThreshold) {
-                    LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
-                            MemUtils.bytesCntToStr(memUsage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
-                    try {
-                        flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new BufferWriteProcessorException(e);
-                    }
-                }
-                return false;
+                checkMemThreshold4Flush(memUsage);
+                return true;
             case WARNING:
                 LOGGER.warn("Memory usage will exceed warning threshold, current : {}.",
                         MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
-                // memUsed += newMemUsage;
-                // memtable
-                memUsage = memSize.addAndGet(memUsage);
-                if (memUsage > memThreshold) {
-                    LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
-                            MemUtils.bytesCntToStr(memUsage), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
-                    try {
-                        flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new BufferWriteProcessorException(e);
-                    }
-                }
-                return false;
+                checkMemThreshold4Flush(memUsage);
+                return true;
             case DANGEROUS:
             default:
                 LOGGER.warn("Memory usage will exceed dangerous threshold, current : {}.",
                         MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()));
+                //FIXME if it is dangerous, I think we need to reject comming insertions until the memory is safe.
                 return false;
         }
     }
 
-    public Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> queryBufferWriteData(String deltaObjectId,
-                                                                                    String measurementId, TSDataType dataType) {
+    private void checkMemThreshold4Flush(long addedMemory) throws BufferWriteProcessorException{
+        // memUsed += newMemUsage;
+        addedMemory = memSize.addAndGet(addedMemory);
+        if (addedMemory > memThreshold) {
+            LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
+                    MemUtils.bytesCntToStr(addedMemory), getProcessorName(), MemUtils.bytesCntToStr(memThreshold));
+            try {
+                flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new BufferWriteProcessorException(e);
+            }
+        }
+    }
+
+    /**
+     * get the one (or two) chunk(s) in the memtable ( and the other one in flushing status and then compact them into one TimeValuePairSorter).
+     * Then get its (or their) ChunkMetadata(s).
+     * @param deltaObjectId device id
+     * @param measurementId sensor id
+     * @param dataType data type
+     * @return corresponding chunk data and chunk metadata in memory
+     */
+    public Pair<TimeValuePairSorter, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
+                                                                               String measurementId, TSDataType dataType) {
         flushQueryLock.lock();
         try {
             MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
@@ -186,8 +196,8 @@ public class BufferWriteProcessor extends Processor {
                 memSeriesLazyMerger.addMemSeries(flushMemTable.query(deltaObjectId, measurementId, dataType));
             }
             memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
-            RawSeriesChunk rawSeriesChunk = new RawSeriesChunkLazyLoadImpl(dataType, memSeriesLazyMerger);
-            return new Pair<>(rawSeriesChunk,
+            TimeValuePairSorter timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
+            return new Pair<>(timeValuePairSorter,
                     bufferWriteRestoreManager.getInsertMetadatas(deltaObjectId, measurementId, dataType));
         } finally {
             flushQueryLock.unlock();
@@ -223,7 +233,15 @@ public class BufferWriteProcessor extends Processor {
         long flushStartTime = System.currentTimeMillis();
         LOGGER.info("The bufferwrite processor {} starts flushing {}.", getProcessorName(), flushFunction);
         try {
-            bufferWriteRestoreManager.flush(fileSchema, flushMemTable);
+            if (flushMemTable != null && !flushMemTable.isEmpty()) {
+                long startPos = writer.getPos();
+                long startTime = System.currentTimeMillis();
+                // flush data
+                MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable);
+                // write restore information
+                bufferWriteRestoreManager.flush(writer.getPos(), writer.getAppendedRowGroupMetadata());
+            }
+
             filenodeFlushAction.act();
             if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
                 logNode.notifyEndFlush(null);
@@ -249,7 +267,7 @@ public class BufferWriteProcessor extends Processor {
                 "The bufferwrite processor {} flush {}, start time is {}, flush end time is {}, flush time consumption is {}ms",
                 getProcessorName(), flushFunction, startDateTime, endDateTime, flushInterval);
     }
-
+    
     private Future<?> flush(boolean synchronization) throws IOException {
         // statistic information for flush
         if (lastFlushTime > 0) {
@@ -295,11 +313,7 @@ public class BufferWriteProcessor extends Processor {
             if (synchronization) {
                 flushOperation("synchronously");
             } else {
-                FlushManager.getInstance().submit(new Runnable() {
-                    public void run() {
-                        flushOperation("asynchronously");
-                    }
-                });
+                FlushManager.getInstance().submit( ()-> flushOperation("asynchronously"));
             }
         }
         return null;
@@ -329,7 +343,9 @@ public class BufferWriteProcessor extends Processor {
             // flush data
             flush(true);
             // end file
-            bufferWriteRestoreManager.close(fileSchema);
+            writer.endFile(fileSchema);
+            bufferWriteRestoreManager.deleteRestoreFile();
+//            bufferWriteRestoreManager.close(fileSchema);
             // update the IntervalFile for interval list
             bufferwriteCloseAction.act();
             // flush the changed information for filenode

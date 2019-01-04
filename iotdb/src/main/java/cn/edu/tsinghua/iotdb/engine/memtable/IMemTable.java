@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.engine.memtable;
 
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
 
 import java.util.Map;
 
@@ -10,18 +9,20 @@ import java.util.Map;
  * all series belonging to one StorageGroup, corresponding to one FileNodeProcessor.<br>
  * The concurrent control of IMemTable is based on the concurrent control of FileNodeProcessor,
  * i.e., Writing and querying operations have gotten writeLock and readLock respectively.<br>
- *
- * @author Rong Kang
  */
 public interface IMemTable {
-    Map<String, Map<String, IMemSeries>> getMemTableMap();
+
+    Map<String, Map<String, IWritableMemChunk>> getMemTableMap();
 
     void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue);
 
     int size();
 
-    IMemSeries query(String deltaObject, String measurement,TSDataType dataType);
+    TimeValuePairSorter query(String deltaObject, String measurement,TSDataType dataType);
 
+    /**
+     * release all the memory resources
+     */
     void clear();
 
     boolean isEmpty();

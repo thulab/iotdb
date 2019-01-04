@@ -1,10 +1,10 @@
 package cn.edu.tsinghua.tsfile.file.metadata.utils;
 
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.*;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -58,6 +58,11 @@ public class TestHelper {
         metaData.setEndTime(TsDeviceMetadataTest.END_TIME);
         metaData.addChunkGroupMetaData(TestHelper.createSimpleChunkGroupMetaData());
         metaData.addChunkGroupMetaData(TestHelper.createSimpleChunkGroupMetaData());
+        return metaData;
+    }
+
+    public static ChunkGroupMetaData createEmptySeriesChunkGroupMetaData(){
+        ChunkGroupMetaData metaData = new ChunkGroupMetaData("d1",new ArrayList<>());
         return metaData;
     }
 

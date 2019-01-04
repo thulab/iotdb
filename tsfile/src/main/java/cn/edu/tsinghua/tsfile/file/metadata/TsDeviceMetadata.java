@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TsDeviceMetadata {
+public class TsDeviceMetadata{
 
     /**
      * size of ChunkGroupMetadataBlock in byte
@@ -47,6 +47,15 @@ public class TsDeviceMetadata {
     }
 
     public TsDeviceMetadata() {
+    }
+
+    /**
+     * set the ChunkGroupMetadataList and recalculate serialized size.
+     * @param chunkGroupMetadataList
+     */
+    public void setChunkGroupMetadataList(List<ChunkGroupMetaData> chunkGroupMetadataList){
+        this.chunkGroupMetadataList = chunkGroupMetadataList;
+        reCalculateSerializedSize();
     }
 
     /**
@@ -96,7 +105,6 @@ public class TsDeviceMetadata {
             for (ChunkGroupMetaData chunkGroupMetaData : chunkGroupMetadataList)
                 byteLen += chunkGroupMetaData.serializeTo(outputStream);
         }
-
         assert getSerializedSize() == byteLen;
         return byteLen;
     }
@@ -165,4 +173,5 @@ public class TsDeviceMetadata {
                 ", chunkGroupMetadataList=" + chunkGroupMetadataList +
                 '}';
     }
+
 }

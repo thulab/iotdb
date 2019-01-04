@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import cn.edu.tsinghua.tsfile.file.metadata.utils.TestHelper;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,14 +29,53 @@ public class TimeSeriesMetadataTest {
     @Test
     public void testWriteIntoFile() throws IOException {
         MeasurementSchema measurementSchema = TestHelper.createSimpleMeasurementSchema();
-        File file = new File(PATH);
-        if (file.exists())
-            file.delete();
-        FileOutputStream fos = new FileOutputStream(file);
-        measurementSchema.serializeTo(fos);
-        fos.close();
+        serialized(measurementSchema);
+        MeasurementSchema readMetadata = deSerialized();
+        measurementSchema.equals(readMetadata);
+        serialized(readMetadata);
+    }
 
-        FileInputStream fis = new FileInputStream(new File(PATH));
-        measurementSchema.equals(MeasurementSchema.deserializeFrom(fis));
+    private MeasurementSchema deSerialized() {
+        FileInputStream fis = null;
+        MeasurementSchema metaData = null;
+        try {
+            fis = new FileInputStream(new File(PATH));
+            metaData = MeasurementSchema.deserializeFrom(fis);
+            return metaData;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return metaData;
+    }
+
+
+    private void serialized(MeasurementSchema metaData){
+        File file = new File(PATH);
+        if (file.exists()){
+            file.delete();
+        }
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            metaData.serializeTo(fos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if(fos!=null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

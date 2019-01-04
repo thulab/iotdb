@@ -5,11 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.edu.tsinghua.tsfile.file.metadata.TsDeviceMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.file.metadata.TsFileMetaData;
-import cn.edu.tsinghua.tsfile.file.metadata.TsRowGroupBlockMetaData;
 
 /**
  * This class is used to cache <code>RowGroupBlockMetaDataCache</code> of tsfile
@@ -22,8 +22,10 @@ public class RowGroupBlockMetaDataCache {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
 	private static final int cacheSize = 100;
+
 	/** key: the file path + DeltaObjectId */
-	private LinkedHashMap<String, TsRowGroupBlockMetaData> LRUCache;
+	private LinkedHashMap<String, TsDeviceMetadata> LRUCache;
+
 	private AtomicLong cacheHintNum = new AtomicLong();
 	private AtomicLong cacheRequestNum = new AtomicLong();
 
@@ -34,7 +36,7 @@ public class RowGroupBlockMetaDataCache {
 	 * @author liukun
 	 *
 	 */
-	private class LRULinkedHashMap extends LinkedHashMap<String, TsRowGroupBlockMetaData> {
+	private class LRULinkedHashMap extends LinkedHashMap<String, TsDeviceMetadata> {
 
 		private static final long serialVersionUID = 1290160928914532649L;
 		private static final float loadFactor = 0.75f;
@@ -46,7 +48,7 @@ public class RowGroupBlockMetaDataCache {
 		}
 
 		@Override
-		protected boolean removeEldestEntry(Map.Entry<String, TsRowGroupBlockMetaData> eldest) {
+		protected boolean removeEldestEntry(Map.Entry<String, TsDeviceMetadata> eldest) {
 			return size() > maxCapacity;
 		}
 	}
@@ -66,8 +68,10 @@ public class RowGroupBlockMetaDataCache {
 		LRUCache = new LRULinkedHashMap(cacheSize, true);
 	}
 
-	public TsRowGroupBlockMetaData get(String filePath, String deltaObjectId, TsFileMetaData fileMetaData) throws IOException {
+
+	public TsDeviceMetadata get(String filePath, String deltaObjectId, TsFileMetaData fileMetaData) throws IOException {
 		/** The key(the tsfile path and deltaObjectId) for the LRUCahe */
+
 		String jointPath = filePath + deltaObjectId;
 		jointPath = jointPath.intern();
 		synchronized (LRUCache) {
@@ -91,7 +95,7 @@ public class RowGroupBlockMetaDataCache {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Cache didn't hint: the number of requests for cache is {}", cacheRequestNum.get());
 			}
-			TsRowGroupBlockMetaData blockMetaData = TsFileMetadataUtils.getTsRowGroupBlockMetaData(filePath,
+			TsDeviceMetadata blockMetaData = TsFileMetadataUtils.getTsRowGroupBlockMetaData(filePath,
 					deltaObjectId, fileMetaData);
 			synchronized (LRUCache) {
 				LRUCache.put(jointPath, blockMetaData);

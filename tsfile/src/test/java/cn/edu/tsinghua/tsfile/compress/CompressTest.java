@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.compress;
 
-import cn.edu.tsinghua.tsfile.common.utils.PublicBAOS;
+import cn.edu.tsinghua.tsfile.utils.PublicBAOS;
 import cn.edu.tsinghua.tsfile.compress.UnCompressor.SnappyUnCompressor;
 import org.junit.After;
 import org.junit.Before;

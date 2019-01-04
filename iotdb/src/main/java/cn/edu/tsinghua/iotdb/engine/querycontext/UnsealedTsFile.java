@@ -4,9 +4,7 @@ import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 
 import java.util.List;
 
-/**
- * Created by zhangjinrui on 2018/1/18.
- */
+
 public class UnsealedTsFile {
     private String filePath;
     private List<ChunkMetaData> timeSeriesChunkMetaDatas;
@@ -19,7 +17,7 @@ public class UnsealedTsFile {
         this.filePath = filePath;
     }
 
-    public List<ChunkMetaData> getTimeSeriesChunkMetaDatas() {
+    public List<ChunkMetaData> getChunkMetaDataList() {
         return timeSeriesChunkMetaDatas;
     }
 

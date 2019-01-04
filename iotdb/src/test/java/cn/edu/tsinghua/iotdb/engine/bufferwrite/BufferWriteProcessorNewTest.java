@@ -11,20 +11,20 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.querycontext.RawSeriesChunk;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
-import cn.edu.tsinghua.tsfile.common.utils.Pair;
-import cn.edu.tsinghua.tsfile.file.metadata.TimeSeriesChunkMetaData;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.readV2.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
 
 public class BufferWriteProcessorNewTest {
 
@@ -50,7 +50,7 @@ public class BufferWriteProcessorNewTest {
 
 		}
 	};
-	Map<String, Object> parameters = new HashMap<>();
+	Map<String, Action> parameters = new HashMap<>();
 	private String processorName = "root.vehicle.d0";
 	private String measurementId = "s0";
 	private TSDataType dataType = TSDataType.INT32;
@@ -82,10 +82,10 @@ public class BufferWriteProcessorNewTest {
 		assertEquals(true, bufferwrite.isNewProcessor());
 		bufferwrite.setNewProcessor(false);
 		assertEquals(false, bufferwrite.isNewProcessor());
-		Pair<RawSeriesChunk, List<TimeSeriesChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
+		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
 				measurementId, dataType);
-		RawSeriesChunk left = pair.left;
-		List<TimeSeriesChunkMetaData> right = pair.right;
+		TimeValuePairSorter left = pair.left;
+		List<ChunkMetaData> right = pair.right;
 		assertEquals(true, left.isEmpty());
 		assertEquals(0, right.size());
 		for (int i = 1; i <= 100; i++) {
@@ -117,8 +117,8 @@ public class BufferWriteProcessorNewTest {
 		right = pair.right;
 		assertEquals(true, left.isEmpty());
 		assertEquals(1, right.size());
-		assertEquals(measurementId, right.get(0).getProperties().getMeasurementUID());
-		assertEquals(dataType, right.get(0).getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(measurementId, right.get(0).getMeasurementUID());
+		assertEquals(dataType, right.get(0).getTsDataType());
 
 		// test recovery
 		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(Directories.getInstance().getFolderForTest(),
@@ -128,8 +128,8 @@ public class BufferWriteProcessorNewTest {
 		right = pair.right;
 		assertEquals(true, left.isEmpty());
 		assertEquals(1, right.size());
-		assertEquals(measurementId, right.get(0).getProperties().getMeasurementUID());
-		assertEquals(dataType, right.get(0).getVInTimeSeriesChunkMetaData().getDataType());
+		assertEquals(measurementId, right.get(0).getMeasurementUID());
+		assertEquals(dataType, right.get(0).getTsDataType());
 		bufferWriteProcessor.close();
 	}
 }

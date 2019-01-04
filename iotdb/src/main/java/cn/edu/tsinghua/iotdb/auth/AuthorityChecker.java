@@ -5,7 +5,7 @@ import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.entity.PrivilegeType;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class AuthorityChecker {
                 return true;
             }
         } catch (AuthException e) {
-            logger.error("Error occurs when checking the path {} for user {}", path, username, e);
+            logger.error("Error occurs when checking the seriesPath {} for user {}", path, username, e);
         }
         return false;
     }

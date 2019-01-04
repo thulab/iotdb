@@ -63,7 +63,7 @@ public class PostBackSenderDescriptor {
 			inputStream = new FileInputStream(new File(url));
 		} catch (FileNotFoundException e) {
 			LOGGER.warn("Fail to find config file {}", url);
-			// update all data path
+			// update all data seriesPath
 			return;
 		}
 

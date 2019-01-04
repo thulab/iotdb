@@ -16,9 +16,9 @@ import cn.edu.tsinghua.iotdb.utils.MemUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.common.constant.JsonFormatConstant;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.write.exception.WriteProcessException;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,7 +114,7 @@ public class BufferwriteMetaSizeControlTest {
         String filename = "bufferwritetest";
         new File(filename).delete();
 
-        Map<String, Object> parameters = new HashMap<>();
+        Map<String, Action> parameters = new HashMap<>();
         parameters.put(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION, bfflushaction);
         parameters.put(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION, bfcloseaction);
         parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, fnflushaction);

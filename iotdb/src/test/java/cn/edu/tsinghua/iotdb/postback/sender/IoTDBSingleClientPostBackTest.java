@@ -17,7 +17,7 @@ import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
-import cn.edu.tsinghua.iotdb.service.TestUtils;
+import cn.edu.tsinghua.iotdb.integration.Constant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 
 /**
@@ -157,7 +157,7 @@ public class IoTDBSingleClientPostBackTest {
 			"flush",
 			};
 
-	private boolean testFlag = TestUtils.testFlag;
+	private boolean testFlag = Constant.testFlag;
 
 	public void setUp() throws Exception {
 		if (testFlag) {

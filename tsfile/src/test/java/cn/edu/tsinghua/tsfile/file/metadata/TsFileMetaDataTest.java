@@ -29,15 +29,54 @@ public class TsFileMetaDataTest {
 
     @Test
     public void testWriteFileMetaData() throws IOException {
-    TsFileMetaData tsfMetaData = TestHelper.createSimpleFileMetaData();
-    File file = new File(PATH);
-    if (file.exists())
-      file.delete();
-    FileOutputStream fos = new FileOutputStream(file);
-    tsfMetaData.serializeTo(fos);
-    fos.close();
+        TsFileMetaData tsfMetaData = TestHelper.createSimpleFileMetaData();
+        serialized(tsfMetaData);
+        TsFileMetaData readMetaData = deSerialized();
+        Utils.isFileMetaDataEqual(tsfMetaData, readMetaData);
+        serialized(readMetaData);
+    }
 
-    FileInputStream fis = new FileInputStream(new File(PATH));
-    Utils.isFileMetaDataEqual(tsfMetaData, TsFileMetaData.deserializeFrom(fis));
+    private TsFileMetaData deSerialized() {
+        FileInputStream fis = null;
+        TsFileMetaData metaData = null;
+        try {
+            fis = new FileInputStream(new File(PATH));
+            metaData = TsFileMetaData.deserializeFrom(fis);
+            return metaData;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return metaData;
+    }
+
+
+    private void serialized(TsFileMetaData metaData){
+        File file = new File(PATH);
+        if (file.exists()){
+            file.delete();
+        }
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            metaData.serializeTo(fos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if(fos!=null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

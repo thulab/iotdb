@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.tsfile.file.metadata;
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public class ChunkGroupMetaData {
         reCalculateSerializedSize();
     }
 
-    private void reCalculateSerializedSize(){
+    void reCalculateSerializedSize(){
         serializedSize = Integer.BYTES + deviceID.length() +
                 Integer.BYTES; // size of chunkMetaDataList
         for (ChunkMetaData chunk : chunkMetaDataList) {
@@ -83,6 +83,7 @@ public class ChunkGroupMetaData {
     }
 
 
+    @Override
     public String toString() {
         return String.format(
                 "ChunkGroupMetaData{ time series chunk list: %s }", chunkMetaDataList);
@@ -124,7 +125,7 @@ public class ChunkGroupMetaData {
         chunkGroupMetaData.deviceID = ReadWriteIOUtils.readString(inputStream);
 
         int size = ReadWriteIOUtils.readInt(inputStream);
-        chunkGroupMetaData.serializedSize = Integer.BYTES + chunkGroupMetaData.deviceID.length() + Long.BYTES + Integer.BYTES;
+        chunkGroupMetaData.serializedSize = Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
 
         List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
 
@@ -146,7 +147,7 @@ public class ChunkGroupMetaData {
 
         int size = ReadWriteIOUtils.readInt(buffer);
 
-        chunkGroupMetaData.serializedSize = Integer.BYTES + chunkGroupMetaData.deviceID.length() + Long.BYTES + Integer.BYTES;
+        chunkGroupMetaData.serializedSize = Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
 
 
         List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();

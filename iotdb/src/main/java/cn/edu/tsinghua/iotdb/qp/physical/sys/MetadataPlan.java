@@ -6,13 +6,9 @@ import java.util.List;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.logical.sys.MetadataOperator;
-import cn.edu.tsinghua.tsfile.timeseries.read.common.Path;
+import cn.edu.tsinghua.tsfile.read.common.Path;
 
-/**
- *
- * @author kangrong
- * @author qiaojialin
- */
+
 public class MetadataPlan extends PhysicalPlan {
 	private final MetadataOperator.NamespaceType namespaceType;
 	private Path path;
@@ -80,7 +76,7 @@ public class MetadataPlan extends PhysicalPlan {
 
 	@Override
 	public String toString() {
-		String ret =  "path: " + path +
+		String ret =  "seriesPath: " + path +
 				"\ndataType: " + dataType +
 				"\nencoding: " + encoding +
 				"\nnamespace type: " + namespaceType +

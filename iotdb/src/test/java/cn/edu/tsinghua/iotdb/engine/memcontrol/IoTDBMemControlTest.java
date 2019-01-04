@@ -5,21 +5,19 @@ import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
-import cn.edu.tsinghua.iotdb.service.TestUtils;
+import cn.edu.tsinghua.iotdb.integration.Constant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
-import cn.edu.tsinghua.tsfile.common.utils.Binary;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.FloatDataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.IntDataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.LongDataPoint;
-import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint.StringDataPoint;
-import org.apache.commons.io.FileUtils;
+import cn.edu.tsinghua.tsfile.utils.Binary;
+import cn.edu.tsinghua.tsfile.write.record.TSRecord;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.FloatDataPoint;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.IntDataPoint;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.LongDataPoint;
+import cn.edu.tsinghua.tsfile.write.record.datapoint.StringDataPoint;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -133,7 +131,7 @@ public class IoTDBMemControlTest {
             Statement statement = connection.createStatement();
             for (int i = 0; i < insertCnt; i++) {
                 record.time = i + 1;
-                statement.execute(TestUtils.recordToInsert(record));
+                statement.execute(Constant.recordToInsert(record));
                 if(i % 1000 == 0) {
                     System.out.println(Thread.currentThread().getId() + " inserting " + i);
                 }

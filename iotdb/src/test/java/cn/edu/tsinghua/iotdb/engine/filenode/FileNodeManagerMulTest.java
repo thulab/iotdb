@@ -18,9 +18,9 @@
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 //import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 //import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-//import cn.edu.tsinghua.tsfile.timeseries.read.query.DynamicOneColumnData;
-//import cn.edu.tsinghua.tsfile.timeseries.write.record.datapoint.DataPoint;
-//import cn.edu.tsinghua.tsfile.timeseries.write.record.TSRecord;
+//import cn.edu.tsinghua.tsfile.read.query.DynamicOneColumnData;
+//import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
+//import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 //
 ///**
 // * @author liukun

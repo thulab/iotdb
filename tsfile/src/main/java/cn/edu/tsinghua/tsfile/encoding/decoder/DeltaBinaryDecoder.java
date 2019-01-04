@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.encoding.decoder;
 
-import cn.edu.tsinghua.tsfile.common.utils.BytesUtils;
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.BytesUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import cn.edu.tsinghua.tsfile.encoding.encoder.DeltaBinaryEncoder;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;

@@ -1,5 +1,9 @@
 #!/bin/sh
 
+echo ---------------------
+echo Starting IoTDB
+echo ---------------------
+
 if [ -z "${IOTDB_HOME}" ]; then
   export IOTDB_HOME="`dirname "$0"`/.."
 fi
@@ -43,7 +47,7 @@ launch_service()
 	iotdb_parms="$iotdb_parms -DTSFILE_HOME=${IOTDB_HOME}"
 	iotdb_parms="$iotdb_parms -DIOTDB_CONF=${IOTDB_CONF}"
 	iotdb_parms="$iotdb_parms -Dname=iotdb\.IoTDB"
-	exec "$JAVA" $iotdb_parms $IOTDB_DERBY_OPTS $IOTDB_JMX_OPTS $iotdb_parms -cp "$CLASSPATH"  "$class"
+	exec "$JAVA" $iotdb_parms $IOTDB_JMX_OPTS $iotdb_parms -cp "$CLASSPATH"  "$class"
 	return $?
 }
 

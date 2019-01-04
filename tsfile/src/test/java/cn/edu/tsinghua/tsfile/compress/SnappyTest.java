@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.tsfile.compress;
 
 
-import cn.edu.tsinghua.tsfile.common.utils.ReadWriteIOUtils;
+import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

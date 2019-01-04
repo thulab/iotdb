@@ -3,25 +3,28 @@ package cn.edu.tsinghua.iotdb.engine.memtable;
 import java.io.IOException;
 import java.util.List;
 
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.file.footer.ChunkGroupFooter;
+import cn.edu.tsinghua.tsfile.write.chunk.ChunkBuffer;
+import cn.edu.tsinghua.tsfile.write.chunk.ChunkWriterImpl;
+import cn.edu.tsinghua.tsfile.write.chunk.IChunkWriter;
+import cn.edu.tsinghua.tsfile.write.page.PageWriter;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
-import cn.edu.tsinghua.tsfile.timeseries.read.datatype.TimeValuePair;
-import cn.edu.tsinghua.tsfile.timeseries.write.desc.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.timeseries.write.io.TsFileIOWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.page.IPageWriter;
-import cn.edu.tsinghua.tsfile.timeseries.write.page.PageWriterImpl;
-import cn.edu.tsinghua.tsfile.timeseries.write.schema.FileSchema;
-import cn.edu.tsinghua.tsfile.timeseries.write.series.SeriesWriterImpl;
+import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
+
 
 public class MemTableFlushUtil {
 	private static final Logger logger = LoggerFactory.getLogger(MemTableFlushUtil.class);
 	private static final int pageSizeThreshold = TSFileDescriptor.getInstance().getConfig().pageSizeInByte;
 
-	private static int writeOneSeries(List<TimeValuePair> tvPairs, SeriesWriterImpl seriesWriterImpl,
-			TSDataType dataType) throws IOException {
+	private static int writeOneSeries(List<TimeValuePair> tvPairs, IChunkWriter seriesWriterImpl,
+									  TSDataType dataType) throws IOException {
 		int count = 0;
 		switch (dataType) {
 		case BOOLEAN:
@@ -72,18 +75,21 @@ public class MemTableFlushUtil {
 		for (String deltaObjectId : iMemTable.getMemTableMap().keySet()) {
 			long startPos = tsFileIOWriter.getPos();
 			long recordCount = 0;
-			tsFileIOWriter.startRowGroup(deltaObjectId);
+			tsFileIOWriter.startFlushChunkGroup(deltaObjectId);
+			int seriesNumber = iMemTable.getMemTableMap().get(deltaObjectId).size();
 			for (String measurementId : iMemTable.getMemTableMap().get(deltaObjectId).keySet()) {
-				IMemSeries series = iMemTable.getMemTableMap().get(deltaObjectId).get(measurementId);
+				//TODO if we can not use TSFileIO writer, then we have to redesign the class of TSFileIO.
+				IWritableMemChunk series = iMemTable.getMemTableMap().get(deltaObjectId).get(measurementId);
 				MeasurementSchema desc = fileSchema.getMeasurementSchema(measurementId);
-				IPageWriter pageWriter = new PageWriterImpl(desc);
-				SeriesWriterImpl seriesWriter = new SeriesWriterImpl(deltaObjectId, desc, pageWriter,
-						pageSizeThreshold);
+				PageWriter pageWriter = new PageWriter(desc);
+				ChunkBuffer chunkBuffer = new ChunkBuffer(desc);
+				IChunkWriter seriesWriter = new ChunkWriterImpl(desc, chunkBuffer, pageSizeThreshold);
 				recordCount += writeOneSeries(series.getSortedTimeValuePairList(), seriesWriter, desc.getType());
 				seriesWriter.writeToFileWriter(tsFileIOWriter);
 			}
 			long memSize = tsFileIOWriter.getPos() - startPos;
-			tsFileIOWriter.endRowGroup(memSize, recordCount);
+			ChunkGroupFooter footer = new ChunkGroupFooter(deltaObjectId, memSize, seriesNumber);
+			tsFileIOWriter.endChunkGroup(footer);
 		}
 	}
 }
